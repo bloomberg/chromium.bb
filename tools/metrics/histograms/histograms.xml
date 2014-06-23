@@ -20482,6 +20482,95 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.Abandoned.NoProxy.http" enum="Abandoned">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned.NoProxy.https" enum="Abandoned">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned.Proxy.http" enum="Abandoned">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned.Proxy.https" enum="Abandoned">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionAdblock" enum="Abandoned">
+  <obsolete>
+    Deprecated 6/2014. Replaced by Abandoned_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionAdblockPlus" enum="Abandoned">
+  <obsolete>
+    Deprecated 6/2014. Replaced by Abandoned_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionWebRequest" enum="Abandoned">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The PLT.Abandoned histogram for pages loaded after WebRequest API was used.
+  </summary>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionWebRequestAdblock" enum="Abandoned">
+  <obsolete>
+    Deprecated 6/2014. Replaced by Abandoned_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionWebRequestAdblockPlus" enum="Abandoned">
+  <obsolete>
+    Deprecated 6/2014. Replaced by Abandoned_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_ExtensionWebRequestOther" enum="Abandoned">
+  <obsolete>
+    Deprecated 6/2014. Replaced by Abandoned_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.Abandoned_SpdyProxy" enum="Abandoned">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.AbandonType" enum="AbandonType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Diagnose why a page load was considered abandoned.</summary>
+</histogram>
+
+<histogram name="PLT.BeginToCommit" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;begin&quot; to &quot;commit.&quot;   &quot;Begin&quot;==
+    &quot;request&quot; if user requested, and &quot;start&quot; otherwise.
+    &quot;Request&quot;== time when user requested document. &quot;Start&quot;==
+    time when renderer requested load of document, after any unload of last
+    document. &quot;Commit&quot;== time when renderer got first byte of
+    document.
+  </summary>
+</histogram>
+
 <histogram name="PLT.BeginToFinish" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
@@ -20509,6 +20598,245 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     PLT.BeginToFinish, but for pages which were referred to by pages which
     contained prefetch links.
   </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadNormal_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadNormal_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequest"
+    units="milliseconds">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The PLT.BeginToFinish histogram for pages loaded by following a link, after
+    WebRequest API was used.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadNormal_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram
+    name="PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadNormal_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestOther"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadNormal_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadReload_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadReload_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequest"
+    units="milliseconds">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The PLT.BeginToFinish histogram for pages reloaded by JavaScript or by
+    following a link, after WebRequest API was used.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadReload_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram
+    name="PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadReload_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestOther"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadReload_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest"
+    units="milliseconds">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The PLT.BeginToFinish histogram for pages loads initiated by back/forward
+    buttons, or by a change of encoding, after WebRequest API was used.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram
+    name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestOther"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by
+    BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by BeginToFinish_NormalLoad_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by BeginToFinish_NormalLoad_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionWebRequest"
+    units="milliseconds">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The PLT.BeginToFinish histogram for pages loaded by entering a URL or a
+    search query into Omnibox, after WebRequest API was used.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblock"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by BeginToFinish_NormalLoad_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblockPlus"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by BeginToFinish_NormalLoad_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_NormalLoad_ExtensionWebRequestOther"
+    units="milliseconds">
+  <obsolete>
+    Deprecated 6/2014. Replaced by BeginToFinish_NormalLoad_ExtensionWebRequest.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary/>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_SpdyProxy" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>PLT.BeginToFinish, but for pages fetched over a SPDY proxy.</summary>
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc">
@@ -20541,6 +20869,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.BeginToFinishDoc_SpdyProxy" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    PLT.BeginToFinshDoc, but for pages fetched over a SPDY proxy.
+  </summary>
+</histogram>
+
 <histogram name="PLT.BeginToFirstPaint" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
@@ -20553,6 +20888,37 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.BeginToFirstPaintAfterLoad" units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    Time from &quot;big&quot; to &quot;first paint after load.&quot;
+    &quot;Begin&quot;== &quot;request&quot; if user requested, and
+    &quot;start&quot; otherwise.  &quot;Request&quot;== time when user requested
+    document. &quot;Start&quot;== time when renderer requested load of document,
+    after any unload of last document. &quot;First paint after load&quot;== time
+    after onload() when first paint operation is performed.
+  </summary>
+</histogram>
+
+<histogram name="PLT.CommitToFinish" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;commit&quot; to &quot;finish.&quot; &quot;Commit&quot;==
+    time when renderer got first byte of document.  &quot;Finish&quot;==after
+    onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="PLT.CommitToFinishDoc" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;commit&quot; to &quot;finish doc.&quot; &quot;Commit&quot;==
+    time when renderer got first byte of document. &quot;Finish doc&quot; ==
+    main document loaded, before onload(). &quot;Finish&quot;==after onload()
+    and all resources are loaded.
+  </summary>
+</histogram>
+
 <histogram name="PLT.CommitToFirstPaint" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -20562,10 +20928,69 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.CommitToFirstPaintAfterLoad" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;commit&quot; to &quot;first paint after load.&quot;
+    &quot;Commit&quot;== time when renderer got first byte of document.
+    &quot;First paint after load&quot;== time after onload() when first paint
+    operation is performed.
+  </summary>
+</histogram>
+
+<histogram name="PLT.FinishDocToFinish" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;finish doc&quot; to &quot;finish.&quot; &quot;Finish
+    doc&quot;== main document loaded, before onload(). &quot;Finish&quot;==after
+    onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="PLT.FinishToFirstPaintAfterLoad" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;finish &quot; to &quot;first paint after load.&quot;
+    &quot;Finish&quot;==after onload() and all resources are loaded. &quot;First
+    paint after load&quot;== time after onload() when first paint operation is
+    performed.
+  </summary>
+</histogram>
+
 <histogram name="PLT.LoadType" enum="LoadType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Probability distribution for enumerated varieties of page loads.
+  </summary>
+</histogram>
+
+<histogram name="PLT.MissingStart" enum="MissingStartType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Diagnose error conditions in PLT reporting. A start time should always be
+    present.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NavStartToLoadEnd" units="milliseconds">
+  <obsolete>
+    deprecated 2012-01-19 in favour of PLT.PT_*
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time elapsed between the Navigation Timing metrics navigationStart and
+    loadEventEnd. Definitions: http://www.w3.org/TR/navigation-timing/
+  </summary>
+</histogram>
+
+<histogram name="PLT.NavStartToLoadStart" units="milliseconds">
+  <obsolete>
+    deprecated 2012-01-19 in favour of PLT.PT_*
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time elapsed between the Navigation Timing metrics navigationStart and
+    loadEventStart. Definitions: http://www.w3.org/TR/navigation-timing/
   </summary>
 </histogram>
 
@@ -20687,6 +21112,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PageUsed_PrerenderLoad" enum="PageUsed">
+  <obsolete>
+    Deprecated as of 5/02/2011.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Distribution of discarded and displayed prerendered pages.</summary>
+</histogram>
+
 <histogram name="PLT.PerceivedLoadTime" units="milliseconds">
   <obsolete>
     Deprecated as of 5/02/2011, replaced by Prerender.RendererPLT.
@@ -20717,12 +21150,46 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.Prerender_TimeUntilDisplay" units="milliseconds">
+  <obsolete>
+    Deprecated as of 5/02/2011, replaced by Prerender.RendererTimeUntilDisplay.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time elapsed between when the prerendering of a page starts and when the
+    page is displayed. Prerendered pages discarded without being displayed are
+    excluded from this count.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PrerenderIdleTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 5/02/2011, replaced by Prerender.RendererIdleTime.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This is the time from when a prerendered page finishes loading to when it is
+    displayed. When a page is displayed before it finishes loading, no value is
+    recorded in this histogram.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_BeginToCommit" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
     version of PLT.BeginToCommit. Commit: responseStart. Begin: requestStart or
     navigationStart if user-initiated request.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_BeginToCommit_DataReductionProxy" units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.BeginToCommit. Commit: responseStart. Begin: requestStart or
+    navigationStart if user-initiated request. Only page loads through the data
+    reduction proxy are considered.
   </summary>
 </histogram>
 
@@ -20735,6 +21202,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_BeginToFinish_DataReductionProxy" units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.BeginToFinish_SpdyProxy. Finish: loadEventEnd. Begin:
+    requestStart or navigationStart if user-initiated request. Only page loads
+    through the data reduction proxy are considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_BeginToFinishDoc" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
@@ -20744,11 +21221,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_BeginToFinishDoc_DataReductionProxy"
+    units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.BeginToFinishDoc_SpdyProxy. FinishDoc: loadEventStart. Begin:
+    requestStart or navigationStart if user-initiated request. Only page loads
+    through the data reduction proxy are considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_CommitToFinish" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
     version of PLT.CommitToFinish. Commit: responseStart. Finish: loadEventEnd.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_CommitToFinish_DataReductionProxy" units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.CommitToFinish. Commit: responseStart. Finish: loadEventEnd.
+    Only page loads through the data reduction proxy are considered.
   </summary>
 </histogram>
 
@@ -20761,12 +21258,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_CommitToFinishDoc_DataReductionProxy"
+    units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.CommitToFinishDoc. Commit: responseStart. FinishDoc:
+    loadEventStart. Only page loads through the data reduction proxy are
+    considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_FinishDocToFinish" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
     version of PLT.FinishDocToFinish. Finish: loadEventEnd. FinishDoc:
     loadEventStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_FinishDocToFinish_DataReductionProxy"
+    units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.FinishDocToFinish. Finish: loadEventEnd. FinishDoc:
+    loadEventStart. Only page loads through the data reduction proxy are
+    considered.
   </summary>
 </histogram>
 
@@ -20797,6 +21316,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_RequestToFinish_DataReductionProxy"
+    units="milliseconds">
+  <owner>pmeenan@chromium.org</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.RequestToFinish. Finish: loadEventEnd. Request:
+    navigationStart. Only page loads through the data reduction proxy are
+    considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_RequestToFinishDoc" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
@@ -20815,11 +21345,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_RequestToStart_DataReductionProxy" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.RequestToStart. Start: requestStart. Request:
+    navigationStart. Only page loads through the data reduction proxy are
+    considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_StartToCommit" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
     version of PLT.StartToCommit. Start: requestStart. Commit: responseStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_StartToCommit_DataReductionProxy" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.StartToCommit. Start: requestStart. Commit: responseStart.
+    Only page loads through the data reduction proxy are considered.
   </summary>
 </histogram>
 
@@ -20831,12 +21380,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_StartToFinish_DataReductionProxy" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This time is based on the PerformanceTiming spec and is a more accurate
+    version of PLT.StartToFinish. Start: requestStart. Finish: loadEventEnd.
+    Only page loads through the data reduction proxy are considered.
+  </summary>
+</histogram>
+
 <histogram name="PLT.RequestToFinish" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot; ==
     time when user requested document.  &quot;Finish&quot; == after onload() and
     all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="PLT.RequestToStart" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Time from &quot;request&quot; to &quot;start.&quot; &quot;Request&quot;==
+    time when user requested document. &quot;Start&quot;== time when renderer
+    requested load of document, after any unload of last document.
   </summary>
 </histogram>
 
@@ -20856,6 +21423,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     when renderer requested load of document, after any unload of last document.
     &quot;Finish&quot;==after onload() and all resources are loaded.
   </summary>
+</histogram>
+
+<histogram name="PLT.StartToFinish.NoProxy.http">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>StartToFinish times when using http and no proxy.</summary>
+</histogram>
+
+<histogram name="PLT.StartToFinish.NoProxy.https">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>StartToFinish times when using https and no proxy.</summary>
+</histogram>
+
+<histogram name="PLT.StartToFinish.Proxy.http">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>StartToFinish times when using http over a proxy.</summary>
+</histogram>
+
+<histogram name="PLT.StartToFinish.Proxy.https">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>StartToFinish times when using https over a proxy.</summary>
 </histogram>
 
 <histogram name="PLT.UserTiming_Mark" units="milliseconds">
@@ -33366,6 +33953,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Abandoned"/>
 </enum>
 
+<enum name="AbandonType" type="int">
+  <int value="0" label="Not abandoned"/>
+  <int value="1" label="FinishDoc missing"/>
+  <int value="2" label="FinishAllLoads missing"/>
+  <int value="3" label="FinishAllLoads+FinishDoc missing"/>
+  <int value="4" label="LoadEventStart missing"/>
+  <int value="5" label="LoadEventStart+FinishDoc missing"/>
+  <int value="6" label="LoadEventStart+FinishAllLoads missing"/>
+  <int value="7" label="LoadEventStart+FinishAllLoads+FinishDoc missing"/>
+  <int value="8" label="LoadEventEnd missing"/>
+  <int value="9" label="LoadEventEnd+FinishDoc missing"/>
+  <int value="10" label="LoadEventEnd+FinishAllLoads missing"/>
+  <int value="11" label="LoadEventEnd+FinishAllLoads+FinishDoc missing"/>
+  <int value="12" label="LoadEventEnd+LoadEventStart missing"/>
+  <int value="13" label="LoadEventEnd+LoadEventStart+FinishDoc missing"/>
+  <int value="14" label="LoadEventEnd+LoadEventStart+FinishAllLoads missing"/>
+  <int value="15"
+      label="LoadEventEnd+LoadEventStart+FinishAllLoads+FinishDoc missing"/>
+</enum>
+
 <enum name="AcceleratedFixedRootBackground" type="int">
   <int value="0" label="ScrolledMainFrame"/>
   <int value="1" label="ScrolledMainFrameWithAcceleratedFixedRootBackground"/>
@@ -40423,6 +41030,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="IPsec"/>
 </enum>
 
+<enum name="MissingStartType" type="int">
+  <int value="0" label="Nothing missing"/>
+  <int value="1" label="Start missing"/>
+  <int value="2" label="Commit missing"/>
+  <int value="3" label="Start+Commit missing"/>
+  <int value="4" label="NavStart missing"/>
+  <int value="5" label="NavStart+Start missing"/>
+  <int value="6" label="NavStart+Commit missing"/>
+  <int value="7" label="NavStart+Start+Commit missing"/>
+</enum>
+
 <enum name="MistSwitchResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
@@ -41686,6 +42304,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="97" label="a.b.57.x"/>
   <int value="98" label="a.b.58.0"/>
   <int value="99" label="a.b.58.x"/>
+</enum>
+
+<enum name="PageUsed" type="int">
+  <int value="0" label="Discarded"/>
+  <int value="1" label="Used"/>
 </enum>
 
 <enum name="ParsedCookieStatus" type="int">
@@ -46127,6 +46750,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="CaptivePortal.Session.DiscrepancyWithShill"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AlternateProtocol">
+  <suffix name="AlternateProtocol_spdy"
+      label="with alternate protocol available but http is used"/>
+  <suffix name="AlternateProtocol_http"
+      label="(with alternate protocol available and spdy is used"/>
+  <affected-histogram name="PLT.StartToCommit_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToCommit_NormalLoad"/>
+  <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AppListFirstPaintWarmStartFast" separator="">
   <suffix name="" label="Normal start."/>
   <suffix name="Fast"
@@ -46252,6 +46886,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="PLT.BeginToFinishDoc"/>
   <affected-histogram name="PLT.BeginToFirstPaint"/>
   <affected-histogram name="PLT.CommitToFirstPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CacheSensitivityHistograms">
+  <suffix name="CacheSensitivity" label="Cache Sensivitiy Analysis"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.BeginToFirstPaint"/>
+  <affected-histogram name="PLT.CommitToFirstPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CacheThrottle">
+  <suffix name="CacheThrottle_On" label="Throttling payload requests."/>
+  <suffix name="CacheThrottle_Off" label="Control group."/>
+  <affected-histogram name="DiskCache.TotalIOTime"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinish_HistoryLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadCacheOnly"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_Reload"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CertificateTypeAlgorithms" separator=".">
@@ -46593,6 +47250,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="FileBrowser.Load"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="FirstPacketSplit">
+  <suffix name="first_packet_intact"
+      label="with GET/POST headers often using only 1 packet"/>
+  <suffix name="first_packet_split"
+      label="with all GET/POST requests using at least 2 packets"/>
+  <affected-histogram name="Renderer4.Abandoned"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="Renderer4.LoadType"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="FromGWS">
   <suffix name="FromGWS"
       label="Only page loads that are a result of a navigation from a web
@@ -46613,6 +47283,41 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="GlobalSdch">
+  <suffix name="global_disable_sdch" label="with SDCH completely disabled"/>
+  <suffix name="global_enable_sdch"
+      label="with SDCH support for applicable sites"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadCacheOnly"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_LinkLoadCacheOnly"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_NormalLoad"/>
+  <affected-histogram name="PLT.LoadType"/>
+  <affected-histogram name="PLT.RequestToFinish"/>
+  <affected-histogram name="PLT.StartToFinish"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadCacheOnly"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadCacheOnly"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadStaleOk"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_NormalLoad"/>
+  <affected-histogram name="Renderer4.LoadType"/>
+  <affected-histogram name="Renderer4.RequestToFinish"/>
+  <affected-histogram name="Renderer4.StartToFinish"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GoogleSearchVariations">
@@ -46802,6 +47507,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
   <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
   <affected-histogram name="NetConnectivity.Pipeline.Success"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="IdleSktToImpact">
+  <suffix name="idle_timeout_5"
+      label="with 5-second unused idle socket timeout"/>
+  <suffix name="idle_timeout_10"
+      label="with 10-second unused idle socket timeout"/>
+  <suffix name="idle_timeout_20"
+      label="with 20-second unused idle socket timeout"/>
+  <suffix name="idle_timeout_60"
+      label="with 60-second unused idle socket timeout"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IndexedDBLevelDBErrnoMethods" separator=".">
@@ -48373,6 +49094,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Renderer4.BeginToFinishDoc"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadType">
+  <suffix name="HistoryLoad"
+      label="but only for user pressing back or forward"/>
+  <suffix name="LinkLoad"
+      label="deprecated - see LinkLoadReload, LinkLoadNormal,
+             LinkLoadStaleOk, LinkLoadCacheOnly; content initiated, commonly
+             back to a posted page"/>
+  <suffix name="LinkLoadCacheOnly"
+      label="content initiated, commonly back to a posted page, where browser
+             must ONLY use cache"/>
+  <suffix name="LinkLoadNormal"
+      label="content initiated, ordinary link traversal or post"/>
+  <suffix name="LinkLoadReload" label="content initiated, calling reload()"/>
+  <suffix name="LinkLoadStaleOk"
+      label="content initiated, commonly forward or back where stale cached
+             data is very acceptable"/>
+  <suffix name="NormalLoad"
+      label="but only for user entered URL or omnibox search"/>
+  <suffix name="Reload" label="but only for user pressed reload"/>
+  <suffix name="UndefLoad"
+      label="should never happen... as it is only for an client-code error
+             case which should not exist"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.StartToCommit">
+    <with-suffix name="LinkLoadNormal"/>
+    <with-suffix name="NormalLoad"/>
+  </affected-histogram>
+  <affected-histogram name="PLT.StartToFinish">
+    <with-suffix name="LinkLoadNormal"/>
+    <with-suffix name="NormalLoad"/>
+  </affected-histogram>
+  <affected-histogram name="Renderer4.BeginToFinish"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PasswordManagerMonitor">
   <suffix name="group_1" label="group 1"/>
   <suffix name="group_2" label="group 2"/>
@@ -49055,6 +49812,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Net.SocketInitErrorCodes"/>
   <affected-histogram name="Net.SocketRequestTime"/>
   <affected-histogram name="Net.SocketType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SpdyCwnd">
+  <suffix name="cwnd32" label="using cwnd policy static 32"/>
+  <suffix name="cwnd10" label="using cwnd policy static 10"/>
+  <suffix name="cwnd16" label="using cwnd policy static 16"/>
+  <suffix name="cwndMin16" label="using dynamic cwnd policy no lower than 16"/>
+  <suffix name="cwndMin10" label="using dynamic cwnd policy no lower than 10"/>
+  <suffix name="cwndDynamic" label="using dynamic cwnd policy"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.StartToCommit_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SpdyImpact">
