@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/browser/ui/views
       'target_name': 'browser_ui_views',
       'type': '<(component)',
       'dependencies': [
