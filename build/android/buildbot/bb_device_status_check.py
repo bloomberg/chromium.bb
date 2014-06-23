@@ -146,11 +146,11 @@ def CheckForMissingDevices(options, adb_online_devs):
     bb_annotations.PrintSummaryText(devices_missing_msg)
 
     from_address = 'chrome-bot@chromium.org'
-    to_address = 'chrome-labs-tech-ticket@google.com'
+    to_addresses = ['zty@chromium.org']
     subject = 'Devices offline on %s' % os.environ.get('BUILDBOT_SLAVENAME')
     msg = ('Please reboot the following devices:\n%s' %
            '\n'.join(map(str,new_missing_devs)))
-    SendEmail(from_address, to_address, subject, msg)
+    SendEmail(from_address, to_addresses, subject, msg)
 
   all_known_devices = list(set(adb_online_devs) | set(last_devices))
   device_list.WritePersistentDeviceList(last_devices_path, all_known_devices)
@@ -193,12 +193,13 @@ def CheckForMissingDevices(options, adb_online_devs):
              'regularly scheduled program.' % list(new_devs))
 
 
-def SendEmail(from_address, to_address, subject, msg):
-  msg_body = '\r\n'.join(['From: %s' % from_address, 'To: %s' % to_address,
+def SendEmail(from_address, to_addresses, subject, msg):
+  msg_body = '\r\n'.join(['From: %s' % from_address,
+                          'To: %s' % ', '.join(to_addresses),
                           'Subject: %s' % subject, '', msg])
   try:
     server = smtplib.SMTP('localhost')
-    server.sendmail(from_address, [to_address], msg_body)
+    server.sendmail(from_address, to_addresses, msg_body)
     server.quit()
   except Exception as e:
     print 'Failed to send alert email. Error: %s' % e
@@ -337,11 +338,11 @@ def main():
     msg = '\n'.join(err_msg)
     print msg
     from_address = 'buildbot@chromium.org'
-    to_address = 'chromium-android-device-alerts@google.com'
+    to_addresses = ['chromium-android-device-alerts@google.com']
     bot_name = os.environ.get('BUILDBOT_BUILDERNAME')
     slave_name = os.environ.get('BUILDBOT_SLAVENAME')
     subject = 'Device status check errors on %s, %s.' % (slave_name, bot_name)
-    SendEmail(from_address, to_address, subject, msg)
+    SendEmail(from_address, to_addresses, subject, msg)
 
   if options.device_status_dashboard:
     perf_tests_results_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
