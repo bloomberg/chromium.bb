@@ -798,7 +798,8 @@ class GitWrapper(SCMWrapper):
         depth = 10000
     else:
       depth = None
-    mirror.populate(verbose=options.verbose, bootstrap=True, depth=depth)
+    mirror.populate(verbose=options.verbose, bootstrap=True, depth=depth,
+                    ignore_lock=options.ignore_locks)
     mirror.unlock()
 
   def _Clone(self, revision, url, options):
