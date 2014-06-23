@@ -195,9 +195,11 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
                     std::vector<autofill::PasswordForm> /* forms */)
 
 // Notification that initial layout has occurred and the following password
-// forms are visible on the page (e.g. not set to display:none.)
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
-                    std::vector<autofill::PasswordForm> /* forms */)
+// forms are visible on the page (e.g. not set to display:none.), and whether
+// all frames in the page have been rendered.
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_PasswordFormsRendered,
+                    std::vector<autofill::PasswordForm> /* forms */,
+                    bool /* did_stop_loading */)
 
 // A ping to the browser that PasswordAutofillAgent was constructed. As a
 // consequence, the browser sends AutofillMsg_SetLoggingState with the current

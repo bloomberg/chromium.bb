@@ -739,7 +739,7 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
   const IPC::Message* message = render_thread_->sink()
       .GetFirstMessageMatching(AutofillHostMsg_PasswordFormsRendered::ID);
   EXPECT_TRUE(message);
-  Tuple1<std::vector<autofill::PasswordForm> > param;
+  Tuple2<std::vector<autofill::PasswordForm>, bool > param;
   AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
   EXPECT_TRUE(param.a.size());
 

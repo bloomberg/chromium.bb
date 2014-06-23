@@ -487,6 +487,45 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTest,
+    NoPromptForFailedLoginFromMainFrameWithMultiFramesInPage) {
+  NavigateToFile("/password/multi_frames.html");
+
+  // Make sure that we don't prompt to save the password for a failed login
+  // from the main frame with multiple frames in the same page.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_failed').value = 'temp';"
+      "document.getElementById('password_failed').value = 'random';"
+      "document.getElementById('submit_failed').click();";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTest,
+    NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage) {
+  NavigateToFile("/password/multi_frames.html");
+
+  // Make sure that we don't prompt to save the password for a failed login
+  // from a sub-frame with multiple frames in the same page.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "var first_frame = document.getElementById('first_frame');"
+      "var frame_doc = first_frame.contentDocument;"
+      "frame_doc.getElementById('username_failed').value = 'temp';"
+      "frame_doc.getElementById('password_failed').value = 'random';"
+      "frame_doc.getElementById('submit_failed').click();"
+      "window.parent.location.href = 'multi_frames.html';";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        PromptForXHRSubmit) {
 #if defined(OS_WIN) && defined(USE_ASH)

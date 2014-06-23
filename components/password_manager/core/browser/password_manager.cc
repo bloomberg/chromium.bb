@@ -364,9 +364,9 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
 }
 
 void PasswordManager::OnPasswordFormsRendered(
-    const std::vector<PasswordForm>& visible_forms) {
+    const std::vector<PasswordForm>& visible_forms,
+    bool did_stop_loading) {
   CreatePendingLoginManagers(visible_forms);
-
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
@@ -388,40 +388,52 @@ void PasswordManager::OnPasswordFormsRendered(
                       visible_forms.size());
   }
 
+  // Record all visible forms from the frame.
+  all_visible_forms_.insert(all_visible_forms_.end(),
+                            visible_forms.begin(),
+                            visible_forms.end());
+
   // If we see the login form again, then the login failed.
-  for (size_t i = 0; i < visible_forms.size(); ++i) {
-    // TODO(vabr): The similarity check is just action equality for now. If it
-    // becomes more complex, it may make sense to consider modifying and using
-    // PasswordFormManager::DoesManage for it.
-    if (visible_forms[i].action.is_valid() &&
-        provisional_save_manager_->pending_credentials().action ==
-            visible_forms[i].action) {
-      if (logger) {
-        logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                visible_forms[i]);
-        logger->LogMessage(Logger::STRING_DECISION_DROP);
+  if (did_stop_loading) {
+    for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
+      // TODO(vabr): The similarity check is just action equality for now. If it
+      // becomes more complex, it may make sense to consider modifying and using
+      // PasswordFormManager::DoesManage for it.
+      if (all_visible_forms_[i].action.is_valid() &&
+          provisional_save_manager_->pending_credentials().action ==
+              all_visible_forms_[i].action) {
+        if (logger) {
+          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
+                                  visible_forms[i]);
+          logger->LogMessage(Logger::STRING_DECISION_DROP);
+        }
+        provisional_save_manager_->SubmitFailed();
+        provisional_save_manager_.reset();
+        // Clear all_visible_forms_ once we found the match.
+        all_visible_forms_.clear();
+        return;
       }
-      provisional_save_manager_->SubmitFailed();
-      provisional_save_manager_.reset();
-      return;
     }
-  }
 
-  // Looks like a successful login attempt. Either show an infobar or
-  // automatically save the login data. We prompt when the user hasn't already
-  // given consent, either through previously accepting the infobar or by having
-  // the browser generate the password.
-  provisional_save_manager_->SubmitPassed();
+    // Clear all_visible_forms_ after checking all the visible forms.
+    all_visible_forms_.clear();
 
-  if (ShouldPromptUserToSavePassword()) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_DECISION_ASK);
-    client_->PromptUserToSavePassword(provisional_save_manager_.release());
-  } else {
-    if (logger)
-      logger->LogMessage(Logger::STRING_DECISION_SAVE);
-    provisional_save_manager_->Save();
-    provisional_save_manager_.reset();
+    // Looks like a successful login attempt. Either show an infobar or
+    // automatically save the login data. We prompt when the user hasn't
+    // already given consent, either through previously accepting the infobar
+    // or by having the browser generate the password.
+    provisional_save_manager_->SubmitPassed();
+
+    if (ShouldPromptUserToSavePassword()) {
+      if (logger)
+        logger->LogMessage(Logger::STRING_DECISION_ASK);
+      client_->PromptUserToSavePassword(provisional_save_manager_.release());
+    } else {
+      if (logger)
+        logger->LogMessage(Logger::STRING_DECISION_SAVE);
+      provisional_save_manager_->Save();
+      provisional_save_manager_.reset();
+    }
   }
 }
 

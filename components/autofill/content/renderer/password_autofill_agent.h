@@ -127,6 +127,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
   virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
@@ -217,6 +218,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Records original starting point of username element's selection range
   // before preview.
   int username_selection_start_;
+
+  // True indicates that all frames in a page have been rendered.
+  bool did_stop_loading_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 

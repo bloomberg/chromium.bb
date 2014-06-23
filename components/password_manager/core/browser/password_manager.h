@@ -95,7 +95,8 @@ class PasswordManager : public LoginModel {
 
   // Handles password forms being rendered.
   void OnPasswordFormsRendered(
-      const std::vector<autofill::PasswordForm>& visible_forms);
+      const std::vector<autofill::PasswordForm>& visible_forms,
+      bool did_stop_loading);
 
   // Handles a password form being submitted.
   virtual void OnPasswordFormSubmitted(
@@ -187,6 +188,12 @@ class PasswordManager : public LoginModel {
 
   // Callbacks to be notified when a password form has been submitted.
   std::vector<PasswordSubmittedCallback> submission_callbacks_;
+
+  // Records all visible forms seen during a page load, in all frames of the
+  // page. When the page stops loading, the password manager checks if one of
+  // the recorded forms matches the login form from the previous page
+  // (to see if the login was a failure), and clears the vector.
+  std::vector<autofill::PasswordForm> all_visible_forms_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

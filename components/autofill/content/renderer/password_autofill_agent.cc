@@ -232,6 +232,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
       was_username_autofilled_(false),
       was_password_autofilled_(false),
       username_selection_start_(0),
+      did_stop_loading_(false),
       weak_ptr_factory_(this) {
   Send(new AutofillHostMsg_PasswordAutofillAgentConstructed(routing_id()));
 }
@@ -535,7 +536,8 @@ void PasswordAutofillAgent::SendPasswordForms(blink::WebFrame* frame,
 
   if (only_visible) {
     Send(new AutofillHostMsg_PasswordFormsRendered(routing_id(),
-                                                   password_forms));
+                                                   password_forms,
+                                                   did_stop_loading_));
   } else {
     Send(new AutofillHostMsg_PasswordFormsParsed(routing_id(), password_forms));
   }
@@ -552,6 +554,7 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PasswordAutofillAgent::DidStartLoading() {
+  did_stop_loading_ = false;
   if (usernames_usage_ != NOTHING_TO_AUTOFILL) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.OtherPossibleUsernamesUsage",
                               usernames_usage_,
@@ -573,6 +576,10 @@ void PasswordAutofillAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
   // triggers the "Save password?" infobar if the user just submitted a password
   // form.
   SendPasswordForms(frame, true);
+}
+
+void PasswordAutofillAgent::DidStopLoading() {
+  did_stop_loading_ = true;
 }
 
 void PasswordAutofillAgent::FrameDetached(blink::WebFrame* frame) {

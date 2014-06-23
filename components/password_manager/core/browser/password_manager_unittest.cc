@@ -212,7 +212,7 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
@@ -224,7 +224,8 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 
   ASSERT_TRUE(form_to_save.get());
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
@@ -244,7 +245,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // Simulate the user generating the password and submitting the form.
   manager()->SetFormHasGeneratedPassword(form);
@@ -259,7 +260,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 }
 
 TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
@@ -278,7 +280,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
   manager()->ProvisionallySavePassword(form);
 
   // We still expect an add, since we didn't have a good match.
@@ -289,7 +291,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 
   ASSERT_TRUE(form_to_save.get());
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
@@ -307,14 +310,15 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // No message from the renderer that a password was submitted. No
   // expected calls.
   EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(0);
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 }
 
 TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
@@ -328,7 +332,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // Simulate navigating in the page.
   manager()->DidNavigateMainFrame(true);
@@ -343,7 +347,8 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
 
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 
   ASSERT_FALSE(NULL == form_to_save.get());
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
@@ -372,7 +377,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   observed.push_back(first_form);
   manager()->OnPasswordFormsParsed(observed);
   observed.clear();
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 
   // Now navigate to a second page.
   manager()->DidNavigateMainFrame(false);
@@ -381,7 +386,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   // URL.
   observed.push_back(second_form);
   manager()->OnPasswordFormsParsed(observed);
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 
   // Now submit this form
   OnPasswordFormSubmitted(second_form);
@@ -392,7 +397,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 
   // Make sure that the saved form matches the second form, not the first.
   ASSERT_TRUE(form_to_save.get());
@@ -411,14 +416,14 @@ TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   manager()->ProvisionallySavePassword(form);
 
   // The form reappears, and is visible in the layout:
   // No expected calls to the PasswordStore...
   manager()->OnPasswordFormsParsed(observed);
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 }
 
 TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
@@ -432,7 +437,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   manager()->ProvisionallySavePassword(form);
 
@@ -444,7 +449,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   // The form reappears, but is not visible in the layout:
   manager()->OnPasswordFormsParsed(observed);
   observed.clear();
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 
   ASSERT_TRUE(form_to_save.get());
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
@@ -466,10 +471,11 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);  // The initial load.
   observed.clear();
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 }
 
 TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
@@ -513,7 +519,7 @@ TEST_F(PasswordManagerTest, FormSavedWithAutocompleteOff) {
   form.password_autocomplete_set = false;
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
@@ -527,7 +533,8 @@ TEST_F(PasswordManagerTest, FormSavedWithAutocompleteOff) {
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 
   ASSERT_TRUE(form_to_save.get());
 }
@@ -544,7 +551,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   form.password_autocomplete_set = false;
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   // Simulate the user generating the password and submitting the form.
   manager()->SetFormHasGeneratedPassword(form);
@@ -559,7 +566,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   // Now the password manager waits for the navigation to complete.
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
-  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
 }
 
 TEST_F(PasswordManagerTest, SubmissionCallbackTest) {
@@ -582,7 +590,7 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   PasswordForm login_form(MakeTwitterLoginForm());
   observed.push_back(login_form);
   manager()->OnPasswordFormsParsed(observed);    // The initial load.
-  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
 
   manager()->ProvisionallySavePassword(login_form);
 
@@ -592,7 +600,7 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   // A PasswordForm appears, and is visible in the layout:
   // No expected calls to the PasswordStore...
   manager()->OnPasswordFormsParsed(observed);
-  manager()->OnPasswordFormsRendered(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 }
 
 TEST_F(PasswordManagerTest, SavingNotEnabledOnSSLErrors) {
