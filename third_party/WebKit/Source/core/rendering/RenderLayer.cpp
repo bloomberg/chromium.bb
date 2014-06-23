@@ -1097,7 +1097,6 @@ void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingR
     if ((compositingReasons() & mask) == (reasons & mask))
         return;
     m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
-    m_clipper.setCompositingClipRectsDirty();
 }
 
 void RenderLayer::setHasCompositingDescendant(bool hasCompositingDescendant)

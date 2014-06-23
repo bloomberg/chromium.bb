@@ -110,11 +110,7 @@ void RenderLayerClipper::clearClipRects(ClipRectsType typeToClear)
 {
     if (typeToClear == AllClipRectTypes) {
         m_clipRectsCache = nullptr;
-        m_compositingClipRectsDirty = false;
     } else {
-        if (typeToClear == CompositingClipRects)
-            m_compositingClipRectsDirty = false;
-
         ASSERT(typeToClear < NumCachedClipRectsTypes);
         RefPtr<ClipRects> dummy;
         m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy, 0);
@@ -304,17 +300,9 @@ static inline ClipRect backgroundClipRectForPosition(const ClipRects& parentRect
     return parentRects.overflowClipRect();
 }
 
-void RenderLayerClipper::setCompositingClipRectsDirty()
-{
-    m_compositingClipRectsDirty = true;
-}
-
 ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& clipRectsContext) const
 {
     ASSERT(m_renderer.layer()->parent());
-
-    if (clipRectsContext.clipRectsType == CompositingClipRects)
-        const_cast<RenderLayerClipper*>(this)->clearClipRectsIncludingDescendants(CompositingClipRects);
 
     ClipRects parentRects;
 

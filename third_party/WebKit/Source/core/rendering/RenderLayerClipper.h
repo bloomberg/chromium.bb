@@ -72,7 +72,6 @@ class RenderLayerClipper FINAL {
 public:
     explicit RenderLayerClipper(RenderLayerModelObject& renderer)
         : m_renderer(renderer)
-        , m_compositingClipRectsDirty(false)
     {
     }
 
@@ -87,8 +86,6 @@ public:
 
     void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
     void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
-
-    void setCompositingClipRectsDirty();
 
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
     LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
@@ -119,7 +116,6 @@ private:
     // FIXME: Could this be a RenderBox?
     RenderLayerModelObject& m_renderer;
     OwnPtr<ClipRectsCache> m_clipRectsCache;
-    unsigned m_compositingClipRectsDirty : 1;
 };
 
 } // namespace WebCore
