@@ -51,6 +51,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/VoidCallback.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -119,6 +120,32 @@ KURL urlWithoutFragment(const KURL& url)
 
 }
 
+class InspectorPageAgent::GetResourceContentLoadListener FINAL : public VoidCallback {
+public:
+    GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>);
+    virtual void handleEvent() OVERRIDE;
+private:
+    InspectorPageAgent* m_pageAgent;
+    String m_frameId;
+    String m_url;
+    RefPtr<GetResourceContentCallback> m_callback;
+};
+
+InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListener(InspectorPageAgent* pageAgent, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+    : m_pageAgent(pageAgent)
+    , m_frameId(frameId)
+    , m_url(url)
+    , m_callback(callback)
+{
+}
+
+void InspectorPageAgent::GetResourceContentLoadListener::handleEvent()
+{
+    if (!m_callback->isActive())
+        return;
+    m_pageAgent->getResourceContentAfterResourcesContentLoaded(m_frameId, m_url, m_callback);
+}
+
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
 {
     if (buffer) {
@@ -178,6 +205,16 @@ static PassOwnPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeTy
     if (equalIgnoringCase(mimeType, "text/html"))
         return TextResourceDecoder::create("text/html", "UTF-8");
     return TextResourceDecoder::create("text/plain", "UTF-8");
+}
+
+static void resourceContent(ErrorString* errorString, LocalFrame* frame, const KURL& url, String* result, bool* base64Encoded)
+{
+    DocumentLoader* loader = InspectorPageAgent::assertDocumentLoader(errorString, frame);
+    if (!loader)
+        return;
+
+    if (!InspectorPageAgent::cachedResourceContent(InspectorPageAgent::cachedResource(frame, url), result, base64Encoded))
+        *errorString = "No resource with given URL found";
 }
 
 bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
@@ -249,16 +286,6 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
 PassOwnPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorClient* client, InspectorOverlay* overlay)
 {
     return adoptPtr(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
-}
-
-// static
-void InspectorPageAgent::resourceContent(ErrorString* errorString, LocalFrame* frame, const KURL& url, String* result, bool* base64Encoded)
-{
-    DocumentLoader* loader = assertDocumentLoader(errorString, frame);
-    if (!loader)
-        return;
-    if (!cachedResourceContent(cachedResource(frame, url), result, base64Encoded))
-        *errorString = "No resource with given URL found";
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
@@ -639,12 +666,31 @@ void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page:
     object = buildObjectForFrameTree(m_page->deprecatedLocalMainFrame());
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, String* content, bool* base64Encoded)
+void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
 {
-    LocalFrame* frame = assertFrame(errorString, frameId);
-    if (!frame)
+    ErrorString errorString;
+    LocalFrame* frame = assertFrame(&errorString, frameId);
+    if (!frame) {
+        callback->sendFailure(errorString);
         return;
-    resourceContent(errorString, frame, KURL(ParsedURLString, url), content, base64Encoded);
+    }
+    String content;
+    bool base64Encoded;
+    resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
+    if (!errorString.isEmpty()) {
+        callback->sendFailure(errorString);
+        return;
+    }
+    callback->sendSuccess(content, base64Encoded);
+}
+
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+{
+    if (!m_inspectorResourceContentLoader) {
+        callback->sendFailure("Agent is not enabled.");
+        return;
+    }
+    m_inspectorResourceContentLoader->addListener(adoptPtr(new GetResourceContentLoadListener(this, frameId, url, callback)));
 }
 
 static bool textContentForResource(Resource* cachedResource, String* result)
