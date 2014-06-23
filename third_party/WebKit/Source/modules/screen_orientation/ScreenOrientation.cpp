@@ -41,6 +41,7 @@ static ScreenOrientationInfo* orientationsMap(unsigned& length)
     DEFINE_STATIC_LOCAL(const AtomicString, any, ("any", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural", AtomicString::ConstructFromLiteral));
 
     static ScreenOrientationInfo orientationMap[] = {
         { portraitPrimary, blink::WebScreenOrientationLockPortraitPrimary },
@@ -49,7 +50,8 @@ static ScreenOrientationInfo* orientationsMap(unsigned& length)
         { landscapeSecondary, blink::WebScreenOrientationLockLandscapeSecondary },
         { any, blink::WebScreenOrientationLockAny },
         { portrait, blink::WebScreenOrientationLockPortrait },
-        { landscape, blink::WebScreenOrientationLockLandscape }
+        { landscape, blink::WebScreenOrientationLockLandscape },
+        { natural, blink::WebScreenOrientationLockNatural }
     };
     length = WTF_ARRAY_LENGTH(orientationMap);
 

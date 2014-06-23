@@ -11,6 +11,7 @@ enum OrientationType {
 
 enum OrientationLockType {
     "any",
+    "natural",
     "landscape",
     "portrait",
     "portrait-primary",

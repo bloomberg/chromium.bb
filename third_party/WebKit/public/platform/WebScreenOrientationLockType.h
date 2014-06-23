@@ -15,7 +15,8 @@ enum WebScreenOrientationLockType {
     WebScreenOrientationLockLandscapeSecondary,
     WebScreenOrientationLockAny,
     WebScreenOrientationLockLandscape,
-    WebScreenOrientationLockPortrait
+    WebScreenOrientationLockPortrait,
+    WebScreenOrientationLockNatural,
 };
 
 } // namespace blink
