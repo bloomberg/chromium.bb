@@ -36,6 +36,7 @@
 #include "SkTypeface_win.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfbuzz.h"
 #include "platform/fonts/win/FontFallbackWin.h"
@@ -95,8 +96,10 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
         &script,
         m_fontManager.get());
     FontPlatformData* data = 0;
-    if (family)
-        data = getFontPlatformData(fontDescription,  AtomicString(family, wcslen(family)));
+    if (family) {
+        FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription, createByFamily);
+    }
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts
@@ -155,7 +158,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     int i;
     for (i = 0; (!data || !fontContainsCharacter(data, family, character)) && i < numFonts; ++i) {
         family = panUniFonts[i];
-        data = getFontPlatformData(fontDescription, AtomicString(family, wcslen(family)));
+        FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription, createByFamily);
     }
 
     // When i-th font (0-base) in |panUniFonts| contains a character and
@@ -201,10 +205,11 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     return matchesRequestedFamily;
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
 {
+    ASSERT(creationParams.creationType() == CreateFontByFamily);
     CString name;
-    RefPtr<SkTypeface> tf = createTypeface(fontDescription, family, name);
+    RefPtr<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
     if (!tf)
         return 0;
 
@@ -213,7 +218,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     // really used.
     // FIXME: Do we need to use predefined fonts "guaranteed" to exist
     // when we're running in layout-test mode?
-    if (!typefacesMatchesFamily(tf.get(), family)) {
+    if (!typefacesMatchesFamily(tf.get(), creationParams.family())) {
         return 0;
     }
 

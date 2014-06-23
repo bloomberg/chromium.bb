@@ -29,6 +29,7 @@
 #include "core/css/CSSFontFace.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 
 namespace WebCore {
@@ -54,8 +55,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     }
 
     // See if we have a mapping in our FontData cache.
-    AtomicString emptyFontFamily = "";
-    FontCacheKey key = fontDescription.cacheKey(emptyFontFamily);
+    FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams());
 
     RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;
     if (!fontData)

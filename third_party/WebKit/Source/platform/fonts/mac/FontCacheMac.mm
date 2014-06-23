@@ -34,6 +34,7 @@
 #import "platform/LayoutTestSupport.h"
 #import "platform/RuntimeEnabledFeatures.h"
 #import "platform/fonts/FontDescription.h"
+#import "platform/fonts/FontFaceCreationParams.h"
 #import "platform/fonts/FontPlatformData.h"
 #import "platform/fonts/SimpleFontData.h"
 #import "platform/mac/WebFontCache.h"
@@ -201,13 +202,13 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
 {
     NSFontTraitMask traits = fontDescription.style() ? NSFontItalicTrait : 0;
     NSInteger weight = toAppKitFontWeight(fontDescription.weight());
     float size = fontSize;
 
-    NSFont *nsFont = [WebFontCache fontWithFamily:family traits:traits weight:weight size:size];
+    NSFont *nsFont = [WebFontCache fontWithFamily:creationParams.family() traits:traits weight:weight size:size];
     if (!nsFont)
         return 0;
 

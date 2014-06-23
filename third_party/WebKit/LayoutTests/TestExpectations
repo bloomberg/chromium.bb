@@ -234,6 +234,9 @@ crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-su
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
+# Not yet ready for activation.
+crbug.com/381684 fonts/family-fallback-gardiner.html [ Skip ]
+
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]

@@ -31,6 +31,7 @@
 #ifndef FontCacheKey_h
 #define FontCacheKey_h
 
+#include "FontFaceCreationParams.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -46,11 +47,11 @@ struct FontCacheKey {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     FontCacheKey()
-        : m_familyName()
+        : m_creationParams()
         , m_fontSize(0)
         , m_options(0) { }
-    FontCacheKey(AtomicString familyName, float fontSize, unsigned options)
-        : m_familyName(familyName)
+    FontCacheKey(FontFaceCreationParams creationParams, float fontSize, unsigned options)
+        : m_creationParams(creationParams)
         , m_fontSize(fontSize * s_fontSizePrecisionMultiplier)
         , m_options(options) { }
     FontCacheKey(WTF::HashTableDeletedValueType)
@@ -59,7 +60,7 @@ public:
     unsigned hash() const
     {
         unsigned hashCodes[3] = {
-            CaseFoldingHash::hash(m_familyName),
+            m_creationParams.hash(),
             m_fontSize,
             m_options
         };
@@ -68,7 +69,7 @@ public:
 
     bool operator==(const FontCacheKey& other) const
     {
-        return equalIgnoringCase(m_familyName, other.m_familyName)
+        return m_creationParams == other.m_creationParams
             && m_fontSize == other.m_fontSize
             && m_options == other.m_options;
     }
@@ -89,7 +90,7 @@ private:
         return 0xFFFFFFFFU;
     }
 
-    AtomicString m_familyName;
+    FontFaceCreationParams m_creationParams;
     unsigned m_fontSize;
     unsigned m_options;
 };

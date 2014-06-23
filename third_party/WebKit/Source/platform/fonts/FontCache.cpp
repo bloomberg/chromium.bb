@@ -77,29 +77,19 @@ FontCache* FontCache::fontCache()
 }
 
 FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDescription,
-    const AtomicString& passedFamilyName, bool checkingAlternateName)
+    const FontFaceCreationParams& creationParams, bool checkingAlternateName)
 {
-#if OS(WIN) && ENABLE(OPENTYPE_VERTICAL)
-    // Leading "@" in the font name enables Windows vertical flow flag for the font.
-    // Because we do vertical flow by ourselves, we don't want to use the Windows feature.
-    // IE disregards "@" regardless of the orientatoin, so we follow the behavior.
-    const AtomicString& familyName = (passedFamilyName.isEmpty() || passedFamilyName[0] != '@') ?
-        passedFamilyName : AtomicString(passedFamilyName.impl()->substring(1));
-#else
-    const AtomicString& familyName = passedFamilyName;
-#endif
-
     if (!gFontPlatformDataCache) {
         gFontPlatformDataCache = new FontPlatformDataCache;
         platformInit();
     }
 
-    FontCacheKey key = fontDescription.cacheKey(familyName);
+    FontCacheKey key = fontDescription.cacheKey(creationParams);
     FontPlatformData* result = 0;
     bool foundResult;
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
     if (it == gFontPlatformDataCache->end()) {
-        result = createFontPlatformData(fontDescription, familyName, fontDescription.effectiveFontSize());
+        result = createFontPlatformData(fontDescription, creationParams, fontDescription.effectiveFontSize());
         gFontPlatformDataCache->set(key, adoptPtr(result));
         foundResult = result;
     } else {
@@ -107,12 +97,14 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
         foundResult = true;
     }
 
-    if (!foundResult && !checkingAlternateName) {
+    if (!foundResult && !checkingAlternateName && creationParams.creationType() == CreateFontByFamily) {
         // We were unable to find a font. We have a small set of fonts that we alias to other names,
         // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
-        const AtomicString& alternateName = alternateFamilyName(familyName);
-        if (!alternateName.isEmpty())
-            result = getFontPlatformData(fontDescription, alternateName, true);
+        const AtomicString& alternateName = alternateFamilyName(creationParams.family());
+        if (!alternateName.isEmpty()) {
+            FontFaceCreationParams createByAlternateFamily(alternateName);
+            result = getFontPlatformData(fontDescription, createByAlternateFamily, true);
+        }
         if (result)
             gFontPlatformDataCache->set(key, adoptPtr(new FontPlatformData(*result))); // Cache the result under the old name.
     }
@@ -148,7 +140,7 @@ static FontDataCache* gFontDataCache = 0;
 
 PassRefPtr<SimpleFontData> FontCache::getFontData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName, ShouldRetain shouldRetain)
 {
-    if (FontPlatformData* platformData = getFontPlatformData(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(family), checkingAlternateName))
+    if (FontPlatformData* platformData = getFontPlatformData(fontDescription, FontFaceCreationParams(adjustFamilyNameToAvoidUnsupportedFonts(family)), checkingAlternateName))
         return fontDataFromFontPlatformData(platformData, shouldRetain);
 
     return nullptr;
@@ -170,7 +162,7 @@ PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(const FontPla
 bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& family)
 {
     bool checkingAlternateName = true;
-    return getFontPlatformData(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(family), checkingAlternateName);
+    return getFontPlatformData(fontDescription, FontFaceCreationParams(adjustFamilyNameToAvoidUnsupportedFonts(family)), checkingAlternateName);
 }
 
 SimpleFontData* FontCache::getNonRetainedLastResortFallbackFont(const FontDescription& fontDescription)

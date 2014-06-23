@@ -34,6 +34,7 @@
 
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFaceCreationParams.h"
 
 #include "SkTypeface_android.h"
 
@@ -74,7 +75,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     AtomicString familyName = getFamilyNameForCharacter(c, fontDescription.script());
     if (familyName.isEmpty())
         return getLastResortFallbackFont(fontDescription, DoNotRetain);
-    return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, familyName), DoNotRetain);
+    return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)), DoNotRetain);
 }
 
 // static

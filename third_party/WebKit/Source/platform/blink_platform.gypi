@@ -346,6 +346,7 @@
       'fonts/FontDataCache.cpp',
       'fonts/FontDataCache.h',
       'fonts/FontDescription.cpp',
+      'fonts/FontFaceCreationParams.h',
       'fonts/FontFallbackList.cpp',
       'fonts/FontFallbackList.h',
       'fonts/FontFamily.cpp',

@@ -30,17 +30,32 @@
 
 #include "config.h"
 
+#if !OS(WIN) && !OS(ANDROID)
+#include "SkFontConfigInterface.h"
+#endif
 #include "SkFontMgr.h"
+#include "SkStream.h"
 #include "SkTypeface.h"
 #include "platform/NotImplemented.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include <unicode/locid.h>
+
+#if !OS(WIN) && !OS(ANDROID)
+static SkStream* streamForFontconfigInterfaceId(int fontconfigInterfaceId)
+{
+    SkAutoTUnref<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
+    SkFontConfigInterface::FontIdentity fontIdentity;
+    fontIdentity.fID = fontconfigInterfaceId;
+    return fci->openStream(fontIdentity);
+}
+#endif
 
 namespace WebCore {
 
@@ -57,7 +72,9 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     if (fallbackFont.name.isEmpty())
         return nullptr;
 
-    AtomicString atomicFamily(fallbackFont.name);
+    FontFaceCreationParams creationParams;
+    creationParams = FontFaceCreationParams(fallbackFont.fontconfigInterfaceId, fallbackFont.ttcIndex);
+
     // Changes weight and/or italic of given FontDescription depends on
     // the result of fontconfig so that keeping the correct font mapping
     // of the given character. See http://crbug.com/32109 for details.
@@ -77,7 +94,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
         description.setStyle(FontStyleNormal);
     }
 
-    FontPlatformData* substitutePlatformData = getFontPlatformData(description, atomicFamily);
+    FontPlatformData* substitutePlatformData = getFontPlatformData(description, creationParams);
     if (!substitutePlatformData)
         return nullptr;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
@@ -90,17 +107,17 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
-    const AtomicString fallbackFontFamily = getFallbackFontFamily(description);
-    const FontPlatformData* fontPlatformData = getFontPlatformData(description, fallbackFontFamily);
+    const FontFaceCreationParams fallbackCreationParams(getFallbackFontFamily(description));
+    const FontPlatformData* fontPlatformData = getFontPlatformData(description, fallbackCreationParams);
 
     // We should at least have Sans or Arial which is the last resort fallback of SkFontHost ports.
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
-        fontPlatformData = getFontPlatformData(description, sansStr);
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, sansCreationParams, (AtomicString("Sans", AtomicString::ConstructFromLiteral)));
+        fontPlatformData = getFontPlatformData(description, sansCreationParams);
     }
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));
-        fontPlatformData = getFontPlatformData(description, arialStr);
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, arialCreationParams, (AtomicString("Arial", AtomicString::ConstructFromLiteral)));
+        fontPlatformData = getFontPlatformData(description, arialCreationParams);
     }
 
     // TODO(scottmg|eae): Trying to identify crashes in http://crbug.com/383542
@@ -109,8 +126,18 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 
-PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
+PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
 {
+#if !OS(WIN) && !OS(ANDROID)
+    if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
+        // TODO(dro): crbug.com/381620 Use creationParams.ttcIndex() after
+        // https://code.google.com/p/skia/issues/detail?id=1186 gets fixed.
+        SkTypeface* typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()));
+        return adoptRef(typeface);
+    }
+#endif
+
+    AtomicString family = creationParams.family();
     // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the name into
     // the fallback name (like "monospace") that fontconfig understands.
     if (!family.length() || family.startsWith("-webkit-")) {
@@ -142,10 +169,10 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 }
 
 #if !OS(WIN)
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
 {
     CString name;
-    RefPtr<SkTypeface> tf(createTypeface(fontDescription, family, name));
+    RefPtr<SkTypeface> tf(createTypeface(fontDescription, creationParams, name));
     if (!tf)
         return 0;
 

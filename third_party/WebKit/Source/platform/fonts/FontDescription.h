@@ -127,7 +127,7 @@ public:
     FontDescription makeNormalFeatureSettings() const;
 
     float effectiveFontSize() const; // Returns either the computedSize or the computedPixelSize
-    FontCacheKey cacheKey(const AtomicString& familyName, FontTraits desiredTraits = FontTraits(0)) const;
+    FontCacheKey cacheKey(const FontFaceCreationParams&, FontTraits desiredTraits = FontTraits(0)) const;
 
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampToFloat(s); }

@@ -37,13 +37,13 @@ namespace WebCore {
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
     blink::WebFallbackFont webFallbackFont;
-    if (blink::Platform::current()->sandboxSupport()) {
+    if (blink::Platform::current()->sandboxSupport())
         blink::Platform::current()->sandboxSupport()->getFallbackFontForCharacter(c, preferredLocale, &webFallbackFont);
-    } else {
+    else
         blink::WebFontInfo::fallbackFontForChar(c, preferredLocale, &webFallbackFont);
-    }
     fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
     fallbackFont->filename = webFallbackFont.filename;
+    fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
     fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
     fallbackFont->isBold = webFallbackFont.isBold;
     fallbackFont->isItalic = webFallbackFont.isItalic;
