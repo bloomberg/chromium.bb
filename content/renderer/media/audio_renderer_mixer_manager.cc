@@ -54,9 +54,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     return it->second.mixer;
   }
 
-  // On ChromeOS and Linux we can rely on the playback device to handle
-  // resampling, so don't waste cycles on it here.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  // On ChromeOS we can rely on the playback device to handle resampling, so
+  // don't waste cycles on it here.
+#if defined(OS_CHROMEOS)
   int sample_rate = params.sample_rate();
 #else
   int sample_rate = hardware_config_->GetOutputSampleRate();
