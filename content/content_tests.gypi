@@ -619,6 +619,7 @@
         'child/resource_dispatcher_unittest.cc',
         'child/site_isolation_policy_unittest.cc',
         'child/touch_fling_gesture_curve_unittest.cc',
+        'child/web_url_loader_impl_unittest.cc',
         'child/webcrypto/shared_crypto_unittest.cc',
         'child/worker_task_runner_unittest.cc',
         'common/android/address_parser_unittest.cc',

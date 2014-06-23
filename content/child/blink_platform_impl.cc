@@ -26,6 +26,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/fling_curve_configuration.h"
 #include "content/child/web_discardable_memory_impl.h"
@@ -402,7 +403,11 @@ BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
 
 WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  return new WebURLLoaderImpl;
+  ChildThread* child_thread = ChildThread::current();
+  // There may be no child thread in RenderViewTests.  These tests can still use
+  // data URLs to bypass the ResourceDispatcher.
+  return new WebURLLoaderImpl(
+      child_thread ? child_thread->resource_dispatcher() : NULL);
 }
 
 WebSocketStreamHandle* BlinkPlatformImpl::createSocketStreamHandle() {
