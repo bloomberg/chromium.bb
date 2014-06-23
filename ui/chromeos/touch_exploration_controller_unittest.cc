@@ -260,6 +260,7 @@ TEST_F(TouchExplorationTest, ActualMouseMovesUnaffected) {
                             0);
   generator_->Dispatch(&mouse_move);
   generator_->ReleaseTouch();
+  AdvanceSimulatedTimePastTapDelay();
 
   std::vector<ui::LocatedEvent*> events =
       GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
@@ -337,6 +338,8 @@ TEST_F(TouchExplorationTest, TurnOnMidTouch) {
   // The move and release from the second finger should get rewritten.
   generator_->MoveTouchId(gfx::Point(13, 14), 2);
   generator_->ReleaseTouchId(2);
+  AdvanceSimulatedTimePastTapDelay();
+
   ASSERT_EQ(2u, captured_events.size());
   EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[0]->type());
   EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[1]->type());
@@ -582,6 +585,7 @@ TEST_F(TouchExplorationTest, TimerFiresLateDuringTouchExploration) {
 
   generator_->ReleaseTouchId(2);
   generator_->ReleaseTouchId(1);
+  AdvanceSimulatedTimePastTapDelay();
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
@@ -658,7 +662,6 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
-
 // Double-tapping where the user holds their finger down for the second time
 // for a longer press should send a touch press and released (right click)
 // to the location of the last successful touch exploration.
@@ -705,6 +708,40 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   base::TimeDelta released_time = captured_events[1]->time_stamp();
   EXPECT_EQ(gesture_detector_config_.longpress_timeout,
             released_time - pressed_time);
+}
+
+// Single-tapping should send a touch press and release through to the location
+// of the last successful touch exploration if the grace period has not
+// elapsed.
+TEST_F(TouchExplorationTest, SingleTap) {
+  SwitchTouchExplorationMode(true);
+
+  // Tap once to simulate a mouse moved event.
+  gfx::Point initial_location(11, 12);
+  generator_->set_current_location(initial_location);
+  generator_->PressTouch();
+
+  // Move to another location for single tap
+  gfx::Point tap_location(22, 23);
+  generator_->MoveTouch(tap_location);
+  generator_->ReleaseTouch();
+
+  // Allow time to pass within the grace period of releasing before
+  // tapping again.
+  gfx::Point final_location(33, 34);
+  generator_->set_current_location(final_location);
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(250));
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(4U, captured_events.size());
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[0]->type());
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[1]->type());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[2]->type());
+  EXPECT_EQ(tap_location, captured_events[2]->location());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[3]->type());
+  EXPECT_EQ(tap_location, captured_events[3]->location());
 }
 
 // Double-tapping without coming from touch exploration (no previous touch

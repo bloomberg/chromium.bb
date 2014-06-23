@@ -30,8 +30,9 @@ class TouchEvent;
 //
 // At a high-level, single-finger events are used for accessibility -
 // exploring the screen gets turned into mouse moves (which can then be
-// spoken by an accessibility service running), a double-tap simulates a
-// click, and gestures can be used to send high-level accessibility commands.
+// spoken by an accessibility service running), a single tap while the user
+// is in touch exploration or a double-tap simulates a click, and gestures
+// can be used to send high-level accessibility commands.
 // When two or more fingers are pressed initially, from then on the events
 // are passed through, but with the initial finger removed - so if you swipe
 // down with two fingers, the running app will see a one-finger swipe.
@@ -53,6 +54,12 @@ class TouchEvent;
 //
 // If the user taps and releases their finger, after 300 ms from the initial
 // touch, a single mouse move is fired.
+//
+// While in touch exploration mode, the user can perform a single tap
+// if the user releases their finger and taps before 300 ms passes.
+// This will result in a click on the last successful touch exploration
+// location. This allows the user to perform a single tap
+// anywhere to activate it.
 //
 // If the user double-taps, the second tap is passed through, allowing the
 // user to click - however, the double-tap location is changed to the location
@@ -101,7 +108,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSingleTapPressed(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InSingleTapReleased(
+  ui::EventRewriteStatus InSingleTapOrTouchExploreReleased(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InDoubleTapPressed(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
@@ -142,6 +149,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
     // second time. If the second tap doesn't occurs within the grace period,
     // we dispatch a mouse move at the location of the first tap.
     SINGLE_TAP_RELEASED,
+
+    // The user was in touch explore mode and released the finger.
+    // If another touch press occurs within the grace period, a single
+    // tap click occurs. This state differs from SINGLE_TAP_RELEASED
+    // In that if a second tap doesn't occur within the grace period,
+    // there is no mouse move dispatched.
+    TOUCH_EXPLORE_RELEASED,
 
     // The user tapped once, and before the grace period expired, pressed
     // one finger down to begin a double-tap, but has not released it yet.
