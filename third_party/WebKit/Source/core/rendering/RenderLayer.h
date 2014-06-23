@@ -331,9 +331,7 @@ public:
 
     RenderLayer* scrollParent() const
     {
-        if (stackingNode()->isNormalFlowOnly())
-            return 0;
-        return const_cast<RenderLayer*>(compositingInputs().inheritedScrollParent);
+        return const_cast<RenderLayer*>(compositingInputs().scrollParent);
     }
 
     RenderLayer* clipParent() const;
@@ -453,7 +451,7 @@ public:
             , transformAncestor(0)
             , filterAncestor(0)
             , ancestorScrollingLayer(0)
-            , inheritedScrollParent(0)
+            , scrollParent(0)
             , isUnclippedDescendant(false)
         { }
 
@@ -462,7 +460,7 @@ public:
         const RenderLayer* transformAncestor;
         const RenderLayer* filterAncestor;
         const RenderLayer* ancestorScrollingLayer;
-        const RenderLayer* inheritedScrollParent;
+        const RenderLayer* scrollParent;
         unsigned isUnclippedDescendant : 1;
     };
 

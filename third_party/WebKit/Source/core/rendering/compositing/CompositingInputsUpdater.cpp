@@ -21,15 +21,6 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 {
 }
 
-static bool hasStackingContextBeforeAncestor(const RenderLayer* child, const RenderLayer* ancestor)
-{
-    for (RenderLayer* current = child->parent(); current && current != ancestor; current = current->parent()) {
-        if (current->stackingNode()->isStackingContext())
-            return true;
-    }
-    return false;
-}
-
 static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObject* object)
 {
     for (const RenderObject* current = object; current; current = current->containingBlock()) {
@@ -96,24 +87,18 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
                     properties.isUnclippedDescendant = scroller != containingBlock && scroller->isDescendantOf(containingBlock);
                 }
 
-                const RenderLayer* containingBlockEnclosingLayer = containingBlock->enclosingLayer();
-                if (!containingBlockEnclosingLayer->stackingNode()->isStackingContext()) {
-                    const RenderLayer* scrollParent = containingBlockEnclosingLayer->compositingInputs().inheritedScrollParent;
-                    if (containingBlockEnclosingLayer->scrollsOverflow())
-                        scrollParent = containingBlockEnclosingLayer;
-
-                    // We need to ensure that there's no stacking context between us and our scroll parent.
-                    // Sadly, we may have jumped over this stacking context since we're operating in terms
-                    // of containing blocks. This walk should be short, though, since we're only going as
-                    // far as the first stacking context.
-                    if (scrollParent && !hasStackingContextBeforeAncestor(layer, scrollParent))
-                        properties.inheritedScrollParent = scrollParent;
-                }
+                if (!layer->stackingNode()->isNormalFlowOnly()
+                    && properties.ancestorScrollingLayer
+                    && !info.ancestorStackingContext->renderer()->isDescendantOf(properties.ancestorScrollingLayer->renderer()))
+                    properties.scrollParent = properties.ancestorScrollingLayer;
             }
         }
 
         layer->updateCompositingInputs(properties);
     }
+
+    if (layer->stackingNode()->isStackingContext())
+        info.ancestorStackingContext = layer;
 
     if (layer->scrollsOverflow())
         info.lastScrollingAncestor = layer;

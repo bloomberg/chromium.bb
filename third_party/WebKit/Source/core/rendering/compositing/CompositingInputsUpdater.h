@@ -20,6 +20,7 @@ private:
         {
         }
 
+        RenderLayer* ancestorStackingContext;
         RenderLayer* enclosingCompositedLayer;
         // Notice that lastScrollingAncestor isn't the same thing as
         // ancestorScrollingLayer. The former is just the nearest scrolling
