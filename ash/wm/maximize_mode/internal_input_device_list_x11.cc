@@ -9,7 +9,7 @@
 
 #include "base/strings/string_util.h"
 #include "ui/events/event.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -26,7 +26,7 @@ const char kInternalKeyboardName[] = "AT Translated Set 2 keyboard";
 }  // namespace
 
 InternalInputDeviceListX11::InternalInputDeviceListX11() {
-  if (ui::DeviceDataManager::GetInstance()->IsXInput2Available()) {
+  if (ui::DeviceDataManagerX11::GetInstance()->IsXInput2Available()) {
     XIDeviceList xi_dev_list = ui::DeviceListCacheX::GetInstance()->
         GetXI2DeviceList(gfx::GetXDisplay());
     for (int i = 0; i < xi_dev_list.count; ++i) {

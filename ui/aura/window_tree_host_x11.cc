@@ -41,7 +41,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/screen.h"
@@ -454,7 +454,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
           XRefreshKeyboardMapping(&xev->xmapping);
           break;
         case MappingPointer:
-          ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
+          ui::DeviceDataManagerX11::GetInstance()->UpdateButtonMap();
           break;
         default:
           NOTIMPLEMENTED() << " Unknown request: " << xev->xmapping.request;
@@ -663,7 +663,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
       ui::TouchEvent touchev(xev);
-      if (ui::DeviceDataManager::GetInstance()->TouchEventNeedsCalibrate(
+      if (ui::DeviceDataManagerX11::GetInstance()->TouchEventNeedsCalibrate(
               xiev->deviceid)) {
         touch_calibrate_->Calibrate(&touchev, bounds_);
       }

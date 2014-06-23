@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -94,26 +94,35 @@ const char* kCachedAtoms[] = {
 
 // Constants for checking if a data type lies in the range of CMT/Touch data
 // types.
-const int kCMTDataTypeStart = ui::DeviceDataManager::DT_CMT_SCROLL_X;
-const int kCMTDataTypeEnd = ui::DeviceDataManager::DT_CMT_FINGER_COUNT;
-const int kTouchDataTypeStart = ui::DeviceDataManager::DT_TOUCH_MAJOR;
-const int kTouchDataTypeEnd = ui::DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP;
+const int kCMTDataTypeStart = ui::DeviceDataManagerX11::DT_CMT_SCROLL_X;
+const int kCMTDataTypeEnd = ui::DeviceDataManagerX11::DT_CMT_FINGER_COUNT;
+const int kTouchDataTypeStart = ui::DeviceDataManagerX11::DT_TOUCH_MAJOR;
+const int kTouchDataTypeEnd = ui::DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP;
 
 namespace ui {
 
-bool DeviceDataManager::IsCMTDataType(const int type) {
+bool DeviceDataManagerX11::IsCMTDataType(const int type) {
   return (type >= kCMTDataTypeStart) && (type <= kCMTDataTypeEnd);
 }
 
-bool DeviceDataManager::IsTouchDataType(const int type) {
+bool DeviceDataManagerX11::IsTouchDataType(const int type) {
   return (type >= kTouchDataTypeStart) && (type <= kTouchDataTypeEnd);
 }
 
-DeviceDataManager* DeviceDataManager::GetInstance() {
-  return Singleton<DeviceDataManager>::get();
+// static
+void DeviceDataManagerX11::CreateInstance() {
+  if (instance())
+    return;
+
+  new DeviceDataManagerX11();
 }
 
-DeviceDataManager::DeviceDataManager()
+// static
+DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
+  return static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance());
+}
+
+DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
       atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
@@ -124,14 +133,12 @@ DeviceDataManager::DeviceDataManager()
   CHECK(arraysize(kCachedAtoms) == static_cast<size_t>(DT_LAST_ENTRY) + 1);
   UpdateDeviceList(gfx::GetXDisplay());
   UpdateButtonMap();
-  for (int i = 0; i < kMaxDeviceNum; i++)
-    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
 }
 
-DeviceDataManager::~DeviceDataManager() {
+DeviceDataManagerX11::~DeviceDataManagerX11() {
 }
 
-bool DeviceDataManager::InitializeXInputInternal() {
+bool DeviceDataManagerX11::InitializeXInputInternal() {
   // Check if XInput is available on the system.
   xi_opcode_ = -1;
   int opcode, event, error;
@@ -178,11 +185,11 @@ bool DeviceDataManager::InitializeXInputInternal() {
   return true;
 }
 
-bool DeviceDataManager::IsXInput2Available() const {
+bool DeviceDataManagerX11::IsXInput2Available() const {
   return xi_opcode_ != -1;
 }
 
-void DeviceDataManager::UpdateDeviceList(Display* display) {
+void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   cmt_devices_.reset();
   touchpads_.reset();
   for (int i = 0; i < kMaxDeviceNum; ++i) {
@@ -266,7 +273,7 @@ void DeviceDataManager::UpdateDeviceList(Display* display) {
   }
 }
 
-bool DeviceDataManager::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
+bool DeviceDataManagerX11::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
 #if defined(USE_XI2_MT)
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   if (!factory->IsMultiTouchDevice(xiev->sourceid)) {
@@ -280,7 +287,7 @@ bool DeviceDataManager::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
 #endif
 }
 
-void DeviceDataManager::GetEventRawData(const XEvent& xev, EventData* data) {
+void DeviceDataManagerX11::GetEventRawData(const XEvent& xev, EventData* data) {
   if (xev.type != GenericEvent)
     return;
 
@@ -306,7 +313,7 @@ void DeviceDataManager::GetEventRawData(const XEvent& xev, EventData* data) {
   }
 }
 
-bool DeviceDataManager::GetEventData(const XEvent& xev,
+bool DeviceDataManagerX11::GetEventData(const XEvent& xev,
     const DataType type, double* value) {
   if (xev.type != GenericEvent)
     return false;
@@ -355,7 +362,7 @@ bool DeviceDataManager::GetEventData(const XEvent& xev,
   return false;
 }
 
-bool DeviceDataManager::IsXIDeviceEvent(
+bool DeviceDataManagerX11::IsXIDeviceEvent(
     const base::NativeEvent& native_event) const {
   if (native_event->type != GenericEvent ||
       native_event->xcookie.extension != xi_opcode_)
@@ -363,7 +370,7 @@ bool DeviceDataManager::IsXIDeviceEvent(
   return xi_device_event_types_[native_event->xcookie.evtype];
 }
 
-bool DeviceDataManager::IsTouchpadXInputEvent(
+bool DeviceDataManagerX11::IsTouchpadXInputEvent(
     const base::NativeEvent& native_event) const {
   if (native_event->type != GenericEvent)
     return false;
@@ -375,7 +382,7 @@ bool DeviceDataManager::IsTouchpadXInputEvent(
   return touchpads_[xievent->sourceid];
 }
 
-bool DeviceDataManager::IsCMTDeviceEvent(
+bool DeviceDataManagerX11::IsCMTDeviceEvent(
     const base::NativeEvent& native_event) const {
   if (native_event->type != GenericEvent)
     return false;
@@ -387,20 +394,20 @@ bool DeviceDataManager::IsCMTDeviceEvent(
   return cmt_devices_[xievent->sourceid];
 }
 
-bool DeviceDataManager::IsCMTGestureEvent(
+bool DeviceDataManagerX11::IsCMTGestureEvent(
     const base::NativeEvent& native_event) const {
   return (IsScrollEvent(native_event) ||
           IsFlingEvent(native_event) ||
           IsCMTMetricsEvent(native_event));
 }
 
-bool DeviceDataManager::HasEventData(
+bool DeviceDataManagerX11::HasEventData(
     const XIDeviceEvent* xiev, const DataType type) const {
   const int idx = valuator_lookup_[xiev->sourceid][type];
   return (idx >= 0) && XIMaskIsSet(xiev->valuators.mask, idx);
 }
 
-bool DeviceDataManager::IsScrollEvent(
+bool DeviceDataManagerX11::IsScrollEvent(
     const base::NativeEvent& native_event) const {
   if (!IsCMTDeviceEvent(native_event))
     return false;
@@ -411,7 +418,7 @@ bool DeviceDataManager::IsScrollEvent(
           HasEventData(xiev, DT_CMT_SCROLL_Y));
 }
 
-bool DeviceDataManager::IsFlingEvent(
+bool DeviceDataManagerX11::IsFlingEvent(
     const base::NativeEvent& native_event) const {
   if (!IsCMTDeviceEvent(native_event))
     return false;
@@ -423,7 +430,7 @@ bool DeviceDataManager::IsFlingEvent(
           HasEventData(xiev, DT_CMT_FLING_STATE));
 }
 
-bool DeviceDataManager::IsCMTMetricsEvent(
+bool DeviceDataManagerX11::IsCMTMetricsEvent(
     const base::NativeEvent& native_event) const {
   if (!IsCMTDeviceEvent(native_event))
     return false;
@@ -435,7 +442,7 @@ bool DeviceDataManager::IsCMTMetricsEvent(
           HasEventData(xiev, DT_CMT_METRICS_DATA2));
 }
 
-bool DeviceDataManager::HasGestureTimes(
+bool DeviceDataManagerX11::HasGestureTimes(
     const base::NativeEvent& native_event) const {
   if (!IsCMTDeviceEvent(native_event))
     return false;
@@ -446,11 +453,13 @@ bool DeviceDataManager::HasGestureTimes(
           HasEventData(xiev, DT_CMT_END_TIME));
 }
 
-void DeviceDataManager::GetScrollOffsets(const base::NativeEvent& native_event,
-                                         float* x_offset, float* y_offset,
-                                         float* x_offset_ordinal,
-                                         float* y_offset_ordinal,
-                                         int* finger_count) {
+void DeviceDataManagerX11::GetScrollOffsets(
+    const base::NativeEvent& native_event,
+    float* x_offset,
+    float* y_offset,
+    float* x_offset_ordinal,
+    float* y_offset_ordinal,
+    int* finger_count) {
   *x_offset = 0;
   *y_offset = 0;
   *x_offset_ordinal = 0;
@@ -472,10 +481,13 @@ void DeviceDataManager::GetScrollOffsets(const base::NativeEvent& native_event,
     *finger_count = static_cast<int>(data[DT_CMT_FINGER_COUNT]);
 }
 
-void DeviceDataManager::GetFlingData(const base::NativeEvent& native_event,
-                                     float* vx, float* vy,
-                                     float* vx_ordinal, float* vy_ordinal,
-                                     bool* is_cancel) {
+void DeviceDataManagerX11::GetFlingData(
+    const base::NativeEvent& native_event,
+    float* vx,
+    float* vy,
+    float* vx_ordinal,
+    float* vy_ordinal,
+    bool* is_cancel) {
   *vx = 0;
   *vy = 0;
   *vx_ordinal = 0;
@@ -497,9 +509,11 @@ void DeviceDataManager::GetFlingData(const base::NativeEvent& native_event,
     *vy_ordinal = data[DT_CMT_ORDINAL_Y];
 }
 
-void DeviceDataManager::GetMetricsData(const base::NativeEvent& native_event,
-                                       GestureMetricsType* type,
-                                       float* data1, float* data2) {
+void DeviceDataManagerX11::GetMetricsData(
+    const base::NativeEvent& native_event,
+    GestureMetricsType* type,
+    float* data1,
+    float* data2) {
   *type = kGestureMetricsTypeUnknown;
   *data1 = 0;
   *data2 = 0;
@@ -520,20 +534,21 @@ void DeviceDataManager::GetMetricsData(const base::NativeEvent& native_event,
     *data2 = data[DT_CMT_METRICS_DATA2];
 }
 
-int DeviceDataManager::GetMappedButton(int button) {
+int DeviceDataManagerX11::GetMappedButton(int button) {
   return button > 0 && button <= button_map_count_ ? button_map_[button - 1] :
                                                      button;
 }
 
-void DeviceDataManager::UpdateButtonMap() {
+void DeviceDataManagerX11::UpdateButtonMap() {
   button_map_count_ = XGetPointerMapping(gfx::GetXDisplay(),
                                          button_map_,
                                          arraysize(button_map_));
 }
 
-void DeviceDataManager::GetGestureTimes(const base::NativeEvent& native_event,
-                                        double* start_time,
-                                        double* end_time) {
+void DeviceDataManagerX11::GetGestureTimes(
+    const base::NativeEvent& native_event,
+    double* start_time,
+    double* end_time) {
   *start_time = 0;
   *end_time = 0;
 
@@ -546,9 +561,9 @@ void DeviceDataManager::GetGestureTimes(const base::NativeEvent& native_event,
     *end_time = data[DT_CMT_END_TIME];
 }
 
-bool DeviceDataManager::NormalizeData(unsigned int deviceid,
-                                      const DataType type,
-                                      double* value) {
+bool DeviceDataManagerX11::NormalizeData(unsigned int deviceid,
+                                         const DataType type,
+                                         double* value) {
   double max_value;
   double min_value;
   if (GetDataRange(deviceid, type, &min_value, &max_value)) {
@@ -559,9 +574,10 @@ bool DeviceDataManager::NormalizeData(unsigned int deviceid,
   return false;
 }
 
-bool DeviceDataManager::GetDataRange(unsigned int deviceid,
-                                     const DataType type,
-                                     double* min, double* max) {
+bool DeviceDataManagerX11::GetDataRange(unsigned int deviceid,
+                                        const DataType type,
+                                        double* min,
+                                        double* max) {
   if (deviceid >= static_cast<unsigned int>(kMaxDeviceNum))
     return false;
   if (valuator_lookup_[deviceid][type] >= 0) {
@@ -572,7 +588,7 @@ bool DeviceDataManager::GetDataRange(unsigned int deviceid,
   return false;
 }
 
-void DeviceDataManager::SetDeviceListForTest(
+void DeviceDataManagerX11::SetDeviceListForTest(
     const std::vector<unsigned int>& touchscreen,
     const std::vector<unsigned int>& cmt_devices) {
   for (int i = 0; i < kMaxDeviceNum; ++i) {
@@ -601,9 +617,9 @@ void DeviceDataManager::SetDeviceListForTest(
   }
 }
 
-void DeviceDataManager::SetValuatorDataForTest(XIDeviceEvent* xievent,
-                                               DataType type,
-                                               double value) {
+void DeviceDataManagerX11::SetValuatorDataForTest(XIDeviceEvent* xievent,
+                                                  DataType type,
+                                                  double value) {
   int index = valuator_lookup_[xievent->deviceid][type];
   CHECK(!XIMaskIsSet(xievent->valuators.mask, index));
   CHECK(index >= 0 && index < valuator_count_[xievent->deviceid]);
@@ -620,11 +636,11 @@ void DeviceDataManager::SetValuatorDataForTest(XIDeviceEvent* xievent,
   *valuators = value;
 }
 
-void DeviceDataManager::InitializeValuatorsForTest(int deviceid,
-                                                   int start_valuator,
-                                                   int end_valuator,
-                                                   double min_value,
-                                                   double max_value) {
+void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
+                                                      int start_valuator,
+                                                      int end_valuator,
+                                                      double min_value,
+                                                      double max_value) {
   valuator_lookup_[deviceid].resize(DT_LAST_ENTRY, -1);
   data_type_lookup_[deviceid].resize(DT_LAST_ENTRY, DT_LAST_ENTRY);
   valuator_min_[deviceid].resize(DT_LAST_ENTRY, 0);
@@ -640,7 +656,7 @@ void DeviceDataManager::InitializeValuatorsForTest(int deviceid,
   }
 }
 
-bool DeviceDataManager::TouchEventNeedsCalibrate(int touch_device_id) const {
+bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
 #if defined(OS_CHROMEOS) && defined(USE_XI2_MT)
   int64 touch_display_id = GetDisplayForTouchDevice(touch_device_id);
   if (base::SysInfo::IsRunningOnChromeOS() &&
@@ -649,45 +665,6 @@ bool DeviceDataManager::TouchEventNeedsCalibrate(int touch_device_id) const {
   }
 #endif  // defined(OS_CHROMEOS) && defined(USE_XI2_MT)
   return false;
-}
-
-void DeviceDataManager::ClearTouchTransformerRecord() {
-  for (int i = 0; i < kMaxDeviceNum; i++) {
-    touch_device_transformer_map_[i] = gfx::Transform();
-    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
-  }
-}
-
-bool DeviceDataManager::IsTouchDeviceIdValid(int touch_device_id) const {
-  return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
-}
-
-void DeviceDataManager::UpdateTouchInfoForDisplay(
-    int64 display_id,
-    int touch_device_id,
-    const gfx::Transform& touch_transformer) {
-  if (IsTouchDeviceIdValid(touch_device_id)) {
-    touch_device_to_display_map_[touch_device_id] = display_id;
-    touch_device_transformer_map_[touch_device_id] = touch_transformer;
-  }
-}
-
-void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
-                                              float* x, float* y) {
-  if (IsTouchDeviceIdValid(touch_device_id)) {
-    gfx::Point3F point(*x, *y, 0.0);
-    const gfx::Transform& trans =
-        touch_device_transformer_map_[touch_device_id];
-    trans.TransformPoint(&point);
-    *x = point.x();
-    *y = point.y();
-  }
-}
-
-int64 DeviceDataManager::GetDisplayForTouchDevice(int touch_device_id) const {
-  if (IsTouchDeviceIdValid(touch_device_id))
-    return touch_device_to_display_map_[touch_device_id];
-  return gfx::Display::kInvalidDisplayID;
 }
 
 }  // namespace ui

@@ -20,6 +20,7 @@
 #undef Bool
 #undef None
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #elif defined(USE_OZONE)
 #include "ui/events/event.h"
 #endif
@@ -39,7 +40,11 @@ class TestMenuItemView : public MenuItemView {
 
 class TestPlatformEventSource : public ui::PlatformEventSource {
  public:
-  TestPlatformEventSource() {}
+  TestPlatformEventSource() {
+#if defined(USE_X11)
+    ui::DeviceDataManagerX11::CreateInstance();
+#endif
+  }
   virtual ~TestPlatformEventSource() {}
 
   uint32_t Dispatch(const ui::PlatformEvent& event) {

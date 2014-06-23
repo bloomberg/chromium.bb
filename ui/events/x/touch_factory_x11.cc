@@ -19,7 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -32,7 +32,7 @@ TouchFactory::TouchFactory()
       touch_device_list_(),
       max_touch_points_(-1),
       id_generator_(0) {
-  if (!DeviceDataManager::GetInstance()->IsXInput2Available())
+  if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
 
   XDisplay* display = gfx::GetXDisplay();
@@ -104,7 +104,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   }
 #endif
 
-  if (!DeviceDataManager::GetInstance()->IsXInput2Available())
+  if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
 
   // Instead of asking X for the list of devices all the time, let's maintain a

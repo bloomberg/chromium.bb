@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -83,6 +84,7 @@ X11EventSource::X11EventSource(XDisplay* display)
     : display_(display),
       continue_stream_(true) {
   CHECK(display_);
+  DeviceDataManagerX11::CreateInstance();
   InitializeXInput2(display_);
   InitializeXkb(display_);
 }

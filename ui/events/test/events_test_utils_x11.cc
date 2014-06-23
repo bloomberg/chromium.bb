@@ -90,7 +90,7 @@ unsigned int XButtonEventButton(ui::EventType type,
 }
 
 void InitValuatorsForXIDeviceEvent(XIDeviceEvent* xiev) {
-  int valuator_count = ui::DeviceDataManager::DT_LAST_ENTRY;
+  int valuator_count = ui::DeviceDataManagerX11::DT_LAST_ENTRY;
   xiev->valuators.mask_len = (valuator_count / 8) + 1;
   xiev->valuators.mask = new unsigned char[xiev->valuators.mask_len];
   memset(xiev->valuators.mask, 0, xiev->valuators.mask_len);
@@ -203,11 +203,11 @@ void ScopedXI2Event::InitScrollEvent(int deviceid,
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, 0, gfx::Point()));
 
   Valuator valuators[] = {
-    Valuator(DeviceDataManager::DT_CMT_SCROLL_X, x_offset),
-    Valuator(DeviceDataManager::DT_CMT_SCROLL_Y, y_offset),
-    Valuator(DeviceDataManager::DT_CMT_ORDINAL_X, x_offset_ordinal),
-    Valuator(DeviceDataManager::DT_CMT_ORDINAL_Y, y_offset_ordinal),
-    Valuator(DeviceDataManager::DT_CMT_FINGER_COUNT, finger_count)
+    Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_X, x_offset),
+    Valuator(DeviceDataManagerX11::DT_CMT_SCROLL_Y, y_offset),
+    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_offset_ordinal),
+    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_offset_ordinal),
+    Valuator(DeviceDataManagerX11::DT_CMT_FINGER_COUNT, finger_count)
   };
   SetUpValuators(
       std::vector<Valuator>(valuators, valuators + arraysize(valuators)));
@@ -222,11 +222,11 @@ void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, deviceid, gfx::Point()));
 
   Valuator valuators[] = {
-    Valuator(DeviceDataManager::DT_CMT_FLING_STATE, is_cancel ? 1 : 0),
-    Valuator(DeviceDataManager::DT_CMT_FLING_Y, y_velocity),
-    Valuator(DeviceDataManager::DT_CMT_ORDINAL_Y, y_velocity_ordinal),
-    Valuator(DeviceDataManager::DT_CMT_FLING_X, x_velocity),
-    Valuator(DeviceDataManager::DT_CMT_ORDINAL_X, x_velocity_ordinal)
+    Valuator(DeviceDataManagerX11::DT_CMT_FLING_STATE, is_cancel ? 1 : 0),
+    Valuator(DeviceDataManagerX11::DT_CMT_FLING_Y, y_velocity),
+    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_Y, y_velocity_ordinal),
+    Valuator(DeviceDataManagerX11::DT_CMT_FLING_X, x_velocity),
+    Valuator(DeviceDataManagerX11::DT_CMT_ORDINAL_X, x_velocity_ordinal)
   };
 
   SetUpValuators(
@@ -242,7 +242,8 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
 
   // If a timestamp was specified, setup the event.
   for (size_t i = 0; i < valuators.size(); ++i) {
-    if (valuators[i].data_type == DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP) {
+    if (valuators[i].data_type ==
+        DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP) {
       SetUpValuators(valuators);
       return;
     }
@@ -251,7 +252,7 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
   // No timestamp was specified. Use |ui::EventTimeForNow()|.
   std::vector<Valuator> valuators_with_time = valuators;
   valuators_with_time.push_back(
-      Valuator(DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP,
+      Valuator(DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP,
                (ui::EventTimeForNow()).InMicroseconds()));
   SetUpValuators(valuators_with_time);
 }
@@ -261,7 +262,7 @@ void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   CHECK_EQ(GenericEvent, event_->type);
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   InitValuatorsForXIDeviceEvent(xiev);
-  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
+  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
   for (size_t i = 0; i < valuators.size(); ++i) {
     manager->SetValuatorDataForTest(xiev, valuators[i].data_type,
                                     valuators[i].value);
@@ -273,13 +274,13 @@ void SetUpTouchPadForTest(unsigned int deviceid) {
   device_list.push_back(deviceid);
 
   TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
-  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
+  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
   manager->SetDeviceListForTest(std::vector<unsigned int>(), device_list);
 }
 
 void SetUpTouchDevicesForTest(const std::vector<unsigned int>& devices) {
   TouchFactory::GetInstance()->SetTouchDeviceForTest(devices);
-  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
+  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
   manager->SetDeviceListForTest(devices, std::vector<unsigned int>());
 }
 

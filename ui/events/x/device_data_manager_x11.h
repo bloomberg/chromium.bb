@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
-#define UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
+#ifndef UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_
+#define UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_
 
 // Generically-named #defines from Xlib is conflicting with symbols in GTest.
 // So many tests .cc file #undef Bool before including device_data_manager.h,
@@ -21,14 +21,12 @@
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/events/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-
-template <typename T> struct DefaultSingletonTraits;
 
 typedef union _XEvent XEvent;
 
@@ -42,7 +40,7 @@ enum GestureMetricsType {
 
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
-class EVENTS_BASE_EXPORT DeviceDataManager {
+class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
  public:
   // Enumerate additional data that one might be interested on an input event,
   // which are usually wrapped in X valuators. If you modify any of this,
@@ -101,12 +99,14 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   // Data struct to store extracted data from an input event.
   typedef std::map<int, double> EventData;
 
+  static void CreateInstance();
+
   // We use int because enums can be casted to ints but not vice versa.
   static bool IsCMTDataType(const int type);
   static bool IsTouchDataType(const int type);
 
-  // Returns the DeviceDataManager singleton.
-  static DeviceDataManager* GetInstance();
+  // Returns the DeviceDataManagerX11 singleton.
+  static DeviceDataManagerX11* GetInstance();
 
   // Returns if XInput2 is available on the system.
   bool IsXInput2Available() const;
@@ -221,20 +221,11 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
                               DataType type,
                               double value);
 
-  void ClearTouchTransformerRecord();
-  void UpdateTouchInfoForDisplay(int64 display_id,
-                                 int touch_device_id,
-                                 const gfx::Transform& touch_transformer);
-  void ApplyTouchTransformer(int touch_device_id, float* x, float* y);
-  int64 GetDisplayForTouchDevice(int touch_device_id) const;
   bool TouchEventNeedsCalibrate(int touch_device_id) const;
 
  private:
-  // Requirement for Singleton.
-  friend struct DefaultSingletonTraits<DeviceDataManager>;
-
-  DeviceDataManager();
-  ~DeviceDataManager();
+  DeviceDataManagerX11();
+  virtual ~DeviceDataManagerX11();
 
   // Initialize the XInput related system information.
   bool InitializeXInputInternal();
@@ -248,9 +239,6 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
                                   double min_value,
                                   double max_value);
 
-  bool IsTouchDeviceIdValid(int touch_device_id) const;
-
-  static const int kMaxDeviceNum = 128;
   static const int kMaxXIEventType = XI_LASTEVENT + 1;
   static const int kMaxSlotNum = 10;
 
@@ -296,14 +284,9 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   unsigned char button_map_[256];
   int button_map_count_;
 
-  // Table to keep track of which display id is mapped to which touch device.
-  int64 touch_device_to_display_map_[kMaxDeviceNum];
-  // Index table to find the TouchTransformer for a touch device.
-  gfx::Transform touch_device_transformer_map_[kMaxDeviceNum];
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
+  DISALLOW_COPY_AND_ASSIGN(DeviceDataManagerX11);
 };
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
+#endif  // UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_

@@ -22,6 +22,7 @@ component("x11") {
 
   deps = [
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx/x",
   ]

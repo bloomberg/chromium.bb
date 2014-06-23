@@ -34,6 +34,8 @@
         'EVENTS_BASE_IMPLEMENTATION',
       ],
       'sources': [
+        'device_data_manager.cc',
+        'device_data_manager.h',
         'event_constants.h',
         'event_switches.cc',
         'event_switches.h',
@@ -55,12 +57,15 @@
         'keycodes/keyboard_codes.h',
         'latency_info.cc',
         'latency_info.h',
-        'x/device_data_manager.cc',
-        'x/device_data_manager.h',
+        'x/device_data_manager_x11.cc',
+        'x/device_data_manager_x11.h',
         'x/device_list_cache_x.cc',
         'x/device_list_cache_x.h',
         'x/touch_factory_x11.cc',
         'x/touch_factory_x11.h',
+      ],
+      'export_dependent_settings': [
+        '../../ui/gfx/gfx.gyp:gfx',
       ],
       'conditions': [
         ['use_x11==1', {

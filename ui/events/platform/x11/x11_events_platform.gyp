@@ -16,6 +16,7 @@
       '../../../../build/linux/system.gyp:x11',
       '../../../gfx/x/gfx_x11.gyp:gfx_x11',
       '../../events.gyp:events',
+      '../../events.gyp:events_base',
       '../events_platform.gyp:events_platform',
     ],
     'sources': [

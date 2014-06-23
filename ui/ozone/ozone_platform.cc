@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "ui/events/device_data_manager.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_switches.h"
 #include "ui/ozone/platform_object.h"
@@ -38,6 +39,9 @@ void OzonePlatform::InitializeForUI() {
     return;
   g_platform_initialized_ui = true;
   instance_->InitializeUI();
+  // This is deliberately created after initializing so that the platform can
+  // create its own version of DDM.
+  DeviceDataManager::CreateInstance();
 }
 
 // static

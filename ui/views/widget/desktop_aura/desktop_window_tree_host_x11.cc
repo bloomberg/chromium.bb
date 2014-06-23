@@ -27,7 +27,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1749,7 +1749,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
           XRefreshKeyboardMapping(&xev->xmapping);
           break;
         case MappingPointer:
-          ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
+          ui::DeviceDataManagerX11::GetInstance()->UpdateButtonMap();
           break;
         default:
           NOTIMPLEMENTED() << " Unknown request: " << xev->xmapping.request;

@@ -8,13 +8,13 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 
 namespace {
 
 bool IsXI2Available() {
 #if defined(USE_AURA)
-  return ui::DeviceDataManager::GetInstance()->IsXInput2Available();
+  return ui::DeviceDataManagerX11::GetInstance()->IsXInput2Available();
 #else
   return false;
 #endif

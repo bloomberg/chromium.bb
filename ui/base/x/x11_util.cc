@@ -40,7 +40,7 @@
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -227,7 +227,7 @@ class XCustomCursorCache {
 }  // namespace
 
 bool IsXInput2Available() {
-  return DeviceDataManager::GetInstance()->IsXInput2Available();
+  return DeviceDataManagerX11::GetInstance()->IsXInput2Available();
 }
 
 static SharedMemorySupport DoQuerySharedMemorySupport(XDisplay* dpy) {
@@ -399,7 +399,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
 
     if (next_event.type == GenericEvent &&
         next_event.xgeneric.evtype == event_type &&
-        !ui::DeviceDataManager::GetInstance()->IsCMTGestureEvent(
+        !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
             &next_event)) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);

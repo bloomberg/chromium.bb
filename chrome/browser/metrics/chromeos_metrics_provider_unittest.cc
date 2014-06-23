@@ -25,6 +25,10 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_X11)
+#include "ui/events/x/device_data_manager_x11.h"
+#endif
+
 using chromeos::DBusThreadManager;
 using chromeos::BluetoothAdapterClient;
 using chromeos::BluetoothAgentManagerClient;
@@ -50,6 +54,10 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
+#if defined(USE_X11)
+    ui::DeviceDataManagerX11::CreateInstance();
+#endif
+
     // Set up the fake Bluetooth environment,
     scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
         new FakeDBusThreadManager);

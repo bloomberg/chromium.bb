@@ -18,7 +18,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/events/x/device_data_manager.h"
 
 namespace ash {
 
