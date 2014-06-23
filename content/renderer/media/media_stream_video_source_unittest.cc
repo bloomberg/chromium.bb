@@ -662,4 +662,33 @@ TEST_F(MediaStreamVideoSourceTest, IsConstraintSupported) {
       "something unsupported"));
 }
 
+// Test that the constraint negotiation can handle 0.0 fps as frame rate.
+TEST_F(MediaStreamVideoSourceTest, Use0FpsSupportedFormat) {
+  media::VideoCaptureFormats formats;
+  formats.push_back(media::VideoCaptureFormat(
+      gfx::Size(640, 480), 0.0f, media::PIXEL_FORMAT_I420));
+  formats.push_back(media::VideoCaptureFormat(
+      gfx::Size(320, 240), 0.0f, media::PIXEL_FORMAT_I420));
+  mock_source()->SetSupportedFormats(formats);
+
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+
+  MockMediaStreamVideoSink sink;
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink, sink.GetDeliverFrameCB(), track);
+  EXPECT_EQ(0, sink.number_of_frames());
+  DeliverVideoFrameAndWaitForRenderer(320, 240, &sink);
+  EXPECT_EQ(1, sink.number_of_frames());
+  // Expect the delivered frame to be passed unchanged since its smaller than
+  // max requested.
+  EXPECT_EQ(320, sink.frame_size().width());
+  EXPECT_EQ(240, sink.frame_size().height());
+  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+}
+
 }  // namespace content
