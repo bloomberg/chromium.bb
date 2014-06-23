@@ -73,6 +73,7 @@
       'public/browser/browser_main_runner.h',
       'public/browser/browser_message_filter.cc',
       'public/browser/browser_message_filter.h',
+      'public/browser/browser_plugin_guest_delegate.cc',
       'public/browser/browser_plugin_guest_delegate.h',
       'public/browser/browser_plugin_guest_manager.cc',
       'public/browser/browser_plugin_guest_manager.h',

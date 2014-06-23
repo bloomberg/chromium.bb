@@ -44,9 +44,7 @@ class SimpleMenuModel;
 class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
-  WebViewGuest(int guest_instance_id,
-               content::WebContents* guest_web_contents,
-               const std::string& embedder_extension_id);
+  explicit WebViewGuest(int guest_instance_id);
 
   // For WebViewGuest, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
@@ -63,12 +61,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
   // WebViewGuest.
   static int GetViewInstanceId(content::WebContents* contents);
-  // Parses partition related parameters from |extra_params|.
-  // |storage_partition_id| is the parsed partition ID and |persist_storage|
-  // specifies whether or not the partition is in memory.
-  static void ParsePartitionParam(const base::DictionaryValue* extra_params,
-                                  std::string* storage_partition_id,
-                                  bool* persist_storage);
+
   static const char Type[];
 
   // Request navigating the guest to the provided |src| URL.
@@ -88,7 +81,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void SetZoom(double zoom_factor);
 
   // GuestViewBase implementation.
+  virtual void CreateWebContents(
+      const std::string& embedder_extension_id,
+      int embedder_render_process_id,
+      const base::DictionaryValue& create_params,
+      const WebContentsCreatedCallback& callback) OVERRIDE;
   virtual void DidAttachToEmbedder() OVERRIDE;
+  virtual void DidInitialize() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
   virtual void GuestDestroyed() OVERRIDE;
@@ -151,6 +150,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                   content::WebContents* new_contents) OVERRIDE;
 
   // BrowserPluginGuestDelegate implementation.
+  virtual content::WebContents* CreateNewGuestWindow(
+      const content::WebContents::CreateParams& create_params) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
   virtual void RequestPointerLockPermission(
@@ -429,7 +430,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void OnUpdateFrameName(bool is_top_level, const std::string& name);
 
   // Creates a new guest window owned by this WebViewGuest.
-  WebViewGuest* CreateNewGuestWindow(const content::OpenURLParams& params);
+  WebViewGuest* CreateNewGuestWebViewWindow(
+      const content::OpenURLParams& params);
 
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 

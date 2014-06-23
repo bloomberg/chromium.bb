@@ -141,24 +141,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents);
 
-  // Notifies that a guest WebContents has been created. A guest WebContents
-  // represents a renderer that's hosted within a BrowserPlugin. Creation can
-  // occur an arbitrary length of time before attachment. If the new guest has
-  // an |opener_web_contents|, then it's a new window created by that opener.
-  // If the guest was created via navigation, then |extra_params| will be
-  // non-NULL. |extra_params| are parameters passed to the BrowserPlugin object
-  // element by the content embedder. These parameters may include the API to
-  // enable for the given guest. |guest_delegate| is a return parameter of
-  // the delegate in the content embedder that will service the guest in the
-  // content layer. The content layer takes ownership of the |guest_delegate|.
-  virtual void GuestWebContentsCreated(
-      int guest_instance_id,
-      SiteInstance* guest_site_instance,
-      WebContents* guest_web_contents,
-      WebContents* opener_web_contents,
-      BrowserPluginGuestDelegate** guest_delegate,
-      scoped_ptr<base::DictionaryValue> extra_params) {}
-
   // Notifies that a render process will be created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.

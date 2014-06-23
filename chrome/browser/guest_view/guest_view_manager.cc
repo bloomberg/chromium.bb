@@ -66,62 +66,37 @@ int GuestViewManager::GetNextInstanceID() {
 }
 
 content::WebContents* GuestViewManager::CreateGuest(
-    content::SiteInstance* embedder_site_instance,
-    int instance_id,
-    scoped_ptr<base::DictionaryValue> extra_params) {
-  std::string storage_partition_id;
-  bool persist_storage = false;
-  std::string storage_partition_string;
-  WebViewGuest::ParsePartitionParam(
-      extra_params.get(), &storage_partition_id, &persist_storage);
-
-  content::RenderProcessHost* embedder_process_host =
-      embedder_site_instance->GetProcess();
-  // Validate that the partition id coming from the renderer is valid UTF-8,
-  // since we depend on this in other parts of the code, such as FilePath
-  // creation. If the validation fails, treat it as a bad message and kill the
-  // renderer process.
-  if (!base::IsStringUTF8(storage_partition_id)) {
-    content::RecordAction(
-        base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    base::KillProcess(
-        embedder_process_host->GetHandle(),
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    const std::string& view_type,
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    const base::DictionaryValue& create_params) {
+  int guest_instance_id = GetNextInstanceID();
+  GuestViewBase* guest = GuestViewBase::Create(guest_instance_id, view_type);
+  if (!guest)
     return NULL;
-  }
+  guest->Init(embedder_extension_id,
+              embedder_render_process_id,
+              create_params);
+  return guest->guest_web_contents();
+}
 
-  const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
-  const std::string& host = embedder_site_url.host();
-
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
-      storage_partition_id, false);
-  // The SiteInstance of a given webview tag is based on the fact that it's
-  // a guest process in addition to which platform application the tag
-  // belongs to and what storage partition is in use, rather than the URL
-  // that the tag is being navigated to.
-  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
-                                     content::kGuestScheme,
-                                     host.c_str(),
-                                     persist_storage ? "persist" : "",
-                                     url_encoded_partition.c_str()));
-
-  // If we already have a webview tag in the same app using the same storage
-  // partition, we should use the same SiteInstance so the existing tag and
-  // the new tag can script each other.
-  SiteInstance* guest_site_instance = GetGuestSiteInstance(guest_site);
-  if (!guest_site_instance) {
-    // Create the SiteInstance in a new BrowsingInstance, which will ensure
-    // that webview tags are also not allowed to send messages across
-    // different partitions.
-    guest_site_instance = SiteInstance::CreateForURL(
-        embedder_site_instance->GetBrowserContext(), guest_site);
-  }
-  WebContents::CreateParams create_params(
-      embedder_site_instance->GetBrowserContext(),
-      guest_site_instance);
-  create_params.guest_instance_id = instance_id;
-  create_params.guest_extra_params.reset(extra_params.release());
-  return WebContents::Create(create_params);
+content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
+    const std::string& view_type,
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    const content::WebContents::CreateParams& create_params) {
+  int guest_instance_id = GetNextInstanceID();
+  GuestViewBase* guest = GuestViewBase::Create(guest_instance_id, view_type);
+  if (!guest)
+    return NULL;
+  content::WebContents::CreateParams guest_create_params(create_params);
+  guest_create_params.guest_delegate = guest;
+  content::WebContents* guest_web_contents =
+      WebContents::Create(guest_create_params);
+  guest->InitWithWebContents(embedder_extension_id,
+                             embedder_render_process_id,
+                             guest_web_contents);
+  return guest_web_contents;
 }
 
 void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
@@ -250,6 +225,8 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
   if (guest_instance_id > current_instance_id_)
     return false;
 
+  // We might get some late arriving messages at tear down. Let's let the
+  // embedder tear down in peace.
   GuestInstanceMap::const_iterator it =
       guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())
@@ -259,22 +236,5 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
   if (!guest_view)
     return false;
 
-  return CanEmbedderAccessGuest(embedder_render_process_id, guest_view);
-}
-
-bool GuestViewManager::CanEmbedderAccessGuest(int embedder_render_process_id,
-                                              GuestViewBase* guest) {
-  // The embedder can access the guest if it has not been attached and its
-  // opener's embedder lives in the same process as the given embedder.
-  if (!guest->attached()) {
-    if (!guest->GetOpener())
-      return false;
-
-    return embedder_render_process_id ==
-        guest->GetOpener()->embedder_web_contents()->GetRenderProcessHost()->
-            GetID();
-  }
-
-  return embedder_render_process_id ==
-      guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
+  return embedder_render_process_id == guest_view->embedder_render_process_id();
 }

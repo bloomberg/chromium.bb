@@ -11,9 +11,24 @@
     "description": "none",
     "functions": [
       {
-        "name": "allocateInstanceId",
+        "name": "createGuest",
         "type": "function",
         "parameters": [
+          {
+            "type": "string",
+            "name": "viewType",
+            "nodoc": true
+          },
+          {
+            "type": "object",
+            "name": "createParams",
+            "properties": {
+              "storagePartitionId": {
+                "type": "string",
+                "optional": true
+              }
+            }
+          },
           {
             "type": "function",
             "name": "callback",

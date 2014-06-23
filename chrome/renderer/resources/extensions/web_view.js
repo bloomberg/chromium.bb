@@ -612,9 +612,16 @@ WebViewInternal.prototype.hasGuestInstanceID = function() {
 };
 
 WebViewInternal.prototype.allocateInstanceId = function() {
-  // Parse .src and .partition.
+  var storagePartitionId =
+      this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
+      this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
+  var params = {
+    'storagePartitionId': storagePartitionId,
+  };
   var self = this;
-  GuestViewInternal.allocateInstanceId(
+  GuestViewInternal.createGuest(
+      'webview',
+      params,
       function(instanceId) {
         self.instanceId = instanceId;
         // TODO(lazyboy): Make sure this.autoNavigate_ stuff correctly updated

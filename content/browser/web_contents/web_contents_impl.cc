@@ -440,17 +440,12 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   WebContentsImpl* new_contents = new WebContentsImpl(
       params.browser_context, params.opener_suppressed ? NULL : opener);
 
-  if (params.guest_instance_id) {
-    scoped_ptr<base::DictionaryValue> extra_params;
-    if (params.guest_extra_params)
-        extra_params.reset(params.guest_extra_params->DeepCopy());
+  if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    BrowserPluginGuest::Create(params.guest_instance_id,
-                               params.site_instance,
+    BrowserPluginGuest::Create(params.guest_delegate->GetGuestInstanceID(),
                                new_contents,
-                               extra_params.Pass(),
-                               opener ? opener->GetBrowserPluginGuest() : NULL);
+                               params.guest_delegate);
     // We are instantiating a WebContents for browser plugin. Set its subframe
     // bit to true.
     new_contents->is_subframe_ = true;
@@ -1429,15 +1424,15 @@ void WebContentsImpl::CreateNewWindow(
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
 
+  WebContentsImpl* new_contents = NULL;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
     create_params.initial_size = GetContainerBounds().size();
-  } else {
-    create_params.guest_instance_id =
-        GetBrowserContext()->GetGuestManager()->GetNextInstanceID();
+    new_contents = static_cast<WebContentsImpl*>(
+        WebContents::Create(create_params));
+  }  else {
+    new_contents = GetBrowserPluginGuest()->CreateNewGuestWindow(create_params);
   }
-  WebContentsImpl* new_contents = static_cast<WebContentsImpl*>(
-      WebContents::Create(create_params));
   new_contents->GetController().SetSessionStorageNamespace(
       partition_id,
       session_storage_namespace);

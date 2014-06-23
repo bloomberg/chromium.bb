@@ -9,19 +9,18 @@
 
 namespace extensions {
 
-class GuestViewInternalAllocateInstanceIdFunction
-    : public AsyncExtensionFunction {
+class GuestViewInternalCreateGuestFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("guestViewInternal.allocateInstanceId",
-                             GUESTVIEWINTERNAL_ALLOCATEINSTANCEID);
-  GuestViewInternalAllocateInstanceIdFunction();
+  DECLARE_EXTENSION_FUNCTION("guestViewInternal.createGuest",
+                             GUESTVIEWINTERNAL_CREATEGUEST);
+  GuestViewInternalCreateGuestFunction();
 
  protected:
-  virtual ~GuestViewInternalAllocateInstanceIdFunction() {}
+  virtual ~GuestViewInternalCreateGuestFunction() {}
   virtual bool RunAsync() OVERRIDE FINAL;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalAllocateInstanceIdFunction);
+  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalCreateGuestFunction);
 };
 
 }  // namespace extensions

@@ -45,6 +45,7 @@ struct LoadStateWithParam;
 namespace content {
 
 class BrowserContext;
+class BrowserPluginGuestDelegate;
 class InterstitialPage;
 class PageState;
 class RenderFrameHost;
@@ -109,13 +110,8 @@ class WebContents : public PageNavigator,
     // True if the contents should be initially hidden.
     bool initially_hidden;
 
-    // If this instance ID is non-zero then it indicates that this WebContents
-    // should behave as a guest.
-    int guest_instance_id;
-
-    // TODO(fsamuel): This is temporary. Remove this once all guests are created
-    // from the content embedder.
-    scoped_ptr<base::DictionaryValue> guest_extra_params;
+    // If non-null then this WebContents will be hosted by a BrowserPlugin.
+    BrowserPluginGuestDelegate* guest_delegate;
 
     // Used to specify the location context which display the new view should
     // belong. This can be NULL if not needed.

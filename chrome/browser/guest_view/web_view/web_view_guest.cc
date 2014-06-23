@@ -181,14 +181,39 @@ void AttachWebViewHelpers(WebContents* contents) {
   PDFTabHelper::CreateForWebContents(contents);
 }
 
+void ParsePartitionParam(const base::DictionaryValue& create_params,
+                         std::string* storage_partition_id,
+                         bool* persist_storage) {
+  std::string partition_str;
+  if (!create_params.GetString(webview::kStoragePartitionId, &partition_str)) {
+    return;
+  }
+
+  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
+  // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
+  // remove the prefix without splicing in the middle of a multi-byte codepoint.
+  // We can use the rest of the string as UTF-8 encoded one.
+  if (StartsWithASCII(partition_str, "persist:", true)) {
+    size_t index = partition_str.find(":");
+    CHECK(index != std::string::npos);
+    // It is safe to do index + 1, since we tested for the full prefix above.
+    *storage_partition_id = partition_str.substr(index + 1);
+
+    if (storage_partition_id->empty()) {
+      // TODO(lazyboy): Better way to deal with this error.
+      return;
+    }
+    *persist_storage = true;
+  } else {
+    *storage_partition_id = partition_str;
+    *persist_storage = false;
+  }
+}
+
 }  // namespace
 
-WebViewGuest::WebViewGuest(int guest_instance_id,
-                           WebContents* guest_web_contents,
-                           const std::string& embedder_extension_id)
-    : GuestView<WebViewGuest>(guest_instance_id),
-      script_executor_(new extensions::ScriptExecutor(guest_web_contents,
-                                                      &script_observers_)),
+WebViewGuest::WebViewGuest(int guest_instance_id)
+   :  GuestView<WebViewGuest>(guest_instance_id),
       pending_context_menu_request_id_(0),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
@@ -196,25 +221,6 @@ WebViewGuest::WebViewGuest(int guest_instance_id,
       chromevox_injected_(false),
       find_helper_(this),
       javascript_dialog_helper_(this) {
-  Init(guest_web_contents, embedder_extension_id);
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::Source<WebContents>(guest_web_contents));
-
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<WebContents>(guest_web_contents));
-
-#if defined(OS_CHROMEOS)
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  CHECK(accessibility_manager);
-  accessibility_subscription_ = accessibility_manager->RegisterCallback(
-      base::Bind(&WebViewGuest::OnAccessibilityStatusChanged,
-                 base::Unretained(this)));
-#endif
-
-  AttachWebViewHelpers(guest_web_contents);
 }
 
 // static
@@ -250,37 +256,6 @@ int WebViewGuest::GetViewInstanceId(WebContents* contents) {
     return guestview::kInstanceIDNone;
 
   return guest->view_instance_id();
-}
-
-// static
-void WebViewGuest::ParsePartitionParam(
-    const base::DictionaryValue* extra_params,
-    std::string* storage_partition_id,
-    bool* persist_storage) {
-  std::string partition_str;
-  if (!extra_params->GetString(webview::kStoragePartitionId, &partition_str)) {
-    return;
-  }
-
-  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
-  // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
-  // remove the prefix without splicing in the middle of a multi-byte codepoint.
-  // We can use the rest of the string as UTF-8 encoded one.
-  if (StartsWithASCII(partition_str, "persist:", true)) {
-    size_t index = partition_str.find(":");
-    CHECK(index != std::string::npos);
-    // It is safe to do index + 1, since we tested for the full prefix above.
-    *storage_partition_id = partition_str.substr(index + 1);
-
-    if (storage_partition_id->empty()) {
-      // TODO(lazyboy): Better way to deal with this error.
-      return;
-    }
-    *persist_storage = true;
-  } else {
-    *storage_partition_id = partition_str;
-    *persist_storage = false;
-  }
 }
 
 // static
@@ -382,6 +357,63 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
   return items.Pass();
 }
 
+void WebViewGuest::CreateWebContents(
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    const base::DictionaryValue& create_params,
+    const WebContentsCreatedCallback& callback) {
+  content::RenderProcessHost* embedder_render_process_host =
+      content::RenderProcessHost::FromID(embedder_render_process_id);
+  std::string storage_partition_id;
+  bool persist_storage = false;
+  std::string storage_partition_string;
+  ParsePartitionParam(create_params, &storage_partition_id, &persist_storage);
+  // Validate that the partition id coming from the renderer is valid UTF-8,
+  // since we depend on this in other parts of the code, such as FilePath
+  // creation. If the validation fails, treat it as a bad message and kill the
+  // renderer process.
+  if (!base::IsStringUTF8(storage_partition_id)) {
+    content::RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_BPGM"));
+    base::KillProcess(
+        embedder_render_process_host->GetHandle(),
+        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    return;
+  }
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      storage_partition_id, false);
+  // The SiteInstance of a given webview tag is based on the fact that it's
+  // a guest process in addition to which platform application the tag
+  // belongs to and what storage partition is in use, rather than the URL
+  // that the tag is being navigated to.
+  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
+                                     content::kGuestScheme,
+                                     embedder_extension_id.c_str(),
+                                     persist_storage ? "persist" : "",
+                                     url_encoded_partition.c_str()));
+
+  // If we already have a webview tag in the same app using the same storage
+  // partition, we should use the same SiteInstance so the existing tag and
+  // the new tag can script each other.
+  GuestViewManager* guest_view_manager =
+      GuestViewManager::FromBrowserContext(
+          embedder_render_process_host->GetBrowserContext());
+  content::SiteInstance* guest_site_instance =
+      guest_view_manager->GetGuestSiteInstance(guest_site);
+  if (!guest_site_instance) {
+    // Create the SiteInstance in a new BrowsingInstance, which will ensure
+    // that webview tags are also not allowed to send messages across
+    // different partitions.
+    guest_site_instance = content::SiteInstance::CreateForURL(
+        embedder_render_process_host->GetBrowserContext(), guest_site);
+  }
+  WebContents::CreateParams params(
+      embedder_render_process_host->GetBrowserContext(),
+      guest_site_instance);
+  params.guest_delegate = this;
+  callback.Run(WebContents::Create(params));
+}
+
 void WebViewGuest::DidAttachToEmbedder() {
   std::string name;
   if (extra_params()->GetString(webview::kName, &name)) {
@@ -425,6 +457,31 @@ void WebViewGuest::DidAttachToEmbedder() {
     GetOpener()->pending_new_windows_.erase(this);
   }
 }
+
+void WebViewGuest::DidInitialize() {
+  script_executor_.reset(new extensions::ScriptExecutor(guest_web_contents(),
+                                                        &script_observers_));
+
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::Source<WebContents>(guest_web_contents()));
+
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+      content::Source<WebContents>(guest_web_contents()));
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&WebViewGuest::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
+#endif
+
+  AttachWebViewHelpers(guest_web_contents());
+}
+
 
 void WebViewGuest::DidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
@@ -570,26 +627,25 @@ void WebViewGuest::OnUpdateFrameName(bool is_top_level,
   ReportFrameNameChange(name);
 }
 
-WebViewGuest* WebViewGuest::CreateNewGuestWindow(
+WebViewGuest* WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
       GuestViewManager::FromBrowserContext(browser_context());
-  // Allocate a new instance ID for the new guest.
-  int instance_id = guest_manager->GetNextInstanceID();
-
   // Set the attach params to use the same partition as the opener.
   // We pull the partition information from the site's URL, which is of the
   // form guest://site/{persist}?{partition_name}.
   const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
-  scoped_ptr<base::DictionaryValue> create_params(extra_params()->DeepCopy());
   const std::string storage_partition_id =
       GetStoragePartitionIdFromSiteURL(site_url);
-  create_params->SetString(webview::kStoragePartitionId, storage_partition_id);
+  base::DictionaryValue create_params;
+  create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
   WebContents* new_guest_web_contents =
-      guest_manager->CreateGuest(guest_web_contents()->GetSiteInstance(),
-                                 instance_id,
-                                 create_params.Pass());
+      guest_manager->CreateGuest(
+          WebViewGuest::Type,
+          embedder_extension_id(),
+          embedder_web_contents()->GetRenderProcessHost()->GetID(),
+          create_params);
   WebViewGuest* new_guest =
       WebViewGuest::FromWebContents(new_guest_web_contents);
   new_guest->SetOpener(this);
@@ -1121,6 +1177,17 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
           web_contents->GetRoutingID()));
 }
 
+content::WebContents* WebViewGuest::CreateNewGuestWindow(
+    const content::WebContents::CreateParams& create_params) {
+  GuestViewManager* guest_manager =
+      GuestViewManager::FromBrowserContext(browser_context());
+  return guest_manager->CreateGuestWithWebContentsParams(
+      WebViewGuest::Type,
+      embedder_extension_id(),
+      embedder_web_contents()->GetRenderProcessHost()->GetID(),
+      create_params);
+}
+
 void WebViewGuest::SizeChanged(const gfx::Size& old_size,
                                const gfx::Size& new_size) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
@@ -1474,7 +1541,7 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
     return source;
   }
 
-  return CreateNewGuestWindow(params)->guest_web_contents();
+  return CreateNewGuestWebViewWindow(params)->guest_web_contents();
 }
 
 void WebViewGuest::WebContentsCreated(WebContents* source_contents,
@@ -1533,7 +1600,8 @@ void WebViewGuest::RequestNewWindowPermission(
   request_info.Set(webview::kName,
                    base::Value::CreateStringValue(new_window_info.name));
   request_info.Set(webview::kWindowID,
-                   base::Value::CreateIntegerValue(guest->guest_instance_id()));
+                   base::Value::CreateIntegerValue(
+                      guest->GetGuestInstanceID()));
   // We pass in partition info so that window-s created through newwindow
   // API can use it to set their partition attribute.
   request_info.Set(webview::kStoragePartitionId,
@@ -1546,7 +1614,7 @@ void WebViewGuest::RequestNewWindowPermission(
                     request_info,
                     base::Bind(&WebViewGuest::OnWebViewNewWindowResponse,
                                base::Unretained(this),
-                               guest->guest_instance_id()),
+                               guest->GetGuestInstanceID()),
                                false /* allowed_by_default */);
 }
 

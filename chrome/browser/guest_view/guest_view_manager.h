@@ -49,12 +49,24 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
       int guest_instance_id,
       int embedder_render_process_id);
 
+  int GetNextInstanceID();
+
+  content::WebContents* CreateGuest(
+      const std::string& view_type,
+      const std::string& embedder_extension_id,
+      int embedder_render_process_id,
+      const base::DictionaryValue& create_params);
+
+  content::WebContents* CreateGuestWithWebContentsParams(
+      const std::string& view_type,
+      const std::string& embedder_extension_id,
+      int embedder_render_process_id,
+      const content::WebContents::CreateParams& create_params);
+
+  content::SiteInstance* GetGuestSiteInstance(
+      const GURL& guest_site);
+
   // BrowserPluginGuestManager implementation.
-  virtual content::WebContents* CreateGuest(
-      content::SiteInstance* embedder_site_instance,
-      int instance_id,
-      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
-  virtual int GetNextInstanceID() OVERRIDE;
   virtual void MaybeGetGuestByInstanceIDOrKill(
       int guest_instance_id,
       int embedder_render_process_id,
@@ -74,9 +86,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   void RemoveGuest(int guest_instance_id);
 
-  content::SiteInstance* GetGuestSiteInstance(
-      const GURL& guest_site);
-
   content::WebContents* GetGuestByInstanceID(
       int guest_instance_id,
       int embedder_render_process_id);
@@ -93,9 +102,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // We disallow adding new guest with instance IDs that were previously removed
   // from this manager using RemoveGuest.
   bool CanUseGuestInstanceID(int guest_instance_id);
-
-  static bool CanEmbedderAccessGuest(int embedder_render_process_id,
-                                     GuestViewBase* guest);
 
   // Static factory instance (always NULL for non-test).
   static GuestViewManagerFactory* factory_;

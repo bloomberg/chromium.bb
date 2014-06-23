@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/process/kill.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents.h"
 
 namespace base {
 class DictionaryValue;
@@ -18,8 +19,6 @@ class Size;
 }  // namespace gfx
 
 namespace content {
-
-class WebContents;
 
 // Objects implement this interface to get notified about changes in the guest
 // WebContents and to provide necessary functionality.
@@ -32,8 +31,14 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void WillAttach(content::WebContents* embedder_web_contents,
                           const base::DictionaryValue& extra_params) {}
 
+  virtual WebContents* CreateNewGuestWindow(
+      const WebContents::CreateParams& create_params);
+
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
+
+  // Requests the instance ID associated with the delegate.
+  virtual int GetGuestInstanceID() const;
 
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,

@@ -123,19 +123,6 @@ void BrowserPluginEmbedder::OnGuestCallback(
   BrowserPluginGuest* guest = guest_web_contents ?
       static_cast<WebContentsImpl*>(guest_web_contents)->
           GetBrowserPluginGuest() : NULL;
-  if (!guest) {
-    scoped_ptr<base::DictionaryValue> copy_extra_params(
-        extra_params->DeepCopy());
-    guest_web_contents = GetBrowserPluginGuestManager()->CreateGuest(
-        GetWebContents()->GetSiteInstance(),
-        instance_id,
-        copy_extra_params.Pass());
-    guest = guest_web_contents
-                ? static_cast<WebContentsImpl*>(guest_web_contents)
-                      ->GetBrowserPluginGuest()
-                : NULL;
-  }
-
   if (guest)
     guest->Attach(GetWebContents(), params, *extra_params);
 }

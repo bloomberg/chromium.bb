@@ -27,17 +27,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
  public:
   virtual ~BrowserPluginGuestManager() {}
 
-  // Requests the allocation of a new guest WebContents.
-  virtual content::WebContents* CreateGuest(
-      content::SiteInstance* embedder_site_instance,
-      int instance_id,
-      scoped_ptr<base::DictionaryValue> extra_params);
-
-  // Return a new instance ID.
-  // TODO(fsamuel): Remove this. Once the instance ID concept is moved
-  // entirely out of content and into chrome, this API will be unnecessary.
-  virtual int GetNextInstanceID();
-
   typedef base::Callback<void(WebContents*)> GuestByInstanceIDCallback;
   // Requests a guest WebContents associated with the provided
   // |guest_instance_id|. If a guest associated with the provided ID

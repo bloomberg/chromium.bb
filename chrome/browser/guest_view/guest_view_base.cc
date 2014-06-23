@@ -76,13 +76,35 @@ GuestViewBase::GuestViewBase(int guest_instance_id)
       weak_ptr_factory_(this) {
 }
 
-void GuestViewBase::Init(WebContents* guest_web_contents,
-                         const std::string& embedder_extension_id) {
+void GuestViewBase::Init(
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    const base::DictionaryValue& create_params) {
   if (initialized_)
     return;
   initialized_ = true;
+
+  CreateWebContents(embedder_extension_id,
+                    embedder_render_process_id,
+                    create_params,
+                    base::Bind(&GuestViewBase::InitWithWebContents,
+                               AsWeakPtr(),
+                               embedder_extension_id,
+                               embedder_render_process_id));
+}
+
+void GuestViewBase::InitWithWebContents(
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    content::WebContents* guest_web_contents) {
+  DCHECK(guest_web_contents);
+  content::RenderProcessHost* embedder_render_process_host =
+      content::RenderProcessHost::FromID(embedder_render_process_id);
+
   browser_context_ = guest_web_contents->GetBrowserContext();
   embedder_extension_id_ = embedder_extension_id;
+  embedder_render_process_id_ = embedder_render_process_host->GetID();
+  embedder_render_process_host->AddObserver(this);
 
   WebContentsObserver::Observe(guest_web_contents);
   guest_web_contents->SetDelegate(this);
@@ -90,18 +112,17 @@ void GuestViewBase::Init(WebContents* guest_web_contents,
       std::make_pair(guest_web_contents, this));
   GuestViewManager::FromBrowserContext(browser_context_)->
       AddGuest(guest_instance_id_, guest_web_contents);
+
+  // Give the derived class an opportunity to perform additional initialization.
+  DidInitialize();
 }
 
 // static
 GuestViewBase* GuestViewBase::Create(
     int guest_instance_id,
-    WebContents* guest_web_contents,
-    const std::string& embedder_extension_id,
     const std::string& view_type) {
   if (view_type == "webview") {
-    return new WebViewGuest(guest_instance_id,
-                            guest_web_contents,
-                            embedder_extension_id);
+    return new WebViewGuest(guest_instance_id);
   }
   NOTREACHED();
   return NULL;
@@ -163,7 +184,28 @@ bool GuestViewBase::IsDragAndDropEnabled() const {
   return false;
 }
 
+void GuestViewBase::RenderProcessExited(content::RenderProcessHost* host,
+                                        base::ProcessHandle handle,
+                                        base::TerminationStatus status,
+                                        int exit_code) {
+  // GuestViewBase tracks the lifetime of its embedder render process until it
+  // is attached to a particular embedder WebContents. At that point, its
+  // lifetime is restricted in scope to the lifetime of its embedder
+  // WebContents.
+  CHECK(!attached());
+  CHECK_EQ(host->GetID(), embedder_render_process_id());
+
+  // This code path may be reached if the embedder WebContents is killed for
+  // whatever reason immediately after a called to GuestViewInternal.createGuest
+  // and before attaching the new guest to a frame.
+  Destroy();
+}
+
 void GuestViewBase::Destroy() {
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(embedder_render_process_id());
+  if (host)
+    host->RemoveObserver(this);
   WillDestroy();
   if (!destruction_callback_.is_null())
     destruction_callback_.Run();
@@ -175,6 +217,10 @@ void GuestViewBase::DidAttach() {
   DidAttachToEmbedder();
 
   SendQueuedEvents();
+}
+
+int GuestViewBase::GetGuestInstanceID() const {
+  return guest_instance_id_;
 }
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
@@ -192,11 +238,13 @@ void GuestViewBase::RegisterDestructionCallback(
 
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                const base::DictionaryValue& extra_params) {
+  // After attachment, this GuestViewBase's lifetime is restricted to the
+  // lifetime of its embedder WebContents. Observing the RenderProcessHost
+  // of the embedder is no longer necessary.
+  embedder_web_contents->GetRenderProcessHost()->RemoveObserver(this);
   embedder_web_contents_ = embedder_web_contents;
   embedder_web_contents_observer_.reset(
       new EmbedderWebContentsObserver(this));
-  embedder_render_process_id_ =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
   extra_params.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
   extra_params_.reset(extra_params.DeepCopy());
 

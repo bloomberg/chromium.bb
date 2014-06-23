@@ -69,13 +69,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool* in_memory) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
-  virtual void GuestWebContentsCreated(
-      int guest_instance_id,
-      content::SiteInstance* guest_site_instance,
-      content::WebContents* guest_web_contents,
-      content::WebContents* opener_web_contents,
-      content::BrowserPluginGuestDelegate** guest_delegate,
-      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
   virtual void RenderProcessWillLaunch(
       content::RenderProcessHost* host) OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,

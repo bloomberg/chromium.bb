@@ -89,10 +89,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // construction and so we pass it in here.
   static BrowserPluginGuest* Create(
       int instance_id,
-      SiteInstance* guest_site_instance,
       WebContentsImpl* web_contents,
-      scoped_ptr<base::DictionaryValue> extra_params,
-      BrowserPluginGuest* opener);
+      BrowserPluginGuestDelegate* delegate);
 
   // Returns whether the given WebContents is a BrowserPlugin guest.
   static bool IsGuest(WebContentsImpl* web_contents);
@@ -114,6 +112,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // this BrowserPluginGuest, and its new unattached windows.
   void Destroy();
 
+  // Creates a new guest WebContentsImpl with the provided |params| with |this|
+  // as the |opener|.
+  WebContentsImpl* CreateNewGuestWindow(
+      const WebContents::CreateParams& params);
+
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int instance_id() const { return instance_id_; }
@@ -131,9 +134,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
   bool is_in_destruction() { return is_in_destruction_; }
-
-  // Returns the BrowserPluginGuest that created this guest, if any.
-  BrowserPluginGuest* GetOpener() const;
 
   void UpdateVisibility();
 
@@ -190,11 +190,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Called when the drag started by this guest ends at an OS-level.
   void EndSystemDrag();
 
-  void set_delegate(BrowserPluginGuestDelegate* delegate) {
-    DCHECK(!delegate_);
-    delegate_ = delegate;
-  }
-
   void RespondToPermissionRequest(int request_id,
                                   bool should_allow,
                                   const std::string& user_input);
@@ -208,7 +203,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
   BrowserPluginGuest(int instance_id,
                      bool has_render_view,
-                     WebContentsImpl* web_contents);
+                     WebContentsImpl* web_contents,
+                     BrowserPluginGuestDelegate* delegate);
 
   void WillDestroy();
 
@@ -338,7 +334,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
-  int instance_id_;
+  const int instance_id_;
   float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
@@ -384,7 +380,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // once the guest is attached to a particular embedder.
   std::deque<linked_ptr<IPC::Message> > pending_messages_;
 
-  BrowserPluginGuestDelegate* delegate_;
+  BrowserPluginGuestDelegate* const delegate_;
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.

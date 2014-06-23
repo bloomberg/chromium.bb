@@ -8,17 +8,6 @@
 
 namespace content {
 
-content::WebContents* BrowserPluginGuestManager::CreateGuest(
-    SiteInstance* embedder_site_instance,
-    int instance_id,
-    scoped_ptr<base::DictionaryValue> extra_params) {
-  return NULL;
-}
-
-int BrowserPluginGuestManager::GetNextInstanceID() {
-  return 0;
-}
-
 bool BrowserPluginGuestManager::ForEachGuest(
     WebContents* embedder_web_contents,
     const GuestCallback& callback) {
