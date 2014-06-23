@@ -149,18 +149,14 @@ void GetLastModifiedTime(IPortableDeviceValues* properties_values,
 }
 
 // Gets the size of the file object in bytes from the property key values
-// specified by the |properties_values|. On success, returns true and fills
-// in |size|.
-bool GetObjectSize(IPortableDeviceValues* properties_values, int64* size) {
+// specified by the |properties_values|. On failure, return -1.
+int64 GetObjectSize(IPortableDeviceValues* properties_values) {
   DCHECK(properties_values);
-  DCHECK(size);
   ULONGLONG actual_size;
   HRESULT hr = properties_values->GetUnsignedLargeIntegerValue(WPD_OBJECT_SIZE,
                                                                &actual_size);
   bool success = SUCCEEDED(hr) && (actual_size <= kint64max);
-  if (success)
-    *size = static_cast<int64>(actual_size);
-  return success;
+  return success ? static_cast<int64>(actual_size) : -1;
 }
 
 // Gets the details of the object specified by the |object_id| given the media
@@ -229,28 +225,31 @@ bool GetObjectDetails(IPortableDevice* device,
   // Try to get the last modified time, but don't fail if we can't.
   GetLastModifiedTime(properties_values.get(), last_modified_time);
 
-  return GetObjectSize(properties_values.get(), size);
+  int64 object_size = GetObjectSize(properties_values.get());
+  if (object_size < 0)
+    return false;
+  *size = object_size;
+  return true;
 }
 
 // Creates an MTP device object entry for the given |device| and |object_id|.
 // On success, returns true and fills in |entry|.
-bool GetMTPDeviceObjectEntry(IPortableDevice* device,
-                             const base::string16& object_id,
-                             MTPDeviceObjectEntry* entry) {
+MTPDeviceObjectEntry GetMTPDeviceObjectEntry(IPortableDevice* device,
+                                             const base::string16& object_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!object_id.empty());
-  DCHECK(entry);
   base::string16 name;
   bool is_directory;
   int64 size;
   base::Time last_modified_time;
-  if (!GetObjectDetails(device, object_id, &name, &is_directory, &size,
-                        &last_modified_time))
-    return false;
-  *entry = MTPDeviceObjectEntry(object_id, name, is_directory, size,
-                                last_modified_time);
-  return true;
+  MTPDeviceObjectEntry entry;
+  if (GetObjectDetails(device, object_id, &name, &is_directory, &size,
+                       &last_modified_time)) {
+    entry = MTPDeviceObjectEntry(object_id, name, is_directory, size,
+                                 last_modified_time);
+  }
+  return entry;
 }
 
 // Gets the entries of the directory specified by |directory_object_id| from
@@ -280,21 +279,20 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
     hr = enum_object_ids->Next(num_objects_to_request,
                                object_ids.get(),
                                &num_objects_fetched);
-    for (DWORD index = 0; index < num_objects_fetched; ++index) {
-      MTPDeviceObjectEntry entry;
-      if (GetMTPDeviceObjectEntry(device,
-                                  object_ids[index],
-                                  &entry)) {
-        if (get_all_entries) {
-          object_entries->push_back(entry);
-        } else if (entry.name == object_name) {
-          object_entries->push_back(entry);  // Object entry found.
-          break;
-        }
+    for (DWORD i = 0; i < num_objects_fetched; ++i) {
+      MTPDeviceObjectEntry entry =
+          GetMTPDeviceObjectEntry(device, object_ids[i]);
+      if (entry.object_id.empty())
+        continue;
+      if (get_all_entries) {
+        object_entries->push_back(entry);
+      } else if (entry.name == object_name) {
+        object_entries->push_back(entry);  // Object entry found.
+        break;
       }
     }
-    for (DWORD index = 0; index < num_objects_fetched; ++index)
-      CoTaskMemFree(object_ids[index]);
+    for (DWORD i = 0; i < num_objects_fetched; ++i)
+      CoTaskMemFree(object_ids[i]);
   }
   return true;
 }
@@ -329,8 +327,8 @@ base::File::Error GetFileEntryInfo(
   DCHECK(device);
   DCHECK(!object_id.empty());
   DCHECK(file_entry_info);
-  MTPDeviceObjectEntry entry;
-  if (!GetMTPDeviceObjectEntry(device, object_id, &entry))
+  MTPDeviceObjectEntry entry = GetMTPDeviceObjectEntry(device, object_id);
+  if (entry.object_id.empty())
     return base::File::FILE_ERROR_NOT_FOUND;
 
   file_entry_info->size = entry.size;
