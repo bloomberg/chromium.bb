@@ -1301,6 +1301,8 @@ def _CreateParser():
   group.add_remote_option('--validation_pool', default=None,
                           help=('Path to a pickled validation pool. Intended '
                                 'for use only with the commit queue.'))
+  group.add_remote_option('--metadata_dump', default=None,
+                          help=('This option is not yet used.'))
   group.add_remote_option('--mock-tree-status', dest='mock_tree_status',
                           default=None, action='store',
                           help=('Override the tree status value that would be '
