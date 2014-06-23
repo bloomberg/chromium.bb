@@ -16,13 +16,18 @@
 #include "media/video/capture/win/filter_base_win.h"
 #include "media/video/capture/win/sink_filter_observer_win.h"
 
+namespace media {
+
 // Define GUID for I420. This is the color format we would like to support but
 // it is not defined in the DirectShow SDK.
 // http://msdn.microsoft.com/en-us/library/dd757532.aspx
 // 30323449-0000-0010-8000-00AA00389B71.
 extern GUID kMediaSubTypeI420;
 
-namespace media {
+// UYVY synonym with BT709 color components, used in HD video. This variation
+// might appear in non-USB capture cards and it's implemented as a normal YUV
+// pixel format with the characters HDYC encoded in the first array word.
+extern GUID kMediaSubTypeHDYC;
 
 class SinkInputPin;
 
