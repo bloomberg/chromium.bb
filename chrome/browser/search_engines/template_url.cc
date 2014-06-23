@@ -85,6 +85,7 @@ const char kGoogleOmniboxStartMarginParameter[] =
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGooglePageClassificationParameter[] = "google:pageClassification";
+const char kGooglePrefetchQuery[] = "google:prefetchQuery";
 const char kGoogleRLZParameter[] = "google:RLZ";
 const char kGoogleSearchClient[] = "google:searchClient";
 const char kGoogleSearchFieldtrialParameter[] =
@@ -597,6 +598,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == kGooglePageClassificationParameter) {
     replacements->push_back(Replacement(GOOGLE_PAGE_CLASSIFICATION, start));
+  } else if (parameter == kGooglePrefetchQuery) {
+    replacements->push_back(Replacement(GOOGLE_PREFETCH_QUERY, start));
   } else if (parameter == kGoogleRLZParameter) {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
   } else if (parameter == kGoogleSearchClient) {
@@ -990,6 +993,16 @@ std::string TemplateURLRef::HandleReplacements(
               *i, &url);
         }
         break;
+
+      case GOOGLE_PREFETCH_QUERY: {
+        const std::string& query = search_terms_args.prefetch_query;
+        const std::string& type = search_terms_args.prefetch_query_type;
+        if (!query.empty() && !type.empty()) {
+          HandleReplacement(
+              std::string(), "pfq=" + query + "&qha=" + type + "&", *i, &url);
+        }
+        break;
+      }
 
       case GOOGLE_RLZ: {
         DCHECK(!i->is_post_param);

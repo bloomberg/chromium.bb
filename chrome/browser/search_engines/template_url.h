@@ -146,6 +146,10 @@ class TemplateURLRef {
     // Optional session token.
     std::string session_token;
 
+    // Prefetch query and type.
+    std::string prefetch_query;
+    std::string prefetch_query_type;
+
     // Additional query params provided by the suggest server.
     std::string suggest_query_params;
 
@@ -300,6 +304,7 @@ class TemplateURLRef {
     GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_PAGE_CLASSIFICATION,
+    GOOGLE_PREFETCH_QUERY,
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
