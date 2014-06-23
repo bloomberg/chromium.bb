@@ -134,6 +134,8 @@ public:
     // Called when scroll bars are added / removed (as the view resizes).
     void handleScrollbarUpdate(ScrollView*);
 
+    void handleLayoutComplete(RenderObject*);
+
     // Called when the scroll offset changes.
     void handleScrollPositionChanged(ScrollView*);
     void handleScrollPositionChanged(RenderObject*);
