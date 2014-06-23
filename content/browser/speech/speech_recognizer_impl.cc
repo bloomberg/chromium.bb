@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
@@ -178,6 +179,8 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
     : SpeechRecognizer(listener, session_id),
       recognition_engine_(engine),
       endpointer_(kAudioSampleRate),
+      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)),
       is_dispatching_event_(false),
       provisional_results_(provisional_results),
       state_(STATE_IDLE) {
@@ -258,6 +261,7 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   if (audio_controller_.get()) {
     audio_controller_->Close(
         base::Bind(&KeepAudioControllerRefcountedForDtor, audio_controller_));
+    audio_log_->OnClosed(0);
   }
 }
 
@@ -570,12 +574,15 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
   }
 
+  audio_log_->OnCreated(0, input_parameters, device_id_);
+
   // The endpointer needs to estimate the environment/background noise before
   // starting to treat the audio as user input. We wait in the state
   // ESTIMATING_ENVIRONMENT until such interval has elapsed before switching
   // to user input mode.
   endpointer_.SetEnvironmentEstimationMode();
   audio_controller_->Record();
+  audio_log_->OnStarted(0);
   return STATE_STARTING;
 }
 
@@ -772,6 +779,7 @@ void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   audio_controller_->Close(base::Bind(&SpeechRecognizerImpl::OnAudioClosed,
                                       this, audio_controller_));
   audio_controller_ = NULL;  // The controller is still refcounted by Bind.
+  audio_log_->OnClosed(0);
 }
 
 int SpeechRecognizerImpl::GetElapsedTimeMs() const {
