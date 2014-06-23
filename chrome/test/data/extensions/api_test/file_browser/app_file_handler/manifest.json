@@ -11,12 +11,10 @@
   },
   "file_handlers": {
     "xulAction": {
-      "types": ["application/vnd.mozilla.xul+xml"],
-      "title": "xul action handler"
+      "types": ["application/vnd.mozilla.xul+xml"]
     },
     "tiffAction": {
-      "extensions": ["tiff"],
-      "title": "tiff action handler"
+      "extensions": ["tiff"]
     }
   },
   "permissions": [

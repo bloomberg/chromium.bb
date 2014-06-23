@@ -5,8 +5,7 @@
     "image": {
       "extensions": [
         "png"
-      ],
-      "title": "Test editor"
+      ]
     }
   },
   "app": {

@@ -46,7 +46,6 @@ const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
-const char kFileHandlerTitle[] = "title";
 const char kFileHandlerTypes[] = "types";
 const char kGlobal[] = "global";
 const char kHideBookmarkButton[] = "hide_bookmark_button";
@@ -360,8 +359,6 @@ const char kInvalidFileHandlerExtensionElement[] =
     "Invalid value for 'file_handlers[*].extensions[*]'.";
 const char kInvalidFileHandlerNoTypeOrExtension[] =
     "'file_handlers[*]' must contain a non-empty 'types' or 'extensions'.";
-const char kInvalidFileHandlerTitle[] =
-    "Invalid value for 'file_handlers[*].title'.";
 const char kInvalidFileHandlerType[] =
     "Invalid value for 'file_handlers[*].types'.";
 const char kInvalidFileHandlerTypeElement[] =
