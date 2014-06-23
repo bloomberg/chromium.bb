@@ -380,6 +380,7 @@ SyncTaskManager* SyncWorker::GetSyncTaskManager() {
 }
 
 void SyncWorker::DetachFromSequence() {
+  task_manager_->DetachFromSequence();
   context_->DetachFromSequence();
   sequence_checker_.DetachFromSequence();
 }

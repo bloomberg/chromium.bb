@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -41,9 +40,7 @@ struct BlockingFactor;
 // describes which task can run in parallel.  When a task start running as a
 // background task, SyncTaskManager checks if any running background task
 // doesn't block the new background task, and queues it up if it can't run.
-class SyncTaskManager
-    : public base::NonThreadSafe,
-      public base::SupportsWeakPtr<SyncTaskManager> {
+class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
  public:
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
   typedef base::Callback<void(scoped_ptr<SyncTaskToken> token)> Continuation;
