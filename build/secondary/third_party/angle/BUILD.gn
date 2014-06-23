@@ -97,7 +97,10 @@ static_library("translator_lib") {
     "src/common/event_tracer.h",
     "src/common/mathutil.cpp",
     "src/common/mathutil.h",
+    "src/common/platform.h",
     "src/common/shadervars.h",
+    "src/common/tls.cpp",
+    "src/common/tls.h",
     "src/common/utilities.cpp",
     "src/common/utilities.h",
     "src/common/version.h",
@@ -162,6 +165,8 @@ static_library("translator_lib") {
     "src/compiler/translator/SearchSymbol.cpp",
     "src/compiler/translator/SearchSymbol.h",
     "src/compiler/translator/ShHandle.h",
+    "src/compiler/translator/StructureHLSL.cpp",
+    "src/compiler/translator/StructureHLSL.h",
     "src/compiler/translator/SymbolTable.cpp",
     "src/compiler/translator/SymbolTable.h",
     "src/compiler/translator/TranslatorESSL.cpp",
@@ -176,6 +181,10 @@ static_library("translator_lib") {
     "src/compiler/translator/UnfoldShortCircuit.h",
     "src/compiler/translator/UnfoldShortCircuitAST.cpp",
     "src/compiler/translator/UnfoldShortCircuitAST.h",
+    "src/compiler/translator/UniformHLSL.cpp",
+    "src/compiler/translator/UniformHLSL.h",
+    "src/compiler/translator/UtilsHLSL.cpp",
+    "src/compiler/translator/UtilsHLSL.h",
     "src/compiler/translator/ValidateLimitations.cpp",
     "src/compiler/translator/ValidateLimitations.h",
     "src/compiler/translator/ValidateOutputs.cpp",
@@ -205,9 +214,6 @@ static_library("translator_lib") {
     "src/compiler/translator/intermediate.h",
     "src/compiler/translator/length_limits.h",
     "src/compiler/translator/localintermediate.h",
-    "src/compiler/translator/osinclude.h",
-    "src/compiler/translator/ossource_posix.cpp",
-    "src/compiler/translator/ossource_win.cpp",
     "src/compiler/translator/parseConst.cpp",
     "src/compiler/translator/timing/RestrictFragmentShaderTiming.cpp",
     "src/compiler/translator/timing/RestrictFragmentShaderTiming.h",
@@ -218,12 +224,6 @@ static_library("translator_lib") {
     "src/third_party/compiler/ArrayBoundsClamper.cpp",
     "src/third_party/compiler/ArrayBoundsClamper.h",
   ]
-
-  if (is_win) {
-    sources -= [ "src/compiler/translator/ossource_posix.cpp" ]
-  } else {
-    sources -= [ "src/compiler/translator/ossource_win.cpp" ]
-  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -258,38 +258,23 @@ static_library("translator_static") {
   ]
 }
 
-# TODO(GYP) this requires some changes to the script before it will work.
-# https://chromium-review.googlesource.com/#/c/202048/
-if (false) {
-  action("commit_id") {
-    script = "src/commit_id.py"
+config("commit_id_config") {
+  include_dirs = [ "$root_gen_dir/angle" ]
+}
 
-    output_file = "$root_gen_dir/angle_commit.h"
-    outputs = [ output_file ]
+action("commit_id") {
+  script = "src/commit_id.py"
 
-    args = [
-      rebase_path(".", root_build_dir),
-      rebase_path(output_file, root_build_dir),
-    ]
-  }
-} else {
-  # While Angle is being updated, we copy a temporary hardcoded commit.h. This
-  # is copied both as commit.h and angle_commit.h. The angle roll will rename
-  # this file from commit.h to angle_commit.h and we don't want to make the
-  # udpate more complicated than necessary.
-  group("commit_id") {
-    deps = [ ":copy_angle_commit_h", ":copy_commit_h" ]
-  }
+  output_file = "$root_gen_dir/angle/id/commit.h"
+  outputs = [ output_file ]
 
-  hardcoded_commit = [ "//build/secondary/third_party/angle/angle_commit.h" ]
-  copy("copy_angle_commit_h") {
-    sources = hardcoded_commit
-    outputs = [ "$root_gen_dir/angle_commit.h" ]
-  }
-  copy("copy_commit_h") {
-    sources = hardcoded_commit
-    outputs = [ "$root_gen_dir/commit.h" ]
-  }
+  args = [
+    "gen",
+    rebase_path(".", root_build_dir),
+    rebase_path(output_file, root_build_dir),
+  ]
+
+  direct_dependent_configs = [ ":commit_id_config" ]
 }
 
 if (is_win) {
@@ -309,13 +294,18 @@ if (is_win) {
       "src/common/event_tracer.h",
       "src/common/mathutil.cpp",
       "src/common/mathutil.h",
+      "src/common/platform.h",
       "src/common/shadervars.h",
+      "src/common/tls.cpp",
+      "src/common/tls.h",
       "src/common/utilities.cpp",
       "src/common/utilities.h",
       "src/common/version.h",
       "src/libGLESv2/BinaryStream.h",
       "src/libGLESv2/Buffer.cpp",
       "src/libGLESv2/Buffer.h",
+      "src/libGLESv2/Caps.cpp",
+      "src/libGLESv2/Caps.h",
       "src/libGLESv2/Context.cpp",
       "src/libGLESv2/Context.h",
       "src/libGLESv2/DynamicHLSL.cpp",
@@ -354,6 +344,7 @@ if (is_win) {
       "src/libGLESv2/VertexArray.cpp",
       "src/libGLESv2/VertexArray.h",
       "src/libGLESv2/VertexAttribute.h",
+      "src/libGLESv2/VertexAttribute.cpp",
       "src/libGLESv2/angletypes.cpp",
       "src/libGLESv2/angletypes.h",
       "src/libGLESv2/constants.h",
@@ -387,6 +378,7 @@ if (is_win) {
       "src/libGLESv2/renderer/SwapChain.h",
       "src/libGLESv2/renderer/TextureStorage.cpp",
       "src/libGLESv2/renderer/TextureStorage.h",
+      "src/libGLESv2/renderer/VertexArrayImpl.h",
       "src/libGLESv2/renderer/VertexBuffer.cpp",
       "src/libGLESv2/renderer/VertexBuffer.h",
       "src/libGLESv2/renderer/VertexDataManager.cpp",
@@ -455,6 +447,7 @@ if (is_win) {
         "src/libGLESv2/renderer/d3d9/SwapChain9.h",
         "src/libGLESv2/renderer/d3d9/TextureStorage9.cpp",
         "src/libGLESv2/renderer/d3d9/TextureStorage9.h",
+        "src/libGLESv2/renderer/d3d9/VertexArray9.h",
         "src/libGLESv2/renderer/d3d9/VertexBuffer9.cpp",
         "src/libGLESv2/renderer/d3d9/VertexBuffer9.h",
         "src/libGLESv2/renderer/d3d9/VertexDeclarationCache.cpp",
@@ -506,6 +499,7 @@ if (is_win) {
         "src/libGLESv2/renderer/d3d11/SwapChain11.h",
         "src/libGLESv2/renderer/d3d11/TextureStorage11.cpp",
         "src/libGLESv2/renderer/d3d11/TextureStorage11.h",
+        "src/libGLESv2/renderer/d3d11/VertexArray11.h",
         "src/libGLESv2/renderer/d3d11/VertexBuffer11.cpp",
         "src/libGLESv2/renderer/d3d11/VertexBuffer11.h",
         "src/libGLESv2/renderer/d3d11/formatutils11.cpp",

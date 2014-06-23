@@ -100,8 +100,7 @@ source_set("browser") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      # TODO(GYP)
-      #"//third_party/angle:commit_id",
+      "//third_party/angle:commit_id",
     ]
   }
 
