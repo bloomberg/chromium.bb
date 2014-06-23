@@ -2195,6 +2195,13 @@ public class AwContents {
         }
     }
 
+    // Return true if the GeolocationPermissionAPI should be used.
+    @CalledByNative
+    private boolean useLegacyGeolocationPermissionAPI() {
+        // TODO (michaelbai): Need to verify whether this is correct when release.
+        return mContext.getApplicationInfo().targetSdkVersion <= Build.VERSION_CODES.KITKAT;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------

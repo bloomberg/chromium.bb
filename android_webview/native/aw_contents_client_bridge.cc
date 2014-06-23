@@ -46,15 +46,6 @@ void RecordClientCertificateKey(
       client_cert.get(), private_key.get());
 }
 
-void CancelGeolocationPermission(int render_process_id,
-                                 int render_view_id,
-                                 const GURL& requesting_frame) {
-  AwContents* aw_contents = AwContents::FromID(
-      render_process_id, render_view_id);
-  if (aw_contents)
-    aw_contents->HideGeolocationPrompt(requesting_frame);
-}
-
 }  // namespace
 
 AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env, jobject obj)
@@ -347,28 +338,6 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
   return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
       env, obj.obj(),
       jurl.obj());
-}
-
-void AwContentsClientBridge::RequestGeolocationPermission(
-    content::WebContents* web_contents,
-    const GURL& requesting_frame,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
-  if (!aw_contents) {
-    result_callback.Run(false);
-    return;
-  }
-
-  if (cancel_callback) {
-    *cancel_callback = base::Bind(
-        CancelGeolocationPermission,
-        web_contents->GetRenderProcessHost()->GetID(),
-        web_contents->GetRenderViewHost()->GetRoutingID(),
-        requesting_frame);
-  }
-
-  aw_contents->ShowGeolocationPrompt(requesting_frame, result_callback);
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,

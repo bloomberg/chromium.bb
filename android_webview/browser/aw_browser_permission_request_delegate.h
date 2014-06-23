@@ -25,6 +25,12 @@ class AwBrowserPermissionRequestDelegate {
   virtual void CancelProtectedMediaIdentifierPermissionRequests(
       const GURL& origin) = 0;
 
+  virtual void RequestGeolocationPermission(
+      const GURL& origin,
+      const base::Callback<void(bool)>& callback) = 0;
+
+  virtual void CancelGeolocationPermissionRequests(const GURL& origin) = 0;
+
  protected:
   AwBrowserPermissionRequestDelegate() {}
 };

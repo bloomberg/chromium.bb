@@ -65,12 +65,6 @@ class AwContentsClientBridgeBase {
       = 0;
 
   virtual bool ShouldOverrideUrlLoading(const base::string16& url) = 0;
-
-  virtual void RequestGeolocationPermission(
-      content::WebContents* web_contents,
-      const GURL& requesting_frame,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback) = 0;
 };
 
 }  // namespace android_webview

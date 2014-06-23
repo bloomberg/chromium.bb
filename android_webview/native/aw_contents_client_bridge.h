@@ -55,11 +55,6 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       OVERRIDE;
   virtual bool ShouldOverrideUrlLoading(const base::string16& url) OVERRIDE;
-  virtual void RequestGeolocationPermission(
-      content::WebContents* web_contents,
-      const GURL& requesting_frame,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback) OVERRIDE;
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);

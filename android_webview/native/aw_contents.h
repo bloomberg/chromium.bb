@@ -134,9 +134,6 @@ class AwContents : public FindHelper::Listener,
 
   void DrawGL(AwDrawGLInfo* draw_info);
 
-  // Geolocation API support
-  void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
-  void HideGeolocationPrompt(const GURL& origin);
   void InvokeGeolocationCallback(JNIEnv* env,
                                  jobject obj,
                                  jboolean value,
@@ -162,6 +159,12 @@ class AwContents : public FindHelper::Listener,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void CancelProtectedMediaIdentifierPermissionRequests(
       const GURL& origin) OVERRIDE;
+  virtual void RequestGeolocationPermission(
+      const GURL& origin,
+      const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void CancelGeolocationPermissionRequests(
+      const GURL& origin) OVERRIDE;
+
 
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
@@ -228,6 +231,10 @@ class AwContents : public FindHelper::Listener,
   void InitAutofillIfNecessary(bool enabled);
 
   void InitializeHardwareDrawIfNeeded();
+
+  // Geolocation API support
+  void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
+  void HideGeolocationPrompt(const GURL& origin);
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;

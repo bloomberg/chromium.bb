@@ -148,7 +148,18 @@ void CancelProtectedMediaIdentifierPermissionRequests(
     delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
 }
 
+void CancelGeolocationPermissionRequests(
+    int render_process_id,
+    int render_view_id,
+    const GURL& origin) {
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate)
+    delegate->CancelGeolocationPermissionRequests(origin);
 }
+
+}  // namespace
 
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
   // Start with the currnet locale.
@@ -405,16 +416,24 @@ void AwContentBrowserClient::RequestGeolocationPermission(
     bool user_gesture,
     base::Callback<void(bool)> result_callback,
     base::Closure* cancel_callback) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
-  if (client) {
-    client->RequestGeolocationPermission(
-        web_contents, requesting_frame, result_callback, cancel_callback);
-  } else {
-    LOG(WARNING) << "Failed to find the associated bridge for geolocation "
-                 << "permission request.";
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate == NULL) {
+    DVLOG(0) << "Dropping GeolocationPermission request";
     result_callback.Run(false);
+    return;
   }
+
+  GURL origin = requesting_frame.GetOrigin();
+  if (cancel_callback) {
+    *cancel_callback = base::Bind(
+        CancelGeolocationPermissionRequests, render_process_id, render_view_id,
+        origin);
+  }
+  delegate->RequestGeolocationPermission(origin, result_callback);
 }
 
 void AwContentBrowserClient::RequestMidiSysExPermission(
