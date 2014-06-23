@@ -65,6 +65,11 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
                          const v8::Handle<v8::Value>* argv,
                          const blink::WebURL& url,
                          const blink::WebString& title);
+  virtual void logEvent(const blink::WebString& event_name,
+                        int argc,
+                        const blink::WebString* argv,
+                        const blink::WebURL& url,
+                        const blink::WebString& title);
 
   // Helper function to actually send the message across IPC.
   void SendDomActionMessage(const std::string& api_call,

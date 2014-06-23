@@ -107,6 +107,19 @@ void DOMActivityLogger::logMethod(const WebString& api_name,
       api_name_utf8, url, title, DomActionType::METHOD, args.Pass());
 }
 
+void DOMActivityLogger::logEvent(const WebString& event_name,
+                                 int argc,
+                                 const WebString* argv,
+                                 const WebURL& url,
+                                 const WebString& title) {
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::string event_name_utf8 = event_name.utf8();
+  for (int i = 0; i < argc; ++i)
+    args->Append(base::Value::CreateStringValue(argv[i]));
+  SendDomActionMessage(
+      event_name_utf8, url, title, DomActionType::METHOD, args.Pass());
+}
+
 void DOMActivityLogger::SendDomActionMessage(const std::string& api_call,
                                              const GURL& url,
                                              const base::string16& url_title,
