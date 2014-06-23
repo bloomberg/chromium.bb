@@ -438,15 +438,31 @@ class IDLParser(object):
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'float'),
                           self.BuildAttribute('VALUE', val))
 
-  # [31] Removed unsupported: Serializer, Stringifier
+  # [31] Removed unsupported: Serializer
   def p_AttributeOrOperationOrIterator(self, p):
-    """AttributeOrOperationOrIterator : StaticMember
+    """AttributeOrOperationOrIterator : Stringifier
+                                      | StaticMember
                                       | Attribute
                                       | OperationOrIterator"""
     p[0] = p[1]
 
   # [32-37] NOT IMPLEMENTED (Serializer)
-  # [38-39] FIXME: NOT IMPLEMENTED (Stringifier) http://crbug.com/306606
+
+  # [38]
+  def p_Stringifier(self, p):
+    """Stringifier : STRINGIFIER StringifierRest"""
+    p[0] = self.BuildProduction('Stringifier', p, 1, p[2])
+
+  # [39]
+  def p_StringifierRest(self, p):
+    """StringifierRest : AttributeRest
+                       | ReturnType OperationRest
+                       | ';'"""
+    if len(p) == 3:
+      p[2].AddChildren(p[1])
+      p[0] = p[2]
+    elif p[1] != ';':
+      p[0] = p[1]
 
   # [40]
   def p_StaticMember(self, p):
