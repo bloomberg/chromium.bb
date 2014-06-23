@@ -75,3 +75,5 @@ class SessionRestore(startup.Startup):
     self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
 
     startup_metric.StartupMetric().AddResults(tab, results)
+
+    # TODO(jeremy): Measure time to load - first, last and frontmost tab here.
