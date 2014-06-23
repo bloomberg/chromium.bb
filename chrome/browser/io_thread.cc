@@ -106,6 +106,7 @@ using content::BrowserThread;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 using data_reduction_proxy::DataReductionProxyParams;
+using data_reduction_proxy::DataReductionProxyUsageStats;
 using data_reduction_proxy::DataReductionProxySettings;
 #endif
 
@@ -610,10 +611,16 @@ void IOThread::InitAsync() {
     drp_flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
     drp_flags |= DataReductionProxyParams::kPromoAllowed;
-  globals_->data_reduction_proxy_params.reset(
-      new DataReductionProxyParams(drp_flags));
-  network_delegate->set_data_reduction_proxy_params(
-      globals_->data_reduction_proxy_params.get());
+  DataReductionProxyParams* proxy_params =
+      new DataReductionProxyParams(drp_flags);
+  globals_->data_reduction_proxy_params.reset(proxy_params);
+  network_delegate->set_data_reduction_proxy_params(proxy_params);
+  DataReductionProxyUsageStats* proxy_usage_stats =
+      new DataReductionProxyUsageStats(proxy_params,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  globals_->data_reduction_proxy_usage_stats.reset(proxy_usage_stats);
+  network_delegate->set_data_reduction_proxy_usage_stats(proxy_usage_stats);
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(

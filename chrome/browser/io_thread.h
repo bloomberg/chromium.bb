@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
@@ -186,6 +187,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
     scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
         data_reduction_proxy_params;
+    scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
+        data_reduction_proxy_usage_stats;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
