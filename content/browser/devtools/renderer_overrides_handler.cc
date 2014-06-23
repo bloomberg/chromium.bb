@@ -206,22 +206,21 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
   double scale = 1;
   ParseCaptureParameters(screencast_command_.get(), &format, &quality, &scale);
 
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  float device_scale_factor = display.device_scale_factor();
-
-  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  gfx::Size snapshot_size(gfx::ToCeiledSize(
-      gfx::ScaleSize(view_bounds.size(), scale / device_scale_factor)));
-
+  gfx::SizeF view_size = last_compositor_frame_metadata_.viewport_size;
+  float page_scale = last_compositor_frame_metadata_.page_scale_factor;
+  gfx::Rect view_bounds(0, 0, view_size.width() * page_scale,
+                        view_size.height() * page_scale);
+  gfx::Size snapshot_size(gfx::ToFlooredSize(gfx::ScaleSize(view_size, scale)));
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       host->GetView());
-  view->CopyFromCompositingSurface(
-      view_bounds, snapshot_size,
-      base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
-                 weak_factory_.GetWeakPtr(),
-                 format, quality, last_compositor_frame_metadata_),
-      SkBitmap::kARGB_8888_Config);
+  if (snapshot_size.width() > 0 && snapshot_size.height() > 0) {
+    view->CopyFromCompositingSurface(
+        view_bounds, snapshot_size,
+        base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
+                   weak_factory_.GetWeakPtr(),
+                   format, quality, last_compositor_frame_metadata_),
+        SkBitmap::kARGB_8888_Config);
+  }
 }
 
 void RendererOverridesHandler::ParseCaptureParameters(
@@ -245,13 +244,16 @@ void RendererOverridesHandler::ParseCaptureParameters(
                       &max_height);
   }
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  CHECK(host->GetView());
-  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
+  float device_scale = last_compositor_frame_metadata_.device_scale_factor;
+  gfx::SizeF view_size = last_compositor_frame_metadata_.viewport_size;
+  view_size.set_height(view_size.height() +
+      (last_compositor_frame_metadata_.location_bar_content_translation.y() +
+          last_compositor_frame_metadata_.overdraw_bottom_height) /
+      last_compositor_frame_metadata_.page_scale_factor);
   if (max_width > 0)
-    *scale = std::min(*scale, max_width / view_bounds.width());
+    *scale = std::min(*scale, max_width / (view_size.width() * device_scale));
   if (max_height > 0)
-    *scale = std::min(*scale, max_height / view_bounds.height());
+    *scale = std::min(*scale, max_height / (view_size.height() * device_scale));
 
   if (format->empty())
     *format = kPng;
@@ -259,8 +261,6 @@ void RendererOverridesHandler::ParseCaptureParameters(
     *quality = kDefaultScreenshotQuality;
   if (*scale <= 0)
     *scale = 0.1;
-  if (*scale > 5)
-    *scale = 5;
 }
 
 base::DictionaryValue* RendererOverridesHandler::CreateScreenshotResponse(
