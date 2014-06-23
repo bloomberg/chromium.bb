@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -219,4 +220,27 @@ IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, Basic) {
       "",
       base::StringPrintf("chrome-extension://%s/basic.html", kTestExtensionID)))
       << message_;
+}
+
+// Ensure that extensions that are not pre-installed by policy throw an install
+// warning if they request the enterprise.platformKeys permission in the
+// manifest and that such extensions don't see the
+// chrome.enterprise.platformKeys namespace.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       EnterprisePlatformKeysIsRestrictedToPolicyExtension) {
+  ASSERT_TRUE(RunExtensionSubtest("enterprise_platform_keys",
+                                  "api_not_available.html",
+                                  kFlagIgnoreManifestWarnings));
+
+  base::FilePath extension_path =
+      test_data_dir_.AppendASCII("enterprise_platform_keys");
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      profile())->extension_service();
+  const extensions::Extension* extension =
+      GetExtensionByPath(service->extensions(), extension_path);
+  ASSERT_FALSE(extension->install_warnings().empty());
+  EXPECT_EQ(
+      "'enterprise.platformKeys' is not allowed for specified install "
+      "location.",
+      extension->install_warnings()[0].message);
 }
