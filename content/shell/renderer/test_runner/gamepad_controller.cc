@@ -154,6 +154,8 @@ void GamepadController::Install(WebFrame* frame) {
 }
 
 void GamepadController::SetDelegate(WebTestDelegate* delegate) {
+  if (!delegate)
+    return;
   delegate->setGamepadProvider(this);
 }
 
