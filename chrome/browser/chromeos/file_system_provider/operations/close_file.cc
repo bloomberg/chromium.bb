@@ -41,7 +41,9 @@ void CloseFile::OnSuccess(int /* request_id */,
   callback_.Run(base::File::FILE_OK);
 }
 
-void CloseFile::OnError(int /* request_id */, base::File::Error error) {
+void CloseFile::OnError(int /* request_id */,
+                        scoped_ptr<RequestValue> /* result */,
+                        base::File::Error error) {
   callback_.Run(error);
 }
 

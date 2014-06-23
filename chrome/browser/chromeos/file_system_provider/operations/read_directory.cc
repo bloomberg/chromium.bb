@@ -84,7 +84,9 @@ void ReadDirectory::OnSuccess(int /* request_id */,
   callback_.Run(base::File::FILE_OK, entry_list, has_more);
 }
 
-void ReadDirectory::OnError(int /* request_id */, base::File::Error error) {
+void ReadDirectory::OnError(int /* request_id */,
+                            scoped_ptr<RequestValue> /* result */,
+                            base::File::Error error) {
   callback_.Run(
       error, fileapi::AsyncFileUtil::EntryList(), false /* has_more */);
 }

@@ -42,18 +42,6 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
-class FileSystemProviderInternalUnmountRequestedErrorFunction
-    : public FileSystemProviderInternalFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.unmountRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR)
-
- protected:
-  virtual ~FileSystemProviderInternalUnmountRequestedErrorFunction() {}
-  virtual bool RunWhenValid() OVERRIDE;
-};
-
 class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
     : public FileSystemProviderInternalFunction {
  public:
@@ -63,18 +51,6 @@ class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
 
  protected:
   virtual ~FileSystemProviderInternalGetMetadataRequestedSuccessFunction() {}
-  virtual bool RunWhenValid() OVERRIDE;
-};
-
-class FileSystemProviderInternalGetMetadataRequestedErrorFunction
-    : public FileSystemProviderInternalFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.getMetadataRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR)
-
- protected:
-  virtual ~FileSystemProviderInternalGetMetadataRequestedErrorFunction() {}
   virtual bool RunWhenValid() OVERRIDE;
 };
 
@@ -90,18 +66,6 @@ class FileSystemProviderInternalReadDirectoryRequestedSuccessFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
-class FileSystemProviderInternalReadDirectoryRequestedErrorFunction
-    : public FileSystemProviderInternalFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.readDirectoryRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDERROR)
-
- protected:
-  virtual ~FileSystemProviderInternalReadDirectoryRequestedErrorFunction() {}
-  virtual bool RunWhenValid() OVERRIDE;
-};
-
 class FileSystemProviderInternalOpenFileRequestedSuccessFunction
     : public FileSystemProviderInternalFunction {
  public:
@@ -111,18 +75,6 @@ class FileSystemProviderInternalOpenFileRequestedSuccessFunction
 
  protected:
   virtual ~FileSystemProviderInternalOpenFileRequestedSuccessFunction() {}
-  virtual bool RunWhenValid() OVERRIDE;
-};
-
-class FileSystemProviderInternalOpenFileRequestedErrorFunction
-    : public FileSystemProviderInternalFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.openFileRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDERROR)
-
- protected:
-  virtual ~FileSystemProviderInternalOpenFileRequestedErrorFunction() {}
   virtual bool RunWhenValid() OVERRIDE;
 };
 
@@ -138,18 +90,6 @@ class FileSystemProviderInternalCloseFileRequestedSuccessFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
-class FileSystemProviderInternalCloseFileRequestedErrorFunction
-    : public FileSystemProviderInternalFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.closeFileRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_CLOSEFILEREQUESTEDERROR)
-
- protected:
-  virtual ~FileSystemProviderInternalCloseFileRequestedErrorFunction() {}
-  virtual bool RunWhenValid() OVERRIDE;
-};
-
 class FileSystemProviderInternalReadFileRequestedSuccessFunction
     : public FileSystemProviderInternalFunction {
  public:
@@ -162,15 +102,15 @@ class FileSystemProviderInternalReadFileRequestedSuccessFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
-class FileSystemProviderInternalReadFileRequestedErrorFunction
+class FileSystemProviderInternalOperationRequestedErrorFunction
     : public FileSystemProviderInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
-      "fileSystemProviderInternal.readFileRequestedError",
-      FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR)
+      "fileSystemProviderInternal.operationRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_OPERATIONREQUESTEDERROR)
 
  protected:
-  virtual ~FileSystemProviderInternalReadFileRequestedErrorFunction() {}
+  virtual ~FileSystemProviderInternalOperationRequestedErrorFunction() {}
   virtual bool RunWhenValid() OVERRIDE;
 };
 

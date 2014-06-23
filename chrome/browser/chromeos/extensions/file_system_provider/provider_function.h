@@ -60,7 +60,9 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
   virtual ~FileSystemProviderInternalFunction() {}
 
   // Rejects the request and sets a response for this API function.
-  void RejectRequest(base::File::Error error);
+  void RejectRequest(
+      scoped_ptr<chromeos::file_system_provider::RequestValue> value,
+      base::File::Error error);
 
   // Fulfills the request with parsed arguments of this API function
   // encapsulated as a RequestValue instance. Also, sets a response.

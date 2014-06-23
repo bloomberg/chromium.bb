@@ -34,7 +34,9 @@ void Unmount::OnSuccess(int /* request_id */,
   callback_.Run(base::File::FILE_OK);
 }
 
-void Unmount::OnError(int /* request_id */, base::File::Error error) {
+void Unmount::OnError(int /* request_id */,
+                      scoped_ptr<RequestValue> /* result */,
+                      base::File::Error error) {
   callback_.Run(error);
 }
 

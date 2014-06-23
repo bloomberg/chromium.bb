@@ -49,7 +49,9 @@ RequestManager::~RequestManager() {
   while (it != requests_.end()) {
     const int request_id = it->first;
     ++it;
-    RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
+    RejectRequest(request_id,
+                  scoped_ptr<RequestValue>(new RequestValue()),
+                  base::File::FILE_ERROR_ABORT);
   }
 
   DCHECK_EQ(0u, requests_.size());
@@ -111,15 +113,15 @@ bool RequestManager::FulfillRequest(int request_id,
   return true;
 }
 
-bool RequestManager::RejectRequest(int request_id, base::File::Error error) {
+bool RequestManager::RejectRequest(int request_id,
+                                   scoped_ptr<RequestValue> response,
+                                   base::File::Error error) {
   RequestMap::iterator request_it = requests_.find(request_id);
   if (request_it == requests_.end())
     return false;
 
-  request_it->second->handler->OnError(request_id, error);
-
+  request_it->second->handler->OnError(request_id, response.Pass(), error);
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestRejected(request_id, error));
-
   DestroyRequest(request_id);
 
   return true;
@@ -150,7 +152,9 @@ RequestManager::Request::~Request() {}
 void RequestManager::OnRequestTimeout(int request_id) {
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestTimeouted(request_id));
 
-  RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
+  RejectRequest(request_id,
+                scoped_ptr<RequestValue>(new RequestValue()),
+                base::File::FILE_ERROR_ABORT);
 }
 
 void RequestManager::DestroyRequest(int request_id) {

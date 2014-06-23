@@ -116,7 +116,7 @@ eventBindings.registerArgumentMassager(
             options.fileSystemId, options.requestId);
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.unmountRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);
@@ -133,7 +133,7 @@ eventBindings.registerArgumentMassager(
             annotateMetadata(metadata));
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.getMetadataRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);
@@ -149,7 +149,7 @@ eventBindings.registerArgumentMassager(
             options.fileSystemId, options.requestId, annotatedEntries, hasNext);
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.readDirectoryRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);
@@ -164,7 +164,7 @@ eventBindings.registerArgumentMassager(
             options.fileSystemId, options.requestId);
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.openFileRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);
@@ -179,7 +179,7 @@ eventBindings.registerArgumentMassager(
             options.fileSystemId, options.requestId);
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.closeFileRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);
@@ -194,7 +194,7 @@ eventBindings.registerArgumentMassager(
             options.fileSystemId, options.requestId, data, hasNext);
       };
       var onErrorCallback = function(error) {
-        fileSystemProviderInternal.readFileRequestedError(
+        fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error);
       }
       dispatch([options, onSuccessCallback, onErrorCallback]);

@@ -41,7 +41,9 @@ class CloseFile : public Operation {
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
                          bool has_more) OVERRIDE;
-  virtual void OnError(int request_id, base::File::Error error) OVERRIDE;
+  virtual void OnError(int request_id,
+                       scoped_ptr<RequestValue> result,
+                       base::File::Error error) OVERRIDE;
 
  private:
   int open_request_id_;
