@@ -67,7 +67,8 @@ public:
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
     virtual bool cancelled() const OVERRIDE;
 
-    // It is only valid to call this before completion.
+    // If called after completion (including cancellation) will return an empty
+    // ScriptPromise.
     ScriptPromise promise();
 
 private:

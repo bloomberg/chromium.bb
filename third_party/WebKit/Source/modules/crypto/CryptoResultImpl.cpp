@@ -181,14 +181,16 @@ void CryptoResultImpl::cancel()
 }
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
-    : m_resolver(WeakResolver::create(scriptState, this))
-    , m_cancelled(0)
+    : m_cancelled(0)
 {
+    // Creating the WeakResolver may return nullptr if active dom objects have
+    // been stopped. And in the process set m_cancelled to 1.
+    m_resolver = WeakResolver::create(scriptState, this);
 }
 
 ScriptPromise CryptoResultImpl::promise()
 {
-    return m_resolver->promise();
+    return m_resolver ? m_resolver->promise() : ScriptPromise();
 }
 
 } // namespace WebCore
