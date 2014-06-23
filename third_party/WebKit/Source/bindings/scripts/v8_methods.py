@@ -88,10 +88,12 @@ def method_context(interface, method):
     if is_call_with_script_arguments:
         includes.update(['bindings/v8/ScriptCallStackFactory.h',
                          'core/inspector/ScriptArguments.h'])
-    is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
+    is_call_with_script_state = has_extended_attribute_value(
+        method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
-    is_check_security_for_node = 'CheckSecurity' in extended_attributes
+    is_check_security_for_node = has_extended_attribute_value(
+        method, 'CheckSecurity', 'Node')
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
@@ -100,9 +102,9 @@ def method_context(interface, method):
 
     has_event_listener_argument = any(
         argument for argument in arguments
-        if argument.idl_type.name == 'EventListener')
+        if argument.idl_type.name == 'EventListenerOrNull')
     is_check_security_for_frame = (
-        'CheckSecurity' in interface.extended_attributes and
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Frame') and
         'DoNotCheckSecurity' not in extended_attributes)
     is_raises_exception = 'RaisesException' in extended_attributes
 
@@ -127,7 +129,7 @@ def method_context(interface, method):
                 method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_event_listener_argument': has_event_listener_argument,
         'has_exception_state':
-            has_event_listener_argument or
+            interface.name == 'EventTarget' or  # FIXME: merge with is_check_security_for_frame http://crbug.com/383699
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
@@ -188,7 +190,7 @@ def argument_context(interface, method, argument, index):
         'has_default': 'Default' in extended_attributes or argument.default_value,
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
-            if argument_so_far.idl_type.name == 'EventListener'),
+            if argument_so_far.idl_type.name == 'EventListenerOrNull'),
         'has_type_checking_interface':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
              has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
@@ -222,7 +224,7 @@ def argument_context(interface, method, argument, index):
 def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
-        if idl_type.name == 'EventListener':
+        if idl_type.name == 'EventListenerOrNull':
             if (interface.name == 'EventTarget' and
                 method.name == 'removeEventListener'):
                 # FIXME: remove this special case by moving get() into

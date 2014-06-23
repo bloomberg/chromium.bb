@@ -290,9 +290,9 @@ INCLUDES_FOR_TYPE = {
     'Dictionary': set(['bindings/v8/Dictionary.h']),
     'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
                          'bindings/v8/V8EventListenerList.h']),
-    'EventListener': set(['bindings/v8/BindingSecurity.h',
+    'EventListener': set(['bindings/v8/BindingSecurity.h',  # FIXME: replace with [CheckSecurity=Frame] http://crbug.com/383699
                           'bindings/v8/V8EventListenerList.h',
-                          'core/frame/LocalDOMWindow.h']),
+                          'core/frame/LocalDOMWindow.h']),  # FIXME: move to EventTarget::frame
     'HTMLCollection': set(['bindings/core/v8/V8HTMLCollection.h',
                            'core/dom/ClassCollection.h',
                            'core/dom/TagCollection.h',

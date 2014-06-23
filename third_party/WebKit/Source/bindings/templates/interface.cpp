@@ -83,7 +83,7 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 {% if has_replaceable_attributes or has_constructor_attributes %}
 static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    {% if is_check_security %}
+    {% if is_check_security_for_frame %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
     v8::String::Utf8Value attributeName(name);
@@ -108,7 +108,7 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 
 {##############################################################################}
 {% block security_check_functions %}
-{% if is_check_security and interface_name != 'Window' %}
+{% if is_check_security_for_frame and interface_name != 'Window' %}
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     {{cpp_class}}* impl = {{v8_class}}::toNative(host);
@@ -921,7 +921,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
     v8::Local<v8::ObjectTemplate> instanceTemplate ALLOW_UNUSED = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate ALLOW_UNUSED = functionTemplate->PrototypeTemplate();
-    {% if is_check_security and interface_name != 'Window' %}
+    {% if is_check_security_for_frame and interface_name != 'Window' %}
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
     {% for attribute in attributes

@@ -8,7 +8,7 @@ PASS window.open.length is 2
 PASS window.showModalDialog.length is 1
 PASS window.setTimeout.length is 1
 PASS window.clearTimeout.length is 0
-PASS window.addEventListener.length is 0
+PASS window.addEventListener.length is 2
 PASS window.postMessage.length is 2
 PASS window.dispatchEvent.length is 1
 PASS window.openDatabase.length is 4
