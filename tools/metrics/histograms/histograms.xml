@@ -7825,6 +7825,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FileSystem.DirectoryDatabaseInit"
+    enum="FileSystemDatabaseInitResult">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of FileSystemDirectoryDatabase initialization.</summary>
+</histogram>
+
+<histogram name="FileSystem.OpenFileSystem" enum="OpenFileSystemResult">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    The success or the cause of failure for each call to OpenFileSystem().
+  </summary>
+</histogram>
+
+<histogram name="FileSystem.OriginDatabaseInit"
+    enum="FileSystemDatabaseInitResult">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of FileSystemOriginDatabase initialization.</summary>
+</histogram>
+
+<histogram name="FileSystem.PersistentOriginsCount">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Number of origins that have persistent filesystem. Measured when the Quota
+    system queries the filesystem subsystem about its entire usage, which
+    usually happens when one of the storage subsystem methods is called for the
+    first time.
+  </summary>
+</histogram>
+
+<histogram name="FileSystem.TemporaryOriginsCount">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Number of origins that have temporary filesystem. Measured when the Quota
+    system queries the filesystem subsystem about its entire usage, which
+    usually happens when one of the storage subsystem methods is called for the
+    first time.
+  </summary>
+</histogram>
+
 <histogram name="GCM.APICallUnregister">
   <owner>jianli@chromium.org</owner>
   <summary>Number of times when gcm.unregister API is called.</summary>
@@ -22972,6 +23011,125 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Quota.DiskspaceShortage" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Difference between acceptable lower limit of diskspace and actual free
+    diskspace at beginning of an eviction round.
+  </summary>
+</histogram>
+
+<histogram name="Quota.ErrorsOnEvictingOriginPerHour">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Number of errors on evicting origin by QuotaTemporaryStorageEvictor in an
+    hour.
+  </summary>
+</histogram>
+
+<histogram name="Quota.ErrorsOnGettingUsageAndQuotaPerHour">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Number of errors on getting usage and quota by QuotaTemporaryStorageEvictor
+    in an hour.
+  </summary>
+</histogram>
+
+<histogram name="Quota.EvictedBytesPerRound" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Amount of usage used by evicted origins in an eviction round.
+  </summary>
+</histogram>
+
+<histogram name="Quota.EvictedOriginsPerHour">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of evicted origins in an hour.</summary>
+</histogram>
+
+<histogram name="Quota.EvictionRoundsPerHour">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of eviction rounds in an hour.</summary>
+</histogram>
+
+<histogram name="Quota.FreeDiskSpaceForProfile" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>Amount of free disk space for profile directory.</summary>
+</histogram>
+
+<histogram name="Quota.GlobalUsageOfPersistentStorage" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>Global usage of persistent storage.</summary>
+</histogram>
+
+<histogram name="Quota.GlobalUsageOfTemporaryStorage" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>Global usage of temporary storage.</summary>
+</histogram>
+
+<histogram name="Quota.InitialTemporaryGlobalStorageQuota" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>Initial quota for global temporary storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfEvictedOriginsPerRound">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of evicted origins per round.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfPersistentStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of origins using persistent storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfProtectedPersistentStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of protected origins using persistent storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfProtectedTemporaryStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of protected origins using temporary storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfTemporaryStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of origins using temporary storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfUnlimitedPersistentStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of unlimited origins using persistent storage.</summary>
+</histogram>
+
+<histogram name="Quota.NumberOfUnlimitedTemporaryStorageOrigins">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of unlimited origins using temporary storage.</summary>
+</histogram>
+
+<histogram name="Quota.SkippedEvictionRoundsPerHour">
+  <owner>tzik@chromium.org</owner>
+  <summary>Number of skipped eviction rounds in an hour.</summary>
+</histogram>
+
+<histogram name="Quota.TimeDeltaOfEvictionRounds">
+  <owner>tzik@chromium.org</owner>
+  <summary>Time between two consecutive active eviction rounds.</summary>
+</histogram>
+
+<histogram name="Quota.TimeSpentToAEvictionRound">
+  <owner>tzik@chromium.org</owner>
+  <summary>Time spent to an eviction round.</summary>
+</histogram>
+
+<histogram name="Quota.UsageOverageOfTemporaryGlobalStorage" units="MB">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Overage of the temporary global storage usage at beginning of an eviction
+    round.
+  </summary>
+</histogram>
+
 <histogram name="Rappor.DiscardReason" enum="RapporDiscardReason">
   <owner>holte@chromium.org</owner>
   <summary>
@@ -37854,6 +38012,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="MTP (Media Transfer Protocol) Device"/>
 </enum>
 
+<enum name="FileSystemDatabaseInitResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Corruption"/>
+  <int value="2" label="IO Error"/>
+  <int value="3" label="Unknown Error"/>
+</enum>
+
 <enum name="FileType" type="int">
   <int value="0" label="other"/>
   <int value="1" label=".doc"/>
@@ -41303,6 +41468,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OpenFileSystemResult" type="int">
+  <int value="0" label="OK."/>
+  <int value="1" label="In incognito mode."/>
+  <int value="2" label="Invalid scheme."/>
+  <int value="3" label="Failed to create directory."/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">
