@@ -254,6 +254,7 @@ void WorkerThreadableWebSocketChannel::Peer::destroy()
 
 #if ENABLE(OILPAN)
     m_keepAlive = nullptr;
+    m_syncHelper->signalWorkerThread();
 #else
     delete this;
 #endif
@@ -567,7 +568,15 @@ bool WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion(PassOwnPt
 void WorkerThreadableWebSocketChannel::Bridge::terminatePeer()
 {
     ASSERT(!hasTerminatedPeer());
+#if ENABLE(OILPAN)
+    // The worker thread has to wait for the main thread to complete Peer::destroy,
+    // because the worker thread has to make sure that the main thread does not have any
+    // references to on-heap objects allocated in the thread heap of the worker thread
+    // before the worker thread shuts down.
+    waitForMethodCompletion(CallClosureTask::create(bind(&Peer::destroy, m_peer)));
+#else
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::destroy, m_peer)));
+#endif
 
     // Peer::destroy() deletes m_peer and then m_syncHelper will be released.
     // We must not touch m_syncHelper any more.
