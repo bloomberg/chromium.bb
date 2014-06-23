@@ -41,7 +41,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
 
   EmbeddedWorkerRegistry(base::WeakPtr<ServiceWorkerContextCore> context,
-                         int64 initial_embedded_worker_id_);
+                         int initial_embedded_worker_id);
 
   bool OnMessageReceived(const IPC::Message& message);
 

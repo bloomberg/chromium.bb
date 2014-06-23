@@ -19,10 +19,10 @@ namespace content {
 
 EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    int64 initial_embedded_worker_id_)
+    int initial_embedded_worker_id)
     : context_(context),
-      next_embedded_worker_id_(initial_embedded_worker_id_),
-      initial_embedded_worker_id_(initial_embedded_worker_id_) {
+      next_embedded_worker_id_(initial_embedded_worker_id),
+      initial_embedded_worker_id_(initial_embedded_worker_id) {
 }
 
 scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
