@@ -20,11 +20,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "chrome/browser/search/search.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
@@ -173,11 +171,6 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
-bool ShowingSearchTermsOnSRP() {
-  return chrome::IsInstantExtendedAPIEnabled() &&
-      chrome::IsQueryExtractionEnabled();
-}
-
 }  // namespace
 
 
@@ -240,8 +233,7 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
       valid_(false),
       supports_replacements_(false),
       search_term_key_location_(url::Parsed::QUERY),
-      prepopulated_(false),
-      showing_search_terms_(ShowingSearchTermsOnSRP()) {
+      prepopulated_(false) {
   DCHECK(owner_);
   DCHECK_NE(INDEXED, type_);
 }
@@ -254,8 +246,7 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, size_t index_in_owner)
       valid_(false),
       supports_replacements_(false),
       search_term_key_location_(url::Parsed::QUERY),
-      prepopulated_(false),
-      showing_search_terms_(ShowingSearchTermsOnSRP()) {
+      prepopulated_(false) {
   DCHECK(owner_);
   DCHECK_LT(index_in_owner_, owner_->URLCount());
 }
@@ -613,8 +604,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
   } else if (parameter == kGoogleSearchVersion) {
-    if (OmniboxFieldTrial::EnableAnswersInSuggest())
-      url->insert(start, "gs_rn=42&");
+    replacements->push_back(Replacement(GOOGLE_SEARCH_VERSION, start));
   } else if (parameter == kGoogleSessionToken) {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
   } else if (parameter == kGoogleSourceIdParameter) {
@@ -867,7 +857,7 @@ std::string TemplateURLRef::HandleReplacements(
         break;
 
       case GOOGLE_BOOKMARK_BAR_PINNED:
-        if (showing_search_terms_) {
+        if (search_terms_data.IsShowingSearchTermsOnSearchResultsPages()) {
           // Log whether the bookmark bar is pinned when the user is seeing
           // InstantExtended on the SRP.
           DCHECK(!i->is_post_param);
@@ -900,7 +890,7 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_FORCE_INSTANT_RESULTS:
         DCHECK(!i->is_post_param);
         HandleReplacement(std::string(),
-                          chrome::ForceInstantResultsParam(
+                          search_terms_data.ForceInstantResultsParam(
                               search_terms_args.force_instant_results),
                           *i,
                           &url);
@@ -915,7 +905,8 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_INSTANT_EXTENDED_ENABLED:
         DCHECK(!i->is_post_param);
         HandleReplacement(std::string(),
-                          chrome::InstantExtendedEnabledParam(type_ == SEARCH),
+                          search_terms_data.InstantExtendedEnabledParam(
+                              type_ == SEARCH),
                           *i,
                           &url);
         break;
@@ -1026,6 +1017,11 @@ std::string TemplateURLRef::HandleReplacements(
         // We are not currently running any fieldtrials that modulate the search
         // url.  If we do, then we'd have some conditional insert such as:
         // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
+        break;
+
+      case GOOGLE_SEARCH_VERSION:
+        if (search_terms_data.EnableAnswersInSuggest())
+          HandleReplacement("gs_rn", "42", *i, &url);
         break;
 
       case GOOGLE_SESSION_TOKEN: {

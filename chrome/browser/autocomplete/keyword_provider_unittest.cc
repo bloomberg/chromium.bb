@@ -9,9 +9,9 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

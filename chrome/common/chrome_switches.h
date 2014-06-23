@@ -200,7 +200,6 @@ extern const char kExtensionContentVerification[];
 extern const char kExtensionsInstallVerification[];
 extern const char kExtensionsNotWebstore[];
 extern const char kExtensionsUpdateFrequency[];
-extern const char kExtraSearchQueryParams[];
 extern const char kFakeVariationsChannel[];
 extern const char kFastStart[];
 extern const char kFlagSwitchesBegin[];

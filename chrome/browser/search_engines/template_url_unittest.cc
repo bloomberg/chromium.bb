@@ -8,9 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +28,8 @@ class TestSearchTermsData : public SearchTermsData {
       bool from_app_list) const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string GoogleImageSearchSource() const OVERRIDE;
+  virtual bool EnableAnswersInSuggest() const OVERRIDE;
+  virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
 
   void set_google_base_url(const std::string& google_base_url) {
     google_base_url_ = google_base_url;
@@ -35,16 +37,26 @@ class TestSearchTermsData : public SearchTermsData {
   void set_search_client(const std::string& search_client) {
     search_client_ = search_client;
   }
+  void set_enable_answers_in_suggest(bool enable_answers_in_suggest) {
+    enable_answers_in_suggest_ = enable_answers_in_suggest;
+  }
+  void set_is_showing_search_terms_on_search_results_pages(bool value) {
+    is_showing_search_terms_on_search_results_pages_ = value;
+  }
 
  private:
   std::string google_base_url_;
   std::string search_client_;
+  bool enable_answers_in_suggest_;
+  bool is_showing_search_terms_on_search_results_pages_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
 };
 
 TestSearchTermsData::TestSearchTermsData(const std::string& google_base_url)
-    : google_base_url_(google_base_url) {
+    : google_base_url_(google_base_url),
+      enable_answers_in_suggest_(false),
+      is_showing_search_terms_on_search_results_pages_(false) {
 }
 
 std::string TestSearchTermsData::GoogleBaseURLValue() const {
@@ -63,6 +75,14 @@ std::string TestSearchTermsData::GetSearchClient() const {
 
 std::string TestSearchTermsData::GoogleImageSearchSource() const {
   return "google_image_search_source";
+}
+
+bool TestSearchTermsData::EnableAnswersInSuggest() const {
+  return enable_answers_in_suggest_;
+}
+
+bool TestSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
+  return is_showing_search_terms_on_search_results_pages_;
 }
 
 // TemplateURLTest ------------------------------------------------------------
@@ -1375,19 +1395,19 @@ TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
   TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
 
   // Do not add the param when InstantExtended is suppressed on SRPs.
-  url.url_ref_.showing_search_terms_ = false;
+  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(false);
   std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                         search_terms_data_);
   EXPECT_EQ("http://www.google.com/?q=foo", result);
 
   // Add the param when InstantExtended is not suppressed on SRPs.
-  url.url_ref_.showing_search_terms_ = true;
+  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(true);
   search_terms_args.bookmark_bar_pinned = false;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
   EXPECT_EQ("http://www.google.com/?bmbp=0&q=foo", result);
 
-  url.url_ref_.showing_search_terms_ = true;
+  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(true);
   search_terms_args.bookmark_bar_pinned = true;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1405,8 +1425,7 @@ TEST_F(TemplateURLTest, AnswersHasVersion) {
                                                         search_terms_data_);
   EXPECT_EQ("http://bar/search?q=foo&xssi=t", result);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableAnswersInSuggest);
+  search_terms_data_.set_enable_answers_in_suggest(true);
   TemplateURL url2(data);
   result = url2.url_ref().ReplaceSearchTerms(search_terms_args,
                                              search_terms_data_);

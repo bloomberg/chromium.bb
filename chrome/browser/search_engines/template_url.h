@@ -303,6 +303,7 @@ class TemplateURLRef {
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
+    GOOGLE_SEARCH_VERSION,
     GOOGLE_SESSION_TOKEN,
     GOOGLE_SUGGEST_CLIENT,
     GOOGLE_SUGGEST_REQUEST_ID,
@@ -430,10 +431,6 @@ class TemplateURLRef {
 
   // Whether the contained URL is a pre-populated URL.
   bool prepopulated_;
-
-  // Whether search terms are shown in the omnibox on search results pages.
-  // This is kept as a member so it can be overridden by tests.
-  bool showing_search_terms_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLRef);
 };

@@ -1,0 +1,7 @@
+specific_include_rules = {
+  "template_url(_unittest)?\.": [
+    "-chrome",
+    "-content",
+    "+chrome/browser/search_engines/template_url.h",
+  ],
+}

@@ -125,6 +125,25 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
 #endif
 }
 
+bool UIThreadSearchTermsData::EnableAnswersInSuggest() const {
+  return OmniboxFieldTrial::EnableAnswersInSuggest();
+}
+
+bool UIThreadSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
+  return chrome::IsInstantExtendedAPIEnabled() &&
+      chrome::IsQueryExtractionEnabled();
+}
+
+std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
+    bool for_search) const {
+  return chrome::InstantExtendedEnabledParam(for_search);
+}
+
+std::string UIThreadSearchTermsData::ForceInstantResultsParam(
+    bool for_prerender) const {
+  return chrome::ForceInstantResultsParam(for_prerender);
+}
+
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));

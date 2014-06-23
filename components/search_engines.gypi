@@ -19,6 +19,8 @@
         'search_engines/search_engine_type.h',
         'search_engines/search_engines_pref_names.cc',
         'search_engines/search_engines_pref_names.h',
+        'search_engines/search_engines_switches.cc',
+        'search_engines/search_engines_switches.h',
         'search_engines/search_terms_data.cc',
         'search_engines/search_terms_data.h',
         'search_engines/template_url_data.cc',

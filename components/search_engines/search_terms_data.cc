@@ -58,6 +58,24 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
+bool SearchTermsData::EnableAnswersInSuggest() const {
+  return false;
+}
+
+bool SearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
+  return false;
+}
+
+std::string SearchTermsData::InstantExtendedEnabledParam(
+    bool for_search) const {
+  return std::string();
+}
+
+std::string SearchTermsData::ForceInstantResultsParam(
+    bool for_prerender) const {
+  return std::string();
+}
+
 std::string SearchTermsData::NTPIsThemedParam() const {
   return std::string();
 }

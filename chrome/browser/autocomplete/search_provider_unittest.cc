@@ -39,6 +39,7 @@
 #include "components/google/core/browser/google_switches.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/search_engines/search_engine_type.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/variations/entropy_provider.h"

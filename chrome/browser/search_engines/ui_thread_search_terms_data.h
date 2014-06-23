@@ -28,6 +28,12 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string GetSuggestClient() const OVERRIDE;
   virtual std::string GetSuggestRequestIdentifier() const OVERRIDE;
+  virtual bool EnableAnswersInSuggest() const OVERRIDE;
+  virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
+  virtual std::string InstantExtendedEnabledParam(
+      bool for_search) const OVERRIDE;
+  virtual std::string ForceInstantResultsParam(
+      bool for_prerender) const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
   virtual std::string GoogleImageSearchSource() const OVERRIDE;
 
