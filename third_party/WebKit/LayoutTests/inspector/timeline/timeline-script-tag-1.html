@@ -36,7 +36,8 @@ function test()
                 var skipCategories = { rendering: true, painting: true };
                 for (var i = 0; i < record.children.length; ++i) {
                     var modelRecord = new WebInspector.TimelineModel.RecordImpl(WebInspector.panels.timeline._model, record.children[i], null);
-                    if (!skipCategories[modelRecord.category().name])
+                    var uiUtils = WebInspector.panels.timeline._uiUtils;
+                    if (!skipCategories[uiUtils.categoryForRecord(modelRecord).name])
                         children.push(record.children[i]);
                 }
                 record.children = children;

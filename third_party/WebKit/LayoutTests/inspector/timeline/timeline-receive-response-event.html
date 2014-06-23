@@ -44,7 +44,8 @@ function test()
             if (!presentationRecord.coalesced() && record.type() !== "GCEvent")
                 InspectorTest.addResult(prefix + record.type());
             // Ignore stray paint & rendering events for better stability.
-            if (record.category().name !== "loading" && record.category().name !== "scripting")
+            var categoryName = WebInspector.panels.timeline._uiUtils.categoryForRecord(record).name;
+            if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
             if (presentationRecord.presentationChildren()) {
                 var childPrefix = prefix + (presentationRecord.coalesced() ? "" : "    ");
