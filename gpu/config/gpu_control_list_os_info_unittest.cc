@@ -79,6 +79,46 @@ TEST_F(OsInfoTest, InvalidOsInfo) {
   }
 }
 
+TEST_F(OsInfoTest, NonNumericOsVersion) {
+  {
+    OsInfo info("android", "<", "4.2", std::string());
+    EXPECT_TRUE(info.IsValid());
+    // The expectation is the version number first, then extra info.
+    EXPECT_TRUE(info.Contains(
+        GpuControlList::kOsAndroid, "4.0 bug fix version 5.2"));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "F"));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "F 4.0"));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, std::string()));
+  }
+  {
+    OsInfo info("android", "any", std::string(), std::string());
+    EXPECT_TRUE(info.IsValid());
+    EXPECT_TRUE(info.Contains(
+        GpuControlList::kOsAndroid, "4.0 bug fix version 5.2"));
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, "F"));
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, "F 4.0"));
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, std::string()));
+  }
+}
+
+TEST_F(OsInfoTest, OsVersionZero) {
+  {
+    OsInfo info("android", "<", "4.2", std::string());
+    EXPECT_TRUE(info.IsValid());
+    // All forms of version 0 is considered invalid.
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "0"));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "0.0"));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "0.00.0"));
+  }
+  {
+    OsInfo info("android", "any", std::string(), std::string());
+    EXPECT_TRUE(info.IsValid());
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, "0"));
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, "0.0"));
+    EXPECT_TRUE(info.Contains(GpuControlList::kOsAndroid, "0.00.0"));
+  }
+}
+
 TEST_F(OsInfoTest, OsComparison) {
   {
     OsInfo info("any", "any", std::string(), std::string());
