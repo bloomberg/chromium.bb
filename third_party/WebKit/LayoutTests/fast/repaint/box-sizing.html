@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<script src="resources/text-based-repaint.js"></script>
+<script>
+function repaintTest()
+{
+    document.getElementById('target').style.boxSizing = 'content-box';
+}
+window.onload = runRepaintTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+#target {
+    border: solid blue 20px;
+    width: 50%;
+    height: 100px;
+    box-sizing: border-box;
+    position: absolute;
+}
+</style>
+<div id="target"></div>

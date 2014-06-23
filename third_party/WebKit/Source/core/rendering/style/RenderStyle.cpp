@@ -422,11 +422,6 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
     // - or the renderer knows how to exactly repaint caused by the layout change
     //   instead of forced full repaint.
 
-    if (m_box.get() != other.m_box.get()) {
-        if (m_box->boxSizing() != other.m_box->boxSizing())
-            return true;
-    }
-
     if (surround.get() != other.surround.get()) {
         if (surround->margin != other.surround->margin)
             return true;
@@ -612,6 +607,9 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
             return true;
 
         if (m_box->verticalAlign() != other.m_box->verticalAlign())
+            return true;
+
+        if (m_box->boxSizing() != other.m_box->boxSizing())
             return true;
     }
 
