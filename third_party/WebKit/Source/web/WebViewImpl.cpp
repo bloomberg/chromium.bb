@@ -3498,13 +3498,6 @@ void WebViewImpl::showContextMenu()
     m_contextMenuAllowed = false;
 }
 
-// FIXME: This should be removed when the chromium side patch lands
-// http://codereview.chromium.org/260623004
-WebString WebViewImpl::getSmartClipData(WebRect rect)
-{
-    return WebString();
-}
-
 void WebViewImpl::getSmartClipData(WebRect rect, WebString& clipText, WebRect& clipRect)
 {
     LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
