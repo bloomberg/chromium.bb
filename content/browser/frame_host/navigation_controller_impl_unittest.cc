@@ -3080,48 +3080,52 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
 
   // Reloading the page is not an in-page navigation.
   EXPECT_FALSE(controller.IsURLInPageNavigation(url, false,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
   const GURL other_url("http://www.google.com/add.html");
   EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
   EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
 
   // Navigate to URL with refs.
   main_test_rfh()->SendNavigate(1, url_with_ref);
 
   // Reloading the page is not an in-page navigation.
   EXPECT_FALSE(controller.IsURLInPageNavigation(url_with_ref, false,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
   EXPECT_FALSE(controller.IsURLInPageNavigation(url, false,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
   EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
   EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref, true,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
 
   // Going to the same url again will be considered in-page
   // if the renderer says it is even if the navigation type isn't IN_PAGE.
   EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
 
   // Going back to the non ref url will be considered in-page if the navigation
   // type is IN_PAGE.
   EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
-      NAVIGATION_TYPE_IN_PAGE));
+      main_test_rfh()));
 
   // If the renderer says this is a same-origin in-page navigation, believe it.
   // This is the pushState/replaceState case.
   EXPECT_TRUE(controller.IsURLInPageNavigation(other_url, true,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
 
   // Don't believe the renderer if it claims a cross-origin navigation is
   // in-page.
   const GURL different_origin_url("http://www.example.com");
+  MockRenderProcessHost* rph =
+      static_cast<MockRenderProcessHost*>(main_test_rfh()->GetProcess());
+  EXPECT_EQ(0, rph->bad_msg_count());
   EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
-      NAVIGATION_TYPE_UNKNOWN));
+      main_test_rfh()));
+  EXPECT_EQ(1, rph->bad_msg_count());
 }
 
 // Some pages can have subframes with the same base URL (minus the reference) as

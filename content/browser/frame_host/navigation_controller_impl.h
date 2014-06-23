@@ -167,7 +167,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool IsURLInPageNavigation(
       const GURL& url,
       bool renderer_says_in_page,
-      NavigationType navigation_type) const;
+      RenderFrameHost* rfh) const;
 
   // Sets the SessionStorageNamespace for the given |partition_id|. This is
   // used during initialization of a new NavigationController to allow

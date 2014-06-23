@@ -2433,13 +2433,11 @@ void WebContentsImpl::DidCommitProvisionalLoad(
 }
 
 void WebContentsImpl::DidNavigateMainFramePreCommit(
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    bool navigation_is_within_page) {
   // Ensure fullscreen mode is exited before committing the navigation to a
   // different page.  The next page will not start out assuming it is in
   // fullscreen mode.
-  if (controller_.IsURLInPageNavigation(params.url,
-                                        params.was_within_same_page,
-                                        NAVIGATION_TYPE_UNKNOWN)) {
+  if (navigation_is_within_page) {
     // No page change?  Then, the renderer and browser can remain in fullscreen.
     return;
   }

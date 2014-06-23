@@ -472,7 +472,7 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
   virtual void DidNavigateMainFramePreCommit(
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
+      bool navigation_is_within_page) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;

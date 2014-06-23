@@ -447,7 +447,9 @@ void NavigatorImpl::DidNavigate(
       }
 
       // Run tasks that must execute just before the commit.
-      delegate_->DidNavigateMainFramePreCommit(params);
+      bool is_navigation_within_page = controller_->IsURLInPageNavigation(
+          params.url, params.was_within_same_page, render_frame_host);
+      delegate_->DidNavigateMainFramePreCommit(is_navigation_within_page);
     }
 
     if (!use_site_per_process)
