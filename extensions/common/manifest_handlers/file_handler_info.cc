@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
@@ -19,6 +20,7 @@ namespace errors = manifest_errors;
 
 namespace {
 const int kMaxTypeAndExtensionHandlers = 200;
+const char kNotRecognized[] = "'%s' is not a recognized file handler property.";
 }
 
 FileHandlerInfo::FileHandlerInfo() {}
@@ -44,7 +46,8 @@ FileHandlersParser::~FileHandlersParser() {
 bool LoadFileHandler(const std::string& handler_id,
                      const base::DictionaryValue& handler_info,
                      FileHandlersInfo* file_handlers,
-                     base::string16* error) {
+                     base::string16* error,
+                     std::vector<InstallWarning>* install_warnings) {
   DCHECK(error);
   FileHandlerInfo handler;
 
@@ -71,12 +74,6 @@ bool LoadFileHandler(const std::string& handler_id,
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidFileHandlerNoTypeOrExtension,
         handler_id);
-    return false;
-  }
-
-  if (handler_info.HasKey(keys::kFileHandlerTitle) &&
-      !handler_info.GetString(keys::kFileHandlerTitle, &handler.title)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
     return false;
   }
 
@@ -109,6 +106,19 @@ bool LoadFileHandler(const std::string& handler_id,
   }
 
   file_handlers->push_back(handler);
+
+  // Check for unknown keys.
+  for (base::DictionaryValue::Iterator it(handler_info); !it.IsAtEnd();
+       it.Advance()) {
+    if (it.key() != keys::kFileHandlerExtensions &&
+        it.key() != keys::kFileHandlerTypes) {
+      install_warnings->push_back(
+          InstallWarning(base::StringPrintf(kNotRecognized, it.key().c_str()),
+                         keys::kFileHandlers,
+                         it.key()));
+    }
+  }
+
   return true;
 }
 
@@ -121,13 +131,17 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
+  std::vector<InstallWarning> install_warnings;
   for (base::DictionaryValue::Iterator iter(*all_handlers);
        !iter.IsAtEnd();
        iter.Advance()) {
-    // A file handler entry is a title and a list of MIME types to handle.
     const base::DictionaryValue* handler = NULL;
     if (iter.value().GetAsDictionary(&handler)) {
-      if (!LoadFileHandler(iter.key(), *handler, &info->file_handlers, error))
+      if (!LoadFileHandler(iter.key(),
+                           *handler,
+                           &info->file_handlers,
+                           error,
+                           &install_warnings))
         return false;
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidFileHandlers);
@@ -150,6 +164,7 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
   }
 
   extension->SetManifestData(keys::kFileHandlers, info.release());
+  extension->AddInstallWarnings(install_warnings);
   return true;
 }
 

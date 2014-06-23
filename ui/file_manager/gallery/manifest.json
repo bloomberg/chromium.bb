@@ -42,9 +42,7 @@
         "jpeg",
         "png",
         "webp"
-      ],
-      // TODO(hirono): Rename and localize this.
-      "title": "Open"
+      ]
     }
   },
   "app": {

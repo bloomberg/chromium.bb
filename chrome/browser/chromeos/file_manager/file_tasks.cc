@@ -411,10 +411,9 @@ void FindFileHandlerTasks(
           NULL);  // exists
 
       result_list->push_back(FullTaskDescriptor(
-          TaskDescriptor(extension->id(),
-                         file_tasks::TASK_TYPE_FILE_HANDLER,
-                         (*i)->id),
-          (*i)->title,
+          TaskDescriptor(
+              extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, (*i)->id),
+          extension->name(),
           best_icon,
           false /* is_default */));
     }

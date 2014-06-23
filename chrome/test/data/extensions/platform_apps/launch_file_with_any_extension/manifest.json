@@ -5,8 +5,7 @@
     "text": {
       "extensions": [
         "*"
-      ],
-      "title": "Test editor"
+      ]
     }
   },
   "app": {
