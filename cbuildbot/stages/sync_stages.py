@@ -311,6 +311,32 @@ class SyncStage(generic_stages.BuilderStage):
     print >> sys.stderr, self.repo.ExportManifest(
         mark_revision=self.output_manifest_sha1)
 
+  def RunPrePatchBuild(self):
+    """Run through a pre-patch build to prepare for incremental build.
+
+    This function runs though the InitSDKStage, SetupBoardStage, and
+    BuildPackagesStage. It is intended to be called before applying
+    any patches under test, to prepare the chroot and sysroot in a state
+    corresponding to ToT prior to an incremental build.
+
+    Returns:
+      True if all stages were successful, False if any of them failed.
+    """
+    suffix = ' (pre-Patch)'
+    try:
+      build_stages.InitSDKStage(
+          self._run, chroot_replace=True, suffix=suffix).Run()
+      for builder_run in self._run.GetUngroupedBuilderRuns():
+        for board in builder_run.config.boards:
+          build_stages.SetupBoardStage(
+              builder_run, board=board, suffix=suffix).Run()
+          build_stages.BuildPackagesStage(
+              builder_run, board=board, suffix=suffix).Run()
+    except failures_lib.StepFailure:
+      return False
+
+    return True
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -335,6 +361,12 @@ class SyncStage(generic_stages.BuilderStage):
         cros_build_lib.PrintBuildbotStepText('(From scratch)')
       elif self._run.options.buildbot:
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
+
+      # Incremental builds request an additional build before patching changes.
+      if self._run.config.build_before_patching:
+        pre_build_passed = self.RunPrePatchBuild()
+        if not pre_build_passed:
+          cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
 
 
 class LKGMSyncStage(SyncStage):
@@ -665,7 +697,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
           dashboard_url=self.ConstructDashboardURL())
       if manifest:
         if self._run.config.build_before_patching:
-          pre_build_passed = self._RunPrePatchBuild()
+          pre_build_passed = self.RunPrePatchBuild()
           cros_build_lib.PrintBuildbotStepName(
               'CommitQueueSync : Apply Patches')
           if not pre_build_passed:
@@ -675,32 +707,6 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
         self.pool.ApplyPoolIntoRepo()
 
       return manifest
-
-  def _RunPrePatchBuild(self):
-    """Run through a pre-patch build to prepare for incremental build.
-
-    This function runs though the InitSDKStage, SetupBoardStage, and
-    BuildPackagesStage. It is intended to be called before applying
-    any patches under test, to prepare the chroot and sysroot in a state
-    corresponding to ToT prior to an incremental build.
-
-    Returns:
-      True if all stages were successful, False if any of them failed.
-    """
-    suffix = ' (pre-Patch)'
-    try:
-      build_stages.InitSDKStage(
-          self._run, chroot_replace=True, suffix=suffix).Run()
-      for builder_run in self._run.GetUngroupedBuilderRuns():
-        for board in builder_run.config.boards:
-          build_stages.SetupBoardStage(
-              builder_run, board=board, suffix=suffix).Run()
-          build_stages.BuildPackagesStage(
-              builder_run, board=board, suffix=suffix).Run()
-    except failures_lib.StepFailure:
-      return False
-
-    return True
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
