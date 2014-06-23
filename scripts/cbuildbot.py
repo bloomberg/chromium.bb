@@ -305,12 +305,6 @@ class Builder(object):
     if not self._run.options.cache_dir_specified:
       commandline.BaseParser.ConfigureCacheDir(None)
 
-    # Record that this metadata dict has been dumped to a file. This key is used
-    # by a check in CommitQueueSync to ensure that while this CL lands,
-    # duplicate actions are not recorded. This key and the corresponding check
-    # will be removed in a future CL.
-    self._run.attrs.metadata.UpdateWithDict({'dumped_dict': True})
-
     with tempfile.NamedTemporaryFile(prefix='metadata') as metadata_file:
       metadata_file.write(self._run.attrs.metadata.GetJSON())
       metadata_file.flush()
