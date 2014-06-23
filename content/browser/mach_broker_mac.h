@@ -44,10 +44,6 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // and false if otherwise.
   static bool ChildSendTaskPortToParent();
 
-  // Returns the Mach port name to use when sending or receiving messages.
-  // Does the Right Thing in the browser and in child processes.
-  static std::string GetMachPortName();
-
   // Returns the global MachBroker.
   static MachBroker* GetInstance();
 
@@ -97,6 +93,9 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // Removes all mappings belonging to |pid| from the broker.
   void InvalidatePid(base::ProcessHandle pid);
 
+  // Returns the Mach port name to use when sending or receiving messages.
+  // Does the Right Thing in the browser and in child processes.
+  static std::string GetMachPortName();
   // Callback used to register notifications on the UI thread.
   void RegisterNotifications();
 

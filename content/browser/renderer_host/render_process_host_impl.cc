@@ -170,10 +170,6 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/public/common/sandbox_type_mac.h"
-#endif
-
 #if defined(ENABLE_WEBRTC)
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
@@ -333,11 +329,6 @@ class RendererSandboxedProcessLauncherDelegate
   virtual int GetIpcFd() OVERRIDE {
     return ipc_fd_;
   }
-#if defined(OS_MACOSX)
-  virtual SandboxType GetSandboxType() OVERRIDE {
-    return SANDBOX_TYPE_RENDERER;
-  }
-#endif
 #endif  // OS_WIN
 
  private:

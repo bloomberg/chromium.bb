@@ -132,7 +132,6 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MachListenerThreadDelegate);
 };
 
-// static
 bool MachBroker::ChildSendTaskPortToParent() {
   // Look up the named MachBroker port that's been registered with the
   // bootstrap server.
@@ -168,17 +167,6 @@ bool MachBroker::ChildSendTaskPortToParent() {
   return true;
 }
 
-// static
-std::string MachBroker::GetMachPortName() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const bool is_child = command_line->HasSwitch(switches::kProcessType);
-
-  // In non-browser (child) processes, use the parent's pid.
-  const pid_t pid = is_child ? getppid() : getpid();
-  return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
-}
-
-// static
 MachBroker* MachBroker::GetInstance() {
   return Singleton<MachBroker, LeakySingletonTraits<MachBroker> >::get();
 }
@@ -284,6 +272,16 @@ void MachBroker::InvalidatePid(base::ProcessHandle pid) {
                                           it->second);
   MACH_LOG_IF(WARNING, kr != KERN_SUCCESS, kr) << "mach_port_deallocate";
   mach_map_.erase(it);
+}
+
+// static
+std::string MachBroker::GetMachPortName() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const bool is_child = command_line->HasSwitch(switches::kProcessType);
+
+  // In non-browser (child) processes, use the parent's pid.
+  const pid_t pid = is_child ? getppid() : getpid();
+  return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
 }
 
 void MachBroker::RegisterNotifications() {
