@@ -5,13 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 
+#include <algorithm>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -436,7 +436,7 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  DecoderTextureState(bool texsubimage2d_faster_than_teximage2d)
+  explicit DecoderTextureState(bool texsubimage2d_faster_than_teximage2d)
       : tex_image_2d_failed(false),
         texture_upload_count(0),
         texsubimage2d_faster_than_teximage2d(
@@ -574,7 +574,7 @@ class GPU_EXPORT TextureManager {
         ref, params.target, params.level, params.internal_format,
         params.width, params.height, 1 /* depth */,
         params.border, params.format,
-        params.type, true /* cleared */ );
+        params.type, true /* cleared */);
   }
 
   Texture* Produce(TextureRef* ref);

@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/texture_manager.h"
+
+#include <algorithm>
+#include <utility>
+
 #include "base/bits.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -968,9 +972,9 @@ scoped_refptr<TextureRef>
 
   // Make default textures and texture for replacing non-renderable textures.
   GLuint ids[2];
-  const unsigned long num_ids = use_default_textures_ ? 2 : 1;
+  const int num_ids = use_default_textures_ ? 2 : 1;
   glGenTextures(num_ids, ids);
-  for (unsigned long ii = 0; ii < num_ids; ++ii) {
+  for (int ii = 0; ii < num_ids; ++ii) {
     glBindTexture(target, ids[ii]);
     if (needs_initialization) {
       if (needs_faces) {
@@ -1256,7 +1260,7 @@ void TextureManager::StopTracking(TextureRef* ref) {
 }
 
 MemoryTypeTracker* TextureManager::GetMemTracker(GLenum tracking_pool) {
-  switch(tracking_pool) {
+  switch (tracking_pool) {
     case GL_TEXTURE_POOL_MANAGED_CHROMIUM:
       return memory_tracker_managed_.get();
       break;
@@ -1487,9 +1491,6 @@ bool TextureManager::ValidateTexImage2D(
     return false;
   }
 
-  // TODO - verify that using the managed vs unmanaged does not matter.
-  // They both use the same MemoryTracker, and this call just re-routes
-  // to it.
   if (!memory_tracker_managed_->EnsureGPUMemoryAvailable(args.pixels_size)) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, function_name,
                             "out of memory");
