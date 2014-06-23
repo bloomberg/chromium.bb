@@ -32,7 +32,6 @@
 #include "bindings/v8/V8Callback.h"
 
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/Document.h"
 
 namespace WebCore {
 
