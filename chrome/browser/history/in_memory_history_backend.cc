@@ -93,7 +93,7 @@ void InMemoryHistoryBackend::Observe(
       // For simplicity, this will not remove the corresponding URLRows, but
       // this is okay, as the main database does not do so either.
       db_->DeleteAllSearchTermsForKeyword(
-          *(content::Details<TemplateURLID>(details).ptr()));
+          *(content::Details<KeywordID>(details).ptr()));
       break;
     default:
       // For simplicity, the unit tests send us all notifications, even when

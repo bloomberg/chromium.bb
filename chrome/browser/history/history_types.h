@@ -19,9 +19,9 @@
 #include "base/time/time.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/query_parser/snippet.h"
-#include "components/search_engines/template_url_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
@@ -501,9 +501,9 @@ struct KeywordSearchTermRow {
   KeywordSearchTermRow();
   ~KeywordSearchTermRow();
 
-  TemplateURLID keyword_id;  // ID of the keyword.
-  URLID url_id;              // ID of the url.
-  base::string16 term;             // The search term that was used.
+  KeywordID keyword_id;  // ID of the keyword.
+  URLID url_id;  // ID of the url.
+  base::string16 term;  // The search term that was used.
 };
 
 // MostVisitedURL --------------------------------------------------------------

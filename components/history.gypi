@@ -18,6 +18,7 @@
       'sources': [
         'history/core/browser/history_client.h',
         'history/core/browser/history_client.cc',
+        'history/core/browser/keyword_id.h',
       ],
     },
     {

@@ -64,6 +64,7 @@
 
 using base::Time;
 using history::HistoryBackend;
+using history::KeywordID;
 
 namespace {
 
@@ -335,7 +336,7 @@ void HistoryService::Shutdown() {
 }
 
 void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
-                                                 TemplateURLID keyword_id,
+                                                 KeywordID keyword_id,
                                                  const base::string16& term) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_UI,
@@ -343,8 +344,7 @@ void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
                     url, keyword_id, term);
 }
 
-void HistoryService::DeleteAllSearchTermsForKeyword(
-    TemplateURLID keyword_id) {
+void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::DeleteAllSearchTermsForKeyword,
@@ -352,7 +352,7 @@ void HistoryService::DeleteAllSearchTermsForKeyword(
 }
 
 HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
-    TemplateURLID keyword_id,
+    KeywordID keyword_id,
     const base::string16& prefix,
     int max_count,
     CancelableRequestConsumerBase* consumer,
@@ -370,7 +370,7 @@ void HistoryService::DeleteKeywordSearchTermForURL(const GURL& url) {
                     url);
 }
 
-void HistoryService::DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+void HistoryService::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                                   const base::string16& term) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_UI, &HistoryBackend::DeleteMatchingURLsForKeyword,
@@ -887,7 +887,7 @@ void HistoryService::Observe(int type,
 
     case chrome::NOTIFICATION_TEMPLATE_URL_REMOVED:
       DeleteAllSearchTermsForKeyword(
-          *(content::Details<TemplateURLID>(details).ptr()));
+          *(content::Details<KeywordID>(details).ptr()));
       break;
 
     default:

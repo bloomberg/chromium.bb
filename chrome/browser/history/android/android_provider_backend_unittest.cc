@@ -1379,7 +1379,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   SearchRow search_row;
   search_row.set_search_term(update_term);
   search_row.set_url(GURL("http://google.com"));
-  search_row.set_template_url_id(1);
+  search_row.set_keyword_id(1);
   search_row.set_search_time(Time::Now() - TimeDelta::FromHours(1));
   int update_count = 0;
   ASSERT_TRUE(backend->UpdateSearchTerms(search_row, "search = ?", args,
@@ -1564,7 +1564,7 @@ TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
   SearchRow search_row;
   search_row.set_search_term(UTF8ToUTF16("google"));
   search_row.set_url(GURL("http://google.com"));
-  search_row.set_template_url_id(1);
+  search_row.set_keyword_id(1);
   search_row.set_search_time(Time::Now() - TimeDelta::FromHours(1));
 
   SearchTermID id = backend->InsertSearchTerm(search_row);

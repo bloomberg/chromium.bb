@@ -1177,7 +1177,7 @@ void AndroidProviderBackend::BroadcastNotifications(
 
 bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
   DCHECK(values.is_value_set_explicitly(SearchRow::SEARCH_TERM));
-  DCHECK(values.is_value_set_explicitly(SearchRow::TEMPLATE_URL));
+  DCHECK(values.is_value_set_explicitly(SearchRow::KEYWORD_ID));
   DCHECK(values.is_value_set_explicitly(SearchRow::URL));
 
   URLRow url_row;
@@ -1202,7 +1202,7 @@ bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
 
     if (!history_db_->GetKeywordSearchTermRow(url_row.id(), NULL))
       if (!history_db_->SetKeywordSearchTermsForURL(url_row.id(),
-               values.template_url_id(), values.search_term()))
+               values.keyword_id(), values.search_term()))
         return false;
   } else {
     bookmark_row.set_raw_url(values.url().spec());
@@ -1220,7 +1220,7 @@ bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
       return false;
 
     if (!history_db_->SetKeywordSearchTermsForURL(bookmark_row.url_id(),
-                          values.template_url_id(), values.search_term()))
+                          values.keyword_id(), values.search_term()))
       return false;
   }
   return true;

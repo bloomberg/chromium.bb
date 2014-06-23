@@ -21,7 +21,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
-#include "components/search_engines/template_url_id.h"
+#include "components/history/core/browser/keyword_id.h"
 #include "sql/init_status.h"
 
 class TestingProfile;
@@ -286,20 +286,20 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Keyword search terms ------------------------------------------------------
 
   void SetKeywordSearchTermsForURL(const GURL& url,
-                                   TemplateURLID keyword_id,
+                                   KeywordID keyword_id,
                                    const base::string16& term);
 
-  void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
+  void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
 
   void GetMostRecentKeywordSearchTerms(
       scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
-      TemplateURLID keyword_id,
+      KeywordID keyword_id,
       const base::string16& prefix,
       int max_count);
 
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
-  void DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+  void DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                     const base::string16& term);
 
 #if defined(OS_ANDROID)

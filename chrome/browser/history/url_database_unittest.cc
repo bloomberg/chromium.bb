@@ -161,7 +161,7 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
   ASSERT_NE(0, url_id);
 
   // Add a keyword visit.
-  TemplateURLID keyword_id = 100;
+  KeywordID keyword_id = 100;
   base::string16 keyword = base::UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, keyword_id, keyword));
 
@@ -261,7 +261,7 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
   ASSERT_NE(0, url_id1);
 
   // Add a keyword visit.
-  TemplateURLID keyword_id = 100;
+  KeywordID keyword_id = 100;
   base::string16 keyword = base::UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id1, keyword_id, keyword));
 

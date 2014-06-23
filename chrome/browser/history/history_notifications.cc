@@ -24,7 +24,7 @@ URLsDeletedDetails::~URLsDeletedDetails() {}
 
 KeywordSearchUpdatedDetails::KeywordSearchUpdatedDetails(
     const URLRow& url_row,
-    TemplateURLID keyword_id,
+    KeywordID keyword_id,
     const base::string16& term)
     : url_row(url_row),
       keyword_id(keyword_id),

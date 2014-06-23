@@ -11,7 +11,7 @@
 
 #include "chrome/browser/history/history_details.h"
 #include "chrome/browser/history/history_types.h"
-#include "components/search_engines/template_url_id.h"
+#include "components/history/core/browser/keyword_id.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -72,14 +72,14 @@ struct URLsDeletedDetails : public HistoryDetails {
 // Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
 struct KeywordSearchUpdatedDetails : public HistoryDetails {
   KeywordSearchUpdatedDetails(const URLRow& url_row,
-                              TemplateURLID keyword_id,
+                              KeywordID keyword_id,
                               const base::string16& term);
   virtual ~KeywordSearchUpdatedDetails();
 
   // The affected URLRow. The ID will be set to the value that is currently in
   // effect in the main history database.
   URLRow url_row;
-  TemplateURLID keyword_id;
+  KeywordID keyword_id;
   base::string16 term;
 };
 

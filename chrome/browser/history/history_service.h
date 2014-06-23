@@ -28,8 +28,8 @@
 #include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/keyword_id.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/search_engines/template_url_id.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -466,11 +466,11 @@ class HistoryService : public CancelableRequestProvider,
   // Sets the search terms for the specified url and keyword. url_id gives the
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
-                                   TemplateURLID keyword_id,
+                                   history::KeywordID keyword_id,
                                    const base::string16& term);
 
   // Deletes all search terms for the specified keyword.
-  void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
+  void DeleteAllSearchTermsForKeyword(history::KeywordID keyword_id);
 
   typedef base::Callback<
       void(Handle, std::vector<history::KeywordSearchTermVisit>*)>
@@ -481,7 +481,7 @@ class HistoryService : public CancelableRequestProvider,
   // in descending order up to |max_count| with the most recent search term
   // first.
   Handle GetMostRecentKeywordSearchTerms(
-      TemplateURLID keyword_id,
+      history::KeywordID keyword_id,
       const base::string16& prefix,
       int max_count,
       CancelableRequestConsumerBase* consumer,
@@ -492,7 +492,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Deletes all URL and search term entries matching the given |term| and
   // |keyword_id|.
-  void DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+  void DeleteMatchingURLsForKeyword(history::KeywordID keyword_id,
                                     const base::string16& term);
 
   // Bookmarks -----------------------------------------------------------------

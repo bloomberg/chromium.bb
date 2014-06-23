@@ -893,7 +893,7 @@ class SearchTermTask : public HistoryProviderTask {
       : HistoryProviderTask(service, cancelable_consumer),
         profile_(profile) {}
 
-  // Fill SearchRow's template_url_id and url fields according the given
+  // Fill SearchRow's keyword_id and url fields according the given
   // search_term. Return true if succeeded.
   void BuildSearchRow(history::SearchRow* row) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -912,7 +912,7 @@ class SearchTermTask : public HistoryProviderTask {
           search_terms_args, template_service->search_terms_data());
       if (!url.empty()) {
         row->set_url(GURL(url));
-        row->set_template_url_id(search_engine->id());
+        row->set_keyword_id(search_engine->id());
       }
     }
   }

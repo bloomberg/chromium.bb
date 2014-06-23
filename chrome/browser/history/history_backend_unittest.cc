@@ -520,7 +520,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
 
   void TestAddingAndChangingURLRows(int notification_type);
 
-  static const TemplateURLID kTestKeywordId;
+  static const KeywordID kTestKeywordId;
   static const char kTestSearchTerm1[];
   static const char kTestSearchTerm2[];
 
@@ -528,7 +528,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
   DISALLOW_COPY_AND_ASSIGN(InMemoryHistoryBackendTest);
 };
 
-const TemplateURLID InMemoryHistoryBackendTest::kTestKeywordId = 42;
+const KeywordID InMemoryHistoryBackendTest::kTestKeywordId = 42;
 const char InMemoryHistoryBackendTest::kTestSearchTerm1[] = "banana";
 const char InMemoryHistoryBackendTest::kTestSearchTerm2[] = "orange";
 
@@ -3037,7 +3037,7 @@ TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
   const URLID url1_id = backend_->db()->AddURL(url_info1);
   EXPECT_NE(0, url1_id);
 
-  TemplateURLID keyword_id = 1;
+  KeywordID keyword_id = 1;
   base::string16 keyword = base::UTF8ToUTF16("bar");
   ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
       url1_id, keyword_id, keyword));
@@ -3051,7 +3051,7 @@ TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
   const URLID url2_id = backend_->db()->AddURL(url_info2);
   EXPECT_NE(0, url2_id);
 
-  TemplateURLID keyword_id2 = 2;
+  KeywordID keyword_id2 = 2;
   ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
       url2_id, keyword_id2, keyword));
 
@@ -3312,10 +3312,10 @@ TEST_F(InMemoryHistoryBackendTest, DeleteAllSearchTermsForKeyword) {
 
   // Removing a keyword should cause all corresponding search terms to be
   // deleted from the in-memory database (and also the main database).
-  TemplateURLID id = kTestKeywordId;
+  KeywordID id = kTestKeywordId;
   mem_backend_->Observe(chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
                         content::Source<HistoryBackendTestBase>(NULL),
-                        content::Details<TemplateURLID>(&id));
+                        content::Details<KeywordID>(&id));
 
   // The typed URL should remain intact.
   // Note: we do not need to guarantee anything about the non-typed URL.

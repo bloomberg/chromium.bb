@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
-#include "components/search_engines/template_url_id.h"
+#include "components/history/core/browser/keyword_id.h"
 #include "sql/statement.h"
 
 namespace sql {
@@ -199,7 +199,7 @@ class SearchRow {
     SEARCH_TERM,
     SEARCH_TIME,
     URL,
-    TEMPLATE_URL,
+    KEYWORD_ID,
     COLUMN_END
   };
 
@@ -243,12 +243,12 @@ class SearchRow {
     url_ = url;
   }
 
-  TemplateURLID template_url_id() const {
-    return template_url_id_;
+  KeywordID keyword_id() const {
+    return keyword_id_;
   }
-  void set_template_url_id(TemplateURLID template_url_id) {
-    set_value_explicitly(SearchRow::TEMPLATE_URL);
-    template_url_id_ = template_url_id;
+  void set_keyword_id(KeywordID keyword_id) {
+    set_value_explicitly(SearchRow::KEYWORD_ID);
+    keyword_id_ = keyword_id;
   }
 
  // Returns true if the given |id| has been set explicitly.
@@ -265,7 +265,7 @@ class SearchRow {
   base::string16 search_term_;
   base::Time search_time_;
   GURL url_;
-  TemplateURLID template_url_id_;
+  KeywordID keyword_id_;
 
   // Used to find whether a column has been set a value.
   std::set<ColumnID> values_set_;

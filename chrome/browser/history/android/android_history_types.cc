@@ -95,7 +95,7 @@ HistoryAndBookmarkRow::ColumnID HistoryAndBookmarkRow::GetColumnID(
 
 SearchRow::SearchRow()
     : id_(0),
-      template_url_id_(0) {
+      keyword_id_(0) {
 }
 
 SearchRow::~SearchRow() {
