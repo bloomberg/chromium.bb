@@ -7,6 +7,7 @@ from urlparse import urlsplit
 
 from file_system import FileNotFoundError
 from future import Future
+from path_util import Segment, Join, SplitParent
 
 class Redirector(object):
   def __init__(self, compiled_fs_factory, file_system):
@@ -23,26 +24,69 @@ class Redirector(object):
     return self._RedirectOldHosts(host, path) or self._RedirectFromConfig(path)
 
   def _RedirectFromConfig(self, url):
-    ''' Lookup the redirects configuration file in the directory that contains
-    the requested resource. If no redirection rule is matched, or no
-    configuration file exists, returns None.
+    ''' Look up redirects.json file in the directory hierarchy of |url|.
+    Directory-level redirects occur first, followed by the specific file
+    redirects. Returns the URL to the redirect, if any exist, or None.
     '''
     dirname, filename = posixpath.split(url)
+    redirected_dirname = self._RedirectDirectory(dirname)
+
+    # Set up default return value.
+    default_redirect = None
+    if redirected_dirname != dirname:
+      default_redirect = posixpath.normpath(Join(redirected_dirname, filename))
 
     try:
       rules = self._cache.GetFromFile(
-          posixpath.join(dirname, 'redirects.json')).Get()
+        posixpath.normpath(Join(redirected_dirname,
+                                          'redirects.json'))).Get()
     except FileNotFoundError:
-      return None
+      return default_redirect
 
     redirect = rules.get(filename)
     if redirect is None:
-      return None
+      return default_redirect
     if (redirect.startswith('/') or
         urlsplit(redirect).scheme in ('http', 'https')):
       return redirect
 
-    return posixpath.normpath(posixpath.join(dirname, redirect))
+    return posixpath.normpath(Join(redirected_dirname, redirect))
+
+  def _RedirectDirectory(self, real_url):
+    ''' Returns the final redirected directory after all directory hops.
+    If there is a circular redirection, it skips the redirection that would
+    cause the infinite loop.
+    If no redirection rule is matched, the base directory is returned.
+    '''
+    seen_redirects = set()
+
+    def lookup_redirect(url):
+      sub_url = url
+
+      for sub_url, _ in Segment(url):
+        for base, filename in Segment(sub_url):
+          try:
+            redirects = self._cache.GetFromFile(posixpath.normpath(
+                posixpath.join(base, 'redirects.json'))).Get()
+          except FileNotFoundError:
+            continue
+
+          redirect = redirects.get(posixpath.join(filename, '...'))
+
+          if redirect is None:
+            continue
+
+          redirect = Join(base, redirect.rstrip('...'))
+
+          # Avoid infinite redirection loops by breaking if seen before.
+          if redirect in seen_redirects:
+            break
+          seen_redirects.add(redirect)
+          return lookup_redirect(
+              Join(redirect, posixpath.relpath(url, sub_url)))
+      return url
+
+    return lookup_redirect(real_url)
 
   def _RedirectOldHosts(self, host, path):
     ''' Redirect paths from the old code.google.com to the new

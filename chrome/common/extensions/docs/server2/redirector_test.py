@@ -16,6 +16,7 @@ HOST = 'http://localhost/'
 
 file_system = TestFileSystem({
   'redirects.json': json.dumps({
+    'foo/...': 'apps/...',
     '': '/index.html',
     'home': 'index.html',
     'index.html': 'http://something.absolute.com/'
@@ -29,14 +30,109 @@ file_system = TestFileSystem({
   },
   'extensions': {
     'redirects.json': json.dumps({
-      'manifest': 'manifest.html'
+      'manifest': 'manifest.html',
+      'tabs': 'tabs.html',
+      'dev/...': '...',
+      'a/very/long/dir/chain/...': 'short/...',
+      '_short/...': 'another/long/chain/...',
+      'r1/...': 'r2/r1/...',
+      'r2/r1/...': 'r3/...',
+      'r3/...': 'r4/...',
+      'r5/...': 'r6/...',
+      'nofile1/...': 'nofile2/...',
+      'noredirects1/...': 'noredirects2/...'
     }),
     'manifest': {
       'redirects.json': json.dumps({
         '': '../manifest.html',
         'more-info': 'http://lmgtfy.com'
+      }),
+    },
+    'stable': {
+        'redirects.json': json.dumps({
+            'tabs': 'tabs.html'
+        }),
+        'manifest': {
+          'redirects.json': json.dumps({
+            'storage': 'storage.html'
+          })
+        },
+    },
+    'dev': {
+      'redirects.json': json.dumps({
+        'tabs': 'tabs.html',
+        'manifest': 'manifest.html'
+      }),
+      'manifest': {
+        'redirects.json': json.dumps({
+          'storage': 'storage.html'
+        })
+      }
+    },
+    'r4': {
+      'redirects.json': json.dumps({
+        'manifest': 'manifest.html'
+      })
+    },
+    'r6': {
+      'redirects.json': json.dumps({
+        '...': 'directory/...'
+      }),
+      'directory': {
+        'redirects.json': json.dumps({
+          'manifest': 'manifest.html'
+        }),
+        'manifest': 'manifest.html'
+      }
+    },
+    'short': {
+      'redirects.json': json.dumps({
+        'index': 'index.html'
+      })
+    },
+    'another': {
+      'long': {
+        'chain': {
+          'redirects.json': json.dumps({
+            'index': 'index.html'
+          })
+        }
+      }
+    },
+    'nofile': {
+      'redirects.json': json.dumps({
       })
     }
+  },
+  'priority': {
+    'redirects.json': json.dumps({
+      'directory/...': 'GOOD/...'
+    }),
+    'directory': {
+      'redirects.json': json.dumps({
+        '...': '../BAD/...'
+      }),
+    }
+  },
+  'relative_directory': {
+    'redirects.json': json.dumps({
+      '...': '../...'
+    })
+  },
+  'infinite_redirect': {
+    'redirects.json': json.dumps({
+      '...': 'loop/...'
+    }),
+    'loop': {
+      'redirects.json': json.dumps({
+        '...': './...'
+      })
+    }
+  },
+  'parent_redirect': {
+    'redirects.json': json.dumps({
+      'a/...': 'b/...'
+    })
   }
 })
 
@@ -107,6 +203,66 @@ class RedirectorTest(unittest.TestCase):
           # TODO(jshumway): Make a non hack version of this check.
           self._redirector._cache._file_object_store.Get(
               path).Get()._cache_data)
+
+  def testDirectoryRedirection(self):
+    # Simple redirect.
+    self.assertEqual(
+      'extensions/manifest.html',
+      self._redirector.Redirect(HOST, 'extensions/dev/manifest'))
+
+    # Multiple hops with one file.
+    self.assertEqual(
+      'extensions/r4/manifest.html',
+      self._redirector.Redirect(HOST, 'extensions/r1/manifest'))
+
+    # Multiple hops w/ multiple redirection files.
+    self.assertEqual(
+      'extensions/r6/directory/manifest.html',
+      self._redirector.Redirect(HOST, 'extensions/r5/manifest'))
+
+    # Redirection from root directory redirector.
+    self.assertEqual(
+      'apps/about_apps.html',
+      self._redirector.Redirect(HOST, 'foo/index.html'))
+
+    # Short to long.
+    self.assertEqual(
+      'extensions/short/index.html',
+      self._redirector.Redirect(HOST, 'extensions/a/very/long/dir/chain/index'))
+
+    # Long to short.
+    self.assertEqual(
+      'extensions/another/long/chain/index.html',
+      self._redirector.Redirect(HOST, 'extensions/_short/index'))
+
+    # Directory redirection without a redirects.json in final directory.
+    self.assertEqual(
+      'extensions/noredirects2/file',
+      self._redirector.Redirect(HOST, 'extensions/noredirects1/file'))
+
+    # Directory redirection with redirects.json without rule for the filename.
+    self.assertEqual(
+      'extensions/nofile2/file',
+      self._redirector.Redirect(HOST, 'extensions/nofile1/file'))
+
+    # Relative directory path.
+    self.assertEqual(
+      'index.html',
+      self._redirector.Redirect(HOST, 'relative_directory/home'))
+
+    # Shallower directory redirects have priority.
+    self.assertEqual(
+      'priority/GOOD/index',
+      self._redirector.Redirect(HOST, 'priority/directory/index'))
+
+    # Don't infinitely redirect.
+    self.assertEqual('infinite_redirect/loop/index',
+      self._redirector.Redirect(HOST, 'infinite_redirect/index'))
+
+    # If a parent directory is redirected, redirect children properly.
+    self.assertEqual('parent_redirect/b/c/index',
+      self._redirector.Redirect(HOST, 'parent_redirect/a/c/index'))
+
 
 if __name__ == '__main__':
   unittest.main()

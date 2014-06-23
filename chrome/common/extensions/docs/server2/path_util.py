@@ -59,3 +59,26 @@ def AssertIsDirectory(path):
 
 def AssertIsFile(path):
   assert not IsDirectory(path), '"%s" is not a file' % path
+
+def Segment(path):
+  '''Yields a tuple (url, file) for directory split pairs.
+  For example, if we split the path 'foo/bar/baz', it will yield:
+  ('', 'foo/bar/baz'), ('foo', "bar/baz'), ('foo/bar', 'baz'),
+  ('foo/bar/baz', '')
+  '''
+  AssertIsValid(path)
+
+  last_path = ''
+  yield (last_path, path)
+
+  for segment in (segment for segment in path.split('/') if segment != ''):
+    last_path = posixpath.join(last_path, segment)
+    rel_path = posixpath.relpath(path, last_path)
+
+    # Don't let relpath say the filename is '.'
+    if rel_path == '.':
+      rel_path = ''
+    else:
+      last_path = ToDirectory(last_path)
+
+    yield (last_path, rel_path)
