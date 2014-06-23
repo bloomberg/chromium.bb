@@ -26,7 +26,7 @@ class _ScreenshotSyncValidator(page_test.PageTest):
       message = tab.EvaluateJavaScript('window.__testMessage')
       raise page_test.Failure(message)
 
-
+@test.Disabled('mac')
 class ScreenshotSyncPage(page.Page):
   def __init__(self, page_set, base_dir):
     super(ScreenshotSyncPage, self).__init__(
