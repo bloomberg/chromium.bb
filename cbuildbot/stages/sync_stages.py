@@ -597,8 +597,14 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     super(CommitQueueSyncStage, self).HandleSkip()
     filename = self._run.options.validation_pool
     if filename:
+      # Temporary code to check if we are using a metadata object that was
+      # dumped by an outer cbuildbot run. If so, do not re-write CL actions.
+      # This code will be removed by a future change, once this change has
+      # landed.
+      record_patches = not self._run.attrs.metadata.GetDict().has_key(
+          'dumped_dict')
       self.pool = validation_pool.ValidationPool.Load(filename,
-          metadata=self._run.attrs.metadata)
+          metadata=self._run.attrs.metadata, record_patches=record_patches)
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 

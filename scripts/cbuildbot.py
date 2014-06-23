@@ -13,12 +13,14 @@ full and pre-flight-queue builds.
 import collections
 import distutils.version
 import glob
+import json
 import logging
 import optparse
 import os
 import multiprocessing
 import pickle
 import sys
+import tempfile
 import traceback
 
 from chromite.cbuildbot import cbuildbot_config
@@ -303,14 +305,25 @@ class Builder(object):
     if not self._run.options.cache_dir_specified:
       commandline.BaseParser.ConfigureCacheDir(None)
 
-    # Re-run the command in the buildroot.
-    # Finally, be generous and give the invoked cbuildbot 30s to shutdown
-    # when something occurs.  It should exit quicker, but the sigterm may
-    # hit while the system is particularly busy.
-    return_obj = cros_build_lib.RunCommand(
-        args, cwd=self._run.options.buildroot, error_code_ok=True,
-        kill_timeout=30)
-    return return_obj.returncode == 0
+    # Record that this metadata dict has been dumped to a file. This key is used
+    # by a check in CommitQueueSync to ensure that while this CL lands,
+    # duplicate actions are not recorded. This key and the corresponding check
+    # will be removed in a future CL.
+    self._run.attrs.metadata.UpdateWithDict({'dumped_dict': True})
+
+    with tempfile.NamedTemporaryFile(prefix='metadata') as metadata_file:
+      metadata_file.write(self._run.attrs.metadata.GetJSON())
+      metadata_file.flush()
+      args += ['--metadata_dump', metadata_file.name]
+
+      # Re-run the command in the buildroot.
+      # Finally, be generous and give the invoked cbuildbot 30s to shutdown
+      # when something occurs.  It should exit quicker, but the sigterm may
+      # hit while the system is particularly busy.
+      return_obj = cros_build_lib.RunCommand(
+          args, cwd=self._run.options.buildroot, error_code_ok=True,
+          kill_timeout=30)
+      return return_obj.returncode == 0
 
   def _InitializeTrybotPatchPool(self):
     """Generate patch pool from patches specified on the command line.
@@ -876,6 +889,11 @@ def _RunBuildStagesWrapper(options, build_config):
   elif options.rietveld_patches:
     cros_build_lib.Die('This builder does not support Rietveld patches.')
 
+  metadata_dump_dict = {}
+  if options.metadata_dump:
+    with open(options.metadata_dump, 'r') as metadata_file:
+      metadata_dump_dict = json.loads(metadata_file.read())
+
   # We are done munging options values, so freeze options object now to avoid
   # further abuse of it.
   # TODO(mtennant): one by one identify each options value override and see if
@@ -885,6 +903,8 @@ def _RunBuildStagesWrapper(options, build_config):
 
   with parallel.Manager() as manager:
     builder_run = cbuildbot_run.BuilderRun(options, build_config, manager)
+    if metadata_dump_dict:
+      builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
     if _IsDistributedBuilder(options, chrome_rev, build_config):
       builder_cls = DistributedBuilder
     else:
@@ -1302,7 +1322,8 @@ def _CreateParser():
                           help=('Path to a pickled validation pool. Intended '
                                 'for use only with the commit queue.'))
   group.add_remote_option('--metadata_dump', default=None,
-                          help=('This option is not yet used.'))
+                          help=('Path to a json dumped metadata file. This '
+                                'will be used as the initial metadata.'))
   group.add_remote_option('--mock-tree-status', dest='mock_tree_status',
                           default=None, action='store',
                           help=('Override the tree status value that would be '
