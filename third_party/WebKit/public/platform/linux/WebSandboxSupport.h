@@ -34,7 +34,6 @@
 #include "../WebCommon.h"
 #include "../WebString.h"
 #include "WebFallbackFont.h"
-#include "WebFontFamily.h"
 
 namespace blink {
 

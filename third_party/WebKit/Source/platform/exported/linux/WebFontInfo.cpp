@@ -32,7 +32,6 @@
 #include "public/platform/linux/WebFontInfo.h"
 
 #include "public/platform/linux/WebFallbackFont.h"
-#include "public/platform/linux/WebFontFamily.h"
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include <fontconfig/fontconfig.h>
 #include <string.h>

@@ -33,7 +33,6 @@
 
 #include "../WebCString.h"
 #include "WebFallbackFont.h"
-#include "WebFontFamily.h"
 #include "WebFontRenderStyle.h"
 
 #include <string.h>
