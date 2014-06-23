@@ -539,36 +539,6 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
     client().respondToChangedContents();
 }
 
-TriState Editor::selectionUnorderedListState() const
-{
-    if (m_frame.selection().isCaret()) {
-        if (enclosingNodeWithTag(m_frame.selection().selection().start(), ulTag))
-            return TrueTriState;
-    } else if (m_frame.selection().isRange()) {
-        Node* startNode = enclosingNodeWithTag(m_frame.selection().selection().start(), ulTag);
-        Node* endNode = enclosingNodeWithTag(m_frame.selection().selection().end(), ulTag);
-        if (startNode && endNode && startNode == endNode)
-            return TrueTriState;
-    }
-
-    return FalseTriState;
-}
-
-TriState Editor::selectionOrderedListState() const
-{
-    if (m_frame.selection().isCaret()) {
-        if (enclosingNodeWithTag(m_frame.selection().selection().start(), olTag))
-            return TrueTriState;
-    } else if (m_frame.selection().isRange()) {
-        Node* startNode = enclosingNodeWithTag(m_frame.selection().selection().start(), olTag);
-        Node* endNode = enclosingNodeWithTag(m_frame.selection().selection().end(), olTag);
-        if (startNode && endNode && startNode == endNode)
-            return TrueTriState;
-    }
-
-    return FalseTriState;
-}
-
 void Editor::removeFormattingAndStyle()
 {
     ASSERT(m_frame.document());

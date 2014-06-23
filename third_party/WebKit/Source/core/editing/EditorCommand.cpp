@@ -39,12 +39,14 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/FormatBlockCommand.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/IndentOutdentCommand.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/ReplaceSelectionCommand.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/UnlinkCommand.h"
+#include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
@@ -221,6 +223,21 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
     EAffinity affinity = frame.selection().affinity();
     frame.selection().setSelectedRange(newRange.get(), affinity, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
     return true;
+}
+
+static TriState selectionListState(const FrameSelection& selection, const QualifiedName& tagName)
+{
+    if (selection.isCaret()) {
+        if (enclosingNodeWithTag(selection.selection().start(), tagName))
+            return TrueTriState;
+    } else if (selection.isRange()) {
+        Node* startNode = enclosingNodeWithTag(selection.selection().start(), tagName);
+        Node* endNode = enclosingNodeWithTag(selection.selection().end(), tagName);
+        if (startNode && endNode && startNode == endNode)
+            return TrueTriState;
+    }
+
+    return FalseTriState;
 }
 
 static TriState stateStyle(LocalFrame& frame, CSSPropertyID propertyID, const char* desiredValue)
@@ -1302,7 +1319,7 @@ static TriState stateItalic(LocalFrame& frame, Event*)
 
 static TriState stateOrderedList(LocalFrame& frame, Event*)
 {
-    return frame.editor().selectionOrderedListState();
+    return selectionListState(frame.selection(), olTag);
 }
 
 static TriState stateStrikethrough(LocalFrame& frame, Event*)
@@ -1347,7 +1364,7 @@ static TriState stateUnderline(LocalFrame& frame, Event*)
 
 static TriState stateUnorderedList(LocalFrame& frame, Event*)
 {
-    return frame.editor().selectionUnorderedListState();
+    return selectionListState(frame.selection(), ulTag);
 }
 
 static TriState stateJustifyCenter(LocalFrame& frame, Event*)

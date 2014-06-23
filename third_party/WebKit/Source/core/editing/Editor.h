@@ -112,9 +112,6 @@ public:
     TriState selectionHasStyle(CSSPropertyID, const String& value) const;
     String selectionStartCSSPropertyValue(CSSPropertyID);
 
-    TriState selectionUnorderedListState() const;
-    TriState selectionOrderedListState() const;
-
     void removeFormattingAndStyle();
 
     void clearLastEditCommand();
