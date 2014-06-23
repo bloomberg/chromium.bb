@@ -80,6 +80,10 @@ void throwMinimumArityTypeErrorForMethod(const char* method, const char* type, u
 void throwMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
 void throwMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
 
+// Returns false if the callback threw an exception, true otherwise.
+bool invokeCallback(ScriptState*, v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[]);
+bool invokeCallback(ScriptState*, v8::Local<v8::Function> callback, v8::Handle<v8::Value> thisValue, int argc, v8::Handle<v8::Value> argv[]);
+
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
 inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)

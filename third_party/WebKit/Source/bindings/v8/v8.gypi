@@ -91,8 +91,6 @@
             'V8Binding.cpp',
             'V8Binding.h',
             'V8BindingMacros.h',
-            'V8Callback.cpp',
-            'V8Callback.h',
             'V8CustomElementLifecycleCallbacks.cpp',
             'V8CustomElementLifecycleCallbacks.h',
             'V8DOMActivityLogger.cpp',

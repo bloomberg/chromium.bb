@@ -45,7 +45,6 @@ CALLBACK_INTERFACE_H_INCLUDES = frozenset([
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/v8/V8Binding.h',
-    'bindings/v8/V8Callback.h',
     'core/dom/ExecutionContext.h',
     'wtf/Assertions.h',
     'wtf/GetPtr.h',

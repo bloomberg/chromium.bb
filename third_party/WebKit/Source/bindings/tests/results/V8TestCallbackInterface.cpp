@@ -10,7 +10,6 @@
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/tests/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 #include "wtf/GetPtr.h"
