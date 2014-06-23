@@ -4,11 +4,11 @@
 
 package org.chromium.android_webview;
 
-import android.util.ArrayMap;
-
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.util.HashMap;
 
 /**
  * Delegate for handling callbacks. All methods are called on the IO thread.
@@ -55,7 +55,7 @@ public abstract class AwContentsIoThreadClient {
         params.isMainFrame = isMainFrame;
         params.hasUserGesture = hasUserGesture;
         params.method = method;
-        params.requestHeaders = new ArrayMap<String, String>(requestHeaderNames.length);
+        params.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
         for (int i = 0; i < requestHeaderNames.length; ++i) {
             params.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
         }

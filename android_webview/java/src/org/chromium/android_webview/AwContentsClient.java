@@ -10,7 +10,6 @@ import android.graphics.Picture;
 import android.net.http.SslError;
 import android.os.Looper;
 import android.os.Message;
-import android.util.ArrayMap;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -24,6 +23,7 @@ import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.net.NetError;
 
 import java.security.Principal;
+import java.util.HashMap;
 
 /**
  * Base-class that an AwContents embedder derives from to receive callbacks.
@@ -165,7 +165,7 @@ public abstract class AwContentsClient {
         // Method used (GET/POST/OPTIONS)
         public String method;
         // Headers that would have been sent to server.
-        public ArrayMap<String, String> requestHeaders;
+        public HashMap<String, String> requestHeaders;
     }
 
     public abstract void getVisitedHistory(ValueCallback<String[]> callback);
