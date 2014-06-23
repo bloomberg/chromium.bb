@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
@@ -23,7 +24,7 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
   virtual ~NativeViewHostAura();
 
   // Overridden from NativeViewHostWrapper:
-  virtual void NativeViewWillAttach() OVERRIDE;
+  virtual void AttachNativeView() OVERRIDE;
   virtual void NativeViewDetaching(bool destroyed) OVERRIDE;
   virtual void AddedToWidget() OVERRIDE;
   virtual void RemovedFromWidget() OVERRIDE;
@@ -37,14 +38,27 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
   virtual gfx::NativeCursor GetCursor(int x, int y) OVERRIDE;
 
  private:
+  friend class NativeViewHostAuraTest;
+
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+
+  // Reparents the native view with the clipping window existing between it and
+  // its old parent, so that the fast resize path works.
+  void AddClippingWindow();
+
+  // If the native view has been reparented via AddClippingWindow, this call
+  // undoes it.
+  void RemoveClippingWindow();
 
   // Our associated NativeViewHost.
   NativeViewHost* host_;
 
-  // Have we installed a clip region?
-  bool installed_clip_;
+  // Window that exists between the native view and the parent that allows for
+  // clipping to occur. This is positioned in the coordinate space of
+  // host_->GetWidget().
+  aura::Window clipping_window_;
+  scoped_ptr<gfx::Rect> clip_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostAura);
 };

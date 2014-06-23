@@ -477,7 +477,7 @@ class WebContentsViewAura::WindowObserver
  public:
   explicit WindowObserver(WebContentsViewAura* view)
       : view_(view),
-        parent_(NULL) {
+        host_window_(NULL) {
     view_->window_->AddObserver(this);
 
 #if defined(OS_WIN)
@@ -490,12 +490,11 @@ class WebContentsViewAura::WindowObserver
     view_->window_->RemoveObserver(this);
     if (view_->window_->GetHost())
       view_->window_->GetHost()->RemoveObserver(this);
-    if (parent_)
-      parent_->RemoveObserver(this);
-
+    if (host_window_)
+      host_window_->RemoveObserver(this);
 #if defined(OS_WIN)
-    if (parent_) {
-      const aura::Window::Windows& children = parent_->children();
+    if (host_window_) {
+      const aura::Window::Windows& children = host_window_->children();
       for (size_t i = 0; i < children.size(); ++i)
         children[i]->RemoveObserver(this);
     }
@@ -519,19 +518,19 @@ class WebContentsViewAura::WindowObserver
   // going to be deprecated in a year, this is ok for now. The test for this is
   // PrintPreviewTest.WindowedNPAPIPluginHidden.
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
-    if (new_window != view_->window_) {
+    if (!new_window->Contains(view_->window_.get())) {
       // Skip the case when the parent moves to the root window.
-      if (new_window != parent_) {
+      if (new_window != host_window_) {
         // Observe sibling windows of the WebContents, or children of the root
         // window.
-        if (new_window->parent() == parent_ ||
+        if (new_window->parent() == host_window_ ||
             new_window->parent() == view_->window_->GetRootWindow()) {
           new_window->AddObserver(this);
         }
       }
     }
 
-    if (new_window->parent() == parent_) {
+    if (new_window->parent() == host_window_) {
       UpdateConstrainedWindows(NULL);
     }
   }
@@ -547,7 +546,7 @@ class WebContentsViewAura::WindowObserver
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE {
     if (window == view_->window_ ||
-        window->parent() == parent_ ||
+        window->parent() == host_window_ ||
         window->parent() == view_->window_->GetRootWindow()) {
       UpdateConstrainedWindows(NULL);
     }
@@ -558,12 +557,18 @@ class WebContentsViewAura::WindowObserver
                                      aura::Window* parent) OVERRIDE {
     if (window != view_->window_)
       return;
-    if (parent_)
-      parent_->RemoveObserver(this);
+
+    aura::Window* host_window =
+        window->GetProperty(aura::client::kHostWindowKey);
+    if (!host_window)
+      host_window = parent;
+
+    if (host_window_)
+      host_window_->RemoveObserver(this);
 
 #if defined(OS_WIN)
-    if (parent_) {
-      const aura::Window::Windows& children = parent_->children();
+    if (host_window_) {
+      const aura::Window::Windows& children = host_window_->children();
       for (size_t i = 0; i < children.size(); ++i)
         children[i]->RemoveObserver(this);
 
@@ -574,29 +579,29 @@ class WebContentsViewAura::WindowObserver
     }
 
     // When we get parented to the root window, the code below will watch the
-    // parent, aka root window. Since we already watch the root window on
+    // host window, aka root window. Since we already watch the root window on
     // Windows, unregister first so that the debug check doesn't fire.
-    if (parent && parent == window->GetRootWindow())
-      parent->RemoveObserver(this);
+    if (host_window && host_window == window->GetRootWindow())
+      host_window->RemoveObserver(this);
 
     // We need to undo the above if we were parented to the root window and then
     // got parented to another window. At that point, the code before the ifdef
     // would have stopped watching the root window.
     if (window->GetRootWindow() &&
-        parent != window->GetRootWindow() &&
+        host_window != window->GetRootWindow() &&
         !window->GetRootWindow()->HasObserver(this)) {
       window->GetRootWindow()->AddObserver(this);
     }
 #endif
 
-    parent_ = parent;
-    if (parent) {
-      parent->AddObserver(this);
+    host_window_ = host_window;
+    if (host_window) {
+      host_window->AddObserver(this);
 #if defined(OS_WIN)
-      if (parent != window->GetRootWindow()) {
-        const aura::Window::Windows& children = parent->children();
+      if (host_window != window->GetRootWindow()) {
+        const aura::Window::Windows& children = host_window->children();
         for (size_t i = 0; i < children.size(); ++i) {
-          if (children[i] != view_->window_)
+          if (!children[i]->Contains(view_->window_.get()))
             children[i]->AddObserver(this);
         }
       }
@@ -607,7 +612,7 @@ class WebContentsViewAura::WindowObserver
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
-    if (window == parent_ || window == view_->window_) {
+    if (window == host_window_ || window == view_->window_) {
       SendScreenRects();
       if (view_->touch_editable_)
         view_->touch_editable_->UpdateEditingController();
@@ -638,8 +643,10 @@ class WebContentsViewAura::WindowObserver
       const aura::Window::Windows& root_children =
           window->GetRootWindow()->children();
       for (size_t i = 0; i < root_children.size(); ++i) {
-        if (root_children[i] != view_->window_ && root_children[i] != parent_)
+        if (root_children[i] != view_->window_ &&
+            root_children[i] != host_window_) {
           root_children[i]->RemoveObserver(this);
+        }
       }
 #endif
     }
@@ -670,10 +677,10 @@ class WebContentsViewAura::WindowObserver
       return;
 
     std::vector<gfx::Rect> constrained_windows;
-    if (parent_) {
-      const aura::Window::Windows& children = parent_->children();
+    if (host_window_) {
+      const aura::Window::Windows& children = host_window_->children();
       for (size_t i = 0; i < children.size(); ++i) {
-        if (children[i] != view_->window_ &&
+        if (!children[i]->Contains(view_->window_.get()) &&
             children[i] != exclude &&
             children[i]->IsVisible()) {
           constrained_windows.push_back(children[i]->GetBoundsInRootWindow());
@@ -699,9 +706,9 @@ class WebContentsViewAura::WindowObserver
 
   WebContentsViewAura* view_;
 
-  // We cache the old parent so that we can unregister when it's not the parent
-  // anymore.
-  aura::Window* parent_;
+  // The parent window that hosts the constrained windows. We cache the old host
+  // view so that we can unregister when it's not the parent anymore.
+  aura::Window* host_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };

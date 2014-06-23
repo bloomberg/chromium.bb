@@ -19,10 +19,10 @@ class VIEWS_EXPORT NativeViewHostWrapper {
  public:
   virtual ~NativeViewHostWrapper() {}
 
-  // Called right before a gfx::NativeView is attached to the associated
-  // NativeViewHost, allowing the wrapper to perform platform-specific
-  // initialization.
-  virtual void NativeViewWillAttach() = 0;
+  // Called at the end of NativeViewHost::Attach, allowing the wrapper to
+  // perform platform-specific operations that need to occur to complete
+  // attaching the gfx::NativeView.
+  virtual void AttachNativeView() = 0;
 
   // Called before the attached gfx::NativeView is detached from the
   // NativeViewHost, allowing the wrapper to perform platform-specific
@@ -38,13 +38,18 @@ class VIEWS_EXPORT NativeViewHostWrapper {
   // rooted at a valid Widget.
   virtual void RemovedFromWidget() = 0;
 
-  // Installs a clip on the gfx::NativeView.
+  // Installs a clip on the gfx::NativeView. These values are in the coordinate
+  // space of the Widget, so if this method is called from ShowWidget
+  // then the values need to be translated.
   virtual void InstallClip(int x, int y, int w, int h) = 0;
 
   // Whether or not a clip has been installed on the wrapped gfx::NativeView.
   virtual bool HasInstalledClip() = 0;
 
-  // Removes the clip installed on the gfx::NativeView by way of InstallClip.
+  // Removes the clip installed on the gfx::NativeView by way of InstallClip. A
+  // following call to ShowWidget should occur after calling this method to
+  // position the gfx::NativeView correctly, since the clipping process may have
+  // adjusted its position.
   virtual void UninstallClip() = 0;
 
   // Shows the gfx::NativeView at the specified position (relative to the parent
