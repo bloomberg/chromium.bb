@@ -756,7 +756,11 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
     fullscreen_container_->ScrollRect(dx, dy, rect);
   } else {
     if (full_frame_ && !IsViewAccelerated()) {
+#ifdef SCROLL_RECT_REQUIRES_NO_DELTA
+      container_->scrollRect(rect);
+#else
       container_->scrollRect(dx, dy, rect);
+#endif
     } else {
       // Can't do optimized scrolling since there could be other elements on top
       // of us or the view renders via the accelerated compositor which is
