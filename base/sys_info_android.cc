@@ -14,11 +14,10 @@
 namespace {
 
 // Default version of Android to fall back to when actual version numbers
-// cannot be acquired.
-// TODO(dfalcantara): Keep this reasonably up to date with the latest publicly
-//                    available version of Android.
-const int kDefaultAndroidMajorVersion = 4;
-const int kDefaultAndroidMinorVersion = 3;
+// cannot be acquired. This is an obviously invalid version number. Code
+// doing version comparison should treat it as so and fail all comparisons.
+const int kDefaultAndroidMajorVersion = 0;
+const int kDefaultAndroidMinorVersion = 0;
 const int kDefaultAndroidBugfixVersion = 0;
 
 // Parse out the OS version numbers from the system properties.
