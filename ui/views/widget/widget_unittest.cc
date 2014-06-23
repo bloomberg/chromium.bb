@@ -15,6 +15,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_processor.h"
@@ -1625,6 +1626,49 @@ class CloseDestroysWidget : public Widget {
   DISALLOW_COPY_AND_ASSIGN(CloseDestroysWidget);
 };
 
+// An observer that registers that an animation has ended.
+class AnimationEndObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AnimationEndObserver()
+      : animation_completed_(false) {
+  }
+
+  virtual ~AnimationEndObserver() {
+  }
+
+  bool animation_completed() const { return animation_completed_; }
+
+  // ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    animation_completed_ = true;
+  }
+
+ private:
+  bool animation_completed_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationEndObserver);
+};
+
+// An observer that registers the bounds of a widget on destruction.
+class WidgetBoundsObserver : public WidgetObserver {
+ public:
+  WidgetBoundsObserver() {}
+  virtual ~WidgetBoundsObserver() {}
+
+  gfx::Rect bounds() { return bounds_; }
+
+  // WidgetObserver:
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+    bounds_ = widget->GetNativeWindow()->bounds();
+  }
+
+ private:
+  gfx::Rect bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetBoundsObserver);
+};
+
 // Verifies Close() results in destroying.
 TEST_F(WidgetTest, CloseDestroys) {
   bool destroyed = false;
@@ -1654,17 +1698,29 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 250, 250);
   widget->Init(params);
+  AnimationEndObserver animation_observer;
+  WidgetBoundsObserver widget_observer;
+  gfx::Rect bounds(0, 0, 50, 50);
+  {
+    // Normal animations for tests have ZERO_DURATION, make sure we are actually
+    // animating the movement.
+    ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ui::ScopedLayerAnimationSettings animation_settings(
+        widget->GetNativeWindow()->layer()->GetAnimator());
+    animation_settings.AddObserver(&animation_observer);
+    widget->AddObserver(&widget_observer);
+    widget->Show();
 
-  // Normal animations for tests have ZERO_DURATION, make sure we are actually
-  // animating the movement.
-  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-  ui::ScopedLayerAnimationSettings animation_settings(
-      widget->GetLayer()->GetAnimator());
-  widget->Show();
-  // Animate the bounds change.
-  widget->SetBounds(gfx::Rect(0, 0, 200, 200));
+    // Animate the bounds change.
+    widget->SetBounds(bounds);
+    widget.reset();
+    EXPECT_FALSE(animation_observer.animation_completed());
+  }
+  EXPECT_TRUE(animation_observer.animation_completed());
+  EXPECT_EQ(widget_observer.bounds(), bounds);
 }
 
 // A view that consumes mouse-pressed event and gesture-tap-down events.
