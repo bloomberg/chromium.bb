@@ -122,7 +122,25 @@ struct ResourceLoaderOptions {
     {
     }
 
-    ContentSniffingPolicy sniffContent;
+    // Answers the question "can a separate request with these
+    // different options be re-used" (e.g. preload request)
+    // The safe (but possibly slow) answer is always false.
+    bool canReuseRequest(const ResourceLoaderOptions& other) const
+    {
+        // sniffContent is dead code.
+        // dataBufferingPolicy differences are believed to be safe for re-use.
+        // FIXME: check allowCredentials.
+        // FIXME: check credentialsRequested.
+        // FIXME: check contentSecurityPolicyOption.
+        // initiatorInfo is purely informational and should be benign for re-use.
+        // requestInitiatorContext is benign (indicates document vs. worker)
+        // FIXME: check mixedContentBlockingTreatment.
+        // synchronousPolicy (safe to re-use an async XHR response for sync, etc.)
+        return corsEnabled == other.corsEnabled;
+        // securityOrigin has more complicated checks which callers are responsible for.
+    }
+
+    ContentSniffingPolicy sniffContent; // FIXME: Dead code, please remove.
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
     CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.

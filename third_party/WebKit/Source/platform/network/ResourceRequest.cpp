@@ -320,21 +320,24 @@ static const AtomicString& pragmaHeaderString()
     return pragmaHeader;
 }
 
-bool ResourceRequest::cacheControlContainsNoCache()
+const CacheControlHeader& ResourceRequest::cacheControlHeader() const
 {
-    if (!m_cacheControlHeader.parsed)
-        m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
-    return m_cacheControlHeader.containsNoCache;
+    if (!m_cacheControlHeaderCache.parsed)
+        m_cacheControlHeaderCache = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
+    return m_cacheControlHeaderCache;
 }
 
-bool ResourceRequest::cacheControlContainsNoStore()
+bool ResourceRequest::cacheControlContainsNoCache() const
 {
-    if (!m_cacheControlHeader.parsed)
-        m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
-    return m_cacheControlHeader.containsNoStore;
+    return cacheControlHeader().containsNoCache;
 }
 
-bool ResourceRequest::hasCacheValidatorFields()
+bool ResourceRequest::cacheControlContainsNoStore() const
+{
+    return cacheControlHeader().containsNoStore;
+}
+
+bool ResourceRequest::hasCacheValidatorFields() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, lastModifiedHeader, ("last-modified", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, eTagHeader, ("etag", AtomicString::ConstructFromLiteral));

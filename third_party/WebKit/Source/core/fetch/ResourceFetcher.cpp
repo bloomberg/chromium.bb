@@ -689,7 +689,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // See if we can use an existing resource from the cache.
     ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url);
 
-    const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer(), request.options());
+    const RevalidationPolicy policy = determineRevalidationPolicy(type, request, resource.get());
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource.get());
@@ -902,13 +902,15 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     }
 }
 
-ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, ResourceRequest& request, bool forPreload, Resource* existingResource, FetchRequest::DeferOption defer, const ResourceLoaderOptions& options) const
+ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource) const
 {
+    const ResourceRequest& request = fetchRequest.resourceRequest();
+
     if (!existingResource)
         return Load;
 
     // We already have a preload going for this URL.
-    if (forPreload && existingResource->isPreloaded())
+    if (fetchRequest.forPreload() && existingResource->isPreloaded())
         return Use;
 
     // If the same URL has been loaded as a different type, we need to reload.
@@ -923,7 +925,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // Do not load from cache if images are not enabled. The load for this image will be blocked
     // in ImageResource::load.
-    if (FetchRequest::DeferredByClient == defer)
+    if (FetchRequest::DeferredByClient == fetchRequest.defer())
         return Reload;
 
     // Always use data uris.
@@ -952,8 +954,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (m_allowStaleResources)
         return Use;
 
-    // If fetching a resource with a different 'CORS enabled' flag, reload.
-    if (type != Resource::MainResource && options.corsEnabled != existingResource->options().corsEnabled)
+    if (!fetchRequest.options().canReuseRequest(existingResource->options()))
         return Reload;
 
     // Always use preloads.

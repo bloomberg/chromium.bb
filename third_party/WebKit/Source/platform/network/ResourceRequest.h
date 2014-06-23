@@ -205,9 +205,9 @@ public:
     TargetType targetType() const { return m_targetType; }
     void setTargetType(TargetType type) { m_targetType = type; }
 
-    bool cacheControlContainsNoCache();
-    bool cacheControlContainsNoStore();
-    bool hasCacheValidatorFields();
+    bool cacheControlContainsNoCache() const;
+    bool cacheControlContainsNoStore() const;
+    bool hasCacheValidatorFields() const;
 
     static double defaultTimeoutInterval(); // May return 0 when using platform default.
     static void setDefaultTimeoutInterval(double);
@@ -216,6 +216,8 @@ public:
 
 private:
     void initialize(const KURL& url, ResourceRequestCachePolicy cachePolicy);
+
+    const CacheControlHeader& cacheControlHeader() const;
 
     KURL m_url;
     ResourceRequestCachePolicy m_cachePolicy;
@@ -237,7 +239,8 @@ private:
     RefPtr<ExtraData> m_extraData;
     TargetType m_targetType;
     ReferrerPolicy m_referrerPolicy;
-    CacheControlHeader m_cacheControlHeader;
+
+    mutable CacheControlHeader m_cacheControlHeaderCache;
 
     static double s_defaultTimeoutInterval;
 };
