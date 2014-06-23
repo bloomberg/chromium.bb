@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -18,6 +20,21 @@ namespace extensions {
 namespace {
 
 ContentVerifyJob::TestDelegate* g_test_delegate = NULL;
+
+class ScopedElapsedTimer {
+ public:
+  ScopedElapsedTimer(base::TimeDelta* total) : total_(total) { DCHECK(total_); }
+
+  ~ScopedElapsedTimer() { *total_ += timer.Elapsed(); }
+
+ private:
+  // Some total amount of time we should add our elapsed time to at
+  // destruction.
+  base::TimeDelta* total_;
+
+  // A timer for how long this object has been alive.
+  base::ElapsedTimer timer;
+};
 
 }  // namespace
 
@@ -37,6 +54,8 @@ ContentVerifyJob::ContentVerifyJob(ContentHashReader* hash_reader,
 }
 
 ContentVerifyJob::~ContentVerifyJob() {
+  UMA_HISTOGRAM_COUNTS("ExtensionContentVerifyJob.TimeSpentUS",
+                       time_spent_.InMicroseconds());
 }
 
 void ContentVerifyJob::Start() {
@@ -49,6 +68,7 @@ void ContentVerifyJob::Start() {
 }
 
 void ContentVerifyJob::BytesRead(int count, const char* data) {
+  ScopedElapsedTimer timer(&time_spent_);
   DCHECK(thread_checker_.CalledOnValidThread());
   if (failed_)
     return;
@@ -95,6 +115,7 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
 }
 
 void ContentVerifyJob::DoneReading() {
+  ScopedElapsedTimer timer(&time_spent_);
   DCHECK(thread_checker_.CalledOnValidThread());
   if (failed_)
     return;
@@ -144,8 +165,11 @@ void ContentVerifyJob::OnHashesReady(bool success) {
     queue_.swap(tmp);
     BytesRead(tmp.size(), string_as_array(&tmp));
   }
-  if (done_reading_ && !FinishBlock())
-    DispatchFailureCallback(HASH_MISMATCH);
+  if (done_reading_) {
+    ScopedElapsedTimer timer(&time_spent_);
+    if (!FinishBlock())
+      DispatchFailureCallback(HASH_MISMATCH);
+  }
 }
 
 // static

@@ -195,6 +195,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   virtual void Start() OVERRIDE {
+    request_timer_.reset(new base::ElapsedTimer());
     base::FilePath* read_file_path = new base::FilePath;
     base::Time* last_modified_time = new base::Time();
     bool posted = BrowserThread::PostBlockingPoolTaskAndReply(
@@ -252,6 +253,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   virtual ~URLRequestExtensionJob() {
     UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
     UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
+    if (request_timer_.get())
+      UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.Latency",
+                          request_timer_->Elapsed());
   }
 
   void OnFilePathAndLastModifiedTimeRead(base::FilePath* read_file_path,
@@ -265,6 +269,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   scoped_refptr<ContentVerifyJob> verify_job_;
+
+  scoped_ptr<base::ElapsedTimer> request_timer_;
 
   // The position we seeked to in the file.
   int64 seek_position_;

@@ -7,7 +7,9 @@
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
@@ -42,6 +44,7 @@ ContentHashReader::~ContentHashReader() {
 }
 
 bool ContentHashReader::Init() {
+  base::ElapsedTimer timer;
   DCHECK_EQ(status_, NOT_INITIALIZED);
   status_ = FAILURE;
   base::FilePath verified_contents_path =
@@ -85,6 +88,8 @@ bool ContentHashReader::Init() {
     return false;
 
   status_ = SUCCESS;
+  UMA_HISTOGRAM_TIMES("ExtensionContentHashReader.InitLatency",
+                      timer.Elapsed());
   return true;
 }
 

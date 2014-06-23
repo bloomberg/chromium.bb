@@ -120,6 +120,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   scoped_refptr<ContentHashReader> hash_reader_;
 
+  base::TimeDelta time_spent_;
+
   // Called once if verification fails.
   FailureCallback failure_callback_;
 
