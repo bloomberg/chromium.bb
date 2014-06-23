@@ -961,9 +961,9 @@ FileOperationManager.ZipTask.prototype.run = function(
       this.targetDirEntry, destName + '.zip',
       function(destPath) {
         // TODO: per-entry zip progress update with accurate byte count.
-        // For now just set completedBytes to same value as totalBytes so
-        // that the progress bar is full.
-        this.processedBytes = this.totalBytes;
+        // For now just set completedBytes to 0 so that it is not full until
+        // the zip operatoin is done.
+        this.processedBytes = 0;
         progressCallback();
 
         // The number of elements in processingEntries is 1. See also
