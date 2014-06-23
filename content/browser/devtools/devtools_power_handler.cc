@@ -80,4 +80,8 @@ DevToolsPowerHandler::OnCanProfilePower(
   return command->SuccessResponse(result);
 }
 
+void DevToolsPowerHandler::OnClientDetached() {
+  PowerProfilerService::GetInstance()->RemoveObserver(this);
+}
+
 }  // namespace content

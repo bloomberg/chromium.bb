@@ -262,6 +262,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
 #endif
   overrides_handler_->OnClientDetached();
   tracing_handler_->OnClientDetached();
+  power_handler_->OnClientDetached();
   ClientDetachedFromRenderer();
 }
 
