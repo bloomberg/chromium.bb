@@ -29,6 +29,7 @@ function checkNegativeZero()
 function test()
 {
     var obj1, obj2;
+    var nameFoo = WebInspector.RemoteObject.toCallArgument("foo");
 
     InspectorTest.runTestSuite([
         function testSetUp(next)
@@ -55,7 +56,7 @@ function test()
 
         function testSetPrimitive(next)
         {
-            obj1.setPropertyValue("foo", "2", step1);
+            obj1.setPropertyValue(nameFoo, "2", step1);
 
             function step1()
             {
@@ -65,7 +66,7 @@ function test()
 
         function testSetHandle(next)
         {
-            obj1.setPropertyValue("foo", "object2", step1);
+            obj1.setPropertyValue(nameFoo, "object2", step1);
 
             function step1()
             {
@@ -75,7 +76,7 @@ function test()
 
         function testSetUndefined(next)
         {
-            obj1.setPropertyValue("foo", "undefined", step1);
+            obj1.setPropertyValue(nameFoo, "undefined", step1);
 
             function step1()
             {
@@ -85,7 +86,7 @@ function test()
 
         function testSetZero(next)
         {
-            obj1.setPropertyValue("foo", "0", step1);
+            obj1.setPropertyValue(nameFoo, "0", step1);
 
             function step1()
             {
@@ -95,7 +96,7 @@ function test()
 
         function testSetNull(next)
         {
-            obj1.setPropertyValue("foo", "null", step1);
+            obj1.setPropertyValue(nameFoo, "null", step1);
 
             function step1()
             {
@@ -105,7 +106,7 @@ function test()
 
         function testSetEmptyString(next)
         {
-            obj1.setPropertyValue("foo", "\"\"", step1);
+            obj1.setPropertyValue(nameFoo, "\"\"", step1);
 
             function step1()
             {
@@ -115,7 +116,7 @@ function test()
 
         function testSetException(next)
         {
-            obj1.setPropertyValue("foo", "throw 'exception'", step1);
+            obj1.setPropertyValue(nameFoo, "throw 'exception'", step1);
 
             function step1(error)
             {
@@ -126,16 +127,16 @@ function test()
 
         function testSetNonFiniteNumbers(next)
         {
-            obj1.setPropertyValue("foo", "NaN", step1);
+            obj1.setPropertyValue(nameFoo, "NaN", step1);
 
             function step1(error)
             {
-                obj1.setPropertyValue("foo1", "Infinity", step2);
+                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo1"), "Infinity", step2);
             }
 
             function step2(error)
             {
-                obj1.setPropertyValue("foo2", "-Infinity", step3);
+                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo2"), "-Infinity", step3);
             }
 
             function step3(error)
@@ -146,7 +147,7 @@ function test()
 
         function testNegativeZero(next)
         {
-            obj1.setPropertyValue("foo", "1/-Infinity", step1);
+            obj1.setPropertyValue(nameFoo, "1/-Infinity", step1);
 
             function step1(error)
             {
@@ -158,7 +159,7 @@ function test()
         {
             // If failed, this test will time out.
             InspectorTest.addSniffer(RuntimeAgent, "releaseObject", next);
-            obj1.setPropertyValue("foo", "[1,2,3]", function(){});
+            obj1.setPropertyValue(nameFoo, "[1,2,3]", function(){});
         }
     ]);
 }
