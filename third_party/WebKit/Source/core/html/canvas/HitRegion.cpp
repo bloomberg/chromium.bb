@@ -41,9 +41,6 @@ void HitRegion::updateAccessibility(Element* canvas)
 
 bool HitRegion::contains(const LayoutPoint& point) const
 {
-    if (!m_path.boundingRect().contains(point))
-        return false;
-
     return m_path.contains(point, RULE_NONZERO);
 }
 
