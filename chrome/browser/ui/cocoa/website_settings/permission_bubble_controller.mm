@@ -321,14 +321,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                             info_bubble::kBubbleArrowHeight;
 
   if (customizationMode) {
-    // Add the maximum menu width to the bubble width.  Note that the right edge
-    // of the menus align with the left edge of the 'ok' button, so the width of
-    // the 'ok' button needs to be added as well.
+    // Add the maximum menu width to the bubble width.
     CGFloat maxMenuWidth = 0;
     for (AllowBlockMenuButton* button in permissionMenus.get()) {
       maxMenuWidth = std::max(maxMenuWidth, [button maximumTitleWidth]);
     }
-    maxPermissionLineWidth += maxMenuWidth + NSWidth([allowOrOkButton frame]);
+    maxPermissionLineWidth += maxMenuWidth;
   }
 
   // The title and 'x' button row must fit within the bubble.
@@ -362,8 +360,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   if (customizationMode) {
     // Adjust the horizontal origin for each menu so that its right edge
-    // lines up with the left edge of the ok button.
-    CGFloat rightEdge = NSMinX([allowOrOkButton frame]);
+    // lines up with the right edge of the ok button.
+    CGFloat rightEdge = NSMaxX([allowOrOkButton frame]);
     for (NSView* view in permissionMenus.get()) {
       [view setFrameOrigin:NSMakePoint(rightEdge - NSWidth([view frame]),
                                        NSMinY([view frame]))];
