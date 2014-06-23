@@ -128,6 +128,9 @@ const char kCryptohomeMountEx[] = "MountEx";
 const char kCryptohomeAddKeyEx[] = "AddKeyEx";
 const char kCryptohomeUpdateKeyEx[] = "UpdateKeyEx";
 const char kCryptohomeRemoveKeyEx[] = "RemoveKeyEx";
+const char kCryptohomeSignBootLockbox[] = "SignBootLockbox";
+const char kCryptohomeVerifyBootLockbox[] = "VerifyBootLockbox";
+const char kCryptohomeFinalizeBootLockbox[] = "FinalizeBootLockbox";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
