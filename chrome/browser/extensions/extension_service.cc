@@ -426,8 +426,6 @@ void ExtensionService::Init() {
     component_loader_->LoadAll();
     extensions::InstalledLoader(this).LoadAllExtensions();
 
-    ReconcileKnownDisabled();
-
     // Attempt to re-enable extensions whose only disable reason is reloading.
     std::vector<std::string> extensions_to_enable;
     const ExtensionSet& disabled_extensions = registry_->disabled_extensions();
@@ -1285,50 +1283,6 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
           !extension_prefs_->IsExternalExtensionAcknowledged(extension->id()) &&
           !(extension_prefs_->GetDisableReasons(extension->id()) &
                 Extension::DISABLE_SIDELOAD_WIPEOUT));
-}
-
-void ExtensionService::ReconcileKnownDisabled() {
-  ExtensionIdSet known_disabled_ids;
-  if (!extension_prefs_->GetKnownDisabled(&known_disabled_ids)) {
-    extension_prefs_->SetKnownDisabled(
-        registry_->disabled_extensions().GetIDs());
-    UMA_HISTOGRAM_BOOLEAN("Extensions.KnownDisabledInitialized", true);
-    return;
-  }
-
-  // Both |known_disabled_ids| and |extensions| are ordered (by definition
-  // of std::map and std::set). Iterate forward over both sets in parallel
-  // to find matching IDs and disable the corresponding extensions.
-  const ExtensionSet& enabled_set = registry_->enabled_extensions();
-  ExtensionSet::const_iterator extensions_it = enabled_set.begin();
-  ExtensionIdSet::const_iterator known_disabled_ids_it =
-      known_disabled_ids.begin();
-  int known_disabled_count = 0;
-  while (extensions_it != enabled_set.end() &&
-         known_disabled_ids_it != known_disabled_ids.end()) {
-    const std::string& extension_id = extensions_it->get()->id();
-    const int comparison = extension_id.compare(*known_disabled_ids_it);
-    if (comparison < 0) {
-      ++extensions_it;
-    } else if (comparison > 0) {
-      ++known_disabled_ids_it;
-    } else {
-      ++known_disabled_count;
-      // Advance |extensions_it| immediately as it will be invalidated upon
-      // disabling the extension it points to.
-      ++extensions_it;
-      ++known_disabled_ids_it;
-      DisableExtension(extension_id, Extension::DISABLE_KNOWN_DISABLED);
-    }
-  }
-  UMA_HISTOGRAM_COUNTS_100("Extensions.KnownDisabledReDisabled",
-                           known_disabled_count);
-
-  // Update the list of known disabled to reflect every change to
-  // |disabled_extensions_| from this point forward.
-  registry_->SetDisabledModificationCallback(
-      base::Bind(&extensions::ExtensionPrefs::SetKnownDisabled,
-                 base::Unretained(extension_prefs_)));
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {

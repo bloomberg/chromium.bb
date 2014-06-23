@@ -119,37 +119,6 @@ class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
 
-// Tests the GetKnownDisabled/SetKnownDisabled functions.
-class ExtensionPrefsKnownDisabled : public ExtensionPrefsTest {
- public:
-  virtual void Initialize() OVERRIDE {
-    ExtensionIdSet before_set;
-    EXPECT_FALSE(prefs()->GetKnownDisabled(&before_set));
-    EXPECT_TRUE(before_set.empty());
-
-    // Initialize to an empty list and confirm that GetKnownDisabled() returns
-    // true and an empty list.
-    prefs()->SetKnownDisabled(before_set);
-    EXPECT_TRUE(prefs()->GetKnownDisabled(&before_set));
-    EXPECT_TRUE(before_set.empty());
-
-    set_.insert(prefs_.AddExtensionAndReturnId("1"));
-    set_.insert(prefs_.AddExtensionAndReturnId("2"));
-    set_.insert(prefs_.AddExtensionAndReturnId("3"));
-    prefs()->SetKnownDisabled(set_);
-  }
-
-  virtual void Verify() OVERRIDE {
-    ExtensionIdSet result;
-    EXPECT_TRUE(prefs()->GetKnownDisabled(&result));
-    ASSERT_EQ(set_, result);
-  }
-
- private:
-  ExtensionIdSet set_;
-};
-TEST_F(ExtensionPrefsKnownDisabled, KnownDisabled) {}
-
 // Tests the IsExtensionDisabled/SetExtensionState functions.
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:

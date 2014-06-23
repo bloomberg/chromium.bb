@@ -144,6 +144,8 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
 #endif
   {
+    // This pref has been deprecated, leave it here for now for it to be
+    // properly mapped back to Preferences and cleaned up from there.
     12, extensions::pref_names::kKnownDisabled,
     PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
@@ -280,11 +282,8 @@ GetTrackingConfiguration() {
     }
 
     if (enforcement_group >= GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS_AND_DSE &&
-        (data.name == extensions::pref_names::kExtensions ||
-         data.name == extensions::pref_names::kKnownDisabled)) {
-      // Specifically enable extension settings enforcement and ensure
-      // kKnownDisabled follows it in the Protected Preferences.
-      // TODO(gab): Get rid of kKnownDisabled altogether.
+        data.name == extensions::pref_names::kExtensions) {
+      // Specifically enable extension settings enforcement.
       data.enforcement_level = PrefHashFilter::ENFORCE_ON_LOAD;
     }
 

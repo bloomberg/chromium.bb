@@ -319,9 +319,6 @@ class ExtensionService
   // acknowledged.
   void AcknowledgeExternalExtension(const std::string& id);
 
-  // Disable extensions that are known to be disabled yet are currently enabled.
-  void ReconcileKnownDisabled();
-
   // Postpone installations so that we don't have to worry about race
   // conditions.
   void OnGarbageCollectIsolatedStorageStart();

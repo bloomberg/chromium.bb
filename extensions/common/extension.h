@@ -92,8 +92,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3,
     DISABLE_SIDELOAD_WIPEOUT = 1 << 4,
     DISABLE_UNKNOWN_FROM_SYNC = 1 << 5,
-    DISABLE_PERMISSIONS_CONSENT = 1 << 6,  // Unused - abandoned experiment.
-    DISABLE_KNOWN_DISABLED = 1 << 7,
+    // DISABLE_PERMISSIONS_CONSENT = 1 << 6,  // Deprecated.
+    // DISABLE_KNOWN_DISABLED = 1 << 7,  // Deprecated.
     DISABLE_NOT_VERIFIED = 1 << 8,  // Disabled because we could not verify
                                     // the install.
     DISABLE_GREYLIST = 1 << 9,

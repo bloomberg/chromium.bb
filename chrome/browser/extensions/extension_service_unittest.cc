@@ -6821,69 +6821,6 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
       ExtensionPrefs::Get(profile())->IsBlacklistedExtensionAcknowledged(id));
 }
 
-TEST_F(ExtensionServiceTest, ReconcileKnownDisabledNoneDisabled) {
-  // A profile with 3 extensions installed: good0, good1, and good2.
-  InitializeGoodInstalledExtensionService();
-
-  // Initializing shouldn't disable any extensions if none are known to be
-  // disabled.
-  service()->Init();
-
-  extensions::ExtensionIdSet expected_extensions;
-  expected_extensions.insert(good0);
-  expected_extensions.insert(good1);
-  expected_extensions.insert(good2);
-
-  extensions::ExtensionIdSet expected_disabled_extensions;
-
-  EXPECT_EQ(expected_extensions, registry()->enabled_extensions().GetIDs());
-  EXPECT_EQ(expected_disabled_extensions,
-            registry()->disabled_extensions().GetIDs());
-}
-
-TEST_F(ExtensionServiceTest, ReconcileKnownDisabledWithSideEnable) {
-  // A profile with 3 extensions installed: good0, good1, and good2.
-  InitializeGoodInstalledExtensionService();
-
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
-
-  // Disable good1.
-  extension_prefs->SetExtensionState(good1, Extension::DISABLED);
-
-  // Mark both good1 and good2 as "known_disabled" (effectively making good2
-  // look as if it had been side-enabled).
-  extensions::ExtensionIdSet known_disabled;
-  known_disabled.insert(good1);
-  known_disabled.insert(good2);
-  extension_prefs->SetKnownDisabled(known_disabled);
-
-  // Initialize the service (which should disable good2 since it's known to be
-  // disabled).
-  service()->Init();
-
-  extensions::ExtensionIdSet expected_extensions;
-  expected_extensions.insert(good0);
-
-  extensions::ExtensionIdSet expected_disabled_extensions;
-  expected_disabled_extensions.insert(good1);
-  expected_disabled_extensions.insert(good2);
-
-  EXPECT_EQ(expected_extensions, registry()->enabled_extensions().GetIDs());
-  EXPECT_EQ(expected_disabled_extensions,
-            registry()->disabled_extensions().GetIDs());
-
-  // Make sure that re-enabling an extension sticks across calls to
-  // ReconcileKnownDisabled().
-  service()->EnableExtension(good2);
-  service()->ReconcileKnownDisabled();
-  expected_extensions.insert(good2);
-  expected_disabled_extensions.erase(good2);
-
-  EXPECT_EQ(expected_extensions, registry()->enabled_extensions().GetIDs());
-  EXPECT_EQ(expected_disabled_extensions,
-            registry()->disabled_extensions().GetIDs());
-}
-
 // Tests a profile being destroyed correctly disables extensions.
 TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   InitializeEmptyExtensionService();

@@ -1222,15 +1222,6 @@ void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
   SetExtensionPrefFromContainer(pref_names::kToolbar, extension_ids);
 }
 
-bool ExtensionPrefs::GetKnownDisabled(ExtensionIdSet* id_set_out) {
-  return GetUserExtensionPrefIntoContainer(pref_names::kKnownDisabled,
-                                           id_set_out);
-}
-
-void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
-  SetExtensionPrefFromContainer(pref_names::kKnownDisabled, extension_ids);
-}
-
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
@@ -1895,6 +1886,10 @@ ExtensionPrefs::ExtensionPrefs(
       app_sorting_(app_sorting.Pass()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
+  // Remove this deprecated pref.
+  // TODO(gab): Remove the pref's name from the code base altogether in M40.
+  prefs_->ClearPref(pref_names::kKnownDisabled);
+
   app_sorting_->SetExtensionScopedPrefs(this);
   MakePathsRelative();
 
