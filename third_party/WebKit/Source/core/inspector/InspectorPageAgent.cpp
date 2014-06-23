@@ -263,7 +263,19 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, LocalFrame* f
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
 {
-    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
+    Document* document = frame->document();
+    if (!document)
+        return 0;
+    Resource* cachedResource = document->fetcher()->cachedResource(url);
+    if (!cachedResource) {
+        Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
+        for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
+            Document* import = *it;
+            cachedResource = import->fetcher()->cachedResource(url);
+            if (cachedResource)
+                break;
+        }
+    }
     if (!cachedResource)
         cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
