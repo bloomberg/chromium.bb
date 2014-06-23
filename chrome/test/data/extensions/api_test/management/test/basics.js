@@ -112,9 +112,9 @@ var tests = [
       chrome.test.assertEq(
         "Read and modify your data on *.flickr.com and api.flickr.com",
         warnings[0]);
-      chrome.test.assertEq("Read and modify your bookmarks", warnings[1]);
+      chrome.test.assertEq("Read and change your bookmarks", warnings[1]);
       chrome.test.assertEq("Detect your physical location", warnings[2]);
-      chrome.test.assertEq("Read and modify your browsing history",
+      chrome.test.assertEq("Read and change your browsing history",
                            warnings[3]);
     }));
 

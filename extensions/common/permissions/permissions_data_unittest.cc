@@ -251,9 +251,9 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
   ASSERT_EQ(5u, warnings.size());
   EXPECT_EQ("Read and modify your data on api.flickr.com",
             UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Read and modify your bookmarks", UTF16ToUTF8(warnings[1]));
+  EXPECT_EQ("Read and change your bookmarks", UTF16ToUTF8(warnings[1]));
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
-  EXPECT_EQ("Read and modify your browsing history", UTF16ToUTF8(warnings[3]));
+  EXPECT_EQ("Read and change your browsing history", UTF16ToUTF8(warnings[3]));
   EXPECT_EQ("Manage your apps, extensions, and themes",
             UTF16ToUTF8(warnings[4]));
 }
@@ -308,7 +308,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
 #else
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ(
-      "Read and modify all your data on your computer and the websites you "
+      "Read and change all your data on your computer and the websites you "
       "visit",
       UTF16ToUTF8(warnings[0]));
 #endif
