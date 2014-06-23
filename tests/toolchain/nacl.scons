@@ -399,10 +399,7 @@ getid_test_nexe = env.ComponentProgram(
     EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('getid_test.out', getid_test_nexe)
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                       'run_getid_test',
-# See https://code.google.com/p/nativeclient/issues/detail?id=3667
-                       is_broken=(env.Bit('nacl_glibc') and
-                                  env.Bit('target_x86_32')))
+                       'run_getid_test')
 
 # The compile currently causes arm-nacl-gcc to crash.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3582

@@ -5,17 +5,17 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "d36d50201bc37b0511d6fb147b7d5c32caea7b56",
+          "hash": "fb66e89c201f3dfe774d3b4f00fa9a74ddf16cc4",
           "name": "gdb_i686_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_linux_708db55b85a2bda77ee90796fb32f755c42ce41d.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_linux_21d0937b2e3b60f3a921b758e044c89ddea784c4.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "6e01e0047dd3b803093c2076996a5b4c85579f64",
+          "hash": "9cf8bd18d27d5fab2613307faebdb9a4d4c320e5",
           "name": "toolchain.tar.bz2",
           "tar_src_dir": "toolchain/linux_x86",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13351/toolchain_linux_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13387/toolchain_linux_x86.tar.bz2"
         }
       ],
       "version": 1
@@ -24,17 +24,17 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "3b7185c8fab280322dea6844512f4d0ff75352c2",
+          "hash": "724edf6c45cccf9d737fc856ecce100c4885b25b",
           "name": "gdb_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_x86_64_apple_darwin_3522671a5d7abab8d04a52a62aeb5b9a3f25c497.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_x86_64_apple_darwin_45dbc18d18f770cbc00ad4609f54d41b0bead6bb.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "c3ef9015c63b239f5639a1454f27c0ff25728cd4",
+          "hash": "2ab379d5ad992d3d53b515afbe1f797c1f88eb75",
           "name": "toolchain.tar.bz2",
           "tar_src_dir": "toolchain/mac_x86",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13351/toolchain_mac_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13387/toolchain_mac_x86.tar.bz2"
         }
       ],
       "version": 1
@@ -43,22 +43,22 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "8bb7d8e898c0f0b2c3e1067c390d6d11982df56e",
+          "hash": "5326c0180c146aaae2879a1b263e95ad0c21aad8",
           "name": "gdb_i686_w64_mingw32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_w64_mingw32_b5a3d8d2601a22fb0393421f53d871513aa7a00e.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_w64_mingw32_3f1154868c800c0fb1a8fc8c9f5897c5065ed03e.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "d1880eb7a6522612e49c82b2aca3bae1ebabccb9",
+          "hash": "c2c24fa3ba7634c873790ed1926ccb0b4e06781c",
           "name": "toolchain.tar.bz2",
           "tar_src_dir": "toolchain/win_x86",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13351/toolchain_win_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13387/toolchain_win_x86.tar.bz2"
         }
       ],
       "version": 1
     }
   },
-  "revision": 13351,
-  "revision_hash": "c9f0e702e6c405e61bf2e1166aa1e08e105af312"
+  "revision": 13387,
+  "revision_hash": "179e973fd4b331fc7eae359c432d7c67db922b73"
 }
