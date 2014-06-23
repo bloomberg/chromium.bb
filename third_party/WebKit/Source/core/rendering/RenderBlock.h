@@ -368,8 +368,6 @@ private:
 
     void addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild = 0);
 
-    void removeAnonymousWrappersIfRequired();
-
     virtual bool isSelfCollapsingBlock() const OVERRIDE;
 
     void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);

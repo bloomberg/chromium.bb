@@ -330,9 +330,6 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 {
     RenderBox::styleDidChange(diff, oldStyle);
 
-    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isRenderBlockFlow())
-        toRenderBlock(parent())->removeAnonymousWrappersIfRequired();
-
     RenderStyle* newStyle = style();
 
     if (!isAnonymousBlock()) {
@@ -1085,25 +1082,6 @@ static bool canMergeContiguousAnonymousBlocks(RenderObject* oldChild, RenderObje
     // Make sure the types of the anonymous blocks match up.
     return prev->isAnonymousColumnsBlock() == next->isAnonymousColumnsBlock()
            && prev->isAnonymousColumnSpanBlock() == next->isAnonymousColumnSpanBlock();
-}
-
-void RenderBlock::removeAnonymousWrappersIfRequired()
-{
-    ASSERT(isRenderBlockFlow());
-    Vector<RenderBox*, 16> blocksToRemove;
-    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        // There are still block children in the container, so any anonymous wrappers are still needed.
-        if (!child->isAnonymousBlock() && !child->isFloatingOrOutOfFlowPositioned())
-            return;
-        // We can't remove anonymous wrappers if they contain continuations as this means there are block children present.
-        if (child->isRenderBlock() && toRenderBlock(child)->continuation())
-            return;
-        if (child->isAnonymousBlock())
-            blocksToRemove.append(child);
-    }
-
-    for (size_t i = 0; i < blocksToRemove.size(); i++)
-        collapseAnonymousBlockChild(this, toRenderBlock(blocksToRemove[i]));
 }
 
 void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* child)
