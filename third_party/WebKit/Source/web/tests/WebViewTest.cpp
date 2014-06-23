@@ -812,6 +812,38 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(0, mainFrameLocal->loader().currentItem()->scrollPoint().y());
 }
 
+TEST_F(WebViewTest, BackForwardRestoreScroll)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("back_forward_restore_scroll.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "back_forward_restore_scroll.html");
+    webViewImpl->resize(WebSize(640, 480));
+    webViewImpl->layout();
+
+    // Emulate a user scroll
+    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 900));
+    WebCore::LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
+    RefPtr<WebCore::HistoryItem> item1 = mainFrameLocal->loader().currentItem();
+
+    // Click an anchor
+    mainFrameLocal->loader().load(WebCore::FrameLoadRequest(mainFrameLocal->document(), WebCore::ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
+    RefPtr<WebCore::HistoryItem> item2 = mainFrameLocal->loader().currentItem();
+
+    // Go back, then forward, then back again.
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), WebCore::HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item2.get(), WebCore::HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), WebCore::HistorySameDocumentLoad);
+
+    // Click a different anchor
+    mainFrameLocal->loader().load(WebCore::FrameLoadRequest(mainFrameLocal->document(), WebCore::ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
+    RefPtr<WebCore::HistoryItem> item3 = mainFrameLocal->loader().currentItem();
+
+    // Go back, then forward. The scroll position should be properly set on the forward navigation.
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), WebCore::HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item3.get(), WebCore::HistorySameDocumentLoad);
+    EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
+    EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
+}
+
 class EnterFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebViewClient methods

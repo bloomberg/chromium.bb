@@ -565,6 +565,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         if (!m_frame->host())
             return;
     }
+    m_loadType = type;
     saveScrollState();
 
     KURL oldURL = m_frame->document()->url();
@@ -1433,7 +1434,6 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
 
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
-        m_loadType = FrameLoadTypeBackForward;
         loadInSameDocument(item->url(), item->stateObject(), FrameLoadTypeBackForward, NotClientRedirect);
         restoreScrollPositionAndViewState();
         return;
