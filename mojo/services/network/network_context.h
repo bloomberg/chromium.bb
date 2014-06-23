@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class NetLog;
 class URLRequestContext;
@@ -19,7 +23,7 @@ namespace mojo {
 
 class NetworkContext {
  public:
-  NetworkContext();
+  explicit NetworkContext(const base::FilePath& base_path);
   ~NetworkContext();
 
   net::URLRequestContext* url_request_context() {

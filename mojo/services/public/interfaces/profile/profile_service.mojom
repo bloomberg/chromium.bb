@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+// Provides access to system information.
+interface ProfileService {
+
+  enum PathKey {
+    DIR_TEMP  // temporary directory
+  };
+
+  // Returns a path to a special directory or file.  If you ask for a directory
+  // it is guaranteed to NOT have a path separator at the end. For example,
+  // "c:\windows\temp" Returns |null| if the directory of path doesn't exist.
+  // On windows and Mac OS X and Chrome OS, path will be utf-8 encoded, on all
+  // other platform, the encoding is not specified and may depend on the file
+  // system.
+  GetPath(PathKey key) => (string path);
+};
+
+}

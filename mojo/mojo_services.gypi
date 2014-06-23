@@ -224,6 +224,7 @@
         'mojo_common_lib',
         'mojo_environment_chromium',
         'mojo_network_bindings',
+        'mojo_profile_service_bindings',
         'mojo_system_impl',
       ],
       'export_dependent_settings': [
@@ -409,6 +410,32 @@
         'services/test_service/test_service_application.h',
         'services/test_service/test_service_impl.cc',
         'services/test_service/test_service_impl.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_profile_service_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/profile/profile_service.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_profile_service',
+      'type': 'static_library',
+      'sources': [
+        'services/profile/profile_service_impl.cc',
+        'services/profile/profile_service_impl.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_profile_service_bindings',
       ],
     },
   ],

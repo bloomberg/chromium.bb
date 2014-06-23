@@ -25,7 +25,7 @@
 
 namespace mojo {
 
-NetworkContext::NetworkContext()
+NetworkContext::NetworkContext(const base::FilePath& base_path)
     : file_thread_("network_file_thread"),
       cache_thread_("network_cache_thread") {
   file_thread_.Start();
@@ -33,11 +33,6 @@ NetworkContext::NetworkContext()
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   cache_thread_.StartWithOptions(options);
-
-  // TODO(darin): Need to figure out a better base path, obviously.
-  base::FilePath base_path;
-  PathService::Get(base::DIR_TEMP, &base_path);
-  base_path = base_path.Append(FILE_PATH_LITERAL("network_service"));
 
   url_request_context_.reset(new net::URLRequestContext());
   url_request_context_->set_net_log(net_log_.get());

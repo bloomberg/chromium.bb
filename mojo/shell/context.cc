@@ -18,6 +18,7 @@
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
+#include "mojo/shell/profile_service_loader.h"
 #include "mojo/shell/switches.h"
 #include "mojo/spy/spy.h"
 
@@ -118,6 +119,10 @@ Context::Context()
       scoped_ptr<ServiceLoader>(new DBusServiceLoader(this)),
       "dbus");
 #endif  // defined(OS_LINUX)
+
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(new ProfileServiceLoader()),
+      GURL("mojo:profile_service"));
 
   if (cmdline->HasSwitch(switches::kSpy)) {
     spy_.reset(new mojo::Spy(&service_manager_,
