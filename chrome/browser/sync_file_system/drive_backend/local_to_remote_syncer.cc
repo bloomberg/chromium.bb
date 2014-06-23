@@ -61,6 +61,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       local_path_(local_path),
       url_(url),
       sync_action_(SYNC_ACTION_NONE),
+      retry_on_success_(false),
       needs_remote_change_listing_(false),
       weak_ptr_factory_(this) {
   DCHECK(local_is_missing_ ||
@@ -166,6 +167,8 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
       remote_parent_folder_tracker_ = active_ancestor_tracker.Pass();
       target_path_ = active_ancestor_path.Append(missing_components[0]);
       token->RecordLog("Detected missing parent folder.");
+
+      retry_on_success_ = true;
       CreateRemoteFolder(token.Pass());
       return;
     }
@@ -177,7 +180,9 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     remote_file_tracker_ = active_ancestor_tracker.Pass();
     target_path_ = active_ancestor_path;
     token->RecordLog("Detected non-folder file in its path.");
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
+
+    retry_on_success_ = true;
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -226,7 +231,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
 
 void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
                                         SyncStatusCode status) {
-  if (status == SYNC_STATUS_OK && target_path_ != url_.path())
+  if (status == SYNC_STATUS_OK && retry_on_success_)
     status = SYNC_STATUS_RETRY;
 
   if (needs_remote_change_listing_)
@@ -318,7 +323,8 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Non-conflicting local file update to existing remote *folder*.
     // Assuming this case as local folder deletion + local file creation, delete
     // the remote folder and upload the file.
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
+    retry_on_success_ = true;
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -329,7 +335,8 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Non-conflicting local folder creation to existing remote *file*.
     // Assuming this case as local file deletion + local folder creation, delete
     // the remote file and create a remote folder.
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
+    retry_on_success_ = true;
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -514,9 +521,10 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
   if (error == google_apis::HTTP_NOT_FOUND) {
+    retry_on_success_ = true;
     metadata_database()->UpdateByDeletedRemoteFile(
         file_id,
-        base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
+        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&token)));
     return;
@@ -534,9 +542,10 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
     return;
   }
 
+  retry_on_success_ = true;
   metadata_database()->UpdateByFileResource(
       *entry,
-      base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
+      base::Bind(&LocalToRemoteSyncer::SyncCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&token)));
 }
@@ -674,14 +683,6 @@ drive::DriveUploaderInterface* LocalToRemoteSyncer::drive_uploader() {
 
 MetadataDatabase* LocalToRemoteSyncer::metadata_database() {
   return sync_context_->GetMetadataDatabase();
-}
-
-void LocalToRemoteSyncer::CompleteWithRetryStatus(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
-  if (status == SYNC_STATUS_OK)
-    status = SYNC_STATUS_RETRY;
-  SyncCompleted(token.Pass(), status);
 }
 
 }  // namespace drive_backend

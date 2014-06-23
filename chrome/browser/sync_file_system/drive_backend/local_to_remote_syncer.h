@@ -102,9 +102,6 @@ class LocalToRemoteSyncer : public SyncTask {
   drive::DriveUploaderInterface* drive_uploader();
   MetadataDatabase* metadata_database();
 
-  void CompleteWithRetryStatus(scoped_ptr<SyncTaskToken> token,
-                               SyncStatusCode status);
-
   SyncEngineContext* sync_context_;  // Not owned.
 
   FileChange local_change_;
@@ -117,6 +114,7 @@ class LocalToRemoteSyncer : public SyncTask {
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;
   base::FilePath target_path_;
 
+  bool retry_on_success_;
   bool needs_remote_change_listing_;
 
   scoped_ptr<FolderCreator> folder_creator_;
