@@ -64,6 +64,7 @@ const AtomicString& MediaKeyEvent::interfaceName() const
 
 void MediaKeyEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_errorCode);
     Event::trace(visitor);
 }
 

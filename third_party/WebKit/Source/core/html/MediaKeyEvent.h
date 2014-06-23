@@ -39,7 +39,7 @@ struct MediaKeyEventInit : public EventInit {
     RefPtr<Uint8Array> initData;
     RefPtr<Uint8Array> message;
     String defaultURL;
-    RefPtr<MediaKeyError> errorCode;
+    RefPtrWillBeMember<MediaKeyError> errorCode;
     unsigned short systemCode;
 };
 
@@ -79,7 +79,7 @@ private:
     RefPtr<Uint8Array> m_initData;
     RefPtr<Uint8Array> m_message;
     String m_defaultURL;
-    RefPtr<MediaKeyError> m_errorCode;
+    RefPtrWillBeMember<MediaKeyError> m_errorCode;
     unsigned short m_systemCode;
 };
 

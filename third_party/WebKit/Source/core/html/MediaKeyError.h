@@ -27,12 +27,13 @@
 #define MediaKeyError_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class MediaKeyError : public RefCounted<MediaKeyError>, public ScriptWrappable {
+class MediaKeyError FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaKeyError>, public ScriptWrappable {
 public:
     enum {
         MEDIA_KEYERR_UNKNOWN = 1,
@@ -44,13 +45,18 @@ public:
     };
     typedef unsigned short Code;
 
-    static PassRefPtr<MediaKeyError> create(Code code, unsigned long systemCode = 0) { return adoptRef(new MediaKeyError(code, systemCode)); }
+    static PassRefPtrWillBeRawPtr<MediaKeyError> create(Code code, unsigned long systemCode = 0)
+    {
+        return adoptRefWillBeNoop(new MediaKeyError(code, systemCode));
+    }
 
     Code code() const { return m_code; }
     unsigned long systemCode() { return m_systemCode; }
 
+    void trace(Visitor*) { }
+
 private:
-    explicit MediaKeyError(Code code, unsigned long systemCode) : m_code(code), m_systemCode(systemCode)
+    MediaKeyError(Code code, unsigned long systemCode) : m_code(code), m_systemCode(systemCode)
     {
         ScriptWrappable::init(this);
     }

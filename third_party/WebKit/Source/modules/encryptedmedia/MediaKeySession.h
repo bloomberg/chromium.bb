@@ -123,7 +123,7 @@ private:
     virtual void error(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString& errorMessage) OVERRIDE;
 
     String m_keySystem;
-    RefPtr<MediaKeyError> m_error;
+    RefPtrWillBeMember<MediaKeyError> m_error;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 

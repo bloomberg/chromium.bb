@@ -458,7 +458,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<MIDIPort>& value) con
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<MediaKeyError>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

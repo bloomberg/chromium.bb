@@ -298,6 +298,7 @@ void MediaKeySession::stop()
 
 void MediaKeySession::trace(Visitor* visitor)
 {
+    visitor->trace(m_error);
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_keys);
     EventTargetWithInlineData::trace(visitor);
