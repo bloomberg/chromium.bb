@@ -19,6 +19,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -59,7 +60,27 @@ views::View* AppInfoPermissionsPanel::CreateBulletedListView(
     bool allow_multiline,
     gfx::ElideBehavior elide_behavior) {
   const int kSpacingBetweenBulletAndStartOfText = 5;
-  views::View* list_view = CreateVerticalStack();
+
+  views::View* list_view = new views::View();
+  views::GridLayout* layout = new views::GridLayout(list_view);
+  list_view->SetLayoutManager(layout);
+
+  // Create 2 columns: one for the bullet, one for the bullet text.
+  static const int kColumnSetId = 1;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, kSpacingBetweenBulletAndStartOfText);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
 
   for (std::vector<base::string16>::const_iterator it = messages.begin();
        it != messages.end();
@@ -72,25 +93,17 @@ views::View* AppInfoPermissionsPanel::CreateBulletedListView(
     else
       permission_label->SetElideBehavior(elide_behavior);
 
-    // Extract only the bullet from the IDS_EXTENSION_PERMISSION_LINE text, and
-    // place it in it's own view so it doesn't align vertically with the
-    // multilined permissions text.
+    // Extract only the bullet from the IDS_EXTENSION_PERMISSION_LINE text.
     views::Label* bullet_label = new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PERMISSION_LINE, base::string16()));
-    views::View* bullet_label_top_aligned = CreateVerticalStack();
-    bullet_label_top_aligned->AddChildView(bullet_label);
 
-    // Place the bullet and the text so all permissions line up at the bullet.
-    views::View* bulleted_list_item = new views::View();
-    bulleted_list_item->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal,
-                             0,
-                             0,
-                             kSpacingBetweenBulletAndStartOfText));
-    bulleted_list_item->AddChildView(bullet_label_top_aligned);
-    bulleted_list_item->AddChildView(permission_label);
+    // Add a padding row before every item except the first
+    if (it != messages.begin())
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-    list_view->AddChildView(bulleted_list_item);
+    layout->StartRow(1, kColumnSetId);
+    layout->AddView(bullet_label);
+    layout->AddView(permission_label);
   }
 
   return list_view;
