@@ -710,6 +710,25 @@ void NetworkChangeNotifier::RemoveNetworkChangeObserver(
   }
 }
 
+// static
+void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests() {
+  if (g_network_change_notifier)
+    g_network_change_notifier->NotifyObserversOfIPAddressChangeImpl();
+}
+
+// static
+void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+    ConnectionType type) {
+  if (g_network_change_notifier)
+    g_network_change_notifier->NotifyObserversOfConnectionTypeChangeImpl(type);
+}
+
+// static
+void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
+  if (g_network_change_notifier)
+    g_network_change_notifier->test_notifications_only_ = test_only;
+}
+
 NetworkChangeNotifier::NetworkChangeNotifier(
     const NetworkChangeCalculatorParams& params
         /*= NetworkChangeCalculatorParams()*/)
@@ -726,7 +745,8 @@ NetworkChangeNotifier::NetworkChangeNotifier(
         new ObserverListThreadSafe<NetworkChangeObserver>(
             ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
       network_state_(new NetworkState()),
-      network_change_calculator_(new NetworkChangeCalculator(params)) {
+      network_change_calculator_(new NetworkChangeCalculator(params)),
+      test_notifications_only_(false) {
   DCHECK(!g_network_change_notifier);
   g_network_change_notifier = this;
   network_change_calculator_->Init();
@@ -741,17 +761,35 @@ NetworkChangeNotifier::GetAddressTrackerInternal() const {
 
 // static
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->ip_address_observer_list_->Notify(
-        &IPAddressObserver::OnIPAddressChanged);
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfIPAddressChangeImpl();
+  }
+}
+
+// static
+void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfConnectionTypeChangeImpl(
+        GetConnectionType());
+  }
+}
+
+// static
+void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
+    ConnectionType type) {
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfNetworkChangeImpl(type);
   }
 }
 
 // static
 void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->resolver_state_observer_list_->Notify(
-        &DNSObserver::OnDNSChanged);
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfDNSChangeImpl();
   }
 }
 
@@ -793,21 +831,24 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
   return result;
 }
 
-void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->connection_type_observer_list_->Notify(
-        &ConnectionTypeObserver::OnConnectionTypeChanged,
-        GetConnectionType());
-  }
+void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeImpl() {
+  ip_address_observer_list_->Notify(&IPAddressObserver::OnIPAddressChanged);
 }
 
-void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
+void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeImpl(
     ConnectionType type) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->network_change_observer_list_->Notify(
-        &NetworkChangeObserver::OnNetworkChanged,
-        type);
-  }
+  connection_type_observer_list_->Notify(
+      &ConnectionTypeObserver::OnConnectionTypeChanged, type);
+}
+
+void NetworkChangeNotifier::NotifyObserversOfNetworkChangeImpl(
+    ConnectionType type) {
+  network_change_observer_list_->Notify(
+      &NetworkChangeObserver::OnNetworkChanged, type);
+}
+
+void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
+  resolver_state_observer_list_->Notify(&DNSObserver::OnDNSChanged);
 }
 
 NetworkChangeNotifier::DisableForTest::DisableForTest()

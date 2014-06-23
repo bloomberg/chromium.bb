@@ -1,0 +1,19 @@
+<html>
+<head></head>
+<script>
+
+function getType() {
+  sendValueToTest(navigator.connection.type);
+}
+
+function getOnLine() {
+  sendValueToTest(navigator.onLine);
+}
+
+function sendValueToTest(value) {
+  window.domAutomationController.setAutomationId(0);
+  window.domAutomationController.send(value);
+}
+
+</script>
+</html>

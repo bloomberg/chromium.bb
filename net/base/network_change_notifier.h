@@ -217,9 +217,14 @@ class NET_EXPORT NetworkChangeNotifier {
   static void RemoveNetworkChangeObserver(NetworkChangeObserver* observer);
 
   // Allow unit tests to trigger notifications.
-  static void NotifyObserversOfIPAddressChangeForTests() {
-    NotifyObserversOfIPAddressChange();
-  }
+  static void NotifyObserversOfIPAddressChangeForTests();
+  static void NotifyObserversOfConnectionTypeChangeForTests(
+      ConnectionType type);
+
+  // Enable or disable notifications from the host. After setting to true, be
+  // sure to pump the RunLoop until idle to finish any preexisting
+  // notifications.
+  static void SetTestNotificationsOnly(bool test_only);
 
   // Return a string equivalent to |type|.
   static const char* ConnectionTypeToString(ConnectionType type);
@@ -325,6 +330,11 @@ class NET_EXPORT NetworkChangeNotifier {
   static ConnectionType ConnectionTypeFromInterfaceList(
       const NetworkInterfaceList& interfaces);
 
+  void NotifyObserversOfIPAddressChangeImpl();
+  void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
+  void NotifyObserversOfDNSChangeImpl();
+  void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
+
   const scoped_refptr<ObserverListThreadSafe<IPAddressObserver> >
       ip_address_observer_list_;
   const scoped_refptr<ObserverListThreadSafe<ConnectionTypeObserver> >
@@ -342,6 +352,9 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Computes NetworkChange signal from IPAddress and ConnectionType signals.
   scoped_ptr<NetworkChangeCalculator> network_change_calculator_;
+
+  // Set true to disable non-test notifications (to prevent flakes in tests).
+  bool test_notifications_only_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifier);
 };
