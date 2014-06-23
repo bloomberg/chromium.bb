@@ -187,14 +187,12 @@ gfx::Image SelectFaviconFramesFromPNGs(
 
   std::vector<float> favicon_scales_to_generate = favicon_scales;
   for (size_t i = 0; i < png_reps.size(); ++i) {
-    for (int j = static_cast<int>(favicon_scales_to_generate.size()) - 1;
-         j >= 0;
-         --j) {
-      if (png_reps[i].scale == favicon_scales_to_generate[j]) {
-        favicon_scales_to_generate.erase(favicon_scales_to_generate.begin() +
-                                         j);
-      }
-    }
+    std::vector<float>::iterator iter = std::find(
+        favicon_scales_to_generate.begin(),
+        favicon_scales_to_generate.end(),
+        png_reps[i].scale);
+    if (iter != favicon_scales_to_generate.end())
+      favicon_scales_to_generate.erase(iter);
   }
 
   if (favicon_scales_to_generate.empty())
