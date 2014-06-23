@@ -64,11 +64,11 @@ test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, null)',
 test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, {})', false);
 test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, objectThrowingException)', true, 'Error: enableHighAccuracy getter exception');
 test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, emptyFunction)', false);
-test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, true)', false);
-test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, 42)', false);
-test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, Infinity)', false);
-test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, -Infinity)', false);
-test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, "string")', false);
+test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, true)', true);
+test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, 42)', true);
+test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, Infinity)', true);
+test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, -Infinity)', true);
+test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, "string")', true);
 
 test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, {dummyProperty:undefined})', false);
 test('navigator.geolocation.getCurrentPosition(emptyFunction, undefined, {dummyProperty:null})', false);

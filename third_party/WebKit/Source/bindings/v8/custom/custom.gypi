@@ -39,7 +39,6 @@
             'V8FileReaderCustom.cpp',
             'V8Float32ArrayCustom.h',
             'V8Float64ArrayCustom.h',
-            'V8GeolocationCustom.cpp',
             'V8HTMLAllCollectionCustom.cpp',
             'V8HTMLCanvasElementCustom.cpp',
             'V8HTMLCollectionCustom.cpp',

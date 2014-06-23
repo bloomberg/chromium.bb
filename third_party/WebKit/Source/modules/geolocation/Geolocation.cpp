@@ -295,23 +295,23 @@ Geoposition* Geolocation::lastPosition()
     return m_lastPosition.get();
 }
 
-void Geolocation::getCurrentPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
+void Geolocation::getCurrentPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, const Dictionary& options)
 {
     if (!frame())
         return;
 
-    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
+    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, PositionOptions::create(options));
     startRequest(notifier);
 
     m_oneShots.add(notifier);
 }
 
-int Geolocation::watchPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
+int Geolocation::watchPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, const Dictionary& options)
 {
     if (!frame())
         return 0;
 
-    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
+    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, PositionOptions::create(options));
     startRequest(notifier);
 
     int watchID;

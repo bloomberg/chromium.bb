@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class Dictionary;
 class Document;
 class LocalFrame;
 class GeolocationController;
@@ -61,11 +62,11 @@ public:
 
     // Creates a oneshot and attempts to obtain a position that meets the
     // constraints of the options.
-    void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PositionOptions*);
+    void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, const Dictionary&);
 
     // Creates a watcher that will be notified whenever a new position is
     // available that meets the constraints of the options.
-    int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PositionOptions*);
+    int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, const Dictionary&);
 
     // Removes all references to the watcher, it will not be updated again.
     void clearWatch(int watchID);

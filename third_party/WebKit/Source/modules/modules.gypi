@@ -454,6 +454,8 @@
       'geolocation/GeolocationInspectorAgent.cpp',
       'geolocation/NavigatorGeolocation.cpp',
       'geolocation/NavigatorGeolocation.h',
+      'geolocation/PositionOptions.cpp',
+      'geolocation/PositionOptions.h',
       'imagebitmap/ImageBitmapFactories.cpp',
       'imagebitmap/ImageBitmapFactories.h',
       'indexeddb/DOMWindowIndexedDatabase.cpp',
