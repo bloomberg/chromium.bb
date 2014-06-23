@@ -102,13 +102,18 @@ void HitRegionManager::removeHitRegionsInRect(const FloatRect& rect, const Affin
     clearArea.transform(ctm);
 
     HitRegionIterator itEnd = m_hitRegionList.rend();
+    HitRegionList toBeRemoved;
 
     for (HitRegionIterator it = m_hitRegionList.rbegin(); it != itEnd; ++it) {
         RefPtrWillBeRawPtr<HitRegion> hitRegion = *it;
         hitRegion->removePixels(clearArea);
         if (hitRegion->path().isEmpty())
-            removeHitRegion(hitRegion.get());
+            toBeRemoved.add(hitRegion);
     }
+
+    itEnd = toBeRemoved.rend();
+    for (HitRegionIterator it = toBeRemoved.rbegin(); it != itEnd; ++it)
+        removeHitRegion(it->get());
 }
 
 void HitRegionManager::removeAllHitRegions()
