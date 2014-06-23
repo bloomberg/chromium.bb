@@ -12,6 +12,8 @@
 #include "ui/ozone/ozone_switches.h"
 #include "ui/ozone/platform/test/file_surface_factory.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/gpu_platform_support.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -41,10 +43,10 @@ class OzonePlatformTest : public OzonePlatform {
     return cursor_factory_ozone_.get();
   }
   virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
-    return NULL;  // no GPU support
+    return gpu_platform_support_.get();
   }
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
-    return NULL;  // no GPU support
+    return gpu_platform_support_host_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -65,15 +67,20 @@ class OzonePlatformTest : public OzonePlatform {
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
-  virtual void InitializeGPU() OVERRIDE {}
+  virtual void InitializeGPU() OVERRIDE {
+    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
+  }
 
  private:
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<FileSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
+  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);

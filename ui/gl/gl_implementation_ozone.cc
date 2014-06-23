@@ -38,12 +38,12 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
+  ui::OzonePlatform::InitializeForGPU();
 
   switch (implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationEGLGLES2:
-      ui::OzonePlatform::InitializeForGPU();
       if (!ui::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings(
               base::Bind(&AddGLNativeLibrary),
               base::Bind(&SetGLGetProcAddressProc)))
