@@ -189,6 +189,14 @@ class ASH_EXPORT DisplayInfo {
     available_color_profiles_ = profiles;
   }
 
+  bool is_aspect_preserving_scaling() const {
+    return is_aspect_preserving_scaling_;
+  }
+
+  void set_is_aspect_preserving_scaling(bool value) {
+    is_aspect_preserving_scaling_ = value;
+  }
+
   // Returns a string representation of the DisplayInfo, excluding display
   // modes.
   std::string ToString() const;
@@ -231,6 +239,11 @@ class ASH_EXPORT DisplayInfo {
 
   // True if this comes from native platform (DisplayChangeObserver).
   bool native_;
+
+  // True if the display is configured to preserve the aspect ratio. When the
+  // display is configured in a non-native mode, only parts of the display will
+  // be used such that the aspect ratio is preserved.
+  bool is_aspect_preserving_scaling_;
 
   // The list of modes supported by this display.
   std::vector<DisplayMode> display_modes_;

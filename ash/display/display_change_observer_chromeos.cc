@@ -164,6 +164,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
         gfx::Display::TOUCH_SUPPORT_AVAILABLE);
     new_info.set_touch_device_id(state.touch_device_id);
+    new_info.set_is_aspect_preserving_scaling(
+        state.display->is_aspect_preserving_scaling());
     new_info.set_available_color_profiles(
         Shell::GetInstance()
             ->display_configurator()

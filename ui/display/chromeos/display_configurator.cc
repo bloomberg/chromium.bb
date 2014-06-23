@@ -809,13 +809,6 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
       for (size_t i = 0; i < cached_displays_.size(); ++i) {
         DisplayState* state = &cached_displays_[i];
         new_mode[i] = display_power[i] ? state->mirror_mode : NULL;
-        if (state->touch_device_id) {
-          if (state->mirror_mode != state->display->native_mode() &&
-              state->display->is_aspect_preserving_scaling()) {
-            mirrored_display_area_ratio_map_[state->touch_device_id] =
-                GetMirroredDisplayAreaRatio(*state);
-          }
-        }
       }
       break;
     }
@@ -944,28 +937,6 @@ MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
       NOTREACHED();
   }
   return MULTIPLE_DISPLAY_STATE_INVALID;
-}
-
-float DisplayConfigurator::GetMirroredDisplayAreaRatio(
-    const DisplayState& display_state) {
-  float area_ratio = 1.0f;
-  const DisplayMode* native_mode_info = display_state.display->native_mode();
-  const DisplayMode* mirror_mode_info = display_state.mirror_mode;
-
-  if (!native_mode_info || !mirror_mode_info ||
-      native_mode_info->size().height() == 0 ||
-      mirror_mode_info->size().height() == 0 ||
-      native_mode_info->size().width() == 0 ||
-      mirror_mode_info->size().width() == 0)
-    return area_ratio;
-
-  float width_ratio = static_cast<float>(mirror_mode_info->size().width()) /
-                      static_cast<float>(native_mode_info->size().width());
-  float height_ratio = static_cast<float>(mirror_mode_info->size().height()) /
-                       static_cast<float>(native_mode_info->size().height());
-
-  area_ratio = width_ratio * height_ratio;
-  return area_ratio;
 }
 
 }  // namespace ui
