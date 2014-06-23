@@ -921,8 +921,7 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
     }
 
     delegate_->OnNativeBlur(gained_focus);
-    if (GetWidget()->GetFocusManager())
-      GetWidget()->GetFocusManager()->StoreFocusedView(true);
+    GetWidget()->GetFocusManager()->StoreFocusedView(true);
   }
 }
 
