@@ -996,14 +996,14 @@ bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {
   return false;
 }
 
-HistoryBackend::QueryURLResult HistoryBackend::QueryURL(const GURL& url,
-                                                        bool want_visits) {
-  QueryURLResult result;
-  result.success = db_ && db_->GetRowForURL(url, &result.row);
+void HistoryBackend::QueryURL(const GURL& url,
+                              bool want_visits,
+                              QueryURLResult* result) {
+  DCHECK(result);
+  result->success = db_ && db_->GetRowForURL(url, &result->row);
   // Optionally query the visits.
-  if (result.success && want_visits)
-    db_->GetVisitsForURL(result.row.id(), &result.visits);
-  return result;
+  if (result->success && want_visits)
+    db_->GetVisitsForURL(result->row.id(), &result->visits);
 }
 
 TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {

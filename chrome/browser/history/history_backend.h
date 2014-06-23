@@ -159,7 +159,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void IterateURLs(
       const scoped_refptr<visitedlink::VisitedLinkDelegate::URLEnumerator>&
           enumerator);
-  QueryURLResult QueryURL(const GURL& url, bool want_visits);
+  void QueryURL(const GURL& url,
+                bool want_visits,
+                QueryURLResult* query_url_result);
   void QueryHistory(scoped_refptr<QueryHistoryRequest> request,
                     const base::string16& text_query,
                     const QueryOptions& options);

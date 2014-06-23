@@ -82,8 +82,8 @@ void RunWithFaviconResult(
 }
 
 void RunWithQueryURLResult(const HistoryService::QueryURLCallback& callback,
-                           const HistoryBackend::QueryURLResult& result) {
-  callback.Run(result.success, result.row, result.visits);
+                           const HistoryBackend::QueryURLResult* result) {
+  callback.Run(result->success, result->row, result->visits);
 }
 
 // Extract history::URLRows into GURLs for VisitedLinkMaster.
@@ -708,12 +708,18 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     const QueryURLCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return PostTaskAndReplyWithResult(
+  HistoryBackend::QueryURLResult* query_url_result =
+      new HistoryBackend::QueryURLResult();
+  return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
+      base::Bind(&HistoryBackend::QueryURL,
+                 history_backend_.get(),
+                 url,
+                 want_visits,
+                 base::Unretained(query_url_result)),
       base::Bind(
-          &HistoryBackend::QueryURL, history_backend_.get(), url, want_visits),
-      base::Bind(&RunWithQueryURLResult, callback));
+          &RunWithQueryURLResult, callback, base::Owned(query_url_result)));
 }
 
 // Downloads -------------------------------------------------------------------
