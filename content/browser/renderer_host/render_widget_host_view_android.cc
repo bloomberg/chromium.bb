@@ -544,13 +544,10 @@ void RenderWidgetHostViewAndroid::OnStartContentIntent(
 }
 
 void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(
-    const base::string16& result) {
-  // Custom serialization over IPC isn't allowed normally for security reasons.
-  // Since this feature is only used in (single-process) WebView, there are no
-  // security issues. Enforce that it's only called in single process mode.
-  CHECK(RenderProcessHost::run_renderer_in_process());
+    const base::string16& result,
+    const gfx::Rect rect) {
   if (content_view_core_)
-    content_view_core_->OnSmartClipDataExtracted(result);
+    content_view_core_->OnSmartClipDataExtracted(rect, result);
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(

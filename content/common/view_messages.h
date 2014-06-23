@@ -1663,11 +1663,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
                     bool /* enabled */)
 
 // Reply to the ViewMsg_ExtractSmartClipData message.
-// TODO(juhui24.lee@samsung.com): this should be changed to a vector of structs
-// instead of encoding the data as a string which is not allowed normally. Since
-// ths is only used in Android WebView, it's allowed temporarily.
-// http://crbug.com/330872
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SmartClipDataExtracted, base::string16)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SmartClipDataExtracted,
+                    base::string16 /* result */,
+                    gfx::Rect /* rect */)
 
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.

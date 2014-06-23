@@ -1646,14 +1646,16 @@ bool ContentViewCoreImpl::WillHandleDeferAfterResponseStarted() {
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
+    const gfx::Rect& clip_rect,
     const base::string16& result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
+  ScopedJavaLocalRef<jobject> clip_rect_object(CreateJavaRect(env, clip_rect));
   ScopedJavaLocalRef<jstring> jresult = ConvertUTF16ToJavaString(env, result);
   Java_ContentViewCore_onSmartClipDataExtracted(
-      env, obj.obj(), jresult.obj());
+      env, obj.obj(), jresult.obj(), clip_rect_object.obj());
 }
 
 void ContentViewCoreImpl::WebContentsDestroyed() {

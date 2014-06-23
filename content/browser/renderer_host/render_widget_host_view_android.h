@@ -198,7 +198,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
-  void OnSmartClipDataExtracted(const base::string16& result);
+  void OnSmartClipDataExtracted(const base::string16& result,
+                                const gfx::Rect rect);
 
   bool OnTouchEvent(const ui::MotionEvent& event);
   void ResetGestureDetection();
