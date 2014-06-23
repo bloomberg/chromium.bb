@@ -24,54 +24,56 @@
  */
 
 #include "config.h"
-
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSourceInfo.h"
+#include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
-    return adoptRefWillBeNoop(new MediaStreamTrackSourcesRequestImpl(origin, callback));
+    return adoptRefWillBeNoop(new MediaStreamTrackSourcesRequestImpl(context, callback));
 }
 
-MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
-    , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired)
+    , m_executionContext(&context)
 {
-    m_origin = origin;
 }
 
 MediaStreamTrackSourcesRequestImpl::~MediaStreamTrackSourcesRequestImpl()
 {
 }
 
+String MediaStreamTrackSourcesRequestImpl::origin()
+{
+    return m_executionContext->securityOrigin()->toString();
+}
+
 void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const blink::WebVector<blink::WebSourceInfo>& webSourceInfos)
 {
-    ASSERT(m_callback && !m_scheduledEventTimer.isActive());
+    ASSERT(m_callback);
 
     for (size_t i = 0; i < webSourceInfos.size(); ++i)
         m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
-
-    m_protect = this;
-    m_scheduledEventTimer.startOneShot(0, FROM_HERE);
+    m_executionContext->postTask(bind(&MediaStreamTrackSourcesRequestImpl::performCallback, PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl>(this)));
 }
 
-void MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequestImpl>*)
+void MediaStreamTrackSourcesRequestImpl::performCallback()
 {
     m_callback->handleEvent(m_sourceInfos);
     m_callback.clear();
-    m_protect.release();
 }
 
 void MediaStreamTrackSourcesRequestImpl::trace(Visitor* visitor)
 {
+    visitor->trace(m_executionContext);
     visitor->trace(m_sourceInfos);
-    visitor->trace(m_protect);
     MediaStreamTrackSourcesRequest::trace(visitor);
 }
 

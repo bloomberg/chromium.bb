@@ -27,40 +27,36 @@
 #define MediaStreamTrackSourcesRequestImpl_h
 
 #include "modules/mediastream/SourceInfo.h"
-#include "platform/Timer.h"
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
-#include "public/platform/WebVector.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 class WebSourceInfo;
+template<typename T> class WebVector;
 }
 
 namespace WebCore {
 
+class ExecutionContext;
 class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
 public:
-    static PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> create(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    static PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> create(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
     ~MediaStreamTrackSourcesRequestImpl();
 
-    virtual String origin() { return m_origin; }
-    virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&);
+    virtual String origin() OVERRIDE;
+    virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    MediaStreamTrackSourcesRequestImpl(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    MediaStreamTrackSourcesRequestImpl(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
 
-    void scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequestImpl>*);
+    void performCallback();
 
     OwnPtr<MediaStreamTrackSourcesCallback> m_callback;
-    String m_origin;
-    Timer<MediaStreamTrackSourcesRequestImpl> m_scheduledEventTimer;
+    RefPtrWillBeMember<ExecutionContext> m_executionContext;
     SourceInfoVector m_sourceInfos;
-    RefPtrWillBeMember<MediaStreamTrackSourcesRequest> m_protect;
 };
 
 } // namespace WebCore
