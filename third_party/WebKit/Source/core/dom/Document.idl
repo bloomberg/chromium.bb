@@ -189,7 +189,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     attribute EventHandler onwebkitfullscreenerror;
     attribute EventHandler onwebkitpointerlockchange;
     attribute EventHandler onwebkitpointerlockerror;
-    [LogActivity=SetterOnly] attribute EventHandler onwheel;
+    attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,

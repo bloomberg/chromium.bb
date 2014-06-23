@@ -33,6 +33,7 @@
 #include "core/events/EventTarget.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NoEventDispatchAssertion.h"
 #include "core/editing/Editor.h"
@@ -88,6 +89,15 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     // generated bindings), but breaks legacy content. http://crbug.com/249598
     if (!listener)
         return false;
+
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (activityLogger) {
+        Vector<String> argv;
+        argv.append(toNode() ? toNode()->nodeName() : interfaceName());
+        argv.append(eventType);
+        activityLogger->logEvent("blinkAddEventListener", 2, argv.data());
+    }
+
     return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
 }
 
