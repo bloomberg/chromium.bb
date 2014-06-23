@@ -94,10 +94,10 @@
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
-    'classes_dir': '<(intermediate_dir)/classes',
-    'classes_final_dir': '<(intermediate_dir)/classes_instr',
+    'classes_dir': '<(intermediate_dir)/classes/2',
     'javac_includes': [],
     'jar_excluded_classes': [],
+    'javac_jar_path': '<(intermediate_dir)/<(_target_name).javac.jar',
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
     'obfuscated_jar_path': '<(intermediate_dir)/obfuscated.jar',
     'test_jar_path': '<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
@@ -153,7 +153,6 @@
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
     'extra_native_libs': [],
-    'apk_dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -540,14 +539,17 @@
       ],
       'outputs': [
         '<(compile_stamp)',
+        '<(javac_jar_path)',
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/javac.py',
-        '--output-dir=<(classes_dir)',
+        '--classes-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
         '--src-gendirs=>(gen_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
+        '--jar-path=<(javac_jar_path)',
+        '--jar-excluded-classes=<(jar_excluded_classes)',
         '--stamp=<(compile_stamp)',
         '>@(java_sources)',
       ],
@@ -571,42 +573,22 @@
       'includes': [ 'android/lint_action.gypi' ],
     },
     {
-      'action_name': 'instr_classes_<(_target_name)',
-      'message': 'Instrumenting <(_target_name) classes',
+      'action_name': 'instr_jar_<(_target_name)',
+      'message': 'Instrumenting <(_target_name) jar',
       'variables': {
-        'input_path': '<(classes_dir)',
-        'output_path': '<(classes_final_dir)',
+        'input_path': '<(javac_jar_path)',
+        'output_path': '<(jar_path)',
         'stamp_path': '<(instr_stamp)',
-        'instr_type': 'classes',
+        'instr_type': 'jar',
       },
-      'inputs': [
-        '<(compile_stamp)',
-      ],
       'outputs': [
         '<(instr_stamp)',
-      ],
-      'includes': [ 'android/instr_action.gypi' ],
-    },
-    {
-      'action_name': 'jar_<(_target_name)',
-      'message': 'Creating <(_target_name) jar',
-      'inputs': [
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/util/md5_check.py',
-        '<(DEPTH)/build/android/gyp/jar.py',
-        '<(instr_stamp)',
-      ],
-      'outputs': [
-        '<(jar_stamp)',
         '<(jar_path)',
       ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/jar.py',
-        '--classes-dir=<(classes_final_dir)',
-        '--jar-path=<(jar_path)',
-        '--excluded-classes=<(jar_excluded_classes)',
-        '--stamp=<(jar_stamp)',
-      ]
+      'inputs': [
+        '<(javac_jar_path)',
+      ],
+      'includes': [ 'android/instr_action.gypi' ],
     },
     {
       'action_name': 'obfuscate_<(_target_name)',
@@ -696,11 +678,11 @@
     {
       'action_name': 'dex_<(_target_name)',
       'variables': {
-        'output_path': '<(dex_path)',
         'dex_input_paths': [
-          '>@(apk_dex_input_paths)',
+          '>@(library_dexed_jars_paths)',
           '<(jar_path)',
         ],
+        'output_path': '<(dex_path)',
         'proguard_enabled_input_path': '<(obfuscated_jar_path)',
       },
       'target_conditions': [

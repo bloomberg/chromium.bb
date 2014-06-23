@@ -230,14 +230,17 @@
       ],
       'outputs': [
         '<(compile_stamp)',
+        '<(javac_jar_path)',
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/javac.py',
-        '--output-dir=<(classes_dir)',
+        '--classes-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths)',
         '--src-gendirs=>(generated_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
+        '--jar-path=<(javac_jar_path)',
+        '--jar-excluded-classes=<(jar_excluded_classes)',
         '--stamp=<(compile_stamp)',
         '>@(java_sources)',
       ]
@@ -259,25 +262,6 @@
         '<(lint_stamp)',
       ],
       'includes': [ 'android/lint_action.gypi' ],
-    },
-    {
-      'action_name': 'jar_<(_target_name)',
-      'message': 'Creating <(_target_name) jar',
-      'inputs': [
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/util/md5_check.py',
-        '<(DEPTH)/build/android/gyp/jar.py',
-        '<(compile_stamp)',
-      ],
-      'outputs': [
-        '<(javac_jar_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/jar.py',
-        '--classes-dir=<(classes_dir)',
-        '--jar-path=<(javac_jar_path)',
-        '--excluded-classes=<(jar_excluded_classes)',
-      ]
     },
     {
       'action_name': 'instr_jar_<(_target_name)',

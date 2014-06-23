@@ -41,7 +41,10 @@ def DeleteDirectory(dir_path):
     shutil.rmtree(dir_path)
 
 
-def Touch(path):
+def Touch(path, fail_if_missing=False):
+  if fail_if_missing and not os.path.exists(path):
+    raise Exception(path + ' doesn\'t exist.')
+
   MakeDirectory(os.path.dirname(path))
   with open(path, 'a'):
     os.utime(path, None)
