@@ -391,8 +391,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
 #if defined(ENABLE_WEBRTC)
     waiting_for_clear_webrtc_logs_ = true;
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
+    BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(
             &WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles,

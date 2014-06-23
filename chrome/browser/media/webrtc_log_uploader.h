@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -118,7 +119,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
 
   void DecreaseLogCount();
 
-  // Must be called on the FILE thread.
+  // Must be called on the blocking task pool.
   void WriteCompressedLogToFile(const std::vector<uint8>& compressed_log,
                                 const base::FilePath& log_file_path);
 
@@ -137,7 +138,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // "upload_time" and "report_id" is the left empty in the entry written to the
   // list file. If uploading is successful, AddUploadedLogInfoToUploadListFile()
   // is called and those empty items are filled out.
-  // Must be called on the FILE thread.
+  // Must be called on the blocking task pool.
   void AddLocallyStoredLogInfoToUploadListFile(
       const base::FilePath& upload_list_path,
       const std::string& local_log_id);
@@ -153,15 +154,18 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // This is the UI thread for Chromium. Some other thread for tests.
   base::ThreadChecker create_thread_checker_;
 
-  // This is the FILE thread for Chromium. Some other thread for tests.
-  base::ThreadChecker file_thread_checker_;
+  // This is the blocking task pool.
+  base::SequenceChecker blocking_sequence_checker_;
+
+  // Token to make sure AddUploadedLogInfoToUploadListFile() is sequenced.
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
 
   // Keeps track of number of currently open logs. Must be accessed on the UI
   // thread.
   int log_count_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
-  // on the FILE thread.
+  // on the blocking thread pool.
   std::string* post_data_;
 
   typedef std::map<const net::URLFetcher*, WebRtcLogUploadDoneData>
