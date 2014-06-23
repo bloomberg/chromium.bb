@@ -121,7 +121,10 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
         startOfContents = VisiblePosition(positionInParentAfterNode(*targetBlockquote));
     }
 
-    moveParagraphWithClones(startOfContents, VisiblePosition(end), targetBlockquote.get(), outerBlock.get());
+    VisiblePosition endOfContents(end);
+    if (startOfContents.isNull() || endOfContents.isNull())
+        return;
+    moveParagraphWithClones(startOfContents, endOfContents, targetBlockquote.get(), outerBlock.get());
 }
 
 void IndentOutdentCommand::outdentParagraph()
