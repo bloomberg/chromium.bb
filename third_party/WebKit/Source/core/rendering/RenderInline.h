@@ -23,7 +23,6 @@
 #ifndef RenderInline_h
 #define RenderInline_h
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"

@@ -29,7 +29,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"

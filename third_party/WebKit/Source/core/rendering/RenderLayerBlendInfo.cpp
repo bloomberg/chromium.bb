@@ -47,6 +47,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

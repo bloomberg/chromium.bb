@@ -46,7 +46,6 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"

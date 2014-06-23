@@ -23,7 +23,6 @@
 #ifndef RenderBox_h
 #define RenderBox_h
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderOverflow.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"

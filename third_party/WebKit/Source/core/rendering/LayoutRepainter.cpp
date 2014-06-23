@@ -28,6 +28,7 @@
 
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 
