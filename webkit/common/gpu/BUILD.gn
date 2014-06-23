@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: webkit/common/gpu/webkit_gpu.gyp:webkit_gpu
 component("gpu") {
   output_name = "webkit_gpu"
 
@@ -35,7 +36,7 @@ component("gpu") {
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/skia_bindings",
     "//skia",
-    #"//third_party/WebKit/public:blink_minimal",  TODO(GYP)
+    "//third_party/WebKit/public:blink_minimal",
     "//third_party/angle:translator",
     "//ui/gl",
     "//ui/gfx",

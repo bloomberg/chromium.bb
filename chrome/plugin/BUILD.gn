@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("plugin") {
+  sources = [
+    "chrome_content_plugin_client.cc",
+    "chrome_content_plugin_client.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    "//base",
+    "//chrome:strings",
+    "//content/public/plugin",
+  ]
+}

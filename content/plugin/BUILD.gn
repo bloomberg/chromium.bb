@@ -32,9 +32,7 @@ if (enable_plugins && !is_linux) {
       "//mojo/public/interfaces/service_provider",
       "//skia",
       "//third_party/npapi",
-      #"//third_party/WebKit/public:blink",  TODO(GYP)
-      # TODO(GYP) remove this when blink is enabled:
-      "//third_party/WebKit/public:blink_headers",
+      "//third_party/WebKit/public:blink",
     ]
   }
 } else {

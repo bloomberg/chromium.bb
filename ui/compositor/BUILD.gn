@@ -104,12 +104,12 @@ source_set("test_support") {
     "//cc:test_support",
     "//skia",
     "//testing/gtest",
-    #"//third_party/WebKit/public:blink_minimal",  TODO(GYP)
+    "//third_party/WebKit/public:blink_minimal",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    #'<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',  TODO(GYP)
+    "//webkit/common/gpu",
   ]
 
   if (use_x11) {

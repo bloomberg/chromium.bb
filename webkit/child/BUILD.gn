@@ -39,7 +39,7 @@ component("child") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//skia",
-    #"//third_party/WebKit/public:blink",  TODO(GYP)
+    "//third_party/WebKit/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/native_theme",

@@ -88,7 +88,7 @@ source_set("child") {
   } else {
     deps += [
       "//crypto:platform",
-      #"//third_party/WebKit/public:blink",  # TODO(GYP)
+      "//third_party/WebKit/public:blink",
       "//third_party/npapi",
       "//webkit:resources",
       "//webkit:strings",
