@@ -19,9 +19,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.JavascriptAppModalDialog;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.test.util.TabUtils;
-import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -278,20 +275,15 @@ public class ModalDialogTest extends ChromeShellTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testDialogDismissedAfterClosingTab()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testDialogDismissedAfterClosingTab() throws InterruptedException {
         executeJavaScriptAndWaitForDialog("alert('Android')");
 
-        final CallbackHelper onTabClosed =
-                getActiveTabTestCallbackHelperContainer().getOnCloseTabHelper();
-        int callCount = onTabClosed.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 getActivity().createTab(EMPTY_PAGE);
             }
         });
-        onTabClosed.waitForCallback(callCount);
 
         // Closing the tab should have dismissed the dialog.
         boolean criteriaSatisfied = CriteriaHelper.pollForCriteria(
@@ -417,7 +409,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
                 button.getText().toString());
     }
 
-    private TestCallbackHelperContainerForTab getActiveTabTestCallbackHelperContainer() {
-        return TabUtils.getTestCallbackHelperContainer(getActivity().getActiveTab());
+    private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {
+        return new TestCallbackHelperContainer(getActivity().getActiveTab().getContentViewCore());
     }
 }

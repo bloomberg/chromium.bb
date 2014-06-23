@@ -11,7 +11,6 @@ import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
@@ -31,7 +30,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
         super.setUp();
 
         mTab = launchChromeShellWithBlankPage().getActiveTab();
-        mCallbackHelper = TabUtils.getTestCallbackHelperContainer(mTab);
+        mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
 
         // Wait for the initial load of about://blank to finish.
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);

@@ -11,13 +11,14 @@ import android.view.MenuItem;
 
 import junit.framework.Assert;
 
+import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.test.util.TabUtils;
-import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -25,24 +26,41 @@ import java.util.concurrent.TimeoutException;
  */
 public class ContextMenuUtils {
     /**
+     * Callback helper that also provides access to the last display ContextMenu.
+     */
+    private static class OnContextMenuShownHelper extends CallbackHelper {
+        private WeakReference<ContextMenu> mContextMenu;
+
+        public void notifyCalled(ContextMenu menu) {
+            mContextMenu = new WeakReference<ContextMenu>(menu);
+            notifyCalled();
+        }
+
+        public ContextMenu getContextMenu() {
+            assert getCallCount() > 0;
+            return mContextMenu.get();
+        }
+    }
+
+    /**
      * Opens a context menu.
      * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
-     * @param client                The helper client for {@code tab} that can wait for events.  If
-     *                              this is {@code null} one will be built automatically.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @return                      The {@link ContextMenu} that was opened.
      * @throws InterruptedException
      * @throws TimeoutException
      */
     public static ContextMenu openContextMenu(ActivityInstrumentationTestCase2 testCase,
-            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId)
+            Tab tab, String openerDOMNodeId)
                     throws InterruptedException, TimeoutException {
-        if (client == null) client = TabUtils.getTestCallbackHelperContainer(tab);
-
-        TestCallbackHelperContainerForTab.OnContextMenuShownHelper helper =
-                client.getOnContextMenuShownHelper();
-
+        final OnContextMenuShownHelper helper = new OnContextMenuShownHelper();
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onContextMenuShown(Tab tab, ContextMenu menu) {
+                helper.notifyCalled(menu);
+            }
+        });
         int callCount = helper.getCallCount();
         DOMUtils.longPressNode(testCase, tab.getContentViewCore(), openerDOMNodeId);
 
@@ -54,17 +72,15 @@ public class ContextMenuUtils {
      * Opens and selects an item from a context menu.
      * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
-     * @param client                The helper client for {@code tab} that can wait for events.  If
-     *                              this is {@code null} one will be built automatically.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemId                The context menu item ID to select.
      * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItem(ActivityInstrumentationTestCase2 testCase,
-            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
+            Tab tab, String openerDOMNodeId,
             final int itemId) throws InterruptedException, TimeoutException {
-        ContextMenu menu = openContextMenu(testCase, tab, client, openerDOMNodeId);
+        ContextMenu menu = openContextMenu(testCase, tab, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
 
         selectOpenContextMenuItem(testCase, menu, itemId);
@@ -74,18 +90,16 @@ public class ContextMenuUtils {
      * Opens and selects an item from a context menu.
      * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
-     * @param client                The helper client for {@code tab} that can wait for events.  If
-     *                              this is {@code null} one will be built automatically.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemTitle             The title of the context menu item to select.
      * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItemByTitle(ActivityInstrumentationTestCase2 testCase,
-            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
+            Tab tab, String openerDOMNodeId,
             String itemTitle) throws InterruptedException, TimeoutException {
 
-        ContextMenu menu = openContextMenu(testCase, tab, client, openerDOMNodeId);
+        ContextMenu menu = openContextMenu(testCase, tab, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
 
         Integer itemId = null;
