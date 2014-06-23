@@ -36,6 +36,13 @@ var jsFile = arguments[1];
 var jsFileBase = arguments[2];
 
 /**
+ * The cwd, as determined by the paths of |jsFile| and |jsFileBase|.
+ * This is usually relative to the root source directory and points to the
+ * directory where the GYP rule processing the js file lives.
+ */
+var jsDirBase = jsFileBase.replace(jsFile, '');
+
+/**
  * Path to Closure library style deps.js file.
  * @type {string?}
  */
@@ -150,9 +157,20 @@ function maybeGenHeader(testFixture) {
  * inclusion (path) and runtime inclusion (base).
  * @param {string} includeFile The file to include.
  * @return {{path: string, base: string}} Object describing the paths
- *     for |includeFile|.
+ *     for |includeFile|. |path| is relative to cwd; |base| is relative to
+ * source root.
  */
 function includeFileToPaths(includeFile) {
+  if (includeFile.indexOf(jsDirBase) == 0) {
+    // The caller supplied a path relative to root source.
+    var relPath = includeFile.replace(jsDirBase, '');
+    return {
+      path: relPath,
+      base: jsDirBase + relPath
+    };
+  }
+
+  // The caller supplied a path relative to the input js file's directory (cwd).
   return {
     path: jsFile.replace(/[^\/\\]+$/, includeFile),
     base: jsFileBase.replace(/[^\/\\]+$/, includeFile),
@@ -281,6 +299,9 @@ function GEN_BLOCK(commentEncodedCode) {
 /**
  * Generate includes for the current |jsFile| by including them
  * immediately and at runtime.
+ * The paths are allowed to be:
+ *   1. relative to the root src directory (i.e. similar to #include's).
+ *   2. relative to the directory specified in the GYP rule for the file.
  * @param {Array.<string>} includes Paths to JavaScript files to
  *     include immediately and at runtime.
  */
