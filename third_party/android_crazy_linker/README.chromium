@@ -30,3 +30,5 @@ index 5fa16df..bc03739 100644
   (Re-add license header to crazy_linker_elf_view.cpp)
 
 - Fix for crbug/373695 (NDK crazy linker: Bug in library file name handling)
+
+- Fix for crbug/386594 (Crazy linker fails to load a browser on MIPS)

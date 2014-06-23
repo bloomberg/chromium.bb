@@ -242,9 +242,18 @@ bool ElfRelocations::Init(const ElfView* view, Error* error) {
     }
   }
 
-  if (relocations_type_ != DT_REL && relocations_type_ != DT_RELA) {
-    *error = "Unsupported or missing DT_PLTREL in dynamic section";
+  if (has_rel_relocations && has_rela_relocations) {
+    *error = "Combining DT_REL and DT_RELA is not currently supported";
     return false;
+  }
+
+  // If DT_PLTREL did not explicitly assign relocations_type_, set it
+  // here based on the type of relocations found.
+  if (relocations_type_ != DT_REL && relocations_type_ != DT_RELA) {
+    if (has_rel_relocations)
+      relocations_type_ = DT_REL;
+    else if (has_rela_relocations)
+      relocations_type_ = DT_RELA;
   }
 
   if (relocations_type_ == DT_REL && has_rela_relocations) {
@@ -286,7 +295,7 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
       return false;
   }
 
-  else if (relocations_type_ == DT_RELA) {
+  if (relocations_type_ == DT_RELA) {
     if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(plt_relocations_),
                          plt_relocations_size_ / sizeof(ELF::Rela),
                          symbols,
@@ -578,13 +587,16 @@ bool ElfRelocations::ApplyRelRelocs(const ELF::Rel* rel,
 
     // If this is a symbolic relocation, compute the symbol's address.
     if (__builtin_expect(rel_symbol != 0, 0)) {
-      resolved = ResolveSymbol(rel_type,
-                               rel_symbol,
-                               symbols,
-                               resolver,
-                               reloc,
-                               &sym_addr,
-                               error);
+      if (!ResolveSymbol(rel_type,
+                         rel_symbol,
+                         symbols,
+                         resolver,
+                         reloc,
+                         &sym_addr,
+                         error)) {
+        return false;
+      }
+      resolved = true;
     }
 
     if (!ApplyRelReloc(rel, sym_addr, resolved, error))
@@ -625,13 +637,16 @@ bool ElfRelocations::ApplyRelaRelocs(const ELF::Rela* rela,
 
     // If this is a symbolic relocation, compute the symbol's address.
     if (__builtin_expect(rel_symbol != 0, 0)) {
-      resolved = ResolveSymbol(rel_type,
-                               rel_symbol,
-                               symbols,
-                               resolver,
-                               reloc,
-                               &sym_addr,
-                               error);
+      if (!ResolveSymbol(rel_type,
+                         rel_symbol,
+                         symbols,
+                         resolver,
+                         reloc,
+                         &sym_addr,
+                         error)) {
+        return false;
+      }
+      resolved = true;
     }
 
     if (!ApplyRelaReloc(rela, sym_addr, resolved, error))
@@ -803,7 +818,7 @@ void ElfRelocations::CopyAndRelocate(size_t src_addr,
   if (relocations_type_ == DT_REL)
     RelocateRel(src_addr, dst_addr, map_addr, size);
 
-  else if (relocations_type_ == DT_RELA)
+  if (relocations_type_ == DT_RELA)
     RelocateRela(src_addr, dst_addr, map_addr, size);
 
 #ifdef __mips__
