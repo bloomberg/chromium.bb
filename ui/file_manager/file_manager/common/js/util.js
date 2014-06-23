@@ -1357,6 +1357,7 @@ util.getEntryLabel = function(volumeManager, entry) {
         return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
       case VolumeManagerCommon.RootType.DRIVE_RECENT:
         return str('DRIVE_RECENT_COLLECTION_LABEL');
+      case VolumeManagerCommon.RootType.DRIVE_OTHER:
       case VolumeManagerCommon.RootType.DOWNLOADS:
       case VolumeManagerCommon.RootType.ARCHIVE:
       case VolumeManagerCommon.RootType.REMOVABLE:
