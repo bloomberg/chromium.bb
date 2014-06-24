@@ -137,27 +137,32 @@ VideoPlayer.prototype.prepare = function(videos) {
   var maximizeButton = document.querySelector('.maximize-button');
   maximizeButton.addEventListener(
     'click',
-    function() {
+    function(event) {
       var appWindow = chrome.app.window.current();
       if (appWindow.isMaximized())
         appWindow.restore();
       else
         appWindow.maximize();
+      event.stopPropagation();
     }.wrap(null));
   maximizeButton.addEventListener('mousedown', preventDefault);
 
   var minimizeButton = document.querySelector('.minimize-button');
   minimizeButton.addEventListener(
     'click',
-    function() {
+    function(event) {
       chrome.app.window.current().minimize()
+      event.stopPropagation();
     }.wrap(null));
   minimizeButton.addEventListener('mousedown', preventDefault);
 
   var closeButton = document.querySelector('.close-button');
   closeButton.addEventListener(
     'click',
-    function() { close(); }.wrap(null));
+    function(event) {
+      close();
+      event.stopPropagation();
+    }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
   this.controls_ = new FullWindowVideoControls(
@@ -187,8 +192,8 @@ VideoPlayer.prototype.prepare = function(videos) {
   else
     videoPlayerElement.removeAttribute('multiple');
 
-  document.addEventListener('keydown', reloadVideo, true);
-  document.addEventListener('click', reloadVideo, true);
+  document.addEventListener('keydown', reloadVideo);
+  document.addEventListener('click', reloadVideo);
 };
 
 /**

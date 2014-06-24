@@ -60,7 +60,8 @@ video {
   cursor: none;
 }
 
-#video-player[disabled] .tool {
+/* Hides controls when disabled mode */
+#video-player[disabled] > #controls-wrapper .tool {
   display: none;
 }
 
