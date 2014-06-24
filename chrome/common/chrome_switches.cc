@@ -337,10 +337,6 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // Disables support for the QUIC protocol.
 const char kDisableQuic[]                   = "disable-quic";
 
-// Disables support for the HTTPS over QUIC protocol.  This is a temporary
-// testing flag.  This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicHttps[]              = "disable-quic-https";
-
 // Disable use of pacing of QUIC packets.
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPacing[]             = "disable-quic-pacing";
@@ -564,10 +560,6 @@ const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
-
-// Enables support for the HTTPS over QUIC protocol.  This is a temporary
-// testing flag.  This only has an effect if QUIC protocol is enabled.
-const char kEnableQuicHttps[]               = "enable-quic-https";
 
 // Disable use of pacing of QUIC packets.
 // This only has an effect if QUIC protocol is enabled.

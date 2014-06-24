@@ -83,7 +83,6 @@ HttpNetworkSession::Params::Params()
       use_alternate_protocols(false),
       enable_websocket_over_spdy(false),
       enable_quic(false),
-      enable_quic_https(false),
       enable_quic_port_selection(true),
       enable_quic_pacing(false),
       enable_quic_time_based_loss_detection(false),
@@ -242,7 +241,6 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
-  dict->SetBoolean("quic_enabled_https", params_.enable_quic_https);
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
   dict->SetBoolean("enable_quic_pacing",

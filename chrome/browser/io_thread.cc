@@ -977,7 +977,6 @@ void IOThread::InitializeNetworkSessionParams(
       &params->enable_websocket_over_spdy);
 
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
-  globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->enable_quic_pacing.CopyToIfSet(
       &params->enable_quic_pacing);
   globals_->enable_quic_time_based_loss_detection.CopyToIfSet(
@@ -1075,8 +1074,6 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
   globals_->enable_quic.set(enable_quic);
   if (enable_quic) {
-    globals_->enable_quic_https.set(
-        ShouldEnableQuicHttps(command_line, quic_trial_group));
     globals_->enable_quic_pacing.set(
         ShouldEnableQuicPacing(command_line, quic_trial_group));
     globals_->enable_quic_time_based_loss_detection.set(
@@ -1127,17 +1124,6 @@ bool IOThread::ShouldEnableQuic(const CommandLine& command_line,
 
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
       quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
-}
-
-bool IOThread::ShouldEnableQuicHttps(const CommandLine& command_line,
-                                     base::StringPiece quic_trial_group) {
-  if (command_line.HasSwitch(switches::kDisableQuicHttps))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableQuicHttps))
-    return true;
-
-  return quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
 }
 
 bool IOThread::ShouldEnableQuicPortSelection(

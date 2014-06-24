@@ -171,7 +171,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_websocket_over_spdy;
 
     Optional<bool> enable_quic;
-    Optional<bool> enable_quic_https;
     Optional<bool> enable_quic_pacing;
     Optional<bool> enable_quic_time_based_loss_detection;
     Optional<bool> enable_quic_persist_server_info;
@@ -285,11 +284,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // of a field trial or a command line flag.
   bool ShouldEnableQuic(const base::CommandLine& command_line,
                         base::StringPiece quic_trial_group);
-
-  // Returns true if HTTPS over QUIC should be enabled, either as a result
-  // of a field trial or a command line flag.
-  bool ShouldEnableQuicHttps(const base::CommandLine& command_line,
-                             base::StringPiece quic_trial_group);
 
   // Returns true if the selection of the ephemeral port in bind() should be
   // performed by Chromium, and false if the OS should select the port.  The OS
