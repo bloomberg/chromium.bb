@@ -369,8 +369,9 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
 }
 
+// Disabled due to http://crbug.com/388367
 TEST_F(SyncNonFrontendDataTypeControllerTest,
-       OnSingleDatatypeUnrecoverableError) {
+       DISABLED_OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
