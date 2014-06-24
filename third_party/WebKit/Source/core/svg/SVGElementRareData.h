@@ -50,6 +50,11 @@ public:
     {
     }
 
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencingElements() { return m_referencingElements; }
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencingElements() const { return m_referencingElements; }
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencedElements() { return m_referencedElements; }
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencedElements() const { return m_referencedElements; }
+
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
 
@@ -94,6 +99,8 @@ public:
     void trace(Visitor* visitor)
     {
 #if ENABLE(OILPAN)
+        visitor->trace(m_referencingElements);
+        visitor->trace(m_referencedElements);
         visitor->trace(m_animatedSMILStyleProperties);
         visitor->trace(m_elementInstances);
         visitor->trace(m_correspondingElement);
@@ -127,6 +134,8 @@ private:
 #if ENABLE(OILPAN)
     Member<SVGElement> m_owner;
 #endif
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > m_referencingElements;
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > m_referencedElements;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;

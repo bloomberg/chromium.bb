@@ -109,8 +109,6 @@ private:
     HashMap<AtomicString, RenderSVGResourceContainer*> m_resources;
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResources; // Resources that are pending.
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<SVGElement>, OwnPtrWillBeMember<SVGElementSet> > ElementDependenciesMap;
-    ElementDependenciesMap m_elementDependencies;
     OwnPtr<SVGResourcesCache> m_resourcesCache;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;

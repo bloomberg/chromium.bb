@@ -95,15 +95,12 @@ SVGElement::~SVGElement()
             cursorElement->removeReferencedElement(this);
         if (CSSCursorImageValue* cursorImageValue = svgRareData()->cursorImageValue())
             cursorImageValue->removeReferencedElement(this);
-        // Clear the rare data now so that we are in a consistent state when
-        // calling rebuildAllElementReferencesForTarget() below.
-        m_SVGRareData.clear();
-    }
 
-    // With Oilpan, either removedFrom has been called or the document is dead
-    // as well and there is no reason to clear out the references.
-    document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
-    document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
+        // With Oilpan, either removedFrom has been called or the document is dead
+        // as well and there is no reason to clear out the references.
+        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
+        document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
+    }
 #endif
 }
 
@@ -543,7 +540,6 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
         return;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = svgRareData()->elementInstances();
-    ASSERT(instances.contains(instance));
 
     instances.remove(instance);
 }

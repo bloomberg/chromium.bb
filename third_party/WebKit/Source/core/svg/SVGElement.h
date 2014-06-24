@@ -208,8 +208,9 @@ protected:
 
     virtual bool selfHasRelativeLengths() const { return false; }
 
+    // FIXME: This "friend" is temporary to keep the current |SVGDocumentExtensions::*ReferencesFor*| methods. This will be removed after they are moved to SVGElement.
+    friend class SVGDocumentExtensions;
     SVGElementRareData* ensureSVGRareData();
-
     inline bool hasSVGRareData() const { return m_SVGRareData; }
     inline SVGElementRareData* svgRareData() const
     {
