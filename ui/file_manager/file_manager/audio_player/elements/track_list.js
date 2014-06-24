@@ -156,7 +156,7 @@
      * @private
      */
     ensureTrackInViewport_: function(trackIndex) {
-      var trackSelector = '.track[index="' + trackIndex + '"]';
+      var trackSelector = '::shadow .track[index="' + trackIndex + '"]';
       var trackElement = this.querySelector(trackSelector);
       if (trackElement) {
         var viewTop = this.scrollTop;
