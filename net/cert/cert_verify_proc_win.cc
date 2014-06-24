@@ -385,10 +385,15 @@ enum CRLSetResult {
 // CheckRevocationWithCRLSet attempts to check each element of |chain|
 // against |crl_set|. It returns:
 //   kCRLSetRevoked: if any element of the chain is known to have been revoked.
-//   kCRLSetUnknown: if there is no fresh information about some element in
-//       the chain.
-//   kCRLSetOk: if every element in the chain is covered by a fresh CRLSet and
-//       is unrevoked.
+//   kCRLSetUnknown: if there is no fresh information about the leaf
+//       certificate in the chain or if the CRLSet has expired.
+//
+//       Only the leaf certificate is considered for coverage because some
+//       intermediates have CRLs with no revocations (after filtering) and
+//       those CRLs are pruned from the CRLSet at generation time. This means
+//       that some EV sites would otherwise take the hit of an OCSP lookup for
+//       no reason.
+//   kCRLSetOk: otherwise.
 CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
                                        CRLSet* crl_set) {
   if (chain->cChain == 0)
@@ -401,7 +406,13 @@ CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
   if (num_elements == 0)
     return kCRLSetOk;
 
-  bool covered = true;
+  // error is set to true if any errors are found. It causes such chains to be
+  // considered as not covered.
+  bool error = false;
+  // last_covered is set to the coverage state of the previous certificate. The
+  // certificates are iterated over backwards thus, after the iteration,
+  // |last_covered| contains the coverage state of the leaf certificate.
+  bool last_covered = false;
 
   // We iterate from the root certificate down to the leaf, keeping track of
   // the issuer's SPKI at each step.
@@ -416,7 +427,7 @@ CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
     base::StringPiece spki;
     if (!asn1::ExtractSPKIFromDERCert(der_bytes, &spki)) {
       NOTREACHED();
-      covered = false;
+      error = true;
       continue;
     }
 
@@ -441,18 +452,19 @@ CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
       case CRLSet::REVOKED:
         return kCRLSetRevoked;
       case CRLSet::UNKNOWN:
-        covered = false;
+        last_covered = false;
         continue;
       case CRLSet::GOOD:
+        last_covered = true;
         continue;
       default:
         NOTREACHED();
-        covered = false;
+        error = true;
         continue;
     }
   }
 
-  if (!covered || crl_set->IsExpired())
+  if (error || !last_covered || crl_set->IsExpired())
     return kCRLSetUnknown;
   return kCRLSetOk;
 }
