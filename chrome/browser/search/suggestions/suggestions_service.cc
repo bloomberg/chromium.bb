@@ -84,9 +84,10 @@ const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
 SuggestionsService::SuggestionsService(
-    Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store)
+    Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store,
+    scoped_ptr<ThumbnailManager> thumbnail_manager)
     : suggestions_store_(suggestions_store.Pass()),
-      thumbnail_manager_(new ThumbnailManager(profile)),
+      thumbnail_manager_(thumbnail_manager.Pass()),
       profile_(profile),
       weak_ptr_factory_(this),
       request_timeout_ms_(kDefaultRequestTimeoutMs) {

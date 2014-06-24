@@ -4,15 +4,16 @@
 
 #include "chrome/browser/search/suggestions/thumbnail_manager.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace suggestions {
 
-ThumbnailManager::ThumbnailManager(Profile* profile)
-    : url_request_context_(profile->GetRequestContext()) {}
+ThumbnailManager::ThumbnailManager(
+    net::URLRequestContextGetter* url_request_context)
+    : url_request_context_(url_request_context) {}
 
 ThumbnailManager::~ThumbnailManager() {}
 
@@ -21,9 +22,7 @@ ThumbnailManager::ThumbnailRequest::ThumbnailRequest() : fetcher(NULL) {}
 ThumbnailManager::ThumbnailRequest::ThumbnailRequest(chrome::BitmapFetcher* f)
     : fetcher(f) {}
 
-ThumbnailManager::ThumbnailRequest::~ThumbnailRequest() {
-  delete fetcher;
-}
+ThumbnailManager::ThumbnailRequest::~ThumbnailRequest() { delete fetcher; }
 
 void ThumbnailManager::InitializeThumbnailMap(
     const SuggestionsProfile& suggestions) {
@@ -71,19 +70,20 @@ void ThumbnailManager::OnFetchComplete(const GURL thumbnail_url,
                                        const SkBitmap* bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ThumbnailRequestMap::iterator it = pending_requests_.find(thumbnail_url);
-  DCHECK(it != pending_requests_.end());
+  ThumbnailRequestMap::iterator thumb_iter =
+      pending_requests_.find(thumbnail_url);
+  DCHECK(thumb_iter != pending_requests_.end());
 
-  ThumbnailRequest* request = &it->second;
+  ThumbnailRequest* request = &thumb_iter->second;
 
   // Here |bitmap| could be NULL or a pointer to a bitmap which is owned by the
   // BitmapFetcher and which ceases to exist after this function. Pass the
   // un-owned pointer to the registered callbacks.
-  for (CallbackVector::iterator it = request->callbacks.begin();
-       it != request->callbacks.end(); ++it) {
-    it->Run(request->url, bitmap);
+  for (CallbackVector::iterator callback_iter = request->callbacks.begin();
+       callback_iter != request->callbacks.end(); ++callback_iter) {
+    callback_iter->Run(request->url, bitmap);
   }
-  pending_requests_.erase(it);
+  pending_requests_.erase(thumb_iter);
 }
 
 bool ThumbnailManager::GetThumbnailURL(const GURL& url, GURL* thumbnail_url) {

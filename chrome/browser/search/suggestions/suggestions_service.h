@@ -46,7 +46,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
   SuggestionsService(Profile* profile,
-                     scoped_ptr<SuggestionsStore> suggestions_store);
+                     scoped_ptr<SuggestionsStore> suggestions_store,
+                     scoped_ptr<ThumbnailManager> thumbnail_manager);
   virtual ~SuggestionsService();
 
   // Whether this service is enabled.

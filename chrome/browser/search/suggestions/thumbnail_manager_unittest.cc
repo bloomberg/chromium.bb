@@ -32,7 +32,7 @@ TEST_F(ThumbnailManagerTest, InitializeThumbnailMapTest) {
   suggestion->set_thumbnail(kTestThumbnailUrl);
 
   TestingProfile profile;
-  ThumbnailManager thumbnail_manager(&profile);
+  ThumbnailManager thumbnail_manager(profile.GetRequestContext());
   thumbnail_manager.InitializeThumbnailMap(suggestions_profile);
 
   GURL output;

@@ -15,7 +15,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace suggestions {
 
@@ -24,7 +26,7 @@ class SuggestionsProfile;
 // A class used to fetch server thumbnails asynchronously.
 class ThumbnailManager : public chrome::BitmapFetcherDelegate {
  public:
-  explicit ThumbnailManager(Profile* profile);
+  explicit ThumbnailManager(net::URLRequestContextGetter* url_request_context);
   virtual ~ThumbnailManager();
 
   // Initializes the |thumbnail_map_| with the proper mapping from website URL
@@ -77,11 +79,6 @@ class ThumbnailManager : public chrome::BitmapFetcherDelegate {
   // Looks up thumbnail for |url|. If found, writes the result to
   // |thumbnail_url| and returns true. Otherwise just returns false.
   bool GetThumbnailURL(const GURL& url, GURL* thumbnail_url);
-
-  // Used for substituting the request context during testing.
-  void set_request_context(net::URLRequestContextGetter* context) {
-    url_request_context_ = context;
-  }
 
   // Map from URL to thumbnail URL. Should be kept up to date when a new
   // SuggestionsProfile is available.

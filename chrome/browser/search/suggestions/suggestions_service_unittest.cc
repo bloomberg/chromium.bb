@@ -90,6 +90,16 @@ class MockSuggestionsStore : public suggestions::SuggestionsStore {
   MOCK_METHOD0(ClearSuggestions, void());
 };
 
+class MockThumbnailManager : public suggestions::ThumbnailManager {
+ public:
+  MockThumbnailManager() : suggestions::ThumbnailManager(NULL) {}
+  virtual ~MockThumbnailManager() {}
+  MOCK_METHOD1(InitializeThumbnailMap, void(const SuggestionsProfile&));
+  MOCK_METHOD2(GetPageThumbnail,
+               void(const GURL&,
+                    base::Callback<void(const GURL&, const SkBitmap*)>));
+};
+
 }  // namespace
 
 class SuggestionsServiceTest : public testing::Test {
@@ -114,7 +124,8 @@ class SuggestionsServiceTest : public testing::Test {
       : suggestions_data_check_count_(0),
         suggestions_empty_data_count_(0),
         factory_(NULL, base::Bind(&CreateURLFetcher)),
-        mock_suggestions_store_(NULL) {
+        mock_suggestions_store_(NULL),
+        mock_thumbnail_manager_(NULL) {
     profile_ = profile_builder_.Build();
   }
   virtual ~SuggestionsServiceTest() {}
@@ -157,8 +168,10 @@ class SuggestionsServiceTest : public testing::Test {
   // SuggestionsStore in |mock_suggestions_store_|.
   SuggestionsService* CreateSuggestionsServiceWithMockStore() {
     mock_suggestions_store_ = new StrictMock<MockSuggestionsStore>();
+    mock_thumbnail_manager_ = new StrictMock<MockThumbnailManager>();
     return new SuggestionsService(
-        profile_.get(), scoped_ptr<SuggestionsStore>(mock_suggestions_store_));
+        profile_.get(), scoped_ptr<SuggestionsStore>(mock_suggestions_store_),
+        scoped_ptr<ThumbnailManager>(mock_thumbnail_manager_));
   }
 
   void FetchSuggestionsDataNoTimeoutHelper(bool interleaved_requests) {
@@ -181,9 +194,7 @@ class SuggestionsServiceTest : public testing::Test {
     // Set up expectations on the SuggestionsStore. The number depends on
     // whether the second request is issued (it won't be issued if the second
     // fetch occurs before the first request has completed).
-    int expected_count = 2;
-    if (interleaved_requests)
-      expected_count = 1;
+    int expected_count = interleaved_requests ? 1 : 2;
     EXPECT_CALL(*mock_suggestions_store_,
                 StoreSuggestions(EqualsProto(*suggestions_profile)))
         .Times(expected_count)
@@ -209,9 +220,9 @@ class SuggestionsServiceTest : public testing::Test {
 
  protected:
   net::FakeURLFetcherFactory factory_;
-  // Only used if the SuggestionsService is built with a MockSuggestionsStore.
-  // Not owned.
+  // Only used if the SuggestionsService is built with mocks. Not owned.
   MockSuggestionsStore* mock_suggestions_store_;
+  MockThumbnailManager* mock_thumbnail_manager_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

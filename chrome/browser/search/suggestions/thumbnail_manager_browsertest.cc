@@ -77,9 +77,8 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, FetchThumbnails) {
   suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
   TestingProfile profile;
-  ThumbnailManager thumbnail_manager(&profile);
+  ThumbnailManager thumbnail_manager(profile.GetRequestContext());
   thumbnail_manager.InitializeThumbnailMap(suggestions_profile);
-  thumbnail_manager.set_request_context(context_);
 
   // Fetch existing URL.
   thumbnail_manager.GetPageThumbnail(
@@ -111,9 +110,8 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, FetchThumbnailsMultiple) {
   suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
   TestingProfile profile;
-  ThumbnailManager thumbnail_manager(&profile);
+  ThumbnailManager thumbnail_manager(profile.GetRequestContext());
   thumbnail_manager.InitializeThumbnailMap(suggestions_profile);
-  thumbnail_manager.set_request_context(context_);
 
   // Fetch non-existing URL, and add more while request is in flight.
   for (int i = 0 ; i < 5; i++) {
@@ -136,9 +134,8 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, FetchThumbnailsInvalid) {
   suggestion->set_thumbnail(test_server_.GetURL(kInvalidImagePath).spec());
 
   TestingProfile profile;
-  ThumbnailManager thumbnail_manager(&profile);
+  ThumbnailManager thumbnail_manager(profile.GetRequestContext());
   thumbnail_manager.InitializeThumbnailMap(suggestions_profile);
-  thumbnail_manager.set_request_context(context_);
 
   // Fetch existing URL that has invalid thumbnail.
   thumbnail_manager.GetPageThumbnail(

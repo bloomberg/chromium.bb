@@ -47,7 +47,10 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   Profile* the_profile = static_cast<Profile*>(profile);
   scoped_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(the_profile->GetPrefs()));
-  return new SuggestionsService(the_profile, suggestions_store.Pass());
+  scoped_ptr<ThumbnailManager> thumbnail_manager(
+      new ThumbnailManager(the_profile->GetRequestContext()));
+  return new SuggestionsService(the_profile, suggestions_store.Pass(),
+                                thumbnail_manager.Pass());
 }
 
 void SuggestionsServiceFactory::RegisterProfilePrefs(
