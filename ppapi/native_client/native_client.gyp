@@ -113,7 +113,6 @@
             'build_newlib': 0,
             'build_irt': 1,
             'include_dirs': [
-              'lib/gl/include',
               '..',
             ],
             'link_flags': [
