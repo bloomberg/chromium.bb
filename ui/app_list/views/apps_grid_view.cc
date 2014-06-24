@@ -484,8 +484,8 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (!delegate_ || !use_synchronous_drag_)
     return;
 
-  // Folders can't be integrated with the OS.
-  if (IsFolderItem(drag_view_->item()))
+  // Folders and downloading items can't be integrated with the OS.
+  if (IsFolderItem(drag_view_->item()) || drag_view_->item()->is_installing())
     return;
 
   // Favor the drag and drop host over native win32 drag. For the Win8/ash
