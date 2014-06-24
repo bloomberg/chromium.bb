@@ -764,6 +764,17 @@ void AutofillDialogControllerImpl::Show() {
       base::Bind(CountryFilter,
                  form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY))));
 
+  // If the form has a country <select> but none of the options are valid, bail.
+  if (billing_country_combobox_model_->GetItemCount() == 0 ||
+      shipping_country_combobox_model_->GetItemCount() == 0) {
+    callback_.Run(AutofillClient::AutocompleteResultErrorDisabled,
+                  base::ASCIIToUTF16("No valid/supported country options"
+                                     " found."),
+                  NULL);
+    delete this;
+    return;
+  }
+
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 

@@ -3446,6 +3446,34 @@ TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
             billing_country_model->GetItemCount());
 }
 
+// http://crbug.com/388018
+TEST_F(AutofillDialogControllerTest, NoCountryChoices) {
+  // Create a form data that simulates:
+  //   <select autocomplete="billing country">
+  //     <option value="ATL">Atlantis</option>
+  //     <option value="ELD">Eldorado</option>
+  //   </select>
+  // i.e. contains a list of no valid countries.
+  FormData form_data;
+  FormFieldData field;
+  field.autocomplete_attribute = "billing country";
+  field.option_contents.push_back(ASCIIToUTF16("Atlantis"));
+  field.option_values.push_back(ASCIIToUTF16("ATL"));
+  field.option_contents.push_back(ASCIIToUTF16("Eldorado"));
+  field.option_values.push_back(ASCIIToUTF16("ELD"));
+
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
+
+  form_data.fields.push_back(field);
+  form_data.fields.push_back(cc_field);
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+
+  // Controller aborts and self destructs.
+  EXPECT_EQ(0, controller());
+}
+
 TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
   SwitchToAutofill();
   // Typically, MC and Visa are both valid.
