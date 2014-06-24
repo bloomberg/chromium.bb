@@ -1703,6 +1703,10 @@ class BisectPerformanceMetrics(object):
 
       print 'Time elapsed: %ss without build.' % elapsed_time
       time.sleep(poll_interval)
+      # For some reason, mac bisect bots were not flushing stdout periodically.
+      # As a result buildbot command is timed-out. Flush stdout on all platforms
+      # while waiting for build.
+      sys.stdout.flush()
 
   def PostBuildRequestAndWait(self, revision, fetch_build, patch=None):
     """POSTs the build request job to the tryserver instance.
