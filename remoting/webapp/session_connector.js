@@ -435,8 +435,10 @@ remoting.SessionConnector.prototype.onStateChange_ = function(event) {
           this.bound_.onStateChange);
 
       base.dispose(this.reconnector_);
-      this.reconnector_ =
-          new remoting.SmartReconnector(this, this.clientSession_);
+      if (this.connectionMode_ != remoting.ClientSession.Mode.IT2ME) {
+        this.reconnector_ =
+            new remoting.SmartReconnector(this, this.clientSession_);
+      }
       this.onOk_(this.clientSession_);
       break;
 
