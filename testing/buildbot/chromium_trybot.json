@@ -45,6 +45,10 @@
     },
     "device_unittests",
     "events_unittests",
+    {
+      "test": "extensions_unittests",
+      "platforms": ["win", "mac", "linux"]
+    },
     "gcm_unit_tests",
     "gfx_unittests",
     "google_apis_unittests",
