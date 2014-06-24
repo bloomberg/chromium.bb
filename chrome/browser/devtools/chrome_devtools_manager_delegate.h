@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,15 +22,13 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate overrides:
   virtual void Inspect(content::BrowserContext* browser_context,
                        content::DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
+                                         bool attached) OVERRIDE;
   virtual base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) OVERRIDE;
 
  private:
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
-  bool devtools_callback_registered_;
-  void EnsureDevtoolsCallbackRegistered();
-
   Profile* GetProfile(content::DevToolsAgentHost* agent_host);
 
   scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
@@ -41,9 +38,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,
       const scoped_refptr<DevToolsNetworkConditions> conditions);
-
-  void OnDevToolsStateChanged(content::DevToolsAgentHost* agent_host,
-                              bool attached);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };
