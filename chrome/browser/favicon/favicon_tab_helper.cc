@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
+#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -41,21 +42,17 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  client_.reset(new ChromeFaviconClient(profile_));
+  client_ = ChromeFaviconClientFactory::GetForProfile(profile_);
 #if defined(OS_ANDROID)
   bool download_largest_icon = true;
 #else
   bool download_largest_icon = false;
 #endif
-  favicon_handler_.reset(new FaviconHandler(client_.get(),
-                                            this,
-                                            FaviconHandler::FAVICON,
-                                            download_largest_icon));
+  favicon_handler_.reset(new FaviconHandler(
+      client_, this, FaviconHandler::FAVICON, download_largest_icon));
   if (chrome::kEnableTouchIcon)
-    touch_icon_handler_.reset(new FaviconHandler(client_.get(),
-                                                 this,
-                                                 FaviconHandler::TOUCH,
-                                                 download_largest_icon));
+    touch_icon_handler_.reset(new FaviconHandler(
+        client_, this, FaviconHandler::TOUCH, download_largest_icon));
 }
 
 FaviconTabHelper::~FaviconTabHelper() {

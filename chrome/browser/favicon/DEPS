@@ -9,6 +9,7 @@ include_rules = [
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
+  "+chrome/browser/profiles/incognito_helpers.h",
   "+chrome/browser/search/search.h",
   "+components/favicon/core",
   "+third_party/skia/include/core/SkBitmap.h",
