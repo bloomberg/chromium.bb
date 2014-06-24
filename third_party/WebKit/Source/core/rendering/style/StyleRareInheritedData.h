@@ -126,7 +126,7 @@ public:
     unsigned m_textIndentType : 1; // TextIndentHanging
     unsigned m_lineBoxContain: 7; // LineBoxContain
     // CSS Image Values Level 3
-    unsigned m_imageRendering : 2; // EImageRendering
+    unsigned m_imageRendering : 3; // EImageRendering
     unsigned m_textUnderlinePosition : 2; // TextUnderlinePosition
     unsigned m_rubyPosition : 1; // RubyPosition
     unsigned m_touchActionDelay : 1; // TouchActionDelay

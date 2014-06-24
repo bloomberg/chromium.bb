@@ -8163,7 +8163,11 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-    case CSSPropertyImageRendering: // auto | optimizeSpeed |
+    case CSSPropertyImageRendering: // auto | optimizeSpeed | pixelated
+        if (RuntimeEnabledFeatures::imageRenderingPixelatedEnabled() && id == CSSValuePixelated) {
+            validPrimitive = true;
+            break;
+        }
     case CSSPropertyColorRendering: // optimizeQuality | inherit
         if (id == CSSValueAuto || id == CSSValueOptimizespeed
             || id == CSSValueOptimizequality)

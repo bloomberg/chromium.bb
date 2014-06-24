@@ -876,6 +876,7 @@ off
 //auto
 //optimizeSpeed
 optimizeQuality
+pixelated
 -webkit-optimize-contrast
 
 // shape-outside

@@ -68,6 +68,13 @@ void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& pa
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
     // See bug for more details: crbug.com/353716.
     InterpolationQuality interpolationQuality = style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
+
+    // FIXME: This ImageRenderingPixelated should only be InterpolationNone when
+    // upscaling. It should be the same as ImageRenderingAuto when downscaling.
+    // See crbug.com/386944.
+    if (style()->imageRendering() == ImageRenderingPixelated)
+        interpolationQuality = InterpolationNone;
+
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
     toHTMLCanvasElement(node())->paint(context, paintRect);

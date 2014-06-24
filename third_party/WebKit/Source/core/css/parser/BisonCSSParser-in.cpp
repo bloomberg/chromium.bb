@@ -400,8 +400,8 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
         return valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueNone || valueID == CSSValueCenter;
     case CSSPropertyFontStyle: // normal | italic | oblique
         return valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique;
-    case CSSPropertyImageRendering: // auto | optimizeContrast
-        return valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast;
+    case CSSPropertyImageRendering: // auto | optimizeContrast | pixelated
+        return valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast || (RuntimeEnabledFeatures::imageRenderingPixelatedEnabled() && valueID == CSSValuePixelated);
     case CSSPropertyIsolation: // auto | isolate
         return RuntimeEnabledFeatures::cssCompositingEnabled()
             && (valueID == CSSValueAuto || valueID == CSSValueIsolate);

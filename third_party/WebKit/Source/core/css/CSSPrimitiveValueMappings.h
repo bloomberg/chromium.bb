@@ -4025,6 +4025,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EImageRendering e)
     case ImageRenderingOptimizeQuality:
         m_value.valueID = CSSValueOptimizequality;
         break;
+    case ImageRenderingPixelated:
+        m_value.valueID = CSSValuePixelated;
+        break;
     case ImageRenderingOptimizeContrast:
         m_value.valueID = CSSValueWebkitOptimizeContrast;
         break;
@@ -4041,6 +4044,8 @@ template<> inline CSSPrimitiveValue::operator EImageRendering() const
         return ImageRenderingOptimizeSpeed;
     case CSSValueOptimizequality:
         return ImageRenderingOptimizeQuality;
+    case CSSValuePixelated:
+        return ImageRenderingPixelated;
     case CSSValueWebkitOptimizeContrast:
         return ImageRenderingOptimizeContrast;
     default:
