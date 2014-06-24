@@ -310,6 +310,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                           kRenderDuplicatedMediastreamAndStop));
 }
 
+// Flaky on Android.  http://crbug.com/387895
+#if defined(OS_ANDROID)
+#define MAYBE_GetAudioAndVideoStreamAndStop DISABLED_GetAudioAndVideoStreamAndStop
+#else
+#define MAYBE_GetAudioAndVideoStreamAndStop GetAudioAndVideoStreamAndStop
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        GetAudioAndVideoStreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
