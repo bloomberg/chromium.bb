@@ -37,5 +37,5 @@ KeyedService* ChromeFaviconClientFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ChromeFaviconClientFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
