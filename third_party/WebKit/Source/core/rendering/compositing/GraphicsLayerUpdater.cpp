@@ -33,25 +33,39 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
-GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other, const RenderLayer& layer)
-    : m_compositingStackingContext(other.m_compositingStackingContext)
-    , m_compositingAncestor(other.compositingContainer(layer))
-{
-    CompositingState compositingState = layer.compositingState();
-    if (compositingState != NotComposited && compositingState != PaintsIntoGroupedBacking) {
-        m_compositingAncestor = &layer;
-        if (layer.stackingNode()->isStackingContext())
-            m_compositingStackingContext = &layer;
+class GraphicsLayerUpdater::UpdateContext {
+public:
+    UpdateContext()
+        : m_compositingStackingContext(0)
+        , m_compositingAncestor(0)
+    {
     }
-}
 
-const RenderLayer* GraphicsLayerUpdater::UpdateContext::compositingContainer(const RenderLayer& layer) const
-{
-    return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
-}
+    UpdateContext(const UpdateContext& other, const RenderLayer& layer)
+        : m_compositingStackingContext(other.m_compositingStackingContext)
+        , m_compositingAncestor(other.compositingContainer(layer))
+    {
+        CompositingState compositingState = layer.compositingState();
+        if (compositingState != NotComposited && compositingState != PaintsIntoGroupedBacking) {
+            m_compositingAncestor = &layer;
+            if (layer.stackingNode()->isStackingContext())
+                m_compositingStackingContext = &layer;
+        }
+    }
+
+    const RenderLayer* compositingContainer(const RenderLayer& layer) const
+    {
+        return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
+    }
+
+private:
+    const RenderLayer* m_compositingStackingContext;
+    const RenderLayer* m_compositingAncestor;
+};
 
 GraphicsLayerUpdater::GraphicsLayerUpdater()
     : m_needsRebuildTree(false)
@@ -62,7 +76,13 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::update(Vector<RenderLayer*>& layersNeedingPaintInvalidation, RenderLayer& layer, UpdateType updateType, const UpdateContext& context)
+void GraphicsLayerUpdater::update(RenderLayer& layer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
+{
+    TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::update");
+    updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
+}
+
+void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType updateType, const UpdateContext& context, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
     if (layer.hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr mapping = layer.compositedLayerMapping();
@@ -101,7 +121,7 @@ void GraphicsLayerUpdater::update(Vector<RenderLayer*>& layersNeedingPaintInvali
 
     UpdateContext childContext(context, layer);
     for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
-        update(layersNeedingPaintInvalidation, *child, updateType, childContext);
+        updateRecursive(*child, updateType, childContext, layersNeedingPaintInvalidation);
 }
 
 #if ASSERT_ENABLED

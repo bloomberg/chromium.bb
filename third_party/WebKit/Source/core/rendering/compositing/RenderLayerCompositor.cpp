@@ -290,21 +290,17 @@ void RenderLayerCompositor::updateIfNeeded()
     Vector<RenderLayer*> layersNeedingRepaint;
 
     if (updateType >= CompositingUpdateAfterCompositingInputChange) {
-        {
-            TRACE_EVENT0("blink_rendering", "CompositingInputsUpdater::update");
-            CompositingInputsUpdater(updateRoot).update(updateRoot);
+        CompositingInputsUpdater(updateRoot).update();
+
 #if ASSERT_ENABLED
-            CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(updateRoot);
+        // FIXME: Move this check to the end of the compositing update.
+        CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(updateRoot);
 #endif
-        }
 
         CompositingRequirementsUpdater(m_renderView, m_compositingReasonFinder).update(updateRoot);
 
         CompositingLayerAssigner layerAssigner(this);
-        {
-            TRACE_EVENT0("blink_rendering", "CompositingLayerAssigner::assign");
-            layerAssigner.assign(updateRoot, layersNeedingRepaint);
-        }
+        layerAssigner.assign(updateRoot, layersNeedingRepaint);
 
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateAfterCompositingChange");
@@ -319,9 +315,8 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     if (updateType != CompositingUpdateNone) {
-        TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
-        updater.update(layersNeedingRepaint, *updateRoot);
+        updater.update(*updateRoot, layersNeedingRepaint);
 
         if (updater.needsRebuildTree())
             updateType = std::max(updateType, CompositingUpdateRebuildTree);

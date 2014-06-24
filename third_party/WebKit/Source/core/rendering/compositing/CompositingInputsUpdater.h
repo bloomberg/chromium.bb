@@ -12,7 +12,22 @@ namespace WebCore {
 class RenderLayer;
 
 class CompositingInputsUpdater {
+public:
+    explicit CompositingInputsUpdater(RenderLayer* rootRenderLayer);
+    ~CompositingInputsUpdater();
+
+    void update();
+
+#if ASSERT_ENABLED
+    static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
+#endif
+
 private:
+    enum UpdateType {
+        DoNotForceUpdate,
+        ForceUpdate,
+    };
+
     struct AncestorInfo {
         AncestorInfo()
             : enclosingCompositedLayer(0)
@@ -30,22 +45,8 @@ private:
         RenderLayer* lastScrollingAncestor;
     };
 
-public:
-    explicit CompositingInputsUpdater(RenderLayer* rootRenderLayer);
-    ~CompositingInputsUpdater();
+    void updateRecursive(RenderLayer*, UpdateType, AncestorInfo);
 
-    enum UpdateType {
-        DoNotForceUpdate,
-        ForceUpdate,
-    };
-
-    void update(RenderLayer*, UpdateType = DoNotForceUpdate, AncestorInfo = AncestorInfo());
-
-#if ASSERT_ENABLED
-    static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
-#endif
-
-private:
     RenderGeometryMap m_geometryMap;
     RenderLayer* m_rootRenderLayer;
 };

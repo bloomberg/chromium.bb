@@ -28,6 +28,7 @@
 #include "core/rendering/compositing/CompositingLayerAssigner.h"
 
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
@@ -48,6 +49,8 @@ CompositingLayerAssigner::~CompositingLayerAssigner()
 
 void CompositingLayerAssigner::assign(RenderLayer* updateRoot, Vector<RenderLayer*>& layersNeedingRepaint)
 {
+    TRACE_EVENT0("blink_rendering", "CompositingLayerAssigner::assign");
+
     SquashingState squashingState;
     assignLayersToBackingsInternal(updateRoot, squashingState, layersNeedingRepaint);
     if (squashingState.hasMostRecentMapping)

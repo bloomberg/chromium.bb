@@ -8,6 +8,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
@@ -21,6 +22,12 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 {
 }
 
+void CompositingInputsUpdater::update()
+{
+    TRACE_EVENT0("blink_rendering", "CompositingInputsUpdater::update");
+    updateRecursive(m_rootRenderLayer, DoNotForceUpdate, AncestorInfo());
+}
+
 static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObject* object)
 {
     for (const RenderObject* current = object; current; current = current->containingBlock()) {
@@ -31,7 +38,7 @@ static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObje
     return 0;
 }
 
-void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
+void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
         return;
@@ -104,7 +111,7 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
         info.lastScrollingAncestor = layer;
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        update(child, updateType, info);
+        updateRecursive(child, updateType, info);
 
     m_geometryMap.popMappingsToAncestor(layer->parent());
 

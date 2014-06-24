@@ -34,21 +34,6 @@ namespace WebCore {
 class RenderLayer;
 
 class GraphicsLayerUpdater {
-    class UpdateContext {
-    public:
-        UpdateContext()
-            : m_compositingStackingContext(0)
-            , m_compositingAncestor(0)
-        {
-        }
-
-        UpdateContext(const UpdateContext&, const RenderLayer&);
-
-        const RenderLayer* compositingContainer(const RenderLayer&) const;
-    private:
-        const RenderLayer* m_compositingStackingContext;
-        const RenderLayer* m_compositingAncestor;
-    };
 
 public:
     GraphicsLayerUpdater();
@@ -59,8 +44,7 @@ public:
         ForceUpdate,
     };
 
-    void update(Vector<RenderLayer*>& layersNeedingPaintInvalidation, RenderLayer&, UpdateType = DoNotForceUpdate, const UpdateContext& = UpdateContext());
-    void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
+    void update(RenderLayer&, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
 
     bool needsRebuildTree() const { return m_needsRebuildTree; }
 
@@ -69,6 +53,10 @@ public:
 #endif
 
 private:
+    class UpdateContext;
+
+    void updateRecursive(RenderLayer&, UpdateType, const UpdateContext&, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
+
     bool m_needsRebuildTree;
 };
 
