@@ -13,6 +13,8 @@ LOCAL_MODULE := android_webview_java
 
 LOCAL_MODULE_TAGS := optional
 
+LOCAL_ADDITIONAL_DEPENDENCIES := android_webview_java_with_new_resources
+
 include $(LOCAL_PATH)/java_library_common.mk
 # resource glue layer
 LOCAL_SRC_FILES += \
