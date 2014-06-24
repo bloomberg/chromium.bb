@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<style>
+#root {
+  background-color: #ddd;
+  font-size: 24pt;
+  position: relative;
+  width: 200px;
+}
+span {
+  display: inline-block;
+  width: 100px;
+}
+</style>
+
+This test verifies that a selection spanning nested flexbox boundaries
+is drawn correctly.
+
+<div id="root">
+  <div>
+    <span id="start">aaa</span><span>bbb</span>
+  </div>
+  <div>
+    <span>ccc</span><span id="end">ddd</span>
+  </div>
+</div>
+<script>
+
+var start = document.querySelector('#start'),
+    end = document.querySelector('#end');
+getSelection().setBaseAndExtent(start.firstChild, 1, end.firstChild, 2);
+focus();
+
+</script>
