@@ -24,7 +24,7 @@ action("cached_lex_yacc_tables") {
     "$bindings_scripts_output_dir/parsetab.pickle",
   ]
 
-  args = [ rebase_path(bindings_output_dir, root_build_dir) ]
+  args = [ rebase_path(bindings_scripts_output_dir, root_build_dir) ]
 }
 
 # A separate pre-caching step is *required* to use bytecode caching in
