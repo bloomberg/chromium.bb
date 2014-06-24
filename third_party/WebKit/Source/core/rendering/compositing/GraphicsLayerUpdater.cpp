@@ -80,6 +80,7 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, Vector<RenderLayer*>& laye
 {
     TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::update");
     updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
+    layer.compositor()->updateRootLayerPosition();
 }
 
 void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType updateType, const UpdateContext& context, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
@@ -87,13 +88,13 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
     if (layer.hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr mapping = layer.compositedLayerMapping();
 
-        const RenderLayer* compositingContainer = context.compositingContainer(layer);
-        ASSERT(compositingContainer == layer.ancestorCompositingLayer());
-
-        if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer))
-            updateType = ForceUpdate;
-
         if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
+            const RenderLayer* compositingContainer = context.compositingContainer(layer);
+            ASSERT(compositingContainer == layer.ancestorCompositingLayer());
+
+            if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer))
+                updateType = ForceUpdate;
+
             // Note carefully: here we assume that the compositing state of all descendants have been updated already,
             // so it is legitimate to compute and cache the composited bounds for this layer.
             mapping->updateCompositedBounds();
@@ -108,15 +109,12 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
 
             mapping->updateGraphicsLayerGeometry(compositingContainer, layersNeedingPaintInvalidation);
 
+            if (mapping->hasUnpositionedOverflowControlsLayers())
+                layer.scrollableArea()->positionOverflowControls(IntSize());
+
             updateType = mapping->updateTypeForChildren(updateType);
             mapping->clearNeedsGraphicsLayerUpdate();
         }
-
-        if (!layer.parent())
-            layer.compositor()->updateRootLayerPosition();
-
-        if (mapping->hasUnpositionedOverflowControlsLayers())
-            layer.scrollableArea()->positionOverflowControls(IntSize());
     }
 
     UpdateContext childContext(context, layer);
