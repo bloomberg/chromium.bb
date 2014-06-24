@@ -40,6 +40,7 @@
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -201,66 +202,65 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
     return;
 
   last_frame_time_ = base::TimeTicks::Now();
+
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      host->GetView());
+  gfx::Size screen_size_dip(view->GetRequestedRendererSize());
+
   std::string format;
   int quality = kDefaultScreenshotQuality;
   double scale = 1;
-  ParseCaptureParameters(screencast_command_.get(), &format, &quality, &scale);
-
-  gfx::SizeF view_size = last_compositor_frame_metadata_.viewport_size;
-  float page_scale = last_compositor_frame_metadata_.page_scale_factor;
-  gfx::Rect view_bounds(0, 0, view_size.width() * page_scale,
-                        view_size.height() * page_scale);
-  gfx::Size snapshot_size(gfx::ToFlooredSize(gfx::ScaleSize(view_size, scale)));
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host->GetView());
-  if (snapshot_size.width() > 0 && snapshot_size.height() > 0) {
-    view->CopyFromCompositingSurface(
-        view_bounds, snapshot_size,
-        base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
-                   weak_factory_.GetWeakPtr(),
-                   format, quality, last_compositor_frame_metadata_),
-        SkBitmap::kARGB_8888_Config);
-  }
-}
-
-void RendererOverridesHandler::ParseCaptureParameters(
-    DevToolsProtocol::Command* command,
-    std::string* format,
-    int* quality,
-    double* scale) {
-  *quality = kDefaultScreenshotQuality;
-  *scale = 1;
   double max_width = -1;
   double max_height = -1;
-  base::DictionaryValue* params = command->params();
+  base::DictionaryValue* params = screencast_command_->params();
   if (params) {
     params->GetString(devtools::Page::startScreencast::kParamFormat,
-                      format);
+                      &format);
     params->GetInteger(devtools::Page::startScreencast::kParamQuality,
-                       quality);
+                       &quality);
     params->GetDouble(devtools::Page::startScreencast::kParamMaxWidth,
                       &max_width);
     params->GetDouble(devtools::Page::startScreencast::kParamMaxHeight,
                       &max_height);
   }
 
-  float device_scale = last_compositor_frame_metadata_.device_scale_factor;
-  gfx::SizeF view_size = last_compositor_frame_metadata_.viewport_size;
-  view_size.set_height(view_size.height() +
-      (last_compositor_frame_metadata_.location_bar_content_translation.y() +
-          last_compositor_frame_metadata_.overdraw_bottom_height) /
-      last_compositor_frame_metadata_.page_scale_factor);
-  if (max_width > 0)
-    *scale = std::min(*scale, max_width / (view_size.width() * device_scale));
-  if (max_height > 0)
-    *scale = std::min(*scale, max_height / (view_size.height() * device_scale));
+  blink::WebScreenInfo screen_info;
+  view->GetScreenInfo(&screen_info);
+  double device_scale_factor = screen_info.deviceScaleFactor;
 
-  if (format->empty())
-    *format = kPng;
-  if (*quality < 0 || *quality > 100)
-    *quality = kDefaultScreenshotQuality;
-  if (*scale <= 0)
-    *scale = 0.1;
+  if (max_width > 0) {
+    double max_width_dip = max_width / device_scale_factor;
+    scale = std::min(scale, max_width_dip / screen_size_dip.width());
+  }
+  if (max_height > 0) {
+    double max_height_dip = max_height / device_scale_factor;
+    scale = std::min(scale, max_height_dip / screen_size_dip.height());
+  }
+
+  if (format.empty())
+    format = kPng;
+  if (quality < 0 || quality > 100)
+    quality = kDefaultScreenshotQuality;
+  if (scale <= 0)
+    scale = 0.1;
+
+  // FIXME: do not use previous frame metadata.
+  cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
+  gfx::SizeF view_size_dip = gfx::ScaleSize(metadata.viewport_size,
+                                            metadata.page_scale_factor);
+
+  gfx::Size snapshot_size_dip(gfx::ToRoundedSize(
+      gfx::ScaleSize(view_size_dip, scale)));
+
+  if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
+    gfx::Rect view_bounds_dip(gfx::ToRoundedSize(view_size_dip));
+    view->CopyFromCompositingSurface(
+        view_bounds_dip, snapshot_size_dip,
+        base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
+                   weak_factory_.GetWeakPtr(),
+                   format, quality, last_compositor_frame_metadata_),
+        SkBitmap::kARGB_8888_Config);
+  }
 }
 
 // DOM agent handlers  --------------------------------------------------------

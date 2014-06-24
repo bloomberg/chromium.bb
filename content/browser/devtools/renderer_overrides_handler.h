@@ -41,9 +41,7 @@ class CONTENT_EXPORT RendererOverridesHandler
 
  private:
   void InnerSwapCompositorFrame();
-  void ParseCaptureParameters(DevToolsProtocol::Command* command,
-                              std::string* format, int* quality,
-                              double* scale);
+
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
       GrantPermissionsForSetFileInputFiles(
