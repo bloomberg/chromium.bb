@@ -5,18 +5,21 @@
     if (window.testRunner)
         window.testRunner.dumpAsText();
 
+    if (window.internals)
+        window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+
     function hasScrollbarRepaint(layerTree)
     {
         return hasScrollbarRepaintHelper(JSON.parse(layerTree));
     }
-    
+
     function hasScrollbarRepaintHelper(jsonLayerTree) {
         var repaintRects = jsonLayerTree["repaintRects"];
         if (repaintRects) {
             for (var i = 0; i < repaintRects.length; ++i) {
                 var width = repaintRects[i][2];
                 var height = repaintRects[i][3];
-                if (width == 15 && height == 285)
+                if (width != 15 || height != 285)
                     return true;
             }
         }
@@ -163,7 +166,7 @@
         position: fixed;
         top: 200px;
         left: 200px;
-        background-color: blue;    
+        background-color: blue;
         -webkit-backface-visibility: hidden;
     }
 
@@ -172,7 +175,7 @@
         height: 50px;
         margin: 10px;
         position: relative;
-        background-color: green;    
+        background-color: green;
         -webkit-backface-visibility: hidden;
     }
 

@@ -1118,10 +1118,6 @@ crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.htm
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
-crbug.com/353827 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-crbug.com/353827 virtual/softwarecompositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-crbug.com/353827 virtual/gpu/compositedscrolling/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
