@@ -13,7 +13,10 @@ class SimpleScrollPage(page_module.Page):
     self.credentials = credentials
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 class Google(SimpleScrollPage):
   def __init__(self, page_set):

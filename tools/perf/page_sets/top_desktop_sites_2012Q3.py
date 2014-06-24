@@ -21,7 +21,10 @@ class Top2012Q3Page(page.Page):
     action_runner.ForceGarbageCollection()
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
   def RunStressMemory(self, action_runner):
     for _ in xrange(3):

@@ -13,7 +13,10 @@ class ToughSchedulingCasesPage(page_module.Page):
     super(ToughSchedulingCasesPage, self).__init__(url=url, page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Page1(ToughSchedulingCasesPage):
@@ -303,17 +306,15 @@ class Page20(ToughSchedulingCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('card'));
-          }''',
-        'scroll_requires_touch': True,
-        'direction': 'up',
-        'speed': 150,
-        'scroll_distance_function': 'function() { return 400; }'
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#card',
+        use_touch=True,
+        direction='up',
+        speed_in_pixels_per_second=150,
+        distance=400)
+    interaction.End()
 
 class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
@@ -335,18 +336,15 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
   def RunSmoothness(self, action_runner):
     if self.bounce:
-      action = ScrollBounceAction()
+      action_runner.RunAction(ScrollBounceAction())
     else:
-      action = ScrollAction(
-        {
-          'scroll_requires_touch': True,
-           """ Speed and distance are tuned to run exactly as long as a scroll
-                bounce """
-          'speed': 400,
-          'scroll_distance_function': 'function() { return 2100; }'
-        })
-
-    action_runner.RunAction(action)
+      interaction = action_runner.BeginGestureInteraction(
+          'ScrollAction', is_smooth=True)
+      # Speed and distance are tuned to run exactly as long as a scroll
+      # bounce.
+      action_runner.ScrollPage(use_touch=True, speed_in_pixels_per_second=400,
+                               distance=2100)
+      interaction.End()
 
 class ToughSchedulingCasesPageSet(page_set_module.PageSet):
 

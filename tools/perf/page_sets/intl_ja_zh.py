@@ -15,7 +15,10 @@ class IntlJaZhPage(page_module.Page):
     self.archive_data_file = 'data/intl_ja_zh.json'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class IntlJaZhPageSet(page_set_module.PageSet):

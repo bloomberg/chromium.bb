@@ -13,7 +13,10 @@ class ToughScrollingCasesPage(page_module.Page):
     super(ToughScrollingCasesPage, self).__init__(url=url, page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class ToughScrollingCasesPageSet(page_set_module.PageSet):

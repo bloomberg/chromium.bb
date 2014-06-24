@@ -16,7 +16,10 @@ class Top10MobilePage(page_module.Page):
     self.archive_data_file = 'data/top_10_mobile.json'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Top10MobilePageSet(page_set_module.PageSet):

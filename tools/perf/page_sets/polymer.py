@@ -55,7 +55,7 @@ class PolymerCalculatorPage(PolymerPage):
         'Action_SwipeAction', is_smooth=True)
     action_runner.SwipeElement(
         left_start_ratio=0.1, top_start_ratio=0.2,
-        direction='left', distance=300, speed=5000,
+        direction='left', distance=300, speed_in_pixels_per_second=5000,
         element_function='''
             document.querySelector(
               'body /deep/ #outerPanels'

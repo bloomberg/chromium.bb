@@ -17,7 +17,10 @@ class ToughTextureUploadCasesPage(page_module.Page):
         page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class ToughTextureUploadCasesPageSet(page_set_module.PageSet):

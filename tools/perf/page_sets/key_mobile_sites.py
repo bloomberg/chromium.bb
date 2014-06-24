@@ -17,7 +17,10 @@ class KeyMobileSitesPage(page_module.Page):
     self.archive_data_file = 'data/key_mobile_sites.json'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
   def RunRepaint(self, action_runner):
     action_runner.RunAction(RepaintContinuouslyAction({'seconds': 5}))
@@ -110,7 +113,10 @@ class Page6(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction({'scroll_is_infinite': True}))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Page7(KeyMobileSitesPage):
@@ -267,20 +273,16 @@ class Page17(KeyMobileSitesPage):
         'document.getElementById("og_user_warning") === null')
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function':
-          ('function(callback) {'
-           'callback(document.getElementById("views")'
-           '.childNodes[1].firstChild); }')
-      }))
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function':
-          ('function(callback) { '
-           'callback(document.getElementById("views")'
-           '.childNodes[1].firstChild); }')
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(element_function=(
+        'document.getElementById("views").childNodes[1].firstChild'))
+    interaction.End()
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(element_function=(
+        'document.getElementById("views").childNodes[1].firstChild'))
+    interaction.End()
 
 
 class Page18(KeyMobileSitesPage):
@@ -343,17 +345,16 @@ class Page21(KeyMobileSitesPage):
               "container list-item gc-list-item stretched").length !== 0''')
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_distance_function': '''
-          function() {
-            return Math.max(0, 1250 + document.getElementById("element-19")
-                                              .contentDocument
-                                              .getElementById("element-22")
-                                              .getBoundingClientRect().top);
-          }''',
-        'scroll_requires_touch': True
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage(
+        distance_expr='''
+            Math.max(0, 1250 + document.getElementById("element-19")
+                                       .contentDocument
+                                       .getElementById("element-22")
+                                       .getBoundingClientRect().top);''',
+        use_touch=True)
+    interaction.End()
 
 
 class Page22(KeyMobileSitesPage):
@@ -371,15 +372,15 @@ class Page22(KeyMobileSitesPage):
         'document.getElementById("element-5") !== null')
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_distance_function': '''
-          function() {
-            return Math.max(0, 1250 +
-              document.getElementById("element-5").getBoundingClientRect().top);
-          }''',
-        'scroll_requires_touch': True
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage(
+        distance_expr='''
+            Math.max(0, 1250 +
+                document.getElementById("element-5")
+                        .getBoundingClientRect().top);''',
+        use_touch=True)
+    interaction.End()
 
 
 class Page23(KeyMobileSitesPage):
@@ -428,19 +429,15 @@ class Page25(KeyMobileSitesPage):
     action_runner.Wait(1)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_requires_touch': True,
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById(':5'));
-          }''',
-        'scroll_distance_function': '''
-          function() {
-            return Math.max(0, 2500 +
-              document.getElementById(':h').getBoundingClientRect().top);
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        element_function='document.getElementById(":5")',
+        distance_expr='''
+            Math.max(0, 2500 +
+                document.getElementById(':h').getBoundingClientRect().top)''',
+        use_touch=True)
+    interaction.End()
 
 
 class Page26(KeyMobileSitesPage):
@@ -455,17 +452,12 @@ class Page26(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('search'));
-          }''',
-        'scroll_distance_function': '''
-          function() {
-            return document.body.scrollHeight - window.innerHeight;
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#search',
+        distance_expr='document.body.scrollHeight - window.innerHeight')
+    interaction.End()
 
 
 class KeyMobileSitesPageSet(page_set_module.PageSet):

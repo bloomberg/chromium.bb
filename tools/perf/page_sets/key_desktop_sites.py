@@ -15,7 +15,10 @@ class KeyDesktopSitesPage(page_module.Page):
     self.archive_data_file = 'data/key_desktop_sites.json'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class FacebookPage(KeyDesktopSitesPage):
@@ -44,7 +47,10 @@ class GmailPage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined && '
         'document.getElementById("gb") !== null')
@@ -78,7 +84,10 @@ class GoogleDrivePage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("doclistview-list").length')
 
@@ -98,7 +107,10 @@ class GoogleDocPage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("kix-appview-editor").length')
 

@@ -20,7 +20,10 @@ class KeySilkCasesPage(page_module.Page):
     action_runner.Wait(2)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Page1(KeySilkCasesPage):
@@ -33,13 +36,10 @@ class Page1(KeySilkCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('scrollable'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(selector='#scrollable')
+    interaction.End()
 
 
 class Page2(KeySilkCasesPage):
@@ -69,13 +69,10 @@ class Page3(KeySilkCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('container'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(selector='#container')
+    interaction.End()
 
 
 class Page4(KeySilkCasesPage):
@@ -287,7 +284,7 @@ class Page16(KeySilkCasesPage):
         'SwipeAction', is_smooth=True)
     action_runner.SwipeElement(
         left_start_ratio=0.8, top_start_ratio=0.2,
-        direction='left', distance=200, speed=5000,
+        direction='left', distance=200, speed_in_pixels_per_second=5000,
         element_function='document.getElementsByClassName("message")[2]')
     interaction.End()
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
@@ -314,33 +311,21 @@ class Page17(KeySilkCasesPage):
     self.StressHideyBars(action_runner)
 
   def StressHideyBars(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'direction': 'down',
-        'speed': 200,
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('messages'));
-          }'''
-      }))
-    action_runner.RunAction(ScrollAction(
-      {
-        'direction': 'up',
-        'speed': 200,
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('messages'));
-          }'''
-      }))
-    action_runner.RunAction(ScrollAction(
-      {
-        'direction': 'down',
-        'speed': 200,
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('messages'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#messages', direction='down', speed_in_pixels_per_second=200)
+    interaction.End()
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#messages', direction='up', speed_in_pixels_per_second=200)
+    interaction.End()
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#messages', direction='down', speed_in_pixels_per_second=200)
+    interaction.End()
 
 
 class Page18(KeySilkCasesPage):
@@ -384,7 +369,6 @@ class Page19(KeySilkCasesPage):
         'document.getElementById("nav-drawer").active')
     interaction.End()
 
-
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
@@ -415,14 +399,11 @@ class Page20(KeySilkCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'speed': 5000,
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('container'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        selector='#container', speed_in_pixels_per_second=5000)
+    interaction.End()
 
 
 class Page21(KeySilkCasesPage):
@@ -434,16 +415,13 @@ class Page21(KeySilkCasesPage):
 
   def ScrollKnowledgeCardToTop(self, action_runner):
     # scroll until the knowledge card is at the top
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_distance_function': '''
-          function() {
+    action_runner.ScrollPage(
+      distance_expr='''
+          (function() {
             var el = document.getElementById('kno-result');
             var bound = el.getBoundingClientRect();
             return bound.top - document.body.scrollTop;
-          }
-        '''
-      }))
+          })()''')
 
   def ExpandKnowledgeCard(self, action_runner):
     # expand card
@@ -481,13 +459,10 @@ class Page22(KeySilkCasesPage):
     action_runner.Wait(2)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scrollable_element_function': '''
-          function(callback) {
-            callback(document.getElementById('mainContent'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(selector='#mainContent')
+    interaction.End()
 
 
 class Page23(KeySilkCasesPage):
@@ -503,13 +478,13 @@ class Page23(KeySilkCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'direction': 'down',
-        'scroll_requires_touch': True,
-        'scroll_distance_function':
-          'function() { return window.innerHeight / 2; }'
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage(
+        distance_expr='window.innerHeight / 2',
+        direction='down',
+        use_touch=True)
+    interaction.End()
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.Wait(1)
     interaction.End()
@@ -533,13 +508,13 @@ class Page24(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_distance_function': 'function() { return 2500; }',
-        'scrollable_element_function':
-          'function(callback) { callback(document.getElementById(":5")); }',
-        'scroll_requires_touch': True
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollElement(
+        element_function='document.getElementById(":5")',
+        distance=2500,
+        use_touch=True)
+    interaction.End()
 
 
 class Page25(KeySilkCasesPage):
@@ -583,10 +558,10 @@ class Page26(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction(
-      {
-        'scroll_distance_function': 'function() { return 5000; }'
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage(distance=5000)
+    interaction.End()
 
 
 class KeySilkCasesPageSet(page_set_module.PageSet):

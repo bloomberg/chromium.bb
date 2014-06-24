@@ -49,13 +49,25 @@ class GoogleSearchPage(MobileMemoryPage):
         page_set=page_set)
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.Wait(3)
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.Wait(3)
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.Wait(3)
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("rg_s").childElementCount > 300')
 
@@ -66,7 +78,10 @@ class ScrollPage(MobileMemoryPage):
     super(ScrollPage, self).__init__(url=url, page_set=page_set)
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class MobileMemoryPageSet(page_set_module.PageSet):

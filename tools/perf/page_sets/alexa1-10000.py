@@ -14,7 +14,10 @@ class Alexa1To10000Page(Page):
     self.make_javascript_deterministic = True
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(ScrollAction())
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Alexa1To10000PageSet(PageSet):
