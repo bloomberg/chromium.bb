@@ -1309,6 +1309,10 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
     bool valid_for_tile_management) {
+  if (external_transform_ != transform || external_viewport_ != viewport) {
+    active_tree_->set_needs_update_draw_properties();
+  }
+
   external_transform_ = transform;
   external_viewport_ = viewport;
   external_clip_ = clip;

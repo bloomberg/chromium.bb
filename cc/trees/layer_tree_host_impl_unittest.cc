@@ -6578,5 +6578,31 @@ TEST_F(LayerTreeHostImplWithImplicitLimitsTest, ImplicitMemoryLimits) {
             150u * 1024u * 1024u);
 }
 
+TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
+  const gfx::Size layer_size(100, 100);
+  gfx::Transform external_transform;
+  const gfx::Rect external_viewport(layer_size);
+  const gfx::Rect external_clip(layer_size);
+  const bool valid_for_tile_management = true;
+  LayerImpl* layer = SetupScrollAndContentsLayers(layer_size);
+
+  host_impl_->SetExternalDrawConstraints(external_transform,
+                                         external_viewport,
+                                         external_clip,
+                                         valid_for_tile_management);
+  DrawFrame();
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      external_transform, layer->draw_properties().target_space_transform);
+
+  external_transform.Translate(20, 20);
+  host_impl_->SetExternalDrawConstraints(external_transform,
+                                         external_viewport,
+                                         external_clip,
+                                         valid_for_tile_management);
+  DrawFrame();
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      external_transform, layer->draw_properties().target_space_transform);
+}
+
 }  // namespace
 }  // namespace cc
