@@ -231,14 +231,18 @@
     </div>
   </section>
 
-  <section id="security-section" hidden>
-    <h3 i18n-content="securityTitle"></h3>
-    <div class="settings-row">
-      <span i18n-content="consumerManagementEnrollDescription"></span>
-    </div>
-    <div class="settings-row">
-      <button id="consumer-management-enroll-button"
-          i18n-content="consumerManagementEnrollButton"></button>
+  <section id="device-control-section" hidden>
+    <h3 i18n-content="deviceControlTitle"></h3>
+    <div id="consumer-management-section">
+      <div class="settings-row">
+        <span i18n-content="consumerManagementDescription"></span>
+      </div>
+      <div id="consumer-management-enroll" class="settings-row">
+        <button i18n-content="consumerManagementEnrollButton"></button>
+      </div>
+      <div id="consumer-management-unenroll" class="settings-row" hidden>
+        <button i18n-content="consumerManagementUnenrollButton"></button>
+      </div>
     </div>
   </section>
 </if>

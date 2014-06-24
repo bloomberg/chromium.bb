@@ -383,10 +383,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_LONG },
     { "autoclickDelayVeryLong",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG },
+    { "consumerManagementDescription",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_DESCRIPTION },
     { "consumerManagementEnrollButton",
       IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON },
-    { "consumerManagementEnrollDescription",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_DESCRIPTION },
+    { "consumerManagementUnenrollButton",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLL_BUTTON },
+    { "deviceControlTitle", IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
@@ -410,7 +413,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "noPointingDevices", IDS_OPTIONS_NO_POINTING_DEVICES },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
-    { "securityTitle", IDS_OPTIONS_SECURITY_SECTION_TITLE },
     { "syncOverview", IDS_SYNC_OVERVIEW },
     { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
     { "thirdPartyImeConfirmEnable", IDS_OK },
@@ -691,10 +693,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "performFactoryResetRestart",
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "enrollConsumerManagement",
-      base::Bind(&BrowserOptionsHandler::HandleEnrollConsumerManagement,
                  base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
@@ -1596,11 +1594,6 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(
   // Perform sign out. Current chrome process will then terminate, new one will
   // be launched (as if it was a restart).
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
-}
-
-void BrowserOptionsHandler::HandleEnrollConsumerManagement(
-    const base::ListValue* args) {
-  // TODO(davidyu): Implement. http://crbug.com/353050.
 }
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {

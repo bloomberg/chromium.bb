@@ -180,6 +180,8 @@ function load() {
     OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('account-picture')]);
+    OptionsPage.registerOverlay(ConsumerManagementOverlay.getInstance(),
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 BrowserOptions.getInstance());
     OptionsPage.registerOverlay(DisplayOptions.getInstance(),
