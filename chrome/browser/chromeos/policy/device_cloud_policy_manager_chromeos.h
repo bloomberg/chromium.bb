@@ -5,20 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_MANAGER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_MANAGER_CHROMEOS_H_
 
-#include <bitset>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
-#include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -36,64 +32,28 @@ class PrefService;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
-class DeviceManagementService;
-class EnrollmentHandlerChromeOS;
-class EnterpriseInstallAttributes;
 
-// CloudPolicyManager specialization for device policy on Chrome OS. The most
-// significant addition is support for device enrollment.
+// CloudPolicyManager specialization for device policy on Chrome OS.
 class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
  public:
-  typedef std::bitset<32> AllowedDeviceModes;
-  typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
-
   // |task_runner| is the runner for policy refresh tasks.
-  // |background_task_runner| is used to execute long-running background tasks
-  // that may involve file I/O.
   DeviceCloudPolicyManagerChromeOS(
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker);
   virtual ~DeviceCloudPolicyManagerChromeOS();
 
-  // Establishes the connection to the cloud, updating policy as necessary.
-  void Connect(
-      PrefService* local_state,
-      DeviceManagementService* device_management_service,
-      scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider);
+  // Initializes state keys and requisition information.
+  void Initialize(PrefService* local_state);
 
-  // Starts enrollment or re-enrollment. Once the enrollment process completes,
-  // |callback| is invoked and gets passed the status of the operation.
-  // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
-  // enrollment.
-  void StartEnrollment(const std::string& auth_token,
-                       bool is_auto_enrollment,
-                       const AllowedDeviceModes& allowed_modes,
-                       const EnrollmentCallback& callback);
-
-  // Cancels a pending enrollment operation, if any.
-  void CancelEnrollment();
-
+  // TODO(davidyu): Move these two functions to a more appropriate place. See
+  // http://crbug.com/383695.
   // Gets/Sets the device requisition.
   std::string GetDeviceRequisition() const;
   void SetDeviceRequisition(const std::string& requisition);
 
-  // Checks whether enterprise enrollment should be a regular step during OOBE.
-  bool ShouldAutoStartEnrollment() const;
-
-  // Checks whether the user can cancel enrollment.
-  bool CanExitEnrollment() const;
-
-  // Gets the domain this device is supposed to be enrolled to.
-  std::string GetForcedEnrollmentDomain() const;
-
   // CloudPolicyManager:
   virtual void Shutdown() OVERRIDE;
-
-  // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
 
   // Pref registration helper.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -109,50 +69,39 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // during enterprise enrollment.
   std::string GetRobotAccountId();
 
- private:
-  // Creates a new CloudPolicyClient.
-  scoped_ptr<CloudPolicyClient> CreateClient();
-
-  // Starts policy refreshes if |store_| indicates a managed device and the
-  // necessary dependencies have been provided via Initialize().
-  void StartIfManaged();
-
-  // Handles completion signaled by |enrollment_handler_|.
-  void EnrollmentCompleted(const EnrollmentCallback& callback,
-                           EnrollmentStatus status);
-
   // Starts the connection via |client_to_connect|.
-  void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect);
+  void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect,
+                       scoped_ptr<CloudPolicyClient::StatusProvider>
+                           device_status_provider);
 
+  DeviceCloudPolicyStoreChromeOS* device_store() {
+    return device_store_.get();
+  }
+
+ private:
   // Saves the state keys received from |session_manager_client_|.
   void OnStateKeysUpdated();
 
   // Initializes requisition settings at OOBE with values from VPD.
   void InitializeRequisition();
 
-  // Gets the device restore mode as stored in |local_state_|.
-  std::string GetRestoreMode() const;
-
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 
-  DeviceManagementService* device_management_service_;
-  scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;
-
   // PrefService instance to read the policy refresh rate from.
   PrefService* local_state_;
 
-  // Non-null if there is an enrollment operation pending.
-  scoped_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
-
   scoped_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
+
+  // TODO(davidyu): Currently we need to keep this object alive while
+  // CloudPolicyClient is in use. We should have CPC take over the
+  // ownership of this object instead. See http://crbug.com/383696.
+  scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOS);
 };

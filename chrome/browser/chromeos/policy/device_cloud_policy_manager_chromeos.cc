@@ -12,24 +12,16 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
-#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -107,8 +99,6 @@ bool ForcedReEnrollmentEnabled() {
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker)
     : CloudPolicyManager(
           PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
@@ -118,66 +108,22 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
       device_store_(store.Pass()),
-      background_task_runner_(background_task_runner),
-      install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
-      device_management_service_(NULL),
       local_state_(NULL) {
 }
 
 DeviceCloudPolicyManagerChromeOS::~DeviceCloudPolicyManagerChromeOS() {}
 
-void DeviceCloudPolicyManagerChromeOS::Connect(
-    PrefService* local_state,
-    DeviceManagementService* device_management_service,
-    scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider) {
-  CHECK(!device_management_service_);
-  CHECK(device_management_service);
+void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
   CHECK(local_state);
 
   local_state_ = local_state;
-  device_management_service_ = device_management_service;
-  device_status_provider_ = device_status_provider.Pass();
 
   state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
       base::Bind(&DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated,
                  base::Unretained(this)));
 
   InitializeRequisition();
-  StartIfManaged();
-}
-
-void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
-    const std::string& auth_token,
-    bool is_auto_enrollment,
-    const AllowedDeviceModes& allowed_device_modes,
-    const EnrollmentCallback& callback) {
-  CHECK(device_management_service_);
-  CHECK(!enrollment_handler_);
-  core()->Disconnect();
-
-  enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
-      device_store_.get(),
-      install_attributes_,
-      state_keys_broker_,
-      CreateClient(),
-      background_task_runner_,
-      auth_token,
-      install_attributes_->GetDeviceId(),
-      is_auto_enrollment,
-      GetDeviceRequisition(),
-      allowed_device_modes,
-      base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
-                 base::Unretained(this),
-                 callback)));
-  enrollment_handler_->StartEnrollment();
-}
-
-void DeviceCloudPolicyManagerChromeOS::CancelEnrollment() {
-  if (enrollment_handler_) {
-    enrollment_handler_.reset();
-    StartIfManaged();
-  }
 }
 
 std::string DeviceCloudPolicyManagerChromeOS::GetDeviceRequisition() const {
@@ -213,49 +159,9 @@ void DeviceCloudPolicyManagerChromeOS::SetDeviceRequisition(
   }
 }
 
-bool DeviceCloudPolicyManagerChromeOS::ShouldAutoStartEnrollment() const {
-  std::string restore_mode = GetRestoreMode();
-  if (restore_mode == kDeviceStateRestoreModeReEnrollmentRequested ||
-      restore_mode == kDeviceStateRestoreModeReEnrollmentEnforced) {
-    return true;
-  }
-
-  if (local_state_->HasPrefPath(prefs::kDeviceEnrollmentAutoStart))
-    return local_state_->GetBoolean(prefs::kDeviceEnrollmentAutoStart);
-
-  return GetMachineFlag(chromeos::system::kOemIsEnterpriseManagedKey, false);
-}
-
-bool DeviceCloudPolicyManagerChromeOS::CanExitEnrollment() const {
-  if (GetRestoreMode() == kDeviceStateRestoreModeReEnrollmentEnforced)
-    return false;
-
-  if (local_state_->HasPrefPath(prefs::kDeviceEnrollmentCanExit))
-    return local_state_->GetBoolean(prefs::kDeviceEnrollmentCanExit);
-
-  return GetMachineFlag(chromeos::system::kOemCanExitEnterpriseEnrollmentKey,
-                        true);
-}
-
-std::string
-DeviceCloudPolicyManagerChromeOS::GetForcedEnrollmentDomain() const {
-  const base::DictionaryValue* device_state_dict =
-      local_state_->GetDictionary(prefs::kServerBackedDeviceState);
-  std::string management_domain;
-  device_state_dict->GetString(kDeviceStateManagementDomain,
-                               &management_domain);
-  return management_domain;
-}
-
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
-  device_status_provider_.reset();
-}
-
-void DeviceCloudPolicyManagerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
-  CloudPolicyManager::OnStoreLoaded(store);
-  StartIfManaged();
 }
 
 // static
@@ -292,49 +198,13 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
   return GetMachineStatistic(chromeos::system::kHardwareClassKey);
 }
 
-scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      new SystemPolicyRequestContext(
-          g_browser_process->system_request_context(), GetUserAgent());
-
-  scoped_ptr<CloudPolicyClient> client(
-      new CloudPolicyClient(GetMachineID(), GetMachineModel(),
-                            kPolicyVerificationKeyHash,
-                            USER_AFFILIATION_NONE,
-                            device_status_provider_.get(),
-                            device_management_service_,
-                            request_context));
-
-  return client.Pass();
-}
-
-void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
-    const EnrollmentCallback& callback,
-    EnrollmentStatus status) {
-  if (status.status() == EnrollmentStatus::STATUS_SUCCESS)
-    StartConnection(enrollment_handler_->ReleaseClient());
-  else
-    StartIfManaged();
-
-  enrollment_handler_.reset();
-  if (!callback.is_null())
-    callback.Run(status);
-}
-
-void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
-  if (device_management_service_ &&
-      local_state_ &&
-      store()->is_initialized() &&
-      store()->has_policy() &&
-      !state_keys_broker_->pending() &&
-      !enrollment_handler_ &&
-      !service()) {
-    StartConnection(CreateClient());
-  }
-}
-
 void DeviceCloudPolicyManagerChromeOS::StartConnection(
-    scoped_ptr<CloudPolicyClient> client_to_connect) {
+    scoped_ptr<CloudPolicyClient> client_to_connect,
+    scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider) {
+  CHECK(!service());
+
+  device_status_provider_ = device_status_provider.Pass();
+
   // Set state keys here so the first policy fetch submits them to the server.
   if (ForcedReEnrollmentEnabled())
     client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
@@ -348,12 +218,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
 }
 
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
-  if (client()) {
-    if (ForcedReEnrollmentEnabled())
-      client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
-  } else {
-    StartIfManaged();
-  }
+  if (client() && ForcedReEnrollmentEnabled())
+    client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
 }
 
 void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
@@ -385,14 +251,6 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
       }
     }
   }
-}
-
-std::string DeviceCloudPolicyManagerChromeOS::GetRestoreMode() const {
-  const base::DictionaryValue* device_state_dict =
-      local_state_->GetDictionary(prefs::kServerBackedDeviceState);
-  std::string restore_mode;
-  device_state_dict->GetString(kDeviceStateRestoreMode, &restore_mode);
-  return restore_mode;
 }
 
 }  // namespace policy

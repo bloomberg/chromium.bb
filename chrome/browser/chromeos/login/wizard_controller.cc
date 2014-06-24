@@ -51,7 +51,7 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1008,21 +1008,26 @@ void WizardController::SkipPostLoginScreensForTesting() {
 bool WizardController::ShouldAutoStartEnrollment() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
+  policy::DeviceCloudPolicyInitializer* dcp_initializer =
+      connector->GetDeviceCloudPolicyInitializer();
+  return dcp_initializer && dcp_initializer->ShouldAutoStartEnrollment();
 }
 
 // static
 bool WizardController::CanExitEnrollment() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetDeviceCloudPolicyManager()->CanExitEnrollment();
+  CHECK(connector);
+  return connector->GetDeviceCloudPolicyInitializer()->CanExitEnrollment();
 }
 
 // static
 std::string WizardController::GetForcedEnrollmentDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetDeviceCloudPolicyManager()->GetForcedEnrollmentDomain();
+  CHECK(connector);
+  return connector->GetDeviceCloudPolicyInitializer()
+      ->GetForcedEnrollmentDomain();
 }
 
 void WizardController::OnLocalStateInitialized(bool /* succeeded */) {

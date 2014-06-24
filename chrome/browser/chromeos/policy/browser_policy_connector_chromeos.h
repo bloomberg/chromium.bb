@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 namespace policy {
 
 class AppPackUpdater;
+class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyManagerChromeOS;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
@@ -68,6 +69,10 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
     return device_cloud_policy_manager_;
   }
 
+  DeviceCloudPolicyInitializer* GetDeviceCloudPolicyInitializer() {
+    return device_cloud_policy_initializer_.get();
+  }
+
   DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() {
     return device_local_account_policy_service_.get();
   }
@@ -110,10 +115,13 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
 
+  void OnDeviceCloudPolicyManagerConnected();
+
   // Components of the device cloud policy implementation.
   scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
+  scoped_ptr<DeviceCloudPolicyInitializer> device_cloud_policy_initializer_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
 

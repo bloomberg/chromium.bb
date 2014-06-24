@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -202,12 +202,17 @@ void EnrollmentScreen::RegisterForDevicePolicy(
     return;
   }
 
-  policy::DeviceCloudPolicyManagerChromeOS::AllowedDeviceModes device_modes;
+  policy::DeviceCloudPolicyInitializer::AllowedDeviceModes device_modes;
   device_modes[policy::DEVICE_MODE_ENTERPRISE] = true;
   device_modes[policy::DEVICE_MODE_RETAIL_KIOSK] =
       enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
   connector->ScheduleServiceInitialization(0);
-  connector->GetDeviceCloudPolicyManager()->StartEnrollment(
+
+  policy::DeviceCloudPolicyInitializer* dcp_initializer =
+      connector->GetDeviceCloudPolicyInitializer();
+  CHECK(dcp_initializer);
+  dcp_initializer->StartEnrollment(
+      connector->device_management_service(),
       token, is_auto_enrollment(), device_modes,
       base::Bind(&EnrollmentScreen::ReportEnrollmentStatus,
                  weak_ptr_factory_.GetWeakPtr()));

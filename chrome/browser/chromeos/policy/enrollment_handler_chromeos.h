@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -29,6 +29,7 @@ class PolicyFetchResponse;
 
 namespace policy {
 
+class DeviceCloudPolicyStoreChromeOS;
 class ServerBackedStateKeysBroker;
 
 // Implements the logic that establishes enterprise enrollment for Chromium OS
@@ -46,9 +47,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
                                   public CloudPolicyStore::Observer,
                                   public gaia::GaiaOAuthClient::Delegate {
  public:
-  typedef DeviceCloudPolicyManagerChromeOS::AllowedDeviceModes
+  typedef DeviceCloudPolicyInitializer::AllowedDeviceModes
       AllowedDeviceModes;
-  typedef DeviceCloudPolicyManagerChromeOS::EnrollmentCallback
+  typedef DeviceCloudPolicyInitializer::EnrollmentCallback
       EnrollmentCallback;
 
   // |store| and |install_attributes| must remain valid for the life time of the
