@@ -1018,10 +1018,12 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
  * @param {boolean} ready True if the connection is ready.
  */
 remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
+  var container = /** @type {HTMLMediaElement} */(
+      document.getElementById('video-container'));
   if (!ready) {
-    this.plugin_.element().classList.add("session-client-inactive");
+    container.classList.add('session-client-inactive');
   } else {
-    this.plugin_.element().classList.remove("session-client-inactive");
+    container.classList.remove('session-client-inactive');
   }
 
   this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,
