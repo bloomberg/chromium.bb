@@ -150,7 +150,8 @@ class TestCLActionLogic(unittest.TestCase):
              'and then some crosreview.com/3456 or some '
              'https://chromium-review.googlesource.com/#/c/6543/ and '
              'then crosreview.com/i/9876 followed by '
-             'https://chrome-internal-review.googlesource.com/#/c/6789/')
+             'https://chrome-internal-review.googlesource.com/#/c/6789/ '
+             'blah https://gutsv3.corp.google.com/#ticket/1234 t/4321')
     expected = ['crbug.com/1234',
                 'crbug.com/4321',
                 'b/2345',
@@ -158,7 +159,9 @@ class TestCLActionLogic(unittest.TestCase):
                 'crosreview.com/3456',
                 'crosreview.com/6543',
                 'crosreview.com/i/9876',
-                'crosreview.com/i/6789']
+                'crosreview.com/i/6789',
+                't/1234',
+                't/4321']
     self.assertEqual(gather_builder_stats.CLStats.ProcessBlameString(blame),
                      expected)
 

@@ -51,6 +51,7 @@ PFQ_SS_KEY = '0AhFPeDq6pmwxdDdrYXk3cnJJV05jN3Zja0s5VjFfNlE'
 
 # These are the preferred base URLs we use to canonicalize bugs/CLs.
 BUGANIZER_BASE_URL = 'b/'
+GUTS_BASE_URL = 't/'
 CROS_BUG_BASE_URL = 'crbug.com/'
 INTERNAL_CL_BASE_URL = 'crosreview.com/i/'
 EXTERNAL_CL_BASE_URL = 'crosreview.com/'
@@ -907,7 +908,7 @@ class CLStats(StatsManager):
     Returns:
       A list of canonicalized URLs for bugs or CLs that appear in the blame
       string. Canonicalized form will be 'crbug.com/1234',
-      'crosreview.com/1234', 'b/1234', or 'crosreview.com/i/1234' as
+      'crosreview.com/1234', 'b/1234', 't/1234', or 'crosreview.com/i/1234' as
       applicable.
     """
     urls = []
@@ -923,6 +924,7 @@ class CLStats(StatsManager):
         'chrome-internal-review.googlesource.com|crosreview.com/i')
     external_review = (general_regex %
         'crosreview.com|chromium-review.googlesource.com')
+    guts = (general_regex % 't/|gutsv\d.corp.google.com/#ticket/')
 
     # Buganizer regex is different, as buganizer urls do not end with the bug
     # number.
@@ -934,11 +936,13 @@ class CLStats(StatsManager):
     patterns = [crbug,
                 internal_review,
                 external_review,
-                buganizer]
+                buganizer,
+                guts]
     url_patterns = [CROS_BUG_BASE_URL,
                     INTERNAL_CL_BASE_URL,
                     EXTERNAL_CL_BASE_URL,
-                    BUGANIZER_BASE_URL]
+                    BUGANIZER_BASE_URL,
+                    GUTS_BASE_URL]
 
     for t in tokens:
       for p, u in zip(patterns, url_patterns):
