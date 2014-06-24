@@ -24,6 +24,7 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kCanMaximizeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kCanResizeKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kDrawAttentionKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 // gfx::Rect object for RestoreBoundsKey property is owned by the window
 // and will be freed automatically.
