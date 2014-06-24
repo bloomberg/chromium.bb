@@ -702,51 +702,12 @@ hooks = [
                 "-s", "src/buildtools/linux64/gn.sha1",
     ],
   },
-  # Pull GN binaries (old location). TODO(brettw) remove this after a transition
-  # period while we move the binaries from tools/gn/bin to buildtools.
   {
-    "name": "gn_old_win",
+    # Remove GN binaries from tools/gn/bin that aren't used anymore.
+    # TODO(brettw) remove after the end of July, 2014.
+    "name": "remove_old_gn_binaries",
     "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=win32",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "src/tools/gn/bin/win/gn.exe.sha1",
-    ],
-  },
-  {
-    "name": "gn_old_mac",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=darwin",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "src/tools/gn/bin/mac/gn.sha1",
-    ],
-  },
-  {
-    "name": "gn_old_linux",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "src/tools/gn/bin/linux/gn.sha1",
-    ],
-  },
-  {
-    "name": "gn_old_linux32",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "src/tools/gn/bin/linux/gn32.sha1",
-    ],
+    "action": ["python", "src/tools/gn/bin/rm_binaries.py"],
   },
   # Pull clang-format binaries using checked-in hashes.
   {
