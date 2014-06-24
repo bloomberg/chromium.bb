@@ -346,6 +346,8 @@ class TestViewManagerClientConnection
                                 const Callback<void()>& callback) OVERRIDE {
     tracker_.OnViewInputEvent(view_id, event.Pass());
   }
+  virtual void OnFocusChanged(Id gained_focus_id,
+                              Id lost_focus_id) OVERRIDE {}
   virtual void DispatchOnViewInputEvent(Id view_id,
                                         mojo::EventPtr event) OVERRIDE {
   }
@@ -1364,6 +1366,11 @@ TEST_F(ViewManagerTest, DISABLED_OnViewInput) {
 // TODO(sky): need to better track changes to initial connection. For example,
 // that SetBounsdNodes/AddNode and the like don't result in messages to the
 // originating connection.
+
+// TODO(beng): Add tests for focus:
+// - focus between two nodes known to a connection
+// - focus between nodes unknown to one of the connections.
+// - focus between nodes unknown to either connection.
 
 }  // namespace service
 }  // namespace view_manager

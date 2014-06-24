@@ -56,6 +56,8 @@ class NodeObserver {
                                   const gfx::Rect& new_bounds,
                                   DispositionChangePhase phase) {}
 
+  virtual void OnNodeFocusChanged(Node* gained_focus, Node* lost_focus) {}
+
  protected:
   virtual ~NodeObserver() {}
 };

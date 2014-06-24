@@ -185,6 +185,15 @@ interface ViewManagerClient {
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
 
+  // Invoked when focus shifts from one Node to another. |gained_focus_id| is
+  // the id of the node that gained focus, or 0 if the node that gained focus is
+  // not known to this connection. |lost_focus_id| is likewise the node that
+  // lost focus.
+  // TODO(beng): once aura is removed from the service, focus management should
+  //             entirely move to the window manager and this method can be
+  //             removed.
+  OnFocusChanged(uint32 gained_focus_id, uint32 lost_focus_id);
+
   // TODO(sky): move to separate interface when FIFO sorted out.
 
   DispatchOnViewInputEvent(uint32 view, mojo.Event event);

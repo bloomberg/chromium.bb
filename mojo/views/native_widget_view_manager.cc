@@ -8,6 +8,7 @@
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method.h"
@@ -103,6 +104,10 @@ NativeWidgetViewManager::NativeWidgetViewManager(
   aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
+
+  aura::client::SetCaptureClient(
+      window_tree_host_->window(),
+      new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {

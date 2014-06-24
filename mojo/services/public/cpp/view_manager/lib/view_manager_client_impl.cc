@@ -13,6 +13,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
+#include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -501,7 +502,8 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
       connection_id_(0),
       next_id_(1),
       next_server_change_id_(0),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      dispatcher_(NULL) {}
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
   while (!nodes_.empty()) {
@@ -638,6 +640,17 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
+
+void ViewManagerClientImpl::SetEventDispatcher(
+    ViewEventDispatcher* dispatcher) {
+  CHECK(NULL != GetNodeById(1));
+  dispatcher_ = dispatcher;
+}
+
+void ViewManagerClientImpl::DispatchEvent(View* target, EventPtr event) {
+  CHECK(dispatcher_);
+  service_->DispatchOnViewInputEvent(target->id(), event.Pass());
+}
 
 const std::string& ViewManagerClientImpl::GetEmbedderURL() const {
   return creator_url_;
@@ -776,12 +789,25 @@ void ViewManagerClientImpl::OnViewInputEvent(
   ack_callback.Run();
 }
 
+void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
+                                           Id lost_focus_id) {
+  Node* focused = GetNodeById(gained_focus_id);
+  Node* blurred = GetNodeById(lost_focus_id);
+  if (blurred) {
+    FOR_EACH_OBSERVER(NodeObserver,
+                      *NodePrivate(blurred).observers(),
+                      OnNodeFocusChanged(focused, blurred));
+  }
+  if (focused) {
+    FOR_EACH_OBSERVER(NodeObserver,
+                      *NodePrivate(focused).observers(),
+                      OnNodeFocusChanged(focused, blurred));
+  }
+}
+
 void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
                                                      EventPtr event) {
-  // For now blindly bounce the message back to the server. Doing this means the
-  // event is sent to the correct target (|view_id|).
-  // Note: This function is only invoked on the window manager.
-  service_->DispatchOnViewInputEvent(view_id, event.Pass());
+  dispatcher_->DispatchEvent(GetViewById(view_id), event.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

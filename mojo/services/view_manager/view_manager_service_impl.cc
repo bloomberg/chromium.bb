@@ -233,6 +233,29 @@ void ViewManagerServiceImpl::ProcessViewDeleted(const ViewId& view,
   client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
+void ViewManagerServiceImpl::ProcessFocusChanged(const Node* focused_node,
+                                                 const Node* blurred_node,
+                                                 bool originated_change) {
+  if (originated_change)
+    return;
+
+  Id focused_id = 0;
+  Id blurred_id = 0;
+  if (focused_node) {
+    Id focused_node_id = NodeIdToTransportId(focused_node->id());
+    if (known_nodes_.count(focused_node_id) > 0)
+      focused_id = focused_node_id;
+  }
+  if (blurred_node) {
+    Id blurred_node_id = NodeIdToTransportId(blurred_node->id());
+    if (known_nodes_.count(blurred_node_id) > 0)
+      blurred_id = blurred_node_id;
+  }
+
+  if (focused_id != 0 || blurred_id != 0)
+    client()->OnFocusChanged(focused_id, blurred_id);
+}
+
 void ViewManagerServiceImpl::OnConnectionError() {
   if (delete_on_connection_error_)
     delete this;
@@ -392,11 +415,6 @@ bool ViewManagerServiceImpl::SetViewImpl(Node* node, const ViewId& view_id) {
       this, root_node_manager_,
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID, false);
   node->SetView(view);
-
-  // TODO(sky): this is temporary, need a real focus API.
-  if (view && root_node_manager_->root()->Contains(node))
-    node->window()->Focus();
-
   return true;
 }
 

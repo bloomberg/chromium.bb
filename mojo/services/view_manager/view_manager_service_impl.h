@@ -99,6 +99,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                           Id server_change_id,
                           bool originated_change);
   void ProcessViewDeleted(const ViewId& view, bool originated_change);
+  void ProcessFocusChanged(const Node* focused_node,
+                           const Node* blurred_node,
+                           bool originated_change);
 
   // TODO(sky): move this to private section (currently can't because of
   // bindings).

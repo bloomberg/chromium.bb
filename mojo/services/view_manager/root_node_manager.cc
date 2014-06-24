@@ -9,6 +9,7 @@
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 
 namespace mojo {
@@ -51,6 +52,9 @@ RootNodeManager::RootNodeManager(ServiceProvider* service_provider,
 }
 
 RootNodeManager::~RootNodeManager() {
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(root_.window());
+  focus_client->RemoveObserver(this);
   while (!connections_created_by_connect_.empty())
     delete *(connections_created_by_connect_.begin());
   // All the connections should have been destroyed.
@@ -198,6 +202,17 @@ void RootNodeManager::ProcessViewDeleted(const ViewId& view) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessViewDeleted(view, IsChangeSource(i->first));
+  }
+}
+
+void RootNodeManager::OnWindowFocused(aura::Window* gained_focus,
+                                      aura::Window* lost_focus) {
+  Node* focused_node = gained_focus ? Node::NodeForWindow(gained_focus) : NULL;
+  Node* blurred_node = lost_focus ? Node::NodeForWindow(lost_focus) : NULL;
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    i->second->ProcessFocusChanged(focused_node, blurred_node,
+                                   IsChangeSource(i->first));
   }
 }
 

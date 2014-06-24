@@ -30,6 +30,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node
   Node(NodeDelegate* delegate, const NodeId& id);
   virtual ~Node();
 
+  static Node* NodeForWindow(aura::Window* window);
+
   void set_view_id(const ViewId& view_id) { view_id_ = view_id; }
   const ViewId& view_id() const { return view_id_; }
 

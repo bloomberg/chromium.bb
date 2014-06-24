@@ -44,6 +44,11 @@ Node::~Node() {
     window_.parent()->RemoveChild(&window_);
 }
 
+// static
+Node* Node::NodeForWindow(aura::Window* window) {
+  return window->GetProperty(kNodeKey);
+}
+
 const Node* Node::GetParent() const {
   if (!window_.parent())
     return NULL;

@@ -20,6 +20,7 @@ class SkBitmap;
 namespace mojo {
 namespace view_manager {
 
+class ViewEventDispatcher;
 class ViewManager;
 class ViewManagerTransaction;
 
@@ -84,6 +85,8 @@ class ViewManagerClientImpl : public ViewManager,
   typedef std::map<Id, View*> IdToViewMap;
 
   // Overridden from ViewManager:
+  virtual void SetEventDispatcher(ViewEventDispatcher* dispatcher) OVERRIDE;
+  virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE;
   virtual const std::string& GetEmbedderURL() const OVERRIDE;
   virtual const std::vector<Node*>& GetRoots() const OVERRIDE;
   virtual Node* GetNodeById(Id id) OVERRIDE;
@@ -120,6 +123,7 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void OnViewInputEvent(Id view,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
+  virtual void OnFocusChanged(Id gained_focus_id, Id lost_focus_id) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
@@ -145,6 +149,7 @@ class ViewManagerClientImpl : public ViewManager,
   base::Callback<void(void)> changes_acked_callback_;
 
   ViewManagerDelegate* delegate_;
+  ViewEventDispatcher* dispatcher_;
 
   std::vector<Node*> roots_;
 

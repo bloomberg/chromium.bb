@@ -14,6 +14,7 @@
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -50,9 +51,10 @@ class BrowserLayoutManager : public views::LayoutManager {
 // TODO: cleanup!
 class Browser : public Application,
                 public view_manager::ViewManagerDelegate,
-                public views::TextfieldController {
+                public views::TextfieldController,
+                public view_manager::NodeObserver {
  public:
-  Browser() : view_manager_(NULL) {}
+  Browser() : view_manager_(NULL), root_(NULL), widget_(NULL) {}
 
   virtual ~Browser() {
   }
@@ -74,14 +76,14 @@ class Browser : public Application,
     widget_delegate->GetContentsView()->SetLayoutManager(
         new BrowserLayoutManager);
 
-    views::Widget* widget = new views::Widget;
+    widget_ = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget, node);
+    params.native_widget = new NativeWidgetViewManager(widget_, node);
     params.delegate = widget_delegate;
     params.bounds = gfx::Rect(node->bounds().width(), node->bounds().height());
-    widget->Init(params);
-    widget->Show();
+    widget_->Init(params);
+    widget_->Show();
     textfield->RequestFocus();
   }
 
@@ -90,9 +92,11 @@ class Browser : public Application,
                            view_manager::Node* root) OVERRIDE {
     // TODO: deal with OnRootAdded() being invoked multiple times.
     view_manager_ = view_manager;
-    root->SetActiveView(view_manager::View::Create(view_manager));
-    root->SetFocus();
-    CreateWidget(root);
+    root_ = root;
+    root_->AddObserver(this);
+    root_->SetActiveView(view_manager::View::Create(view_manager));
+    root_->SetFocus();
+    CreateWidget(root_);
   }
 
   // views::TextfieldController:
@@ -111,9 +115,22 @@ class Browser : public Application,
     return false;
   }
 
+  // NodeObserver:
+  virtual void OnNodeFocusChanged(view_manager::Node* gained_focus,
+                                  view_manager::Node* lost_focus) OVERRIDE {
+    aura::client::FocusClient* focus_client =
+        aura::client::GetFocusClient(widget_->GetNativeView());
+    if (lost_focus == root_)
+      focus_client->FocusWindow(NULL);
+    else if (gained_focus == root_)
+      focus_client->FocusWindow(widget_->GetNativeView());
+  }
+
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
+  view_manager::Node* root_;
+  views::Widget* widget_;
   navigation::NavigatorHostPtr navigator_host_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);

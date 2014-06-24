@@ -15,6 +15,7 @@
 #include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/root_view_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
+#include "ui/aura/client/focus_change_observer.h"
 
 namespace ui {
 class Event;
@@ -33,7 +34,9 @@ class ViewManagerServiceImpl;
 
 // RootNodeManager is responsible for managing the set of
 // ViewManagerServiceImpls as well as providing the root of the node hierarchy.
-class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
+class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
+    : public NodeDelegate,
+      public aura::client::FocusChangeObserver {
  public:
   // Used to indicate if the server id should be incremented after notifiying
   // clients of the change.
@@ -157,6 +160,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   };
 
   typedef std::map<ConnectionSpecificId, ViewManagerServiceImpl*> ConnectionMap;
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.

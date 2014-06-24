@@ -775,5 +775,13 @@ TEST_F(ViewManagerTest, Reorder) {
   }
 }
 
+// TODO(beng): tests for view event dispatcher.
+// - verify that we see events for all views.
+
+// TODO(beng): tests for focus:
+// - focus between two nodes known to a connection
+// - focus between nodes unknown to one of the connections.
+// - focus between nodes unknown to either connection.
+
 }  // namespace view_manager
 }  // namespace mojo

@@ -9,9 +9,11 @@
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/events/event_constants.h"
@@ -24,6 +26,7 @@ using mojo::view_manager::Id;
 using mojo::view_manager::Node;
 using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
+using mojo::view_manager::ViewEventDispatcher;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
@@ -75,7 +78,8 @@ class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
 
 class WindowManager : public Application,
                       public ViewObserver,
-                      public ViewManagerDelegate {
+                      public ViewManagerDelegate,
+                      public ViewEventDispatcher {
  public:
   WindowManager() : launcher_ui_(NULL), view_manager_(NULL) {}
   virtual ~WindowManager() {}
@@ -137,6 +141,7 @@ class WindowManager : public Application,
   virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
+    view_manager_->SetEventDispatcher(this);
 
     Node* node = Node::Create(view_manager);
     view_manager->GetRoots().front()->AddChild(node);
@@ -151,7 +156,15 @@ class WindowManager : public Application,
     CreateLauncherUI();
   }
 
-  virtual void OnLaunch(
+  // Overridden from ViewEventDispatcher:
+  virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE {
+    // TODO(beng): More sophisticated focus handling than this is required!
+    if (event->action == ui::ET_MOUSE_PRESSED)
+      target->node()->SetFocus();
+    view_manager_->DispatchEvent(target, event.Pass());
+  }
+
+  void OnLaunch(
       uint32 source_node_id,
       navigation::Target target,
       const mojo::String& handler_url,
@@ -198,6 +211,7 @@ class WindowManager : public Application,
     node->AddChild(embedded);
     embedded->SetBounds(bounds);
     Embed(embedded, url, nav_details.Pass(), response.Pass());
+    embedded->SetFocus();
     return embedded;
   }
 
