@@ -53,8 +53,6 @@ extern int trace_flag;
 void va_TraceInit(VADisplay dpy);
 void va_TraceEnd(VADisplay dpy);
 
-void va_TraceMsg(int idx, const char *msg, ...);
-
 void va_TraceInitialize (
     VADisplay dpy,
     int *major_version,	 /* out */
@@ -140,6 +138,13 @@ void va_TraceEndPicture(
 void va_TraceSyncSurface(
     VADisplay dpy,
     VASurfaceID render_target
+);
+
+void va_TraceQuerySurfaceAttributes(
+    VADisplay           dpy,
+    VAConfigID          config,
+    VASurfaceAttrib    *attrib_list,
+    unsigned int       *num_attribs
 );
 
 void va_TraceQuerySurfaceStatus(

@@ -37,21 +37,21 @@
  *
  * The minor version of VA-API (2, if %VA_VERSION is 1.2.3)
  */
-#define VA_MINOR_VERSION    34
+#define VA_MINOR_VERSION    35
 
 /**
  * VA_MICRO_VERSION:
  *
  * The micro version of VA-API (3, if %VA_VERSION is 1.2.3)
  */
-#define VA_MICRO_VERSION    0
+#define VA_MICRO_VERSION    1
 
 /**
  * VA_VERSION:
  *
  * The full version of VA-API, like 1.2.3
  */
-#define VA_VERSION          0.34.0
+#define VA_VERSION          0.35.1
 
 /**
  * VA_VERSION_S:
@@ -59,7 +59,7 @@
  * The full version of VA-API, in string form (suited for string
  * concatenation)
  */
-#define VA_VERSION_S       "0.34.0"
+#define VA_VERSION_S       "0.35.1"
 
 /**
  * VA_VERSION_HEX:

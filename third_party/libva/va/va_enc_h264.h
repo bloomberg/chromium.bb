@@ -523,68 +523,6 @@ typedef struct _VAEncSliceParameterBufferH264 {
 #define VA_MB_PRED_AVAIL_LEFT             (1 << 6)
 /**@}*/
 
-/**
- * \brief Macroblock parameter for H.264 encoding in baseline, main & high 
- * profiles.
- *
- * This structure holds per-macroblock information. The buffer must be
- * allocated with as many elements (macroblocks) as necessary to fit
- * the slice to be encoded. Besides, the per-macroblock records must
- * be written in a strict raster order and with no gap. i.e. every
- * macroblock, regardless of its type, shall have an entry.
- */
-typedef struct _VAEncMacroblockParameterBufferH264 {
-    /**
-     * \brief Quantization parameter.
-     *
-     * Requested quantization parameter. Range: 0 to 51, inclusive.
-     * If \ref qp is set to 0xff, then the actual value is derived
-     * from the slice-level value: \c pic_init_qp + \c slice_qp_delta.
-     */
-    unsigned char   qp;
-
-    union {
-        /** @name Data for intra macroblock */
-        /**@{*/
-        struct {
-            union {
-                /**
-                 * \brief Flag specified to override MB neighbour
-                 * availability bits from VME stage.
-                 *
-                 * This flag specifies that macroblock neighbour
-                 * availability bits from the VME stage are overriden
-                 * by the \ref pred_avail_flags hereunder.
-                 */
-                unsigned int    pred_avail_override_flag        : 1;
-                /**
-                 * \brief Bitwise representation of which macroblocks
-                 * are available for intra prediction.
-                 *
-                 * If the slice is intra-coded, this field represents
-                 * the macroblocks available for intra prediction.
-                 * See \ref api_enc_h264_mb_pred_avail_bits
-                 * "macroblock neighbour availability" bit definitions.
-                 */
-                unsigned int    pred_avail_flags                : 8;
-            } bits;
-            unsigned int value;
-        } intra_fields;
-        /**@}*/
-
-        /** @name Data for inter macroblock */
-        /**@{*/
-        struct {
-            union {
-            } bits;
-            unsigned int value;
-        } inter_fields;
-        /**@}*/
-    } info;
-} VAEncMacroblockParameterBufferH264;
-
-/**@}*/
-
 #ifdef __cplusplus
 }
 #endif
