@@ -8,6 +8,7 @@
     Exposed=ServiceWorker
 ] interface FetchEvent : Event {
     readonly attribute Request request;
+    readonly attribute boolean isReload;
 
     [CallWith=ScriptState] void respondWith(any value);
 };
