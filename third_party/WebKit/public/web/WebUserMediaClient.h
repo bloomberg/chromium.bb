@@ -43,8 +43,8 @@ public:
 
     virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
     virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
-    virtual void requestMediaDevices(const WebMediaDevicesRequest&) { }
-    virtual void cancelMediaDevicesRequest(const WebMediaDevicesRequest&) { }
+    virtual void requestMediaDevices(const WebMediaDevicesRequest&) = 0;
+    virtual void cancelMediaDevicesRequest(const WebMediaDevicesRequest&) = 0;
 };
 
 } // namespace blink
