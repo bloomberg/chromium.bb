@@ -941,10 +941,29 @@ bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
   return false;
 }
 
-bool HistoryBackend::UpdateURL(URLID id, const history::URLRow& url) {
-  if (db_)
-    return db_->UpdateURLRow(id, url);
-  return false;
+size_t HistoryBackend::UpdateURLs(const history::URLRows& urls) {
+  if (!db_)
+    return 0;
+
+  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
+  for (history::URLRows::const_iterator it = urls.begin(); it != urls.end();
+       ++it) {
+    DCHECK(it->id());
+    if (db_->UpdateURLRow(it->id(), *it))
+      details->changed_urls.push_back(*it);
+  }
+
+  // Broadcast notifications for any URLs that have actually been changed. This
+  // will update the in-memory database and the InMemoryURLIndex.
+  size_t num_updated_records = details->changed_urls.size();
+  if (num_updated_records) {
+    if (typed_url_syncable_service_)
+      typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
+    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                           details.PassAs<HistoryDetails>());
+    ScheduleCommit();
+  }
+  return num_updated_records;
 }
 
 bool HistoryBackend::AddVisits(const GURL& url,

@@ -109,6 +109,13 @@ TEST_F(URLDatabaseTest, AddAndUpdateURL) {
   EXPECT_TRUE(GetRowForURL(url2, &info2));
   EXPECT_TRUE(IsURLRowEqual(url_info2, info2));
 
+  // Try updating a non-existing row. This should fail and have no effects.
+  const GURL url3("http://youtube.com/");
+  URLRow url_info3(url3);
+  url_info3.set_id(42);
+  EXPECT_FALSE(UpdateURLRow(url_info3.id(), url_info3));
+  EXPECT_EQ(0, GetRowForURL(url3, &info));
+
   // Update an existing URL and insert a new one using the upsert operation.
   url_info1.set_id(id1_initially);
   url_info1.set_title(base::UTF8ToUTF16("Google Again!"));
@@ -118,23 +125,23 @@ TEST_F(URLDatabaseTest, AddAndUpdateURL) {
   url_info1.set_hidden(true);
   EXPECT_TRUE(InsertOrUpdateURLRowByID(url_info1));
 
-  const GURL url3("http://maps.google.com/");
-  URLRow url_info3(url3);
-  url_info3.set_id(42);
-  url_info3.set_title(base::UTF8ToUTF16("Google Maps"));
-  url_info3.set_visit_count(7);
-  url_info3.set_typed_count(6);
-  url_info3.set_last_visit(Time::Now() - TimeDelta::FromDays(3));
-  url_info3.set_hidden(false);
-  EXPECT_TRUE(InsertOrUpdateURLRowByID(url_info3));
+  const GURL url4("http://maps.google.com/");
+  URLRow url_info4(url4);
+  url_info4.set_id(43);
+  url_info4.set_title(base::UTF8ToUTF16("Google Maps"));
+  url_info4.set_visit_count(7);
+  url_info4.set_typed_count(6);
+  url_info4.set_last_visit(Time::Now() - TimeDelta::FromDays(3));
+  url_info4.set_hidden(false);
+  EXPECT_TRUE(InsertOrUpdateURLRowByID(url_info4));
 
   // Query both of these as well.
   URLID id1 = GetRowForURL(url1, &info);
-  EXPECT_EQ(id1, id1);
+  EXPECT_EQ(id1_initially, id1);
   EXPECT_TRUE(IsURLRowEqual(url_info1, info));
-  URLID id3 = GetRowForURL(url3, &info);
-  EXPECT_EQ(42, id3);
-  EXPECT_TRUE(IsURLRowEqual(url_info3, info));
+  URLID id4 = GetRowForURL(url4, &info);
+  EXPECT_EQ(43, id4);
+  EXPECT_TRUE(IsURLRowEqual(url_info4, info));
 
   // Query a nonexistent URL.
   EXPECT_EQ(0, GetRowForURL(GURL("http://news.google.com/"), &info));

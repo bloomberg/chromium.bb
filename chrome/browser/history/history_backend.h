@@ -365,7 +365,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                          int max_visits,
                                          VisitVector* visits);
 
-  virtual bool UpdateURL(URLID id, const history::URLRow& url);
+  // For each element in |urls|, updates the pre-existing URLRow in the database
+  // with the same ID; or ignores the element if no such row exists. Returns the
+  // number of records successfully updated.
+  virtual size_t UpdateURLs(const history::URLRows& urls);
 
   // While adding visits in batch, the source needs to be provided.
   virtual bool AddVisits(const GURL& url,
@@ -468,6 +471,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAllThenAddData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPagesWithDetails);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateURLs);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, URLsNoLongerBookmarked);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);

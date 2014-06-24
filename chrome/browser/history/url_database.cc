@@ -127,7 +127,7 @@ bool URLDatabase::UpdateURLRow(URLID url_id,
   statement.BindInt(4, info.hidden() ? 1 : 0);
   statement.BindInt64(5, url_id);
 
-  return statement.Run();
+  return statement.Run() && GetDB().GetLastChangeCount() > 0;
 }
 
 URLID URLDatabase::AddURLInternal(const history::URLRow& info,

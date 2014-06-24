@@ -188,8 +188,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
       history_backend_ && history_backend_->GetAllTypedURLs(&typed_urls);
 
   history::URLRows new_urls;
+  history::URLRows updated_urls;
   TypedUrlVisitVector new_visits;
-  TypedUrlUpdateVector updated_urls;
   {
     base::AutoLock au(abort_lock_);
     if (abort_requested_) {
@@ -290,8 +290,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
           WriteToSyncNode(new_url, visits, &write_node);
         }
         if (difference & DIFF_LOCAL_ROW_CHANGED) {
-          updated_urls.push_back(
-              std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
+          DCHECK_EQ(ix->id(), new_url.id());
+          updated_urls.push_back(new_url);
         }
         if (difference & DIFF_LOCAL_VISITS_ADDED) {
           new_visits.push_back(
@@ -407,7 +407,7 @@ void TypedUrlModelAssociator::UpdateFromSyncDB(
     const sync_pb::TypedUrlSpecifics& typed_url,
     TypedUrlVisitVector* visits_to_add,
     history::VisitVector* visits_to_remove,
-    TypedUrlUpdateVector* updated_urls,
+    history::URLRows* updated_urls,
     history::URLRows* new_urls) {
   history::URLRow new_url(GURL(typed_url.url()));
   history::VisitVector existing_visits;
@@ -434,8 +434,7 @@ void TypedUrlModelAssociator::UpdateFromSyncDB(
              visits_to_remove);
 
   if (existing_url) {
-    updated_urls->push_back(
-        std::pair<history::URLID, history::URLRow>(new_url.id(), new_url));
+    updated_urls->push_back(new_url);
   } else {
     new_urls->push_back(new_url);
   }
@@ -511,28 +510,22 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 void TypedUrlModelAssociator::WriteToHistoryBackend(
     const history::URLRows* new_urls,
-    const TypedUrlUpdateVector* updated_urls,
+    const history::URLRows* updated_urls,
     const TypedUrlVisitVector* new_visits,
     const history::VisitVector* deleted_visits) {
   if (new_urls) {
     history_backend_->AddPagesWithDetails(*new_urls, history::SOURCE_SYNCED);
   }
   if (updated_urls) {
-    for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
-         url != updated_urls->end(); ++url) {
-      // This is an existing entry in the URL database. We don't verify the
-      // visit_count or typed_count values here, because either one (or both)
-      // could be zero in the case of bookmarks, or in the case of a URL
-      // transitioning from non-typed to typed as a result of this sync.
-      ++num_db_accesses_;
-      if (!history_backend_->UpdateURL(url->first, url->second)) {
-        // In the field we sometimes run into errors on specific URLs. It's OK
-        // to just continue on (we can try writing again on the next model
-        // association).
-        ++num_db_errors_;
-        DLOG(ERROR) << "Could not update page: " << url->second.url().spec();
-      }
-    }
+    ++num_db_accesses_;
+    // These are existing entries in the URL database. We don't verify the
+    // visit_count or typed_count values here, because either one (or both)
+    // could be zero in the case of bookmarks, or in the case of a URL
+    // transitioning from non-typed to typed as a result of this sync.
+    // In the field we sometimes run into errors on specific URLs. It's OK to
+    // just continue, as we can try writing again on the next model association.
+    size_t num_successful_updates = history_backend_->UpdateURLs(*updated_urls);
+    num_db_errors_ += updated_urls->size() - num_successful_updates;
   }
   if (new_visits) {
     for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
