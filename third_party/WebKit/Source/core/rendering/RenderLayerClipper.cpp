@@ -49,34 +49,36 @@
 
 namespace WebCore {
 
-void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContext)
+ClipRects* RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContext)
 {
     ClipRectsType clipRectsType = clipRectsContext.clipRectsType;
     ASSERT(clipRectsType < NumCachedClipRectsTypes);
-    if (m_clipRectsCache
-        && clipRectsContext.rootLayer == m_clipRectsCache->clipRectsRoot(clipRectsType)
-        && m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip)) {
+    if (m_clipRectsCache && clipRectsContext.rootLayer == m_clipRectsCache->clipRectsRoot(clipRectsType)) {
         // FIXME: We used to ASSERT that we always got a consistent root layer.
         // We should add a test that has an inconsistent root. See
         // http://crbug.com/366118 for an example.
         ASSERT(m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] == clipRectsContext.overlayScrollbarSizeRelevancy);
-
+        ClipRects* result = m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip);
+        if (result) {
 #ifdef CHECK_CACHED_CLIP_RECTS
-        // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
-        ClipRectsContext tempContext(clipRectsContext);
-        tempContext.clipRectsType = TemporaryClipRects;
-        ClipRects clipRects;
-        calculateClipRects(tempContext, clipRects);
-        ASSERT(clipRects == *m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip));
+            // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
+            ClipRectsContext tempContext(clipRectsContext);
+            tempContext.clipRectsType = TemporaryClipRects;
+            ClipRects clipRects;
+            calculateClipRects(tempContext, clipRects);
+            ASSERT(clipRects == *result);
 #endif
-        return; // We have the correct cached value.
+            return result;
+        }
     }
+
+    ClipRects* parentClipRects = 0;
 
     // For transformed layers, the root layer was shifted to be us, so there is no need to
     // examine the parent. We want to cache clip rects with us as the root.
     RenderLayer* parentLayer = !isClippingRootForContext(clipRectsContext) ? m_renderer.layer()->parent() : 0;
     if (parentLayer)
-        parentLayer->clipper().updateClipRects(clipRectsContext);
+        parentClipRects = parentLayer->clipper().updateClipRects(clipRectsContext);
 
     ClipRects clipRects;
     calculateClipRects(clipRectsContext, clipRects);
@@ -84,14 +86,22 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
     if (!m_clipRectsCache)
         m_clipRectsCache = adoptPtr(new ClipRectsCache);
 
-    if (parentLayer && parentLayer->clipper().clipRects(clipRectsContext) && clipRects == *parentLayer->clipper().clipRects(clipRectsContext))
-        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, parentLayer->clipper().clipRects(clipRectsContext), clipRectsContext.rootLayer);
-    else
-        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, ClipRects::create(clipRects), clipRectsContext.rootLayer);
+    ClipRects* result = 0;
+
+    if (parentClipRects && clipRects == *parentClipRects) {
+        result = parentClipRects;
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, parentClipRects, clipRectsContext.rootLayer);
+    } else {
+        RefPtr<ClipRects> cachedClipRects = ClipRects::create(clipRects);
+        result = cachedClipRects.get();
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, cachedClipRects.release(), clipRectsContext.rootLayer);
+    }
 
 #ifndef NDEBUG
     m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] = clipRectsContext.overlayScrollbarSizeRelevancy;
 #endif
+
+    return result;
 }
 
 void RenderLayerClipper::clearClipRectsIncludingDescendants(ClipRectsType typeToClear)
@@ -112,9 +122,8 @@ void RenderLayerClipper::clearClipRects(ClipRectsType typeToClear)
         m_clipRectsCache = nullptr;
     } else {
         ASSERT(typeToClear < NumCachedClipRectsTypes);
-        RefPtr<ClipRects> dummy;
-        m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy, 0);
-        m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, dummy, 0);
+        m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, nullptr, 0);
+        m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, nullptr, 0);
     }
 }
 
@@ -234,8 +243,9 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& clipRectsCon
 
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
-        if (useCached && parentLayer->clipper().clipRects(clipRectsContext)) {
-            clipRects = *parentLayer->clipper().clipRects(clipRectsContext);
+        // FIXME: Why don't we just call updateClipRects here?
+        if (useCached && parentLayer->clipper().cachedClipRects(clipRectsContext)) {
+            clipRects = *parentLayer->clipper().cachedClipRects(clipRectsContext);
         } else {
             ClipRectsContext parentContext(clipRectsContext);
             parentContext.overlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize; // FIXME: why?
@@ -348,8 +358,7 @@ void RenderLayerClipper::parentClipRects(const ClipRectsContext& clipRectsContex
         return;
     }
 
-    parentClipper.updateClipRects(clipRectsContext);
-    clipRects = *parentClipper.clipRects(clipRectsContext);
+    clipRects = *parentClipper.updateClipRects(clipRectsContext);
 }
 
 RenderLayer* RenderLayerClipper::clippingRootForPainting() const

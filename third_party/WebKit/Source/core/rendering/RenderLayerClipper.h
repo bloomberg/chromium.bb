@@ -67,7 +67,7 @@ struct ClipRectsContext {
     LayoutSize subPixelAccumulation;
 };
 
-class RenderLayerClipper FINAL {
+class RenderLayerClipper {
     WTF_MAKE_NONCOPYABLE(RenderLayerClipper);
 public:
     explicit RenderLayerClipper(RenderLayerModelObject& renderer)
@@ -91,24 +91,18 @@ public:
         ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
 
 private:
-    ClipRects* clipRects(const ClipRectsContext& context) const
+    ClipRects* cachedClipRects(const ClipRectsContext& context) const
     {
         ASSERT(context.clipRectsType < NumCachedClipRectsTypes);
         return m_clipRectsCache ? m_clipRectsCache->getClipRects(context.clipRectsType, context.respectOverflowClip) : 0;
     }
 
-    // Compute and cache clip rects computed with the given layer as the root
-    void updateClipRects(const ClipRectsContext&);
+    ClipRects* updateClipRects(const ClipRectsContext&);
 
-    // Compute and return the clip rects. If useCached is true, will used previously computed clip rects on ancestors
-    // (rather than computing them all from scratch up the parent chain).
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
     void parentClipRects(const ClipRectsContext&, ClipRects&) const;
 
-    // The layer relative to which clipping rects for this layer are computed.
     RenderLayer* clippingRootForPainting() const;
-
     bool isClippingRootForContext(const ClipRectsContext&) const;
 
     // FIXME: Could this be a RenderBox?
