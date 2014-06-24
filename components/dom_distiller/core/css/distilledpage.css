@@ -226,12 +226,6 @@ pre {
   padding: .5em;
 }
 
-/* TODO(sunangel): Create loading indicator graphic to replace "Loading...". */
-#loadingIndicator {
-  display: table;
-  margin: 0 auto;
-}
-
 .hidden {
-  display: hidden;
+  display: none;
 }
