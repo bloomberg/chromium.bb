@@ -165,6 +165,10 @@ class CONTENT_EXPORT WebContentsImpl
     return geolocation_dispatcher_host_.get();
   }
 
+  ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host() {
+    return screen_orientation_dispatcher_host_.get();
+  }
+
   bool should_normally_be_visible() { return should_normally_be_visible_; }
 
   // WebContents ------------------------------------------------------

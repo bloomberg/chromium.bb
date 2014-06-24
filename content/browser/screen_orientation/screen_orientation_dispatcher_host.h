@@ -31,12 +31,10 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   virtual bool OnMessageReceived(const IPC::Message&,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
 
-  void NotifyLockSuccess(int request_id,
-                         int angle,
-                         blink::WebScreenOrientationType type);
+  void NotifyLockSuccess(int request_id);
   void NotifyLockError(int request_id, blink::WebLockOrientationError error);
 
-  void OnOrientationChange(blink::WebScreenOrientationType orientation);
+  void OnOrientationChange();
 
  private:
   void OnLockRequest(RenderFrameHost* render_frame_host,

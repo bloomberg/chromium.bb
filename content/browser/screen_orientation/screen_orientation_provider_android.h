@@ -27,12 +27,17 @@ class ScreenOrientationProviderAndroid : public ScreenOrientationProvider,
   virtual void LockOrientation(int request_id,
                                blink::WebScreenOrientationLockType) OVERRIDE;
   virtual void UnlockOrientation() OVERRIDE;
+  virtual void OnOrientationChange() OVERRIDE;
 
   // WebContentsObserver
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
 
  private:
   WebContentsImpl* web_contents_impl();
+
+  // Whether the passed |lock| matches the current orientation. In other words,
+  // whether the orientation will need to change to match the |lock|.
+  bool LockMatchesCurrentOrientation(blink::WebScreenOrientationLockType lock);
 
   virtual ~ScreenOrientationProviderAndroid();
 
@@ -44,6 +49,13 @@ class ScreenOrientationProviderAndroid : public ScreenOrientationProvider,
 
   // Whether the ScreenOrientationProvider currently has a lock applied.
   bool lock_applied_;
+
+  struct LockInformation {
+    LockInformation(int request_id, blink::WebScreenOrientationLockType lock);
+    int request_id;
+    blink::WebScreenOrientationLockType lock;
+  };
+  LockInformation* pending_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProviderAndroid);
 };

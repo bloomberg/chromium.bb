@@ -24,6 +24,10 @@ class ScreenOrientationProvider {
   // Unlock the screen orientation.
   virtual void UnlockOrientation() = 0;
 
+  // Inform about a screen orientation update. It is called to let the provider
+  // know if a lock has been resolved.
+  virtual void OnOrientationChange() = 0;
+
   virtual ~ScreenOrientationProvider() {}
 
  protected:

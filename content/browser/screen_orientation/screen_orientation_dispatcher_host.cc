@@ -8,7 +8,10 @@
 #include "content/common/screen_orientation_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 namespace content {
 
@@ -62,15 +65,23 @@ ScreenOrientationDispatcherHost::GetRenderFrameHostForRequestID(
                                  current_lock_->routing_id);
 }
 
-void ScreenOrientationDispatcherHost::NotifyLockSuccess(
-    int request_id, int angle, blink::WebScreenOrientationType type) {
+void ScreenOrientationDispatcherHost::NotifyLockSuccess(int request_id) {
   RenderFrameHost* render_frame_host =
       GetRenderFrameHostForRequestID(request_id);
   if (!render_frame_host)
     return;
 
+  DCHECK(web_contents()->GetRenderViewHost());
+
+  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost();
+  blink::WebScreenInfo screen_info;
+  rwh->GetWebScreenInfo(&screen_info);
+
   render_frame_host->Send(new ScreenOrientationMsg_LockSuccess(
-      render_frame_host->GetRoutingID(), request_id, angle, type));
+      render_frame_host->GetRoutingID(),
+      request_id,
+      screen_info.orientationAngle,
+      screen_info.orientationType));
   ResetCurrentLock();
 }
 
@@ -86,9 +97,9 @@ void ScreenOrientationDispatcherHost::NotifyLockError(
   ResetCurrentLock();
 }
 
-void ScreenOrientationDispatcherHost::OnOrientationChange(
-    blink::WebScreenOrientationType orientation) {
-  Send(new ScreenOrientationMsg_OrientationChange(orientation));
+void ScreenOrientationDispatcherHost::OnOrientationChange() {
+  if (provider_)
+    provider_->OnOrientationChange();
 }
 
 void ScreenOrientationDispatcherHost::OnLockRequest(
@@ -111,9 +122,6 @@ void ScreenOrientationDispatcherHost::OnLockRequest(
   }
 
   provider_->LockOrientation(request_id, orientation);
-
-  // TODO(mlamouri): pass real values.
-  NotifyLockSuccess(request_id, 0, blink::WebScreenOrientationPortraitPrimary);
 }
 
 void ScreenOrientationDispatcherHost::OnUnlockRequest(
