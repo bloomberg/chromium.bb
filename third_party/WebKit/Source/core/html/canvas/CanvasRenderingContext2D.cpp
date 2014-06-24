@@ -1743,15 +1743,12 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
     if (dirtyRect.isEmpty())
         return;
 
-    // If we are drawing to hardware and we have a composited layer, just call contentChanged().
-    if (isAccelerated()) {
-        RenderBox* renderBox = canvas()->renderBox();
-        if (renderBox && renderBox->hasAcceleratedCompositing()) {
-            renderBox->contentChanged(CanvasPixelsChanged);
-            canvas()->clearCopiedImage();
-            canvas()->notifyObserversCanvasChanged(dirtyRect);
-            return;
-        }
+    // If we are drawing to hardware and we have a composited layer, just invalidate layer.
+    if (isAccelerated() && platformLayer()) {
+        platformLayer()->invalidateRect(dirtyRect);
+        canvas()->clearCopiedImage();
+        canvas()->notifyObserversCanvasChanged(dirtyRect);
+        return;
     }
 
     canvas()->didDraw(dirtyRect);
