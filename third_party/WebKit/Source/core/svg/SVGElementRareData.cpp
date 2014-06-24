@@ -1,0 +1,68 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "core/svg/SVGElementRareData.h"
+
+#include "core/css/CSSCursorImageValue.h"
+
+namespace WebCore {
+
+MutableStylePropertySet* SVGElementRareData::ensureAnimatedSMILStyleProperties()
+{
+    if (!m_animatedSMILStyleProperties)
+        m_animatedSMILStyleProperties = MutableStylePropertySet::create(SVGAttributeMode);
+    return m_animatedSMILStyleProperties.get();
+}
+
+RenderStyle* SVGElementRareData::overrideComputedStyle(Element* element, RenderStyle* parentStyle)
+{
+    ASSERT(element);
+    if (!m_useOverrideComputedStyle)
+        return 0;
+    if (!m_overrideComputedStyle || m_needsOverrideComputedStyleUpdate) {
+        // The style computed here contains no CSS Animations/Transitions or SMIL induced rules - this is needed to compute the "base value" for the SMIL animation sandwhich model.
+        m_overrideComputedStyle = element->document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing, MatchAllRulesExcludingSMIL);
+        m_needsOverrideComputedStyleUpdate = false;
+    }
+    ASSERT(m_overrideComputedStyle);
+    return m_overrideComputedStyle.get();
+}
+
+void SVGElementRareData::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_referencingElements);
+    visitor->trace(m_referencedElements);
+    visitor->trace(m_animatedSMILStyleProperties);
+    visitor->trace(m_elementInstances);
+    visitor->trace(m_correspondingElement);
+    visitor->trace(m_owner);
+    visitor->registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
+#endif
+}
+
+void SVGElementRareData::processWeakMembers(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+        ASSERT(m_owner);
+        if (!visitor->isAlive(m_cursorElement))
+            m_cursorElement = nullptr;
+
+        if (!visitor->isAlive(m_cursorImageValue)) {
+            // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
+            // we unregister it when the CSSCursorImageValue dies.
+            if (m_cursorElement) {
+                m_cursorElement->removeReferencedElement(m_owner);
+                m_cursorElement = nullptr;
+            }
+            m_cursorImageValue = nullptr;
+        }
+        ASSERT(!m_cursorElement || visitor->isAlive(m_cursorElement));
+        ASSERT(!m_cursorImageValue || visitor->isAlive(m_cursorImageValue));
+#endif
+}
+
+
+}

@@ -3018,6 +3018,7 @@
             'svg/SVGDiscardElement.h',
             'svg/SVGDocumentExtensions.cpp',
             'svg/SVGElement.cpp',
+            'svg/SVGElementRareData.cpp',
             'svg/SVGElementRareData.h',
             'svg/SVGEllipseElement.cpp',
             'svg/SVGEllipseElement.h',
