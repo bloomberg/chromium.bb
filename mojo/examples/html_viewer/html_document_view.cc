@@ -30,6 +30,8 @@ namespace {
 
 void ConfigureSettings(blink::WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
+  settings->setDefaultFixedFontSize(13);
+  settings->setDefaultFontSize(16);
   settings->setLoadsImagesAutomatically(true);
   settings->setJavaScriptEnabled(true);
 }

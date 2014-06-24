@@ -10,6 +10,7 @@
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
@@ -24,6 +25,12 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   result.setMIMEType(blink::WebString::fromUTF8(url_response->mime_type));
   result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
   result.setHTTPStatusCode(url_response->status_code);
+
+  // TODO(darin): Initialize timing properly.
+  blink::WebURLLoadTiming timing;
+  timing.initialize();
+  result.setLoadTiming(timing);
+
   // TODO(darin): Copy other fields.
   return result;
 }
