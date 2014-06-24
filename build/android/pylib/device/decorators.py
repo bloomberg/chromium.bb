@@ -50,11 +50,14 @@ def _TimeoutRetryWrapper(f, timeout_func, retries_func, pass_values=False):
     try:
       return timeout_retry.Run(impl, timeout, retries)
     except old_errors.WaitForResponseTimedOutError as e:
-      raise device_errors.CommandTimeoutError(str(e))
+      raise device_errors.CommandTimeoutError(str(e)), None, (
+             sys.exc_info()[2])
     except old_errors.DeviceUnresponsiveError as e:
-      raise device_errors.DeviceUnreachableError(str(e))
+      raise device_errors.DeviceUnreachableError(str(e)), None, (
+             sys.exc_info()[2])
     except reraiser_thread.TimeoutError as e:
-      raise device_errors.CommandTimeoutError(str(e))
+      raise device_errors.CommandTimeoutError(str(e)), None, (
+             sys.exc_info()[2])
   return TimeoutRetryWrapper
 
 

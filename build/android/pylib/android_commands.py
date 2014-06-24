@@ -39,6 +39,7 @@ import am_instrument_parser
 import errors
 
 from pylib.device import device_blacklist
+from pylib.device import device_errors
 
 # Pattern to search for the next whole line of pexpect output and capture it
 # into a match group. We can't use ^ and $ for line start end with pexpect,
@@ -387,7 +388,10 @@ class AndroidCommands(object):
   def GetExternalStorage(self):
     if not self._external_storage:
       self._external_storage = self.RunShellCommand('echo $EXTERNAL_STORAGE')[0]
-      assert self._external_storage, 'Unable to find $EXTERNAL_STORAGE'
+      if not self._external_storage:
+        raise device_errors.CommandFailedError(
+            ['shell', "'echo $EXTERNAL_STORAGE'"],
+            'Unable to find $EXTERNAL_STORAGE')
     return self._external_storage
 
   def WaitForDevicePm(self):
@@ -648,30 +652,6 @@ class AndroidCommands(object):
       raise errors.WaitForResponseTimedOutError(
           'SD card not ready after %s seconds' % timeout_time)
 
-  def _CheckCommandIsValid(self, command):
-    """Raises a ValueError if the command is not valid."""
-
-    # A dict of commands the user should not run directly and a mapping to the
-    # API they should use instead.
-    preferred_apis = {
-        'getprop': 'system_properties[<PROPERTY>]',
-        'setprop': 'system_properties[<PROPERTY>]',
-        }
-
-    # A dict of commands to methods that may call them.
-    whitelisted_callers = {
-        'getprop': 'ProvisionDevices',
-        }
-
-    base_command = shlex.split(command)[0].strip(';')
-    if (base_command in preferred_apis and
-        (base_command not in whitelisted_callers or
-         whitelisted_callers[base_command] not in [
-          f[3] for f in inspect.stack()])):
-      error_msg = ('%s should not be run directly. Instead use: %s' %
-                   (base_command, preferred_apis[base_command]))
-      raise ValueError(error_msg)
-
   def GetAndroidToolStatusAndOutput(self, command, lib_path=None, *args, **kw):
     """Runs a native Android binary, wrapping the command as necessary.
 
@@ -724,7 +704,6 @@ class AndroidCommands(object):
     Returns:
       list containing the lines of output received from running the command
     """
-    self._CheckCommandIsValid(command)
     self._LogShell(command)
     if "'" in command:
       logging.warning(command + " contains ' quotes")
@@ -1904,7 +1883,6 @@ class AndroidCommands(object):
                                       'pylib',
                                       'efficient_android_directory_copy.sh')
       self._adb.Push(host_script_path, temp_script_file.name)
-      self.EnableAdbRoot
       out = self.RunShellCommand(
           'sh %s %s %s' % (temp_script_file.name, source, dest),
           timeout_time=120)

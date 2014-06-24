@@ -183,10 +183,14 @@ class DeviceUtils(object):
     if wifi:
       while not 'Wi-Fi is enabled' in (
           self._RunShellCommandImpl('dumpsys wifi')):
-        time.sleep(0.1)
+        time.sleep(1)
+
+  REBOOT_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
+  REBOOT_DEFAULT_RETRIES = _DEFAULT_RETRIES
 
   @decorators.WithTimeoutAndRetriesDefaults(
-      10 * _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
+      REBOOT_DEFAULT_TIMEOUT,
+      REBOOT_DEFAULT_RETRIES)
   def Reboot(self, block=True, timeout=None, retries=None):
     """Reboot the device.
 
@@ -199,8 +203,12 @@ class DeviceUtils(object):
     if block:
       self._WaitUntilFullyBootedImpl(timeout=timeout)
 
+  INSTALL_DEFAULT_TIMEOUT = 4 * _DEFAULT_TIMEOUT
+  INSTALL_DEFAULT_RETRIES = _DEFAULT_RETRIES
+
   @decorators.WithTimeoutAndRetriesDefaults(
-      4 * _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
+      INSTALL_DEFAULT_TIMEOUT,
+      INSTALL_DEFAULT_RETRIES)
   def Install(self, apk_path, reinstall=False, timeout=None, retries=None):
     """Install an APK.
 
@@ -293,7 +301,7 @@ class DeviceUtils(object):
           cmd, timeout_time=timeout)
       if int(code) != 0:
         raise device_errors.CommandFailedError(
-            cmd, 'Nonzero exit code (%d)' % code)
+            cmd.split(), 'Nonzero exit code (%d)' % code)
     else:
       output = self.old_interface.RunShellCommand(cmd, timeout_time=timeout)
     return output
