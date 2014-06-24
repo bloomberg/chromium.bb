@@ -60,8 +60,10 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
       jobject j_result_obj);
   const BookmarkNode* GetNodeByID(long node_id, int type);
   const BookmarkNode* GetFolderWithFallback(long folder_id, int type);
-  // Returns true if |node| can be modified by the user.
+  // Returns whether |node| can be modified by the user.
   bool IsEditable(const BookmarkNode* node) const;
+  // Returns whether |node| is a managed bookmark.
+  bool IsManaged(const BookmarkNode* node) const;
   const BookmarkNode* GetParentNode(const BookmarkNode* node);
   int GetBookmarkType(const BookmarkNode* node);
   base::string16 GetTitle(const BookmarkNode* node) const;

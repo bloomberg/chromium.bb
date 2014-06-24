@@ -289,9 +289,10 @@ public class BookmarksBridge {
 
     @CalledByNative
     private static BookmarkItem createBookmarkItem(long id, int type, String title, String url,
-            boolean isFolder, long parentId, int parentIdType, boolean isEditable) {
+            boolean isFolder, long parentId, int parentIdType, boolean isEditable,
+            boolean isManaged) {
         return new BookmarkItem(new BookmarkId(id, type), title, url, isFolder,
-                new BookmarkId(parentId, parentIdType), isEditable);
+                new BookmarkId(parentId, parentIdType), isEditable, isManaged);
     }
 
     @CalledByNative
@@ -430,16 +431,18 @@ public class BookmarksBridge {
         private final boolean mIsFolder;
         private final BookmarkId mParentId;
         private final boolean mIsEditable;
+        private final boolean mIsManaged;
 
 
         private BookmarkItem(BookmarkId id, String title, String url, boolean isFolder,
-                BookmarkId parentId, boolean isEditable) {
+                BookmarkId parentId, boolean isEditable, boolean isManaged) {
             mId = id;
             mTitle = title;
             mUrl = url;
             mIsFolder = isFolder;
             mParentId = parentId;
             mIsEditable = isEditable;
+            mIsManaged = isManaged;
         }
 
         /** @return Title of the bookmark item. */
@@ -470,6 +473,11 @@ public class BookmarksBridge {
         /** @return Whether this bookmark can be edited. */
         public boolean isEditable() {
             return mIsEditable;
+        }
+
+        /** @return Whether this is a managed bookmark. */
+        public boolean isManaged() {
+            return mIsManaged;
         }
     }
 

@@ -220,7 +220,8 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
       node->is_folder(),
       parent_id,
       GetBookmarkType(parent),
-      IsEditable(node));
+      IsEditable(node),
+      IsManaged(node));
 }
 
 void BookmarksBridge::ExtractBookmarkNodeInformation(const BookmarkNode* node,
@@ -266,6 +267,10 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);
   return client_->CanBeEditedByUser(node);
+}
+
+bool BookmarksBridge::IsManaged(const BookmarkNode* node) const {
+  return client_->IsDescendantOfManagedNode(node);
 }
 
 const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
