@@ -196,7 +196,6 @@ ui.notifications.FailingTests = base.extends(ui.notifications.Failure, {
 ui.notifications.FailingTestsSummary = base.extends(ui.notifications.FailingTests, {
     init: function() {
         this._where = this._how.appendChild(new ui.failures.FailureGrid());
-        this._commitDataPinned = false;
     },
     purge: function() {
         this._where.purge();
@@ -211,21 +210,8 @@ ui.notifications.FailingTestsSummary = base.extends(ui.notifications.FailingTest
         if (!ui.notifications.FailingTests.prototype.addFailureAnalysis.call(this, failureAnalysis))
             return false;
     },
-    pinToCommitData: function(commitData)
-    {
-        if (this._commitDataPinned)
-            return;
-        this._commitDataPinned = true;
-        $(this._causes).children().each(function() {
-            if (this.hasRevision(commitData.revision))
-                return;
-            $(this).detach();
-        });
-    },
     addCommitData: function(commitData)
     {
-        if (this._commitDataPinned)
-            return null;
         return this._causes.appendChild(new ui.notifications.SuspiciousCommit(commitData));
     }
 });

@@ -45,14 +45,6 @@ var Action = base.extends('button', {
     }
 });
 
-ui.actions.Blame = base.extends(Action, {
-    init: function() {
-        this.textContent = 'Blame';
-        this._eventName = 'blame';
-        this.title = 'Blames this failure on this revision.'
-    }
-});
-
 ui.actions.Close = base.extends(Action, {
     init: function() {
         this.textContent = 'Close';

@@ -278,9 +278,6 @@ controllers.UnexpectedFailures = base.extends(FailureStreamController, {
             $(suspiciousCommit).bind('rollout', function() {
                 this.onRollout(commitData.revision, failure.testNameList());
             }.bind(this));
-            $(failure).bind('blame', function() {
-                this.onBlame(failure, commitData);
-            }.bind(this));
         }, this);
 
         return failure;
@@ -293,15 +290,6 @@ controllers.UnexpectedFailures = base.extends(FailureStreamController, {
     length: function()
     {
         return this._testFailures.length();
-    },
-    onBlame: function(failure, commitData)
-    {
-        failure.pinToCommitData(commitData);
-        $('.action', failure).each(function() {
-            // FIXME: This isn't the right way of finding and disabling this action.
-            if (this.textContent == 'Blame')
-                this.disabled = true;
-        });
     },
     onRollout: function(revision, testNameList)
     {
