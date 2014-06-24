@@ -79,7 +79,7 @@ const int kOutputTimeoutSeconds = 15;
 // Limit of output snippet lines when printing to stdout.
 // Avoids flooding the logs with amount of output that gums up
 // the infrastructure.
-const size_t kOutputSnippetLinesLimit = 50;
+const size_t kOutputSnippetLinesLimit = 5000;
 
 // Set of live launch test processes with corresponding lock (it is allowed
 // for callers to launch processes on different threads).
