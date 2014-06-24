@@ -167,16 +167,9 @@ PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* 
 
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
     : ActiveDOMObject(context)
-    , m_async(true)
-    , m_includeCredentials(false)
     , m_timeoutMilliseconds(0)
     , m_state(UNSENT)
-    , m_createdDocument(false)
     , m_downloadedBlobLength(0)
-    , m_error(false)
-    , m_uploadEventsAllowed(true)
-    , m_uploadComplete(false)
-    , m_sameOriginRequest(true)
     , m_receivedLength(0)
     , m_lastSendLineNumber(0)
     , m_exceptionCode(0)
@@ -184,6 +177,13 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_responseTypeCode(ResponseTypeDefault)
     , m_dropProtectionRunner(this, &XMLHttpRequest::dropProtection)
     , m_securityOrigin(securityOrigin)
+    , m_async(true)
+    , m_includeCredentials(false)
+    , m_createdDocument(false)
+    , m_error(false)
+    , m_uploadEventsAllowed(true)
+    , m_uploadComplete(false)
+    , m_sameOriginRequest(true)
 {
     initializeXMLHttpRequestStaticData();
 #ifndef NDEBUG

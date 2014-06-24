@@ -221,8 +221,6 @@ private:
     AtomicString m_method;
     HTTPHeaderMap m_requestHeaders;
     AtomicString m_mimeTypeOverride;
-    bool m_async;
-    bool m_includeCredentials;
     unsigned long m_timeoutMilliseconds;
     RefPtrWillBeMember<Blob> m_responseBlob;
     RefPtrWillBeMember<Stream> m_responseStream;
@@ -236,9 +234,6 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
 
     ScriptString m_responseText;
-    // Used to skip m_responseDocument creation if it's done previously. We need
-    // this separate flag since m_responseDocument can be 0 for some cases.
-    bool m_createdDocument;
     RefPtrWillBeMember<Document> m_responseDocument;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
@@ -246,12 +241,6 @@ private:
 
     RefPtr<ArrayBuffer> m_responseArrayBuffer;
 
-    bool m_error;
-
-    bool m_uploadEventsAllowed;
-    bool m_uploadComplete;
-
-    bool m_sameOriginRequest;
 
     // Used for onprogress tracking
     long long m_receivedLength;
@@ -269,6 +258,16 @@ private:
     ResponseTypeCode m_responseTypeCode;
     AsyncMethodRunner<XMLHttpRequest> m_dropProtectionRunner;
     RefPtr<SecurityOrigin> m_securityOrigin;
+
+    bool m_async;
+    bool m_includeCredentials;
+    // Used to skip m_responseDocument creation if it's done previously. We need
+    // this separate flag since m_responseDocument can be 0 for some cases.
+    bool m_createdDocument;
+    bool m_error;
+    bool m_uploadEventsAllowed;
+    bool m_uploadComplete;
+    bool m_sameOriginRequest;
 };
 
 } // namespace WebCore
