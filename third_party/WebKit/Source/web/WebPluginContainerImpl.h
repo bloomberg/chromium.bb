@@ -101,7 +101,7 @@ public:
     virtual WebElement element() OVERRIDE;
     virtual void invalidate() OVERRIDE;
     virtual void invalidateRect(const WebRect&) OVERRIDE;
-    virtual void scrollRect(int dx, int dy, const WebRect&) OVERRIDE;
+    virtual void scrollRect(const WebRect&) OVERRIDE;
     virtual void reportGeometry() OVERRIDE;
     virtual void allowScriptObjects() OVERRIDE;
     virtual void clearScriptObjects() OVERRIDE;

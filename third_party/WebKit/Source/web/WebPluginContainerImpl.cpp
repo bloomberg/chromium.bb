@@ -384,17 +384,15 @@ void WebPluginContainerImpl::invalidateRect(const WebRect& rect)
     invalidateRect(static_cast<IntRect>(rect));
 }
 
-void WebPluginContainerImpl::scrollRect(int dx, int dy, const WebRect& rect)
+void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 {
     Widget* parentWidget = parent();
     if (parentWidget->isFrameView()) {
         FrameView* parentFrameView = toFrameView(parentWidget);
         if (!parentFrameView->isOverlapped()) {
-            IntRect damageRect = convertToContainingWindow(static_cast<IntRect>(rect));
-            IntSize scrollDelta(dx, dy);
-            // scroll() only uses the second rectangle, clipRect, and ignores the first
-            // rectangle.
-            parent()->hostWindow()->scroll(scrollDelta, damageRect, damageRect);
+            // FIXME: parameter is unused. Remove once popups scroll like everything else.
+            static const IntRect dummy;
+            parent()->hostWindow()->scroll(dummy);
             return;
         }
     }

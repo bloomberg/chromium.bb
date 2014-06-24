@@ -97,11 +97,6 @@ private:
         m_popup->widgetClient()->didInvalidateRect(paintRect);
     }
 
-    virtual void scroll(const IntSize& scrollDelta, const IntRect& scrollRect, const IntRect& clipRect) OVERRIDE
-    {
-        m_popup->widgetClient()->didScrollRect(scrollDelta.width(), scrollDelta.height(), intersection(scrollRect, clipRect));
-    }
-
     virtual void invalidateContentsForSlowScroll(const IntRect& updateRect) OVERRIDE
     {
         invalidateContentsAndRootView(updateRect);

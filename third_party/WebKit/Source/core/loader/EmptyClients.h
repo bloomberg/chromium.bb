@@ -128,7 +128,7 @@ public:
 
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE { }
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE { }
-    virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE { }
+    virtual void scroll() OVERRIDE { }
     virtual void scheduleAnimation() OVERRIDE { }
 
     virtual IntRect rootViewToScreen(const IntRect& r) const OVERRIDE { return r; }

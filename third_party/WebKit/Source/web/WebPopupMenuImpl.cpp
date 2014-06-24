@@ -388,13 +388,8 @@ void WebPopupMenuImpl::scheduleAnimation()
 {
 }
 
-void WebPopupMenuImpl::scroll(const IntSize& scrollDelta, const IntRect& scrollRect, const IntRect& clipRect)
+void WebPopupMenuImpl::scroll(const IntRect& clipRect)
 {
-    if (m_client) {
-        int dx = scrollDelta.width();
-        int dy = scrollDelta.height();
-        m_client->didScrollRect(dx, dy, clipRect);
-    }
     if (m_rootLayer)
         m_rootLayer->layer()->invalidateRect(FloatRect(clipRect));
 }

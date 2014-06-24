@@ -493,19 +493,10 @@ void ChromeClientImpl::scheduleAnimation()
     m_webView->scheduleAnimation();
 }
 
-void ChromeClientImpl::scroll(
-    const IntSize& scrollDelta, const IntRect& scrollRect,
-    const IntRect& clipRect)
+void ChromeClientImpl::scroll()
 {
-    if (!m_webView->isAcceleratedCompositingActive()) {
-        if (m_webView->client()) {
-            int dx = scrollDelta.width();
-            int dy = scrollDelta.height();
-            m_webView->client()->didScrollRect(dx, dy, intersection(scrollRect, clipRect));
-        }
-    } else {
+    if (m_webView->isAcceleratedCompositingActive())
         m_webView->scrollRootLayer();
-    }
 }
 
 IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const

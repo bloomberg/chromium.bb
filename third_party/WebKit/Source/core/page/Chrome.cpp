@@ -73,9 +73,9 @@ void Chrome::invalidateContentsForSlowScroll(const IntRect& updateRect)
     m_client->invalidateContentsForSlowScroll(updateRect);
 }
 
-void Chrome::scroll(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
+void Chrome::scroll(const IntRect& unusedClipRect)
 {
-    m_client->scroll(scrollDelta, rectToScroll, clipRect);
+    m_client->scroll();
     InspectorInstrumentation::didScroll(m_page);
 }
 

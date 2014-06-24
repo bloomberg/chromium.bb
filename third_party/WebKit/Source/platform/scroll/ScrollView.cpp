@@ -557,7 +557,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
 
 bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
 {
-    hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
+    hostWindow()->scroll(clipRect);
     return true;
 }
 

@@ -144,7 +144,7 @@ public:
     // Methods used by HostWindow.
     virtual void invalidateContentsAndRootView(const IntRect&) = 0;
     virtual void invalidateContentsForSlowScroll(const IntRect&) = 0;
-    virtual void scroll(const IntSize&, const IntRect&, const IntRect&) = 0;
+    virtual void scroll() = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
     virtual blink::WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;

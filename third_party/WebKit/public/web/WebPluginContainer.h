@@ -33,6 +33,8 @@
 
 #include "../platform/WebCommon.h"
 
+#define SCROLL_RECT_REQUIRES_NO_DELTA 1
+
 struct NPObject;
 
 namespace blink {
@@ -59,7 +61,7 @@ public:
 
     virtual void invalidate() = 0;
     virtual void invalidateRect(const WebRect&) = 0;
-    virtual void scrollRect(int dx, int dy, const WebRect&) = 0;
+    virtual void scrollRect(const WebRect&) = 0;
 
     // Causes the container to report its current geometry via
     // WebPlugin::updateGeometry.

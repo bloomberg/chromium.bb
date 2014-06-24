@@ -118,9 +118,7 @@ public:
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
-    virtual void scroll(
-        const WebCore::IntSize& scrollDelta, const WebCore::IntRect& rectToScroll,
-        const WebCore::IntRect& clipRect) OVERRIDE;
+    virtual void scroll() OVERRIDE;
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE;
     virtual WebScreenInfo screenInfo() const OVERRIDE;
     virtual void contentsSizeChanged(WebCore::LocalFrame*, const WebCore::IntSize&) const OVERRIDE;
