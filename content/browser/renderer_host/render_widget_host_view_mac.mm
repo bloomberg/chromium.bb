@@ -440,6 +440,21 @@ DelegatedFrameHost* RenderWidgetHostViewMac::GetDelegatedFrameHost() const {
   return delegated_frame_host_.get();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserCompositorViewClient, public:
+
+void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
+    const std::vector<ui::LatencyInfo>& all_latency_info) {
+  if (!render_widget_host_)
+    return;
+
+  for (auto latency_info : all_latency_info) {
+    latency_info.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+    render_widget_host_->FrameSwapped(latency_info);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 
@@ -1760,8 +1775,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
   if (frame->delegated_frame_data) {
     if (!browser_compositor_view_) {
-      browser_compositor_view_.reset(
-          [[BrowserCompositorViewMac alloc] initWithSuperview:cocoa_view_]);
+      browser_compositor_view_.reset([[BrowserCompositorViewMac alloc]
+          initWithSuperview:cocoa_view_ withClient:this]);
       root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
       delegated_frame_host_.reset(new DelegatedFrameHost(this));
       [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
@@ -2193,6 +2208,11 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (!render_widget_host_ || render_widget_host_->is_hidden())
     return;
 
+  // Synchronized resizing does not yet work with browser compositor.
+  // http://crbug.com/388005
+  if (delegated_frame_host_)
+    return;
+
   // Pausing for the overlay/underlay view prevents the other one from receiving
   // frames. This may lead to large delays, causing overlaps.
   // See crbug.com/352020.
@@ -2216,14 +2236,11 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 
 void RenderWidgetHostViewMac::LayoutLayers() {
   if (browser_compositor_view_) {
-    [browser_compositor_view_ layoutLayers];
     return;
   }
 
   // Disable animation of the layer's resizing or change in contents scale.
   ScopedCAActionDisabler disabler;
-
-  CGRect new_background_frame = NSRectToCGRect([cocoa_view() bounds]);
 
   // Dynamically calling setContentsScale on a CAOpenGLLayer for which
   // setAsynchronous is dynamically toggled can result in flashes of corrupt
@@ -2260,17 +2277,6 @@ void RenderWidgetHostViewMac::LayoutLayers() {
       // http://crbug.com/350817
       [compositing_iosurface_layer_ setNeedsDisplay];
       [compositing_iosurface_layer_ displayIfNeeded];
-    }
-  }
-
-  // Changing the software layer's bounds and position doesn't always result
-  // in the layer being anchored to the top-left. Set the layer's frame
-  // explicitly, since this is more reliable in practice.
-  if (software_layer_) {
-    bool frame_changed = !CGRectEqualToRect(
-        new_background_frame, [software_layer_ frame]);
-    if (frame_changed) {
-      [software_layer_ setFrame:new_background_frame];
     }
   }
 }

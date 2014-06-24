@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <IOSurface/IOSurfaceAPI.h>
+#include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "cc/output/software_frame_data.h"
@@ -14,16 +15,25 @@
 #include "content/browser/renderer_host/software_layer_mac.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/compositor/compositor.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
 class BrowserCompositorViewMacHelper;
+
+class BrowserCompositorViewClient {
+ public:
+  virtual void BrowserCompositorViewFrameSwapped(
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
+};
+
 }  // namespace content
 
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
 - (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
+                     withLatencyInfo:(std::vector<ui::LatencyInfo>) latency_info
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor;
 
@@ -42,17 +52,16 @@ class BrowserCompositorViewMacHelper;
   base::scoped_nsobject<CALayer> background_layer_;
   base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
   int accelerated_layer_output_surface_id_;
+  std::vector<ui::LatencyInfo> accelerated_latency_info_;
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
+  content::BrowserCompositorViewClient* client_;
   scoped_ptr<content::BrowserCompositorViewMacHelper> helper_;
 }
 
 // Initialize to render the content of a specific superview.
-- (id)initWithSuperview:(NSView*)view;
-
-// Re-position the layers to the correct place when this view's superview
-// changes size, or when the accelerated or software content changes.
-- (void)layoutLayers;
+- (id)initWithSuperview:(NSView*)view
+             withClient:(content::BrowserCompositorViewClient*)client;
 
 // Disallow further access to the client.
 - (void)resetClient;

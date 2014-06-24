@@ -54,6 +54,8 @@
                     false,
                     kCGRenderingIntentDefault));
   [self setContents:(id)image.get()];
+  [self setBounds:CGRectMake(
+      0, 0, pixelSize.width() / scaleFactor, pixelSize.height() / scaleFactor)];
 
   // Set the contents scale of the software CALayer.
   if ([self respondsToSelector:(@selector(contentsScale))] &&

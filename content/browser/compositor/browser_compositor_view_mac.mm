@@ -50,6 +50,7 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 - (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
+                     withLatencyInfo:(std::vector<ui::LatencyInfo>) latency_info
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
   DLOG(ERROR) << "-[NSView gotAcceleratedIOSurfaceFrame] called on "
@@ -66,9 +67,11 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 @implementation BrowserCompositorViewMac : NSView
 
-- (id)initWithSuperview:(NSView*)view {
+- (id)initWithSuperview:(NSView*)view
+             withClient:(content::BrowserCompositorViewClient*)client {
   if (self = [super init]) {
     accelerated_layer_output_surface_id_ = 0;
+    client_ = client;
     helper_.reset(new content::BrowserCompositorViewMacHelper(self));
 
     // Disable the fade-in animation as the layer and view are added.
@@ -94,54 +97,9 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
   compositor_->ScheduleFullRedraw();
 }
 
-// This function closely mirrors RenderWidgetHostViewMac::LayoutLayers. When
-// only delegated rendering is supported, only one copy of this code will
-// need to exist.
-- (void)layoutLayers {
-  // Disable animation of the layers' resizing or repositioning.
-  ScopedCAActionDisabler disabler;
-
-  NSSize superview_frame_size = [[self superview] frame].size;
-  [self setFrame:NSMakeRect(
-      0, 0, superview_frame_size.width, superview_frame_size.height)];
-
-  CGRect new_background_frame = CGRectMake(
-      0,
-      0,
-      superview_frame_size.width,
-      superview_frame_size.height);
-  [background_layer_ setFrame:new_background_frame];
-
-  // The bounds of the accelerated layer determine the size of the GL surface
-  // that will be drawn to. Make sure that this is big enough to draw the
-  // IOSurface.
-  if (accelerated_layer_) {
-    CGRect layer_bounds = CGRectMake(
-      0,
-      0,
-      [accelerated_layer_ iosurface]->dip_io_surface_size().width(),
-      [accelerated_layer_ iosurface]->dip_io_surface_size().height());
-    CGPoint layer_position = CGPointMake(
-      0,
-      CGRectGetHeight(new_background_frame) - CGRectGetHeight(layer_bounds));
-    bool bounds_changed = !CGRectEqualToRect(
-        layer_bounds, [accelerated_layer_ bounds]);
-    [accelerated_layer_ setBounds:layer_bounds];
-    [accelerated_layer_ setPosition:layer_position];
-    if (bounds_changed) {
-      [accelerated_layer_ setNeedsDisplay];
-      [accelerated_layer_ displayIfNeeded];
-    }
-  }
-
-  // The content area of the software layer is the size of the image provided.
-  // Make the bounds of the layer match the superview's bounds, to ensure that
-  // the visible contents are drawn.
-  [software_layer_ setBounds:new_background_frame];
-}
-
 - (void)resetClient {
   [accelerated_layer_ resetClient];
+  client_ = NULL;
 }
 
 - (ui::Compositor*)compositor {
@@ -150,10 +108,13 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 - (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
+                     withLatencyInfo:(std::vector<ui::LatencyInfo>) latency_info
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
   DCHECK(!accelerated_layer_output_surface_id_);
   accelerated_layer_output_surface_id_ = surface_id;
+  accelerated_latency_info_.insert(accelerated_latency_info_.end(),
+                                   latency_info.begin(), latency_info.end());
 
   ScopedCAActionDisabler disabler;
 
@@ -190,7 +151,21 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
       LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
   }
   [accelerated_layer_ gotNewFrame];
-  [self layoutLayers];
+
+  // Set the bounds of the accelerated layer to match the size of the frame.
+  // If the bounds changed, force the content to be displayed immediately.
+  CGRect new_layer_bounds = CGRectMake(
+    0,
+    0,
+    [accelerated_layer_ iosurface]->dip_io_surface_size().width(),
+    [accelerated_layer_ iosurface]->dip_io_surface_size().height());
+  bool bounds_changed = !CGRectEqualToRect(
+      new_layer_bounds, [accelerated_layer_ bounds]);
+  [accelerated_layer_ setBounds:new_layer_bounds];
+  if (bounds_changed) {
+    [accelerated_layer_ setNeedsDisplay];
+    [accelerated_layer_ displayIfNeeded];
+  }
 
   // If there was a software layer or an old accelerated layer, remove it.
   // Disable the fade-out animation as the layer is removed.
@@ -225,7 +200,6 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
                         withRowBytes:row_bytes
                        withPixelSize:gfx::Size(info.fWidth, info.fHeight)
                      withScaleFactor:scale_factor];
-  [self layoutLayers];
 
   // If there was an accelerated layer, remove it.
   // Disable the fade-out animation as the layer is removed.
@@ -245,12 +219,15 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 }
 
 - (void)layerDidDrawFrame {
-  if (!accelerated_layer_output_surface_id_)
-    return;
+  if (accelerated_layer_output_surface_id_) {
+    content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
+        accelerated_layer_output_surface_id_);
+    accelerated_layer_output_surface_id_ = 0;
+  }
 
-  content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
-      accelerated_layer_output_surface_id_);
-  accelerated_layer_output_surface_id_ = 0;
+  if (client_)
+    client_->BrowserCompositorViewFrameSwapped(accelerated_latency_info_);
+  accelerated_latency_info_.clear();
 }
 
 @end  // BrowserCompositorViewMac

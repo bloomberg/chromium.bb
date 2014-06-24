@@ -26,6 +26,7 @@ void OnNativeSurfaceBuffersSwappedOnUIThread(
       params.surface_handle);
   [native_widget gotAcceleratedIOSurfaceFrame:io_surface_id
                           withOutputSurfaceID:params.surface_id
+                              withLatencyInfo:params.latency_info
                                 withPixelSize:params.size
                               withScaleFactor:params.scale_factor];
 }

@@ -216,6 +216,7 @@ class RenderWidgetHostImpl;
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
+      public BrowserCompositorViewClient,
       public IPC::Sender,
       public SoftwareFrameManagerClient,
       public CompositingIOSurfaceLayerClient {
@@ -510,6 +511,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual float CurrentDeviceScaleFactor() OVERRIDE;
   virtual gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) OVERRIDE;
   virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
+
+  // BrowserCompositorViewClient implementation.
+  virtual void BrowserCompositorViewFrameSwapped(
+      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewMacTest;
