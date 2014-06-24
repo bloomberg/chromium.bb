@@ -205,9 +205,11 @@ class AudioRendererImplTest : public ::testing::Test {
     init_decoder_cb_ = cb;
   }
 
-  void Flush() {
+  void FlushDuringPendingRead() {
+    SCOPED_TRACE("FlushDuringPendingRead()");
     WaitableMessageLoopEvent flush_event;
     renderer_->Flush(flush_event.GetClosure());
+    SatisfyPendingRead(kDataSize);
     flush_event.RunAndWait();
 
     EXPECT_FALSE(IsReadPending());
@@ -238,12 +240,6 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void StopRendering() {
     renderer_->StopRendering();
-  }
-
-  void Seek() {
-    StopRendering();
-    Flush();
-    Preroll();
   }
 
   void WaitForEnded() {
@@ -624,8 +620,7 @@ TEST_F(AudioRendererImplTest, Underflow_CapacityResetsAfterFlush) {
   EXPECT_GT(buffer_capacity(), initial_capacity);
 
   // Verify that the buffer capacity is restored to the |initial_capacity|.
-  DeliverEndOfStream();
-  Flush();
+  FlushDuringPendingRead();
   EXPECT_EQ(buffer_capacity(), initial_capacity);
 }
 
@@ -643,9 +638,8 @@ TEST_F(AudioRendererImplTest, Underflow_FlushWhileUnderflowed) {
   EXPECT_CALL(*this, OnUnderflow());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
-  // Verify that we can still Flush() before entering the rebuffering state.
-  DeliverEndOfStream();
-  Flush();
+  // Verify that we can still flush before entering the rebuffering state.
+  FlushDuringPendingRead();
 }
 
 TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
@@ -803,14 +797,7 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   EXPECT_TRUE(IsReadPending());
 
   // Start flushing.
-  WaitableMessageLoopEvent flush_event;
-  renderer_->Flush(flush_event.GetClosure());
-
-  SatisfyPendingRead(kDataSize);
-
-  flush_event.RunAndWait();
-
-  EXPECT_FALSE(IsReadPending());
+  FlushDuringPendingRead();
 
   // Preroll again to a different timestamp and verify it completed normally.
   Preroll(1000, PIPELINE_OK);
