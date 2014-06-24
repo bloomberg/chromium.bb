@@ -20,7 +20,8 @@ command should be one of:
   test - Run unit tests (does not build).
   perftest - Run perf tests (does not build).
   pytest - Run Python unit tests.
-  gyp - Run gyp for mojo (does not sync), with clang.
+  gyp - Run gyp for mojo (does not sync).
+  gypall - Run gyp for all of chromium (does not sync).
   sync - Sync using gclient (does not run gyp).
   show-bash-alias - Outputs an appropriate bash alias for mojob. In bash do:
       \$ eval \`mojo/tools/mojob.sh show-bash-alias\`
@@ -66,8 +67,14 @@ do_pytests() {
 
 do_gyp() {
   local gyp_defines="$(make_gyp_defines)"
-  echo "Running gyp with GYP_DEFINES=$gyp_defines ..."
+  echo "Running gyp for mojo with GYP_DEFINES=$gyp_defines ..."
   GYP_DEFINES="$gyp_defines" build/gyp_chromium mojo/mojo.gyp || exit 1
+}
+
+do_gypall() {
+  local gyp_defines="$(make_gyp_defines)"
+  echo "Running gyp for everything with GYP_DEFINES=$gyp_defines ..."
+  GYP_DEFINES="$gyp_defines" build/gyp_chromium || exit 1
 }
 
 do_sync() {
@@ -143,6 +150,9 @@ for arg in "$@"; do
       ;;
     gyp)
       do_gyp
+      ;;
+    gypall)
+      do_gypall
       ;;
     sync)
       do_sync
