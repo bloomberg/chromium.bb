@@ -557,70 +557,13 @@ hooks = [
     {
     'action':
          [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=win32',
-    '--no_auth',
-    '--bucket',
-    'chromium-gn',
-    '-s',
-    'src/tools/gn/bin/win/gn.exe.sha1'
+    'python',
+    'src/tools/gn/bin/rm_binaries.py'
 ],
     'pattern':
          '.',
     'name':
-         'gn_old_win'
-},
-    {
-    'action':
-         [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=darwin',
-    '--no_auth',
-    '--bucket',
-    'chromium-gn',
-    '-s',
-    'src/tools/gn/bin/mac/gn.sha1'
-],
-    'pattern':
-         '.',
-    'name':
-         'gn_old_mac'
-},
-    {
-    'action':
-         [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=linux*',
-    '--no_auth',
-    '--bucket',
-    'chromium-gn',
-    '-s',
-    'src/tools/gn/bin/linux/gn.sha1'
-],
-    'pattern':
-         '.',
-    'name':
-         'gn_old_linux'
-},
-    {
-    'action':
-         [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=linux*',
-    '--no_auth',
-    '--bucket',
-    'chromium-gn',
-    '-s',
-    'src/tools/gn/bin/linux/gn32.sha1'
-],
-    'pattern':
-         '.',
-    'name':
-         'gn_old_linux32'
+         'remove_old_gn_binaries'
 },
     {
     'action':
