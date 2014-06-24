@@ -2174,8 +2174,3 @@ name=bug_387373
 *!blink::WebEmbeddedWorkerImpl::startWorkerContext
 *!content::EmbeddedWorkerDispatcher::OnStartWorker
 *!EmbeddedWorkerMsg_StartWorker::Dispatch<>
-
-UNINITIALIZED READ
-name=drm-i#1576-false-positive-bit
-*!WebCore::setGradientAttributes
-*!WebCore::SVGRadialGradientElement::collectGradientAttributes
