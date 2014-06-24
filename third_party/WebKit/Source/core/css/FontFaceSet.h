@@ -144,7 +144,7 @@ private:
     bool resolveFontStyle(const String&, Font&);
     void handlePendingEventsAndPromisesSoon();
     void handlePendingEventsAndPromises();
-    const ListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaceList() const;
+    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaceList() const;
     bool isCSSConnectedFontFace(FontFace*) const;
 
     WillBeHeapHashSet<RefPtrWillBeMember<FontFace> > m_loadingFonts;
@@ -152,8 +152,7 @@ private:
     Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
-    // FIXME: Oilpan: replace with a HeapListHashSet or HeapLinkedHashSet.
-    ListHashSet<RefPtrWillBeMember<FontFace> > m_nonCSSConnectedFaces;
+    WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> > m_nonCSSConnectedFaces;
 
     AsyncMethodRunner<FontFaceSet> m_asyncRunner;
 

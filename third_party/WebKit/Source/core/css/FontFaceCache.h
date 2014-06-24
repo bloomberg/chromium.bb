@@ -58,7 +58,7 @@ public:
     // but this function uses FontDescription/family pair.
     CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
 
-    const ListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
+    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
 
     unsigned version() const { return m_version; }
     void incrementVersion() { ++m_version; }
@@ -72,8 +72,7 @@ private:
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
-    // FIXME: Oilpan: Replace by HeapLinkedHashSet or HeapListHashSet.
-    ListHashSet<RefPtrWillBeMember<FontFace> > m_cssConnectedFontFaces;
+    WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> > m_cssConnectedFontFaces;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.
