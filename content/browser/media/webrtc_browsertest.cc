@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -408,12 +409,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CallWithAecDump) {
   // Get the ID for the render process host. There should only be one.
   RenderProcessHost::iterator it(
       content::RenderProcessHost::AllHostsIterator());
-  int render_process_host_id = it.GetCurrentValue()->GetID();
-  EXPECT_GE(render_process_host_id, 0);
+  base::ProcessId render_process_id =
+      base::GetProcId(it.GetCurrentValue()->GetHandle());
+  EXPECT_NE(base::kNullProcessId, render_process_id);
 
   // Add file extensions that we expect to be added.
   static const int kExpectedConsumerId = 0;
-  dump_file = dump_file.AddExtension(IntToStringType(render_process_host_id))
+  dump_file = dump_file.AddExtension(IntToStringType(render_process_id))
                        .AddExtension(IntToStringType(kExpectedConsumerId));
 
   EXPECT_TRUE(base::PathExists(dump_file));

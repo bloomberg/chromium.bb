@@ -28,6 +28,7 @@
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/path_service.h"
+#include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -2217,7 +2218,7 @@ void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
                                                int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::FilePath unique_file =
-      file.AddExtension(IntToStringType(GetID()))
+      file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
           .AddExtension(IntToStringType(id));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,

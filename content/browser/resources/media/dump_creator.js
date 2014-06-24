@@ -43,8 +43,8 @@ var DumpCreator = (function() {
         ' calls. Recordings in multiple tabs is supported as well as multiple' +
         ' recordings in the same tab. When enabling, you select a base' +
         ' filename to save the dump(s) to. The base filename will have a' +
-        ' suffix appended to it as &lt;base filename&gt;.&lt;unique ID for' +
-        ' the render process&gt;.&lt;recording ID&gt;. If recordings are' +
+        ' suffix appended to it as &lt;base filename&gt;.&lt;render process' +
+        ' ID&gt;.&lt;recording ID&gt;. If recordings are' +
         ' disabled and then enabled using the same base filename, the' +
         ' file(s) will be appended to and may become invalid. It is' +
         ' recommended to choose a new base filename each time or move' +
