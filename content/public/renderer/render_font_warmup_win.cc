@@ -6,6 +6,7 @@
 
 #include <dwrite.h>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -22,10 +23,25 @@ SkFontMgr* g_warmup_fontmgr = NULL;
 // before sandbox lock down to allow Skia access to the Font Manager service.
 void CreateDirectWriteFactory(IDWriteFactory** factory) {
   typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
+  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
+  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
+  if (!dwrite_dll) {
+    DWORD load_library_get_last_error = GetLastError();
+    base::debug::Alias(&dwrite_dll);
+    base::debug::Alias(&load_library_get_last_error);
+    CHECK(false);
+  }
+
   DWriteCreateFactoryProc dwrite_create_factory_proc =
       reinterpret_cast<DWriteCreateFactoryProc>(
-          GetProcAddress(LoadLibraryW(L"dwrite.dll"), "DWriteCreateFactory"));
-  CHECK(dwrite_create_factory_proc);
+          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
+  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
+  if (!dwrite_create_factory_proc) {
+    DWORD get_proc_address_get_last_error = GetLastError();
+    base::debug::Alias(&dwrite_create_factory_proc);
+    base::debug::Alias(&get_proc_address_get_last_error);
+    CHECK(false);
+  }
   CHECK(SUCCEEDED(
       dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_ISOLATED,
                                  __uuidof(IDWriteFactory),
