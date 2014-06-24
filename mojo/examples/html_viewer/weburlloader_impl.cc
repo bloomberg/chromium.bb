@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace mojo {
@@ -20,11 +21,20 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   blink::WebURLResponse result;
   result.initialize();
   result.setURL(GURL(url_response->url));
+  result.setMIMEType(blink::WebString::fromUTF8(url_response->mime_type));
+  result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
+  result.setHTTPStatusCode(url_response->status_code);
   // TODO(darin): Copy other fields.
   return result;
 }
 
 }  // namespace
+
+WebURLRequestExtraData::WebURLRequestExtraData() {
+}
+
+WebURLRequestExtraData::~WebURLRequestExtraData() {
+}
 
 WebURLLoaderImpl::WebURLLoaderImpl(NetworkService* network_service)
     : client_(NULL),
@@ -53,15 +63,34 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
   url_request->auto_follow_redirects = false;
   // TODO(darin): Copy other fields.
 
-  DataPipe pipe;
-  url_loader_->Start(url_request.Pass(), pipe.producer_handle.Pass());
-  response_body_stream_ = pipe.consumer_handle.Pass();
+  if (request.extraData()) {
+    WebURLRequestExtraData* extra_data =
+        static_cast<WebURLRequestExtraData*>(request.extraData());
+    response_body_stream_ = extra_data->synthetic_response_body_stream.Pass();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&extra_data->synthetic_response)));
+  } else {
+    DataPipe pipe;
+    url_loader_->Start(url_request.Pass(), pipe.producer_handle.Pass());
+    response_body_stream_ = pipe.consumer_handle.Pass();
+  }
 }
 
 void WebURLLoaderImpl::cancel() {
   url_loader_.reset();
   response_body_stream_.reset();
-  // TODO(darin): Need to asynchronously call didFail.
+
+  NetworkErrorPtr network_error(NetworkError::New());
+  network_error->code = net::ERR_ABORTED;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebURLLoaderImpl::OnReceivedError,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&network_error)));
 }
 
 void WebURLLoaderImpl::setDefersLoading(bool defers_loading) {
@@ -89,8 +118,14 @@ void WebURLLoaderImpl::OnReceivedResponse(URLResponsePtr url_response) {
 }
 
 void WebURLLoaderImpl::OnReceivedError(NetworkErrorPtr error) {
-  // TODO(darin): Construct a meaningful WebURLError.
-  client_->didFail(this, blink::WebURLError());
+  blink::WebURLError web_error;
+  web_error.domain = blink::WebString::fromUTF8(net::kErrorDomain);
+  web_error.reason = error->code;
+  web_error.unreachableURL = GURL();  // TODO(darin): Record this.
+  web_error.staleCopyInCache = false;
+  web_error.isCancellation = error->code == net::ERR_ABORTED ? true : false;
+
+  client_->didFail(this, web_error);
 }
 
 void WebURLLoaderImpl::OnReceivedEndOfResponseBody() {

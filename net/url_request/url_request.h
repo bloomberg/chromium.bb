@@ -515,11 +515,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Get the mime type.  This method may only be called once the delegate's
   // OnResponseStarted method has been called.
-  void GetMimeType(std::string* mime_type);
+  void GetMimeType(std::string* mime_type) const;
 
   // Get the charset (character encoding).  This method may only be called once
   // the delegate's OnResponseStarted method has been called.
-  void GetCharset(std::string* charset);
+  void GetCharset(std::string* charset) const;
 
   // Returns the HTTP response code (e.g., 200, 404, and so on).  This method
   // may only be called once the delegate's OnResponseStarted method has been

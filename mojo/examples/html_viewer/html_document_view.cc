@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "mojo/examples/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "skia/ext/refptr.h"
@@ -25,29 +26,6 @@
 namespace mojo {
 namespace examples {
 namespace {
-
-blink::WebData CopyToWebData(DataPipeConsumerHandle handle) {
-  std::vector<char> data;
-  for (;;) {
-    char buf[4096];
-    uint32_t num_bytes = sizeof(buf);
-    MojoResult result = ReadDataRaw(
-        handle,
-        buf,
-        &num_bytes,
-        MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
-      Wait(handle,
-           MOJO_HANDLE_SIGNAL_READABLE,
-           MOJO_DEADLINE_INDEFINITE);
-    } else if (result == MOJO_RESULT_OK) {
-      data.insert(data.end(), buf, buf + num_bytes);
-    } else {
-      break;
-    }
-  }
-  return blink::WebData(data);
-}
 
 void ConfigureSettings(blink::WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
@@ -86,11 +64,18 @@ void HTMLDocumentView::Load(URLResponsePtr response,
                             ScopedDataPipeConsumerHandle response_body_stream) {
   DCHECK(web_view_);
 
-  // TODO(darin): A better solution would be to use loadRequest, but intercept
-  // the network request and connect it to the response we already have.
-  blink::WebData data = CopyToWebData(response_body_stream.get());
-  web_view_->mainFrame()->loadHTMLString(
-      data, GURL(response->url), GURL(response->url));
+  GURL url(response->url);
+
+  WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
+  extra_data->synthetic_response = response.Pass();
+  extra_data->synthetic_response_body_stream = response_body_stream.Pass();
+
+  blink::WebURLRequest web_request;
+  web_request.initialize();
+  web_request.setURL(url);
+  web_request.setExtraData(extra_data);
+
+  web_view_->mainFrame()->loadRequest(web_request);
 }
 
 void HTMLDocumentView::didInvalidateRect(const blink::WebRect& rect) {

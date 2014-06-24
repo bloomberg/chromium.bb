@@ -9,11 +9,22 @@
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 namespace mojo {
 class NetworkService;
 
 namespace examples {
+
+// The concrete type of WebURLRequest::ExtraData.
+class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
+ public:
+  WebURLRequestExtraData();
+  virtual ~WebURLRequestExtraData();
+
+  URLResponsePtr synthetic_response;
+  ScopedDataPipeConsumerHandle synthetic_response_body_stream;
+};
 
 class WebURLLoaderImpl : public blink::WebURLLoader,
                          public URLLoaderClient {
@@ -44,8 +55,8 @@ class WebURLLoaderImpl : public blink::WebURLLoader,
   void WaitToReadMore();
   void OnResponseBodyStreamReady(MojoResult result);
 
-  URLLoaderPtr url_loader_;
   blink::WebURLLoaderClient* client_;
+  URLLoaderPtr url_loader_;
   ScopedDataPipeConsumerHandle response_body_stream_;
   common::HandleWatcher handle_watcher_;
 

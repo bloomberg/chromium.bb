@@ -48,6 +48,12 @@ struct URLResponse {
 
   // The HTTP response headers.
   string[] headers;
+
+  // The MIME type of the response body.
+  string mime_type;
+
+  // The character set of the response body.
+  string charset;
 };
 
 [Client=URLLoaderClient]

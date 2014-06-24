@@ -512,12 +512,12 @@ bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
   return job_->GetResponseCookies(cookies);
 }
 
-void URLRequest::GetMimeType(string* mime_type) {
+void URLRequest::GetMimeType(string* mime_type) const {
   DCHECK(job_.get());
   job_->GetMimeType(mime_type);
 }
 
-void URLRequest::GetCharset(string* charset) {
+void URLRequest::GetCharset(string* charset) const {
   DCHECK(job_.get());
   job_->GetCharset(charset);
 }

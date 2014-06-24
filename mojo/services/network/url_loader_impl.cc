@@ -34,6 +34,14 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
       response->headers.Swap(&header_lines);
   }
 
+  std::string mime_type;
+  url_request->GetMimeType(&mime_type);
+  response->mime_type = mime_type;
+
+  std::string charset;
+  url_request->GetCharset(&charset);
+  response->charset = charset;
+
   return response.Pass();
 }
 
@@ -176,6 +184,8 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
     SendError(url_request->status().error());
     return;
   }
+
+  // TODO(darin): Add support for optional MIME sniffing.
 
   client()->OnReceivedResponse(MakeURLResponse(url_request));
 
