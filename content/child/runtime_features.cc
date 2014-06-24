@@ -143,12 +143,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableFastTextAutosizing))
     WebRuntimeFeatures::enableFastTextAutosizing(false);
 
-  if (command_line.HasSwitch(switches::kDisableRepaintAfterLayout))
-    WebRuntimeFeatures::enableRepaintAfterLayout(false);
-
-  if (command_line.HasSwitch(switches::kEnableRepaintAfterLayout))
-    WebRuntimeFeatures::enableRepaintAfterLayout(true);
-
   if (command_line.HasSwitch(switches::kEnableTargetedStyleRecalc))
     WebRuntimeFeatures::enableTargetedStyleRecalc(true);
 
