@@ -49,4 +49,6 @@
     [RaisesException] getter TestInterfaceEmpty namedItem(DOMString name);
     [RaisesException] setter DOMString setNamedItem(DOMString name, DOMString value);
     [RaisesException] deleter boolean deleteNamedItem(DOMString name);
+
+    stringifier DOMString stringifierMethod();
 };

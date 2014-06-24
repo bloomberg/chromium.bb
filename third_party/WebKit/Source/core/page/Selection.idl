@@ -58,7 +58,7 @@
     void removeAllRanges();
     void addRange([Default=Undefined] optional Range range);
 
-    [NotEnumerable] DOMString toString();
+    [NotEnumerable] stringifier;
 
     // WebKit extensions
     [MeasureAs=SelectionBaseNode] readonly attribute Node baseNode;

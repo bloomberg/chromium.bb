@@ -69,6 +69,8 @@
     getter DOMString (DOMString name);
     setter DOMString (DOMString name, DOMString value);
     deleter boolean (DOMString name);
+
+    [NotEnumerable] stringifier;
 };
 
 TestInterface implements TestImplements;

@@ -100,6 +100,6 @@
     // Passing a NaN will use a value of 0.
     [Immutable] WebKitCSSMatrix skewY([Default=Undefined] optional double angle);
 
-    [NotEnumerable] DOMString toString();
+    [NotEnumerable] stringifier;
 };
 

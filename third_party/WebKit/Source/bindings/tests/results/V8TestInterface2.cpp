@@ -219,6 +219,32 @@ static void deleteNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Val
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void stringifierMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
+}
+
+static void stringifierMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterface2V8Internal::stringifierMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
+}
+
+static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterface2V8Internal::toStringMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
@@ -422,6 +448,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] =
     {"namedItem", TestInterface2V8Internal::namedItemMethodCallback, 0, 1},
     {"setNamedItem", TestInterface2V8Internal::setNamedItemMethodCallback, 0, 2},
     {"deleteNamedItem", TestInterface2V8Internal::deleteNamedItemMethodCallback, 0, 1},
+    {"stringifierMethod", TestInterface2V8Internal::stringifierMethodMethodCallback, 0, 0},
+    {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0},
 };
 
 void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

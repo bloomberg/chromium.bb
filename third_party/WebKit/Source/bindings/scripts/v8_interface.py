@@ -36,6 +36,8 @@ from collections import defaultdict
 import itertools
 from operator import itemgetter
 
+import idl_definitions
+from idl_definitions import IdlOperation
 import idl_types
 from idl_types import IdlType, inherits_interface
 import v8_attributes
@@ -251,6 +253,19 @@ def interface_context(interface):
                for method in interface.operations
                if method.name]  # Skip anonymous special operations (methods)
     compute_method_overloads_context(methods)
+
+    # Stringifier
+    if interface.stringifier:
+        stringifier = interface.stringifier
+        method = IdlOperation()
+        method.name = 'toString'
+        method.idl_type = IdlType('DOMString')
+        method.extended_attributes.update(stringifier.extended_attributes)
+        if stringifier.attribute:
+            method.extended_attributes['ImplementedAs'] = stringifier.attribute.name
+        elif stringifier.operation:
+            method.extended_attributes['ImplementedAs'] = stringifier.operation.name
+        methods.append(v8_methods.method_context(interface, method))
 
     per_context_enabled_methods = []
     custom_registration_methods = []

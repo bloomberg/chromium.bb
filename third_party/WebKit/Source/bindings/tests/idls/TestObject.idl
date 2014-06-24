@@ -67,6 +67,7 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] const short FEATURE_ENABLED_CONST = 1;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 
+    stringifier attribute DOMString stringifierAttribute;
 
     // Attributes
     //

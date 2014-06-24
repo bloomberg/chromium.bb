@@ -205,7 +205,7 @@
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // window.toString() requires special handling in V8
-    [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
+    [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] stringifier;
 
     [NotEnumerable] getter Window (unsigned long index);
     [Custom, NotEnumerable] getter Window (DOMString name);

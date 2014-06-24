@@ -56,7 +56,8 @@
     [RaisesException, CustomElementCallbacks] void insertNode(Node newNode);
     [RaisesException, CustomElementCallbacks] void surroundContents(Node newParent);
     Range cloneRange();
-    DOMString toString();
+
+    stringifier;
 
     [DeprecateAs=RangeDetach] void detach();
 
