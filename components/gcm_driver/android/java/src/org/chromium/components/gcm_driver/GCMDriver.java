@@ -5,8 +5,10 @@
 package org.chromium.components.gcm_driver;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -30,6 +32,8 @@ import java.util.List;
 @JNINamespace("gcm")
 public class GCMDriver {
     private static final String TAG = "GCMDriver";
+
+    private static final String LAST_GCM_APP_ID_KEY = "last_gcm_app_id";
 
     // The instance of GCMDriver currently owned by a C++ GCMDriverAndroid, if any.
     private static GCMDriver sInstance = null;
@@ -72,6 +76,7 @@ public class GCMDriver {
 
     @CalledByNative
     private void register(final String appId, final String[] senderIds) {
+        setLastAppId(appId);
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
@@ -141,7 +146,7 @@ public class GCMDriver {
         // TODO(johnme): If this gets called, did it definitely succeed?
         // TODO(johnme): Update registrations cache?
         if (sInstance != null) {
-            sInstance.nativeOnRegisterFinished(sInstance.mNativeGCMDriverAndroid, appId,
+            sInstance.nativeOnRegisterFinished(sInstance.mNativeGCMDriverAndroid, getLastAppId(),
                                                registrationId, true);
         }
     }
@@ -151,7 +156,8 @@ public class GCMDriver {
         // TODO(johnme): If this gets called, did it definitely succeed?
         // TODO(johnme): Update registrations cache?
         if (sInstance != null) {
-            sInstance.nativeOnUnregisterFinished(sInstance.mNativeGCMDriverAndroid, appId, true);
+            sInstance.nativeOnUnregisterFinished(sInstance.mNativeGCMDriverAndroid, getLastAppId(),
+                                                 true);
         }
     }
 
@@ -193,7 +199,7 @@ public class GCMDriver {
                 }
 
                 sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
-                        appId, senderId, collapseKey,
+                        getLastAppId(), senderId, collapseKey,
                         dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
             }
         });
@@ -204,7 +210,8 @@ public class GCMDriver {
         ThreadUtils.assertOnUiThread();
         launchNativeThen(context, new Runnable() {
             @Override public void run() {
-                sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid, appId);
+                sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid,
+                        getLastAppId());
             }
         });
     }
@@ -216,6 +223,21 @@ public class GCMDriver {
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
             String senderId, String collapseKey, String[] dataKeysAndValues);
     private native void nativeOnMessagesDeleted(long nativeGCMDriverAndroid, String appId);
+
+    // TODO(johnme): This and setLastAppId are just temporary (crbug.com/350383).
+    private static String getLastAppId() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(
+                sInstance.mContext);
+        return settings.getString(LAST_GCM_APP_ID_KEY, "push#unknown_app_id#0");
+    }
+
+    private static void setLastAppId(String appId) {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(
+                sInstance.mContext);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(LAST_GCM_APP_ID_KEY, appId);
+        editor.commit();
+    }
 
     private static void launchNativeThen(Context context, Runnable task) {
         if (sInstance != null) {

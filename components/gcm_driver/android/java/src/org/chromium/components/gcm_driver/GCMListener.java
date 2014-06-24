@@ -31,7 +31,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
 
     // Used as a fallback since GCM doesn't yet give us the app ID.
     // TODO(johnme): Get real app IDs from GCM, and remove this.
-    private static final String UNKNOWN_APP_ID = "https://example.com 0";
+    private static final String UNKNOWN_APP_ID = "push#https://www.gcmlistenerfake.com#0";
 
     public GCMListener() {
         super(TAG);
