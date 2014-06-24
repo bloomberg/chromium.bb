@@ -22,6 +22,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/svg/SVGCursorElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
