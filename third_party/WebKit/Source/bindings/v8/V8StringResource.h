@@ -190,6 +190,11 @@ public:
         setString(string);
     }
 
+    void operator=(std::nullptr_t)
+    {
+        setString(String());
+    }
+
     bool prepare()
     {
         if (m_v8Object.IsEmpty())

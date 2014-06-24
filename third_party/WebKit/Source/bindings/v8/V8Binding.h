@@ -82,11 +82,6 @@ void throwMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned pro
 
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
-inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)
-{
-    return index >= info.Length() ? v8::Local<v8::Value>() : info[index];
-}
-
 template<typename CallbackInfo, typename V>
 inline void v8SetReturnValue(const CallbackInfo& info, V v)
 {

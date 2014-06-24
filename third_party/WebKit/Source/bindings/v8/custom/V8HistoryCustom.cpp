@@ -67,7 +67,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
         return;
 
     TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
+    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, info[2]);
 
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeStandard, exceptionState);
@@ -83,7 +83,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
         return;
 
     TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
+    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, info[2]);
 
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeRedirectWithLockedBackForwardList, exceptionState);

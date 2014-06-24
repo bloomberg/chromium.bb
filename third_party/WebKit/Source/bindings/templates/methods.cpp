@@ -84,7 +84,15 @@ if (listener && !impl->toNode())
     V8RethrowTryCatchScope rethrow(block);
     {% endif %}
     {% for argument in method.arguments %}
+    {% if argument.default_value %}
+    if (info.Length() > {{argument.index}}) {
+        {{generate_argument(method, argument, world_suffix) | indent(8)}}
+    } else {
+        {{argument.name}} = {{argument.default_value}};
+    }
+    {% else %}
     {{generate_argument(method, argument, world_suffix) | indent}}
+    {% endif %}
     {% endfor %}
 }
 {% endmacro %}

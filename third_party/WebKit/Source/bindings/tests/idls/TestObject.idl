@@ -388,12 +388,13 @@ interface TestObject {
     void voidMethodOptionalDictionaryArg(optional Dictionary optionalDictionaryArg);
 
     // Optional arguments with defaults
+    void voidMethodDefaultByteStringArg(optional ByteString defaultByteStringArg = "foo");
     void voidMethodDefaultStringArg(optional DOMString defaultStringArg = "foo");
-    void voidMethodDefaultNullStringArg(optional DOMString defaultStringArg = null);
     void voidMethodDefaultLongArg(optional long defaultLongArg = 10);
     void voidMethodDefaultDoubleArg(optional double defaultDoubleArg = 0.5);
     void voidMethodDefaultTrueBooleanArg(optional boolean defaultBooleanArg = true);
     void voidMethodDefaultFalseBooleanArg(optional boolean defaultBooleanArg = false);
+    void voidMethodDefaultNullableByteStringArg(optional ByteString? defaultStringArg = null);
     void voidMethodDefaultNullableStringArg(optional DOMString? defaultStringArg = null);
     void voidMethodDefaultNullableTestInterfaceArg(optional TestInterface? defaultTestInterfaceArg = null);
 

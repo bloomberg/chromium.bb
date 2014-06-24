@@ -6901,12 +6901,40 @@ static void voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> defaultByteStringArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        if (info.Length() > 0) {
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultByteStringArg, toByteString(info[0], exceptionState), exceptionState);
+        } else {
+            defaultByteStringArg = String("foo");
+        }
+    }
+    impl->voidMethodDefaultByteStringArg(defaultByteStringArg);
+}
+
+static void voidMethodDefaultByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodDefaultByteStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void voidMethodDefaultStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultStringArg;
     {
-        TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
+        if (info.Length() > 0) {
+            TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
+        } else {
+            defaultStringArg = String("foo");
+        }
     }
     impl->voidMethodDefaultStringArg(defaultStringArg);
 }
@@ -6918,23 +6946,6 @@ static void voidMethodDefaultStringArgMethodCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void voidMethodDefaultNullStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<> defaultStringArg;
-    {
-        TOSTRING_VOID_INTERNAL(defaultStringArg, argumentOrNull(info, 0));
-    }
-    impl->voidMethodDefaultNullStringArg(defaultStringArg);
-}
-
-static void voidMethodDefaultNullStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodDefaultNullStringArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void voidMethodDefaultLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultLongArg", "TestObject", info.Holder(), info.GetIsolate());
@@ -6943,7 +6954,11 @@ static void voidMethodDefaultLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongArg, toInt32(info[0], exceptionState), exceptionState);
+        if (info.Length() > 0) {
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongArg, toInt32(info[0], exceptionState), exceptionState);
+        } else {
+            defaultLongArg = 10;
+        }
     }
     impl->voidMethodDefaultLongArg(defaultLongArg);
 }
@@ -6962,7 +6977,11 @@ static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(defaultDoubleArg, static_cast<double>(info[0]->NumberValue()));
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(defaultDoubleArg, static_cast<double>(info[0]->NumberValue()));
+        } else {
+            defaultDoubleArg = 0.5;
+        }
     }
     impl->voidMethodDefaultDoubleArg(defaultDoubleArg);
 }
@@ -6981,7 +7000,11 @@ static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+        } else {
+            defaultBooleanArg = true;
+        }
     }
     impl->voidMethodDefaultTrueBooleanArg(defaultBooleanArg);
 }
@@ -7000,7 +7023,11 @@ static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInf
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+        } else {
+            defaultBooleanArg = false;
+        }
     }
     impl->voidMethodDefaultFalseBooleanArg(defaultBooleanArg);
 }
@@ -7012,12 +7039,39 @@ static void voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCal
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> defaultStringArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(defaultStringArg, toByteString(info[0]));
+        } else {
+            defaultStringArg = nullptr;
+        }
+    }
+    impl->voidMethodDefaultNullableByteStringArg(defaultStringArg);
+}
+
+static void voidMethodDefaultNullableByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultStringArg;
     {
-        TOSTRING_VOID_INTERNAL(defaultStringArg, argumentOrNull(info, 0));
+        if (info.Length() > 0) {
+            TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
+        } else {
+            defaultStringArg = nullptr;
+        }
     }
     impl->voidMethodDefaultNullableStringArg(defaultStringArg);
 }
@@ -7036,7 +7090,11 @@ static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCa
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(defaultTestInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(defaultTestInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        } else {
+            defaultTestInterfaceArg = nullptr;
+        }
     }
     impl->voidMethodDefaultNullableTestInterfaceArg(defaultTestInterfaceArg);
 }
@@ -7589,7 +7647,11 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        if (info.Length() > 0) {
+            TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        } else {
+            testInterfaceEmptyOrNullArg = nullptr;
+        }
     }
     impl->overloadedMethodG(testInterfaceEmptyOrNullArg);
 }
@@ -9886,12 +9948,13 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodLongArgOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodOptionalDictionaryArg", TestObjectV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0},
+    {"voidMethodDefaultByteStringArg", TestObjectV8Internal::voidMethodDefaultByteStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultStringArg", TestObjectV8Internal::voidMethodDefaultStringArgMethodCallback, 0, 0},
-    {"voidMethodDefaultNullStringArg", TestObjectV8Internal::voidMethodDefaultNullStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultLongArg", TestObjectV8Internal::voidMethodDefaultLongArgMethodCallback, 0, 0},
     {"voidMethodDefaultDoubleArg", TestObjectV8Internal::voidMethodDefaultDoubleArgMethodCallback, 0, 0},
     {"voidMethodDefaultTrueBooleanArg", TestObjectV8Internal::voidMethodDefaultTrueBooleanArgMethodCallback, 0, 0},
     {"voidMethodDefaultFalseBooleanArg", TestObjectV8Internal::voidMethodDefaultFalseBooleanArgMethodCallback, 0, 0},
+    {"voidMethodDefaultNullableByteStringArg", TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultNullableStringArg", TestObjectV8Internal::voidMethodDefaultNullableStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultNullableTestInterfaceArg", TestObjectV8Internal::voidMethodDefaultNullableTestInterfaceArgMethodCallback, 0, 0},
     {"voidMethodVariadicStringArg", TestObjectV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 0},

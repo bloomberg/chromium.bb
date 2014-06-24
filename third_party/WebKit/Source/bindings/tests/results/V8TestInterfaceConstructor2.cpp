@@ -95,7 +95,11 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
-        TOSTRING_VOID_INTERNAL(defaultNullStringOptionalStringArg, argumentOrNull(info, 3));
+        if (info.Length() > 3) {
+            TOSTRING_VOID_INTERNAL(defaultNullStringOptionalStringArg, info[3]);
+        } else {
+            defaultNullStringOptionalStringArg = nullptr;
+        }
         TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate()));
         if (!defaultUndefinedOptionalDictionaryArg.isUndefinedOrNull() && !defaultUndefinedOptionalDictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");

@@ -308,15 +308,7 @@ def v8_value_to_local_cpp_value(argument, index):
     name = argument.name
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(argument, index)
-    # FIXME: This special way of handling string arguments with null defaults
-    # can go away once we fully support default values.
-    if (argument.is_optional and
-        idl_type.is_string_type and
-        argument.default_value and argument.default_value.is_null):
-        v8_value = 'argumentOrNull(info, %s)' % index
-    else:
-        v8_value = 'info[%s]' % index
-    return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
+    return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
                                                 name, index=index, declare_variable=False)
 
 

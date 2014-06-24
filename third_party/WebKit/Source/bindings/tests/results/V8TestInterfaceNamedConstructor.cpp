@@ -111,7 +111,11 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[3]);
-        TOSTRING_VOID_INTERNAL(defaultNullStringOptionalstringArg, argumentOrNull(info, 4));
+        if (info.Length() > 4) {
+            TOSTRING_VOID_INTERNAL(defaultNullStringOptionalstringArg, info[4]);
+        } else {
+            defaultNullStringOptionalstringArg = nullptr;
+        }
         if (UNLIKELY(info.Length() <= 5)) {
             RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
             v8::Handle<v8::Object> wrapper = info.Holder();
