@@ -14477,6 +14477,23 @@ Do you accept?
       New version plus history string
     </message>
 
+    <!-- Push messaging strings -->
+    <message name="IDS_PUSH_MESSAGES_PERMISSION_QUESTION" desc="Question asked on the info bar whenever a domain wants to send push messages">
+      <ph name="URL"> $1<ex>maps.google.com</ex> </ph>
+       wants to send you notifications.
+    </message>
+    <message name="IDS_PUSH_MESSAGES_TAB_LABEL" desc="Label for the push messages section on Content Settings dialog">
+      Push Messages
+    </message>
+    <message name="IDS_PUSH_MESSSAGING_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow a site to send push messages.">
+      Allow all sites to send background push messages
+    </message>
+    <message name="IDS_PUSH_MESSSAGING_ASK_RADIO" desc="A radio button in Content Settings dialog to allow a site to query the permision send push messages.">
+      Ask me when a site wants to send me push messages (recommended)
+    </message>
+    <message name="IDS_PUSH_MESSSAGING_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to send push messages.">
+      Do not allow any sites to send push messages
+    </message>
   </messages>
   </release>
 </grit>

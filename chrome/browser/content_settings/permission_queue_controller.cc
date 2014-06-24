@@ -11,6 +11,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/push_messaging_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -114,6 +115,11 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       infobar_ = MidiPermissionInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages);
+      break;
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+      infobar_ = gcm::PushMessagingInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
           display_languages);
       break;
