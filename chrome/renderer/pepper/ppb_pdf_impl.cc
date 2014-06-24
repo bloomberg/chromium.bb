@@ -421,7 +421,6 @@ PP_Bool IsOutOfProcess(PP_Instance instance_id) { return PP_FALSE; }
 
 void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
   // This function is intended for out of process PDF plugin.
-  NOTIMPLEMENTED();
 }
 
 void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
