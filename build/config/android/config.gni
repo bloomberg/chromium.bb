@@ -76,7 +76,7 @@ if (is_android) {
   } else if (cpu_arch == "arm") {
     android_libgcc_file =
       "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
-  } else if (cpu_arch == "mips") {
+  } else if (cpu_arch == "mipsel") {
     android_libgcc_file =
       "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {

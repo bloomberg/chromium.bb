@@ -631,9 +631,19 @@ source_set("skia_opts") {
       ]
     }
 
-
+  } else if (cpu_arch == "mipsel") {
+    cflags += [ "-fomit-frame-pointer" ]
+    sources = [
+      "//third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp",
+      "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
+      "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
+      "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
+      "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
+      "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
+      "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
+    ]
   } else {
-    assert(false, "Need to port MIPS stuff from skia_library_opts.gyp")
+    assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
