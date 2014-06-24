@@ -153,6 +153,33 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var domain = createElementWithClassName('div', 'domain');
 
   this.id_ = this.model_.nextVisitId_++;
+  var self = this;
+
+  /**
+   * Removes a history entry on click or keydown and finds a new entry to focus.
+   * @param {Event} e A click or keydown event.
+   */
+  function removeEntryFromHistory(e) {
+    var focusAfter;
+    if (self.domNode_.contains(document.activeElement)) {
+      var next = self.model_.getAfterDeleteVisit(self);
+      if (next) {
+        if (e.target == self.checkBox)
+          focusAfter = next.checkBox;
+        else if (e.target == self.titleLink)
+          focusAfter = next.titleLink;
+        else if (e.target == self.dropDown)
+          focusAfter = next.dropDown;
+      }
+    }
+
+    self.removeFromHistory();
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (focusAfter)
+      focusAfter.focus();
+  }
 
   // Only create the checkbox if it can be used either to delete an entry or to
   // block/allow it.
@@ -168,12 +195,15 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     entryBox.setAttribute('for', checkbox.id);
     entryBox.addEventListener('mousedown', entryBoxMousedown);
     entryBox.addEventListener('click', entryBoxClick);
+    entryBox.addEventListener('keydown', function(e) {
+      if (e.keyCode == 8 || e.keyCode == 46)
+        removeEntryFromHistory(e);
+    });
   }
 
   // Keep track of the drop down that triggered the menu, so we know
   // which element to apply the command to.
   // TODO(dubroy): Ideally we'd use 'activate', but MenuButton swallows it.
-  var self = this;
   var setActiveVisit = function(e) {
     activeVisit = self;
     var menu = $('action-menu');
@@ -215,11 +245,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     removeButton.setAttribute('aria-label',
                               loadTimeData.getString('removeFromHistory'));
     removeButton.classList.add('custom-appearance');
-    removeButton.addEventListener('click', function(e) {
-      self.removeFromHistory();
-      e.stopPropagation();
-      e.preventDefault();
-    });
+    removeButton.addEventListener('click', removeEntryFromHistory);
     entryBox.appendChild(removeButton);
 
     // Support clicking anywhere inside the entry box.
@@ -400,6 +426,24 @@ Visit.prototype.showMoreFromSite_ = function() {
   $('search-field').focus();
 };
 
+Object.defineProperty(Visit.prototype, 'checkBox', {
+  get: function() {
+    return this.domNode_.querySelector('input[type=checkbox]');
+  },
+});
+
+Object.defineProperty(Visit.prototype, 'titleLink', {
+  get: function() {
+    return this.domNode_.querySelector('.title a');
+  },
+});
+
+Object.defineProperty(Visit.prototype, 'dropDown', {
+  get: function() {
+    return this.domNode_.querySelector('button.drop-down');
+  },
+});
+
 // Visit, private, static: ----------------------------------------------------
 
 /**
@@ -536,6 +580,19 @@ HistoryModel.prototype.getSize = function() {
  */
 HistoryModel.prototype.getNumberedRange = function(start, end) {
   return this.visits_.slice(start, end);
+};
+
+/**
+ * Returns a visit to focus after the given |visit| is deleted.
+ * @param {Visit} visit The starting point when looking for the next visit.
+ * @return {Visit|undefined} The next visit to be focused after |vist|.
+ */
+HistoryModel.prototype.getAfterDeleteVisit = function(visit) {
+  var index = this.visits_.indexOf(visit);
+  if (index == -1 || this.visits_.length < 2)
+    return undefined;
+
+  return this.visits_[index == this.visits_.length - 1 ? index - 1 : index + 1];
 };
 
 /**
