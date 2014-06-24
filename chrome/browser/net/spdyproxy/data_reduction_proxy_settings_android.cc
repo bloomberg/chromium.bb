@@ -191,12 +191,6 @@ DataReductionProxySettingsAndroid::GetDailyReceivedContentLengths(
       env, data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
 }
 
-jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
-    JNIEnv* env, jobject obj) {
-  DCHECK(usage_stats());
-  return usage_stats()->isDataReductionProxyUnreachable();
-}
-
 // static
 bool DataReductionProxySettingsAndroid::Register(JNIEnv* env) {
   bool register_natives_impl_result = RegisterNativesImpl(env);

@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "crypto/random.h"
@@ -294,16 +293,6 @@ DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyOriginalContentLengths() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);
-}
-
-bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return usage_stats_->isDataReductionProxyUnreachable();
-}
-
-void DataReductionProxySettings::SetDataReductionProxyUsageStats(
-    DataReductionProxyUsageStats* usage_stats) {
-  usage_stats_ = usage_stats;
 }
 
 DataReductionProxySettings::ContentLengthList

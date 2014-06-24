@@ -88,11 +88,6 @@ class DataReductionProxyParams {
   bool IsDataReductionProxy(const net::HostPortPair& host_port_pair,
                             std::pair<GURL, GURL>* proxy_servers) const;
 
-  // Returns true if this request will be sent through the data request proxy
-  // based on applying the param rules to the URL. We do not check bad proxy
-  // list.
-  virtual bool IsDataReductionProxyEligible(const net::URLRequest* request);
-
   // Returns the data reduction proxy primary origin.
   const GURL& origin() const {
     return origin_;

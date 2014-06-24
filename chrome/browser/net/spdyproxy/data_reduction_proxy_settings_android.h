@@ -75,11 +75,6 @@ class DataReductionProxySettingsAndroid
                                      jstring host,
                                      jstring realm);
 
-  // Determines whether the data reduction proxy is unreachable. This is
-  // done by keeping a count of requests which go through proxy vs those
-  // which should have gone through the proxy based on the config.
-  jboolean IsDataReductionProxyUnreachable(JNIEnv* env, jobject obj);
-
   ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(JNIEnv* env,
                                                        jobject obj,
                                                        jstring host,

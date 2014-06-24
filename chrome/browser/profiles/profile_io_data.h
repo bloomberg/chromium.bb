@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/common/content_settings_types.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
@@ -324,15 +323,6 @@ class ProfileIOData {
 
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
-
-#if defined(OS_ANDROID)
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  void SetDataReductionProxyUsageStatsOnIOThread(IOThread* io_thread,
-                                                 Profile* profile);
-  void SetDataReductionProxyUsageStatsOnUIThread(Profile* profile,
-      data_reduction_proxy::DataReductionProxyUsageStats* usage_stats);
-#endif
-#endif
 
   scoped_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,

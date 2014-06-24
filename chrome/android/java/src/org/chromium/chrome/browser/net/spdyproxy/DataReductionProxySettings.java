@@ -179,14 +179,6 @@ public class DataReductionProxySettings {
     }
 
     /**
-     * Determines if the data reduction proxy is currently unreachable.
-     * @return true if the data reduction proxy is unreachable.
-     */
-    public boolean isDataReductionProxyUnreachable() {
-        return nativeIsDataReductionProxyUnreachable(mNativeDataReductionProxySettings);
-    }
-
-    /**
      * @return The data reduction settings as a string percentage.
      */
     public String getContentLengthPercentSavings() {
@@ -228,7 +220,5 @@ public class DataReductionProxySettings {
     private native long[] nativeGetDailyOriginalContentLengths(
             long nativeDataReductionProxySettingsAndroid);
     private native long[] nativeGetDailyReceivedContentLengths(
-            long nativeDataReductionProxySettingsAndroid);
-    private native boolean nativeIsDataReductionProxyUnreachable(
             long nativeDataReductionProxySettingsAndroid);
 }
