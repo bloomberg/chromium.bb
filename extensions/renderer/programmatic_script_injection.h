@@ -32,22 +32,16 @@ class ProgrammaticScriptInjection : public ScriptInjection {
 
  private:
   // ScriptInjection implementation.
-  virtual bool TryToInject(UserScript::RunLocation current_location,
-                           const Extension* extension,
-                           ScriptsRunInfo* scripts_run_info) OVERRIDE;
-  virtual bool OnPermissionGranted(const Extension* extension,
-                                   ScriptsRunInfo* scripts_run_info) OVERRIDE;
-
-  // Returns the associated RenderView.
-  content::RenderView* GetRenderView();
+  virtual AccessType Allowed(const Extension* extension) const OVERRIDE;
+  virtual void Inject(const Extension* extension,
+                      ScriptsRunInfo* scripts_run_info) OVERRIDE;
+  virtual void OnWillNotInject(InjectFailureReason reason) OVERRIDE;
 
   // Returns true if the script can execute on the given |frame|.
   // |top_url| is passed in for efficiency when this is used in a loop.
-  bool CanExecuteOnFrame(const Extension* extension,
-                         const blink::WebFrame* frame,
-                         const GURL& top_url) const;
-
-  void Inject(const Extension* extension, ScriptsRunInfo* scripts_run_info);
+  AccessType CanExecuteOnFrame(const Extension* extension,
+                               const blink::WebFrame* frame,
+                               const GURL& top_url) const;
 
   // The parameters for injecting the script.
   scoped_ptr<ExtensionMsg_ExecuteCode_Params> params_;

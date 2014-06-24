@@ -33,15 +33,13 @@ const char kBackgroundScriptSource[] =
     "var listener = function(tabId) {\n"
     "  chrome.tabs.onUpdated.removeListener(listener);\n"
     "  chrome.tabs.executeScript(tabId, {\n"
-    "    code: \"chrome.test.sendMessage('inject succeeded');\"\n"
+    "    code: \"chrome.test.sendMessage('inject succeeded');\",\n"
     "  });"
-    "  chrome.test.sendMessage('inject attempted');\n"
     "};\n"
     "chrome.tabs.onUpdated.addListener(listener);";
 const char kContentScriptSource[] =
     "chrome.test.sendMessage('inject succeeded');";
 
-const char kInjectAttempted[] = "inject attempted";
 const char kInjectSucceeded[] = "inject succeeded";
 
 enum InjectionType {
@@ -58,6 +56,15 @@ enum RequiresConsent {
   REQUIRES_CONSENT,
   DOES_NOT_REQUIRE_CONSENT
 };
+
+// Runs all pending tasks in the renderer associated with |web_contents|.
+// Returns true on success.
+bool RunAllPendingInRenderer(content::WebContents* web_contents) {
+  // This is slight hack to achieve a RunPendingInRenderer() method. Since IPCs
+  // are sent synchronously, anything started prior to this method will finish
+  // before this method returns (as content::ExecuteScript() is synchronous).
+  return content::ExecuteScript(web_contents, "1 == 1;");
+}
 
 }  // namespace
 
@@ -192,10 +199,6 @@ class ActiveScriptTester {
   // All of these extensions should inject a script (either through content
   // scripts or through chrome.tabs.executeScript()) that sends a message with
   // the |kInjectSucceeded| message.
-  linked_ptr<ExtensionTestMessageListener> inject_attempt_listener_;
-
-  // After trying to inject the script, extensions sending the script via
-  // chrome.tabs.executeScript() send a |kInjectAttempted| message.
   linked_ptr<ExtensionTestMessageListener> inject_success_listener_;
 };
 
@@ -209,13 +212,9 @@ ActiveScriptTester::ActiveScriptTester(const std::string& name,
       browser_(browser),
       requires_consent_(requires_consent),
       type_(type),
-      inject_attempt_listener_(
-          new ExtensionTestMessageListener(kInjectAttempted,
-                                           false /* won't reply */)),
       inject_success_listener_(
           new ExtensionTestMessageListener(kInjectSucceeded,
                                            false /* won't reply */)) {
-  inject_attempt_listener_->set_extension_id(extension->id());
   inject_success_listener_->set_extension_id(extension->id());
 }
 
@@ -226,13 +225,14 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   if (!extension_)
     return testing::AssertionFailure() << "Could not load extension: " << name_;
 
-  // If it's not a content script, the Extension lets us know when it has
-  // attempted to inject the script.
-  // This means there is a potential for a race condition with content scripts;
-  // however, since they are all injected at document_start, this shouldn't be
-  // a problem. If these tests start failing, though, that might be it.
-  if (type_ == EXECUTE_SCRIPT)
-    inject_attempt_listener_->WaitUntilSatisfied();
+  content::WebContents* web_contents =
+      browser_ ? browser_->tab_strip_model()->GetActiveWebContents() : NULL;
+  if (!web_contents)
+    return testing::AssertionFailure() << "No web contents.";
+
+  // Give the extension plenty of time to inject.
+  if (!RunAllPendingInRenderer(web_contents))
+    return testing::AssertionFailure() << "Could not run pending in renderer.";
 
   // Make sure all running tasks are complete.
   content::RunAllPendingInMessageLoop();
@@ -402,11 +402,7 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
   // Unload one of the extensions.
   UnloadExtension(extension2->id());
 
-  // This is slight hack to achieve a RunPendingInRenderer() method. Since IPCs
-  // are sent synchronously, the renderer will be notified of the extension
-  // being unloaded before the script is executed, and, since ExecuteScript() is
-  // synchronous, the renderer is guaranteed to be done updating scripts.
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "1 == 1;"));
+  EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // We should have pending requests for extension1, but not the removed
   // extension2.

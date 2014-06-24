@@ -102,10 +102,6 @@ class ScriptExecutor {
                      const ExecuteScriptCallback& callback);
 
  private:
-  // Called upon a request being given to execute the script.
-  void ExecuteScriptHelper(scoped_ptr<ExtensionMsg_ExecuteCode_Params> params,
-                           const ExecuteScriptCallback& callback);
-
   // The next value to use for request_id in ExtensionMsg_ExecuteCode_Params.
   int next_request_id_;
 

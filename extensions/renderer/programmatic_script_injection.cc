@@ -56,74 +56,10 @@ ProgrammaticScriptInjection::ProgrammaticScriptInjection(
 ProgrammaticScriptInjection::~ProgrammaticScriptInjection() {
 }
 
-bool ProgrammaticScriptInjection::TryToInject(
-    UserScript::RunLocation current_location,
-    const Extension* extension,
-    ScriptsRunInfo* scripts_run_info) {
-  if (current_location < run_location())
-    return false;  // Wait for the right location.
-
-  if (!extension) {
-    content::RenderView* render_view = GetRenderView();
-    // Inform the browser process that we are not executing the script.
-    render_view->Send(
-        new ExtensionHostMsg_ExecuteCodeFinished(render_view->GetRoutingID(),
-                                                 params_->request_id,
-                                                 std::string(),  // no error
-                                                 -1,             // no page id
-                                                 GURL(std::string()),
-                                                 base::ListValue()));
-    return true;  // We're done.
-  }
-
-  GURL url = web_frame()->document().url();
-  bool can_execute = CanExecuteOnFrame(extension, web_frame(), url);
-  if (!can_execute) {
-    // If we can't execute on the frame, send an error message and abort.
-    content::RenderView* render_view = GetRenderView();
-    render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        render_view->GetRoutingID(),
-        params_->request_id,
-        ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
-                                       url.spec()),
-        render_view->GetPageId(),
-        ScriptContext::GetDataSourceURLForFrame(web_frame()),
-        base::ListValue()));
-     return true;  // We're done.
-  }
-
-  // Otherwise, we're good to go.
-  Inject(extension, scripts_run_info);
-  return true;  // We're done.
-}
-
-bool ProgrammaticScriptInjection::OnPermissionGranted(
-    const Extension* extension,
-    ScriptsRunInfo* scripts_run_info) {
-  // ProgrammaticScriptInjections shouldn't get permission via IPC (yet).
-  NOTREACHED();
-  return false;
-}
-
-content::RenderView* ProgrammaticScriptInjection::GetRenderView() {
-  return content::RenderView::FromWebView(web_frame()->view());
-}
-
-bool ProgrammaticScriptInjection::CanExecuteOnFrame(
-    const Extension* extension,
-    const blink::WebFrame* frame,
-    const GURL& top_url) const {
-  GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      frame, frame->document().url(), params_->match_about_blank);
-  if (params_->is_web_view)
-    return effective_document_url == params_->webview_src;
-
-  return extension->permissions_data()->CanAccessPage(extension,
-                                                      effective_document_url,
-                                                      top_url,
-                                                      tab_id(),
-                                                      -1,     // no process ID.
-                                                      NULL);  // ignore error.
+ScriptInjection::AccessType ProgrammaticScriptInjection::Allowed(
+    const Extension* extension) const {
+  return CanExecuteOnFrame(
+      extension, web_frame(), web_frame()->document().url());
 }
 
 void ProgrammaticScriptInjection::Inject(const Extension* extension,
@@ -150,7 +86,10 @@ void ProgrammaticScriptInjection::Inject(const Extension* extension,
     // extension might only have access to a subset of them.
     // For child frames, we just skip ones the extension doesn't have access
     // to and carry on.
-    if (!CanExecuteOnFrame(extension, child_frame, top_url)) {
+    // Note: we don't consider REQUEST_ACCESS because there is nowhere to
+    // surface a request for a child frame.
+    // TODO(rdevlin.cronin): We should ask for permission somehow.
+    if (CanExecuteOnFrame(extension, child_frame, top_url) == DENY_ACCESS) {
       // If we couldn't access the top frame, we shouldn't be injecting at all.
       DCHECK(child_frame->parent());
       continue;
@@ -204,7 +143,8 @@ void ProgrammaticScriptInjection::Inject(const Extension* extension,
     }
   }
 
-  content::RenderView* render_view = GetRenderView();
+  content::RenderView* render_view =
+      content::RenderView::FromWebView(web_frame()->view());
   render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
       render_view->GetRoutingID(),
       params_->request_id,
@@ -212,6 +152,56 @@ void ProgrammaticScriptInjection::Inject(const Extension* extension,
       render_view->GetPageId(),
       ScriptContext::GetDataSourceURLForFrame(web_frame()),
       execution_results));
+}
+
+void ProgrammaticScriptInjection::OnWillNotInject(InjectFailureReason reason) {
+  std::string error;
+  switch (reason) {
+    case NOT_ALLOWED:
+      error = ErrorUtils::FormatErrorMessage(
+                  manifest_errors::kCannotAccessPage,
+                  GURL(web_frame()->document().url()).spec());
+      break;
+    case EXTENSION_REMOVED:  // no special error here.
+    case WONT_INJECT:
+      break;
+  }
+
+  content::RenderView* render_view =
+      content::RenderView::FromWebView(web_frame()->view());
+  render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
+      render_view->GetRoutingID(),
+      params_->request_id,
+      error,
+      render_view->GetPageId(),
+      ScriptContext::GetDataSourceURLForFrame(web_frame()),
+      base::ListValue()));
+}
+
+ScriptInjection::AccessType ProgrammaticScriptInjection::CanExecuteOnFrame(
+    const Extension* extension,
+    const blink::WebFrame* frame,
+    const GURL& top_url) const {
+  GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
+      frame, frame->document().url(), params_->match_about_blank);
+  if (params_->is_web_view) {
+    return effective_document_url == params_->webview_src
+               ? ALLOW_ACCESS : DENY_ACCESS;
+  }
+
+  if (!extension->permissions_data()->CanAccessPage(
+          extension,
+          effective_document_url,
+          top_url,
+          tab_id(),
+          -1,  // no process ID.
+          NULL /* ignore error */)) {
+    return DENY_ACCESS;
+  }
+
+  return extension->permissions_data()->RequiresActionForScriptExecution(
+             extension, tab_id(), effective_document_url)
+         ? REQUEST_ACCESS : ALLOW_ACCESS;
 }
 
 }  // namespace extensions

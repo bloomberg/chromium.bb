@@ -35,26 +35,14 @@ class UserScriptInjection : public ScriptInjection,
 
  private:
   // ScriptInjection implementation.
-  virtual bool TryToInject(UserScript::RunLocation current_location,
-                           const Extension* extension,
-                           ScriptsRunInfo* scripts_run_info) OVERRIDE;
-  virtual bool OnPermissionGranted(const Extension* extension,
-                                   ScriptsRunInfo* scripts_run_info) OVERRIDE;
+  virtual AccessType Allowed(const Extension* extension) const OVERRIDE;
+  virtual void Inject(const Extension* extension,
+                      ScriptsRunInfo* scripts_run_info) OVERRIDE;
 
   // UserScriptSet::Observer implementation.
   virtual void OnUserScriptsUpdated(
       const std::set<std::string>& changed_extensions,
       const std::vector<UserScript*>& scripts) OVERRIDE;
-
-  // Returns true if the injection is allowed to run.
-  bool Allowed(const Extension* extension);
-
-  // Requests permission for the injection. Returns true if this should inject
-  // immediately.
-  bool RequestPermission(const Extension* extension);
-
-  // Injects the script.
-  void Inject(const Extension* extension, ScriptsRunInfo* scripts_run_info);
 
   // Inject the JS/CSS specified in |script_|.
   void InjectJS(const Extension* extension, ScriptsRunInfo* scripts_run_info);
