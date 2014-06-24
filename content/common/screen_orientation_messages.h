@@ -21,7 +21,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
                               blink::WebScreenOrientationLandscapeSecondary)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,
-                              blink::WebScreenOrientationLockPortrait)
+                              blink::WebScreenOrientationLockNatural)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(
       blink::WebLockOrientationError,
       blink::WebLockOrientationErrorNotAvailable,

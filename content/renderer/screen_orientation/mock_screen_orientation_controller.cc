@@ -81,7 +81,8 @@ bool MockScreenOrientationController::IsOrientationAllowedByCurrentLock(
              current_lock_ == blink::WebScreenOrientationLockPortrait;
     case blink::WebScreenOrientationLandscapePrimary:
       return current_lock_ == blink::WebScreenOrientationLockLandscapePrimary ||
-             current_lock_ == blink::WebScreenOrientationLockLandscape;
+             current_lock_ == blink::WebScreenOrientationLockLandscape ||
+             current_lock_ == blink::WebScreenOrientationLockNatural;
     case blink::WebScreenOrientationLandscapeSecondary:
       return current_lock_ ==
                  blink::WebScreenOrientationLockLandscapeSecondary ||

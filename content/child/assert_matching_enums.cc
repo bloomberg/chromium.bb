@@ -35,6 +35,8 @@ COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockLandscape,
     LANDSCAPE);
 COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortrait,
     PORTRAIT);
+COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockNatural,
+    NATURAL);
 
 // SupportsType
 COMPILE_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::IsNotSupported,
