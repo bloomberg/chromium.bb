@@ -362,6 +362,8 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(404, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+  EXPECT_FALSE(response_.response_time.is_null());
+  EXPECT_FALSE(response_.request_time.is_null());
 
   // There is no body, so this should return immediately.
   EXPECT_EQ(0, stream_->ReadResponseBody(read_buffer_.get(),

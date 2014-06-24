@@ -118,6 +118,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   const HttpRequestInfo* request_info_;
   // The request body to send, if any, owned by the caller.
   UploadDataStream* request_body_stream_;
+  // Time the request was issued.
+  base::Time request_time_;
   // The priority of the request.
   RequestPriority priority_;
   // |response_info_| is the HTTP response data object which is filled in
