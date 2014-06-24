@@ -1,5 +1,4 @@
 include_rules = [
-  "+base/prefs",
   "+crypto",
   "+gpu",
   "+net",
@@ -17,7 +16,6 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
-  "+components/metrics",
   "+components/url_fixer",
   "+components/variations",
   "+content/public/common",
@@ -36,12 +34,9 @@ include_rules = [
   "+third_party/WebKit/public/web",
 
   # Allow inclusion of third-party code:
-  "+third_party/google_toolbox_for_mac/src",
   "+third_party/hunspell",
   "+third_party/libxml",
-  "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/skia",
-  "+third_party/zlib/google",
 
   "+ui",
 ]

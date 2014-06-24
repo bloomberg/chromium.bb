@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_switches.h"
 #include "base/debug/debugger.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
 #include "content/public/common/main_function_params.h"
 #include "net/url_request/url_request.h"
-
-#if defined(OS_WIN)
-#include "content/public/common/sandbox_init.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif  // defined(OS_WIN)
 
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const content::MainFunctionParams& parameters) {

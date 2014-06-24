@@ -28,11 +28,6 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-#include "content/public/app/startup_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif  // defined(OS_WIN)
-
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"

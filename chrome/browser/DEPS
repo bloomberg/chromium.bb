@@ -32,6 +32,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/language_usage_metrics",
   "+components/leveldb_proto",
+  "+components/metrics",
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/navigation_interception",
@@ -112,9 +113,11 @@ include_rules = [
 
   # Other libraries.
   "+libxml",  # For search engine definition parsing.
+  "+third_party/google_toolbox_for_mac/src",
   "+third_party/icu/source/common/unicode",
   "+third_party/icu/source/i18n/unicode",
   "+third_party/leveldatabase",
+  "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/re2",
   "+third_party/smhasher",
