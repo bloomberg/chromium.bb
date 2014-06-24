@@ -2056,4 +2056,24 @@ TEST_F(ShelfLayoutManagerTest, MaximizeModeResetsAutohide) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 }
 
+// Tests that when the auto-hide behaviour is changed during an animation the
+// target bounds are updated to reflect the new state.
+TEST_F(ShelfLayoutManagerTest,
+       ShelfAutoHideToggleDuringAnimationUpdatesBounds) {
+  ShelfLayoutManager* shelf_manager = GetShelfLayoutManager();
+  aura::Window* status_window = GetShelfWidget()->status_area_widget()->
+      GetNativeView();
+  gfx::Rect initial_bounds = status_window->bounds();
+
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  shelf_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  gfx::Rect hide_target_bounds =  status_window->GetTargetBounds();
+  EXPECT_GT(hide_target_bounds.y(), initial_bounds.y());
+
+  shelf_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  gfx::Rect reshow_target_bounds = status_window->GetTargetBounds();
+  EXPECT_EQ(initial_bounds, reshow_target_bounds);
+}
+
 }  // namespace ash
