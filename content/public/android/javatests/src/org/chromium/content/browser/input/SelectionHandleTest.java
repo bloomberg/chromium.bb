@@ -139,6 +139,18 @@ public class SelectionHandleTest extends ContentShellTestBase {
     }
 
     /**
+     * Test is flaky: crbug.com/290375
+     * @MediumTest
+     * @Feature({ "TextSelection", "Main" })
+     */
+    @FlakyTest
+    public void testUpdateContainerViewAndNoneditableSelectionHandles() throws Throwable {
+        launchWithUrl(TestPageType.NONEDITABLE.dataUrl);
+        replaceContainerView();
+        doSelectionHandleTestUrlLaunched(TestPageType.NONEDITABLE);
+    }
+
+    /**
      * Verifies that when a long-press is performed on editable text (within a
      * textarea), selection handles appear and that handles can be dragged to
      * extend the selection. Does not check exact handle position as this will
@@ -151,9 +163,20 @@ public class SelectionHandleTest extends ContentShellTestBase {
         doSelectionHandleTest(TestPageType.EDITABLE);
     }
 
+    @MediumTest
+    @Feature({ "TextSelection" })
+    public void testUpdateContainerViewAndEditableSelectionHandles() throws Throwable {
+        launchWithUrl(TestPageType.EDITABLE.dataUrl);
+        replaceContainerView();
+        doSelectionHandleTestUrlLaunched(TestPageType.EDITABLE);
+    }
+
     private void doSelectionHandleTest(TestPageType pageType) throws Throwable {
         launchWithUrl(pageType.dataUrl);
+        doSelectionHandleTestUrlLaunched(pageType);
+    }
 
+    private void doSelectionHandleTestUrlLaunched(TestPageType pageType) throws Throwable {
         clickNodeToShowSelectionHandles(pageType.nodeId);
         assertWaitForSelectionEditableEquals(pageType.selectionShouldBeEditable);
 

@@ -66,6 +66,7 @@ public class SelectPopupTest extends ContentShellTestBase {
      */
     @LargeTest
     @Feature({"Browser"})
+    @RerunWithUpdatedContainerView
     public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
         // The popup should be hidden before the click.
         assertTrue("The select popup is shown after load.",
@@ -86,7 +87,7 @@ public class SelectPopupTest extends ContentShellTestBase {
             @Override
             public void run() {
                 // Now reload the page while the popup is showing, it gets hidden.
-                getActivity().getActiveShell().loadUrl(SELECT_URL);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,

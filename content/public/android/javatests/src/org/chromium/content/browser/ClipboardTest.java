@@ -34,6 +34,13 @@ public class ClipboardTest extends ContentShellTestBase {
     // String to search for in the HTML representation on the clipboard.
     private static final String EXPECTED_HTML_NEEDLE = "http://www.example.com/";
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        launchContentShellWithUrl(TEST_PAGE_DATA_URL);
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+    }
+
     /**
      * Tests that copying document fragments will put at least a plain-text representation
      * of the contents on the clipboard. For Android JellyBean and higher, we also expect
@@ -41,10 +48,8 @@ public class ClipboardTest extends ContentShellTestBase {
      */
     @LargeTest
     @Feature({"Clipboard","TextInput"})
+    @RerunWithUpdatedContainerView
     public void testCopyDocumentFragment() throws Throwable {
-        launchContentShellWithUrl(TEST_PAGE_DATA_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
-
         final ClipboardManager clipboardManager = (ClipboardManager)
                 getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
         assertNotNull(clipboardManager);

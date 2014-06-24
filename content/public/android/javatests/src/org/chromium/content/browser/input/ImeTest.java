@@ -97,6 +97,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @RerunWithUpdatedContainerView
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
         setComposingText(mConnection, "h", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
@@ -117,6 +118,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RerunWithUpdatedContainerView
     public void testImeCopy() throws Exception {
         commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);

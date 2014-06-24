@@ -44,6 +44,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput", "Main"})
+    @RerunWithUpdatedContainerView
     public void testSetComposingText() throws Throwable {
         mConnection.setComposingText("t", 1);
         assertCorrectState("t", 1, 1, 0, 1, mConnection.getImeStateForTesting());

@@ -437,10 +437,14 @@ public class ContentViewCore
     @VisibleForTesting
     public ViewAndroidDelegate getViewAndroidDelegate() {
         return new ViewAndroidDelegate() {
+            // mContainerView can change, but this ViewAndroidDelegate can only be used to
+            // add and remove views from the mContainerViewAtCreation.
+            private final ViewGroup mContainerViewAtCreation = mContainerView;
+
             @Override
             public View acquireAnchorView() {
-                View anchorView = new View(getContext());
-                mContainerView.addView(anchorView);
+                View anchorView = new View(mContext);
+                mContainerViewAtCreation.addView(anchorView);
                 return anchorView;
             }
 
@@ -448,35 +452,35 @@ public class ContentViewCore
             @SuppressWarnings("deprecation")  // AbsoluteLayout
             public void setAnchorViewPosition(
                     View view, float x, float y, float width, float height) {
-                assert view.getParent() == mContainerView;
+                assert view.getParent() == mContainerViewAtCreation;
 
-                float scale = (float) DeviceDisplayInfo.create(getContext()).getDIPScale();
+                float scale = (float) DeviceDisplayInfo.create(mContext).getDIPScale();
 
                 // The anchor view should not go outside the bounds of the ContainerView.
                 int leftMargin = Math.round(x * scale);
                 int topMargin = Math.round(mRenderCoordinates.getContentOffsetYPix() + y * scale);
                 int scaledWidth = Math.round(width * scale);
                 // ContentViewCore currently only supports these two container view types.
-                if (mContainerView instanceof FrameLayout) {
+                if (mContainerViewAtCreation instanceof FrameLayout) {
                     int startMargin;
-                    if (ApiCompatibilityUtils.isLayoutRtl(mContainerView)) {
-                        startMargin = mContainerView.getMeasuredWidth()
+                    if (ApiCompatibilityUtils.isLayoutRtl(mContainerViewAtCreation)) {
+                        startMargin = mContainerViewAtCreation.getMeasuredWidth()
                                 - Math.round((width + x) * scale);
                     } else {
                         startMargin = leftMargin;
                     }
-                    if (scaledWidth + startMargin > mContainerView.getWidth()) {
-                        scaledWidth = mContainerView.getWidth() - startMargin;
+                    if (scaledWidth + startMargin > mContainerViewAtCreation.getWidth()) {
+                        scaledWidth = mContainerViewAtCreation.getWidth() - startMargin;
                     }
                     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                         scaledWidth, Math.round(height * scale));
                     ApiCompatibilityUtils.setMarginStart(lp, startMargin);
                     lp.topMargin = topMargin;
                     view.setLayoutParams(lp);
-                } else if (mContainerView instanceof android.widget.AbsoluteLayout) {
+                } else if (mContainerViewAtCreation instanceof android.widget.AbsoluteLayout) {
                     // This fixes the offset due to a difference in
                     // scrolling model of WebView vs. Chrome.
-                    // TODO(sgurun) fix this to use mContainerView.getScroll[X/Y]()
+                    // TODO(sgurun) fix this to use mContainerViewAtCreation.getScroll[X/Y]()
                     // as it naturally accounts for scroll differences between
                     // these models.
                     leftMargin += mRenderCoordinates.getScrollXPixInt();
@@ -487,13 +491,13 @@ public class ContentViewCore
                                 scaledWidth, (int) (height * scale), leftMargin, topMargin);
                     view.setLayoutParams(lp);
                 } else {
-                    Log.e(TAG, "Unknown layout " + mContainerView.getClass().getName());
+                    Log.e(TAG, "Unknown layout " + mContainerViewAtCreation.getClass().getName());
                 }
             }
 
             @Override
             public void releaseAnchorView(View anchorView) {
-                mContainerView.removeView(anchorView);
+                mContainerViewAtCreation.removeView(anchorView);
             }
         };
     }
@@ -521,11 +525,6 @@ public class ContentViewCore
     @VisibleForTesting
     public AdapterInputConnection getInputConnectionForTest() {
         return mInputConnection;
-    }
-
-    @VisibleForTesting
-    public void setContainerViewForTest(ViewGroup view) {
-        mContainerView = view;
     }
 
     private ImeAdapter createImeAdapter(Context context) {
@@ -596,8 +595,8 @@ public class ContentViewCore
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
             long nativeWebContents, WindowAndroid windowAndroid) {
-        mContainerView = containerView;
-        mPositionObserver = new ViewPositionObserver(mContainerView);
+        setContainerView(containerView);
+
         mPositionListener = new PositionObserver.Listener() {
             @Override
             public void onPositionChanged(int x, int y) {
@@ -629,18 +628,14 @@ public class ContentViewCore
                 mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
-        initializeContainerView(internalDispatcher);
+
+        setContainerViewInternals(internalDispatcher);
+        mRenderCoordinates.reset();
+        initPopupZoomer(mContext);
+        mImeAdapter = createImeAdapter(mContext);
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
-        String contentDescription = "Web View";
-        if (R.string.accessibility_content_view == 0) {
-            Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
-        } else {
-            contentDescription = mContext.getResources().getString(
-                    R.string.accessibility_content_view);
-        }
-        mContainerView.setContentDescription(contentDescription);
         mWebContentsObserver = new WebContentsObserverAndroid(this) {
             @Override
             public void didNavigateMainFrame(String url, String baseUrl,
@@ -661,6 +656,48 @@ public class ContentViewCore
         };
     }
 
+    /**
+     * Sets a new container view for this {@link ContentViewCore}.
+     *
+     * <p>WARNING: This is not a general purpose method and has been designed with WebView
+     * fullscreen in mind. Please be aware that it might not be appropriate for other use cases
+     * and that it has a number of limitations. For example the PopupZoomer only works with the
+     * container view with which this ContentViewCore has been initialized.
+     *
+     * <p>This method only performs a small part of replacing the container view and
+     * embedders are responsible for:
+     * <ul>
+     *     <li>Disconnecting the old container view from this ContentViewCore</li>
+     *     <li>Updating the InternalAccessDelegate</li>
+     *     <li>Reconciling the state of this ContentViewCore with the new container view</li>
+     *     <li>Tearing down and recreating the native GL rendering where appropriate</li>
+     *     <li>etc.</li>
+     * </ul>
+     */
+    public void setContainerView(ViewGroup containerView) {
+        TraceEvent.begin();
+        if (mContainerView != null) {
+            mPositionObserver.removeListener(mPositionListener);
+            mSelectionHandleController = null;
+            mInsertionHandleController = null;
+            mInputConnection = null;
+        }
+
+        mContainerView = containerView;
+        mPositionObserver = new ViewPositionObserver(mContainerView);
+        String contentDescription = "Web View";
+        if (R.string.accessibility_content_view == 0) {
+            Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
+        } else {
+            contentDescription = mContext.getResources().getString(
+                    R.string.accessibility_content_view);
+        }
+        mContainerView.setContentDescription(contentDescription);
+        mContainerView.setWillNotDraw(false);
+        mContainerView.setClickable(true);
+        TraceEvent.end();
+    }
+
     @CalledByNative
     void onNativeContentViewCoreDestroyed(long nativeContentViewCore) {
         assert nativeContentViewCore == mNativeContentViewCore;
@@ -676,36 +713,20 @@ public class ContentViewCore
         mContainerViewInternals = internalDispatcher;
     }
 
-    /**
-     * Initializes the View that will contain all Views created by the ContentViewCore.
-     *
-     * @param internalDispatcher Handles dispatching all hidden or super methods to the
-     *                           containerView.
-     */
-    private void initializeContainerView(InternalAccessDelegate internalDispatcher) {
-        TraceEvent.begin();
-        mContainerViewInternals = internalDispatcher;
-
-        mContainerView.setWillNotDraw(false);
-        mContainerView.setClickable(true);
-
-        mRenderCoordinates.reset();
-
-        initPopupZoomer(mContext);
-        mImeAdapter = createImeAdapter(mContext);
-        TraceEvent.end();
-    }
-
     private void initPopupZoomer(Context context) {
         mPopupZoomer = new PopupZoomer(context);
         mPopupZoomer.setOnVisibilityChangedListener(new PopupZoomer.OnVisibilityChangedListener() {
+            // mContainerView can change, but this OnVisibilityChangedListener can only be used
+            // to add and remove views from the mContainerViewAtCreation.
+            private final ViewGroup mContainerViewAtCreation = mContainerView;
+
             @Override
             public void onPopupZoomerShown(final PopupZoomer zoomer) {
-                mContainerView.post(new Runnable() {
+                mContainerViewAtCreation.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (mContainerView.indexOfChild(zoomer) == -1) {
-                            mContainerView.addView(zoomer);
+                        if (mContainerViewAtCreation.indexOfChild(zoomer) == -1) {
+                            mContainerViewAtCreation.addView(zoomer);
                         } else {
                             assert false : "PopupZoomer should never be shown without being hidden";
                         }
@@ -715,12 +736,12 @@ public class ContentViewCore
 
             @Override
             public void onPopupZoomerHidden(final PopupZoomer zoomer) {
-                mContainerView.post(new Runnable() {
+                mContainerViewAtCreation.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (mContainerView.indexOfChild(zoomer) != -1) {
-                            mContainerView.removeView(zoomer);
-                            mContainerView.invalidate();
+                        if (mContainerViewAtCreation.indexOfChild(zoomer) != -1) {
+                            mContainerViewAtCreation.removeView(zoomer);
+                            mContainerViewAtCreation.invalidate();
                         } else {
                             assert false : "PopupZoomer should never be hidden without being shown";
                         }
@@ -731,9 +752,13 @@ public class ContentViewCore
         // TODO(yongsheng): LONG_TAP is not enabled in PopupZoomer. So need to dispatch a LONG_TAP
         // gesture if a user completes a tap on PopupZoomer UI after a LONG_PRESS gesture.
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
+            // mContainerView can change, but this OnTapListener can only be used
+            // with the mContainerViewAtCreation.
+            private final ViewGroup mContainerViewAtCreation = mContainerView;
+
             @Override
             public boolean onSingleTap(View v, MotionEvent e) {
-                mContainerView.requestFocus();
+                mContainerViewAtCreation.requestFocus();
                 if (mNativeContentViewCore != 0) {
                     nativeSingleTap(mNativeContentViewCore, e.getEventTime(), e.getX(), e.getY());
                 }

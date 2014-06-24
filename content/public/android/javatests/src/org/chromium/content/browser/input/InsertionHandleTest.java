@@ -88,6 +88,18 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
+    public void testUpdateContainerViewAndUnselectHidesHandle() throws Throwable {
+        launchWithUrl(TEXTAREA_DATA_URL);
+        replaceContainerView();
+
+        clickNodeToShowInsertionHandle(TEXTAREA_ID);
+
+        // Unselecting should cause the handle to disappear.
+        unselectOnMainSync();
+        assertTrue(waitForHandleShowingEquals(false));
+    }
 
     /**
      * @MediumTest

@@ -174,6 +174,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     }
 
     @SmallTest
+    @RerunWithUpdatedContainerView
     @Feature({"Main"})
     public void testScroll() throws Throwable {
         // Vertical scroll to lower-left.
@@ -197,12 +198,12 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
-
     /**
      * To ensure the device properly responds to bounds-exceeding scrolls, e.g., overscroll
      * effects are properly initialized.
      */
     @SmallTest
+    @RerunWithUpdatedContainerView
     @Feature({"Main"})
     public void testOverScroll() throws Throwable {
         // Overscroll lower-left.
@@ -231,10 +232,11 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
      * properly on scrolling a page.
      */
     @SmallTest
+    @RerunWithUpdatedContainerView
     @Feature({"Main"})
     public void testOnScrollChanged() throws Throwable {
-        final int scrollToX = 2500;
-        final int scrollToY = 2500;
+        final int scrollToX = getContentViewCore().getNativeScrollXForTest() + 2500;
+        final int scrollToY = getContentViewCore().getNativeScrollYForTest() + 2500;
         final TestInternalAccessDelegate containerViewInternals = new TestInternalAccessDelegate();
         runTestOnUiThread(new Runnable() {
             @Override

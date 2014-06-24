@@ -11,8 +11,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -21,6 +24,11 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell.Shell;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -194,5 +202,50 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
                 return getContentViewCore().getScale() == expectedScale;
             }
         }));
+    }
+
+    /**
+     * Replaces the {@link ContentViewCore#mContainerView} with a newly created
+     * {@link ContentView}.
+     */
+    @SuppressWarnings("javadoc")
+    protected void replaceContainerView() throws Throwable {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+            public void run() {
+                ContentView cv = ContentView.newInstance(getActivity(), getContentViewCore());
+                ((ViewGroup) getContentViewCore().getContainerView().getParent()).addView(cv);
+                getContentViewCore().setContainerView(cv);
+                getContentViewCore().setContainerViewInternals(cv);
+                cv.requestFocus();
+            }
+        });
+    }
+
+    @Override
+    protected void runTest() throws Throwable {
+        super.runTest();
+        try {
+            Method method = getClass().getMethod(getName(), (Class[]) null);
+            if (method.isAnnotationPresent(RerunWithUpdatedContainerView.class)) {
+                replaceContainerView();
+                super.runTest();
+            }
+        } catch (Throwable e) {
+            throw new Throwable("@RerunWithUpdatedContainerView failed."
+                    + " See ContentShellTestBase#runTest.", e);
+        }
+    }
+
+    /**
+     * Annotation for tests that should be executed a second time after replacing
+     * the ContentViewCore's container view (see {@link #runTest()}).
+     *
+     * <p>Please note that {@link #setUp()} is only invoked once before both runs,
+     * and that any state changes produced by the first run are visible to the second run.
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface RerunWithUpdatedContainerView {
     }
 }

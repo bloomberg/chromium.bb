@@ -49,6 +49,7 @@ public class ContentViewCoreFocusTest extends ContentShellTestBase {
     }
 
     @UiThreadTest
+    @RerunWithUpdatedContainerView
     @SmallTest
     public void testHideImeOnLosingFocus() throws Throwable {
         // Test the IME window is hidden from the content view when the content
@@ -62,7 +63,6 @@ public class ContentViewCoreFocusTest extends ContentShellTestBase {
 
         immw.showSoftInput(view, 0, null);
         assertFalse(immw.isHidden());
-
 
         final EditText urlBox = (EditText) getActivity().findViewById(R.id.url);
 

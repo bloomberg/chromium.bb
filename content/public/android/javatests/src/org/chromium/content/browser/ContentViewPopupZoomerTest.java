@@ -78,6 +78,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
      */
     //@MediumTest
     //@Feature({"Browser"})
+    //@RerunWithUpdatedContainerView -> this test should pass with this new annotation.
     @DisabledTest // crbug.com/167045
     public void testPopupZoomerShowsUp() throws InterruptedException, TimeoutException {
         launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));

@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 
 import org.chromium.content.browser.input.AdapterInputConnection;
 import org.chromium.content.browser.input.ImeAdapter;
@@ -41,7 +40,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
         mImeAdapter.setInputMethodManagerWrapper(new TestInputMethodManagerWrapper(
             mContentViewCore));
         mContentViewCore.setImeAdapterForTest(mImeAdapter);
-        mContentViewCore.setContainerViewForTest(getActivity().getActiveShell().getContentView());
+        mContentViewCore.setContainerView(getActivity().getActiveShell().getContentView());
     }
 
     /**
@@ -49,10 +48,11 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
      * text content in the Editable is not lost.
      */
     @SmallTest
+    @RerunWithUpdatedContainerView
     public void testRecreateInputConnection() throws Exception {
         EditorInfo info = new EditorInfo();
 
-        InputConnection inputConnection = mContentViewCore.onCreateInputConnection(info);
+        mContentViewCore.onCreateInputConnection(info);
         AdapterInputConnection adapter = mContentViewCore.getAdapterInputConnectionForTest();
         adapter.updateState("Is this text restored?", 0, 0, 0, 0, true);
 
@@ -61,7 +61,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
 
         // Create a new InputConnection.
         EditorInfo info2 = new EditorInfo();
-        inputConnection = mContentViewCore.onCreateInputConnection(info2);
+        mContentViewCore.onCreateInputConnection(info2);
 
         String newtext = mContentViewCore.getEditableForTest().toString();
         assertEquals("Check if the string is restored.", "Is this text restored?", newtext);
