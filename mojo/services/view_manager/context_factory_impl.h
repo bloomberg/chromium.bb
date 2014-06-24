@@ -46,6 +46,9 @@ class ContextFactoryImpl : public ui::ContextFactory {
 
   ScopedMessagePipeHandle command_buffer_handle_;
 
+  // TODO(sky): for debugging, remove.
+  bool did_create_;
+
   DISALLOW_COPY_AND_ASSIGN(ContextFactoryImpl);
 };
 

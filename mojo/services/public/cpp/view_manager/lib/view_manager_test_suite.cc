@@ -6,6 +6,10 @@
 
 #include "ui/gl/gl_surface.h"
 
+#if defined(USE_X11)
+#include "ui/gfx/x/x11_connection.h"
+#endif
+
 namespace mojo {
 namespace view_manager {
 
@@ -16,6 +20,12 @@ ViewManagerTestSuite::~ViewManagerTestSuite() {
 }
 
 void ViewManagerTestSuite::Initialize() {
+#if defined(USE_X11)
+  // Each test ends up creating a new thread for the native viewport service.
+  // In other words we'll use X on different threads, so tell it that.
+  gfx::InitializeThreadedX11();
+#endif
+
   base::TestSuite::Initialize();
   gfx::GLSurface::InitializeOneOffForTests();
 }

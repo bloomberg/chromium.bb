@@ -38,7 +38,11 @@ class NativeViewportX11 : public NativeViewport,
 
     XSetWindowAttributes swa;
     memset(&swa, 0, sizeof(swa));
-    swa.override_redirect = False;
+    // Without the override_redirect BlockUntilWindowMapped() may never finish
+    // (we don't necessarily get the mapped nofity). This often happens with
+    // tests.
+    // TODO: decide if we really want the override redirect here.
+    swa.override_redirect = True;
 
     bounds_ = bounds;
     window_ = XCreateWindow(

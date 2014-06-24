@@ -522,6 +522,11 @@
                 '../third_party/mesa/mesa.gyp:osmesa',
               ],
             }],
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
           ],
         },
         {
