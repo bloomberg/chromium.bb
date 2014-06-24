@@ -12,7 +12,6 @@
 #include "base/files/file.h"
 #include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"

@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/platform_file.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 

@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/hid/hid_service_linux.h"
+
 #include <linux/hidraw.h>
 #include <sys/ioctl.h>
-
 #include <stdint.h>
 
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -20,7 +21,6 @@
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_report_descriptor.h"
-#include "device/hid/hid_service_linux.h"
 #include "device/udev_linux/udev.h"
 
 namespace device {

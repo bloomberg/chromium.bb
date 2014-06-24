@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/platform_file.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

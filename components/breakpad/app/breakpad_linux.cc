@@ -29,7 +29,6 @@
 #include "base/files/file_path.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/memory.h"

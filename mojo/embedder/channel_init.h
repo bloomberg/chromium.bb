@@ -5,9 +5,9 @@
 #ifndef MOJO_EMBEDDER_CHANNEL_INIT_H_
 #define MOJO_EMBEDDER_CHANNEL_INIT_H_
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/system/system_impl_export.h"
 

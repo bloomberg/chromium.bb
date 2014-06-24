@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/tuple.h"
 #include "base/values.h"

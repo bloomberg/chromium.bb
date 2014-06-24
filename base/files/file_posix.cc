@@ -12,8 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
-// TODO(rvargas): remove this (needed for kInvalidPlatformFileValue).
-#include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"

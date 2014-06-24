@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/translate/chrome_translate_client.h"

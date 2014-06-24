@@ -333,7 +333,7 @@ void LaunchSelLdr(PP_Instance instance,
     routing_id = GetRoutingID(instance);
     if (!routing_id) {
       if (nexe_file_info->handle != PP_kInvalidFileHandle) {
-        base::ClosePlatformFile(nexe_file_info->handle);
+        base::File closer(nexe_file_info->handle);
       }
       ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
           FROM_HERE,

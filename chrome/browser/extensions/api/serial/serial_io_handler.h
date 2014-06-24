@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_IO_HANDLER_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "net/base/io_buffer.h"

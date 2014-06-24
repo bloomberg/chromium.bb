@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file.h"
-
-// TODO(rvargas): remove this (needed for kInvalidPlatformFileValue).
-#include "base/platform_file.h"
+#include "base/files/file_path.h"
 
 namespace base {
 
@@ -19,16 +17,14 @@ File::Info::~Info() {
 }
 
 File::File()
-    : file_(kInvalidPlatformFileValue),
-      error_details_(FILE_ERROR_FAILED),
+    : error_details_(FILE_ERROR_FAILED),
       created_(false),
       async_(false) {
 }
 
 #if !defined(OS_NACL)
 File::File(const FilePath& name, uint32 flags)
-    : file_(kInvalidPlatformFileValue),
-      error_details_(FILE_OK),
+    : error_details_(FILE_OK),
       created_(false),
       async_(false) {
   Initialize(name, flags);
@@ -46,8 +42,7 @@ File::File(PlatformFile platform_file)
 }
 
 File::File(Error error_details)
-    : file_(kInvalidPlatformFileValue),
-      error_details_(error_details),
+    : error_details_(error_details),
       created_(false),
       async_(false) {
 }
