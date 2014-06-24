@@ -990,6 +990,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kNoSandbox,
     switches::kTestGLLib,
     switches::kTraceStartup,
+    switches::kTraceToConsole,
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)
