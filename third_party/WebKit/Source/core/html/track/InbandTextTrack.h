@@ -38,20 +38,19 @@ class WebString;
 
 namespace WebCore {
 
-class Document;
 class MediaPlayer;
 class TextTrackCue;
 
 class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
-    static PassRefPtrWillBeRawPtr<InbandTextTrack> create(Document&, blink::WebInbandTextTrack*);
+    static PassRefPtrWillBeRawPtr<InbandTextTrack> create(blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();
     virtual void setTrackList(TextTrackList*) OVERRIDE FINAL;
 
 private:
-    InbandTextTrack(Document&, blink::WebInbandTextTrack*);
+    InbandTextTrack(blink::WebInbandTextTrack*);
 
     virtual void addWebVTTCue(double, double, const blink::WebString&, const blink::WebString&, const blink::WebString&) OVERRIDE;
 

@@ -35,7 +35,6 @@
 
 namespace WebCore {
 
-class Document;
 class ExceptionState;
 class HTMLMediaElement;
 class TextTrack;
@@ -49,9 +48,9 @@ class TextTrack : public TrackBase, public ScriptWrappable, public EventTargetWi
     REFCOUNTED_EVENT_TARGET(TrackBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 public:
-    static PassRefPtrWillBeRawPtr<TextTrack> create(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
+    static PassRefPtrWillBeRawPtr<TextTrack> create(const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TextTrack(document, kind, label, language, emptyAtom, AddTrack));
+        return adoptRefWillBeRefCountedGarbageCollected(new TextTrack(kind, label, language, emptyAtom, AddTrack));
     }
     virtual ~TextTrack();
 
@@ -120,7 +119,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    TextTrack(Document&, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
+    TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
     virtual bool isValidKind(const AtomicString& kind) const OVERRIDE { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const OVERRIDE { return subtitlesKeyword(); }

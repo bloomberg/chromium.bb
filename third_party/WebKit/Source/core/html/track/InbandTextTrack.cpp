@@ -39,13 +39,13 @@ using blink::WebString;
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<InbandTextTrack> InbandTextTrack::create(Document& document, WebInbandTextTrack* webTrack)
+PassRefPtrWillBeRawPtr<InbandTextTrack> InbandTextTrack::create(WebInbandTextTrack* webTrack)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new InbandTextTrack(document, webTrack));
+    return adoptRefWillBeRefCountedGarbageCollected(new InbandTextTrack(webTrack));
 }
 
-InbandTextTrack::InbandTextTrack(Document& document, WebInbandTextTrack* webTrack)
-    : TextTrack(document, emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
+InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
+    : TextTrack(emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
     , m_webTrack(webTrack)
 {
     m_webTrack->setClient(this);

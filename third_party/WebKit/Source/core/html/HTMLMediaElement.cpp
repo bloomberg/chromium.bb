@@ -2506,7 +2506,7 @@ void HTMLMediaElement::mediaPlayerDidAddTextTrack(WebInbandTextTrack* webTrack)
 {
     // 4.8.10.12.2 Sourcing in-band text tracks
     // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
-    RefPtrWillBeRawPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), webTrack);
+    RefPtrWillBeRawPtr<InbandTextTrack> textTrack = InbandTextTrack::create(webTrack);
 
     // 2. Set the new text track's kind, label, and language based on the semantics of the relevant data,
     // as defined by the relevant specification. If there is no label in that data, then the label must
@@ -2603,7 +2603,7 @@ PassRefPtrWillBeRawPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicStr
 
     // 5. Create a new text track corresponding to the new object, and set its text track kind to kind, its text
     // track label to label, its text track language to language...
-    RefPtrWillBeRawPtr<TextTrack> textTrack = TextTrack::create(document(), kind, label, language);
+    RefPtrWillBeRawPtr<TextTrack> textTrack = TextTrack::create(kind, label, language);
 
     // Note, due to side effects when changing track parameters, we have to
     // first append the track to the text track list.

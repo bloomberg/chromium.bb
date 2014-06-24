@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+class Document;
 class ExceptionState;
 class HTMLDivElement;
 class VTTCueBox;

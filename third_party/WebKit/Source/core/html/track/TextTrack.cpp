@@ -34,7 +34,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
@@ -95,7 +94,7 @@ const AtomicString& TextTrack::showingKeyword()
     return ended;
 }
 
-TextTrack::TextTrack(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
+TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
     : TrackBase(TrackBase::TextTrack, label, language, id)
     , m_cues(nullptr)
     , m_regions(nullptr)
