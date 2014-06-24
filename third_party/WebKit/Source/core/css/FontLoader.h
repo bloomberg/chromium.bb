@@ -43,7 +43,7 @@ private:
     typedef Vector<std::pair<ResourcePtr<FontResource>, ResourceLoader::RequestCountTracker> > FontsToLoadVector;
     FontsToLoadVector m_fontsToBeginLoading;
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
-    RawPtrWillBeMember<ResourceFetcher> m_resourceFetcher;
+    RawPtrWillBeWeakMember<ResourceFetcher> m_resourceFetcher;
 };
 
 } // namespace WebCore
