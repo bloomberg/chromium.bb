@@ -2267,6 +2267,10 @@ def CMDtry(parser, args):
   if not cl.GetIssue():
     parser.error('Need to upload first')
 
+  props = cl.GetIssueProperties()
+  if props.get('private'):
+    parser.error('Cannot use trybots with private issue')
+
   if not options.name:
     options.name = cl.GetBranch()
 
@@ -2412,6 +2416,9 @@ def CMDset_commit(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   cl = Changelist()
+  props = cl.GetIssueProperties()
+  if props.get('private'):
+    parser.error('Cannot set commit on private issue')
   cl.SetFlag('commit', '1')
   return 0
 

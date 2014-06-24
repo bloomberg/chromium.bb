@@ -1367,6 +1367,12 @@ def CMDtry(args):
   else:
     change_info = ChangeInfo.Load(args[0], GetRepositoryRoot(),
                                   True, True)
+
+  props = change_info.RpcServer().get_issue_properties(
+    change_info.issue, False)
+  if props.get('private'):
+    ErrorExit('Cannot use trybots on a private issue')
+
   if change_info.GetFiles():
     args = args[1:]
   else:
