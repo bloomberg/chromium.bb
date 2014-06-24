@@ -106,7 +106,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
         callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
 
-    v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
+    v8::Handle<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? enteredWindow->document()->url() : toCoreString(resourceName.As<v8::String>());
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
@@ -221,7 +221,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = scriptState->executionContext()) {
         String errorMessage = toCoreString(message->Get());
-        TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
+        TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
 
         RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
