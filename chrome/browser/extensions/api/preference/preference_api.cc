@@ -68,8 +68,6 @@ const char kConversionErrorMessage[] =
     "properly.";
 
 PrefMappingEntry kPrefMapping[] = {
-    {"protectedContentEnabled", prefs::kEnableDRM, APIPermission::kPrivacy,
-     APIPermission::kPrivacy},
     {"alternateErrorPagesEnabled", prefs::kAlternateErrorPagesEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"autofillEnabled", autofill::prefs::kAutofillEnabled,
@@ -78,6 +76,10 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"networkPredictionEnabled", prefs::kNetworkPredictionEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"passwordSavingEnabled", password_manager::prefs::kPasswordManagerEnabled,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"protectedContentEnabled", prefs::kEnableDRM, APIPermission::kPrivacy,
+     APIPermission::kPrivacy},
     {"proxy", prefs::kProxy, APIPermission::kProxy, APIPermission::kProxy},
     {"referrersEnabled", prefs::kEnableReferrers, APIPermission::kPrivacy,
      APIPermission::kPrivacy},

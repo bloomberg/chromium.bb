@@ -41,6 +41,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableReferrers));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableTranslate));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+    EXPECT_TRUE(prefs->GetBoolean(
+        password_manager::prefs::kPasswordManagerEnabled));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
@@ -58,6 +60,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableReferrers));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableTranslate));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+    EXPECT_FALSE(prefs->GetBoolean(
+        password_manager::prefs::kPasswordManagerEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
@@ -103,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   prefs->SetBoolean(prefs::kEnableReferrers, false);
   prefs->SetBoolean(prefs::kEnableTranslate, false);
   prefs->SetBoolean(prefs::kNetworkPredictionEnabled, false);
+  prefs->SetBoolean(password_manager::prefs::kPasswordManagerEnabled, false);
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
 

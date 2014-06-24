@@ -34,6 +34,11 @@
             "value": ["autofillEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
           },
+          "passwordSavingEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["passwordSavingEnabled", {"type":"boolean"}],
+            "description": "If enabled, the password manager will ask if you want to save passwords. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
           "safeBrowsingEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["safeBrowsingEnabled", {"type":"boolean"}],
