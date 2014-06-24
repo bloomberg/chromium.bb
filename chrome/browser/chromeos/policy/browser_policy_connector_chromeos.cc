@@ -20,6 +20,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -182,6 +183,7 @@ void BrowserPolicyConnectorChromeOS::Init(
               content::BrowserThread::IO),
           request_context));
   device_local_account_policy_service_->Connect(device_management_service());
+  device_cloud_policy_invalidator_.reset(new DeviceCloudPolicyInvalidator);
 
   // request_context is NULL in unit tests.
   if (request_context && install_attributes_) {
@@ -200,7 +202,14 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::CrosSettings::Get());
 }
 
+void BrowserPolicyConnectorChromeOS::ShutdownInvalidator() {
+  device_cloud_policy_invalidator_.reset();
+}
+
 void BrowserPolicyConnectorChromeOS::Shutdown() {
+  // Verify that ShutdownInvalidator() has been called first.
+  DCHECK(!device_cloud_policy_invalidator_);
+
   // The AppPackUpdater may be observing the |device_cloud_policy_manager_|.
   // Delete it first.
   app_pack_updater_.reset();
