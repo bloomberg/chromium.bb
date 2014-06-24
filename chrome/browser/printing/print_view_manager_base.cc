@@ -239,7 +239,7 @@ void PrintViewManagerBase::OnDidPrintPage(
     const int kPrinterDpi = print_job_->settings().dpi();
     pdf_to_emf_converter_->Start(
         bytes,
-        printing::PdfRenderSettings(params.content_area, kPrinterDpi, false),
+        printing::PdfRenderSettings(params.content_area, kPrinterDpi, true),
         base::Bind(&PrintViewManagerBase::OnPdfToEmfConverted,
                    base::Unretained(this),
                    params));
