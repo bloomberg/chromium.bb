@@ -48,12 +48,9 @@ ui.results.ResultsGrid = base.extends('div', {
         $.each(resultsURLsByTypeAndKind, function(resultType, resultsURLsByKind) {
             if (results.kUnknownKind in resultsURLsByKind) {
                 // This is something like "crash" that isn't a comparison.
-                var result = document.createElement('iframe');
-                result.src = resultsURLsByKind[results.kUnknownKind];
-                // FIXME: Move this to a stylesheet when we polymerize this component.
-                result.style.border = 0;
-                result.style.width = '100%';
-                result.style.height = '400px';
+                var result = document.createElement('ct-test-output');
+                result.url = resultsURLsByKind[results.kUnknownKind];
+                result.type = results.kTextType;
                 this.appendChild(result);
                 return;
             }

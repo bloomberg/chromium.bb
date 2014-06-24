@@ -98,8 +98,7 @@ test("results.ResultsGrid", 8, function() {
 test("results.ResultsGrid (crashlog)", 1, function() {
     var grid = new ui.results.ResultsGrid()
     grid.addResults(['http://example.com/layout-test-results/foo-bar-crash-log.txt']);
-    equal(grid.innerHTML, '<iframe src="http://example.com/layout-test-results/foo-bar-crash-log.txt" '+
-        'style="border: 0px; width: 100%; height: 400px;"></iframe>');
+    equal(grid.innerHTML, '<ct-test-output></ct-test-output>');
 });
 
 test("results.ResultsGrid (empty)", 1, function() {
