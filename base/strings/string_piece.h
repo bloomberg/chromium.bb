@@ -5,14 +5,19 @@
 //
 // A string-like object that points to a sized piece of memory.
 //
-// Functions or methods may use const StringPiece& parameters to accept either
-// a "const char*" or a "string" value that will be implicitly converted to
-// a StringPiece.  The implicit conversion means that it is often appropriate
-// to include this .h file in other files rather than forward-declaring
-// StringPiece as would be appropriate for most other Google classes.
+// You can use StringPiece as a function or method parameter.  A StringPiece
+// parameter can receive a double-quoted string literal argument, a "const
+// char*" argument, a string argument, or a StringPiece argument with no data
+// copying.  Systematic use of StringPiece for arguments reduces data
+// copies and strlen() calls.
 //
-// Systematic usage of StringPiece is encouraged as it will reduce unnecessary
-// conversions from "const char*" to "string" and back again.
+// Prefer passing StringPieces by value:
+//   void MyFunction(StringPiece arg);
+// If circumstances require, you may also pass by const reference:
+//   void MyFunction(const StringPiece& arg);  // not preferred
+// Both of these have the same lifetime semantics.  Passing by value
+// generates slightly smaller code.  For more discussion, Googlers can see
+// the thread go/stringpiecebyvalue on c-users.
 //
 // StringPiece16 is similar to StringPiece but for base::string16 instead of
 // std::string. We do not define as large of a subset of the STL functions
