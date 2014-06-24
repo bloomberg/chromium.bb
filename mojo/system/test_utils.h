@@ -45,11 +45,11 @@ class Stopwatch {
   ~Stopwatch() {}
 
   void Start() {
-    start_time_ = base::TimeTicks::HighResNow();
+    start_time_ = base::TimeTicks::Now();
   }
 
   base::TimeDelta Elapsed() {
-    return base::TimeTicks::HighResNow() - start_time_;
+    return base::TimeTicks::Now() - start_time_;
   }
 
  private:

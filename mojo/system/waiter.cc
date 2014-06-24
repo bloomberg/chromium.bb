@@ -64,10 +64,10 @@ MojoResult Waiter::Wait(MojoDeadline deadline, uint32_t* context) {
   } else {
     // NOTE(vtl): This is very inefficient on POSIX, since pthreads condition
     // variables take an absolute deadline.
-    const base::TimeTicks end_time = base::TimeTicks::HighResNow() +
+    const base::TimeTicks end_time = base::TimeTicks::Now() +
         base::TimeDelta::FromMicroseconds(static_cast<int64_t>(deadline));
     do {
-      base::TimeTicks now_time = base::TimeTicks::HighResNow();
+      base::TimeTicks now_time = base::TimeTicks::Now();
       if (now_time >= end_time)
         return MOJO_RESULT_DEADLINE_EXCEEDED;
 
