@@ -146,11 +146,10 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       static_cast<const ui::GestureEvent*>(event);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
-      if (gesture_event->details().tap_count() > 1)
-        selection_gesture_in_process_ = true;
       // When the user taps, we want to show touch editing handles if user
       // tapped on selected text.
-      if (selection_anchor_rect_ != selection_focus_rect_) {
+      if (gesture_event->details().tap_count() == 1 &&
+          selection_anchor_rect_ != selection_focus_rect_) {
         // UnionRects only works for rects with non-zero width.
         gfx::Rect anchor(selection_anchor_rect_.origin(),
                          gfx::Size(1, selection_anchor_rect_.height()));

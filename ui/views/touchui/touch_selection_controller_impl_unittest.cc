@@ -525,7 +525,7 @@ TEST_F(TouchSelectionControllerImplTest,
 }
 
 TEST_F(TouchSelectionControllerImplTest,
-       DoubleTapInTextfieldWithCursorHandleShouldSelectWord) {
+       DoubleTapInTextfieldWithCursorHandleShouldSelectText) {
   CreateTextfield();
   textfield_->SetText(ASCIIToUTF16("some text"));
   aura::test::EventGenerator generator(
@@ -546,7 +546,6 @@ TEST_F(TouchSelectionControllerImplTest,
   generator.GestureTapAt(cursor_pos);
   generator.GestureTapAt(cursor_pos);
   EXPECT_TRUE(textfield_->HasSelection());
-  VERIFY_HANDLE_POSITIONS(false);
 }
 
 // A simple implementation of TouchEditable that allows faking cursor position

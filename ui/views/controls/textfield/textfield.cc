@@ -707,6 +707,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
       if (event->details().tap_count() == 1) {
         CreateTouchSelectionControllerAndNotifyIt();
       } else {
+        DestroyTouchSelection();
         OnBeforeUserAction();
         SelectAll(false);
         OnAfterUserAction();

@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       TouchSelectionOnDoubleTapTest) {
+                       NoTouchSelectionOnDoubleTapTest) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -311,8 +311,8 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   rwhva->OnGestureEvent(&double_tap);
   touch_editable->WaitForSelectionChangeCallback();
 
-  // Check if selection handles are showing.
-  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+  // Make sure touch selection handles are not showing.
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
   scoped_ptr<base::Value> value =
       content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
