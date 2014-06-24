@@ -176,7 +176,8 @@ bool MediaCodecBridge::IsKnownUnaccelerated(const std::string& mime_type,
       // It would be nice if MediaCodecInfo externalized some notion of
       // HW-acceleration but it doesn't. Android Media guidance is that the
       // prefix below is always used for SW decoders, so that's what we use.
-      return StartsWithASCII(codecs_info[i].name, "OMX.google.", true);
+      if (!StartsWithASCII(codecs_info[i].name, "OMX.google.", true))
+        return false;
     }
   }
   return true;
