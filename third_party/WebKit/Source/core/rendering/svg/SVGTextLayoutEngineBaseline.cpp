@@ -118,17 +118,15 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     ASSERT(textRendererParent);
 
     EAlignmentBaseline baseline = textRenderer->style()->svgStyle()->alignmentBaseline();
-    if (baseline == AB_AUTO) {
+    if (baseline == AB_AUTO || baseline == AB_BASELINE) {
         baseline = dominantBaselineToAlignmentBaseline(isVerticalText, textRendererParent);
-        ASSERT(baseline != AB_AUTO);
+        ASSERT(baseline != AB_AUTO && baseline != AB_BASELINE);
     }
 
     const FontMetrics& fontMetrics = m_font.fontMetrics();
 
     // Note: http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
     switch (baseline) {
-    case AB_BASELINE:
-        return dominantBaselineToAlignmentBaseline(isVerticalText, textRendererParent);
     case AB_BEFORE_EDGE:
     case AB_TEXT_BEFORE_EDGE:
         return fontMetrics.floatAscent();
@@ -139,13 +137,14 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     case AB_AFTER_EDGE:
     case AB_TEXT_AFTER_EDGE:
     case AB_IDEOGRAPHIC:
-        return fontMetrics.floatDescent();
+        return -fontMetrics.floatDescent();
     case AB_ALPHABETIC:
         return 0;
     case AB_HANGING:
         return fontMetrics.floatAscent() * 8 / 10.f;
     case AB_MATHEMATICAL:
         return fontMetrics.floatAscent() / 2;
+    case AB_BASELINE:
     default:
         ASSERT_NOT_REACHED();
         return 0;
