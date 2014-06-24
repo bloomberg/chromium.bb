@@ -680,6 +680,13 @@ class BuildData(object):
     return int((self.finish_datetime - EPOCH_START).total_seconds())
 
   @property
+  def patches(self):
+    return [GerritPatchTuple(gerrit_number=change['gerrit_number'],
+                             patch_number=change['patch_number'],
+                             internal=change['internal'])
+            for change in self.metadata_dict.get('changes', [])]
+
+  @property
   def count_changes(self):
     if not self.metadata_dict.get('changes', None):
       return 0

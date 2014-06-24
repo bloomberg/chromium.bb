@@ -5,6 +5,7 @@
 """Script for gathering stats from builder runs."""
 
 from __future__ import division
+import collections
 import datetime
 import logging
 import numpy
@@ -993,29 +994,35 @@ class CLStats(StatsManager):
     return submit[-1].change['patch_number']
 
   def ClassifyRejections(self, submitted_changes):
-    """Categorize rejected CLs, deciding whether the rejection was flaky.
+    """Categorize rejected CLs, deciding whether the rejection was incorrect.
 
-    We figure out what patches were flakily rejected by looking for patches
+    We figure out what patches were falsely rejected by looking for patches
     which were later submitted unmodified after being rejected. These patches
     are considered to be likely good CLs.
 
     Args:
-      submitted_changes: A dict mapping submitted CLs to a list of associated
-                         actions.
+      submitted_changes: A dict mapping submitted GerritChangeTuple objects to
+        a list of associated actions.
 
     Yields:
-      change: The CL that was rejected.
+      change: The GerritChangeTuple that was rejected.
       actions: A list of actions applicable to the CL.
       a: The reject action that kicked out the CL.
-      flaky: Whether the CL rejection was flaky. A CL rejection is considered
-             flaky if the same patch is later submitted, with no changes.
+      falsely_rejected: Whether the CL was incorrectly rejected. A CL rejection
+        is considered incorrect if the same patch is later submitted, with no
+        changes. It's a heuristic.
     """
     for change, actions in submitted_changes.iteritems():
       submitted_patch_number = self.GetSubmittedPatchNumber(actions)
       for a in actions:
-        flaky = a.change['patch_number'] == submitted_patch_number
-        if a.action == constants.CL_ACTION_KICKED_OUT:
-          yield change, actions, a, flaky
+        # If the patch wasn't included in the run, this means that it "failed
+        # to apply" rather than "failed to validate". Ignore it.
+        patch = metadata_lib.GerritPatchTuple(**a.change)
+        if (a.action == constants.CL_ACTION_KICKED_OUT and
+            patch in a.build.patches):
+          # Check whether the patch was updated after submission.
+          falsely_rejected = a.change['patch_number'] == submitted_patch_number
+          yield change, actions, a, falsely_rejected
 
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
@@ -1031,13 +1038,16 @@ class CLStats(StatsManager):
     if not d:
       logging.info('  None')
 
-  def CalculateStageFailures(self, reject_actions, submitted_changes):
+  def CalculateStageFailures(self, reject_actions, submitted_changes,
+                             good_patch_rejections):
     """Calculate what stages correctly or incorrectly failed.
 
     Args:
       reject_actions: A list of actions that reject CLs.
-      submitted_changes: A dict mapping submitted CLs to a list of associated
-                         actions.
+      submitted_changes: A dict mapping submitted GerritChangeTuple to a list
+        of associated actions.
+      good_patch_rejections: A dict mapping submitted GerritPatchTuple to a list
+        of associated incorrect rejections.
 
     Returns:
       correctly_rejected_by_stage: A dict, where dict[bot_type][stage_name]
@@ -1052,31 +1062,107 @@ class CLStats(StatsManager):
     bad_cl_builds = set()
     for a in reject_actions:
       if a.bot_type == CQ:
-        reason = self.reasons[a.build.build_number]
+        reason = self.reasons.get(a.build.build_number)
         if reason == self.REASON_BAD_CL:
           bad_cl_builds.add((a.build.bot_id, a.build.build_number))
 
     # Keep track of the stages that correctly detected a bad CL. We assume
     # here that all of the stages that are broken were broken by the bad CL.
     correctly_rejected_by_stage = {}
-    for _, _, a, flaky in self.ClassifyRejections(submitted_changes):
-      if not flaky:
+    for _, _, a, falsely_rejected in self.ClassifyRejections(submitted_changes):
+      if not falsely_rejected:
         good = correctly_rejected_by_stage.setdefault(a.bot_type, {})
         for stage_name in a.build.GetFailedStages():
           good[stage_name] = good.get(stage_name, 0) + 1
-        if a.bot_type == PRE_CQ:
-          bad_cl_builds.add((a.build.bot_id, a.build.build_number))
 
     # Keep track of the stages that failed flakily.
     incorrectly_rejected_by_stage = {}
-    for _, _, a, flaky in self.ClassifyRejections(submitted_changes):
-      # A stage only failed flakily if it wasn't broken by another CL.
-      if flaky and (a.build.bot_id, a.build.build_number) not in bad_cl_builds:
-        bad = incorrectly_rejected_by_stage.setdefault(a.bot_type, {})
-        for stage_name in a.build.GetFailedStages():
-          bad[stage_name] = bad.get(stage_name, 0) + 1
+    for rejections in good_patch_rejections.values():
+      for a in rejections:
+        # A stage only failed flakily if it wasn't broken by another CL.
+        build_tuple = (a.build.bot_id, a.build.build_number)
+        if build_tuple not in bad_cl_builds:
+          bad = incorrectly_rejected_by_stage.setdefault(a.bot_type, {})
+          for stage_name in a.build.GetFailedStages():
+            bad[stage_name] = bad.get(stage_name, 0) + 1
 
     return correctly_rejected_by_stage, incorrectly_rejected_by_stage
+
+  def GoodPatchRejections(self, submitted_changes):
+    """Find good patches that were incorrectly rejected.
+
+    Args:
+      submitted_changes: A dict mapping submitted GerritChangeTuple objects to
+        a list of associated actions.
+
+    Returns:
+      A dict, where d[patch] = reject_actions for each good patch that was
+      incorrectly rejected.
+    """
+    # falsely_rejected_changes maps GerritChangeTuple objects to their actions.
+    # bad_cl_builds is a set of builds that contain a bad patch.
+    falsely_rejected_changes = {}
+    bad_cl_builds = set()
+    for x in self.ClassifyRejections(submitted_changes):
+      change, actions, a, falsely_rejected = x
+      patch = metadata_lib.GerritPatchTuple(**a.change)
+      if falsely_rejected:
+        falsely_rejected_changes[change] = actions
+      elif a.bot_type == PRE_CQ:
+        # If a developer writes a bad patch and it fails the Pre-CQ, it
+        # may cause many other patches from the same developer to be
+        # rejected. This is expected and correct behavior. Treat all of
+        # the patches in the Pre-CQ run as bad so that they don't skew our
+        # our statistics.
+        #
+        # Since we don't have a spreadsheet for the Pre-CQ, we guess what
+        # CLs were bad by looking at what patches needed to be changed
+        # before submission.
+        #
+        # NOTE: We intentionally only apply this logic to the Pre-CQ here.
+        # The CQ is different because it may have many innocent patches in
+        # a single run which should not be treated as bad.
+        bad_cl_builds.add((a.build.bot_id, a.build.build_number))
+
+    # Make a list of candidate patches that got incorrectly rejected. We track
+    # them in a dict, setting good_patch_rejections[patch] = rejections for
+    # each patch.
+    good_patch_rejections = collections.defaultdict(list)
+    for v in falsely_rejected_changes.itervalues():
+      for a in v:
+        if (a.action == constants.CL_ACTION_KICKED_OUT and
+            (a.build.bot_id, a.build.build_number) not in bad_cl_builds):
+          patch = metadata_lib.GerritPatchTuple(**a.change)
+          good_patch_rejections[patch].append(a)
+
+    return good_patch_rejections
+
+  def FalseRejectionRate(self, good_patch_count, good_patch_rejection_count):
+    """Calculate the false rejection ratio.
+
+    This is the chance that a good patch will be rejected by the Pre-CQ or CQ
+    in a given run.
+
+    Args:
+      good_patch_count: The number of good patches in the run.
+      good_patch_rejection_count: A dict containing the number of false
+        rejections for the CQ and PRE_CQ.
+
+    Returns:
+      A dict containing the false rejection ratios for CQ, PRE_CQ, and combined.
+    """
+    false_rejection_rate = dict()
+    for bot, rejection_count in good_patch_rejection_count.iteritems():
+      false_rejection_rate[bot] = (
+          rejection_count * 100 / (rejection_count + good_patch_count)
+      )
+    false_rejection_rate['combined'] = 0
+    if good_patch_count:
+      rejection_count = sum(good_patch_rejection_count.values())
+      false_rejection_rate['combined'] = (
+          rejection_count * 100 / (good_patch_count + rejection_count)
+      )
+    return false_rejection_rate
 
   def Summarize(self):
     """Process, print, and return a summary of cl action statistics.
@@ -1096,8 +1182,6 @@ class CLStats(StatsManager):
 
     submit_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_SUBMITTED]
-    pickup_actions = [a for a in self.actions
-                      if a.action == constants.CL_ACTION_PICKED_UP]
     reject_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_KICKED_OUT]
     sbfail_actions = [a for a in self.actions
@@ -1108,32 +1192,12 @@ class CLStats(StatsManager):
       if reason != 'None':
         build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
 
-    rejected_then_submitted = {}
-    for k, v in self.per_patch_actions.iteritems():
-      if (any(a.action == constants.CL_ACTION_KICKED_OUT for a in v) and
-          any(a.action == constants.CL_ACTION_SUBMITTED for a in v)):
-        rejected_then_submitted[k] = v
-
     unique_blames = set()
     for blames in self.blames.itervalues():
       unique_blames.update(blames)
 
     unique_cl_blames = {blame for blame in unique_blames if
                         EXTERNAL_CL_BASE_URL in blame}
-
-    patch_reason_counts = {}
-    patch_blame_counts = {}
-    good_patch_rejection_count = 0
-    for k, v in rejected_then_submitted.iteritems():
-      for a in v:
-        if a.action == constants.CL_ACTION_KICKED_OUT:
-          good_patch_rejection_count = good_patch_rejection_count + 1
-          if a.bot_type == CQ:
-            reason = self.reasons[a.build.build_number]
-            blames = self.blames[a.build.build_number]
-            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
-            for blame in blames:
-              patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action==constants.CL_ACTION_SUBMITTED
@@ -1142,36 +1206,18 @@ class CLStats(StatsManager):
                          if any(a.action==constants.CL_ACTION_SUBMITTED
                                 for a in v)}
 
-    was_rejected = lambda x: x.action == constants.CL_ACTION_KICKED_OUT
-    good_patch_rejections = {k: len(filter(was_rejected, v))
-                             for k, v in submitted_patches.items()}
-    good_patch_rejection_breakdown = []
-    if good_patch_rejections:
-      for x in range(max(good_patch_rejections.values()) + 1):
-        good_patch_rejection_breakdown.append(
-            (x, good_patch_rejections.values().count(x)))
-
     patch_handle_times =  [v[-1].timestamp - v[0].timestamp
                            for v in submitted_patches.values()]
-
-    correctly_rejected_by_stage, incorrectly_rejected_by_stage = \
-        self.CalculateStageFailures(reject_actions, submitted_changes)
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs. We track them in a dict, setting
     # submitted_after_new_patch[bot_type][patch] = actions for each bad patch.
     submitted_after_new_patch = {}
-    for change, actions, a, flaky in self.ClassifyRejections(submitted_changes):
-      if not flaky:
+    for x in self.ClassifyRejections(submitted_changes):
+      change, actions, a, falsely_rejected = x
+      if not falsely_rejected:
         d = submitted_after_new_patch.setdefault(a.bot_type, {})
         d[change] = actions
-
-    # Calculate the number of times bad CLs were picked up. This
-    # relies on the annotated bad CLs in the spreadsheet and may be
-    # inaccurate (e.g. does not take into account a stack of CLs).
-    bad_cl_pickup_count = len([x for x in self.blames.itervalues()
-                               if EXTERNAL_CL_BASE_URL in x])
-    good_cl_pickup_count = len(pickup_actions) - bad_cl_pickup_count
 
     # Sort the candidate bad CLs in order of submit time.
     bad_cl_candidates = {}
@@ -1180,22 +1226,63 @@ class CLStats(StatsManager):
         k for k, _ in sorted(patch_actions.items(),
                              key=lambda x: x[1][-1].timestamp)]
 
+    # Calculate how many good patches were falsely rejected and why.
+    # good_patch_rejections maps patches to the rejection actions.
+    # patch_reason_counts maps failure reasons to counts.
+    # patch_blame_counts maps blame targets to counts.
+    good_patch_rejections = self.GoodPatchRejections(submitted_changes)
+    patch_reason_counts = {}
+    patch_blame_counts = {}
+    for k, v in good_patch_rejections.iteritems():
+      for a in v:
+        if a.action == constants.CL_ACTION_KICKED_OUT:
+          if a.bot_type == CQ:
+            reason = self.reasons[a.build.build_number]
+            blames = self.blames[a.build.build_number]
+            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
+            for blame in blames:
+              patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
+
+    # good_patch_count: The number of good patches.
+    # good_patch_rejection_count maps the bot type (CQ or PRE_CQ) to the number
+    #   of times that bot has falsely rejected good patches.
+    good_patch_count = len(submit_actions)
+    good_patch_rejection_count = collections.defaultdict(int)
+    for k, v in good_patch_rejections.iteritems():
+      for a in v:
+        good_patch_rejection_count[a.bot_type] += 1
+    false_rejection_rate = self.FalseRejectionRate(good_patch_count,
+                                                   good_patch_rejection_count)
+
+    # This list counts how many times each good patch was rejected.
+    rejection_counts = [0] * (good_patch_count - len(good_patch_rejections))
+    rejection_counts += [len(x) for x in good_patch_rejections.values()]
+
+    # Break down the frequency of how many times each patch is rejected.
+    good_patch_rejection_breakdown = []
+    if rejection_counts:
+      for x in range(max(rejection_counts) + 1):
+        good_patch_rejection_breakdown.append((x, rejection_counts.count(x)))
+
+    correctly_rejected_by_stage, incorrectly_rejected_by_stage = \
+        self.CalculateStageFailures(reject_actions, submitted_changes,
+                                    good_patch_rejections)
+
     summary = {'total_cl_actions'      : len(self.actions),
                'unique_cls'            : len(self.per_cl_actions),
                'unique_patches'        : len(self.per_patch_actions),
                'submitted_patches'     : len(submit_actions),
                'rejections'            : len(reject_actions),
                'submit_fails'          : len(sbfail_actions),
-               'good_patches_rejected' : len(rejected_then_submitted),
+               'good_patch_rejections' : sum(rejection_counts),
                'mean_good_patch_rejections' :
-                   numpy.mean(good_patch_rejections.values()),
+                   numpy.mean(rejection_counts),
                'good_patch_rejection_breakdown' :
                    good_patch_rejection_breakdown,
                'good_patch_rejection_count' :
-                   good_patch_rejection_count,
-               'false_rejection_ratio' :
-                   (0.0 if good_cl_pickup_count == 0 else
-                    good_patch_rejection_count / good_cl_pickup_count),
+                   dict(good_patch_rejection_count),
+               'false_rejection_rate' :
+                   false_rejection_rate,
                'median_handling_time' : numpy.median(patch_handle_times),
                self.PATCH_HANDLING_TIME_SUMMARY_KEY : patch_handle_times,
                'bad_cl_candidates' : bad_cl_candidates,
@@ -1208,9 +1295,11 @@ class CLStats(StatsManager):
     logging.info('CQ correctly rejected %s unique changes',
                  summary['unique_blames_change_count'])
     logging.info('pre-CQ and CQ incorrectly rejected %s changes a total of '
-                 '%s times',
-                 summary['good_patches_rejected'],
-                 summary['good_patch_rejection_count'])
+                 '%s times (pre-CQ: %s; CQ: %s)',
+                 len(good_patch_rejections),
+                 sum(good_patch_rejection_count.values()),
+                 good_patch_rejection_count[PRE_CQ],
+                 good_patch_rejection_count[CQ])
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
     logging.info('    Unique CLs touched: %d.', summary['unique_cls'])
@@ -1219,12 +1308,16 @@ class CLStats(StatsManager):
     logging.info('      Total rejections: %d.', summary['rejections'])
     logging.info(' Total submit failures: %d.', summary['submit_fails'])
     logging.info(' Good patches rejected: %d.',
-                 summary['good_patches_rejected'])
+                 len(good_patch_rejections))
     logging.info('   Mean rejections per')
     logging.info('            good patch: %.2f',
                  summary['mean_good_patch_rejections'])
-    logging.info(' False rejection ratio: %.3f.',
-                 summary['false_rejection_ratio'])
+    logging.info(' False rejection rate for CQ: %.1f%%',
+                 summary['false_rejection_rate'].get(CQ, 0))
+    logging.info(' False rejection rate for Pre-CQ: %.1f%%',
+                 summary['false_rejection_rate'].get(PRE_CQ, 0))
+    logging.info(' Combined false rejection rate: %.1f%%',
+                 summary['false_rejection_rate']['combined'])
 
     for x, p in summary['good_patch_rejection_breakdown']:
       logging.info('%d good patches were rejected %d times.', p, x)

@@ -25,13 +25,17 @@ import mock
 
 REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
 CQ = constants.CQ
+PRE_CQ = constants.PRE_CQ
 
 
 class TestCLActionLogic(unittest.TestCase):
   """Ensures that CL action analysis logic is correct."""
 
-  def _getTestBuildData(self):
+  def _getTestBuildData(self, cq):
     """Generate a return test data.
+
+    Args:
+      cq: Whether this is a CQ run. If False, this is a Pre-CQ run.
 
     Returns:
       A list of metadata_lib.BuildData objects to use as
@@ -41,50 +45,99 @@ class TestCLActionLogic(unittest.TestCase):
     c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
     c2p1 = metadata_lib.GerritPatchTuple(2, 1, True)
     c2p2 = metadata_lib.GerritPatchTuple(2, 2, True)
+    c3p1 = metadata_lib.GerritPatchTuple(3, 1, True)
+    c3p2 = metadata_lib.GerritPatchTuple(3, 2, True)
+    c4p1 = metadata_lib.GerritPatchTuple(4, 1, True)
+    c4p2 = metadata_lib.GerritPatchTuple(4, 2, True)
 
     # Mock builder status dictionaries
     passed_status = {'status' : constants.FINAL_STATUS_PASSED}
     failed_status = {'status' : constants.FINAL_STATUS_FAILED}
 
     t = itertools.count()
+    bot_config = constants.CQ_MASTER if cq else constants.PRE_CQ_GROUP
 
+    # pylint: disable=W0212
     TEST_METADATA = [
       # Build 1 picks up no patches.
       metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 1,
-                            'bot-config' : constants.CQ_MASTER,
+                            'bot-config' : bot_config,
                             'results' : [],
                             'status' : passed_status}),
       # Build 2 picks up c1p1 and does nothing.
       metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 2,
-                            'bot-config' : constants.CQ_MASTER,
+                            'bot-config' : bot_config,
                             'results' : [],
-                            'status' : failed_status}
+                            'status' : failed_status,
+                            'changes': [c1p1._asdict()]}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()),
       # Build 3 picks up c1p1 and c2p1 and rejects both.
+      # c3p1 is not included in the run because it fails to apply.
       metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 3,
-                            'bot-config' : constants.CQ_MASTER,
+                            'bot-config' : bot_config,
                             'results' : [],
-                            'status' : failed_status}
+                            'status' : failed_status,
+                            'changes': [c1p1._asdict(),
+                                        c2p1._asdict()]}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
           ).RecordCLAction(c2p1, constants.CL_ACTION_PICKED_UP, t.next()
           ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t.next()
-          ).RecordCLAction(c2p1, constants.CL_ACTION_KICKED_OUT, t.next()),
-      # Build 4 picks up c1p1 and c2p2 and submits both.
-      # So  c1p1 should be detected as a 1-time rejected good patch,
-      # and c2p1 should be detected as a possibly bad patch.
+          ).RecordCLAction(c2p1, constants.CL_ACTION_KICKED_OUT, t.next()
+          ).RecordCLAction(c3p1, constants.CL_ACTION_KICKED_OUT, t.next()),
+      # Build 4 picks up c4p1 and rejects it.
       metadata_lib.CBuildbotMetadata(
-          ).UpdateWithDict({'build-number' : 4,
-                            'bot-config' : constants.CQ_MASTER,
+          ).UpdateWithDict({'build-number' : 3,
+                            'bot-config' : bot_config,
                             'results' : [],
-                            'status' : passed_status}
-          ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
-          ).RecordCLAction(c2p2, constants.CL_ACTION_PICKED_UP, t.next()
-          ).RecordCLAction(c1p1, constants.CL_ACTION_SUBMITTED, t.next()
-          ).RecordCLAction(c2p2, constants.CL_ACTION_SUBMITTED, t.next())
-     ]
+                            'status' : failed_status,
+                            'changes': [c4p1._asdict()]}
+          ).RecordCLAction(c4p2, constants.CL_ACTION_PICKED_UP, t.next()
+          ).RecordCLAction(c4p2, constants.CL_ACTION_KICKED_OUT, t.next()),
+    ]
+    if cq:
+      TEST_METADATA += [
+        # Build 4 picks up c1p1 and c2p2 and submits both.
+        # So  c1p1 should be detected as a 1-time rejected good patch,
+        # and c2p1 should be detected as a possibly bad patch.
+        metadata_lib.CBuildbotMetadata(
+            ).UpdateWithDict({'build-number' : 4,
+                              'bot-config' : bot_config,
+                              'results' : [],
+                              'status' : passed_status,
+                              'changes': [c1p1._asdict(),
+                                          c2p2._asdict()]}
+            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c2p2, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c3p2, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c1p1, constants.CL_ACTION_SUBMITTED, t.next()
+            ).RecordCLAction(c2p2, constants.CL_ACTION_SUBMITTED, t.next()
+            ).RecordCLAction(c3p2, constants.CL_ACTION_SUBMITTED, t.next()
+            ).RecordCLAction(c4p2, constants.CL_ACTION_SUBMITTED, t.next()),
+      ]
+    else:
+      TEST_METADATA += [
+        metadata_lib.CBuildbotMetadata(
+            ).UpdateWithDict({'build-number' : 5,
+                              'bot-config' : bot_config,
+                              'results' : [],
+                              'status' : failed_status,
+                              'changes': [c4p1._asdict()]}
+            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c4p1, constants.CL_ACTION_KICKED_OUT, t.next()),
+        metadata_lib.CBuildbotMetadata(
+            ).UpdateWithDict({'build-number' : 6,
+                              'bot-config' : bot_config,
+                              'results' : [],
+                              'status' : failed_status,
+                              'changes': [c4p1._asdict()]}
+            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
+            ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t.next())
+      ]
+    # pylint: enable=W0212
 
     # TEST_METADATA should not be guaranteed to be ordered by build number
     # so shuffle it, but use the same seed each time so that unit test is
@@ -101,9 +154,10 @@ class TestCLActionLogic(unittest.TestCase):
 
   def testCLStatsSummary(self):
     with cros_build_lib.ContextManagerStack() as stack:
-      test_builddata = self._getTestBuildData()
+      pre_cq_builddata = self._getTestBuildData(cq=False)
+      cq_builddata = self._getTestBuildData(cq=True)
       stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
-                '_FetchBuildData', side_effect=[test_builddata, []])
+                '_FetchBuildData', side_effect=[cq_builddata, pre_cq_builddata])
       stack.Add(mock.patch.object, gather_builder_stats, '_PrepareCreds')
       stack.Add(mock.patch.object, gather_builder_stats.CLStats,
                 'GatherFailureReasons')
@@ -116,24 +170,29 @@ class TestCLActionLogic(unittest.TestCase):
 
       expected = {
           'mean_good_patch_rejections': 0.5,
-          'unique_patches': 3,
+          'unique_patches': 7,
           'unique_blames_change_count': 0,
-          'total_cl_actions': 9,
-          'good_patch_rejection_breakdown': [(0, 1), (1, 1)],
-          'good_patch_rejection_count': 1,
-          'good_patches_rejected': 1,
-          'false_rejection_ratio': 0.3333333333333333,
-          'submitted_patches': 2,
+          'total_cl_actions': 28,
+          'good_patch_rejection_breakdown': [(0, 3), (1, 0), (2, 1)],
+          'good_patch_rejection_count': {CQ: 1, PRE_CQ: 1},
+          'good_patch_rejections': 2,
+          'false_rejection_rate': {CQ: 20., PRE_CQ: 20., 'combined': 100./3,},
+          'submitted_patches': 4,
           'submit_fails': 0,
-          'unique_cls': 2,
+          'unique_cls': 4,
           'median_handling_time': -1, # This will be ignored in comparison
           'patch_handling_time': -1,  # This will be ignored in comparison
-          'bad_cl_candidates': {CQ: [
-              metadata_lib.GerritChangeTuple(gerrit_number=2,
-                                             internal=True)]},
-          'correctly_rejected_by_stage': {CQ: {}},
-          'incorrectly_rejected_by_stage': {},
-          'rejections': 2}
+          'bad_cl_candidates': {
+              CQ: [metadata_lib.GerritChangeTuple(gerrit_number=2,
+                                                  internal=True)],
+              PRE_CQ: [metadata_lib.GerritChangeTuple(gerrit_number=2,
+                                                      internal=True),
+                       metadata_lib.GerritChangeTuple(gerrit_number=4,
+                                                      internal=True)],
+          },
+          'correctly_rejected_by_stage': {CQ: {}, PRE_CQ: {}},
+          'incorrectly_rejected_by_stage': {PRE_CQ: {}},
+          'rejections': 10}
       # Ignore handling times in comparison, since these are not fully
       # reproducible from run to run of the unit test.
       summary['median_handling_time'] = expected['median_handling_time']
