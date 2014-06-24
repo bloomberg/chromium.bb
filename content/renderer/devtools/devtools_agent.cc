@@ -355,10 +355,8 @@ void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
 
 void DevToolsAgent::ContinueProgram() {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  // TODO(pfeldman): rename didNavigate to continueProgram upstream.
-  // That is in fact the purpose of the signal.
   if (web_agent)
-    web_agent->didNavigate();
+    web_agent->continueProgram();
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {
