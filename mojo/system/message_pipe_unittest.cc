@@ -377,7 +377,7 @@ TEST(MessagePipeTest, BasicWaiting) {
 
   // Not yet readable.
   waiter.Init();
-  EXPECT_EQ(MOJO_RESULT_OK,
+  ASSERT_EQ(MOJO_RESULT_OK,
             mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 1));
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0, NULL));
   mp->RemoveWaiter(0, &waiter);
@@ -450,7 +450,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
                             1));
     thread.Start();
@@ -478,7 +478,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
                             2));
     thread.Start();
@@ -501,7 +501,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
                             3));
     thread.Start();

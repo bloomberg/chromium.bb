@@ -263,7 +263,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   Waiter waiter;
   waiter.Init();
-  EXPECT_EQ(MOJO_RESULT_OK,
+  ASSERT_EQ(MOJO_RESULT_OK,
             mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
 
   // Don't wait for the shutdown to run ...

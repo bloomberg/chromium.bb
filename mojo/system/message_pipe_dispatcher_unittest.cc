@@ -59,7 +59,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Add a readable waiter to |d0|, then make it readable (by writing to
     // |d1|), then wait.
     w.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -90,7 +90,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
     // Wait for zero time for readability on |d0| (will time out).
     w.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
@@ -99,7 +99,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
+    ASSERT_EQ(MOJO_RESULT_OK,
               d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
