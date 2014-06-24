@@ -403,9 +403,9 @@ class ChangeInfo(object):
     if self.issue and self.patchset:
       try:
         self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
-            timeout=10)
+            timeout=60)
       except ssl.SSLError as e:
-        # It takes more than 10 seconds to lint some CLs. Silently ignore
+        # It takes more than 60 seconds to lint some CLs. Silently ignore
         # the expected timeout.
         if e.message != 'The read operation timed out':
           raise
