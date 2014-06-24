@@ -165,19 +165,6 @@ void SVGElement::buildPendingResourcesIfNeeded()
     }
 }
 
-bool SVGElement::rendererIsNeeded(const RenderStyle& style)
-{
-    // http://www.w3.org/TR/SVG/extend.html#PrivateData
-    // Prevent anything other than SVG renderers from appearing in our render tree
-    // Spec: SVG allows inclusion of elements from foreign namespaces anywhere
-    // with the SVG content. In general, the SVG user agent will include the unknown
-    // elements in the DOM but will otherwise ignore unknown elements.
-    if (!parentOrShadowHostElement() || parentOrShadowHostElement()->isSVGElement())
-        return Element::rendererIsNeeded(style);
-
-    return false;
-}
-
 SVGElementRareData* SVGElement::ensureSVGRareData()
 {
     if (hasSVGRareData())
