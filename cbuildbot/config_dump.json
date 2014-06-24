@@ -3206,7 +3206,8 @@
         "overlays": "public",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -3303,7 +3304,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": "beaglebone paladin",
         "paygen": false,
@@ -3402,7 +3404,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -3519,7 +3522,8 @@
                 "overlays": "both",
                 "packages": [
                     "virtual/target-os",
-                    "virtual/target-os-dev"
+                    "virtual/target-os-dev",
+                    "chromeos-base/chromeos-initramfs"
                 ],
                 "paladin_builder_name": null,
                 "paygen": false,
@@ -3620,7 +3624,8 @@
                 "overlays": "both",
                 "packages": [
                     "virtual/target-os",
-                    "virtual/target-os-dev"
+                    "virtual/target-os-dev",
+                    "chromeos-base/chromeos-initramfs"
                 ],
                 "paladin_builder_name": null,
                 "paygen": false,
@@ -3706,7 +3711,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -3807,7 +3813,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": "beaglebone_servo paladin",
         "paygen": false,
@@ -3906,7 +3913,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -27370,7 +27378,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": "mipsel-o32-generic paladin",
         "paygen": false,
@@ -27562,7 +27571,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": null,
         "paygen": true,
@@ -51802,7 +51812,8 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "virtual/target-os-dev"
+            "virtual/target-os-dev",
+            "chromeos-base/chromeos-initramfs"
         ],
         "paladin_builder_name": "storm paladin",
         "paygen": false,

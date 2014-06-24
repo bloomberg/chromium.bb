@@ -452,6 +452,21 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                         '%s is not upload_hw_test_artifacts, but also not'
                         ' paygen_skip_testing' % build_name)
 
+  def testBuildPackagesForRecoveryImage(self):
+    """Tests that we build the packages required for recovery image."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['images']:
+        # If we build any image, the base image will be built, and the
+        # recovery image will be created.
+        if not config['packages']:
+          # No packages are specified. Defaults to build all packages.
+          continue
+
+        self.assertIn('chromeos-base/chromeos-initramfs',
+                      config['packages'],
+                      '%s does not build chromeos-initramfs, which is required '
+                      'for creating the recovery image' % build_name)
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

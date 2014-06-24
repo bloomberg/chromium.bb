@@ -989,8 +989,12 @@ moblab = brillo.derive(
 )
 
 brillo_non_testable = brillo.derive(
-  # Literally build the minimal possible.
-  packages=['virtual/target-os', 'virtual/target-os-dev'],
+  # Literally build the minimal possible. chromeos-initramfs is
+  # required to create the recovery image. If it is not built in
+  # BuildPackages, ArchiveStage will emerge it, causing race condition
+  # with DebugSymbolsStage.
+  packages=['virtual/target-os', 'virtual/target-os-dev',
+            'chromeos-base/chromeos-initramfs'],
   images=['base', 'dev'],
 
   # Disable all the tests!
