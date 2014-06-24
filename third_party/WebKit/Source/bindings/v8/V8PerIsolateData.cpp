@@ -35,6 +35,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/frame/UseCounter.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
@@ -48,6 +49,17 @@ static void assertV8RecursionScope()
     ASSERT(V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
 }
 #endif
+
+static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
+{
+    switch (feature) {
+    case v8::Isolate::kUseAsm:
+        UseCounter::count(currentExecutionContext(isolate), UseCounter::UseAsm);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
 
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
@@ -71,6 +83,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
         mainThreadPerIsolateData = this;
         PageScriptDebugServer::setMainThreadIsolate(isolate);
     }
+    isolate->SetUseCounterCallback(&useCounterCallback);
 }
 
 V8PerIsolateData::~V8PerIsolateData()
