@@ -29344,7 +29344,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.CloseFailure" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Error which prevented database close.</summary>
 </histogram>
 
@@ -29366,7 +29366,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Sqlite.DeprecationVersionResult"
     enum="SqliteVersionDeprecation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Annotations for which bits of sql::MetaTable::CheckDeprecated() fire.
   </summary>
@@ -29391,7 +29391,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.Error" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>SQLite extended error codes.</summary>
 </histogram>
 
@@ -29412,12 +29412,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.OpenFailure" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Error which prevented database open.</summary>
 </histogram>
 
 <histogram name="Sqlite.OpenProbeFailure" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Error from first read of the database.</summary>
 </histogram>
 
@@ -29430,22 +29430,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.RazeDatabase" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Errors attempting to Raze() database.</summary>
 </histogram>
 
 <histogram name="Sqlite.RazeDatabase2" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Errors on second attempt to Raze() database.</summary>
 </histogram>
 
 <histogram name="Sqlite.RazeDatabaseTruncate" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Errors truncating database for Raze().</summary>
 </histogram>
 
 <histogram name="Sqlite.RecoveryEvents" enum="SqliteRecoveryEventEnum">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Records specific failure and success cases in sql::Recovery implementation,
     to determine which cases (if any) might be worth writing additional
@@ -29454,17 +29454,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.RecoveryHandle" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Error from sqlite3_backup_init() in sql::Recovery.</summary>
 </histogram>
 
 <histogram name="Sqlite.RecoveryStep" enum="SqliteErrorCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Error from sqlite3_backup_step() in sql::Recovery.</summary>
 </histogram>
 
 <histogram name="Sqlite.SizeKB" units="Kb">
   <owner>peria@chromium.org</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Size in kilobytes of pre-existing database at startup.</summary>
 </histogram>
 
@@ -29485,7 +29486,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sqlite.Version">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>Version of pre-existing database at startup.</summary>
 </histogram>
 
@@ -49881,6 +49882,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram_suffixes>
 
 <histogram_suffixes name="SqliteDatabases" separator=".">
+  <owner>shess@chromium.org</owner>
   <suffix name="Activity" label="Activity"/>
   <suffix name="AppCache" label="AppCache"/>
   <suffix name="BookmarkImages" label="BookmarkImages"/>
