@@ -15,7 +15,7 @@ var remoting = remoting || {};
 /**
  * @constructor
  */
-remoting.HostIt2MeNativeMessaging = function() {
+remoting.It2MeHostFacade = function() {
   /**
    * @type {number}
    * @private
@@ -56,13 +56,13 @@ remoting.HostIt2MeNativeMessaging = function() {
    * @type {function():void}
    * @private
    */
-  this.onHostStarted_ = function() {};
+  this.onInitialized_ = function() {};
 
   /**
    * Called if Native Messaging host has failed to start.
    * @private
    * */
-  this.onHostInitFailed_ = function() {};
+  this.onInitializationFailed_ = function() {};
 
   /**
    * Called if the It2Me Native Messaging host sends a malformed message:
@@ -88,78 +88,115 @@ remoting.HostIt2MeNativeMessaging = function() {
 /**
  * Sets up connection to the Native Messaging host process and exchanges
  * 'hello' messages. If Native Messaging is not supported or if the it2me
- * native messaging host is not installed, onHostInitFailed is invoked.
- * Otherwise, onHostStarted is invoked.
+ * native messaging host is not installed, onInitializationFailed is invoked.
+ * Otherwise, onInitialized is invoked.
  *
- * @param {function():void} onHostStarted Called after successful
+ * @param {function():void} onInitialized Called after successful
  *     initialization.
- * @param {function():void} onHostInitFailed Called if cannot connect to host.
- * @param {function(remoting.Error):void} onError Called on host error after
- *     successfully connecting to the host.
+ * @param {function():void} onInitializationFailed Called if cannot connect to
+ *     the native messaging host.
  * @return {void}
  */
-remoting.HostIt2MeNativeMessaging.prototype.initialize =
-    function(onHostStarted, onHostInitFailed, onError) {
-  this.onHostStarted_ = onHostStarted;
-  this.onHostInitFailed_ = onHostInitFailed;
-  this.onError_ = onError;
+remoting.It2MeHostFacade.prototype.initialize =
+    function(onInitialized, onInitializationFailed) {
+  this.onInitialized_ = onInitialized;
+  this.onInitializationFailed_ = onInitializationFailed;
 
   try {
     this.port_ = chrome.runtime.connectNative(
         'com.google.chrome.remote_assistance');
     this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
     this.port_.onDisconnect.addListener(this.onHostDisconnect_.bind(this));
-    this.postMessage_({type: 'hello'});
+    this.port_.postMessage({type: 'hello'});
   } catch (err) {
     console.log('Native Messaging initialization failed: ',
                 /** @type {*} */ (err));
-    onHostInitFailed();
+    onInitializationFailed();
     return;
   }
 };
 
 /**
- * Attaches a new ID to the supplied message, and posts it to the Native
- * Messaging port.
- * |message| should have its 'type' field set, and any other fields set
- * depending on the message type.
- *
- * @param {{type: string}} message The message to post.
+ * @param {string} email The user's email address.
+ * @param {string} authServiceWithToken Concatenation of the auth service
+ *     (e.g. oauth2) and the access token.
+ * @param {function(remoting.HostSession.State):void} onStateChanged Callback to
+ *     invoke when the host state changes.
+ * @param {function(boolean):void} onNatPolicyChanged Callback to invoke when
+ *     the nat traversal policy changes.
+ * @param {function(string):void} logDebugInfo Callback allowing the plugin
+ *     to log messages to the debug log.
+ * @param {string} xmppServerAddress XMPP server host name (or IP address) and
+ *     port.
+ * @param {boolean} xmppServerUseTls Whether to use TLS on connections to the
+ *     XMPP server
+ * @param {string} directoryBotJid XMPP JID for the remoting directory server
+ *     bot.
+ * @param {function(remoting.Error):void} onError Callback to invoke in case of
+ *     an error.
  * @return {void}
- * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.postMessage_ =
-    function(message) {
-  var id = this.nextId_++;
-  message['id'] = id;
-  this.port_.postMessage(message);
+remoting.It2MeHostFacade.prototype.connect =
+    function(email, authServiceWithToken, onStateChanged, onNatPolicyChanged,
+             logDebugInfo, xmppServerAddress, xmppServerUseTls, directoryBotJid,
+             onError) {
+  if (!this.port_) {
+    console.error(
+        'remoting.It2MeHostFacade.connect() without initialization.');
+    onError(remoting.Error.UNEXPECTED);
+    return;
+  }
+
+  this.onStateChanged_ = onStateChanged;
+  this.onNatPolicyChanged_ = onNatPolicyChanged;
+  this.onErrorHandler_ = onError;
+  this.port_.postMessage({
+    type: 'connect',
+    userName: email,
+    authServiceWithToken: authServiceWithToken,
+    xmppServerAddress: xmppServerAddress,
+    xmppServerUseTls: xmppServerUseTls,
+    directoryBotJid: directoryBotJid
+  });
 };
 
 /**
- * Handler for incoming Native Messages.
- *
- * @param {Object} message The received message.
  * @return {void}
- * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
-    function(message) {
-  try {
-    this.handleIncomingMessage_(message);
-  } catch (e) {
-    console.error(/** @type {*} */ (e));
-    this.onError_(remoting.Error.UNEXPECTED);
-  }
-}
+remoting.It2MeHostFacade.prototype.disconnect = function() {
+  if (this.port_)
+    this.port_.postMessage({type: 'disconnect'});
+};
 
 /**
- * Handler for incoming Native Messages.
+ * @return {string}
+ */
+remoting.It2MeHostFacade.prototype.getAccessCode = function() {
+  return this.accessCode_
+};
+
+/**
+ * @return {number}
+ */
+remoting.It2MeHostFacade.prototype.getAccessCodeLifetime = function() {
+  return this.accessCodeLifetime_
+};
+
+/**
+ * @return {string}
+ */
+remoting.It2MeHostFacade.prototype.getClient = function() {
+  return this.clientId_;
+};
+
+/**
+ * Handler for incoming messages.
  *
  * @param {Object} message The received message.
  * @return {void}
  * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.handleIncomingMessage_ =
+remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
     function(message) {
   var type = getStringAttr(message, 'type');
 
@@ -171,7 +208,7 @@ remoting.HostIt2MeNativeMessaging.prototype.handleIncomingMessage_ =
       // A "hello" request is sent immediately after the native messaging host
       // is started. We can proceed to the next task once we receive the
       // "helloReponse".
-      this.onHostStarted_();
+      this.onInitialized_();
       break;
 
     case 'connectResponse':
@@ -222,51 +259,12 @@ remoting.HostIt2MeNativeMessaging.prototype.handleIncomingMessage_ =
 };
 
 /**
- * @param {string} email The user's email address.
- * @param {string} authServiceWithToken Concatenation of the auth service
- *     (e.g. oauth2) and the access token.
- * @param {function(remoting.HostSession.State):void} onStateChanged Callback to
- *     invoke when the host state changes.
- * @param {function(boolean):void} onNatPolicyChanged Callback to invoke when
- *     the nat traversal policy changes.
- * @param {string} xmppServerAddress XMPP server host name (or IP address) and
- *     port.
- * @param {boolean} xmppServerUseTls Whether to use TLS on connections to the
- *     XMPP server
- * @param {string} directoryBotJid XMPP JID for the remoting directory server
- *     bot.
- * @return {void}
- */
-remoting.HostIt2MeNativeMessaging.prototype.connect =
-    function(email, authServiceWithToken, onStateChanged, onNatPolicyChanged,
-             xmppServerAddress, xmppServerUseTls, directoryBotJid) {
-  this.onStateChanged_ = onStateChanged;
-  this.onNatPolicyChanged_ = onNatPolicyChanged;
-  this.postMessage_({
-      type: 'connect',
-      userName: email,
-      authServiceWithToken: authServiceWithToken,
-      xmppServerAddress: xmppServerAddress,
-      xmppServerUseTls: xmppServerUseTls,
-      directoryBotJid: directoryBotJid});
-};
-
-/**
- * @return {void}
- */
-remoting.HostIt2MeNativeMessaging.prototype.disconnect =
-    function() {
-  this.postMessage_({
-      type: 'disconnect'});
-};
-
-/**
  * @param {string} accessCode
  * @param {number} accessCodeLifetime
  * @return {void}
  * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.onReceivedAccessCode_ =
+remoting.It2MeHostFacade.prototype.onReceivedAccessCode_ =
     function(accessCode, accessCodeLifetime) {
   this.accessCode_ = accessCode;
   this.accessCodeLifetime_ = accessCodeLifetime;
@@ -277,8 +275,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onReceivedAccessCode_ =
  * @return {void}
  * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.onConnected_ =
-    function(clientId) {
+remoting.It2MeHostFacade.prototype.onConnected_ = function(clientId) {
   this.clientId_ = clientId;
 };
 
@@ -286,7 +283,7 @@ remoting.HostIt2MeNativeMessaging.prototype.onConnected_ =
  * @return {void}
  * @private
  */
-remoting.HostIt2MeNativeMessaging.prototype.onHostDisconnect_ = function() {
+remoting.It2MeHostFacade.prototype.onHostDisconnect_ = function() {
   if (!this.initialized_) {
     // If the host is disconnected before it is initialized, it probably means
     // the host is not propertly installed (or not installed at all).
@@ -296,30 +293,10 @@ remoting.HostIt2MeNativeMessaging.prototype.onHostDisconnect_ = function() {
     // error.
     console.log('Native Messaging initialization failed: ' +
                 chrome.runtime.lastError.message);
-    this.onHostInitFailed_();
+    this.onInitializationFailed_();
   } else {
     console.error('Native Messaging port disconnected.');
+    this.port_ = null;
     this.onError_(remoting.Error.UNEXPECTED);
   }
 }
-
-/**
- * @return {string}
- */
-remoting.HostIt2MeNativeMessaging.prototype.getAccessCode = function() {
-  return this.accessCode_
-};
-
-/**
- * @return {number}
- */
-remoting.HostIt2MeNativeMessaging.prototype.getAccessCodeLifetime = function() {
-  return this.accessCodeLifetime_
-};
-
-/**
- * @return {string}
- */
-remoting.HostIt2MeNativeMessaging.prototype.getClient = function() {
-  return this.clientId_;
-};

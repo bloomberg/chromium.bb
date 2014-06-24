@@ -66,8 +66,7 @@
     'remoting_webapp_js_host_files': [
       'webapp/host_controller.js',
       'webapp/host_daemon_facade.js',
-      'webapp/host_it2me_dispatcher.js',
-      'webapp/host_it2me_native_messaging.js',
+      'webapp/it2me_host_facade.js',
       'webapp/host_session.js',
     ],
     # Logging and stats JavaScript files.

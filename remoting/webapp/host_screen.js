@@ -26,24 +26,23 @@ var lastShareWasCancelled_ = false;
  * to install them if necessary.
  */
 remoting.tryShare = function() {
-  /** @type {remoting.HostIt2MeDispatcher} */
-  var hostDispatcher = new remoting.HostIt2MeDispatcher();
+  /** @type {remoting.It2MeHostFacade} */
+  var hostFacade = new remoting.It2MeHostFacade();
 
   /** @type {remoting.HostInstallDialog} */
   var hostInstallDialog = null;
 
-  var tryInitializeDispatcher = function() {
-    hostDispatcher.initialize(onDispatcherInitialized,
-                              onDispatcherInitializationFailed);
+  var tryInitializeFacade = function() {
+    hostFacade.initialize(onFacadeInitialized, onFacadeInitializationFailed);
   }
 
-  var onDispatcherInitialized = function () {
+  var onFacadeInitialized = function () {
     // Host already installed.
-    remoting.startHostUsingDispatcher_(hostDispatcher);
+    remoting.startHostUsingFacade_(hostFacade);
   };
 
   /** @param {remoting.Error} error */
-  var onDispatcherInitializationFailed = function(error) {
+  var onFacadeInitializationFailed = function(error) {
     if (error != remoting.Error.MISSING_PLUGIN) {
       showShareError_(error);
       return;
@@ -54,8 +53,7 @@ remoting.tryShare = function() {
     var hasHostDialog = (hostInstallDialog != null);  /** jscompile hack */
     if (!hasHostDialog) {
       hostInstallDialog = new remoting.HostInstallDialog();
-
-      hostInstallDialog.show(tryInitializeDispatcher, onInstallError);
+      hostInstallDialog.show(tryInitializeFacade, onInstallError);
     } else {
       hostInstallDialog.tryAgain();
     }
@@ -70,27 +68,26 @@ remoting.tryShare = function() {
     }
   }
 
-  tryInitializeDispatcher();
+  tryInitializeFacade();
 };
 
 /**
- * @param {remoting.HostIt2MeDispatcher} hostDispatcher An initialized
- *     HostIt2MeDispatcher.
+ * @param {remoting.It2MeHostFacade} hostFacade An initialized It2MeHostFacade.
  */
-remoting.startHostUsingDispatcher_ = function(hostDispatcher) {
+remoting.startHostUsingFacade_ = function(hostFacade) {
   console.log('Attempting to share...');
   remoting.identity.callWithToken(
-      remoting.tryShareWithToken_.bind(null, hostDispatcher),
+      remoting.tryShareWithToken_.bind(null, hostFacade),
       remoting.showErrorMessage);
 }
 
 /**
- * @param {remoting.HostIt2MeDispatcher} hostDispatcher An initialized
- *     HostIt2MeDispatcher.
+ * @param {remoting.It2MeHostFacade} hostFacade An initialized
+ *     It2MeHostFacade.
  * @param {string} token The OAuth access token.
  * @private
  */
-remoting.tryShareWithToken_ = function(hostDispatcher, token) {
+remoting.tryShareWithToken_ = function(hostFacade, token) {
   lastShareWasCancelled_ = false;
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
@@ -100,7 +97,7 @@ remoting.tryShareWithToken_ = function(hostDispatcher, token) {
   remoting.hostSession = new remoting.HostSession();
   var email = /** @type {string} */remoting.identity.getCachedEmail();
   remoting.hostSession.connect(
-      hostDispatcher, email, token, onHostStateChanged_,
+      hostFacade, email, token, onHostStateChanged_,
       onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
 };
 

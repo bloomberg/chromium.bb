@@ -20,8 +20,8 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.HostSession = function() {
-  /** @type {remoting.HostIt2MeDispatcher} @private */
-  this.hostDispatcher_ = null;
+  /** @type {remoting.It2MeHostFacade} @private */
+  this.hostFacade_ = null;
 };
 
 // Note that these values are copied directly from host_script_object.h and
@@ -54,8 +54,7 @@ remoting.HostSession.State.fromString = function(stateString) {
 
 /**
  * Initiates a connection.
- * @param {remoting.HostIt2MeDispatcher}  hostDispatcher It2Me host dispatcher
- *     to use.
+ * @param {remoting.It2MeHostFacade} hostFacade It2Me host facade to use.
  * @param {string} email The user's email address.
  * @param {string} accessToken A valid OAuth2 access token.
  * @param {function(remoting.HostSession.State):void} onStateChanged
@@ -67,12 +66,12 @@ remoting.HostSession.State.fromString = function(stateString) {
  * @param {function():void} onError Callback to invoke in case of an error.
  */
 remoting.HostSession.prototype.connect =
-    function(hostDispatcher, email, accessToken, onStateChanged,
+    function(hostFacade, email, accessToken, onStateChanged,
              onNatTraversalPolicyChanged, logDebugInfo, onError) {
   /** @private */
-  this.hostDispatcher_ = hostDispatcher;
+  this.hostFacade_ = hostFacade;
 
-  this.hostDispatcher_.connect(
+  this.hostFacade_.connect(
       email, 'oauth2:' + accessToken,
       onStateChanged, onNatTraversalPolicyChanged, logDebugInfo,
       remoting.settings.XMPP_SERVER_ADDRESS,
@@ -87,7 +86,7 @@ remoting.HostSession.prototype.connect =
  * @return {string} The access code.
  */
 remoting.HostSession.prototype.getAccessCode = function() {
-  return this.hostDispatcher_.getAccessCode();
+  return this.hostFacade_.getAccessCode();
 };
 
 /**
@@ -96,7 +95,7 @@ remoting.HostSession.prototype.getAccessCode = function() {
  * @return {number} The access code lifetime, in seconds.
  */
 remoting.HostSession.prototype.getAccessCodeLifetime = function() {
-  return this.hostDispatcher_.getAccessCodeLifetime();
+  return this.hostFacade_.getAccessCodeLifetime();
 };
 
 /**
@@ -105,7 +104,7 @@ remoting.HostSession.prototype.getAccessCodeLifetime = function() {
  * @return {string} The client's email address.
  */
 remoting.HostSession.prototype.getClient = function() {
-  return this.hostDispatcher_.getClient();
+  return this.hostFacade_.getClient();
 };
 
 /**
@@ -113,5 +112,5 @@ remoting.HostSession.prototype.getClient = function() {
  * @return {void} Nothing.
  */
 remoting.HostSession.prototype.disconnect = function() {
-  this.hostDispatcher_.disconnect();
+  this.hostFacade_.disconnect();
 };
