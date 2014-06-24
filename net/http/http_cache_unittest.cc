@@ -1699,6 +1699,33 @@ TEST(HttpCache, SimpleGET_ManyWriters_BypassCache) {
   }
 }
 
+// Tests that a (simulated) timeout allows transactions waiting on the cache
+// lock to continue.
+TEST(HttpCache, SimpleGET_WriterTimeout) {
+  MockHttpCache cache;
+  cache.BypassCacheLock();
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+  Context c1, c2;
+  ASSERT_EQ(net::OK, cache.CreateTransaction(&c1.trans));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            c1.trans->Start(&request, c1.callback.callback(),
+                            net::BoundNetLog()));
+  ASSERT_EQ(net::OK, cache.CreateTransaction(&c2.trans));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            c2.trans->Start(&request, c2.callback.callback(),
+                            net::BoundNetLog()));
+
+  // The second request is queued after the first one.
+
+  c2.callback.WaitForResult();
+  ReadAndVerifyTransaction(c2.trans.get(), kSimpleGET_Transaction);
+
+  // Complete the first transaction.
+  c1.callback.WaitForResult();
+  ReadAndVerifyTransaction(c1.trans.get(), kSimpleGET_Transaction);
+}
+
 TEST(HttpCache, SimpleGET_AbandonedCacheRead) {
   MockHttpCache cache;
 

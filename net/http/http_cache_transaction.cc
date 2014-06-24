@@ -212,6 +212,7 @@ HttpCache::Transaction::Transaction(
       done_reading_(false),
       vary_mismatch_(false),
       couldnt_conditionalize_request_(false),
+      bypass_lock_for_test_(false),
       io_buf_len_(0),
       read_offset_(0),
       effective_load_flags_(0),
@@ -1210,7 +1211,20 @@ int HttpCache::Transaction::DoAddToEntry() {
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY);
   DCHECK(entry_lock_waiting_since_.is_null());
   entry_lock_waiting_since_ = TimeTicks::Now();
-  return cache_->AddTransactionToEntry(new_entry_, this);
+  int rv = cache_->AddTransactionToEntry(new_entry_, this);
+  if (rv == ERR_IO_PENDING) {
+    if (bypass_lock_for_test_) {
+      OnAddToEntryTimeout(entry_lock_waiting_since_);
+    } else {
+      const int kTimeoutSeconds = 20;
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&HttpCache::Transaction::OnAddToEntryTimeout,
+                     weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),
+          TimeDelta::FromSeconds(kTimeoutSeconds));
+    }
+  }
+  return rv;
 }
 
 int HttpCache::Transaction::DoAddToEntryComplete(int result) {
@@ -1232,6 +1246,17 @@ int HttpCache::Transaction::DoAddToEntryComplete(int result) {
 
   if (result == ERR_CACHE_RACE) {
     next_state_ = STATE_INIT_ENTRY;
+    return OK;
+  }
+
+  if (result == ERR_CACHE_LOCK_TIMEOUT) {
+    // The cache is busy, bypass it for this transaction.
+    mode_ = NONE;
+    next_state_ = STATE_SEND_REQUEST;
+    if (partial_) {
+      partial_->RestoreHeaders(&custom_request_->extra_headers);
+      partial_.reset();
+    }
     return OK;
   }
 
@@ -2358,6 +2383,19 @@ int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
   }
 
   return ERR_CACHE_READ_FAILURE;
+}
+
+void HttpCache::Transaction::OnAddToEntryTimeout(base::TimeTicks start_time) {
+  if (entry_lock_waiting_since_ != start_time)
+    return;
+
+  DCHECK_EQ(next_state_, STATE_ADD_TO_ENTRY_COMPLETE);
+
+  if (!cache_)
+    return;
+
+  cache_->RemovePendingTransaction(this);
+  OnIOComplete(ERR_CACHE_LOCK_TIMEOUT);
 }
 
 void HttpCache::Transaction::DoomPartialEntry(bool delete_object) {

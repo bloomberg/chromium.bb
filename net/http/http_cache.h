@@ -187,6 +187,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Initializes the Infinite Cache, if selected by the field trial.
   void InitializeInfiniteCache(const base::FilePath& path);
 
+  // Causes all transactions created after this point to effectively bypass
+  // the cache lock whenever there is lock contention.
+  void BypassLockForTest() {
+    bypass_lock_for_test_ = true;
+  }
+
   // HttpTransactionFactory implementation:
   virtual int CreateTransaction(RequestPriority priority,
                                 scoped_ptr<HttpTransaction>* trans) OVERRIDE;
@@ -389,6 +395,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Used when lazily constructing the disk_cache_.
   scoped_ptr<BackendFactory> backend_factory_;
   bool building_backend_;
+  bool bypass_lock_for_test_;
 
   Mode mode_;
 

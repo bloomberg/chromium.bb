@@ -645,6 +645,9 @@ NET_ERROR(CACHE_CHECKSUM_READ_FAILURE, -407)
 // SimpleCache backend, but not by any URLRequest methods or members.
 NET_ERROR(CACHE_CHECKSUM_MISMATCH, -408)
 
+// Internal error code for the HTTP cache. The cache lock timeout has fired.
+NET_ERROR(CACHE_LOCK_TIMEOUT, -409)
+
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)
 

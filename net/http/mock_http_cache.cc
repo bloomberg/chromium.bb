@@ -516,6 +516,10 @@ int MockHttpCache::CreateTransaction(scoped_ptr<net::HttpTransaction>* trans) {
   return http_cache_.CreateTransaction(net::DEFAULT_PRIORITY, trans);
 }
 
+void MockHttpCache::BypassCacheLock() {
+  http_cache_.BypassLockForTest();
+}
+
 bool MockHttpCache::ReadResponseInfo(disk_cache::Entry* disk_entry,
                                      net::HttpResponseInfo* response_info,
                                      bool* response_truncated) {

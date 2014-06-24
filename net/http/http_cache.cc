@@ -290,6 +290,7 @@ HttpCache::HttpCache(const net::HttpNetworkSession::Params& params,
     : net_log_(params.net_log),
       backend_factory_(backend_factory),
       building_backend_(false),
+      bypass_lock_for_test_(false),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))),
       weak_factory_(this) {
@@ -304,6 +305,7 @@ HttpCache::HttpCache(HttpNetworkSession* session,
     : net_log_(session->net_log()),
       backend_factory_(backend_factory),
       building_backend_(false),
+      bypass_lock_for_test_(false),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(session)),
       weak_factory_(this) {
@@ -315,6 +317,7 @@ HttpCache::HttpCache(HttpTransactionFactory* network_layer,
     : net_log_(net_log),
       backend_factory_(backend_factory),
       building_backend_(false),
+      bypass_lock_for_test_(false),
       mode_(NORMAL),
       network_layer_(network_layer),
       weak_factory_(this) {
@@ -457,7 +460,12 @@ int HttpCache::CreateTransaction(RequestPriority priority,
     CreateBackend(NULL, net::CompletionCallback());
   }
 
-  trans->reset(new HttpCache::Transaction(priority, this));
+   HttpCache::Transaction* transaction =
+      new HttpCache::Transaction(priority, this);
+   if (bypass_lock_for_test_)
+    transaction->BypassLockForTest();
+
+  trans->reset(transaction);
   return OK;
 }
 

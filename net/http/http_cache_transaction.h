@@ -103,6 +103,11 @@ class HttpCache::Transaction : public HttpTransaction {
 
   const BoundNetLog& net_log() const;
 
+  // Bypasses the cache lock whenever there is lock contention.
+  void BypassLockForTest() {
+    bypass_lock_for_test_ = true;
+  }
+
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
                     const CompletionCallback& callback,
@@ -350,6 +355,9 @@ class HttpCache::Transaction : public HttpTransaction {
   // transaction should be restarted.
   int OnCacheReadError(int result, bool restart);
 
+  // Called when the cache lock timeout fires.
+  void OnAddToEntryTimeout(base::TimeTicks start_time);
+
   // Deletes the current partial cache entry (sparse), and optionally removes
   // the control object (partial_).
   void DoomPartialEntry(bool delete_object);
@@ -412,6 +420,7 @@ class HttpCache::Transaction : public HttpTransaction {
   bool done_reading_;  // All available data was read.
   bool vary_mismatch_;  // The request doesn't match the stored vary data.
   bool couldnt_conditionalize_request_;
+  bool bypass_lock_for_test_;  // A test is exercising the cache lock.
   scoped_refptr<IOBuffer> read_buf_;
   int io_buf_len_;
   int read_offset_;
