@@ -66,7 +66,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
   InstallExtensionSilently(service, "adblock.crx");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
+// Timing out on XP and Vista: http://crbug.com/387866
+#if defined(OS_WIN)
+#define MAYBE_TestAdblockExtensionCrash DISABLED_TestAdblockExtensionCrash
+#else
+#define MAYBE_TestAdblockExtensionCrash TestAdblockExtensionCrash
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
+                       MAYBE_TestAdblockExtensionCrash) {
   ExtensionService* service = GetExtensionService();
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
