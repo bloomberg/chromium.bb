@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "mojo/examples/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/examples/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -76,6 +77,10 @@ void HTMLDocumentView::Load(URLResponsePtr response,
   web_request.setExtraData(extra_data);
 
   web_view_->mainFrame()->loadRequest(web_request);
+}
+
+blink::WebStorageNamespace* HTMLDocumentView::createSessionStorageNamespace() {
+  return new WebStorageNamespaceImpl();
 }
 
 void HTMLDocumentView::didInvalidateRect(const blink::WebRect& rect) {

@@ -120,6 +120,8 @@
         'examples/html_viewer/html_document_view.h',
         'examples/html_viewer/webmimeregistry_impl.cc',
         'examples/html_viewer/webmimeregistry_impl.h',
+        'examples/html_viewer/webstoragenamespace_impl.cc',
+        'examples/html_viewer/webstoragenamespace_impl.h',
         'examples/html_viewer/webthread_impl.cc',
         'examples/html_viewer/webthread_impl.h',
         'examples/html_viewer/weburlloader_impl.cc',

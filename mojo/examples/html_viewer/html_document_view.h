@@ -33,6 +33,9 @@ class HTMLDocumentView : public blink::WebViewClient,
             ScopedDataPipeConsumerHandle response_body_stream);
 
  private:
+  // WebViewClient methods:
+  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
+
   // WebWidgetClient methods:
   virtual void didInvalidateRect(const blink::WebRect& rect);
   virtual bool allowsBrokenNullLayerTreeView() const;
