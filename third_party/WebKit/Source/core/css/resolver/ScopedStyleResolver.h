@@ -39,6 +39,7 @@ namespace WebCore {
 
 class MediaQueryEvaluator;
 class PageRuleCollector;
+class StyleResolver;
 class StyleSheetContents;
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.

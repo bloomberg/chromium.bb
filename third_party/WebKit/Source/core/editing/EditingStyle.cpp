@@ -39,6 +39,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"

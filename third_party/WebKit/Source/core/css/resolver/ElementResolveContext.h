@@ -22,7 +22,6 @@
 #ifndef ElementResolveContext_h
 #define ElementResolveContext_h
 
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 

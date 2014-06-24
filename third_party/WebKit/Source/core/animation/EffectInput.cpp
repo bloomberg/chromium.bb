@@ -38,6 +38,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "wtf/NonCopyingSort.h"
 

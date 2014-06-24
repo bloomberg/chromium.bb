@@ -8,7 +8,6 @@
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
 #include "core/frame/DeviceEventControllerBase.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"

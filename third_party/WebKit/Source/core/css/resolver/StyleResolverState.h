@@ -30,6 +30,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/rendering/style/CachedUAStyle.h"
 #include "core/rendering/style/RenderStyle.h"
