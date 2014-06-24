@@ -1514,7 +1514,6 @@ TEST_F(ViewTest, Textfield) {
   const base::string16 kText = ASCIIToUTF16(
       "Reality is that which, when you stop believing it, doesn't go away.");
   const base::string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
-  const base::string16 kEmptyString;
 
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -1531,15 +1530,15 @@ TEST_F(ViewTest, Textfield) {
   textfield->AppendText(kExtraText);
   EXPECT_EQ(kText + kExtraText, textfield->text());
   textfield->SetText(base::string16());
-  EXPECT_EQ(kEmptyString, textfield->text());
+  EXPECT_TRUE(textfield->text().empty());
 
   // Test selection related methods.
   textfield->SetText(kText);
-  EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
+  EXPECT_TRUE(textfield->GetSelectedText().empty());
   textfield->SelectAll(false);
   EXPECT_EQ(kText, textfield->text());
   textfield->ClearSelection();
-  EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
+  EXPECT_TRUE(textfield->GetSelectedText().empty());
 
   widget->CloseNow();
 }
@@ -2533,7 +2532,7 @@ TEST_F(ViewTest, ConversionsToFromScreen) {
   child->SetTransform(t);
 
   gfx::Point point_in_screen(100, 90);
-  gfx::Point point_in_child(80,60);
+  gfx::Point point_in_child(80, 60);
 
   gfx::Point point = point_in_screen;
   View::ConvertPointFromScreen(child, &point);
