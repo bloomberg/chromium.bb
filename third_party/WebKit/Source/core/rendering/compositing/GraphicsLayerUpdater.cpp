@@ -69,25 +69,28 @@ void GraphicsLayerUpdater::update(Vector<RenderLayer*>& layersNeedingPaintInvali
 
         const RenderLayer* compositingContainer = context.compositingContainer(layer);
         ASSERT(compositingContainer == layer.ancestorCompositingLayer());
+
         if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer))
             updateType = ForceUpdate;
 
-        // Note carefully: here we assume that the compositing state of all descendants have been updated already,
-        // so it is legitimate to compute and cache the composited bounds for this layer.
-        mapping->updateCompositedBounds(updateType);
+        if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
+            // Note carefully: here we assume that the compositing state of all descendants have been updated already,
+            // so it is legitimate to compute and cache the composited bounds for this layer.
+            mapping->updateCompositedBounds();
 
-        if (RenderLayerReflectionInfo* reflection = layer.reflectionInfo()) {
-            if (reflection->reflectionLayer()->hasCompositedLayerMapping())
-                reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds(ForceUpdate);
+            if (RenderLayerReflectionInfo* reflection = layer.reflectionInfo()) {
+                if (reflection->reflectionLayer()->hasCompositedLayerMapping())
+                    reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds();
+            }
+
+            if (mapping->updateGraphicsLayerConfiguration())
+                m_needsRebuildTree = true;
+
+            mapping->updateGraphicsLayerGeometry(compositingContainer, layersNeedingPaintInvalidation);
+
+            updateType = mapping->updateTypeForChildren(updateType);
+            mapping->clearNeedsGraphicsLayerUpdate();
         }
-
-        if (mapping->updateGraphicsLayerConfiguration(updateType))
-            m_needsRebuildTree = true;
-
-        mapping->updateGraphicsLayerGeometry(updateType, compositingContainer, layersNeedingPaintInvalidation);
-
-        updateType = mapping->updateTypeForChildren(updateType);
-        mapping->clearNeedsGraphicsLayerUpdate();
 
         if (!layer.parent())
             layer.compositor()->updateRootLayerPosition();

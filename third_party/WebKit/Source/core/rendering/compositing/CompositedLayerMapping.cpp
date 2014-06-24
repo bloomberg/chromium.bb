@@ -318,11 +318,9 @@ void CompositedLayerMapping::updateContentsOpaque()
     }
 }
 
-void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
+void CompositedLayerMapping::updateCompositedBounds()
 {
-    if (!shouldUpdateGraphicsLayer(updateType))
-        return;
-
+    ASSERT(m_owningLayer.compositor()->lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
     // FIXME: if this is really needed for performance, it would be better to store it on RenderLayer.
     m_compositedBounds = m_owningLayer.boundingBoxForCompositing();
 }
@@ -346,10 +344,9 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
-bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType updateType)
+bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 {
-    if (!shouldUpdateGraphicsLayer(updateType))
-        return false;
+    ASSERT(m_owningLayer.compositor()->lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
 
     RenderLayerCompositor* compositor = this->compositor();
     RenderObject* renderer = this->renderer();
@@ -596,10 +593,9 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(referenceLayer, layers[i], layers);
 }
 
-void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
+void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
-    if (!shouldUpdateGraphicsLayer(updateType))
-        return;
+    ASSERT(m_owningLayer.compositor()->lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
@@ -812,7 +808,7 @@ void CompositedLayerMapping::updateReflectionLayerGeometry(Vector<RenderLayer*>&
         return;
 
     CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping();
-    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate, &m_owningLayer, layersNeedingPaintInvalidation);
+    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(&m_owningLayer, layersNeedingPaintInvalidation);
 }
 
 void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCompositingBounds)

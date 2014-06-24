@@ -164,6 +164,7 @@ public:
     void setTracksRepaints(bool);
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
+    DocumentLifecycle& lifecycle() const;
 
     void updatePotentialCompositingReasonsFromStyle(RenderLayer*);
 
@@ -228,9 +229,6 @@ private:
     bool requiresScrollCornerLayer() const;
 
     void applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
-
-    DocumentLifecycle& lifecycle() const;
-
     void applyOverlayFullscreenVideoAdjustment();
 
     RenderView& m_renderView;

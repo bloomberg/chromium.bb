@@ -89,11 +89,8 @@ public:
 
     RenderLayer& owningLayer() const { return m_owningLayer; }
 
-    // Returns true if layer configuration changed.
-    bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);
-    // Update graphics layer position and bounds.
-
-    void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType, const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
+    bool updateGraphicsLayerConfiguration();
+    void updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
 
     // Update whether layer needs blending.
     void updateContentsOpaque();
@@ -160,7 +157,7 @@ public:
 
     LayoutRect compositedBounds() const { return m_compositedBounds; }
     IntRect pixelSnappedCompositedBounds() const;
-    void updateCompositedBounds(GraphicsLayerUpdater::UpdateType);
+    void updateCompositedBounds();
 
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
@@ -193,10 +190,10 @@ public:
 
     void setBlendMode(blink::WebBlendMode);
 
+    bool needsGraphicsLayerUpdate() { return m_pendingUpdateScope > GraphicsLayerUpdateNone; }
     void setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateScope scope) { m_pendingUpdateScope = std::max(static_cast<GraphicsLayerUpdateScope>(m_pendingUpdateScope), scope); }
     void clearNeedsGraphicsLayerUpdate() { m_pendingUpdateScope = GraphicsLayerUpdateNone; }
 
-    bool shouldUpdateGraphicsLayer(GraphicsLayerUpdater::UpdateType updateType) const { return m_pendingUpdateScope > GraphicsLayerUpdateNone || updateType == GraphicsLayerUpdater::ForceUpdate; }
     GraphicsLayerUpdater::UpdateType updateTypeForChildren(GraphicsLayerUpdater::UpdateType) const;
 
 #if ASSERT_ENABLED

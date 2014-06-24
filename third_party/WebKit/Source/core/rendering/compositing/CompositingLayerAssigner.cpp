@@ -214,8 +214,10 @@ void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(RenderLa
         m_compositor->allocateOrClearCompositedLayerMapping(reflectionLayer, compositedLayerUpdate);
     }
     m_compositor->updateDirectCompositingReasons(reflectionLayer);
+
+    // FIXME: Why do we updateGraphicsLayerConfiguration here instead of in the GraphicsLayerUpdater?
     if (reflectionLayer->hasCompositedLayerMapping())
-        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate);
+        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
 }
 
 void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, Vector<RenderLayer*>& layersNeedingRepaint)
