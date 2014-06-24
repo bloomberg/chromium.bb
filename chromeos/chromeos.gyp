@@ -361,6 +361,8 @@
         'pairing/fake_controller_pairing_flow.h',
         'pairing/controller_pairing_flow.cc',
         'pairing/controller_pairing_flow.h',
+        'pairing/host_pairing_controller.cc',
+        'pairing/host_pairing_controller.h',
         'process_proxy/process_output_watcher.cc',
         'process_proxy/process_output_watcher.h',
         'process_proxy/process_proxy.cc',
