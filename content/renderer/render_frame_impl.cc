@@ -1328,7 +1328,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     return plugin;
   }
 
-  if (base::UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
+  if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
         render_view_.get(), frame, false);
   }
