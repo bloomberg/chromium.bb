@@ -96,7 +96,11 @@ base::string16 QuotaPermissionRequest::GetMessageText() const {
       (requested_quota_ > kRequestLargeQuotaThreshold ?
           IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION :
           IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      net::FormatUrl(origin_url_, display_languages_));
+      net::FormatUrl(origin_url_, display_languages_,
+                     net::kFormatUrlOmitUsernamePassword |
+                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                     net::UnescapeRule::SPACES, NULL, NULL, NULL)
+  );
 }
 
 base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
@@ -218,7 +222,11 @@ base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
       (requested_quota_ > kRequestLargeQuotaThreshold ?
           IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION :
           IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      net::FormatUrl(origin_url_, display_languages_));
+      net::FormatUrl(origin_url_, display_languages_,
+                     net::kFormatUrlOmitUsernamePassword |
+                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                     net::UnescapeRule::SPACES, NULL, NULL, NULL)
+      );
 }
 
 bool RequestQuotaInfoBarDelegate::Accept() {

@@ -145,7 +145,10 @@ bool GeolocationInfoBarDelegate::ShouldExpireInternal(
 
 base::string16 GeolocationInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
-      net::FormatUrl(requesting_frame_, display_languages_));
+      net::FormatUrl(requesting_frame_, display_languages_,
+                     net::kFormatUrlOmitUsernamePassword |
+                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                     net::UnescapeRule::SPACES, NULL, NULL, NULL));
 }
 
 base::string16 GeolocationInfoBarDelegate::GetButtonLabel(
