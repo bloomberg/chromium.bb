@@ -475,8 +475,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   background_layer_.reset([[CALayer alloc] init]);
   [background_layer_
       setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-  [background_layer_
-      setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
   [background_layer_ setGeometryFlipped:YES];
   [background_layer_ setContentsGravity:kCAGravityTopLeft];
   [cocoa_view_ setLayer:background_layer_];
