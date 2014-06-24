@@ -22,9 +22,6 @@ class DevToolsManagerDelegate {
   virtual void Inspect(BrowserContext* browser_context,
                        DevToolsAgentHost* agent_host) = 0;
 
-  virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                         bool attached) = 0;
-
   // Result ownership is passed to the caller.
   virtual base::DictionaryValue* HandleCommand(
       DevToolsAgentHost* agent_host,

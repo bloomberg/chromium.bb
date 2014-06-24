@@ -193,8 +193,6 @@ void DevToolsManagerImpl::RemoveAgentStateCallback(const Callback& callback) {
 void DevToolsManagerImpl::NotifyObservers(DevToolsAgentHost* agent_host,
                                           bool attached) {
   CallbackContainer copy(callbacks_);
-  if (delegate_)
-    delegate_->DevToolsAgentStateChanged(agent_host, attached);
   for (CallbackContainer::iterator it = copy.begin(); it != copy.end(); ++it)
      (*it)->Run(agent_host, attached);
 }
