@@ -181,8 +181,7 @@ def CheckForMissingDevices(options, adb_online_devs):
             '@@@STEP_LINK@Click here to file a bug@%s@@@\n' % crbug_link,
             'Cache file: %s\n\n' % last_devices_path,
             'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
-            'adb devices(GetAttachedDevices): %s' %
-                android_commands.GetAttachedDevices()]
+            'adb devices(GetAttachedDevices): %s' % adb_online_devs]
   else:
     new_devs = set(adb_online_devs) - set(last_devices)
     if new_devs and os.path.exists(last_devices_path):
@@ -273,6 +272,7 @@ def main():
                     help='Output device status data for dashboard.')
   parser.add_option('--restart-usb', action='store_true',
                     help='Restart USB ports before running device check.')
+
   options, args = parser.parse_args()
   if args:
     parser.error('Unknown options %s' % args)
@@ -280,35 +280,36 @@ def main():
   # Remove the last build's "bad devices" before checking device statuses.
   device_blacklist.ResetBlacklist()
 
-  if options.restart_usb:
-    try:
-      expected_devices = device_list.GetPersistentDeviceList(
-          os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME))
-    except IOError:
-      expected_devices = []
-    devices = android_commands.GetAttachedDevices()
-    # Only restart usb if devices are missing.
-    if set(expected_devices) != set(devices):
-      KillAllAdb()
-      retries = 5
-      usb_restarted = True
+  try:
+    expected_devices = device_list.GetPersistentDeviceList(
+        os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME))
+  except IOError:
+    expected_devices = []
+  devices = android_commands.GetAttachedDevices()
+  # Only restart usb if devices are missing.
+  if set(expected_devices) != set(devices):
+    print 'expected_devices: %s, devices: %s' % (expected_devices, devices)
+    KillAllAdb()
+    retries = 5
+    usb_restarted = True
+    if options.restart_usb:
       if not RestartUsb():
         usb_restarted = False
         bb_annotations.PrintWarning()
         print 'USB reset stage failed, wait for any device to come back.'
-      while retries:
-        time.sleep(1)
-        devices = android_commands.GetAttachedDevices()
-        if set(expected_devices) == set(devices):
-          # All devices are online, keep going.
-          break
-        if not usb_restarted and devices:
-          # The USB wasn't restarted, but there's at least one device online.
-          # No point in trying to wait for all devices.
-          break
-        retries -= 1
+    while retries:
+      print 'retry adb devices...'
+      time.sleep(1)
+      devices = android_commands.GetAttachedDevices()
+      if set(expected_devices) == set(devices):
+        # All devices are online, keep going.
+        break
+      if not usb_restarted and devices:
+        # The USB wasn't restarted, but there's at least one device online.
+        # No point in trying to wait for all devices.
+        break
+      retries -= 1
 
-  devices = android_commands.GetAttachedDevices()
   # TODO(navabi): Test to make sure this fails and then fix call
   offline_devices = android_commands.GetAttachedDevices(
       hardware=False, emulator=False, offline=True)
