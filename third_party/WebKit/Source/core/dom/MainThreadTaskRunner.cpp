@@ -27,9 +27,10 @@
 #include "config.h"
 #include "core/dom/MainThreadTaskRunner.h"
 
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "wtf/Assertions.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

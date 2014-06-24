@@ -28,7 +28,6 @@
 
 #include "core/rendering/FilterEffectRenderer.h"
 
-#include "core/dom/Document.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/page/Page.h"

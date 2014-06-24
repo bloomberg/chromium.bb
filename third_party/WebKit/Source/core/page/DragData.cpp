@@ -28,7 +28,6 @@
 #include "core/page/DragData.h"
 
 #include "core/clipboard/DataObject.h"
-#include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"

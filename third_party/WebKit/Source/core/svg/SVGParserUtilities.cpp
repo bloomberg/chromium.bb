@@ -23,11 +23,11 @@
 #include "config.h"
 #include "core/svg/SVGParserUtilities.h"
 
-#include "core/dom/Document.h"
 #include "core/svg/SVGPointList.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/ASCIICType.h"
+#include "wtf/text/StringHash.h"
 #include <limits>
 
 namespace WebCore {

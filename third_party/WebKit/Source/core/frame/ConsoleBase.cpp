@@ -30,7 +30,6 @@
 #include "core/frame/Console.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
-#include "core/dom/Document.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/TraceEvent.h"

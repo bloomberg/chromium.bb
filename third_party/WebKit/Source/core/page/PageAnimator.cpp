@@ -6,7 +6,6 @@
 #include "core/page/PageAnimator.h"
 
 #include "core/animation/DocumentAnimations.h"
-#include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Chrome.h"

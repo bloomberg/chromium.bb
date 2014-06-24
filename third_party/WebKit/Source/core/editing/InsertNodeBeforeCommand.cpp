@@ -27,7 +27,6 @@
 #include "core/editing/InsertNodeBeforeCommand.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Document.h"
 
 namespace WebCore {
 

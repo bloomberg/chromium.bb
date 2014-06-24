@@ -6,7 +6,6 @@
 #include "core/loader/BeaconLoader.h"
 
 #include "core/FetchInitiatorTypeNames.h"
-#include "core/dom/Document.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fileapi/File.h"

@@ -27,7 +27,6 @@
 #include "core/editing/AppendNodeCommand.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Document.h"
 
 namespace WebCore {
 

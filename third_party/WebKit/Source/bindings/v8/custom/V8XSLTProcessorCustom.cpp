@@ -35,7 +35,6 @@
 #include "bindings/core/v8/V8DocumentFragment.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
 #include "core/xml/XSLTProcessor.h"

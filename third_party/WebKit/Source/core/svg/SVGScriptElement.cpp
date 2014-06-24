@@ -26,7 +26,6 @@
 #include "core/HTMLNames.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/events/Event.h"
 

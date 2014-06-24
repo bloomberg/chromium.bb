@@ -26,7 +26,6 @@
 #include "core/rendering/RenderTableRow.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"

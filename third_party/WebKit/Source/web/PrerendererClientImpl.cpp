@@ -32,7 +32,6 @@
 #include "config.h"
 #include "web/PrerendererClientImpl.h"
 
-#include "core/dom/Document.h"
 #include "platform/Prerender.h"
 #include "public/platform/WebPrerender.h"
 #include "public/web/WebPrerendererClient.h"

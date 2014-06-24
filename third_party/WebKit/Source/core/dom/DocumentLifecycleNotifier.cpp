@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
 
-#include "core/dom/Document.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

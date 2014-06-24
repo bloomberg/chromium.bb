@@ -29,7 +29,6 @@
  */
 #include "config.h"
 
-#include "core/dom/Document.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"

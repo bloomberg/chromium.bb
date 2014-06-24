@@ -36,7 +36,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/LocalFrame.h"

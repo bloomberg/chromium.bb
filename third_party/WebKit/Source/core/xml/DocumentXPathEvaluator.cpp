@@ -27,7 +27,6 @@
 #include "core/xml/DocumentXPathEvaluator.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Document.h"
 #include "core/xml/XPathExpression.h"
 #include "core/xml/XPathResult.h"
 

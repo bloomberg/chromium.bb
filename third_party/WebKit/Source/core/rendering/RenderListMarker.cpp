@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/rendering/RenderListMarker.h"
 
-#include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderLayer.h"

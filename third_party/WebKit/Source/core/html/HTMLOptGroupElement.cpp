@@ -26,7 +26,6 @@
 #include "core/html/HTMLOptGroupElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLSelectElement.h"
 #include "wtf/StdLibExtras.h"

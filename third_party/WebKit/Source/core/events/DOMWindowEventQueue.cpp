@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/events/DOMWindowEventQueue.h"
 
-#include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"

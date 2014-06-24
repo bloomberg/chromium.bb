@@ -32,7 +32,6 @@
 
 #include "modules/quota/DeprecatedStorageInfo.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/quota/DeprecatedStorageQuota.h"

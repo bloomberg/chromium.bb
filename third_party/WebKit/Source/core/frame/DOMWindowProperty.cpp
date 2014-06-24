@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/frame/DOMWindowProperty.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 

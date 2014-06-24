@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/frame/FrameConsole.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
