@@ -430,8 +430,6 @@ public:
     // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
-    PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
-
     RenderLayerBlendInfo& blendInfo() { return m_blendInfo; }
 
     void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_offsetFromSquashingLayerOrigin = offset; }

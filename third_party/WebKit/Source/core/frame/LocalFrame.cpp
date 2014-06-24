@@ -452,13 +452,6 @@ String LocalFrame::localLayerTreeAsText(unsigned flags) const
     return contentRenderer()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
 
-String LocalFrame::trackedRepaintRectsAsText() const
-{
-    if (!m_view)
-        return String();
-    return m_view->trackedPaintInvalidationRectsAsText();
-}
-
 void LocalFrame::setPageZoomFactor(float factor)
 {
     setPageAndTextZoomFactors(factor, m_textZoomFactor);

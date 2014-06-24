@@ -2108,19 +2108,6 @@ bool CompositedLayerMapping::isTrackingRepaints() const
     return client ? client->isTrackingRepaints() : false;
 }
 
-struct CollectTrackedRepaintRectsFunctor {
-    void operator() (GraphicsLayer* layer) const { layer->collectTrackedRepaintRects(*rects); }
-    Vector<FloatRect>* rects;
-};
-
-PassOwnPtr<Vector<FloatRect> > CompositedLayerMapping::collectTrackedRepaintRects() const
-{
-    OwnPtr<Vector<FloatRect> > rects = adoptPtr(new Vector<FloatRect>);
-    CollectTrackedRepaintRectsFunctor functor = { rects.get() };
-    ApplyToGraphicsLayers(this, functor, ApplyToAllGraphicsLayers);
-    return rects.release();
-}
-
 #ifndef NDEBUG
 void CompositedLayerMapping::verifyNotPainting()
 {

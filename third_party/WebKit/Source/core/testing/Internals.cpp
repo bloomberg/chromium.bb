@@ -1727,62 +1727,6 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     return layer->compositedLayerMapping()->mainGraphicsLayer()->layerTreeAsText(flags);
 }
 
-static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& exceptionState)
-{
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return 0;
-    }
-
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
-        return 0;
-    }
-
-    RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        exceptionState.throwDOMException(InvalidAccessError, "No render layer can be obtained from the provided element.");
-        return 0;
-    }
-
-    return layer;
-}
-
-String Internals::repaintRectsAsText(Document* document, ExceptionState& exceptionState) const
-{
-    if (!document || !document->frame()) {
-        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
-        return String();
-    }
-
-    return document->frame()->trackedRepaintRectsAsText();
-}
-
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionState& exceptionState) const
-{
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return nullptr;
-    }
-
-    element->document().frame()->view()->updateLayoutAndStyleForPainting();
-
-    if (RenderLayer* layer = getRenderLayerForElement(element, exceptionState)) {
-        if (layer->compositingState() == PaintsIntoOwnBacking) {
-            OwnPtr<Vector<FloatRect> > rects = layer->collectTrackedRepaintRects();
-            ASSERT(rects.get());
-            Vector<FloatQuad> quads(rects->size());
-            for (size_t i = 0; i < rects->size(); ++i)
-                quads[i] = FloatRect(rects->at(i));
-            return ClientRectList::create(quads);
-        }
-    }
-
-    exceptionState.throwDOMException(InvalidAccessError, "The provided element is not composited.");
-    return nullptr;
-}
-
 String Internals::scrollingStateTreeAsText(Document* document, ExceptionState& exceptionState) const
 {
     return String();

@@ -178,8 +178,6 @@ public:
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) OVERRIDE;
     virtual bool isTrackingRepaints() const OVERRIDE;
 
-    PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
-
 #ifndef NDEBUG
     virtual void verifyNotPainting() OVERRIDE;
 #endif

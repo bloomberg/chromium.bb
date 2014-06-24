@@ -9,14 +9,27 @@
         window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
     }
 
-    function isScrollbarRepaint(rect) {
-        return rect.width == 15 && rect.height == 285;
+    function hasScrollbarRepaint(layerTree)
+    {
+        return hasScrollbarRepaintHelper(JSON.parse(layerTree));
     }
-
-    function hasNonScrollbarRepaint(repaintRects) {
-        for (var i = 0; i < repaintRects.length; ++i) {
-           if (!isScrollbarRepaint(repaintRects[i]))
-              return true;
+    
+    function hasScrollbarRepaintHelper(jsonLayerTree) {
+        var repaintRects = jsonLayerTree["repaintRects"];
+        if (repaintRects) {
+            for (var i = 0; i < repaintRects.length; ++i) {
+                var width = repaintRects[i][2];
+                var height = repaintRects[i][3];
+                if (width == 15 && height == 285)
+                    return true;
+            }
+        }
+        var children = jsonLayerTree["children"];
+        if (children) {
+            for (var i = 0; i < children.length; i++) {
+                if (hasScrollbarRepaintHelper(children[i]))
+                    return true;
+            }
         }
         return false;
     }
@@ -33,9 +46,7 @@
         container.scrollTop = 100;
 
         if (window.internals) {
-            var repaintRects = window.internals.repaintRects(container);
-            var repainted = hasNonScrollbarRepaint(repaintRects);
-            if (repainted === true)
+            if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)))
                 result += "PASS repainted when expected\n";
             else
                 result += "FAIL did not repaint when expected\n";

@@ -45,6 +45,7 @@ namespace WebCore {
     class EventHandler;
     class FetchContext;
     class FloatSize;
+    class FloatRect;
     class FrameConsole;
     class FrameSelection;
     class FrameView;
@@ -111,7 +112,6 @@ namespace WebCore {
 
         // See GraphicsLayerClient.h for accepted flags.
         String layerTreeAsText(unsigned flags = 0) const;
-        String trackedRepaintRectsAsText() const;
 
         void setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio);
         bool shouldUsePrintingLayout() const;

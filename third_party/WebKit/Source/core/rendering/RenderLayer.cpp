@@ -1602,13 +1602,6 @@ void RenderLayer::updateScrollableArea()
         m_scrollableArea = nullptr;
 }
 
-PassOwnPtr<Vector<FloatRect> > RenderLayer::collectTrackedRepaintRects() const
-{
-    if (hasCompositedLayerMapping())
-        return compositedLayerMapping()->collectTrackedRepaintRects();
-    return nullptr;
-}
-
 bool RenderLayer::hasOverflowControls() const
 {
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
