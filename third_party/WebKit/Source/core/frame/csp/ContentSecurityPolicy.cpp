@@ -142,6 +142,11 @@ ContentSecurityPolicy::~ContentSecurityPolicy()
 {
 }
 
+Document* ContentSecurityPolicy::document() const
+{
+    return m_executionContext->isDocument() ? toDocument(m_executionContext) : 0;
+}
+
 void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
 {
     ASSERT(m_policies.isEmpty());

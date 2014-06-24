@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/ParsingUtilities.h"
 #include "platform/weborigin/KURL.h"

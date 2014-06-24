@@ -27,7 +27,6 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
@@ -50,6 +49,7 @@ namespace WebCore {
 class ContentSecurityPolicyResponseHeaders;
 class CSPDirectiveList;
 class DOMStringList;
+class Document;
 class JSONObject;
 class KURL;
 class SecurityOrigin;
@@ -174,10 +174,11 @@ public:
     static bool isDirectiveName(const String&);
 
     ExecutionContext* executionContext() const { return m_executionContext; }
-    Document* document() const { return m_executionContext->isDocument() ? toDocument(m_executionContext) : 0; }
 
 private:
     explicit ContentSecurityPolicy(ExecutionContext*);
+
+    Document* document() const;
 
     void logToConsole(const String& message) const;
     void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);

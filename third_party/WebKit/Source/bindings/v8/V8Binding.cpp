@@ -44,6 +44,7 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/QualifiedName.h"

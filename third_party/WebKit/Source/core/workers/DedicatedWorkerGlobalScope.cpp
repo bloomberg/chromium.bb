@@ -97,10 +97,11 @@ private:
 
     virtual void performTask(ExecutionContext* context) OVERRIDE
     {
+        ASSERT(context->isDocument());
         if (m_isDeprecation)
-            UseCounter::countDeprecation(*toDocument(context), m_feature);
+            UseCounter::countDeprecation(context, m_feature);
         else
-            UseCounter::count(*toDocument(context), m_feature);
+            UseCounter::count(context, m_feature);
     }
 
     UseCounter::Feature m_feature;
