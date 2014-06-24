@@ -55,6 +55,75 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);
 };
 
+// Common data and logic shared between TransportConnectJob and
+// WebSocketTransportConnectJob.
+class NET_EXPORT_PRIVATE TransportConnectJobHelper {
+ public:
+  enum State {
+    STATE_RESOLVE_HOST,
+    STATE_RESOLVE_HOST_COMPLETE,
+    STATE_TRANSPORT_CONNECT,
+    STATE_TRANSPORT_CONNECT_COMPLETE,
+    STATE_NONE,
+  };
+
+  // For recording the connection time in the appropriate bucket.
+  enum ConnectionLatencyHistogram {
+    CONNECTION_LATENCY_UNKNOWN,
+    CONNECTION_LATENCY_IPV4_WINS_RACE,
+    CONNECTION_LATENCY_IPV4_NO_RACE,
+    CONNECTION_LATENCY_IPV6_RACEABLE,
+    CONNECTION_LATENCY_IPV6_SOLO,
+  };
+
+  TransportConnectJobHelper(const scoped_refptr<TransportSocketParams>& params,
+                            ClientSocketFactory* client_socket_factory,
+                            HostResolver* host_resolver,
+                            LoadTimingInfo::ConnectTiming* connect_timing);
+  ~TransportConnectJobHelper();
+
+  ClientSocketFactory* client_socket_factory() {
+    return client_socket_factory_;
+  }
+
+  const AddressList& addresses() const { return addresses_; }
+  State next_state() const { return next_state_; }
+  void set_next_state(State next_state) { next_state_ = next_state; }
+  CompletionCallback on_io_complete() const { return on_io_complete_; }
+
+  int DoResolveHost(RequestPriority priority, const BoundNetLog& net_log);
+  int DoResolveHostComplete(int result, const BoundNetLog& net_log);
+
+  template <class T>
+  int DoConnectInternal(T* job);
+
+  template <class T>
+  void SetOnIOComplete(T* job);
+
+  template <class T>
+  void OnIOComplete(T* job, int result);
+
+  // Record the histograms Net.DNS_Resolution_And_TCP_Connection_Latency2 and
+  // Net.TCP_Connection_Latency and return the connect duration.
+  base::TimeDelta HistogramDuration(ConnectionLatencyHistogram race_result);
+
+  static const int kIPv6FallbackTimerInMs;
+
+ private:
+  template <class T>
+  int DoLoop(T* job, int result);
+
+  scoped_refptr<TransportSocketParams> params_;
+  ClientSocketFactory* const client_socket_factory_;
+  SingleRequestHostResolver resolver_;
+  AddressList addresses_;
+  State next_state_;
+  CompletionCallback on_io_complete_;
+  LoadTimingInfo::ConnectTiming* connect_timing_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransportConnectJobHelper);
+};
+
 // TransportConnectJob handles the host resolution necessary for socket creation
 // and the transport (likely TCP) connect. TransportConnectJob also has fallback
 // logic for IPv6 connect() timeouts (which may happen due to networks / routers
@@ -82,27 +151,14 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // WARNING: this method should only be used to implement the prefer-IPv4 hack.
   static void MakeAddressListStartWithIPv4(AddressList* addrlist);
 
-  static const int kIPv6FallbackTimerInMs;
-
  private:
-  enum State {
-    STATE_RESOLVE_HOST,
-    STATE_RESOLVE_HOST_COMPLETE,
-    STATE_TRANSPORT_CONNECT,
-    STATE_TRANSPORT_CONNECT_COMPLETE,
-    STATE_NONE,
-  };
-
   enum ConnectInterval {
     CONNECT_INTERVAL_LE_10MS,
     CONNECT_INTERVAL_LE_20MS,
     CONNECT_INTERVAL_GT_20MS,
   };
 
-  void OnIOComplete(int result);
-
-  // Runs the state transition loop.
-  int DoLoop(int result);
+  friend class TransportConnectJobHelper;
 
   int DoResolveHost();
   int DoResolveHostComplete(int result);
@@ -118,11 +174,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   virtual int ConnectInternal() OVERRIDE;
 
-  scoped_refptr<TransportSocketParams> params_;
-  ClientSocketFactory* const client_socket_factory_;
-  SingleRequestHostResolver resolver_;
-  AddressList addresses_;
-  State next_state_;
+  TransportConnectJobHelper helper_;
 
   scoped_ptr<StreamSocket> transport_socket_;
 
@@ -187,6 +239,12 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) OVERRIDE;
   virtual void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) OVERRIDE;
 
+ protected:
+  // Methods shared with WebSocketTransportClientSocketPool
+  void NetLogTcpClientSocketPoolRequestedSocket(
+      const BoundNetLog& net_log,
+      const scoped_refptr<TransportSocketParams>* casted_params);
+
  private:
   typedef ClientSocketPoolBase<TransportSocketParams> PoolBase;
 
@@ -223,6 +281,61 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };
+
+template <class T>
+int TransportConnectJobHelper::DoConnectInternal(T* job) {
+  next_state_ = STATE_RESOLVE_HOST;
+  return this->DoLoop(job, OK);
+}
+
+template <class T>
+void TransportConnectJobHelper::SetOnIOComplete(T* job) {
+  // These usages of base::Unretained() are safe because IO callbacks are
+  // guaranteed not to be called after the object is destroyed.
+  on_io_complete_ = base::Bind(&TransportConnectJobHelper::OnIOComplete<T>,
+                               base::Unretained(this),
+                               base::Unretained(job));
+}
+
+template <class T>
+void TransportConnectJobHelper::OnIOComplete(T* job, int result) {
+  result = this->DoLoop(job, result);
+  if (result != ERR_IO_PENDING)
+    job->NotifyDelegateOfCompletion(result);  // Deletes |job| and |this|
+}
+
+template <class T>
+int TransportConnectJobHelper::DoLoop(T* job, int result) {
+  DCHECK_NE(next_state_, STATE_NONE);
+
+  int rv = result;
+  do {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
+      case STATE_RESOLVE_HOST:
+        DCHECK_EQ(OK, rv);
+        rv = job->DoResolveHost();
+        break;
+      case STATE_RESOLVE_HOST_COMPLETE:
+        rv = job->DoResolveHostComplete(rv);
+        break;
+      case STATE_TRANSPORT_CONNECT:
+        DCHECK_EQ(OK, rv);
+        rv = job->DoTransportConnect();
+        break;
+      case STATE_TRANSPORT_CONNECT_COMPLETE:
+        rv = job->DoTransportConnectComplete(rv);
+        break;
+      default:
+        NOTREACHED();
+        rv = ERR_FAILED;
+        break;
+    }
+  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
+
+  return rv;
+}
 
 }  // namespace net
 

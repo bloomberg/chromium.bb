@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/capturing_net_log.h"
@@ -19,12 +17,11 @@
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
-#include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/socket/transport_client_socket_pool_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -36,410 +33,6 @@ namespace {
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
 const net::RequestPriority kDefaultPriority = LOW;
-
-// Make sure |handle| sets load times correctly when it has been assigned a
-// reused socket.
-void TestLoadTimingInfoConnectedReused(const ClientSocketHandle& handle) {
-  LoadTimingInfo load_timing_info;
-  // Only pass true in as |is_reused|, as in general, HttpStream types should
-  // have stricter concepts of reuse than socket pools.
-  EXPECT_TRUE(handle.GetLoadTimingInfo(true, &load_timing_info));
-
-  EXPECT_TRUE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
-
-  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
-  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
-}
-
-// Make sure |handle| sets load times correctly when it has been assigned a
-// fresh socket.  Also runs TestLoadTimingInfoConnectedReused, since the owner
-// of a connection where |is_reused| is false may consider the connection
-// reused.
-void TestLoadTimingInfoConnectedNotReused(const ClientSocketHandle& handle) {
-  EXPECT_FALSE(handle.is_reused());
-
-  LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(handle.GetLoadTimingInfo(false, &load_timing_info));
-
-  EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
-
-  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
-                              CONNECT_TIMING_HAS_DNS_TIMES);
-  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
-
-  TestLoadTimingInfoConnectedReused(handle);
-}
-
-void SetIPv4Address(IPEndPoint* address) {
-  IPAddressNumber number;
-  CHECK(ParseIPLiteralToNumber("1.1.1.1", &number));
-  *address = IPEndPoint(number, 80);
-}
-
-void SetIPv6Address(IPEndPoint* address) {
-  IPAddressNumber number;
-  CHECK(ParseIPLiteralToNumber("1:abcd::3:4:ff", &number));
-  *address = IPEndPoint(number, 80);
-}
-
-class MockClientSocket : public StreamSocket {
- public:
-  MockClientSocket(const AddressList& addrlist, net::NetLog* net_log)
-      : connected_(false),
-        addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
-  }
-
-  // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
-    connected_ = true;
-    return OK;
-  }
-  virtual void Disconnect() OVERRIDE {
-    connected_ = false;
-  }
-  virtual bool IsConnected() const OVERRIDE {
-    return connected_;
-  }
-  virtual bool IsConnectedAndIdle() const OVERRIDE {
-    return connected_;
-  }
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
-    if (!connected_)
-      return ERR_SOCKET_NOT_CONNECTED;
-    if (addrlist_.front().GetFamily() == ADDRESS_FAMILY_IPV4)
-      SetIPv4Address(address);
-    else
-      SetIPv6Address(address);
-    return OK;
-  }
-  virtual const BoundNetLog& NetLog() const OVERRIDE {
-    return net_log_;
-  }
-
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
-  virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual bool WasNpnNegotiated() const OVERRIDE {
-    return false;
-  }
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
-    return kProtoUnknown;
-  }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
-    return false;
-  }
-
-  // Socket implementation.
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
-
- private:
-  bool connected_;
-  const AddressList addrlist_;
-  BoundNetLog net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
-};
-
-class MockFailingClientSocket : public StreamSocket {
- public:
-  MockFailingClientSocket(const AddressList& addrlist, net::NetLog* net_log)
-      : addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
-  }
-
-  // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
-    return ERR_CONNECTION_FAILED;
-  }
-
-  virtual void Disconnect() OVERRIDE {}
-
-  virtual bool IsConnected() const OVERRIDE {
-    return false;
-  }
-  virtual bool IsConnectedAndIdle() const OVERRIDE {
-    return false;
-  }
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-  virtual const BoundNetLog& NetLog() const OVERRIDE {
-    return net_log_;
-  }
-
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
-  virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual bool WasNpnNegotiated() const OVERRIDE {
-    return false;
-  }
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
-    return kProtoUnknown;
-  }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
-    return false;
-  }
-
-  // Socket implementation.
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
-
- private:
-  const AddressList addrlist_;
-  BoundNetLog net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockFailingClientSocket);
-};
-
-class MockPendingClientSocket : public StreamSocket {
- public:
-  // |should_connect| indicates whether the socket should successfully complete
-  // or fail.
-  // |should_stall| indicates that this socket should never connect.
-  // |delay_ms| is the delay, in milliseconds, before simulating a connect.
-  MockPendingClientSocket(
-      const AddressList& addrlist,
-      bool should_connect,
-      bool should_stall,
-      base::TimeDelta delay,
-      net::NetLog* net_log)
-      : should_connect_(should_connect),
-        should_stall_(should_stall),
-        delay_(delay),
-        is_connected_(false),
-        addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
-        weak_factory_(this) {
-  }
-
-  // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&MockPendingClientSocket::DoCallback,
-                   weak_factory_.GetWeakPtr(), callback),
-        delay_);
-    return ERR_IO_PENDING;
-  }
-
-  virtual void Disconnect() OVERRIDE {}
-
-  virtual bool IsConnected() const OVERRIDE {
-    return is_connected_;
-  }
-  virtual bool IsConnectedAndIdle() const OVERRIDE {
-    return is_connected_;
-  }
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
-    if (!is_connected_)
-      return ERR_SOCKET_NOT_CONNECTED;
-    if (addrlist_.front().GetFamily() == ADDRESS_FAMILY_IPV4)
-      SetIPv4Address(address);
-    else
-      SetIPv6Address(address);
-    return OK;
-  }
-  virtual const BoundNetLog& NetLog() const OVERRIDE {
-    return net_log_;
-  }
-
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
-  virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual bool WasNpnNegotiated() const OVERRIDE {
-    return false;
-  }
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
-    return kProtoUnknown;
-  }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
-    return false;
-  }
-
-  // Socket implementation.
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
-    return ERR_FAILED;
-  }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
-
- private:
-  void DoCallback(const CompletionCallback& callback) {
-    if (should_stall_)
-      return;
-
-    if (should_connect_) {
-      is_connected_ = true;
-      callback.Run(OK);
-    } else {
-      is_connected_ = false;
-      callback.Run(ERR_CONNECTION_FAILED);
-    }
-  }
-
-  bool should_connect_;
-  bool should_stall_;
-  base::TimeDelta delay_;
-  bool is_connected_;
-  const AddressList addrlist_;
-  BoundNetLog net_log_;
-
-  base::WeakPtrFactory<MockPendingClientSocket> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPendingClientSocket);
-};
-
-class MockClientSocketFactory : public ClientSocketFactory {
- public:
-  enum ClientSocketType {
-    MOCK_CLIENT_SOCKET,
-    MOCK_FAILING_CLIENT_SOCKET,
-    MOCK_PENDING_CLIENT_SOCKET,
-    MOCK_PENDING_FAILING_CLIENT_SOCKET,
-    // A delayed socket will pause before connecting through the message loop.
-    MOCK_DELAYED_CLIENT_SOCKET,
-    // A stalled socket that never connects at all.
-    MOCK_STALLED_CLIENT_SOCKET,
-  };
-
-  explicit MockClientSocketFactory(NetLog* net_log)
-      : net_log_(net_log), allocation_count_(0),
-        client_socket_type_(MOCK_CLIENT_SOCKET), client_socket_types_(NULL),
-        client_socket_index_(0), client_socket_index_max_(0),
-        delay_(base::TimeDelta::FromMilliseconds(
-            ClientSocketPool::kMaxConnectRetryIntervalMs)) {}
-
-  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
-      DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
-      NetLog* net_log,
-      const NetLog::Source& source) OVERRIDE {
-    NOTREACHED();
-    return scoped_ptr<DatagramClientSocket>();
-  }
-
-  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
-      const AddressList& addresses,
-      NetLog* /* net_log */,
-      const NetLog::Source& /* source */) OVERRIDE {
-    allocation_count_++;
-
-    ClientSocketType type = client_socket_type_;
-    if (client_socket_types_ &&
-        client_socket_index_ < client_socket_index_max_) {
-      type = client_socket_types_[client_socket_index_++];
-    }
-
-    switch (type) {
-      case MOCK_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockClientSocket(addresses, net_log_));
-      case MOCK_FAILING_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockFailingClientSocket(addresses, net_log_));
-      case MOCK_PENDING_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockPendingClientSocket(
-                addresses, true, false, base::TimeDelta(), net_log_));
-      case MOCK_PENDING_FAILING_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockPendingClientSocket(
-                addresses, false, false, base::TimeDelta(), net_log_));
-      case MOCK_DELAYED_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockPendingClientSocket(
-                addresses, true, false, delay_, net_log_));
-      case MOCK_STALLED_CLIENT_SOCKET:
-        return scoped_ptr<StreamSocket>(
-            new MockPendingClientSocket(
-                addresses, true, true, base::TimeDelta(), net_log_));
-      default:
-        NOTREACHED();
-        return scoped_ptr<StreamSocket>(
-            new MockClientSocket(addresses, net_log_));
-    }
-  }
-
-  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<ClientSocketHandle> transport_socket,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) OVERRIDE {
-    NOTIMPLEMENTED();
-    return scoped_ptr<SSLClientSocket>();
-  }
-
-  virtual void ClearSSLSessionCache() OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  int allocation_count() const { return allocation_count_; }
-
-  // Set the default ClientSocketType.
-  void set_client_socket_type(ClientSocketType type) {
-    client_socket_type_ = type;
-  }
-
-  // Set a list of ClientSocketTypes to be used.
-  void set_client_socket_types(ClientSocketType* type_list, int num_types) {
-    DCHECK_GT(num_types, 0);
-    client_socket_types_ = type_list;
-    client_socket_index_ = 0;
-    client_socket_index_max_ = num_types;
-  }
-
-  void set_delay(base::TimeDelta delay) { delay_ = delay; }
-
- private:
-  NetLog* net_log_;
-  int allocation_count_;
-  ClientSocketType client_socket_type_;
-  ClientSocketType* client_socket_types_;
-  int client_socket_index_;
-  int client_socket_index_max_;
-  base::TimeDelta delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockClientSocketFactory);
-};
 
 class TransportClientSocketPoolTest : public testing::Test {
  protected:
@@ -494,10 +87,11 @@ class TransportClientSocketPoolTest : public testing::Test {
   scoped_refptr<TransportSocketParams> params_;
   scoped_ptr<ClientSocketPoolHistograms> histograms_;
   scoped_ptr<MockHostResolver> host_resolver_;
-  MockClientSocketFactory client_socket_factory_;
+  MockTransportClientSocketFactory client_socket_factory_;
   TransportClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolTest);
 };
 
@@ -617,7 +211,7 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
 
 TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -761,7 +355,7 @@ TEST_F(TransportClientSocketPoolTest, TwoRequestsCancelOne) {
 
 TEST_F(TransportClientSocketPoolTest, ConnectCancelConnect) {
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -921,7 +515,7 @@ TEST_F(TransportClientSocketPoolTest, RequestTwice) {
 // cancelled.
 TEST_F(TransportClientSocketPoolTest, CancelActiveRequestWithPendingRequests) {
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
 
   // Queue up all the requests
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
@@ -951,7 +545,7 @@ TEST_F(TransportClientSocketPoolTest, CancelActiveRequestWithPendingRequests) {
 // Make sure that pending requests get serviced after active requests fail.
 TEST_F(TransportClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_PENDING_FAILING_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_PENDING_FAILING_CLIENT_SOCKET);
 
   const int kNumRequests = 2 * kMaxSocketsPerGroup + 1;
   ASSERT_LE(kNumRequests, kMaxSockets);  // Otherwise the test will hang.
@@ -1022,24 +616,24 @@ TEST_F(TransportClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
 
 TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
   // Case 1 tests the first socket stalling, and the backup connecting.
-  MockClientSocketFactory::ClientSocketType case1_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case1_types[] = {
     // The first socket will not connect.
-    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
     // The second socket will connect more quickly.
-    MockClientSocketFactory::MOCK_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET
   };
 
   // Case 2 tests the first socket being slow, so that we start the
   // second connect, but the second connect stalls, and we still
   // complete the first.
-  MockClientSocketFactory::ClientSocketType case2_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case2_types[] = {
     // The first socket will connect, although delayed.
-    MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
     // The second socket will not connect.
-    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET
   };
 
-  MockClientSocketFactory::ClientSocketType* cases[2] = {
+  MockTransportClientSocketFactory::ClientSocketType* cases[2] = {
     case1_types,
     case2_types
   };
@@ -1084,7 +678,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
 // of the backup socket, but then we cancelled the request after that.
 TEST_F(TransportClientSocketPoolTest, BackupSocketCancel) {
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET);
 
   enum { CANCEL_BEFORE_WAIT, CANCEL_AFTER_WAIT };
 
@@ -1126,11 +720,11 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketCancel) {
 // of the backup socket and never completes, and then the backup
 // connection fails.
 TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterStall) {
-  MockClientSocketFactory::ClientSocketType case_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
     // The first socket will not connect.
-    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
     // The second socket will fail immediately.
-    MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
   };
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
@@ -1173,11 +767,11 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterStall) {
 // of the backup socket and eventually completes, but the backup socket
 // fails.
 TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
-  MockClientSocketFactory::ClientSocketType case_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
     // The first socket will connect, although delayed.
-    MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
     // The second socket will not connect.
-    MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
   };
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
@@ -1228,11 +822,11 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv4FinishesFirst) {
                                  &client_socket_factory_,
                                  NULL);
 
-  MockClientSocketFactory::ClientSocketType case_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
     // This is the IPv6 socket.
-    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
     // This is the IPv4 socket.
-    MockClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
   };
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
@@ -1271,16 +865,16 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
                                  &client_socket_factory_,
                                  NULL);
 
-  MockClientSocketFactory::ClientSocketType case_types[] = {
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
     // This is the IPv6 socket.
-    MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
+    MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
     // This is the IPv4 socket.
-    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET
   };
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
   client_socket_factory_.set_delay(base::TimeDelta::FromMilliseconds(
-      TransportConnectJob::kIPv6FallbackTimerInMs + 50));
+      TransportConnectJobHelper::kIPv6FallbackTimerInMs + 50));
 
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_->rules()
@@ -1314,7 +908,7 @@ TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
                                  NULL);
 
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
 
   // Resolve an AddressList with only IPv6 addresses.
   host_resolver_->rules()
@@ -1348,7 +942,7 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
                                  NULL);
 
   client_socket_factory_.set_client_socket_type(
-      MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
+      MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
 
   // Resolve an AddressList with only IPv4 addresses.
   host_resolver_->rules()->AddIPLiteralRule("*", "1.1.1.1", std::string());

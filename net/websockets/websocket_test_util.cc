@@ -136,7 +136,7 @@ WebSocketDeterministicMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
 }
 
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
-    : url_request_context_(true) {
+    : url_request_context_(true), url_request_context_initialized_(false) {
   url_request_context_.set_client_socket_factory(maker_.factory());
 }
 
@@ -154,9 +154,12 @@ void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
 
 TestURLRequestContext*
 WebSocketTestURLRequestContextHost::GetURLRequestContext() {
-  url_request_context_.Init();
-  // A Network Delegate is required to make the URLRequest::Delegate work.
-  url_request_context_.set_network_delegate(&network_delegate_);
+  if (!url_request_context_initialized_) {
+    url_request_context_.Init();
+    // A Network Delegate is required to make the URLRequest::Delegate work.
+    url_request_context_.set_network_delegate(&network_delegate_);
+    url_request_context_initialized_ = true;
+  }
   return &url_request_context_;
 }
 

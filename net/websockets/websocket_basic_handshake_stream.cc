@@ -30,6 +30,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_deflate_predictor.h"
 #include "net/websockets/websocket_deflate_predictor_impl.h"
@@ -496,6 +497,7 @@ scoped_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
   // The HttpStreamParser object has a pointer to our ClientSocketHandle. Make
   // sure it does not touch it again before it is destroyed.
   state_.DeleteParser();
+  WebSocketTransportClientSocketPool::UnlockEndpoint(state_.connection());
   scoped_ptr<WebSocketStream> basic_stream(
       new WebSocketBasicStream(state_.ReleaseConnection(),
                                state_.read_buf(),

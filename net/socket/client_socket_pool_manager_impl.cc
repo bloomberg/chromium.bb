@@ -11,6 +11,7 @@
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -57,12 +58,21 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       ssl_config_service_(ssl_config_service),
       pool_type_(pool_type),
       transport_pool_histograms_("TCP"),
-      transport_socket_pool_(new TransportClientSocketPool(
-          max_sockets_per_pool(pool_type), max_sockets_per_group(pool_type),
-          &transport_pool_histograms_,
-          host_resolver,
-          socket_factory_,
-          net_log)),
+      transport_socket_pool_(
+          pool_type == HttpNetworkSession::WEBSOCKET_SOCKET_POOL
+              ? new WebSocketTransportClientSocketPool(
+                    max_sockets_per_pool(pool_type),
+                    max_sockets_per_group(pool_type),
+                    &transport_pool_histograms_,
+                    host_resolver,
+                    socket_factory_,
+                    net_log)
+              : new TransportClientSocketPool(max_sockets_per_pool(pool_type),
+                                              max_sockets_per_group(pool_type),
+                                              &transport_pool_histograms_,
+                                              host_resolver,
+                                              socket_factory_,
+                                              net_log)),
       ssl_pool_histograms_("SSL2"),
       ssl_socket_pool_(new SSLClientSocketPool(
           max_sockets_per_pool(pool_type), max_sockets_per_group(pool_type),

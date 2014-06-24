@@ -117,14 +117,14 @@ struct WebSocketTestURLRequestContextHost {
       scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
 
   // Call after calling one of SetExpections() or AddRawExpectations(). The
-  // returned pointer remains owned by this object. This should only be called
-  // once.
+  // returned pointer remains owned by this object.
   TestURLRequestContext* GetURLRequestContext();
 
  private:
   WebSocketDeterministicMockClientSocketFactoryMaker maker_;
   TestURLRequestContext url_request_context_;
   TestNetworkDelegate network_delegate_;
+  bool url_request_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTestURLRequestContextHost);
 };

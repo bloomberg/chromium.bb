@@ -257,5 +257,52 @@ TEST(LinkedList, MultipleInheritanceNode) {
   EXPECT_EQ(&node, node.value());
 }
 
+TEST(LinkedList, EmptyListIsEmpty) {
+  LinkedList<Node> list;
+  EXPECT_TRUE(list.empty());
+}
+
+TEST(LinkedList, NonEmptyListIsNotEmpty) {
+  LinkedList<Node> list;
+
+  Node n(1);
+  list.Append(&n);
+
+  EXPECT_FALSE(list.empty());
+}
+
+TEST(LinkedList, EmptiedListIsEmptyAgain) {
+  LinkedList<Node> list;
+
+  Node n(1);
+  list.Append(&n);
+  n.RemoveFromList();
+
+  EXPECT_TRUE(list.empty());
+}
+
+TEST(LinkedList, NodesCanBeReused) {
+  LinkedList<Node> list1;
+  LinkedList<Node> list2;
+
+  Node n(1);
+  list1.Append(&n);
+  n.RemoveFromList();
+  list2.Append(&n);
+
+  EXPECT_EQ(list2.head()->value(), &n);
+}
+
+TEST(LinkedList, RemovedNodeHasNullNextPrevious) {
+  LinkedList<Node> list;
+
+  Node n(1);
+  list.Append(&n);
+  n.RemoveFromList();
+
+  EXPECT_EQ(NULL, n.next());
+  EXPECT_EQ(NULL, n.previous());
+}
+
 }  // namespace
 }  // namespace base

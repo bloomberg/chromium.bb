@@ -945,9 +945,6 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
-      session->GetTransportSocketPool(
-          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
@@ -996,9 +993,6 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
-      session->GetTransportSocketPool(
-          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
@@ -1161,9 +1155,6 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStreamButGetSSL) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
-      session->GetTransportSocketPool(
-                HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter1.used_proxy_info().is_direct());
