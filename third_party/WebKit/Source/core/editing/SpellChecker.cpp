@@ -711,6 +711,21 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     }
 }
 
+void SpellChecker::replaceMisspelledRange(const String& text)
+{
+    RefPtrWillBeRawPtr<Range> caretRange = m_frame.selection().toNormalizedRange();
+    if (!caretRange)
+        return;
+    WillBeHeapVector<DocumentMarker*> markers = m_frame.document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
+    if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
+        return;
+    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
+    if (!markerRange)
+        return;
+    m_frame.selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
+    m_frame.editor().replaceSelectionWithText(text, false, false);
+}
+
 void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
     bool closeTyping = options & FrameSelection::CloseTyping;
@@ -756,6 +771,11 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         m_frame.document()->markers().removeMarkers(DocumentMarker::Spelling);
     if (!isContinuousGrammarCheckingEnabled)
         m_frame.document()->markers().removeMarkers(DocumentMarker::Grammar);
+}
+
+void SpellChecker::removeSpellingMarkers()
+{
+    m_frame.document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::spellCheckAfterBlur()
@@ -820,6 +840,11 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
     }
 
     return false;
+}
+
+bool SpellChecker::selectionStartHasSpellingMarkerFor(int from, int length) const
+{
+    return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
 TextCheckingTypeMask SpellChecker::resolveTextCheckingTypeMask(TextCheckingTypeMask textCheckingOptions)

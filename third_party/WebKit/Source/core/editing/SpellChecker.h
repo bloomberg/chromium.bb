@@ -70,11 +70,14 @@ public:
     void clearMisspellingsAndBadGrammar(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection&);
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
+    void replaceMisspelledRange(const String&);
+    void removeSpellingMarkers();
     void spellCheckAfterBlur();
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence);
 
     void didEndEditingOnTextField(Element*);
     bool selectionStartHasMarkerFor(DocumentMarker::MarkerType, int from, int length) const;
+    bool selectionStartHasSpellingMarkerFor(int from, int length) const;
     void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
     void cancelCheck();
     void chunkAndMarkAllMisspellingsAndBadGrammar(Node*);

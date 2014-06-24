@@ -82,8 +82,6 @@
 #include "bindings/v8/V8PerIsolateData.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentMarker.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/Node.h"
@@ -1133,22 +1131,12 @@ void WebLocalFrameImpl::replaceMisspelledRange(const WebString& text)
     // If this caret selection has two or more markers, this function replace the range covered by the first marker with the specified word as Microsoft Word does.
     if (pluginContainerFromFrame(frame()))
         return;
-    RefPtrWillBeRawPtr<Range> caretRange = frame()->selection().toNormalizedRange();
-    if (!caretRange)
-        return;
-    WillBeHeapVector<DocumentMarker*> markers = frame()->document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
-    if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
-        return;
-    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
-    if (!markerRange)
-        return;
-    frame()->selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
-    frame()->editor().replaceSelectionWithText(text, false, false);
+    frame()->spellChecker().replaceMisspelledRange(text);
 }
 
 void WebLocalFrameImpl::removeSpellingMarkers()
 {
-    frame()->document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
+    frame()->spellChecker().removeSpellingMarkers();
 }
 
 bool WebLocalFrameImpl::hasSelection() const
@@ -1535,7 +1523,7 @@ bool WebLocalFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length)
 {
     if (!frame())
         return false;
-    return frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
+    return frame()->spellChecker().selectionStartHasSpellingMarkerFor(from, length);
 }
 
 WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const
