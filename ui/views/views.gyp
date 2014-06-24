@@ -93,6 +93,8 @@
         'cocoa/bridged_content_view.mm',
         'cocoa/bridged_native_widget.h',
         'cocoa/bridged_native_widget.mm',
+        'cocoa/views_nswindow_delegate.h',
+        'cocoa/views_nswindow_delegate.mm',
         'color_chooser/color_chooser_listener.h',
         'color_chooser/color_chooser_view.cc',
         'color_chooser/color_chooser_view.h',

@@ -13,6 +13,7 @@
 #include "ui/views/views_export.h"
 
 @class BridgedContentView;
+@class ViewsNSWindowDelegate;
 
 namespace ui {
 class InputMethod;
@@ -21,15 +22,16 @@ class InputMethod;
 namespace views {
 
 class InputMethod;
+class NativeWidgetMac;
 class View;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
-
  public:
-  BridgedNativeWidget();
+  // Creates one side of the bridge. |parent| can be NULL in tests.
+  explicit BridgedNativeWidget(NativeWidgetMac* parent);
   virtual ~BridgedNativeWidget();
 
   // Initialize the bridge, "retains" ownership of |window|.
@@ -43,6 +45,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();
 
+  NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
   NSWindow* ns_window() { return window_; }
 
@@ -50,7 +53,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
  private:
+  views::NativeWidgetMac* native_widget_mac_;  // Weak. Owns this.
   base::scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   scoped_ptr<ui::InputMethod> input_method_;
 

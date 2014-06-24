@@ -6,11 +6,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/views_nswindow_delegate.h"
 
 namespace views {
 
@@ -18,7 +20,7 @@ namespace views {
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate), bridge_(new BridgedNativeWidget) {
+    : delegate_(delegate), bridge_(new BridgedNativeWidget(this)) {
 }
 
 NativeWidgetMac::~NativeWidgetMac() {
@@ -68,7 +70,8 @@ const Widget* NativeWidgetMac::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetMac::GetNativeView() const {
-  return bridge_->ns_view();
+  // Returns a BridgedContentView, unless there is no views::RootView set.
+  return [GetNativeWindow() contentView];
 }
 
 gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
@@ -386,22 +389,25 @@ NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return GetNativeWidgetForNativeWindow([native_view window]);
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
-  NOTIMPLEMENTED();
-  return NULL;
+  id<NSWindowDelegate> window_delegate = [native_window delegate];
+  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
+    ViewsNSWindowDelegate* delegate =
+        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
+    return [delegate nativeWidgetMac];
+  }
+  return NULL;  // Not created by NativeWidgetMac.
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return GetNativeWidgetForNativeView(native_view);
 }
 
 // static

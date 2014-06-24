@@ -43,9 +43,14 @@ void BridgedNativeWidgetTest::SetUp() {
   ui::CocoaTest::SetUp();
 
   view_.reset(new views::View);
-  bridge_.reset(new BridgedNativeWidget);
+  bridge_.reset(new BridgedNativeWidget(NULL));
   base::scoped_nsobject<NSWindow> window([test_window() retain]);
+
+  EXPECT_FALSE([window delegate]);
   bridge_->Init(window);
+
+  // The delegate should exist before setting the root view.
+  EXPECT_TRUE([window delegate]);
   bridge_->SetRootView(view_.get());
 
   [test_window() makePretendKeyWindowAndSetFirstResponder:bridge_->ns_view()];
@@ -79,6 +84,7 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
   EXPECT_FALSE([view superview]);
   EXPECT_FALSE([view window]);
   EXPECT_FALSE([test_window() contentView]);
+  EXPECT_FALSE([test_window() delegate]);
 }
 
 TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewDisplay) {

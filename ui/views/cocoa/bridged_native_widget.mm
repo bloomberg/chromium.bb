@@ -9,6 +9,7 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_switches_util.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/ime/null_input_method.h"
 #include "ui/views/view.h"
@@ -16,16 +17,21 @@
 
 namespace views {
 
-BridgedNativeWidget::BridgedNativeWidget() {
+BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
+    : native_widget_mac_(parent) {
+  window_delegate_.reset(
+      [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
 }
 
 BridgedNativeWidget::~BridgedNativeWidget() {
   SetRootView(NULL);
+  [window_ setDelegate:nil];
 }
 
 void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window) {
   DCHECK(!window_);
   window_.swap(window);
+  [window_ setDelegate:window_delegate_];
 }
 
 void BridgedNativeWidget::SetRootView(views::View* view) {
