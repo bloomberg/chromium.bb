@@ -189,6 +189,12 @@ def additional_include_files(supplemental_files, args=[]):
 if __name__ == '__main__':
   args = sys.argv[1:]
 
+  use_analyzer = len(args) and args[0] == '--analyzer'
+  if use_analyzer:
+    args.pop(0)
+    os.environ['GYP_GENERATORS'] = 'analyzer'
+    args.append('-Gfile_path=' + args.pop(0))
+
   if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
     # Check for landmines (reasons to clobber the build) in any case.
     print 'Running build/landmines.py...'
@@ -307,22 +313,24 @@ if __name__ == '__main__':
 
   args.extend(['-D', 'gyp_output_dir=' + GetOutputDirectory()])
 
-  print 'Updating projects from gyp files...'
-  sys.stdout.flush()
+  if not use_analyzer:
+    print 'Updating projects from gyp files...'
+    sys.stdout.flush()
 
   # Off we go...
   gyp_rc = gyp.main(args)
 
-  # Check for landmines (reasons to clobber the build). This must be run here,
-  # rather than a separate runhooks step so that any environment modifications
-  # from above are picked up.
-  print 'Running build/landmines.py...'
-  subprocess.check_call(
+  if not use_analyzer:
+    # Check for landmines (reasons to clobber the build). This must be run here,
+    # rather than a separate runhooks step so that any environment modifications
+    # from above are picked up.
+    print 'Running build/landmines.py...'
+    subprocess.check_call(
       [sys.executable, os.path.join(script_dir, 'landmines.py')])
 
-  if vs2013_runtime_dll_dirs:
-    x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
-    vs_toolchain.CopyVsRuntimeDlls(
+    if vs2013_runtime_dll_dirs:
+      x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
+      vs_toolchain.CopyVsRuntimeDlls(
         os.path.join(chrome_src, GetOutputDirectory()),
         (x86_runtime, x64_runtime))
 
