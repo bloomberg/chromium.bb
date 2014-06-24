@@ -1,0 +1,29 @@
+#mao#1#Maori Uncontracted#
+# liblouis: Cherokee Braille Table
+#
+# Copyright (C) 2014, maintained by Greg Kearney, gkearney@gmail.com
+#
+# liblouis  comes with ABSOLUTELY NO WARRANTY.
+#
+# This is free software, placed under the terms of the
+# GNU General Public License, as published by the Free Software
+# Foundation.  Please see the file COPYING for details.
+#
+
+include chardefs.cti
+
+#include text_nabcc.dis All display opcodes
+
+include ukchardefs.cti All character definition opcodes
+include en-ueb-g1.ctb
+
+# Maori specific
+
+always	ng	1345-1245
+always	wh	156
+uplow	Āā	456-1
+uplow	Ēē	456-15
+uplow	Īī	456-24
+uplow	Ōō	456-135
+uplow	Ūū	456-136
+
