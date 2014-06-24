@@ -88,10 +88,10 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ExecutionContext* context, v8::Isolate* isolate)
 {
-    TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded(isolate);
