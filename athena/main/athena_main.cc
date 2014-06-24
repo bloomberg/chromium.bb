@@ -12,6 +12,7 @@
 #include "athena/home/public/home_card.h"
 #include "athena/main/athena_app_window_controller.h"
 #include "athena/main/athena_launcher.h"
+#include "athena/main/debug/debug_window.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_bindings.h"
@@ -61,6 +62,7 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
     athena::VirtualKeyboardManager::Create(context);
 
     CreateTestPages(context);
+    CreateDebugWindow();
   }
 
   virtual void Shutdown() OVERRIDE { athena::ShutdownAthena(); }
