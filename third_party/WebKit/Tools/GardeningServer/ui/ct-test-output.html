@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+ <polymer-element name="ct-test-output" attributes="type url">
+    <template>
+        <style>
+            .result {
+                border: 1px solid gray;
+            }
+            iframe {
+                border: none;
+                width: 100%;
+                height: 400px;
+            }
+            img {
+                width: 100%;
+            }
+        </style>
+
+        <div class="result">
+            <template if="{{url}}">
+                <template if="{{type == _kImageType}}">
+                    <img src="{{url}}">
+                </template>
+                <template if="{{type == _kTextType}}">
+                    <iframe src="{{url}}"></iframe>
+                </template>
+                <template if="{{type == _kAudioType}}">
+                    <audio controls src="{{url}}"></audio>
+                </template>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            type: '',
+            url: '',
+            _kAudioType: results.kAudioType,
+            _kImageType: results.kImageType,
+            _kTextType: results.kTextType,
+        });
+    </script>
+</polymer-element>

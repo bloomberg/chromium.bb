@@ -1,0 +1,43 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-results-comparison.html">
+
+<script>
+(function () {
+
+module("ct-results-comparison");
+
+asyncTest("basic", 7, function() {
+    var comparison = document.createElement('ct-results-comparison');
+    comparison.type = results.kImageType;
+
+    var expected = "http://domain.com/dummy-expected";
+    var actual = "http://domain.com/dummy-actual";
+    var diff = "http://domain.com/dummy-diff";
+
+    comparison.expectedUrl = expected;
+    comparison.actualUrl = actual;
+    comparison.diffUrl = diff;
+
+    Platform.endOfMicrotask(function() {
+        var outputs = comparison.shadowRoot.querySelectorAll('ct-test-output');
+        equal(outputs.length, 3);
+
+        // Verify we didn't typo any of the bindings.
+        equal(outputs[0].type, results.kImageType);
+        equal(outputs[0].url, expected);
+        equal(outputs[1].type, results.kImageType);
+        equal(outputs[1].url, actual);
+        equal(outputs[2].type, results.kImageType);
+        equal(outputs[2].url, diff);
+
+        start();
+    });
+});
+
+})()
+</script>

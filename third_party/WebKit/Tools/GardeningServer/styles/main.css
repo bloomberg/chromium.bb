@@ -316,17 +316,6 @@ button.default:hover {
     background-color: white;
 }
 
-.text-result {
-    border: none;
-    width: 100%;
-    height: 400px; /* FIXME: How do we get a reasonable height here? */
-}
-
-.image-result {
-    width: 100%;
-    height: auto;
-}
-
 /*** partytime ***/
 
 .partytime {

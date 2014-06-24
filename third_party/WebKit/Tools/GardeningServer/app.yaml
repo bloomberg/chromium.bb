@@ -21,3 +21,11 @@ handlers:
 
 - url: /styles
   static_dir: styles
+
+- url: /ui
+  static_dir: ui
+
+# FIXME: Write a script to do the appcfg update so that we can error out
+# if there is no bower_components, or, even better just run "bower update".
+- url: /bower_components
+  static_dir: bower_components

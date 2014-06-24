@@ -1,0 +1,36 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-test-output.html">
+
+<polymer-element name="ct-results-comparison" attributes="type expectedUrl actualUrl diffUrl" noscript>
+    <template>
+        <style>
+            :host {
+                display: flex;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            .container {
+                flex: 1;
+                min-width: 300px;
+            }
+        </style>
+
+        <div class="container">
+            <h2>Expected</h2>
+            <ct-test-output type="{{type}}" url="{{expectedUrl}}"></ct-test-output>
+        </div>
+        <div class="container">
+            <h2>Actual</h2>
+            <ct-test-output type="{{type}}" url="{{actualUrl}}"></ct-test-output>
+        </div>
+        <div class="container">
+            <h2>Diff</h2>
+            <ct-test-output type="{{type}}" url="{{diffUrl}}"></ct-test-output>
+        </div>
+    </template>
+</polymer-element>

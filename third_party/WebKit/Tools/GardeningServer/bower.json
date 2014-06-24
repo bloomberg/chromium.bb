@@ -1,0 +1,6 @@
+{
+    "name": "garden-o-matic",
+    "dependencies": {
+        "polymer": "Polymer/polymer#~0.3.3"
+    }
+}

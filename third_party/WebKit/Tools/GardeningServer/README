@@ -1,0 +1,20 @@
+garden-o-matic must be run from a server in order to handle polymer imports correctly.
+
+1. cd Tools
+2. python -m SimpleHTTPServer
+3. Load http://localhost:8000/GardeningServer/garden-o-matic.html
+
+Run the tests via http://localhost:8000/GardeningServer/run-unittests.html.
+
+Polymer must be synced via bower in order for anything to work.
+
+INSTALLING NPM/BOWER
+The version of npm in apt-get is too old for bower. Instead
+install it from http://nodejs.org/download/.
+
+Install bower with:
+    sudo npm install -g bower
+
+SYNCING POLYMER
+1. cd Tools/GardeningServer
+2. bower update

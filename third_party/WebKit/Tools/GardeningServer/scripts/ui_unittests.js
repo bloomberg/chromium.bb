@@ -73,57 +73,33 @@ test("ui.onebar", 3, function() {
 });
 
 // FIXME: These three results.* tests should be moved ot ui/results_unittests.js.
-test("results.ResultsGrid", 1, function() {
+test("results.ResultsGrid", 8, function() {
     var grid = new ui.results.ResultsGrid()
     grid.addResults([
-        'http://example.com/layout-test-results/foo-bar-diff.txt',
-        'http://example.com/layout-test-results/foo-bar-expected.png',
-        'http://example.com/layout-test-results/foo-bar-actual.png',
-        'http://example.com/layout-test-results/foo-bar-diff.png',
+        'http://example.com/foo-bar-diff.txt',
+        'http://example.com/foo-bar-expected.png',
+        'http://example.com/foo-bar-actual.png',
+        'http://example.com/foo-bar-diff.png',
     ]);
-    equal(grid.innerHTML,
-        '<div class="comparison">' +
-            '<div>' +
-                '<h2>Expected</h2>' +
-                '<div class="results-container expected">' +
-                    '<img class="image-result" src="http://example.com/layout-test-results/foo-bar-expected.png">' +
-                '</div>' +
-            '</div>' +
-            '<div>' +
-                '<h2>Actual</h2>' +
-                '<div class="results-container actual">' +
-                    '<img class="image-result" src="http://example.com/layout-test-results/foo-bar-actual.png">' +
-                '</div>' +
-            '</div>' +
-            '<div>' +
-                '<h2>Diff</h2>' +
-                '<div class="results-container diff">' +
-                    '<img class="image-result" src="http://example.com/layout-test-results/foo-bar-diff.png">' +
-                '</div>' +
-            '</div>' +
-        '</div>' +
-        '<div class="comparison">' +
-            '<div>' +
-                '<h2>Expected</h2>' +
-                '<div class="results-container expected"></div>' +
-            '</div>' +
-            '<div>' +
-                '<h2>Actual</h2>' +
-                '<div class="results-container actual"></div>' +
-            '</div>' +
-            '<div>' +
-                '<h2>Diff</h2>' +
-                '<div class="results-container diff">' +
-                    '<iframe class="text-result" src="http://example.com/layout-test-results/foo-bar-diff.txt"></iframe>' +
-                '</div>' +
-            '</div>' +
-        '</div>');
+
+    var comparisons = grid.querySelectorAll("ct-results-comparison");
+
+    equal(comparisons[0].type, "text");
+    equal(comparisons[0].actualUrl, "");
+    equal(comparisons[0].expectedUrl, "");
+    equal(comparisons[0].diffUrl, "http://example.com/foo-bar-diff.txt");
+
+    equal(comparisons[1].type, "image");
+    equal(comparisons[1].actualUrl, "http://example.com/foo-bar-actual.png");
+    equal(comparisons[1].expectedUrl, "http://example.com/foo-bar-expected.png");
+    equal(comparisons[1].diffUrl, "http://example.com/foo-bar-diff.png");
 });
 
 test("results.ResultsGrid (crashlog)", 1, function() {
     var grid = new ui.results.ResultsGrid()
     grid.addResults(['http://example.com/layout-test-results/foo-bar-crash-log.txt']);
-    equal(grid.innerHTML, '<iframe class="text-result" src="http://example.com/layout-test-results/foo-bar-crash-log.txt"></iframe>');
+    equal(grid.innerHTML, '<iframe src="http://example.com/layout-test-results/foo-bar-crash-log.txt" '+
+        'style="border: 0px; width: 100%; height: 400px;"></iframe>');
 });
 
 test("results.ResultsGrid (empty)", 1, function() {

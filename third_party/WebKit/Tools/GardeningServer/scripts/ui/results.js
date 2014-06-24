@@ -30,125 +30,47 @@ ui.results = ui.results || {};
 
 var kResultsPrefetchDelayMS = 500;
 
-ui.results.Comparison = base.extends('div', {
-    init: function()
-    {
-        this.className = 'comparison';
-        this.innerHTML = '<div><h2>Expected</h2><div class="results-container expected"></div></div>' +
-                         '<div><h2>Actual</h2><div class="results-container actual"></div></div>' +
-                         '<div><h2>Diff</h2><div class="results-container diff"></div></div>';
-    },
-    _selectorForKind: function(kind)
-    {
-        switch (kind) {
-        case results.kExpectedKind:
-            return '.expected';
-        case results.kActualKind:
-            return '.actual';
-        case results.kDiffKind:
-            return '.diff';
-        }
-        return '.unknown';
-    },
-    update: function(kind, result)
-    {
-        var selector = this._selectorForKind(kind);
-        $(selector, this).empty().append(result);
-        return result;
-    },
-});
-
-// We'd really like TextResult and ImageResult to extend a common Result base
-// class, but we can't seem to do that because they inherit from different
-// HTMLElements. We could have them inherit from <div>, but that seems lame.
-
-ui.results.TextResult = base.extends('iframe', {
-    init: function(url)
-    {
-        this.className = 'text-result';
-        this.src = url;
-    }
-});
-
-ui.results.ImageResult = base.extends('img', {
-    init: function(url)
-    {
-        this.className = 'image-result';
-        this.src = url;
-    }
-});
-
-ui.results.AudioResult = base.extends('audio', {
-    init: function(url)
-    {
-        this.className = 'audio-result';
-        this.src = url;
-        this.controls = 'controls';
-    }
-});
-
-function constructorForResultType(type)
-{
-    if (type == results.kImageType)
-        return ui.results.ImageResult;
-    if (type == results.kAudioType)
-        return ui.results.AudioResult;
-    return ui.results.TextResult;
-}
-
 ui.results.ResultsGrid = base.extends('div', {
     init: function()
     {
         this.className = 'results-grid';
     },
-    _addResult: function(comparison, constructor, resultsURLsByKind, kind)
-    {
-        var url = resultsURLsByKind[kind];
-        if (!url)
-            return;
-        comparison.update(kind, new constructor(url));
-    },
-    addComparison: function(resultType, resultsURLsByKind)
-    {
-        var comparison = new ui.results.Comparison();
-        var constructor = constructorForResultType(resultType);
-
-        this._addResult(comparison, constructor, resultsURLsByKind, results.kExpectedKind);
-        this._addResult(comparison, constructor, resultsURLsByKind, results.kActualKind);
-        this._addResult(comparison, constructor, resultsURLsByKind, results.kDiffKind);
-
-        this.appendChild(comparison);
-        return comparison;
-    },
-    addRow: function(resultType, url)
-    {
-        var constructor = constructorForResultType(resultType);
-        var view = new constructor(url);
-        this.appendChild(view);
-        return view;
-    },
     addResults: function(resultsURLs)
     {
         var resultsURLsByTypeAndKind = {};
-
-        resultsURLsByTypeAndKind[results.kImageType] = {};
-        resultsURLsByTypeAndKind[results.kAudioType] = {};
-        resultsURLsByTypeAndKind[results.kTextType] = {};
-
         resultsURLs.forEach(function(url) {
-            resultsURLsByTypeAndKind[results.resultType(url)][results.resultKind(url)] = url;
+            var resultType = results.resultType(url);
+            if (!resultsURLsByTypeAndKind[resultType])
+                resultsURLsByTypeAndKind[resultType] = {};
+            resultsURLsByTypeAndKind[resultType][results.resultKind(url)] = url;
         });
 
         $.each(resultsURLsByTypeAndKind, function(resultType, resultsURLsByKind) {
-            if ($.isEmptyObject(resultsURLsByKind))
-                return;
             if (results.kUnknownKind in resultsURLsByKind) {
                 // This is something like "crash" that isn't a comparison.
-                this.addRow(resultType, resultsURLsByKind[results.kUnknownKind]);
+                var result = document.createElement('iframe');
+                result.src = resultsURLsByKind[results.kUnknownKind];
+                // FIXME: Move this to a stylesheet when we polymerize this component.
+                result.style.border = 0;
+                result.style.width = '100%';
+                result.style.height = '400px';
+                this.appendChild(result);
                 return;
             }
-            this.addComparison(resultType, resultsURLsByKind);
+
+            var comparison = document.createElement('ct-results-comparison');
+            comparison.type = resultType;
+
+            if (results.kActualKind in resultsURLsByKind)
+                comparison.actualUrl = resultsURLsByKind[results.kActualKind];
+            if (results.kExpectedKind in resultsURLsByKind)
+                comparison.expectedUrl = resultsURLsByKind[results.kExpectedKind];
+            if (results.kDiffKind in resultsURLsByKind)
+                comparison.diffUrl = resultsURLsByKind[results.kDiffKind];
+
+            this.appendChild(comparison);
         }.bind(this));
+
         if (!this.children.length)
             this.textContent = 'No results to display.'
     }
@@ -175,8 +97,6 @@ ui.results.ResultsDetails = base.extends('div', {
                     new ui.actions.Previous(),
                     new ui.actions.Next()
                 ])).append(resultsGrid);
-
-
         }.bind(this));
     },
 });
