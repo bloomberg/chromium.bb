@@ -111,6 +111,8 @@ def main():
   colorama.init()
 
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+
   parser.add_option(
       '--src-gendirs',
       help='Directories containing generated java files.')
@@ -164,6 +166,11 @@ def main():
       # running this action.
       build_utils.DeleteDirectory(options.classes_dir)
       shutil.copytree(classes_dir, options.classes_dir)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

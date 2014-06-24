@@ -9,9 +9,11 @@ template("zip") {
   rebase_output = rebase_path(invoker.output)
   action(target_name) {
     script = "//build/android/gn/zip.py"
+    depfile = "$target_gen_dir/$target_name.d"
     source_prereqs = invoker.inputs
-    outputs = [invoker.output]
+    outputs = [depfile, invoker.output]
     args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
       "--inputs=$rebase_inputs",
       "--output=$rebase_output",
     ]

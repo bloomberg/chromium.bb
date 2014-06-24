@@ -92,6 +92,8 @@ def DoJarToc(options):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+
   parser.add_option('--jar-path', help='Input .jar path.')
   parser.add_option('--toc-path', help='Output .jar.TOC path.')
   parser.add_option('--stamp', help='Path to touch on success.')
@@ -99,6 +101,11 @@ def main():
   options, _ = parser.parse_args()
 
   DoJarToc(options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

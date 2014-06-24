@@ -18,6 +18,15 @@ import sys
 import textwrap
 import zipfile
 
+CHROMIUM_SRC = os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir)
+BUILD_ANDROID_GYP = os.path.join(
+    CHROMIUM_SRC, 'build', 'android', 'gyp')
+
+sys.path.append(BUILD_ANDROID_GYP)
+
+from util import build_utils
+
 
 class ParseError(Exception):
   """Exception thrown when we can't parse the input file."""
@@ -1351,6 +1360,8 @@ declarations and print the header file to stdout (or a file).
 See SampleForTests.java for more details.
   """
   option_parser = optparse.OptionParser(usage=usage)
+  build_utils.AddDepfileOption(option_parser)
+
   option_parser.add_option('-j', '--jar_file', dest='jar_file',
                            help='Extract the list of input files from'
                            ' a specified jar file.'
@@ -1424,6 +1435,11 @@ See SampleForTests.java for more details.
     with open(options.jarjar) as f:
       JniParams.SetJarJarMappings(f.read())
   GenerateJNIHeader(input_file, output_file, options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':

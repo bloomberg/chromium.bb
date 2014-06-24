@@ -14,8 +14,9 @@ import sys
 import tempfile
 import zipfile
 
-CHROMIUM_SRC = os.path.join(os.path.dirname(__file__),
-                            os.pardir, os.pardir, os.pardir, os.pardir)
+CHROMIUM_SRC = os.path.normpath(
+    os.path.join(os.path.dirname(__file__),
+                 os.pardir, os.pardir, os.pardir, os.pardir))
 COLORAMA_ROOT = os.path.join(CHROMIUM_SRC,
                              'third_party', 'colorama', 'src')
 
@@ -82,6 +83,7 @@ def CheckOptions(options, parser, required=None):
     if getattr(options, option_name) is None:
       parser.error('--%s is required' % option_name.replace('_', '-'))
 
+
 def WriteJson(obj, path, only_if_changed=False):
   old_dump = None
   if os.path.exists(path):
@@ -93,6 +95,7 @@ def WriteJson(obj, path, only_if_changed=False):
   if not only_if_changed or old_dump != new_dump:
     with open(path, 'w') as outfile:
       outfile.write(new_dump)
+
 
 def ReadJson(path):
   with open(path, 'r') as jsonfile:
@@ -212,3 +215,40 @@ def PrintBigWarning(message):
   print '*****     ' * 8
   PrintWarning(message)
   print '*****     ' * 8
+
+
+def GetPythonDependencies():
+  """Gets the paths of imported non-system python modules.
+
+  A path is assumed to be a "system" import if it is outside of chromium's
+  src/. The paths will be relative to the current directory.
+  """
+  module_paths = (m.__file__ for m in sys.modules.itervalues()
+                  if m is not None and hasattr(m, '__file__'))
+
+  abs_module_paths = map(os.path.abspath, module_paths)
+
+  non_system_module_paths = [
+      p for p in abs_module_paths if p.startswith(CHROMIUM_SRC)]
+  def ConvertPycToPy(s):
+    if s.endswith('.pyc'):
+      return s[:-1]
+    return s
+
+  non_system_module_paths = map(ConvertPycToPy, non_system_module_paths)
+  non_system_module_paths = map(os.path.relpath, non_system_module_paths)
+  return sorted(set(non_system_module_paths))
+
+
+def AddDepfileOption(parser):
+  parser.add_option('--depfile',
+                    help='Path to depfile. This must be specified as the '
+                    'action\'s first output.')
+
+
+def WriteDepfile(path, dependencies):
+  with open(path, 'w') as depfile:
+    depfile.write(path)
+    depfile.write(': ')
+    depfile.write(' '.join(dependencies))
+    depfile.write('\n')

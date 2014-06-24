@@ -31,6 +31,8 @@ def DoGcc(options):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+
   parser.add_option('--include-path', help='Include path for gcc.')
   parser.add_option('--template', help='Path to template.')
   parser.add_option('--output', help='Path for generated file.')
@@ -40,6 +42,11 @@ def main():
   options, _ = parser.parse_args()
 
   DoGcc(options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

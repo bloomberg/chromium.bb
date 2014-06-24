@@ -13,6 +13,9 @@ import os
 import sys
 import zipfile
 
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
+from util import build_utils
+
 def DoZip(inputs, output, base_dir):
   with zipfile.ZipFile(output, 'w') as outfile:
     for f in inputs:
@@ -20,6 +23,8 @@ def DoZip(inputs, output, base_dir):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+
   parser.add_option('--inputs', help='List of files to archive.')
   parser.add_option('--output', help='Path to output archive.')
   parser.add_option('--base-dir',
@@ -33,6 +38,11 @@ def main():
   base_dir = options.base_dir
 
   DoZip(inputs, output, base_dir)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':
