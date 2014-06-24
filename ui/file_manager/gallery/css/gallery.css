@@ -152,11 +152,6 @@ body {
     max-height: 100%;
     max-width: 100%;
   }
-
-  /* Print video at the center of the page */
-  .gallery .image-container > video.image {
-    position: auto !important;
-  }
 }
 
 /* Toolbar */
@@ -1136,52 +1131,6 @@ body {
 }
 
 .gallery:not([error]) .error-banner {
-  display: none;
-}
-
-/* Video playback support. */
-
-.gallery video {
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.gallery .video-controls-spacer {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  bottom: 60px;  /* Just above the toolbar */
-  display: -webkit-box;
-  height: 30px;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-}
-
-.gallery[video] .video-controls-spacer {
-  /* Animate opacity on 'tools' attribute toggle. */
-  /* Change opacity immediately on 'video' attribute change. */
-  transition: opacity 280ms ease;
-}
-
-.gallery[video][tools] .video-controls-spacer {
-  opacity: 1;
-}
-
-.gallery .video-controls {
-  display: none;
-  max-width: 800px;
-}
-
-.gallery[video] .video-controls {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-}
-
-.gallery[video] > .toolbar .edit-main {
   display: none;
 }
 

@@ -21,7 +21,6 @@
     "fileBrowserHandler",
     "fileBrowserPrivate",
     "fullscreen",
-    "mediaPlayerPrivate",
     "metricsPrivate",
     "storage",
     "chrome://extension-icon/",

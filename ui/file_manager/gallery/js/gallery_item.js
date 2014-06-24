@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Object representing an image item (a photo or a video).
+ * Object representing an image item (a photo).
  *
  * @param {FileEntry} entry Image entry.
  * @constructor

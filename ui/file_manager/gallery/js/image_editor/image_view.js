@@ -41,7 +41,7 @@ function ImageView(container, viewport, metadataCache) {
   /**
    * The element displaying the current content.
    *
-   * @type {HTMLCanvasElement|HTMLVideoElement}
+   * @type {HTMLCanvasElement}
    * @private
    */
   this.screenImage_ = null;
@@ -80,24 +80,19 @@ ImageView.LOAD_TYPE_CACHED_SCREEN = 1;
 ImageView.LOAD_TYPE_IMAGE_FILE = 2;
 
 /**
- * Image load type: video loaded.
- */
-ImageView.LOAD_TYPE_VIDEO_FILE = 3;
-
-/**
  * Image load type: error occurred.
  */
-ImageView.LOAD_TYPE_ERROR = 4;
+ImageView.LOAD_TYPE_ERROR = 3;
 
 /**
  * Image load type: the file contents is not available offline.
  */
-ImageView.LOAD_TYPE_OFFLINE = 5;
+ImageView.LOAD_TYPE_OFFLINE = 4;
 
 /**
  * The total number of load types.
  */
-ImageView.LOAD_TYPE_TOTAL = 6;
+ImageView.LOAD_TYPE_TOTAL = 5;
 
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
@@ -183,7 +178,7 @@ ImageView.prototype.invalidateCaches = function() {
 /**
  * @return {HTMLCanvasElement} The content canvas element.
  */
-ImageView.prototype.getCanvas = function() { return this.contentCanvas_ };
+ImageView.prototype.getCanvas = function() { return this.contentCanvas_; };
 
 /**
  * @return {boolean} True if the a valid image is currently loaded.
@@ -193,14 +188,9 @@ ImageView.prototype.hasValidImage = function() {
 };
 
 /**
- * @return {HTMLVideoElement} The video element.
- */
-ImageView.prototype.getVideo = function() { return this.videoElement_ };
-
-/**
  * @return {HTMLCanvasElement} The cached thumbnail image.
  */
-ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
+ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_; };
 
 /**
  * @return {number} The content revision number.
@@ -325,42 +315,6 @@ ImageView.prototype.load = function(entry, metadata, effect,
   this.contentEntry_ = entry;
   this.contentRevision_ = -1;
 
-  var loadingVideo = FileType.getMediaType(entry) === 'video';
-  if (loadingVideo) {
-    var video = this.document_.createElement('video');
-    var videoPreview = !!(metadata.thumbnail && metadata.thumbnail.url);
-    if (videoPreview) {
-      var thumbnailLoader = new ThumbnailLoader(
-          entry,
-          ThumbnailLoader.LoaderType.CANVAS,
-          metadata);
-      thumbnailLoader.loadDetachedImage(function(success) {
-        if (success) {
-          var canvas = thumbnailLoader.getImage();
-          video.setAttribute('poster', canvas.toDataURL('image/jpeg'));
-          this.replace(video, effect);  // Show the poster immediately.
-          if (displayCallback) displayCallback();
-        }
-      }.bind(this));
-    }
-
-    var onVideoLoad = function(error) {
-      video.removeEventListener('loadedmetadata', onVideoLoadSuccess);
-      video.removeEventListener('error', onVideoLoadError);
-      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video,
-          error);
-    };
-    var onVideoLoadError = onVideoLoad.bind(this, 'GALLERY_VIDEO_ERROR');
-    var onVideoLoadSuccess = onVideoLoad.bind(this, null);
-
-    video.addEventListener('loadedmetadata', onVideoLoadSuccess);
-    video.addEventListener('error', onVideoLoadError);
-
-    video.src = entry.toURL();
-    video.load();
-    return;
-  }
-
   // Cache has to be evicted in advance, so the returned cached image is not
   // evicted later by the prefetched image.
   this.contentCache_.evictLRU();
@@ -452,15 +406,10 @@ ImageView.prototype.load = function(entry, metadata, effect,
     if (opt_error)
       loadType = ImageView.LOAD_TYPE_ERROR;
 
-    // If we already displayed the preview we should not replace the content if:
-    //   1. The full content failed to load.
-    //     or
-    //   2. We are loading a video (because the full video is displayed in the
-    //      same HTML element as the preview).
+    // If we already displayed the preview we should not replace the content if
+    // the full content failed to load.
     var animationDuration = 0;
-    if (!(previewShown &&
-        (loadType === ImageView.LOAD_TYPE_ERROR ||
-         loadType === ImageView.LOAD_TYPE_VIDEO_FILE))) {
+    if (!(previewShown && loadType === ImageView.LOAD_TYPE_ERROR)) {
       var replaceEffect = previewShown ? null : effect;
       animationDuration = replaceEffect ? replaceEffect.getSafeInterval() : 0;
       self.replace(content, replaceEffect);
@@ -544,11 +493,10 @@ ImageView.prototype.unload = function(zoomToRect) {
   this.container_.textContent = '';
   this.contentCanvas_ = null;
   this.screenImage_ = null;
-  this.videoElement_ = null;
 };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
+ * @param {HTMLCanvasElement} content The image element.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
  * @param {boolean=} opt_preview True if the image is a preview (not full res).
@@ -560,20 +508,9 @@ ImageView.prototype.replaceContent_ = function(
   if (this.contentCanvas_ && this.contentCanvas_.parentNode === this.container_)
     this.container_.removeChild(this.contentCanvas_);
 
-  if (content.constructor.name === 'HTMLVideoElement') {
-    this.contentCanvas_ = null;
-    this.videoElement_ = content;
-    this.screenImage_ = content;
-    this.screenImage_.className = 'image';
-    this.container_.appendChild(this.screenImage_);
-    this.videoElement_.play();
-    return;
-  }
-
   this.screenImage_ = this.document_.createElement('canvas');
   this.screenImage_.className = 'image';
 
-  this.videoElement_ = null;
   this.contentCanvas_ = content;
   this.invalidateCaches();
   this.viewport_.setImageSize(
@@ -641,7 +578,7 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 /**
  * Replaces the displayed image, possibly with slide-in animation.
  *
- * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
+ * @param {HTMLCanvasElement} content The image element.
  * @param {Object=} opt_effect Transition effect object.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
@@ -682,7 +619,7 @@ ImageView.prototype.replace = function(
 };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element The element to transform.
+ * @param {HTMLCanvasElement} element The element to transform.
  * @param {ImageView.Effect=} opt_effect The effect to apply.
  * @param {number=} opt_duration Transition duration.
  */
@@ -911,7 +848,7 @@ ImageView.Effect.MARGIN = 100;
 /**
  * @return {number} Effect duration in ms.
  */
-ImageView.Effect.prototype.getDuration = function() { return this.duration_ };
+ImageView.Effect.prototype.getDuration = function() { return this.duration_; };
 
 /**
  * @return {number} Delay in ms since the beginning of the animation after which
@@ -924,10 +861,10 @@ ImageView.Effect.prototype.getSafeInterval = function() {
 /**
  * @return {string} CSS transition timing function name.
  */
-ImageView.Effect.prototype.getTiming = function() { return this.timing_ };
+ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {HTMLCanvasElement} element Element.
  * @return {number} Preferred pixel ration to use with this element.
  * @private
  */
@@ -954,7 +891,7 @@ ImageView.Effect.None = function() {
 ImageView.Effect.None.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {HTMLCanvasElement} element Element.
  * @return {string} Transform string.
  */
 ImageView.Effect.None.prototype.transform = function(element) {
@@ -991,7 +928,7 @@ ImageView.Effect.Slide.prototype.getReverse = function() {
 };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {HTMLCanvasElement} element Element.
  * @return {string} Transform string.
  */
 ImageView.Effect.Slide.prototype.transform = function(element) {
@@ -1025,7 +962,7 @@ ImageView.Effect.Zoom = function(
 ImageView.Effect.Zoom.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {HTMLCanvasElement} element Element.
  * @param {Viewport} viewport Viewport.
  * @return {string} Transform string.
  */
@@ -1066,7 +1003,7 @@ ImageView.Effect.Rotate = function(scale, rotate90) {
 ImageView.Effect.Rotate.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {HTMLCanvasElement} element Element.
  * @return {string} Transform string.
  */
 ImageView.Effect.Rotate.prototype.transform = function(element) {

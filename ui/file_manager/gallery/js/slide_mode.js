@@ -92,7 +92,7 @@ SlideMode.prototype.initListeners_ = function() {
  * @private
  */
 SlideMode.prototype.initDom_ = function() {
-  // Container for displayed image or video.
+  // Container for displayed image.
   this.imageContainer_ = util.createChild(
       this.document_.querySelector('.content'), 'image-container');
   this.imageContainer_.addEventListener('click', this.onClick_.bind(this));
@@ -137,17 +137,6 @@ SlideMode.prototype.initDom_ = function() {
 
   var bubbleClose = util.createChild(this.bubble_, 'close-x');
   bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
-
-  // Video player controls.
-  this.mediaSpacer_ =
-      util.createChild(this.container_, 'video-controls-spacer');
-  this.mediaToolbar_ = util.createChild(this.mediaSpacer_, 'tool');
-  this.mediaControls_ = new VideoControls(
-      this.mediaToolbar_,
-      this.showErrorBanner_.bind(this, 'GALLERY_VIDEO_ERROR'),
-      this.displayStringFunction_.bind(this),
-      this.toggleFullScreen_.bind(this),
-      this.container_);
 
   // Ribbon and related controls.
   this.arrowBox_ = util.createChild(this.container_, 'arrow-box');
@@ -486,11 +475,6 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     if (Math.abs(step) != 1)
       return false;
 
-    // Never prefetch after a video load (decoding the next image can freeze
-    // the UI for a second or two).
-    if (loadType === ImageView.LOAD_TYPE_VIDEO_FILE)
-      return false;
-
     // Always prefetch if the previous load was from cache.
     if (loadType === ImageView.LOAD_TYPE_CACHED_FULL)
       return true;
@@ -530,7 +514,6 @@ SlideMode.prototype.loadSelectedItem_ = function() {
  */
 SlideMode.prototype.unloadImage_ = function(zoomToRect) {
   this.imageView_.unload(zoomToRect);
-  this.container_.removeAttribute('video');
 };
 
 /**
@@ -660,9 +643,6 @@ SlideMode.prototype.loadItem_ = function(
   this.showSpinner_(true);
 
   var loadDone = function(loadType, delay, error) {
-    var video = this.isShowingVideo_();
-    ImageUtil.setAttribute(this.container_, 'video', video);
-
     this.showSpinner_(false);
     if (loadType === ImageView.LOAD_TYPE_ERROR) {
       // if we have a specific error, then display it
@@ -670,44 +650,34 @@ SlideMode.prototype.loadItem_ = function(
         this.showErrorBanner_(error);
       } else {
         // otherwise try to infer general error
-        this.showErrorBanner_(
-            video ? 'GALLERY_VIDEO_ERROR' : 'GALLERY_IMAGE_ERROR');
+        this.showErrorBanner_('GALLERY_IMAGE_ERROR');
       }
     } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
-      this.showErrorBanner_(
-          video ? 'GALLERY_VIDEO_OFFLINE' : 'GALLERY_IMAGE_OFFLINE');
+      this.showErrorBanner_('GALLERY_IMAGE_OFFLINE');
     }
 
-    if (video) {
-      // The editor toolbar does not make sense for video, hide it.
-      this.stopEditing_();
-      this.mediaControls_.attachMedia(this.imageView_.getVideo());
+    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
 
-      // TODO(kaznacheev): Add metrics for video playback.
-    } else {
-      ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
+    var toMillions = function(number) {
+      return Math.round(number / (1000 * 1000));
+    };
 
-      var toMillions = function(number) {
-        return Math.round(number / (1000 * 1000));
-      };
+    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
+        toMillions(metadata.filesystem.size));
 
-      ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-          toMillions(metadata.filesystem.size));
+    var canvas = this.imageView_.getCanvas();
+    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
+        toMillions(canvas.width * canvas.height));
 
-      var canvas = this.imageView_.getCanvas();
-      ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
-          toMillions(canvas.width * canvas.height));
-
-      var extIndex = entry.name.lastIndexOf('.');
-      var ext = extIndex < 0 ? '' :
-          entry.name.substr(extIndex + 1).toLowerCase();
-      if (ext === 'jpeg') ext = 'jpg';
-      ImageUtil.metrics.recordEnum(
-          ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
-    }
+    var extIndex = entry.name.lastIndexOf('.');
+    var ext = extIndex < 0 ? '' :
+        entry.name.substr(extIndex + 1).toLowerCase();
+    if (ext === 'jpeg') ext = 'jpg';
+    ImageUtil.metrics.recordEnum(
+        ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
 
     // Enable or disable buttons for editing and printing.
-    if (video || error) {
+    if (error) {
       this.editButton_.setAttribute('disabled', '');
       this.printButton_.setAttribute('disabled', '');
     } else {
@@ -753,20 +723,6 @@ SlideMode.prototype.commitItem_ = function(callback) {
   this.showSpinner_(false);
   this.showErrorBanner_(false);
   this.editor_.getPrompt().hide();
-
-  // Detach any media attached to the controls.
-  if (this.mediaControls_.getMedia())
-    this.mediaControls_.detachMedia();
-
-  // If showing the video, then pause it. Note, that it may not be attached
-  // to the media controls yet.
-  if (this.isShowingVideo_()) {
-    this.imageView_.getVideo().pause();
-    // Force stop downloading, if uncached on Drive.
-    this.imageView_.getVideo().src = '';
-    this.imageView_.getVideo().load();
-  }
-
   this.editor_.closeSession(callback);
 };
 
@@ -792,9 +748,6 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
  * @param {boolean} exiting True if the app is exiting.
  */
 SlideMode.prototype.onUnload = function(exiting) {
-  if (this.isShowingVideo_() && this.mediaControls_.isPlaying()) {
-    this.mediaControls_.savePosition(exiting);
-  }
 };
 
 /**
@@ -804,15 +757,6 @@ SlideMode.prototype.onUnload = function(exiting) {
  * @private
  */
 SlideMode.prototype.onClick_ = function(event) {
-  if (!this.isShowingVideo_() || !this.mediaControls_.getMedia())
-    return;
-  if (event.ctrlKey) {
-    this.mediaControls_.toggleLoopedModeWithFeedback(true);
-    if (!this.mediaControls_.isPlaying())
-      this.mediaControls_.togglePlayStateWithFeedback();
-  } else {
-    this.mediaControls_.togglePlayStateWithFeedback();
-  }
 };
 
 /**
@@ -864,11 +808,6 @@ SlideMode.prototype.onKeyDown = function(event) {
     return true;
 
   switch (keyID) {
-    case 'U+0020':  // Space toggles the video playback.
-      if (this.isShowingVideo_() && this.mediaControls_.getMedia())
-        this.mediaControls_.togglePlayStateWithFeedback();
-      break;
-
     case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
       if (!this.printButton_.hasAttribute('disabled'))
         this.print_();
@@ -1237,8 +1176,6 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   }
 
   this.stopSlideshow_();
-  if (!this.isEditing() && this.isShowingVideo_())
-    return;  // No editing for videos.
 
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing());
 
@@ -1294,14 +1231,6 @@ SlideMode.prototype.showSpinner_ = function(on) {
   } else {
     ImageUtil.setAttribute(this.container_, 'spinner', false);
   }
-};
-
-/**
- * @return {boolean} True if the current item is a video.
- * @private
- */
-SlideMode.prototype.isShowingVideo_ = function() {
-  return !!this.imageView_.getVideo();
 };
 
 /**

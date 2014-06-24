@@ -50,7 +50,6 @@
 //<include src="image_editor/image_encoder.js"/>
 //<include src="image_editor/exif_encoder.js"/>
 
-//<include src="../../file_manager/foreground/js/media/media_controls.js"/>
 //<include src="../../file_manager/foreground/js/media/media_util.js"/>
 //<include src="../../file_manager/foreground/js/media/util.js"/>
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
