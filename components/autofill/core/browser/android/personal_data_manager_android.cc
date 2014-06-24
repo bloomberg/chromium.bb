@@ -10,7 +10,7 @@
 
 namespace autofill {
 
-void PersonalDataManager::LoadAuxiliaryProfiles() const {
+void PersonalDataManager::LoadAuxiliaryProfiles(bool record_metrics) const {
   auxiliary_profiles_.clear();
   autofill::AuxiliaryProfileLoaderAndroid profile_loader;
   profile_loader.Init(

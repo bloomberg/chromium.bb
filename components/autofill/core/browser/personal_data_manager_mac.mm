@@ -114,7 +114,8 @@ class AuxiliaryProfilesImpl {
 
   // Import the "me" card from the Mac Address Book and fill in |profiles_|.
   void GetAddressBookMeCard(const std::string& app_locale,
-                            PrefService* pref_service);
+                            PrefService* pref_service,
+                            bool record_metrics);
 
  private:
   void GetAddressBookNames(ABPerson* me,
@@ -142,7 +143,8 @@ class AuxiliaryProfilesImpl {
 // information and translates it to the internal list of |AutofillProfile| data
 // structures.
 void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
-                                                 PrefService* pref_service) {
+                                                 PrefService* pref_service,
+                                                 bool record_metrics) {
   profiles_.clear();
 
   // The user does not want Chrome to use the AddressBook to populate Autofill
@@ -153,10 +155,13 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
   // See the comment at the definition of g_accessed_address_book for an
   // explanation of this logic.
   if (g_binary_changed && !g_accessed_address_book) {
-    RecordAccessSkipped(true);
+    if (record_metrics)
+      RecordAccessSkipped(true);
     return;
   }
-  RecordAccessSkipped(false);
+
+  if (record_metrics)
+    RecordAccessSkipped(false);
 
   ABAddressBook* addressBook = GetAddressBook(pref_service);
 
@@ -340,9 +345,9 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
 }  // namespace
 
 // Populate |auxiliary_profiles_| with the Address Book data.
-void PersonalDataManager::LoadAuxiliaryProfiles() const {
+void PersonalDataManager::LoadAuxiliaryProfiles(bool record_metrics) const {
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
-  impl.GetAddressBookMeCard(app_locale_, pref_service_);
+  impl.GetAddressBookMeCard(app_locale_, pref_service_, record_metrics);
 }
 
 bool PersonalDataManager::AccessAddressBook() {

@@ -109,7 +109,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Do nothing (auxiliary profiles will be created in
   // CreateTestAuxiliaryProfile).
-  virtual void LoadAuxiliaryProfiles() const OVERRIDE {}
+  virtual void LoadAuxiliaryProfiles(bool record_metrics) const OVERRIDE {}
 
   void ClearAutofillProfiles() {
     web_profiles_.clear();

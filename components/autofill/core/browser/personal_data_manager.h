@@ -257,7 +257,7 @@ class PersonalDataManager : public KeyedService,
   virtual void LoadProfiles();
 
   // Loads the auxiliary profiles.  Currently Mac and Android only.
-  virtual void LoadAuxiliaryProfiles() const;
+  virtual void LoadAuxiliaryProfiles(bool record_metrics) const;
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -340,6 +340,12 @@ class PersonalDataManager : public KeyedService,
 
   // Called when the value of prefs::kAutofillEnabled changes.
   void EnabledPrefChanged();
+
+  // Functionally equivalent to GetProfiles(), but also records metrics if
+  // |record_metrics| is true. Metrics should be recorded when the returned
+  // profiles will be used to populate the fields shown in an Autofill popup.
+  const std::vector<AutofillProfile*>& GetProfiles(
+      bool record_metrics) const;
 
   const std::string app_locale_;
 
