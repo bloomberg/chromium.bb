@@ -241,6 +241,22 @@ _TEST_DATA = {
 }
 
 
+class _FakePlatformBundle(object):
+  def __init__(self):
+    self.platforms = ('apps', 'extensions')
+
+  def GetAPIModels(self, platform):
+    if platform == 'apps':
+      return _FakeAPIModels(_TEST_DATA)
+    # Only includes some of the data in the 'extensions' APIModels.
+    # ReferenceResolver will have to look at other platforms to resolve 'foo'.
+    return _FakeAPIModels({
+      'bar': _TEST_DATA['bar'],
+      'bar.bon': _TEST_DATA['bar.bon'],
+      'baz': _TEST_DATA['baz']
+    })
+
+
 class _FakeAPIModels(object):
   def __init__(self, apis):
     self._apis = apis
@@ -261,103 +277,118 @@ class ReferenceResolverTest(unittest.TestCase):
       return f.read()
 
   def testGetLink(self):
-    resolver = ReferenceResolver(_FakeAPIModels(_TEST_DATA),
-                                 TestObjectStore('test'))
+    apps_resolver = ReferenceResolver(
+        _FakePlatformBundle().GetAPIModels('apps'),
+        TestObjectStore('apps/test'))
+    extensions_resolver = ReferenceResolver(
+        _FakePlatformBundle().GetAPIModels('extensions'),
+        TestObjectStore('extensions/test'))
+
     self.assertEqual({
       'href': 'foo',
       'text': 'foo',
       'name': 'foo'
-    }, resolver.GetLink('foo', namespace='baz'))
+    }, apps_resolver.GetLink('foo', namespace='baz'))
     self.assertEqual({
       'href': 'foo#type-foo_t1',
       'text': 'foo.foo_t1',
       'name': 'foo_t1'
-    }, resolver.GetLink('foo.foo_t1', namespace='baz'))
+    }, apps_resolver.GetLink('foo.foo_t1', namespace='baz'))
     self.assertEqual({
       'href': 'baz#event-baz_e1',
       'text': 'baz_e1',
       'name': 'baz_e1'
-    }, resolver.GetLink('baz.baz_e1', namespace='baz'))
+    }, apps_resolver.GetLink('baz.baz_e1', namespace='baz'))
     self.assertEqual({
       'href': 'baz#event-baz_e1',
       'text': 'baz_e1',
       'name': 'baz_e1'
-    }, resolver.GetLink('baz_e1', namespace='baz'))
+    }, apps_resolver.GetLink('baz_e1', namespace='baz'))
     self.assertEqual({
       'href': 'foo#method-foo_f1',
       'text': 'foo.foo_f1',
       'name': 'foo_f1'
-    }, resolver.GetLink('foo.foo_f1', namespace='baz'))
+    }, apps_resolver.GetLink('foo.foo_f1', namespace='baz'))
     self.assertEqual({
       'href': 'foo#property-foo_p3',
       'text': 'foo.foo_p3',
       'name': 'foo_p3'
-    }, resolver.GetLink('foo.foo_p3', namespace='baz'))
+    }, apps_resolver.GetLink('foo.foo_p3', namespace='baz'))
     self.assertEqual({
       'href': 'bar.bon#type-bar_bon_t3',
       'text': 'bar.bon.bar_bon_t3',
       'name': 'bar_bon_t3'
-    }, resolver.GetLink('bar.bon.bar_bon_t3', namespace='baz'))
+    }, apps_resolver.GetLink('bar.bon.bar_bon_t3', namespace='baz'))
     self.assertEqual({
       'href': 'bar.bon#property-bar_bon_p3',
       'text': 'bar_bon_p3',
       'name': 'bar_bon_p3'
-    }, resolver.GetLink('bar_bon_p3', namespace='bar.bon'))
+    }, apps_resolver.GetLink('bar_bon_p3', namespace='bar.bon'))
     self.assertEqual({
       'href': 'bar.bon#property-bar_bon_p3',
       'text': 'bar_bon_p3',
       'name': 'bar_bon_p3'
-    }, resolver.GetLink('bar.bon.bar_bon_p3', namespace='bar.bon'))
+    }, apps_resolver.GetLink('bar.bon.bar_bon_p3', namespace='bar.bon'))
     self.assertEqual({
       'href': 'bar#event-bar_e2',
       'text': 'bar_e2',
       'name': 'bar_e2'
-    }, resolver.GetLink('bar.bar_e2', namespace='bar'))
+    }, apps_resolver.GetLink('bar.bar_e2', namespace='bar'))
     self.assertEqual({
       'href': 'bar#type-bon',
       'text': 'bon',
       'name': 'bon'
-    }, resolver.GetLink('bar.bon', namespace='bar'))
+    }, apps_resolver.GetLink('bar.bon', namespace='bar'))
     self.assertEqual({
       'href': 'foo#event-foo_t3-foo_t3_e1',
       'text': 'foo_t3.foo_t3_e1',
       'name': 'foo_t3_e1'
-    }, resolver.GetLink('foo_t3.foo_t3_e1', namespace='foo'))
+    }, apps_resolver.GetLink('foo_t3.foo_t3_e1', namespace='foo'))
     self.assertEqual({
       'href': 'foo#event-foo_t3-foo_t3_e1',
       'text': 'foo_t3.foo_t3_e1',
       'name': 'foo_t3_e1'
-    }, resolver.GetLink('foo.foo_t3.foo_t3_e1', namespace='foo'))
+    }, apps_resolver.GetLink('foo.foo_t3.foo_t3_e1', namespace='foo'))
     self.assertEqual({
       'href': 'foo#event-foo_t3-foo_t3_e1',
       'text': 'foo_t3.foo_t3_e1',
       'name': 'foo_t3_e1'
-    }, resolver.GetLink('foo.foo_p1.foo_t3_e1', namespace='foo'))
+    }, apps_resolver.GetLink('foo.foo_p1.foo_t3_e1', namespace='foo'))
     self.assertEqual({
       'href': 'bar#property-bar_t1-bar_t1_p1',
       'text': 'bar.bar_t1.bar_t1_p1',
       'name': 'bar_t1_p1'
-    }, resolver.GetLink('bar.bar_p3.bar_t1_p1', namespace='foo'))
+    }, apps_resolver.GetLink('bar.bar_p3.bar_t1_p1', namespace='foo'))
+    # Test extensions_resolver.
+    self.assertEqual({
+      'href': 'bar#property-bar_t1-bar_t1_p1',
+      'text': 'bar.bar_t1.bar_t1_p1',
+      'name': 'bar_t1_p1'
+    }, extensions_resolver.GetLink('bar.bar_p3.bar_t1_p1', namespace='foo'))
     self.assertEqual({
       'href': 'bar#property-bar_t1-bar_t1_p1',
       'text': 'bar_t1.bar_t1_p1',
       'name': 'bar_t1_p1'
-    }, resolver.GetLink('bar_p3.bar_t1_p1', namespace='bar'))
+    }, apps_resolver.GetLink('bar_p3.bar_t1_p1', namespace='bar'))
     self.assertEqual(
         None,
-        resolver.GetLink('bar.bar_p3.bar_t2_p1', namespace='bar'))
+        apps_resolver.GetLink('bar.bar_p3.bar_t2_p1', namespace='bar'))
     self.assertEqual(
         None,
-        resolver.GetLink('bar.bon.bar_e3', namespace='bar'))
+        apps_resolver.GetLink('bar.bon.bar_e3', namespace='bar'))
     self.assertEqual(
         None,
-        resolver.GetLink('bar_p3', namespace='baz.bon'))
+        apps_resolver.GetLink('bar_p3', namespace='baz.bon'))
     self.assertEqual(
         None,
-        resolver.GetLink('falafel.faf', namespace='a'))
+        apps_resolver.GetLink('falafel.faf', namespace='a'))
     self.assertEqual(
         None,
-        resolver.GetLink('bar_p3', namespace='foo'))
+        apps_resolver.GetLink('bar_p3', namespace='foo'))
+    # Exists in apps but not extensions.
+    self.assertEqual(
+        None,
+        extensions_resolver.GetLink('foo.foo_p3', namespace='baz'))
 
 if __name__ == '__main__':
   unittest.main()

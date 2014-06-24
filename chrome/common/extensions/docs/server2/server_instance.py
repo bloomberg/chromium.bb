@@ -2,23 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from api_categorizer import APICategorizer
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
-from api_models import APIModels
-from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
 from document_renderer import DocumentRenderer
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
-from features_bundle import FeaturesBundle
 from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
-from reference_resolver import ReferenceResolver
+from platform_bundle import PlatformBundle
 from samples_data_source import SamplesDataSource
 from table_of_contents_renderer import TableOfContentsRenderer
 from template_renderer import TemplateRenderer
@@ -72,30 +68,12 @@ class ServerInstance(object):
         host_file_system_provider,
         branch_utility)
 
-    self.features_bundle = FeaturesBundle(
-        host_fs_at_trunk,
-        self.compiled_fs_factory,
-        self.object_store_creator)
-
-    self.api_models = APIModels(
-        self.features_bundle,
-        self.compiled_fs_factory,
-        host_fs_at_trunk)
-
-    self.availability_finder = AvailabilityFinder(
+    self.platform_bundle = PlatformBundle(
         branch_utility,
-        compiled_fs_factory,
+        self.compiled_fs_factory,
+        host_fs_at_trunk,
         self.host_file_system_iterator,
-        host_fs_at_trunk,
-        object_store_creator)
-
-    self.api_categorizer = APICategorizer(
-        host_fs_at_trunk,
-        compiled_fs_factory)
-
-    self.ref_resolver = ReferenceResolver(
-        self.api_models,
-        self.object_store_creator.Create(ReferenceResolver))
+        self.object_store_creator)
 
     # Note: samples are super slow in the dev server because it doesn't support
     # async fetch, so disable them.
@@ -112,7 +90,7 @@ class ServerInstance(object):
         extension_samples_fs,
         app_samples_fs,
         CompiledFileSystem.Factory(object_store_creator),
-        self.ref_resolver,
+        self.platform_bundle,
         base_path)
 
     self.content_providers = ContentProviders(
@@ -134,7 +112,7 @@ class ServerInstance(object):
         TableOfContentsRenderer(host_fs_at_trunk,
                                 compiled_fs_factory,
                                 self.template_renderer),
-        self.ref_resolver)
+        self.platform_bundle)
 
   @staticmethod
   def ForTest(file_system=None, file_system_provider=None, base_path='/'):

@@ -7,8 +7,8 @@ from operator import itemgetter
 
 from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
-from features_utility import Filtered
 from future import Future
+from platform_util import GetPlatforms
 
 
 def _ListifyPermissions(permissions):
@@ -29,7 +29,7 @@ def _AddDependencyDescriptions(permissions, api_features):
   '''
   for name, permission in permissions.iteritems():
     # Don't overwrite the description created by expanding a partial template.
-    if 'partial' in permission or not permission['platforms']:
+    if 'partial' in permission:
       continue
 
     has_deps = False
@@ -45,18 +45,21 @@ class PermissionsDataSource(DataSource):
   '''Load and format permissions features to be used by templates.
   '''
   def __init__(self, server_instance, request):
-    self._features_bundle = server_instance.features_bundle
+    self._platform_bundle = server_instance.platform_bundle
     self._object_store = server_instance.object_store_creator.Create(
         PermissionsDataSource)
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         server_instance.host_file_system_provider.GetTrunk())
 
-  def _CreatePermissionsData(self):
-    api_features_future = self._features_bundle.GetAPIFeatures()
-    permission_features_future = self._features_bundle.GetPermissionFeatures()
+  def _CreatePermissionsDataForPlatform(self, platform):
+    features_bundle = self._platform_bundle.GetFeaturesBundle(platform)
+    api_features_future = features_bundle.GetAPIFeatures()
+    permission_features_future = features_bundle.GetPermissionFeatures()
+
     def resolve():
+      api_features = api_features_future.Get()
       permission_features = permission_features_future.Get()
-      _AddDependencyDescriptions(permission_features, api_features_future.Get())
+      _AddDependencyDescriptions(permission_features, api_features)
 
       # Turn partial templates into descriptions, ensure anchors are set.
       for permission in permission_features.values():
@@ -67,13 +70,17 @@ class PermissionsDataSource(DataSource):
               PRIVATE_TEMPLATES + permission['partial']).Get()
           del permission['partial']
 
-      def filter_for_platform(permissions, platform):
-        return _ListifyPermissions(Filtered(permissions, platform))
-      return {
-        'declare_apps': filter_for_platform(permission_features, 'apps'),
-        'declare_extensions': filter_for_platform(
-            permission_features, 'extensions')
-      }
+      return _ListifyPermissions(permission_features)
+    return Future(callback=resolve)
+
+  def _CreatePermissionsData(self):
+    permissions_data_futures = dict(
+        (platform, self._CreatePermissionsDataForPlatform(platform))
+        for platform in GetPlatforms())
+
+    def resolve():
+      return dict(('declare_' + platform, future.Get())
+                  for platform, future in permissions_data_futures.iteritems())
     return Future(callback=resolve)
 
   def _GetCachedPermissionsData(self):

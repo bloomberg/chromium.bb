@@ -12,8 +12,12 @@ CANNED_TRUNK_FS_DATA = {
       'ref_test': { 'dependencies': ['permission:ref_test'] },
       'tester': { 'dependencies': ['permission:tester', 'manifest:tester'] }
     }),
-    '_manifest_features.json': '{}',
-    '_permission_features.json': '{}',
+    '_manifest_features.json': json.dumps({'tester': {}, 'ref_test': {}}),
+    '_permission_features.json': json.dumps({
+      'tester': {},
+      'ref_test': {},
+      'add_rules_tester': {}
+    }),
     'add_rules_tester.json': json.dumps([{
       'namespace': 'add_rules_tester',
       'description': ('A test api with a couple of events which support or '

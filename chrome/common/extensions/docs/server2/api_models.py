@@ -5,31 +5,44 @@
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
+from docs_server_utils import StringIdentity
 from extensions_paths import API_PATHS
+from features_bundle import HasParentFeature
 from file_system import FileNotFoundError
 from future import Collect, Future
+from platform_util import PlatformToExtensionType
 from schema_util import ProcessSchema
+from third_party.json_schema_compiler.json_schema import DeleteNodes
 from third_party.json_schema_compiler.model import Namespace, UnixName
-
-
-@SingleFile
-@Unicode
-def _CreateAPIModel(path, data):
-  schema = ProcessSchema(path, data)[0]
-  if not schema:
-    raise FileNotFoundError('No schema for %s' % path)
-  return Namespace(schema, schema['namespace'])
 
 
 class APIModels(object):
   '''Tracks APIs and their Models.
   '''
 
-  def __init__(self, features_bundle, compiled_fs_factory, file_system):
+  def __init__(self,
+               features_bundle,
+               compiled_fs_factory,
+               file_system,
+               platform):
     self._features_bundle = features_bundle
-    self._identity = file_system.GetIdentity()
+    self._platform = PlatformToExtensionType(platform)
     self._model_cache = compiled_fs_factory.Create(
-        file_system, _CreateAPIModel, APIModels)
+        file_system, self._CreateAPIModel, APIModels, category=self._platform)
+
+  @SingleFile
+  @Unicode
+  def _CreateAPIModel(self, path, data):
+    def does_not_include_platform(node):
+      return ('extension_types' in node and
+              node['extension_types'] != 'all' and
+              self._platform not in node['extension_types'])
+
+    schema = ProcessSchema(path, data)[0]
+    if not schema:
+      raise ValueError('No schema for %s' % path)
+    return Namespace(DeleteNodes(
+        schema, matcher=does_not_include_platform), schema['namespace'])
 
   def GetNames(self):
     # API names appear alongside some of their methods/events/etc in the
@@ -38,9 +51,7 @@ class APIModels(object):
     # APIs; runtime.onConnectNative is not).
     api_features = self._features_bundle.GetAPIFeatures().Get()
     return [name for name, feature in api_features.iteritems()
-            if ('.' not in name or
-                name.rsplit('.', 1)[0] not in api_features or
-                feature.get('noparent'))]
+            if not HasParentFeature(name, feature, api_features)]
 
   def GetModel(self, api_name):
     # By default |api_name| is assumed to be given without a path or extension,
@@ -80,14 +91,15 @@ class APIModels(object):
       for future in futures:
         try:
           return future.Get()
-        except FileNotFoundError: pass
-      # Propagate the first FileNotFoundError if neither were found.
+        # Either the file wasn't found or there was no schema for the file
+        except (FileNotFoundError, ValueError): pass
+      # Propagate the first error if neither were found.
       futures[0].Get()
     return Future(callback=resolve)
 
   def Cron(self):
     futures = [self.GetModel(name) for name in self.GetNames()]
-    return Collect(futures, except_pass=FileNotFoundError)
+    return Collect(futures, except_pass=(FileNotFoundError, ValueError))
 
   def IterModels(self):
     future_models = [(name, self.GetModel(name)) for name in self.GetNames()]
@@ -98,6 +110,3 @@ class APIModels(object):
         continue
       if model:
         yield name, model
-
-  def GetIdentity(self):
-    return self._identity

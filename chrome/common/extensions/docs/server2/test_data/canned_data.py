@@ -356,6 +356,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'alarms': {
           'channel': 'stable'
         },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
         'bluetooth': {
           'channel': 'dev'
         },
@@ -485,6 +489,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'alarms': {
           'channel': 'stable'
         },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
         'bluetooth': {
           'channel': 'dev'
         },
@@ -598,6 +606,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'alarms': {
           'channel': 'stable'
         },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
         'bluetooth': {
           'channel': 'dev'
         },
@@ -650,6 +662,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       '_permission_features.json': json.dumps({
         'alarms': {
           'channel': 'stable'
+        },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['platform_app']
         },
         'bookmarks': {
           'channel': 'stable'

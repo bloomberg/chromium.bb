@@ -59,10 +59,14 @@ class APIModelsTest(unittest.TestCase):
     compiled_fs_factory = CompiledFileSystem.Factory(object_store_creator)
     self._mock_file_system = MockFileSystem(
         TestFileSystem(_TEST_DATA, relative_to=CHROME_EXTENSIONS))
-    features_bundle = FeaturesBundle(
-        self._mock_file_system, compiled_fs_factory, object_store_creator)
-    self._api_models = APIModels(
-        features_bundle, compiled_fs_factory, self._mock_file_system)
+    features_bundle = FeaturesBundle(self._mock_file_system,
+                                     compiled_fs_factory,
+                                     object_store_creator,
+                                     'extensions')
+    self._api_models = APIModels(features_bundle,
+                                 compiled_fs_factory,
+                                 self._mock_file_system,
+                                 'extensions')
 
   def testGetNames(self):
     # Both 'app' and 'app.runtime' appear here because 'app.runtime' has

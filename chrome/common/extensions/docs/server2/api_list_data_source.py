@@ -5,8 +5,9 @@
 from data_source import DataSource
 from future import Future
 from operator import itemgetter
+from platform_util import GetPlatforms
 
-from docs_server_utils import MarkLast, StringIdentity
+from docs_server_utils import MarkLast
 
 class APIListDataSource(DataSource):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
@@ -24,24 +25,12 @@ class APIListDataSource(DataSource):
       values are present.
   """
   def __init__(self, server_instance, _):
-    self._features_bundle = server_instance.features_bundle
-    self._api_models = server_instance.api_models
+    self._platform_bundle = server_instance.platform_bundle
     self._object_store = server_instance.object_store_creator.Create(
         # Update the model when the API or Features model updates.
-        APIListDataSource,
-        category=StringIdentity(self._features_bundle.GetIdentity(),
-                                self._api_models.GetIdentity()))
-    self._api_categorizer = server_instance.api_categorizer
-    self._availability_finder = server_instance.availability_finder
+        APIListDataSource, category=self._platform_bundle.GetIdentity())
 
   def _GenerateAPIDict(self):
-    def get_channel_info(api_name):
-      return self._availability_finder.GetAPIAvailability(api_name).channel_info
-
-    def get_api_platform(api_name):
-      feature = self._features_bundle.GetAPIFeatures().Get()[api_name]
-      return feature['platforms']
-
     def make_dict_for_platform(platform):
       platform_dict = {
         'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []},
@@ -49,17 +38,20 @@ class APIListDataSource(DataSource):
       private_apis = []
       experimental_apis = []
       all_apis = []
-      for api_name, api_model in self._api_models.IterModels():
-        if not self._api_categorizer.IsDocumented(platform, api_name):
+      for api_name, api_model in self._platform_bundle.GetAPIModels(
+          platform).IterModels():
+        if not self._platform_bundle.GetAPICategorizer(platform).IsDocumented(
+            api_name):
           continue
         api = {
           'name': api_name,
           'description': api_model.description,
-          'platforms': get_api_platform(api_name),
         }
-        category = self._api_categorizer.GetCategory(platform, api_name)
+        category = self._platform_bundle.GetAPICategorizer(
+            platform).GetCategory(api_name)
         if category == 'chrome':
-          channel_info = get_channel_info(api_name)
+          channel_info = self._platform_bundle.GetAvailabilityFinder(
+              platform).GetAPIAvailability(api_name).channel_info
           channel = channel_info.channel
           if channel == 'stable':
             version = channel_info.version
@@ -85,10 +77,8 @@ class APIListDataSource(DataSource):
         platform_dict[key] = apis
 
       return platform_dict
-    return {
-      'apps': make_dict_for_platform('apps'),
-      'extensions': make_dict_for_platform('extensions'),
-    }
+    return dict((platform, make_dict_for_platform(platform))
+                for platform in GetPlatforms())
 
   def _GetCachedAPIData(self):
     data_future = self._object_store.Get('api_data')

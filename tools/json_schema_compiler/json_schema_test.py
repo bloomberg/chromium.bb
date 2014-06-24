@@ -78,6 +78,22 @@ class JsonSchemaUnittest(unittest.TestCase):
     schema = json_schema.CachedLoad('test/json_schema_test.json')
     self.assertEquals(compiled, json_schema.DeleteNodes(schema, 'nocompile'))
 
+    def should_delete(value):
+      return isinstance(value, dict) and not value.get('valid', True)
+    expected = [
+      {'one': {'test': 'test'}},
+      {'valid': True},
+      {}
+    ]
+    given = [
+      {'one': {'test': 'test'}, 'two': {'valid': False}},
+      {'valid': True},
+      {},
+      {'valid': False}
+    ]
+    self.assertEquals(
+        expected, json_schema.DeleteNodes(given, matcher=should_delete))
+
 
 if __name__ == '__main__':
   unittest.main()

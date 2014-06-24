@@ -19,7 +19,8 @@ SCHEMA_COMPILER_FILES = ['memoize.py',
                          'model.py',
                          'idl_schema.py',
                          'schema_util.py',
-                         'json_parse.py']
+                         'json_parse.py',
+                         'json_schema.py']
 
 def MakeInit(path):
   path = os.path.join(path, '__init__.py')

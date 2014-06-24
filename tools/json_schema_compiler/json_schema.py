@@ -6,25 +6,32 @@ import copy
 
 import json_parse
 
-def DeleteNodes(item, delete_key):
-  """Deletes the given nodes in item, recursively, that have |delete_key| as
-  an attribute.
+
+def DeleteNodes(item, delete_key=None, matcher=None):
+  """Deletes certain nodes in item, recursively. If |delete_key| is set, all
+  dicts with |delete_key| as an attribute are deleted. If a callback is passed
+  as |matcher|, |DeleteNodes| will delete all dicts for which matcher(dict)
+  returns True.
   """
-  def HasKey(thing):
-    return json_parse.IsDict(thing) and thing.get(delete_key, False)
+  assert (delete_key is not None) != (matcher is not None)
+
+  def ShouldDelete(thing):
+    return json_parse.IsDict(thing) and (
+        delete_key is not None and delete_key in thing or
+        matcher is not None and matcher(thing))
 
   if json_parse.IsDict(item):
     toDelete = []
     for key, value in item.items():
-      if HasKey(value):
+      if ShouldDelete(value):
         toDelete.append(key)
       else:
-        DeleteNodes(value, delete_key)
+        DeleteNodes(value, delete_key, matcher)
     for key in toDelete:
       del item[key]
   elif type(item) == list:
-    item[:] = [DeleteNodes(thing, delete_key)
-        for thing in item if not HasKey(thing)]
+    item[:] = [DeleteNodes(thing, delete_key, matcher)
+        for thing in item if not ShouldDelete(thing)]
 
   return item
 

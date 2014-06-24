@@ -190,7 +190,7 @@ class CronServlet(Servlet):
 
       targets = (CreateDataSources(server_instance).values() +
                  [server_instance.content_providers,
-                  server_instance.api_models])
+                  server_instance.platform_bundle])
       title = 'initializing %s parallel Cron targets' % len(targets)
       _cronlog.info(title)
       timer = Timer()

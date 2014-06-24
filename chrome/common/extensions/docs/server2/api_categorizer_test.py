@@ -57,20 +57,25 @@ _TEST_DATA = {
 
 class APICategorizerTest(unittest.TestCase):
   def setUp(self):
-    self._api_categorizer = APICategorizer(
-        TestFileSystem(_TEST_DATA, relative_to=CHROME_EXTENSIONS),
-        CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()))
+    self._test_file_system = TestFileSystem(
+        _TEST_DATA, relative_to=CHROME_EXTENSIONS)
+    self._compiled_file_system = CompiledFileSystem.Factory(
+        ObjectStoreCreator.ForTest())
 
   def testGetAPICategory(self):
-    get_category = self._api_categorizer.GetCategory
-    self.assertEqual('chrome', get_category('apps', 'alarms'))
-    self.assertEqual('chrome', get_category('extensions', 'alarms'))
-    self.assertEqual('private', get_category('apps', 'musicManagerPrivate'))
-    self.assertEqual('private', get_category('extensions', 'notDocumentedApi'))
-    self.assertEqual('experimental',
-                     get_category('apps', 'experimental.bluetooth'))
-    self.assertEqual('experimental',
-                     get_category('extensions', 'experimental.history'))
+    def assertGetEqual(expected, category, only_on=None):
+      for platform in ('apps', 'extensions'):
+        get_category = APICategorizer(
+            self._test_file_system,
+            self._compiled_file_system,
+            platform if only_on is None else only_on).GetCategory(category)
+        self.assertEqual(expected, get_category)
+
+    assertGetEqual('chrome', 'alarms')
+    assertGetEqual('private', 'musicManagerPrivate')
+    assertGetEqual('private', 'notDocumentedApi')
+    assertGetEqual('experimental', 'experimental.bluetooth', only_on='apps')
+    assertGetEqual('experimental', 'experimental.history', only_on='extensions')
 
 
 if __name__ == '__main__':

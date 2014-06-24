@@ -141,13 +141,11 @@ class APIListDataSourceTest(unittest.TestCase):
         'stable': [
           {
             'name': 'alarms',
-            'platforms': ['apps', 'extensions'],
             'version': 5,
             'description': u'<code>alarms</code>'
           },
           {
             'name': 'app.window',
-            'platforms': ['apps'],
             # Availability logic will look for a camelCase format filename
             # (i.e. 'app.window.html') at version 20 and below, but the
             # unix_name format above won't be found at these versions.
@@ -156,7 +154,6 @@ class APIListDataSourceTest(unittest.TestCase):
           },
           {
             'name': 'storage',
-            'platforms': ['apps', 'extensions'],
             'last': True,
             'version': 5,
             'description': u'<code>storage</code>'
@@ -164,7 +161,6 @@ class APIListDataSourceTest(unittest.TestCase):
         'dev': [
           {
             'name': 'sockets.udp',
-            'platforms': ['apps', 'extensions'],
             'last': True,
             'description': u'<code>sockets.udp</code>'
           }],
@@ -176,12 +172,10 @@ class APIListDataSourceTest(unittest.TestCase):
     self.assertEqual([
         {
           'name': 'experimental.bluetooth',
-          'platforms': ['apps'],
           'description': u'<code>experimental.bluetooth</code>'
         },
         {
           'name': 'experimental.power',
-          'platforms': ['apps', 'extensions'],
           'last': True,
           'description': u'<code>experimental.power</code>'
         }], self._api_list.get('apps').get('experimental'))
@@ -191,26 +185,22 @@ class APIListDataSourceTest(unittest.TestCase):
         'stable': [
           {
             'name': 'alarms',
-            'platforms': ['apps', 'extensions'],
             'version': 5,
             'description': u'<code>alarms</code>'
           },
           {
             'name': 'browserAction',
-            'platforms': ['extensions'],
             # See comment above for 'app.window'.
             'version': 21,
             'description': u'<code>browserAction</code>'
           },
           {
             'name': 'infobars',
-            'platforms': ['extensions'],
             'version': 5,
             'description': u'<code>infobars</code>'
           },
           {
             'name': 'storage',
-            'platforms': ['apps', 'extensions'],
             'last': True,
             'version': 5,
             'description': u'<code>storage</code>'
@@ -218,7 +208,6 @@ class APIListDataSourceTest(unittest.TestCase):
         'dev': [
           {
             'name': 'sockets.udp',
-            'platforms': ['apps', 'extensions'],
             'last': True,
             'description': u'<code>sockets.udp</code>'
           }],
@@ -230,12 +219,10 @@ class APIListDataSourceTest(unittest.TestCase):
     self.assertEqual([
         {
           'name': 'experimental.history',
-          'platforms': ['extensions'],
           'description': u'<code>experimental.history</code>'
         },
         {
           'name': 'experimental.power',
-          'platforms': ['apps', 'extensions'],
           'description': u'<code>experimental.power</code>',
           'last': True
         }], self._api_list.get('extensions').get('experimental'))

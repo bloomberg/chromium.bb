@@ -39,6 +39,7 @@ _PERMISSION_FEATURES = {
   'cookies': {
     'extension_types': ['platform_app']
   },
+  'host-permissions': {}
 }
 
 
@@ -82,21 +83,24 @@ class PermissionsDataSourceTest(unittest.TestCase):
       {
         'anchor': 'custom-anchor',
         'description': 'host permissions',
+        'extension_types': ['platform_app', 'extension'],
         'literal_name': True,
         'name': 'match pattern',
-        'platforms': ['apps', 'extensions']
+        'channel': 'stable'
       },
       {
         'anchor': 'activeTab',
         'description': 'active tab',
+        'extension_types': ['extension'],
         'name': 'activeTab',
-        'platforms': ['extensions'],
+        'channel': 'stable'
       },
       {
         'anchor': 'alarms',
         'description': 'generic description',
+        'extension_types': ['platform_app', 'extension'],
         'name': 'alarms',
-        'platforms': ['apps', 'extensions'],
+        'channel': 'stable'
       },
     ]
 
@@ -104,21 +108,24 @@ class PermissionsDataSourceTest(unittest.TestCase):
       {
         'anchor': 'custom-anchor',
         'description': 'host permissions',
+        'extension_types': ['platform_app', 'extension'],
         'literal_name': True,
         'name': 'match pattern',
-        'platforms': ['apps', 'extensions'],
+        'channel': 'stable'
       },
       {
         'anchor': 'alarms',
         'description': 'generic description',
+        'extension_types': ['platform_app', 'extension'],
         'name': 'alarms',
-        'platforms': ['apps', 'extensions'],
+        'channel': 'stable'
       },
       {
         'anchor': 'cookies',
         'description': 'generic description',
+        'extension_types': ['platform_app'],
         'name': 'cookies',
-        'platforms': ['apps'],
+        'channel': 'stable'
       },
     ]
 

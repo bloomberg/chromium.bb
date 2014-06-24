@@ -18,7 +18,7 @@ class DocumentRendererUnittest(unittest.TestCase):
 
   def testNothingToSubstitute(self):
     document = 'hello world'
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(document, text)
@@ -30,7 +30,7 @@ class DocumentRendererUnittest(unittest.TestCase):
 
   def testTitles(self):
     document = '<h1>title</h1> then $(title) then another $(title)'
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(document, text)
@@ -45,7 +45,7 @@ class DocumentRendererUnittest(unittest.TestCase):
                 'and another $(table_of_contents)')
     expected_document = ('here is a toc <table-of-contents> and another '
                          '$(table_of_contents)')
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(expected_document, text)
@@ -61,7 +61,7 @@ class DocumentRendererUnittest(unittest.TestCase):
     expected_document = ('A ref <a href=#type-baz_e1>baz.baz_e1</a> '
                          'here, <a href=#type-foo_t3>ref title</a> '
                          'there')
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(expected_document, text)
@@ -73,7 +73,7 @@ class DocumentRendererUnittest(unittest.TestCase):
 
   def testTitleAndToc(self):
     document = '<h1>title</h1> $(title) and $(table_of_contents)'
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual('<h1>title</h1> $(title) and <table-of-contents>', text)
@@ -90,7 +90,7 @@ class DocumentRendererUnittest(unittest.TestCase):
 
     expected_document = ('<h1><a href=#type-baz_e1>title</a></h1>'
                          ' A title was here')
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(expected_document_no_title, text)
@@ -105,7 +105,7 @@ class DocumentRendererUnittest(unittest.TestCase):
     expected_document = ('Hello, <a href=#type-baz_e1>world</a>. A <a href='
                          '#type-foo_t3>link</a>')
 
-    path = 'some/path/to/document.html'
+    path = 'apps/some/path/to/document.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(expected_document, text)
@@ -130,7 +130,7 @@ class DocumentRendererUnittest(unittest.TestCase):
                 '$(ref:baz.baz_e1) here')
     expected_document = ('An invalid $(ref:foo.foo_t3 a title ' + _LOREM_IPSUM +
                          '<a href=#type-baz_e1>baz.baz_e1</a> here')
-    path = 'some/path/to/document_api.html'
+    path = 'apps/some/path/to/document_api.html'
 
     text, warnings = self._renderer.Render(document, path)
     self.assertEqual(expected_document, text)

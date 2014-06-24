@@ -27,11 +27,11 @@ class SamplesDataSource(object):
                  host_file_system,
                  app_samples_file_system,
                  compiled_fs_factory,
-                 ref_resolver,
+                 platform_bundle,
                  base_path):
       self._host_file_system = host_file_system
       self._app_samples_file_system = app_samples_file_system
-      self._ref_resolver = ref_resolver
+      self._platform_bundle = platform_bundle
       self._base_path = base_path
       self._extensions_cache = compiled_fs_factory.Create(
           host_file_system,
@@ -136,7 +136,8 @@ class SamplesDataSource(object):
             item = item[:-len('.addListener')]
           if item.startswith('chrome.'):
             item = item[len('chrome.'):]
-          ref_data = self._ref_resolver.GetLink(item)
+          ref_data = self._platform_bundle.GetReferenceResolver(
+              'apps' if is_apps else 'extensions').GetLink(item)
           # TODO(kalman): What about references like chrome.storage.sync.get?
           # That should link to either chrome.storage.sync or
           # chrome.storage.StorageArea.get (or probably both).

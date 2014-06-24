@@ -35,7 +35,7 @@
         "nocompile": true,
         "description": "An object containing information about the script context that sent a message or request.",
         "properties": {
-          "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $(ref:tabs.Tab) which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app."},
+          "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $(ref:tabs.Tab) which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app.", "extension_types": ["extension", "legacy_packaged_app"]},
           "id": {"type": "string", "optional": true, "description": "The ID of the extension or app that opened the connection, if any."},
           "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab or content script."},
           "tlsChannelId": {"type": "string", "optional": true, "description": "The TLS channel ID of the web page that opened the connection, if requested by the extension or app, and if available."}

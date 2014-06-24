@@ -9,6 +9,7 @@ import posixpath
 from data_source import DataSource
 from extensions_paths import JSON_TEMPLATES, PUBLIC_TEMPLATES
 from future import Future
+from platform_util import GetPlatforms
 
 
 class WhatsNewDataSource(DataSource):
@@ -20,9 +21,7 @@ class WhatsNewDataSource(DataSource):
         server_instance.host_file_system_provider.GetTrunk())
     self._object_store = server_instance.object_store_creator.Create(
         WhatsNewDataSource)
-    self._api_models = server_instance.api_models
-    self._availability_finder = server_instance.availability_finder
-    self._api_categorizer = server_instance.api_categorizer
+    self._platform_bundle = server_instance.platform_bundle
 
   def _GenerateChangesListWithVersion(self, platform, whats_new_json):
     return [{
@@ -34,10 +33,11 @@ class WhatsNewDataSource(DataSource):
 
   def _GetAPIVersion(self, platform, api_name):
     version = None
-    category = self._api_categorizer.GetCategory(platform, api_name)
+    category = self._platform_bundle.GetAPICategorizer(platform).GetCategory(
+        api_name)
     if category == 'chrome':
-      channel_info = self._availability_finder.GetAPIAvailability(
-          api_name).channel_info
+      channel_info = self._platform_bundle.GetAvailabilityFinder(
+          platform).GetAPIAvailability(api_name).channel_info
       channel = channel_info.channel
       if channel == 'stable':
         version = channel_info.version
@@ -45,7 +45,8 @@ class WhatsNewDataSource(DataSource):
 
   def _GenerateAPIListWithVersion(self, platform):
     data = []
-    for api_name, api_model in self._api_models.IterModels():
+    for api_name, api_model in self._platform_bundle.GetAPIModels(
+        platform).IterModels():
       version = self._GetAPIVersion(platform, api_name)
       if version:
         api = {
@@ -81,10 +82,8 @@ class WhatsNewDataSource(DataSource):
       return platform_list
 
     def resolve():
-      return {
-        'apps': _MakeDictByPlatform('apps'),
-        'extensions': _MakeDictByPlatform('extensions')
-      }
+      return dict((platform, _MakeDictByPlatform(platform))
+          for platform in GetPlatforms())
     return Future(callback=resolve)
 
   def _GetCachedWhatsNewData(self):

@@ -9,8 +9,8 @@ from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility, ChannelInfo
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
-import features_utility
 from file_system import FileNotFoundError
+from platform_util import PlatformToExtensionType
 from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 
@@ -70,17 +70,20 @@ class AvailabilityFinder(object):
                compiled_fs_factory,
                file_system_iterator,
                host_file_system,
-               object_store_creator):
+               object_store_creator,
+               platform):
     self._branch_utility = branch_utility
     self._compiled_fs_factory = compiled_fs_factory
     self._file_system_iterator = file_system_iterator
     self._host_file_system = host_file_system
     self._object_store_creator = object_store_creator
     def create_object_store(category):
-      return object_store_creator.Create(AvailabilityFinder, category=category)
+      return object_store_creator.Create(
+          AvailabilityFinder, category='/'.join((platform, category)))
     self._top_level_object_store = create_object_store('top_level')
     self._node_level_object_store = create_object_store('node_level')
     self._json_fs = compiled_fs_factory.ForJson(self._host_file_system)
+    self._platform = platform
 
   def _GetPredeterminedAvailability(self, api_name):
     '''Checks a configuration file for hardcoded (i.e. predetermined)
@@ -205,7 +208,8 @@ class AvailabilityFinder(object):
   def _CreateFeaturesBundle(self, file_system):
     return FeaturesBundle(file_system,
                           self._compiled_fs_factory,
-                          self._object_store_creator)
+                          self._object_store_creator,
+                          self._platform)
 
   def _GetChannelFromAPIFeatures(self, api_name, features_bundle):
     return _GetChannelFromFeatures(api_name, features_bundle.GetAPIFeatures())
@@ -226,12 +230,10 @@ class AvailabilityFinder(object):
     determined to be 'stable' at the given version.
     '''
     if channel_info.channel == 'stable':
-      return self._CheckStableAvailability(api_name,
-                                           file_system,
-                                           channel_info.version)
-    return self._CheckChannelAvailability(api_name,
-                                          file_system,
-                                          channel_info)
+      return self._CheckStableAvailability(
+          api_name, file_system, channel_info.version)
+    return self._CheckChannelAvailability(
+        api_name, file_system, channel_info)
 
   def _FindScheduled(self, api_name):
     '''Determines the earliest version of Chrome where the API is stable.

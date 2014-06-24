@@ -5,7 +5,7 @@
 
 import unittest
 
-from path_util import SplitParent, Segment
+from path_util import SplitParent, Split, Segment
 
 
 class PathUtilTest(unittest.TestCase):
@@ -23,6 +23,13 @@ class PathUtilTest(unittest.TestCase):
     self.assertEqual(('p1/p2', 'hi/'), SplitParent('p1/p2/hi/'))
     self.assertEqual(('/p1/p2', 'hi'), SplitParent('/p1/p2/hi'))
     self.assertEqual(('/p1/p2', 'hi/'), SplitParent('/p1/p2/hi/'))
+
+  def testSplit(self):
+    self.assertEqual(['p1/', 'p2/', 'p3'], Split('p1/p2/p3'))
+    self.assertEqual(['p1/', 'p2/', 'p3/'], Split('p1/p2/p3/'))
+    self.assertEqual([''], Split(''))
+    self.assertEqual(['p1/'], Split('p1/'))
+    self.assertEqual(['p1'], Split('p1'))
 
   def testSegment(self):
     self.assertEqual([('', '')], list(Segment('')))

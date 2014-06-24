@@ -118,7 +118,10 @@ class ReferenceResolver(object):
       link = self._GetRefLink(ref, api_list, namespace)
       if link is None and namespace is not None:
         # Try to resolve the ref in the current namespace if there is one.
-        link = self._GetRefLink('%s.%s' % (namespace, ref), api_list, namespace)
+        api_list = self._api_models.GetNames()
+        link = self._GetRefLink('%s.%s' % (namespace, ref),
+                                api_list,
+                                namespace)
       if link is None:
         return None
       self._object_store.Set(db_key, link)
@@ -129,15 +132,15 @@ class ReferenceResolver(object):
 
     return link
 
-  def SafeGetLink(self, ref, namespace=None, title=None):
+  def SafeGetLink(self, ref, namespace=None, title=None, path=None):
     """Resolve $ref |ref| in namespace |namespace|, or globally if None. If it
     cannot be resolved, pretend like it is a link to a type.
     """
     ref_data = self.GetLink(ref, namespace=namespace, title=title)
     if ref_data is not None:
       return ref_data
-    logging.error('$ref %s could not be resolved in namespace %s.' %
-        (ref, namespace))
+    logging.warning('Could not resolve $ref %s in namespace %s on %s.' %
+        (ref, namespace, path))
     type_name = ref.rsplit('.', 1)[-1]
     return {
       'href': '#type-%s' % type_name,

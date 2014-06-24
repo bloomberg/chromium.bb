@@ -13,15 +13,16 @@ class APICategorizer(object):
   ''' This class gets api category from documented apis.
   '''
 
-  def __init__(self, file_system, compiled_fs_factory):
+  def __init__(self, file_system, compiled_fs_factory, platform):
     self._file_system = file_system
     self._cache = compiled_fs_factory.Create(file_system,
                                              self._CollectDocumentedAPIs,
                                              APICategorizer)
+    self._platform = platform
 
-  def _GenerateAPICategories(self, platform):
+  def _GenerateAPICategories(self):
     return self._cache.GetFromFileListing(
-        posixpath.join(PUBLIC_TEMPLATES, platform) + '/').Get()
+        posixpath.join(PUBLIC_TEMPLATES, self._platform) + '/').Get()
 
   @SingleFile
   def _CollectDocumentedAPIs(self, base_dir, files):
@@ -32,12 +33,12 @@ class APICategorizer(object):
                          for name in public_templates)
     return template_names
 
-  def GetCategory(self, platform, api_name):
+  def GetCategory(self, api_name):
     '''Return the type of api.'Chrome' means the public apis,
     private means the api only used by chrome, and experimental means
     the apis with "experimental" prefix.
     '''
-    documented_apis = self._GenerateAPICategories(platform)
+    documented_apis = self._GenerateAPICategories()
     if (api_name.endswith('Private') or
         api_name not in documented_apis):
       return 'private'
@@ -45,5 +46,5 @@ class APICategorizer(object):
       return 'experimental'
     return 'chrome'
 
-  def IsDocumented(self, platform, api_name):
-    return (api_name in self._GenerateAPICategories(platform))
+  def IsDocumented(self, api_name):
+    return (api_name in self._GenerateAPICategories())

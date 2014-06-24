@@ -249,10 +249,6 @@ class ManifestDataSourceTest(unittest.TestCase):
         'platforms': ['apps'],
         'annotations': ['important!'],
         'level': 'recommended'
-      },
-      'doc2': {
-        'name': 'doc2',
-        'platforms': ['extensions']
       }
     }
 
@@ -279,13 +275,17 @@ class ManifestDataSourceTest(unittest.TestCase):
       }
     ]
 
+    class FakePlatformBundle(object):
+      def GetFeaturesBundle(self, platform):
+        return FakeFeaturesBundle()
+
     class FakeFeaturesBundle(object):
       def GetManifestFeatures(self):
         return Future(value=manifest_features)
 
     class FakeServerInstance(object):
       def __init__(self):
-        self.features_bundle = FakeFeaturesBundle()
+        self.platform_bundle = FakePlatformBundle()
         self.object_store_creator = ObjectStoreCreator.ForTest()
 
     mds = manifest_data_source.ManifestDataSource(FakeServerInstance(), None)

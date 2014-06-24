@@ -747,7 +747,9 @@
   "webstore": {
     // Hosted apps can use the webstore API from within a blessed context.
     "channel": "stable",
-    "extension_types": ["hosted_app"],
+    // Do not specify extension_types to prevent webstore from being filtered.
+    // Technically, webstore is not in apps or extensions, but it is currently
+    // displayed on /extensions/webstore and /apps/webstore. 
     "contexts": ["blessed_web_page", "web_page"],
     // Any webpage can use the webstore API.
     "matches": ["http://*/*", "https://*/*"]

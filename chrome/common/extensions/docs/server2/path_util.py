@@ -45,6 +45,17 @@ def SplitParent(path):
   return parent, base
 
 
+def Split(path):
+  '''Returns a list of the directories and filename in a path. 'p1/p2/p3'
+  will return ['p1/', 'p2/', 'p3'].
+  '''
+  AssertIsValid(path)
+  names = [name + '/' for name in path.rstrip('/').split('/')]
+  if names and not path.endswith('/'):
+    names[-1] = names[-1][:-1]
+  return names
+
+
 def ToDirectory(path):
   '''Returns a string representing |path| as a directory, that is,
   IsDirectory(result) is True (and does not fail assertions). If |path| is

@@ -6,9 +6,10 @@ from copy import deepcopy
 import json
 
 from data_source import DataSource
-from features_utility import Filtered
 from future import Future
 from manifest_features import ConvertDottedKeysToNested
+from platform_util import GetPlatforms, PluralToSingular
+
 
 def _ListifyAndSortDocs(features, app_name):
   '''Convert a |feautres| dictionary, and all 'children' dictionaries, into
@@ -105,23 +106,26 @@ class ManifestDataSource(DataSource):
   '''Provides access to the properties in manifest features.
   '''
   def __init__(self, server_instance, _):
-    self._features_bundle = server_instance.features_bundle
+    self._platform_bundle = server_instance.platform_bundle
     self._object_store = server_instance.object_store_creator.Create(
         ManifestDataSource)
 
-  def _CreateManifestData(self):
-    future_manifest_features = self._features_bundle.GetManifestFeatures()
+  def _CreateManifestDataForPlatform(self, platform):
+    future_manifest_features = self._platform_bundle.GetFeaturesBundle(
+        platform).GetManifestFeatures()
     def resolve():
       manifest_features = future_manifest_features.Get()
-      def for_templates(manifest_features, platform):
-        return _AddLevelAnnotations(_ListifyAndSortDocs(
-            ConvertDottedKeysToNested(
-                deepcopy(Filtered(manifest_features, platform + 's'))),
-            app_name=platform.capitalize()))
-      return {
-        'apps': for_templates(manifest_features, 'app'),
-        'extensions': for_templates(manifest_features, 'extension')
-      }
+      return _AddLevelAnnotations(_ListifyAndSortDocs(
+          ConvertDottedKeysToNested(deepcopy(manifest_features)),
+          app_name=PluralToSingular(platform).capitalize()))
+    return Future(callback=resolve)
+
+  def _CreateManifestData(self):
+    manifest_data_futures = dict((p, self._CreateManifestDataForPlatform(p))
+                                 for p in GetPlatforms())
+    def resolve():
+      return dict((platform, future.Get())
+                  for platform, future in manifest_data_futures.iteritems())
     return Future(callback=resolve)
 
   def _GetCachedManifestData(self):

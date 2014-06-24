@@ -37,22 +37,22 @@ def _GetType(dict_, name):
       return type_
 
 
-class _FakeAvailabilityFinder(object):
-
-  def GetAPIAvailability(self, version):
-    return AvailabilityInfo(ChannelInfo('stable', '396', 5))
-
-
-class _FakeScheduledAvailabilityFinder(object):
-
-  def GetAPIAvailability(self, version):
-    return AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28)
-
-
 class _FakeTemplateCache(object):
 
   def GetFromFile(self, key):
     return Future(value='handlebar %s' % key)
+
+
+class _FakeFeaturesBundle(object):
+  def GetAPIFeatures(self):
+    return Future(value={
+      'bluetooth': {'value': True},
+      'contextMenus': {'value': True},
+      'jsonStableAPI': {'value': True},
+      'idle': {'value': True},
+      'input.ime': {'value': True},
+      'tabs': {'value': True}
+    })
 
 
 class APIDataSourceTest(unittest.TestCase):
@@ -66,17 +66,22 @@ class APIDataSourceTest(unittest.TestCase):
     self._json_cache = server_instance.compiled_fs_factory.ForJson(file_system)
     self._features_bundle = FeaturesBundle(file_system,
                                            server_instance.compiled_fs_factory,
-                                           server_instance.object_store_creator)
-    self._api_models = server_instance.api_models
+                                           server_instance.object_store_creator,
+                                           'extensions')
+    self._api_models = server_instance.platform_bundle.GetAPIModels(
+        'extensions')
+    self._fake_availability = AvailabilityInfo(ChannelInfo('stable', '396', 5))
 
     # Used for testGetAPIAvailability() so that valid-ish data is processed.
     server_instance = ServerInstance.ForTest(
         file_system_provider=FakeHostFileSystemProvider(
             CANNED_API_FILE_SYSTEM_DATA))
-    self._avail_api_models = server_instance.api_models
+    self._avail_api_models = server_instance.platform_bundle.GetAPIModels(
+        'extensions')
     self._avail_json_cache = server_instance.compiled_fs_factory.ForJson(
         server_instance.host_file_system_provider.GetTrunk())
-    self._avail_finder = server_instance.availability_finder
+    self._avail_finder = server_instance.platform_bundle.GetAvailabilityFinder(
+        'extensions')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -87,7 +92,7 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testCreateId(self):
     dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      _FakeAvailabilityFinder(),
+                      self._fake_availability,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -102,7 +107,7 @@ class APIDataSourceTest(unittest.TestCase):
   def DISABLED_testToDict(self):
     expected_json = self._LoadJSON('expected_tester.json')
     dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      _FakeAvailabilityFinder(),
+                      self._fake_availability,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -116,31 +121,27 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testGetAPIAvailability(self):
     api_availabilities = {
-      'bluetooth': AvailabilityInfo(
-          ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
-      'contextMenus': AvailabilityInfo(
-          ChannelInfo('trunk', CANNED_BRANCHES['trunk'], 'trunk')),
-      'jsonStableAPI': AvailabilityInfo(
-          ChannelInfo('stable', CANNED_BRANCHES[20], 20)),
-      'idle': AvailabilityInfo(
-          ChannelInfo('stable', CANNED_BRANCHES[5], 5)),
-      'input.ime': AvailabilityInfo(
-          ChannelInfo('stable', CANNED_BRANCHES[18], 18)),
-      'tabs': AvailabilityInfo(
-          ChannelInfo('stable', CANNED_BRANCHES[18], 18))
+      'bluetooth': 28,
+      'contextMenus': 'trunk',
+      'jsonStableAPI': 20,
+      'idle': 5,
+      'input.ime': 18,
+      'tabs': 18
     }
     for api_name, availability in api_availabilities.iteritems():
-      model = _JSCModel(self._avail_api_models.GetModel(api_name).Get(),
-                        self._avail_finder,
-                        self._avail_json_cache,
-                        _FakeTemplateCache(),
-                        self._features_bundle,
-                        None)
-      self.assertEquals(availability, model._GetAPIAvailability())
+      model_dict = _JSCModel(
+          self._avail_api_models.GetModel(api_name).Get(),
+          self._avail_finder.GetAPIAvailability(api_name),
+          self._avail_json_cache,
+          _FakeTemplateCache(),
+          _FakeFeaturesBundle(),
+          None).ToDict()
+      self.assertEquals(availability,
+                        model_dict['introList'][1]['content'][0]['version'])
 
   def testGetIntroList(self):
     model = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      _FakeAvailabilityFinder(),
+                      self._fake_availability,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -187,11 +188,11 @@ class APIDataSourceTest(unittest.TestCase):
 
     # Tests the same data with a scheduled availability.
     model = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      _FakeScheduledAvailabilityFinder(),
-                      self._json_cache,
-                      _FakeTemplateCache(),
-                      self._features_bundle,
-                      None)
+        AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28),
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        None)
     expected_list[1] = {
       'title': 'Availability',
       'content': [
@@ -226,15 +227,15 @@ class APIDataSourceTest(unittest.TestCase):
 
   def _FakeLoadAddRulesSchema(self):
     events = self._LoadJSON('add_rules_def_test.json')
-    return _GetEventByNameFromEvents(events)
+    return Future(value=_GetEventByNameFromEvents(events))
 
   def testAddRules(self):
     dict_ = _JSCModel(self._api_models.GetModel('add_rules_tester').Get(),
-                      _FakeAvailabilityFinder(),
+                      self._fake_availability,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
-                      self._FakeLoadAddRulesSchema).ToDict()
+                      self._FakeLoadAddRulesSchema()).ToDict()
 
     # Check that the first event has the addRulesFunction defined.
     self.assertEquals('add_rules_tester', dict_['name'])

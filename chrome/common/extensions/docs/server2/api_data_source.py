@@ -13,6 +13,7 @@ from environment import IsPreviewServer
 from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future, Collect
+from platform_util import GetPlatforms
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 from environment import IsPreviewServer
@@ -71,19 +72,19 @@ class _JSCModel(object):
 
   def __init__(self,
                namespace,
-               availability_finder,
+               availability,
                json_cache,
                template_cache,
                features_bundle,
-               event_byname_function):
-    self._availability_finder = availability_finder
+               event_byname_future):
+    self._availability = availability
     self._api_availabilities = json_cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'api_availabilities.json'))
     self._intro_tables = json_cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'intro_tables.json'))
     self._api_features = features_bundle.GetAPIFeatures()
     self._template_cache = template_cache
-    self._event_byname_function = event_byname_function
+    self._event_byname_future = event_byname_future
     self._namespace = namespace
 
   def _GetLink(self, link):
@@ -115,12 +116,11 @@ class _JSCModel(object):
     as_dict['byName'] = _GetByNameDict(as_dict)
     return as_dict
 
-  def _GetAPIAvailability(self):
-    return self._availability_finder.GetAPIAvailability(self._namespace.name)
-
   def _GetChannelWarning(self):
     if not self._IsExperimental():
-      return { self._GetAPIAvailability().channel_info.channel: True }
+      return {
+        self._availability.channel_info.channel: True
+      }
     return None
 
   def _IsExperimental(self):
@@ -190,8 +190,8 @@ class _JSCModel(object):
     }
     self._AddCommonProperties(event_dict, event)
     # Add the Event members to each event in this object.
-    if self._event_byname_function:
-      event_dict['byName'].update(self._event_byname_function())
+    if self._event_byname_future:
+      event_dict['byName'].update(self._event_byname_future.Get())
     # We need to create the method description for addListener based on the
     # information stored in |event|.
     if event.supports_listeners:
@@ -354,10 +354,9 @@ class _JSCModel(object):
       version = None
       scheduled = None
     else:
-      availability = self._GetAPIAvailability()
-      status = availability.channel_info.channel
-      version = availability.channel_info.version
-      scheduled = availability.scheduled
+      status = self._availability.channel_info.channel
+      version = self._availability.channel_info.version
+      scheduled = self._availability.scheduled
     return {
       'title': 'Availability',
       'content': [{
@@ -475,49 +474,50 @@ class APIDataSource(DataSource):
     self._json_cache = server_instance.compiled_fs_factory.ForJson(file_system)
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         file_system)
-    self._availability_finder = server_instance.availability_finder
-    self._api_models = server_instance.api_models
-    self._features_bundle = server_instance.features_bundle
+    self._platform_bundle = server_instance.platform_bundle
     self._model_cache = server_instance.object_store_creator.Create(
         APIDataSource,
         # Update the models when any of templates, APIs, or Features change.
         category=StringIdentity(self._json_cache.GetIdentity(),
                                 self._template_cache.GetIdentity(),
-                                self._api_models.GetIdentity(),
-                                self._features_bundle.GetIdentity()))
+                                self._platform_bundle.GetIdentity()))
 
     # This caches the result of _LoadEventByName.
-    self._event_byname = None
+    self._event_byname_futures = {}
     self._samples = server_instance.samples_data_source_factory.Create(request)
 
-  def _LoadEventByName(self):
+  def _LoadEventByName(self, platform):
     '''All events have some members in common. We source their description
     from Event in events.json.
     '''
-    if self._event_byname is None:
-      self._event_byname = _GetEventByNameFromEvents(
-          self._GetSchemaModel('events').Get())
-    return self._event_byname
+    if platform not in self._event_byname_futures:
+      future = self._GetSchemaModel(platform, 'events')
+      self._event_byname_futures[platform] = Future(
+          callback=lambda: _GetEventByNameFromEvents(future.Get()))
+    return self._event_byname_futures[platform]
 
-  def _GetSchemaModel(self, api_name):
-    jsc_model_future = self._model_cache.Get(api_name)
-    model_future = self._api_models.GetModel(api_name)
+  def _GetSchemaModel(self, platform, api_name):
+    object_store_key = '/'.join((platform, api_name))
+    jsc_model_future = self._model_cache.Get(object_store_key)
+    model_future = self._platform_bundle.GetAPIModels(platform).GetModel(
+        api_name)
     def resolve():
       jsc_model = jsc_model_future.Get()
       if jsc_model is None:
         jsc_model = _JSCModel(
             model_future.Get(),
-            self._availability_finder,
+            self._platform_bundle.GetAvailabilityFinder(
+                platform).GetAPIAvailability(api_name),
             self._json_cache,
             self._template_cache,
-            self._features_bundle,
-            self._LoadEventByName).ToDict()
-        self._model_cache.Set(api_name, jsc_model)
+            self._platform_bundle.GetFeaturesBundle(platform),
+            self._LoadEventByName(platform)).ToDict()
+        self._model_cache.Set(object_store_key, jsc_model)
       return jsc_model
     return Future(callback=resolve)
 
-  def _GetImpl(self, api_name):
-    handlebar_dict_future = self._GetSchemaModel(api_name)
+  def _GetImpl(self, platform, api_name):
+    handlebar_dict_future = self._GetSchemaModel(platform, api_name)
     def resolve():
       handlebar_dict = handlebar_dict_future.Get()
       # Parsing samples on the preview server takes seconds and doesn't add
@@ -529,9 +529,17 @@ class APIDataSource(DataSource):
       return handlebar_dict
     return Future(callback=resolve)
 
-  def get(self, api_name):
-    return self._GetImpl(api_name).Get()
+  def get(self, platform):
+    '''Return a getter object so that templates can perform lookups such
+    as apis.extensions.runtime.
+    '''
+    getter = lambda: 0
+    getter.get = lambda api_name: self._GetImpl(platform, api_name).Get()
+    return getter
 
   def Cron(self):
-    futures = [self._GetImpl(name) for name in self._api_models.GetNames()]
+    futures = []
+    for platform in GetPlatforms():
+      futures += [self._GetImpl(platform, name)
+          for name in self._platform_bundle.GetAPIModels(platform).GetNames()]
     return Collect(futures, except_pass=FileNotFoundError)
