@@ -746,12 +746,18 @@ void Window::SetCapture() {
   Window* root_window = GetRootWindow();
   if (!root_window)
     return;
+  client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
+  if (!capture_client)
+    return;
   client::GetCaptureClient(root_window)->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
   Window* root_window = GetRootWindow();
   if (!root_window)
+    return;
+  client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
+  if (!capture_client)
     return;
   client::GetCaptureClient(root_window)->ReleaseCapture(this);
 }
