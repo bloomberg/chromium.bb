@@ -10,6 +10,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "net/base/net_export.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/signed_certificate_timestamp.h"
@@ -33,6 +34,7 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
   virtual ~MultiLogCTVerifier();
 
   void AddLog(scoped_ptr<CTLogVerifier> log_verifier);
+  void AddLogs(ScopedVector<CTLogVerifier> log_verifiers);
 
   // CTVerifier implementation:
   virtual int Verify(X509Certificate* cert,

@@ -299,6 +299,7 @@
       'cert/crl_set.h',
       'cert/ct_known_logs.cc',
       'cert/ct_known_logs.h',
+      'cert/ct_known_logs_static.h',
       'cert/ct_log_response_parser.cc',
       'cert/ct_log_response_parser.h',
       'cert/ct_log_verifier.cc',

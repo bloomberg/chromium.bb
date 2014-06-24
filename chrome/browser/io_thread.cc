@@ -565,9 +565,7 @@ void IOThread::InitAsync() {
   globals_->cert_transparency_verifier.reset(ct_verifier);
 
   // Add built-in logs
-  ct_verifier->AddLog(net::ct::CreateGooglePilotLogVerifier().Pass());
-  ct_verifier->AddLog(net::ct::CreateGoogleAviatorLogVerifier().Pass());
-  ct_verifier->AddLog(net::ct::CreateGoogleRocketeerLogVerifier().Pass());
+  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
 
   // Add logs from command line
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {

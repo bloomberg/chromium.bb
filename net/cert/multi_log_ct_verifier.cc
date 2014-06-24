@@ -4,6 +4,8 @@
 
 #include "net/cert/multi_log_ct_verifier.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
@@ -64,6 +66,19 @@ void MultiLogCTVerifier::AddLog(scoped_ptr<CTLogVerifier> log_verifier) {
 
   linked_ptr<CTLogVerifier> log(log_verifier.release());
   logs_[log->key_id()] = log;
+}
+
+void MultiLogCTVerifier::AddLogs(
+    ScopedVector<CTLogVerifier> log_verifiers) {
+  for (ScopedVector<CTLogVerifier>::iterator it =
+       log_verifiers.begin(); it != log_verifiers.end(); ++it) {
+    linked_ptr<CTLogVerifier> log(*it);
+    VLOG(1) << "Adding CT log: " << log->description();
+    logs_[log->key_id()] = log;
+  }
+
+  // Ownership of the pointers in |log_verifiers| is transferred to |logs_|
+  log_verifiers.weak_clear();
 }
 
 int MultiLogCTVerifier::Verify(
