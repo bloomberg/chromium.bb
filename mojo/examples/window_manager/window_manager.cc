@@ -43,6 +43,9 @@ const SkColor kColors[] = { SK_ColorYELLOW,
                             SK_ColorGREEN,
                             SK_ColorMAGENTA };
 
+const int kBorderInset = 25;
+const int kTextfieldHeight = 25;
+
 }  // namespace
 
 class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
@@ -182,17 +185,26 @@ class WindowManager : public Application,
     }
   }
 
+  // TODO(beng): proper layout manager!!
   void CreateLauncherUI() {
     navigation::NavigationDetailsPtr nav_details;
     navigation::ResponseDetailsPtr response;
-    launcher_ui_ = CreateChild("mojo:mojo_browser", gfx::Rect(25, 25, 400, 25),
+    Node* node = view_manager_->GetNodeById(parent_node_id_);
+    gfx::Rect bounds = node->bounds();
+    bounds.Inset(kBorderInset, kBorderInset);
+    bounds.set_height(kTextfieldHeight);
+    launcher_ui_ = CreateChild("mojo:mojo_browser", bounds,
                                nav_details.Pass(), response.Pass());
   }
 
   void CreateWindow(const std::string& handler_url,
                     navigation::NavigationDetailsPtr nav_details,
                     navigation::ResponseDetailsPtr response) {
-    gfx::Rect bounds(25, 75, 400, 400);
+    Node* node = view_manager_->GetNodeById(parent_node_id_);
+    gfx::Rect bounds(kBorderInset, 2 * kBorderInset + kTextfieldHeight,
+                     node->bounds().width() - 2 * kBorderInset,
+                     node->bounds().height() -
+                         (3 * kBorderInset + kTextfieldHeight));
     if (!windows_.empty()) {
       gfx::Point position = windows_.back()->bounds().origin();
       position.Offset(35, 35);
