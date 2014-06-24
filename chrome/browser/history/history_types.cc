@@ -265,6 +265,14 @@ int QueryOptions::EffectiveMaxCount() const {
   return max_count ? max_count : std::numeric_limits<int>::max();
 }
 
+// QueryURLResult -------------------------------------------------------------
+
+QueryURLResult::QueryURLResult() : success(false) {
+}
+
+QueryURLResult::~QueryURLResult() {
+}
+
 // KeywordSearchTermVisit -----------------------------------------------------
 
 KeywordSearchTermVisit::KeywordSearchTermVisit() : visits(0) {}

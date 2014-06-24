@@ -152,14 +152,6 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   scoped_refptr<HistoryBackend> history_backend_;
 };
 
-// HistoryBackend::QueryURLResult ----------------------------------------------
-
-HistoryBackend::QueryURLResult::QueryURLResult() : success(false) {
-}
-
-HistoryBackend::QueryURLResult::~QueryURLResult() {
-}
-
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const base::FilePath& history_dir,

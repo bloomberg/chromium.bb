@@ -83,7 +83,7 @@ void RunWithFaviconResult(
 }
 
 void RunWithQueryURLResult(const HistoryService::QueryURLCallback& callback,
-                           const HistoryBackend::QueryURLResult* result) {
+                           const history::QueryURLResult* result) {
   callback.Run(result->success, result->row, result->visits);
 }
 
@@ -708,8 +708,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     const QueryURLCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  HistoryBackend::QueryURLResult* query_url_result =
-      new HistoryBackend::QueryURLResult();
+  history::QueryURLResult* query_url_result = new history::QueryURLResult();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,

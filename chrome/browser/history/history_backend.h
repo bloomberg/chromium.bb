@@ -95,16 +95,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
         const history::BriefVisitInfo& info) = 0;
   };
 
-  // QueryURLResult stores the result of a call to QueryURL. The |row| and
-  // |visits| fields are only valid if |success| is true.
-  struct QueryURLResult {
-    QueryURLResult();
-    ~QueryURLResult();
-    bool success;
-    URLRow row;
-    VisitVector visits;
-  };
-
   // Init must be called to complete object creation. This object can be
   // constructed on any thread, but all other functions including Init() must
   // be called on the history thread.

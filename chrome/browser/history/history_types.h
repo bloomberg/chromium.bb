@@ -481,6 +481,20 @@ struct QueryOptions {
   int64 EffectiveEndTime() const;
 };
 
+// QueryURLResult -------------------------------------------------------------
+
+// QueryURLResult encapsulate the result of a call to HistoryBackend::QueryURL.
+struct QueryURLResult {
+  QueryURLResult();
+  ~QueryURLResult();
+
+  // Indicates whether the call to HistoryBackend::QueryURL was successfull
+  // or not. If false, then both |row| and |visits| fields are undefined.
+  bool success;
+  URLRow row;
+  VisitVector visits;
+};
+
 // KeywordSearchTermVisit -----------------------------------------------------
 
 // KeywordSearchTermVisit is returned from GetMostRecentKeywordSearchTerms. It
