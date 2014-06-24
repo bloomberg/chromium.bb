@@ -59,7 +59,7 @@ path=@libexecdir@/weston-keyboard
 #[output]
 #name=X1
 #mode=1024x768
-#transform=flipped-270
+#transform=flipped-90
 
 #[touchpad]
 #constant_accel_factor = 50
