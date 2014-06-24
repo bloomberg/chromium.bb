@@ -161,6 +161,14 @@
       <include name="IDR_CRYPTOTOKEN_WEBREQUEST_JS" file="cryptotoken/webrequest.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_APPID_JS" file="cryptotoken/appid.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_BACKGROUND_JS" file="cryptotoken/background.js" type="BINDATA" />
+      <if expr="chromeos and _google_chrome">
+        <include name="IDR_LEDGER_BACKGROUND_HTML" file="../extensions/api/ledger/ledger_proxy/background.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_LEDGER_INIT_JS" file="../extensions/api/ledger/ledger_proxy/js/init.js" type="BINDATA" />
+        <include name="IDR_LEDGER_NACL_JS" file="../extensions/api/ledger/ledger_proxy/js/nacl.js" type="BINDATA" />
+        <include name="IDR_LEDGER_WRAPPER_JS" file="../extensions/api/ledger/ledger_proxy/js/wrapper.js" type="BINDATA" />
+        <include name="IDR_LEDGER_LEDGER_PROXY_NMF" file="../extensions/api/ledger/ledger_proxy/ledger_proxy.nmf.js" type="BINDATA" />
+        <include name="IDR_LEDGER_LEDGER_PROXY_PEXE" file="../extensions/api/ledger/ledger_proxy/ledger_proxy_pnacl.pexe.js" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
