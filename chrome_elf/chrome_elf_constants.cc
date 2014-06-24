@@ -5,6 +5,14 @@
 #include "chrome_elf/chrome_elf_constants.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+#define PRODUCT_STRING_PATH L"Google\\Chrome"
+#elif defined(CHROMIUM_BUILD)
+#define PRODUCT_STRING_PATH L"Chromium"
+#else
+#error Unknown branding
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kAppDataDirName[] = L"Google\\Chrome";
 #else
 const wchar_t kAppDataDirName[] = L"Chromium";
@@ -16,9 +24,10 @@ const wchar_t kUserDataDirName[] = L"User Data";
 
 namespace blacklist {
 
-const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
+const wchar_t kRegistryBeaconPath[] =
+    L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BLBeacon";
 const wchar_t kRegistryFinchListPath[] =
-    L"SOFTWARE\\Google\\Chrome\\BLFinchList";
+    L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BLFinchList";
 const wchar_t kBeaconVersion[] = L"version";
 const wchar_t kBeaconState[] = L"state";
 const wchar_t kBeaconAttemptCount[] = L"failed_count";
