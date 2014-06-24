@@ -50,10 +50,10 @@ public:
     {
     }
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencingElements() { return m_referencingElements; }
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencingElements() const { return m_referencingElements; }
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencedElements() { return m_referencedElements; }
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& referencedElements() const { return m_referencedElements; }
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencingElements() { return m_referencingElements; }
+    const WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencingElements() const { return m_referencingElements; }
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencedElements() { return m_referencedElements; }
+    const WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencedElements() const { return m_referencedElements; }
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
