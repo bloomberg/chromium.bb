@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 
+#include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
@@ -73,6 +74,8 @@ void ProvidedFileSystem::ReadFile(int file_handle,
                                   int64 offset,
                                   int length,
                                   const ReadChunkReceivedCallback& callback) {
+  TRACE_EVENT1(
+      "file_system_provider", "ProvidedFileSystem::ReadFile", "length", length);
   if (!request_manager_.CreateRequest(
           READ_FILE,
           make_scoped_ptr<RequestManager::HandlerInterface>(

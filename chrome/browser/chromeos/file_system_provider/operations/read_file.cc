@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
@@ -62,6 +63,7 @@ ReadFile::~ReadFile() {
 }
 
 bool ReadFile::Execute(int request_id) {
+  TRACE_EVENT0("file_system_provider", "ReadFile::Execute");
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetInteger("openRequestId", file_handle_);
   values->SetDouble("offset", offset_);
@@ -75,6 +77,7 @@ bool ReadFile::Execute(int request_id) {
 void ReadFile::OnSuccess(int /* request_id */,
                          scoped_ptr<RequestValue> result,
                          bool has_more) {
+  TRACE_EVENT0("file_system_provider", "ReadFile::OnSuccess");
   const int copy_result = CopyRequestValueToBuffer(
       result.Pass(), buffer_, current_offset_, length_);
   DCHECK_LE(0, copy_result);
@@ -87,6 +90,7 @@ void ReadFile::OnSuccess(int /* request_id */,
 void ReadFile::OnError(int /* request_id */,
                        scoped_ptr<RequestValue> /* result */,
                        base::File::Error error) {
+  TRACE_EVENT0("file_system_provider", "ReadFile::OnError");
   callback_.Run(0 /* chunk_length */, false /* has_more */, error);
 }
 

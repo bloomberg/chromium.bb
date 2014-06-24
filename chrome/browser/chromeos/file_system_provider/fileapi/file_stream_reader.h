@@ -45,6 +45,10 @@ class FileStreamReader : public webkit_blob::FileStreamReader {
       const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
+  // Called when Read() operation is completed with either a success of an
+  // error.
+  void OnReadCompleted(net::CompletionCallback callback, int result);
+
   // Initializes the reader by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.
   void Initialize(const base::Closure& pending_closure,

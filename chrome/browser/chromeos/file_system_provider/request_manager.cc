@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 
+#include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "base/stl_util.h"
 
@@ -67,6 +68,12 @@ int RequestManager::CreateRequest(RequestType type,
   // If cycled the int, then signal an error.
   if (requests_.find(request_id) != requests_.end())
     return 0;
+
+  TRACE_EVENT_ASYNC_BEGIN1("file_system_provider",
+                           "RequestManager::Request",
+                           request_id,
+                           "type",
+                           type);
 
   Request* request = new Request;
   request->handler = handler.Pass();
@@ -166,6 +173,9 @@ void RequestManager::DestroyRequest(int request_id) {
   requests_.erase(request_it);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestDestroyed(request_id));
+
+  TRACE_EVENT_ASYNC_END0(
+      "file_system_provider", "RequestManager::Request", request_id);
 }
 
 }  // namespace file_system_provider

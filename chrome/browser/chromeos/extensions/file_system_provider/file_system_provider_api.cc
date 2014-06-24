@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -123,7 +124,9 @@ bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
 
 bool
 FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
+  TRACE_EVENT0("file_system_provider", "ReadFileRequestedSuccess");
   using api::file_system_provider_internal::ReadFileRequestedSuccess::Params;
+
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
