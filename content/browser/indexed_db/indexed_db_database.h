@@ -109,7 +109,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
 
   // Called by transactions to report failure committing to the backing store.
-  void TransactionCommitFailed();
+  void TransactionCommitFailed(const leveldb::Status& status);
 
   void Get(int64 transaction_id,
            int64 object_store_id,

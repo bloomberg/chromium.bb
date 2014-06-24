@@ -459,8 +459,15 @@ void IndexedDBDatabase::Commit(int64 transaction_id) {
   // been dispatched to the frontend, so it will find out about that
   // asynchronously.
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
-  if (transaction)
-    transaction->Commit();
+  if (transaction) {
+    scoped_refptr<IndexedDBFactory> factory = factory_;
+    leveldb::Status s = transaction->Commit();
+    if (s.IsCorruption()) {
+      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                   "Internal error committing transaction.");
+      factory->HandleBackingStoreCorruption(identifier_.first, error);
+    }
+  }
 }
 
 void IndexedDBDatabase::Abort(int64 transaction_id) {
@@ -1371,11 +1378,17 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
   }
 }
 
-void IndexedDBDatabase::TransactionCommitFailed() {
+void IndexedDBDatabase::TransactionCommitFailed(const leveldb::Status& status) {
   // Factory may be null in unit tests.
   if (!factory_)
     return;
-  factory_->HandleBackingStoreFailure(backing_store_->origin_url());
+  if (status.IsCorruption()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Error committing transaction");
+    factory_->HandleBackingStoreCorruption(backing_store_->origin_url(), error);
+  } else {
+    factory_->HandleBackingStoreFailure(backing_store_->origin_url());
+  }
 }
 
 size_t IndexedDBDatabase::ConnectionCount() const {
@@ -1655,10 +1668,16 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
   DCHECK(backing_store_);
-  if (!backing_store_->DeleteDatabase(metadata_.name).ok()) {
-    callbacks->OnError(
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error deleting database."));
+  leveldb::Status s = backing_store_->DeleteDatabase(metadata_.name);
+  if (!s.ok()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error deleting database.");
+    callbacks->OnError(error);
+    if (s.IsCorruption()) {
+      GURL origin_url = backing_store_->origin_url();
+      backing_store_ = NULL;
+      factory_->HandleBackingStoreCorruption(origin_url, error);
+    }
     return;
   }
   int64 old_version = metadata_.int_version;

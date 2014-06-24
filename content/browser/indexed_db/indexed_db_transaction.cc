@@ -235,14 +235,14 @@ void IndexedDBTransaction::BlobWriteComplete(bool success) {
                                  "Failed to write blobs."));
 }
 
-void IndexedDBTransaction::Commit() {
+leveldb::Status IndexedDBTransaction::Commit() {
   IDB_TRACE1("IndexedDBTransaction::Commit", "txn.id", id());
 
   // In multiprocess ports, front-end may have requested a commit but
   // an abort has already been initiated asynchronously by the
   // back-end.
   if (state_ == FINISHED)
-    return;
+    return leveldb::Status::OK();
   DCHECK_NE(state_, COMMITTING);
 
   DCHECK(!used_ || state_ == STARTED);
@@ -252,27 +252,31 @@ void IndexedDBTransaction::Commit() {
   // create_index which are considered synchronous by the front-end
   // but are processed asynchronously.
   if (HasPendingTasks())
-    return;
+    return leveldb::Status::OK();
 
   state_ = COMMITTING;
 
+  leveldb::Status s;
   if (!used_) {
-    CommitPhaseTwo();
+    s = CommitPhaseTwo();
   } else {
     scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback(
         new BlobWriteCallbackImpl(this));
     // CommitPhaseOne will call the callback synchronously if there are no blobs
     // to write.
-    if (!transaction_->CommitPhaseOne(callback).ok())
+    s = transaction_->CommitPhaseOne(callback);
+    if (!s.ok())
       Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionDataError,
                                    "Error processing blob journal."));
   }
+
+  return s;
 }
 
-void IndexedDBTransaction::CommitPhaseTwo() {
+leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   // Abort may have been called just as the blob write completed.
   if (state_ == FINISHED)
-    return;
+    return leveldb::Status::OK();
 
   DCHECK_EQ(state_, COMMITTING);
 
@@ -285,7 +289,14 @@ void IndexedDBTransaction::CommitPhaseTwo() {
 
   state_ = FINISHED;
 
-  bool committed = !used_ || transaction_->CommitPhaseTwo().ok();
+  leveldb::Status s;
+  bool committed;
+  if (!used_) {
+    committed = true;
+  } else {
+    s = transaction_->CommitPhaseTwo();
+    committed = s.ok();
+  }
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may
@@ -312,10 +323,11 @@ void IndexedDBTransaction::CommitPhaseTwo() {
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error committing transaction."));
     database_->TransactionFinished(this, false);
-    database_->TransactionCommitFailed();
+    database_->TransactionCommitFailed(s);
   }
 
   database_ = NULL;
+  return s;
 }
 
 void IndexedDBTransaction::ProcessTaskQueue() {

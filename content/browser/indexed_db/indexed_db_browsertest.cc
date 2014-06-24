@@ -607,6 +607,7 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
                         IndexedDBBrowserCorruptionTest,
                         ::testing::Values("get",
                                           "iterate",
+                                          "failTransactionCommit",
                                           "clearObjectStore"));
 
 // Crashes flakily on various platforms. crbug.com/375856

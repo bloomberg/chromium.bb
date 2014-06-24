@@ -273,7 +273,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   EXPECT_TRUE(factory->IsBackingStoreOpen(kTestOrigin));
 
   // Simulate the write failure.
-  callbacks->connection()->database()->TransactionCommitFailed();
+  leveldb::Status status = leveldb::Status::IOError("Simulated failure");
+  callbacks->connection()->database()->TransactionCommitFailed(status);
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   EXPECT_FALSE(factory->IsBackingStoreOpen(kTestOrigin));

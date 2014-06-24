@@ -94,6 +94,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   bool disk_full = false;
   base::TaskRunner* task_runner = NULL;
   bool clean_journal = false;
+  leveldb::Status s;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       IndexedDBBackingStore::Open(factory,
                                   origin,
@@ -104,7 +105,8 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
                                   &disk_full,
                                   &mock_leveldb_factory,
                                   task_runner,
-                                  clean_journal);
+                                  clean_journal,
+                                  &s);
 }
 
 // TODO(dgrogan): Remove expect_destroy if we end up not using it again. It is
@@ -155,6 +157,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   bool disk_full = false;
   base::TaskRunner* task_runner = NULL;
   bool clean_journal = false;
+  leveldb::Status s;
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory(ENOSPC, false);
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -167,7 +170,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory,
                                   task_runner,
-                                  clean_journal);
+                                  clean_journal,
+                                  &s);
+  ASSERT_TRUE(s.IsIOError());
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory2(
       base::File::FILE_ERROR_NO_MEMORY, false);
@@ -181,7 +186,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory2,
                                   task_runner,
-                                  clean_journal);
+                                  clean_journal,
+                                  &s);
+  ASSERT_TRUE(s.IsIOError());
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, false);
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
@@ -194,7 +201,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory3,
                                   task_runner,
-                                  clean_journal);
+                                  clean_journal,
+                                  &s);
+  ASSERT_TRUE(s.IsIOError());
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory4(
       base::File::FILE_ERROR_FAILED, false);
@@ -208,7 +217,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory4,
                                   task_runner,
-                                  clean_journal);
+                                  clean_journal,
+                                  &s);
+  ASSERT_TRUE(s.IsIOError());
 }
 
 }  // namespace

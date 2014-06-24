@@ -39,7 +39,7 @@ class CONTENT_EXPORT IndexedDBTransaction
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   virtual void Abort();
-  void Commit();
+  leveldb::Status Commit();
   void Abort(const IndexedDBDatabaseError& error);
 
   // Called by the transaction coordinator when this transaction is unblocked.
@@ -109,7 +109,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   void BlobWriteComplete(bool success);
   void ProcessTaskQueue();
   void CloseOpenCursors();
-  void CommitPhaseTwo();
+  leveldb::Status CommitPhaseTwo();
   void Timeout();
 
   const int64 id_;
