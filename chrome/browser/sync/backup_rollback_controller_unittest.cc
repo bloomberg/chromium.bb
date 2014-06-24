@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,9 +19,9 @@ namespace {
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
 
-class MockSigninManagerWrapper : public ManagedUserSigninManagerWrapper {
+class MockSigninManagerWrapper : public SupervisedUserSigninManagerWrapper {
  public:
-  MockSigninManagerWrapper() : ManagedUserSigninManagerWrapper(NULL, NULL) {}
+  MockSigninManagerWrapper() : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
 
   MOCK_CONST_METHOD0(GetEffectiveUsername, std::string());
 };

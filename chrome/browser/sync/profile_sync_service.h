@@ -50,10 +50,10 @@
 #include "sync/js/sync_js_controller.h"
 #include "url/gurl.h"
 
-class ManagedUserSigninManagerWrapper;
 class Profile;
 class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
+class SupervisedUserSigninManagerWrapper;
 class SyncErrorController;
 
 namespace base {
@@ -267,7 +267,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper,
+      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior);
   virtual ~ProfileSyncService();
@@ -999,7 +999,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  const scoped_ptr<ManagedUserSigninManagerWrapper> signin_;
+  const scoped_ptr<SupervisedUserSigninManagerWrapper> signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;

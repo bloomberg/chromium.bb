@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
@@ -19,7 +19,7 @@ static const int kRollbackLimits = 3;
 
 BackupRollbackController::BackupRollbackController(
     sync_driver::SyncPrefs* sync_prefs,
-    const ManagedUserSigninManagerWrapper* signin,
+    const SupervisedUserSigninManagerWrapper* signin,
     base::Closure start_backup,
     base::Closure start_rollback)
     : sync_prefs_(sync_prefs),

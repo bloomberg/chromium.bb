@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -12,19 +12,19 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
 
-ManagedUserSigninManagerWrapper::ManagedUserSigninManagerWrapper(
+SupervisedUserSigninManagerWrapper::SupervisedUserSigninManagerWrapper(
     Profile* profile,
     SigninManagerBase* original)
     : profile_(profile), original_(original) {}
 
-ManagedUserSigninManagerWrapper::~ManagedUserSigninManagerWrapper() {
+SupervisedUserSigninManagerWrapper::~SupervisedUserSigninManagerWrapper() {
 }
 
-SigninManagerBase* ManagedUserSigninManagerWrapper::GetOriginal() {
+SigninManagerBase* SupervisedUserSigninManagerWrapper::GetOriginal() {
   return original_;
 }
 
-std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
+std::string SupervisedUserSigninManagerWrapper::GetEffectiveUsername() const {
   const std::string& auth_username = original_->GetAuthenticatedUsername();
 #if defined(ENABLE_MANAGED_USERS)
   if (auth_username.empty() && profile_->IsSupervised())
@@ -33,7 +33,7 @@ std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
   return auth_username;
 }
 
-std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
+std::string SupervisedUserSigninManagerWrapper::GetAccountIdToUse() const {
   const std::string& auth_account = original_->GetAuthenticatedAccountId();
 #if defined(ENABLE_MANAGED_USERS)
   if (auth_account.empty() && profile_->IsSupervised())
@@ -42,7 +42,7 @@ std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
   return auth_account;
 }
 
-std::string ManagedUserSigninManagerWrapper::GetSyncScopeToUse() const {
+std::string SupervisedUserSigninManagerWrapper::GetSyncScopeToUse() const {
 #if defined(ENABLE_MANAGED_USERS)
   const std::string& auth_account = original_->GetAuthenticatedAccountId();
   if (auth_account.empty() && profile_->IsSupervised())

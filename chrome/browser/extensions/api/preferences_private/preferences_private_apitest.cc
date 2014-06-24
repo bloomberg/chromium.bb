@@ -19,9 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -44,7 +44,7 @@ class FakeProfileSyncService : public ProfileSyncService {
       : ProfileSyncService(
             NULL,
             profile,
-            make_scoped_ptr<ManagedUserSigninManagerWrapper>(NULL),
+            make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             browser_sync::MANUAL_START),
         sync_initialized_(true),

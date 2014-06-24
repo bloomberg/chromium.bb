@@ -12,7 +12,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -31,11 +31,11 @@ static const char kStateStringStarted[] = "Started";
 static const char kStateStringDeferred[] = "Deferred";
 static const char kStateStringNotStarted[] = "Not started";
 
-class FakeManagedUserSigninManagerWrapper
-    : public ManagedUserSigninManagerWrapper {
+class FakeSupervisedUserSigninManagerWrapper
+    : public SupervisedUserSigninManagerWrapper {
  public:
-  FakeManagedUserSigninManagerWrapper()
-      : ManagedUserSigninManagerWrapper(NULL, NULL) {}
+  FakeSupervisedUserSigninManagerWrapper()
+      : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
   virtual std::string GetEffectiveUsername() const OVERRIDE {
     return account_;
   }
@@ -59,7 +59,7 @@ class StartupControllerTest : public testing::Test {
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
         BuildFakeProfileOAuth2TokenService(profile_.get())));
-    signin_.reset(new FakeManagedUserSigninManagerWrapper());
+    signin_.reset(new FakeSupervisedUserSigninManagerWrapper());
 
     ProfileSyncServiceStartBehavior behavior =
         browser_defaults::kSyncAutoStarts ? AUTO_START : MANUAL_START;
@@ -89,7 +89,7 @@ class StartupControllerTest : public testing::Test {
   bool started() const { return started_; }
   void clear_started() { started_ = false; }
   StartupController* controller() { return controller_.get(); }
-  FakeManagedUserSigninManagerWrapper* signin() { return signin_.get(); }
+  FakeSupervisedUserSigninManagerWrapper* signin() { return signin_.get(); }
   FakeProfileOAuth2TokenService* token_service() {
     return token_service_.get();
   }
@@ -100,7 +100,7 @@ class StartupControllerTest : public testing::Test {
   bool started_;
   base::MessageLoop message_loop_;
   scoped_ptr<StartupController> controller_;
-  scoped_ptr<FakeManagedUserSigninManagerWrapper> signin_;
+  scoped_ptr<FakeSupervisedUserSigninManagerWrapper> signin_;
   scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<TestingProfile> profile_;

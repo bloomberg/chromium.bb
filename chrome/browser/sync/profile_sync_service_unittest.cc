@@ -16,8 +16,8 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -196,7 +196,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset(new ProfileSyncService(
         components_factory_,
         profile_,
-        make_scoped_ptr(new ManagedUserSigninManagerWrapper(profile_, signin)),
+        make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile_,
+                                                               signin)),
         oauth2_token_service,
         behavior));
     service_->SetClearingBrowseringDataForTesting(

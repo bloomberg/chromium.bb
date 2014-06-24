@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -37,7 +37,7 @@ static const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
     OAuth2TokenService* oauth2_token_service,
-    scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper,
+    scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
     net::URLRequestContextGetter* context)
     : OAuth2TokenService::Consumer("permissions_creator"),
       oauth2_token_service_(oauth2_token_service),
@@ -53,8 +53,8 @@ PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper(
-      new ManagedUserSigninManagerWrapper(profile, signin));
+  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper(
+      new SupervisedUserSigninManagerWrapper(profile, signin));
   scoped_ptr<PermissionRequestCreator> creator(
       new PermissionRequestCreatorApiary(
           token_service, signin_wrapper.Pass(), profile->GetRequestContext()));

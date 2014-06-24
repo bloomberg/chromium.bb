@@ -11,8 +11,8 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class ManagedUserSigninManagerWrapper;
 class Profile;
+class SupervisedUserSigninManagerWrapper;
 
 namespace base {
 class Time;
@@ -29,7 +29,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
  public:
   PermissionRequestCreatorApiary(
       OAuth2TokenService* oauth2_token_service,
-      scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper,
+      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       net::URLRequestContextGetter* context);
   virtual ~PermissionRequestCreatorApiary();
 
@@ -59,7 +59,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   void DispatchGoogleServiceAuthError(const GoogleServiceAuthError& error);
 
   OAuth2TokenService* oauth2_token_service_;
-  scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper_;
+  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper_;
   base::Closure callback_;
   net::URLRequestContextGetter* context_;
   std::string url_requested_;

@@ -21,10 +21,10 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/startup_controller.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -105,8 +105,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   const GURL sync_service_url =
       ProfileSyncService::GetSyncServiceURL(*CommandLine::ForCurrentProcess());
 
-  scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper(
-      new ManagedUserSigninManagerWrapper(profile, signin));
+  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper(
+      new SupervisedUserSigninManagerWrapper(profile, signin));
   std::string account_id = signin_wrapper->GetAccountIdToUse();
   OAuth2TokenService::ScopeSet scope_set;
   scope_set.insert(signin_wrapper->GetSyncScopeToUse());

@@ -11,7 +11,6 @@
 
 class SupervisedUserSettingsService;
 class SupervisedUserSharedSettingsService;
-class ManagedUserSigninManagerWrapper;
 
 class PermissionRequestCreatorSync : public PermissionRequestCreator {
  public:

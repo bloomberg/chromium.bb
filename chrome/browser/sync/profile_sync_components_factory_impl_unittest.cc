@@ -9,10 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/testing_profile.h"
@@ -116,7 +116,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             token_service,
             profile_->GetRequestContext()),
         profile_.get(),
-        make_scoped_ptr<ManagedUserSigninManagerWrapper>(NULL),
+        make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),
         token_service,
         browser_sync::MANUAL_START));
     pss->factory()->RegisterDataTypes(pss.get());
@@ -145,7 +145,7 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
           token_service,
           profile_->GetRequestContext()),
       profile_.get(),
-      make_scoped_ptr<ManagedUserSigninManagerWrapper>(NULL),
+      make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),
       token_service,
       browser_sync::MANUAL_START));
   pss->factory()->RegisterDataTypes(pss.get());
