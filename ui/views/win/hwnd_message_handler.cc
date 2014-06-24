@@ -935,35 +935,60 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
 
 LRESULT HWNDMessageHandler::HandleMouseMessage(unsigned int message,
                                                WPARAM w_param,
-                                               LPARAM l_param) {
+                                               LPARAM l_param,
+                                               bool* handled) {
   // Don't track forwarded mouse messages. We expect the caller to track the
   // mouse.
-  return HandleMouseEventInternal(message, w_param, l_param, false);
+  LRESULT ret = HandleMouseEventInternal(message, w_param, l_param, false);
+  *handled = IsMsgHandled();
+  return ret;
 }
 
 LRESULT HWNDMessageHandler::HandleTouchMessage(unsigned int message,
                                                WPARAM w_param,
-                                               LPARAM l_param) {
-  return OnTouchEvent(message, w_param, l_param);
+                                               LPARAM l_param,
+                                               bool* handled) {
+  LRESULT ret = OnTouchEvent(message, w_param, l_param);
+  *handled = IsMsgHandled();
+  return ret;
 }
 
 LRESULT HWNDMessageHandler::HandleKeyboardMessage(unsigned int message,
                                                   WPARAM w_param,
-                                                  LPARAM l_param) {
-  return OnKeyEvent(message, w_param, l_param);
+                                                  LPARAM l_param,
+                                                  bool* handled) {
+  LRESULT ret = OnKeyEvent(message, w_param, l_param);
+  *handled = IsMsgHandled();
+  return ret;
 }
 
 LRESULT HWNDMessageHandler::HandleScrollMessage(unsigned int message,
                                                 WPARAM w_param,
-                                                LPARAM l_param) {
-  return OnScrollMessage(message, w_param, l_param);
+                                                LPARAM l_param,
+                                                bool* handled) {
+  LRESULT ret = OnScrollMessage(message, w_param, l_param);
+  *handled = IsMsgHandled();
+  return ret;
 }
 
 LRESULT HWNDMessageHandler::HandleNcHitTestMessage(unsigned int message,
                                                    WPARAM w_param,
-                                                   LPARAM l_param) {
-  return OnNCHitTest(
+                                                   LPARAM l_param,
+                                                   bool* handled) {
+  LRESULT ret = OnNCHitTest(
       gfx::Point(CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)));
+  *handled = IsMsgHandled();
+  return ret;
+}
+
+LRESULT HWNDMessageHandler::HandleSysCommand(unsigned int message,
+                                             WPARAM w_param,
+                                             LPARAM l_param,
+                                             bool* handled) {
+  OnSysCommand(static_cast<UINT>(w_param),
+               gfx::Point(CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)));
+  *handled = IsMsgHandled();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,6 @@
 #include <oleacc.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
@@ -57,12 +56,13 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                            NON_EXPORTED_BASE(ATL::CWindow),
                            ATL::CWinTraits<WS_CHILD> > Base;
 
-  ~LegacyRenderWidgetHostHWND();
-
   // Creates and returns an instance of the LegacyRenderWidgetHostHWND class on
   // successful creation of a child window parented to the parent window passed
   // in.
-  static scoped_ptr<LegacyRenderWidgetHostHWND> Create(HWND parent);
+  static LegacyRenderWidgetHostHWND* Create(HWND parent);
+
+  // Destroys the HWND managed by this class.
+  void Destroy();
 
   BEGIN_MSG_MAP_EX(LegacyRenderWidgetHostHWND)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
@@ -82,6 +82,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                           OnMouseRange)
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
+    MESSAGE_HANDLER_EX(WM_SYSCOMMAND, OnSysCommand)
   END_MSG_MAP()
 
   HWND hwnd() { return m_hWnd; }
@@ -112,6 +113,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
  private:
   LegacyRenderWidgetHostHWND(HWND parent);
+  ~LegacyRenderWidgetHostHWND();
 
   bool Init();
 
@@ -135,6 +137,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnSysCommand(UINT message, WPARAM w_param, LPARAM l_param);
 
   content::BrowserAccessibilityManagerWin* manager_;
   base::win::ScopedComPtr<IAccessible> window_accessible_;

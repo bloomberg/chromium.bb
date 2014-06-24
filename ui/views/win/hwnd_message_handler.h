@@ -60,7 +60,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // IsMsgHandled() from a member function to a define that checks if the weak
 // factory is still valid in addition to the member. Together these allow for
 // |this| to be deleted during dispatch.
-#define IsMsgHandled() !ref.get() || msg_handled_
+#define IsMsgHandled() !weak_factory_.GetWeakPtr().get() || msg_handled_
 
 #define BEGIN_SAFE_MSG_MAP_EX(the_class) \
  private: \
@@ -218,21 +218,31 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Overridden from WindowEventTarget
   virtual LRESULT HandleMouseMessage(unsigned int message,
                                      WPARAM w_param,
-                                     LPARAM l_param) OVERRIDE;
+                                     LPARAM l_param,
+                                     bool* handled) OVERRIDE;
   virtual LRESULT HandleKeyboardMessage(unsigned int message,
                                         WPARAM w_param,
-                                        LPARAM l_param) OVERRIDE;
+                                        LPARAM l_param,
+                                        bool* handled) OVERRIDE;
   virtual LRESULT HandleTouchMessage(unsigned int message,
                                      WPARAM w_param,
-                                     LPARAM l_param) OVERRIDE;
+                                     LPARAM l_param,
+                                     bool* handled) OVERRIDE;
 
   virtual LRESULT HandleScrollMessage(unsigned int message,
                                       WPARAM w_param,
-                                      LPARAM l_param) OVERRIDE;
+                                      LPARAM l_param,
+                                      bool* handled) OVERRIDE;
 
   virtual LRESULT HandleNcHitTestMessage(unsigned int message,
                                          WPARAM w_param,
-                                         LPARAM l_param) OVERRIDE;
+                                         LPARAM l_param,
+                                         bool* handled) OVERRIDE;
+
+  virtual LRESULT HandleSysCommand(unsigned int message,
+                                   WPARAM w_param,
+                                   LPARAM l_param,
+                                   bool* handled);
 
   // Returns the auto-hide edges of the appbar. See
   // ViewsDelegate::GetAppbarAutohideEdges() for details. If the edges change,
