@@ -597,24 +597,12 @@ void RenderLayer::updatePagination()
     }
 }
 
-static RenderLayerModelObject* getTransformedAncestor(const RenderLayerModelObject* repaintContainer)
-{
-    ASSERT(repaintContainer->layer()->enclosingTransformedAncestor());
-    ASSERT(repaintContainer->layer()->enclosingTransformedAncestor()->renderer());
-
-    // FIXME: this defensive code should not have to exist. None of these pointers should ever be 0. See crbug.com/370410.
-    RenderLayerModelObject* transformedAncestor = 0;
-    if (RenderLayer* ancestor = repaintContainer->layer()->enclosingTransformedAncestor())
-        transformedAncestor = ancestor->renderer();
-    return transformedAncestor;
-}
-
 LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer)
 {
     if (!paintInvalidationContainer || !paintInvalidationContainer->groupedMapping())
         return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
-    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(paintInvalidationContainer);
+    RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
         return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
@@ -636,7 +624,7 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
         return;
     }
 
-    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(paintInvalidationContainer);
+    RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
         return;
 
