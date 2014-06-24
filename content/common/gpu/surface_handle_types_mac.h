@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_SURFACE_HANDLE_TYPES_MAC_H_
 #define CONTENT_COMMON_GPU_SURFACE_HANDLE_TYPES_MAC_H_
 
+#include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLIOSurface.h>
 
 #include "base/basictypes.h"
