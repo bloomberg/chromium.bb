@@ -331,9 +331,9 @@ PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStre
     }
 
     // Use the first audio track in the media stream.
-    RefPtrWillBeRawPtr<MediaStreamTrack> audioTrack = audioTracks[0];
+    MediaStreamTrack* audioTrack = audioTracks[0];
     OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
-    RefPtrWillBeRawPtr<MediaStreamAudioSourceNode> node = MediaStreamAudioSourceNode::create(this, mediaStream, audioTrack.get(), provider.release());
+    RefPtrWillBeRawPtr<MediaStreamAudioSourceNode> node = MediaStreamAudioSourceNode::create(this, mediaStream, audioTrack, provider.release());
 
     // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
     node->setFormat(2, sampleRate());

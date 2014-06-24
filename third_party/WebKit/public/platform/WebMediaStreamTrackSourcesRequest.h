@@ -72,7 +72,7 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(const PassRefPtrWillBeRawPtr<WebCore::MediaStreamTrackSourcesRequest>&);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(WebCore::MediaStreamTrackSourcesRequest*);
 #endif
 
 private:

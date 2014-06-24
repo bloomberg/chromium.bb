@@ -39,11 +39,11 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
+MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
 {
-    RefPtrWillBeRawPtr<MediaStreamTrack> track = adoptRefWillBeRefCountedGarbageCollected(new MediaStreamTrack(context, component));
+    MediaStreamTrack* track = adoptRefCountedGarbageCollectedWillBeNoop(new MediaStreamTrack(context, component));
     track->suspendIfNeeded();
-    return track.release();
+    return track;
 }
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
@@ -124,8 +124,8 @@ String MediaStreamTrack::readyState() const
 
 void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequestImpl::create(*context, callback);
-    if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
+    MediaStreamTrackSourcesRequest* request = MediaStreamTrackSourcesRequestImpl::create(*context, callback);
+    if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
@@ -140,12 +140,12 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
     propagateTrackEnded();
 }
 
-PassRefPtrWillBeRawPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
+MediaStreamTrack* MediaStreamTrack::clone(ExecutionContext* context)
 {
     RefPtr<MediaStreamComponent> clonedComponent = MediaStreamComponent::create(component()->source());
-    RefPtrWillBeRawPtr<MediaStreamTrack> clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
+    MediaStreamTrack* clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
     MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent.get());
-    return clonedTrack.release();
+    return clonedTrack;
 }
 
 bool MediaStreamTrack::ended() const
@@ -177,7 +177,7 @@ void MediaStreamTrack::propagateTrackEnded()
 {
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
     m_isIteratingRegisteredMediaStreams = true;
-    for (WillBeHeapHashSet<RawPtrWillBeMember<MediaStream> >::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
+    for (HeapHashSet<Member<MediaStream> >::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
         (*iter)->trackEnded();
     m_isIteratingRegisteredMediaStreams = false;
 }
@@ -207,7 +207,7 @@ void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream)
 {
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
-    WillBeHeapHashSet<RawPtrWillBeMember<MediaStream> >::iterator iter = m_registeredMediaStreams.find(mediaStream);
+    HeapHashSet<Member<MediaStream> >::iterator iter = m_registeredMediaStreams.find(mediaStream);
     RELEASE_ASSERT(iter != m_registeredMediaStreams.end());
     m_registeredMediaStreams.remove(iter);
 }

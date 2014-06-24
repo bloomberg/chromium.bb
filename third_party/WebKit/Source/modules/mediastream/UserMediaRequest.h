@@ -36,9 +36,8 @@
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaConstraints.h"
+#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -48,9 +47,9 @@ class ExceptionState;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-class UserMediaRequest FINAL : public RefCountedWillBeGarbageCollectedFinalized<UserMediaRequest>, public ContextLifecycleObserver {
+class UserMediaRequest FINAL : public GarbageCollectedFinalized<UserMediaRequest>, public ContextLifecycleObserver {
 public:
-    static PassRefPtrWillBeRawPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
+    static UserMediaRequest* create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
     virtual ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }

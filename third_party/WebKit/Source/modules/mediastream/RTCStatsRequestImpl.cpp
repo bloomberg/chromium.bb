@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 
 #include "modules/mediastream/MediaStreamTrack.h"
@@ -32,14 +31,14 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<RTCPeerConnection> requester, PassOwnPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
+PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
 {
     RefPtr<RTCStatsRequestImpl> request = adoptRef(new RTCStatsRequestImpl(context, requester, callback, selector));
     request->suspendIfNeeded();
     return request.release();
 }
 
-RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, PassRefPtrWillBeRawPtr<RTCPeerConnection> requester, PassOwnPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
+RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
     : ActiveDOMObject(context)
     , m_successCallback(callback)
     , m_component(selector ? selector->component() : 0)
@@ -52,7 +51,7 @@ RTCStatsRequestImpl::~RTCStatsRequestImpl()
 {
 }
 
-PassRefPtrWillBeRawPtr<RTCStatsResponseBase> RTCStatsRequestImpl::createResponse()
+RTCStatsResponseBase* RTCStatsRequestImpl::createResponse()
 {
     return RTCStatsResponse::create();
 }
@@ -67,11 +66,11 @@ MediaStreamComponent* RTCStatsRequestImpl::component()
     return m_component.get();
 }
 
-void RTCStatsRequestImpl::requestSucceeded(PassRefPtrWillBeRawPtr<RTCStatsResponseBase> response)
+void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response)
 {
     bool shouldFireCallback = m_requester ? m_requester->shouldFireGetStatsCallback() : false;
     if (shouldFireCallback && m_successCallback)
-        m_successCallback->handleEvent(static_cast<RTCStatsResponse*>(response.get()));
+        m_successCallback->handleEvent(static_cast<RTCStatsResponse*>(response));
     clear();
 }
 

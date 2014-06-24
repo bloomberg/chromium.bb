@@ -44,21 +44,20 @@ static const long maxToneDurationMs = 6000;
 static const long minInterToneGapMs = 50;
 static const long defaultInterToneGapMs = 50;
 
-PassRefPtrWillBeRawPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, blink::WebRTCPeerConnectionHandler* peerConnectionHandler, PassRefPtrWillBeRawPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
+RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, blink::WebRTCPeerConnectionHandler* peerConnectionHandler, MediaStreamTrack* track, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<MediaStreamTrack> track = prpTrack;
     OwnPtr<blink::WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "The MediaStreamTrack provided is not an element of a MediaStream that's currently in the local streams set.");
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<RTCDTMFSender> dtmfSender = adoptRefWillBeRefCountedGarbageCollected(new RTCDTMFSender(context, track, handler.release()));
+    RTCDTMFSender* dtmfSender = adoptRefCountedGarbageCollectedWillBeNoop(new RTCDTMFSender(context, track, handler.release()));
     dtmfSender->suspendIfNeeded();
-    return dtmfSender.release();
+    return dtmfSender;
 }
 
-RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaStreamTrack> track, PassOwnPtr<blink::WebRTCDTMFSenderHandler> handler)
+RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, PassOwnPtr<blink::WebRTCDTMFSenderHandler> handler)
     : ActiveDOMObject(context)
     , m_track(track)
     , m_duration(defaultToneDurationMs)

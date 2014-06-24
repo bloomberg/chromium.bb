@@ -50,11 +50,6 @@ using namespace WebCore;
 
 namespace blink {
 
-WebUserMediaRequest::WebUserMediaRequest(const PassRefPtrWillBeRawPtr<UserMediaRequest>& request)
-    : m_private(request)
-{
-}
-
 WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)
     : m_private(request)
 {

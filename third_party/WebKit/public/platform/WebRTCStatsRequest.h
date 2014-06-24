@@ -95,7 +95,7 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCStatsResponse createResponse() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const WTF::PassRefPtr<WebCore::RTCStatsRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const PassRefPtr<WebCore::RTCStatsRequest>&);
 #endif
 
 private:

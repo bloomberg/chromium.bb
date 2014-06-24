@@ -55,9 +55,8 @@ public:
     BLINK_PLATFORM_EXPORT void addStatistic(size_t report, const WebString& name, const WebString& value);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(const PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBase>&);
-
-    BLINK_PLATFORM_EXPORT operator PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBase>() const;
+    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(WebCore::RTCStatsResponseBase*);
+    BLINK_PLATFORM_EXPORT operator WebCore::RTCStatsResponseBase*() const;
 #endif
 
 private:

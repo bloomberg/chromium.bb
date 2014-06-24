@@ -49,9 +49,9 @@ public:
     UserMediaClientImpl(WebLocalFrameImpl*);
 
     // WebCore::UserMediaClient ----------------------------------------------
-    virtual void requestUserMedia(PassRefPtrWillBeRawPtr<WebCore::UserMediaRequest>) OVERRIDE;
+    virtual void requestUserMedia(WebCore::UserMediaRequest*) OVERRIDE;
     virtual void cancelUserMediaRequest(WebCore::UserMediaRequest*) OVERRIDE;
-    virtual void requestMediaDevices(PassRefPtrWillBeRawPtr<WebCore::MediaDevicesRequest>) OVERRIDE;
+    virtual void requestMediaDevices(WebCore::MediaDevicesRequest*) OVERRIDE;
     virtual void cancelMediaDevicesRequest(WebCore::MediaDevicesRequest*) OVERRIDE;
 
 private:

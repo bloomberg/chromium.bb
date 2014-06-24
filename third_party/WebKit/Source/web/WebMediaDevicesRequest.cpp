@@ -41,11 +41,6 @@ using namespace WebCore;
 
 namespace blink {
 
-WebMediaDevicesRequest::WebMediaDevicesRequest(const PassRefPtrWillBeRawPtr<MediaDevicesRequest>& request)
-    : m_private(request)
-{
-}
-
 WebMediaDevicesRequest::WebMediaDevicesRequest(MediaDevicesRequest* request)
     : m_private(request)
 {

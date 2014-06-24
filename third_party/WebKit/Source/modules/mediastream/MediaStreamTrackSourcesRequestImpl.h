@@ -41,7 +41,7 @@ class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
 public:
-    static PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> create(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
     ~MediaStreamTrackSourcesRequestImpl();
 
     virtual String origin() OVERRIDE;

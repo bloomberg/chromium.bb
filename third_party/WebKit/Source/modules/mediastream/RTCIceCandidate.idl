@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Constructor(Dictionary dictionary),
     RaisesException=Constructor
 ] interface RTCIceCandidate {

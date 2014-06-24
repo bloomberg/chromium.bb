@@ -27,9 +27,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<RTCStatsResponse> RTCStatsResponse::create()
+RTCStatsResponse* RTCStatsResponse::create()
 {
-    return adoptRefWillBeNoop(new RTCStatsResponse());
+    return new RTCStatsResponse();
 }
 
 RTCStatsResponse::RTCStatsResponse()
@@ -37,7 +37,7 @@ RTCStatsResponse::RTCStatsResponse()
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<RTCStatsReport> RTCStatsResponse::namedItem(const AtomicString& name)
+RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
 {
     if (m_idmap.find(name) != m_idmap.end())
         return m_result[m_idmap.get(name)];

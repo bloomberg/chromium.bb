@@ -37,11 +37,11 @@ namespace WebCore {
 
 class RTCStatsResponse FINAL : public RTCStatsResponseBase, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<RTCStatsResponse> create();
+    static RTCStatsResponse* create();
 
-    const WillBeHeapVector<RefPtrWillBeMember<RTCStatsReport> >& result() const { return m_result; }
+    const HeapVector<Member<RTCStatsReport> >& result() const { return m_result; }
 
-    PassRefPtrWillBeRawPtr<RTCStatsReport> namedItem(const AtomicString& name);
+    RTCStatsReport* namedItem(const AtomicString& name);
 
     virtual size_t addReport(const String& id, const String& type, double timestamp) OVERRIDE;
     virtual void addStatistic(size_t report, const String& name, const String& value) OVERRIDE;
@@ -50,7 +50,8 @@ public:
 
 private:
     RTCStatsResponse();
-    WillBeHeapVector<RefPtrWillBeMember<RTCStatsReport> > m_result;
+
+    HeapVector<Member<RTCStatsReport> > m_result;
     HashMap<String, int> m_idmap;
 };
 

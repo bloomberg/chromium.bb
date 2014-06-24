@@ -95,7 +95,7 @@ public:
     bool get(const String&, Member<SpeechRecognitionResult>&) const;
     bool get(const String&, Member<SpeechRecognitionResultList>&) const;
     bool get(const String&, Member<Gamepad>&) const;
-    bool get(const String&, RefPtr<MediaStream>&) const;
+    bool get(const String&, Member<MediaStream>&) const;
     bool get(const String&, RefPtrWillBeMember<EventTarget>&) const;
     bool get(const String&, HashSet<AtomicString>&) const;
     bool get(const String&, Dictionary&) const;

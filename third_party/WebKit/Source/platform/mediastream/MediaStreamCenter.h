@@ -59,7 +59,7 @@ public:
 
     static MediaStreamCenter& instance();
 
-    bool getMediaStreamTrackSources(PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest>);
+    bool getMediaStreamTrackSources(MediaStreamTrackSourcesRequest*);
 
     void didCreateMediaStreamTrack(MediaStreamComponent*);
     void didSetMediaStreamTrackEnabled(MediaStreamComponent*);

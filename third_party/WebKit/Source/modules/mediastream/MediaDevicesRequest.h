@@ -31,8 +31,6 @@
 #include "modules/mediastream/MediaDeviceInfoCallback.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -41,9 +39,9 @@ class ExceptionState;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-class MediaDevicesRequest FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaDevicesRequest>, public ActiveDOMObject {
+class MediaDevicesRequest FINAL : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {
 public:
-    static PassRefPtrWillBeRawPtr<MediaDevicesRequest> create(ExecutionContext*, UserMediaController*, PassOwnPtr<MediaDeviceInfoCallback>, ExceptionState&);
+    static MediaDevicesRequest* create(ExecutionContext*, UserMediaController*, PassOwnPtr<MediaDeviceInfoCallback>, ExceptionState&);
     virtual ~MediaDevicesRequest();
 
     MediaDeviceInfoCallback* callback() const { return m_callback.get(); }

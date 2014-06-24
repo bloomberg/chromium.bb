@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 
 #include "modules/webaudio/AudioContext.h"
@@ -64,6 +62,12 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
 MediaStreamAudioDestinationNode::~MediaStreamAudioDestinationNode()
 {
     uninitialize();
+}
+
+void MediaStreamAudioDestinationNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_stream);
+    AudioBasicInspectorNode::trace(visitor);
 }
 
 void MediaStreamAudioDestinationNode::process(size_t numberOfFrames)

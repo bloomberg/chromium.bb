@@ -64,7 +64,7 @@ MediaStreamCenter::~MediaStreamCenter()
 {
 }
 
-bool MediaStreamCenter::getMediaStreamTrackSources(PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest> request)
+bool MediaStreamCenter::getMediaStreamTrackSources(MediaStreamTrackSourcesRequest* request)
 {
     return m_private && m_private->getMediaStreamTrackSources(request);
 }

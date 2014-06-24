@@ -518,7 +518,7 @@ bool Dictionary::get(const String& key, Member<Gamepad>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
+bool Dictionary::get(const String& key, Member<MediaStream>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

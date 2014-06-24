@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-class RTCStatsResponseBase : public RefCountedWillBeGarbageCollectedFinalized<RTCStatsResponseBase> {
+class RTCStatsResponseBase : public GarbageCollectedFinalized<RTCStatsResponseBase> {
 public:
     virtual ~RTCStatsResponseBase() { }
 

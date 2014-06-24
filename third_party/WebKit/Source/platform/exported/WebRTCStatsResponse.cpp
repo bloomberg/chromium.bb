@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "public/platform/WebRTCStatsResponse.h"
 
 #include "platform/mediastream/RTCStatsResponseBase.h"
@@ -34,7 +33,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebRTCStatsResponse::WebRTCStatsResponse(const PassRefPtrWillBeRawPtr<RTCStatsResponseBase>& request)
+WebRTCStatsResponse::WebRTCStatsResponse(RTCStatsResponseBase* request)
     : m_private(request)
 {
 }
@@ -49,7 +48,7 @@ void WebRTCStatsResponse::reset()
     m_private.reset();
 }
 
-WebRTCStatsResponse::operator PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBase>() const
+WebRTCStatsResponse::operator WebCore::RTCStatsResponseBase*() const
 {
     return m_private.get();
 }

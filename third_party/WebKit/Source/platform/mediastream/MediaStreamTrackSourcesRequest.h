@@ -28,10 +28,8 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
+#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 class WebSourceInfo;
@@ -39,7 +37,7 @@ class WebSourceInfo;
 
 namespace WebCore {
 
-class MediaStreamTrackSourcesRequest : public RefCountedWillBeGarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
+class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
 public:
     class ExtraData {
     public:

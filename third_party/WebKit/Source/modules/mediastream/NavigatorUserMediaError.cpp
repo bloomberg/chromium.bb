@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<NavigatorUserMediaError> NavigatorUserMediaError::create(Name name, const String& message, const String& constraintName)
+NavigatorUserMediaError* NavigatorUserMediaError::create(Name name, const String& message, const String& constraintName)
 {
     String nameString;
     switch (name) {
@@ -46,7 +46,7 @@ PassRefPtrWillBeRawPtr<NavigatorUserMediaError> NavigatorUserMediaError::create(
         break;
     }
 
-    return adoptRefWillBeNoop(new NavigatorUserMediaError(nameString, message, constraintName));
+    return new NavigatorUserMediaError(nameString, message, constraintName);
 }
 
 } // namespace WebCore

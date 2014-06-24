@@ -65,7 +65,7 @@ static blink::WebMediaConstraints parseOptions(const Dictionary& options, const 
     return constraints;
 }
 
-PassRefPtrWillBeRawPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
+UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
     blink::WebMediaConstraints audio = parseOptions(options, "audio", exceptionState);
     if (exceptionState.hadException())
@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<UserMediaRequest> UserMediaRequest::create(ExecutionConte
         return nullptr;
     }
 
-    return adoptRefWillBeNoop(new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback));
+    return new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback);
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, blink::WebMediaConstraints audio, blink::WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback)
@@ -156,9 +156,7 @@ void UserMediaRequest::failPermissionDenied(const String& message)
 {
     if (!executionContext())
         return;
-
-    RefPtrWillBeRawPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, message, String());
-    m_errorCallback->handleEvent(error.get());
+    m_errorCallback->handleEvent(NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, message, String()));
 }
 
 void UserMediaRequest::failConstraint(const String& constraintName, const String& message)
@@ -166,9 +164,7 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
     ASSERT(!constraintName.isEmpty());
     if (!executionContext())
         return;
-
-    RefPtrWillBeRawPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, message, constraintName);
-    m_errorCallback->handleEvent(error.get());
+    m_errorCallback->handleEvent(NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, message, constraintName));
 }
 
 void UserMediaRequest::failUASpecific(const String& name, const String& message, const String& constraintName)
@@ -176,15 +172,11 @@ void UserMediaRequest::failUASpecific(const String& name, const String& message,
     ASSERT(!name.isEmpty());
     if (!executionContext())
         return;
-
-    RefPtrWillBeRawPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(name, message, constraintName);
-    m_errorCallback->handleEvent(error.get());
+    m_errorCallback->handleEvent(NavigatorUserMediaError::create(name, message, constraintName));
 }
 
 void UserMediaRequest::contextDestroyed()
 {
-    RefPtrWillBeRawPtr<UserMediaRequest> protect(this);
-
     if (m_controller) {
         m_controller->cancelUserMediaRequest(this);
         m_controller = 0;

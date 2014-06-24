@@ -31,7 +31,6 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 class WebRTCDataChannelHandler;
@@ -45,12 +44,16 @@ class Blob;
 class ExceptionState;
 class RTCPeerConnection;
 
-class RTCDataChannel FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDataChannelHandlerClient {
-    REFCOUNTED_EVENT_TARGET(RTCDataChannel);
+class RTCDataChannel FINAL
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDataChannel>
+    , public ScriptWrappable
+    , public EventTargetWithInlineData
+    , public blink::WebRTCDataChannelHandlerClient {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDataChannel>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
 public:
-    static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
-    static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnection*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
+    static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
+    static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
     virtual ~RTCDataChannel();
 
     String label() const;
@@ -88,10 +91,7 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-#if ENABLE(OILPAN)
     void clearWeakMembers(Visitor*);
-#endif
-
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
@@ -123,9 +123,7 @@ private:
     Timer<RTCDataChannel> m_scheduledEventTimer;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 
-#if ENABLE(OILPAN)
     WeakMember<RTCPeerConnection> m_connection;
-#endif
 };
 
 } // namespace WebCore

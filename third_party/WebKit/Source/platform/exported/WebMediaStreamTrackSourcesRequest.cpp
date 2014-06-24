@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-
 #include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "public/platform/WebSourceInfo.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 
@@ -49,7 +49,7 @@ private:
 
 } // namespace
 
-WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(const PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest>& request)
+WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(MediaStreamTrackSourcesRequest* request)
     : m_private(request)
 {
 }

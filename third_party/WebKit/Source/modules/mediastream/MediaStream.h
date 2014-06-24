@@ -33,22 +33,25 @@
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/Timer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class ExceptionState;
 
-class MediaStream FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaStream>, public ScriptWrappable,
-    public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
-    REFCOUNTED_EVENT_TARGET(MediaStream);
+class MediaStream FINAL
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>
+    , public ScriptWrappable
+    , public URLRegistrable
+    , public MediaStreamDescriptorClient
+    , public EventTargetWithInlineData
+    , public ContextLifecycleObserver {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
 public:
-    static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*);
-    static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaStream>);
-    static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*, const MediaStreamTrackVector&);
-    static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    static MediaStream* create(ExecutionContext*);
+    static MediaStream* create(ExecutionContext*, MediaStream*);
+    static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
+    static MediaStream* create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     virtual ~MediaStream();
 
     // DEPRECATED
@@ -56,10 +59,10 @@ public:
 
     String id() const { return m_descriptor->id(); }
 
-    void addTrack(PassRefPtrWillBeRawPtr<MediaStreamTrack>, ExceptionState&);
-    void removeTrack(PassRefPtrWillBeRawPtr<MediaStreamTrack>, ExceptionState&);
+    void addTrack(MediaStreamTrack*, ExceptionState&);
+    void removeTrack(MediaStreamTrack*, ExceptionState&);
     MediaStreamTrack* getTrackById(String);
-    PassRefPtrWillBeRawPtr<MediaStream> clone(ExecutionContext*);
+    MediaStream* clone(ExecutionContext*);
 
     MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
     MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
@@ -111,7 +114,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
-typedef WillBeHeapVector<RefPtrWillBeMember<MediaStream> > MediaStreamVector;
+typedef HeapVector<Member<MediaStream> > MediaStreamVector;
 
 } // namespace WebCore
 

@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
-    return adoptRefWillBeNoop(new MediaStreamTrackSourcesRequestImpl(context, callback));
+    return new MediaStreamTrackSourcesRequestImpl(context, callback);
 }
 
 MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
@@ -61,7 +61,7 @@ void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const blink::WebVector
 
     for (size_t i = 0; i < webSourceInfos.size(); ++i)
         m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
-    m_executionContext->postTask(bind(&MediaStreamTrackSourcesRequestImpl::performCallback, PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl>(this)));
+    m_executionContext->postTask(bind(&MediaStreamTrackSourcesRequestImpl::performCallback, this));
 }
 
 void MediaStreamTrackSourcesRequestImpl::performCallback()

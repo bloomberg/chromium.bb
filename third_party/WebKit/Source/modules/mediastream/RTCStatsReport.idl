@@ -23,7 +23,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface RTCStatsReport {
     readonly attribute Date timestamp;
