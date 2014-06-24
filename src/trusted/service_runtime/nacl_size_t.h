@@ -8,6 +8,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIZE_T_H
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 /*
  * WORDSIZE is defined by service_runtime/include/machine/_types.h.  It is
