@@ -127,6 +127,11 @@
         Courier New
       </message>
 
+      <!-- Alternate value for |WebPreference::fixed_font_family| -->
+      <message name="IDS_FIXED_FONT_FAMILY_ALT_WIN" use_name_for_id="true">
+        Consolas
+      </message>
+
       <!-- The default value for |WebPreference::serif_font_family| -->
       <message name="IDS_SERIF_FONT_FAMILY" use_name_for_id="true">
         Times New Roman

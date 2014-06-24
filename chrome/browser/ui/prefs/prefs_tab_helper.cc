@@ -34,6 +34,10 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
@@ -123,6 +127,17 @@ void RegisterFontFamilyMapObserver(
   }
 }
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+// On Windows with DirectWrite we want to use an alternate fixed font like
+// Consolas, which looks much better than Courier New.
+bool ShouldUseAlternateDefaultFixedFont() {
+  UINT smooth_type = 0;
+  SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smooth_type, 0);
+  return (base::win::GetVersion() >= base::win::VERSION_WIN7) &&
+         (smooth_type == FE_FONTSMOOTHINGCLEARTYPE);
+}
+#endif
 
 struct FontDefault {
   const char* pref_name;
@@ -454,7 +469,15 @@ void PrefsTabHelper::RegisterProfilePrefs(
   std::set<std::string> fonts_with_defaults;
   UScriptCode browser_script = GetScriptOfBrowserLocale();
   for (size_t i = 0; i < kFontDefaultsLength; ++i) {
-    const FontDefault& pref = kFontDefaults[i];
+    FontDefault pref = kFontDefaults[i];
+
+#if defined(OS_WIN)
+    if (pref.pref_name == prefs::kWebKitFixedFontFamily) {
+      if (ShouldUseAlternateDefaultFixedFont())
+        pref.resource_id = IDS_FIXED_FONT_FAMILY_ALT_WIN;
+    }
+#endif
+
     UScriptCode pref_script = GetScriptOfFontPref(pref.pref_name);
 
     // Suppress this default font pref value if it is for the primary script of
