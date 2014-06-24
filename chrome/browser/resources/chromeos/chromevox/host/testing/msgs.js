@@ -43,35 +43,18 @@ cvox.TestMsgs.prototype.getLocale = function() {
  */
 cvox.TestMsgs.prototype.getMsg = function(message_id, opt_subs) {
   if (!message_id) {
-    var e = new Error();
-    e.message = 'Message id required';
-    throw e;
+    throw Error('Message id required');
   }
-  var message = cvox.TestMessages['chromevox_' + message_id];
+  var message = cvox.TestMessages[('chromevox_' + message_id).toUpperCase()];
   if (message == undefined) {
-    var e = new Error();
-    e.message = 'missing-msg: ' + message_id;
-    throw e;
+    throw Error('missing-msg: ' + message_id);
   }
 
   var messageString = message.message;
   if (opt_subs) {
     // Unshift a null to make opt_subs and message.placeholders line up.
     for (var i = 0; i < opt_subs.length; i++) {
-      var placeholderObject = message.placeholders ?
-          message.placeholders[i + 1] : undefined;
-      if (!placeholderObject) {
-        // Allow tests to substitute the string 'dummy' if they don't know
-        // how many substitutions a message has.
-        if (opt_subs[i] == 'dummy') {
-          continue;
-        }
-        var e = new Error();
-        e.message = 'Bad placeholder ' + i + ' for message id ' + message_id;
-        throw e;
-      }
-      var placeholder = message.placeholders[i + 1].content;
-      messageString = messageString.replace(placeholder, opt_subs[i]);
+      messageString = messageString.replace('$' + (i + 1), opt_subs[i]);
     }
   }
   return messageString;
