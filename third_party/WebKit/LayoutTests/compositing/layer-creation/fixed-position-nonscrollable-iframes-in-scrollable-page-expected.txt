@@ -15,18 +15,14 @@ In all iframes, the green fixed-position element should not be composited.
           "backgroundColor": "#00FFFF"
         },
         {
-          "children": [
-            {
-              "position": [10, 200],
-              "bounds": [154, 154],
-              "drawsContent": true
-            },
-            {
-              "position": [10, 380],
-              "bounds": [154, 154],
-              "drawsContent": true
-            }
-          ]
+          "position": [10, 200],
+          "bounds": [154, 154],
+          "drawsContent": true
+        },
+        {
+          "position": [10, 380],
+          "bounds": [154, 154],
+          "drawsContent": true
         }
       ]
     }
