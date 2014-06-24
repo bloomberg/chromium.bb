@@ -35,6 +35,8 @@ PALADIN_FAIL_COUNT_ATTR = 'fail_count'
 PALADIN_PASS_COUNT_ATTR = 'pass_count'
 PALADIN_TOTAL_FAIL_COUNT_ATTR = 'total_fail_count'
 
+CHROME_ELEMENT = 'chrome'
+CHROME_VERSION_ATTR = 'version'
 
 MANIFEST_ELEMENT = 'manifest'
 DEFAULT_ELEMENT = 'default'
@@ -223,6 +225,24 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                               chrome_branch=version_info.chrome_branch,
                               incr_type=self.incr_type)
 
+  def _AddChromeVersionToManifest(self, manifest, chrome_version):
+    """Adds the chrome element with version |chrome_version| to |manifest|.
+
+    The manifest file should contain the Chrome version to build for
+    PFQ slaves.
+
+    Args:
+      manifest: Path to the manifest
+      chrome_version: A string representing the version of Chrome
+        (e.g. 35.0.1863.0).
+    """
+    manifest_dom = minidom.parse(manifest)
+    chrome = manifest_dom.createElement(CHROME_ELEMENT)
+    chrome.setAttribute(CHROME_VERSION_ATTR, chrome_version)
+    manifest_dom.documentElement.appendChild(chrome)
+    with open(manifest, 'w+') as manifest_file:
+      manifest_dom.writexml(manifest_file)
+
   def _AddPatchesToManifest(self, manifest, patches):
     """Adds list of |patches| to given |manifest|.
 
@@ -330,13 +350,17 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return new_path
 
   def CreateNewCandidate(self, validation_pool=None,
+                         chrome_version=None,
                          retries=manifest_version.NUM_RETRIES):
     """Creates, syncs to, and returns the next candidate manifest.
 
     Args:
       validation_pool: Validation pool to apply to the manifest before
         publishing.
-      retries: Number of retries for updating the status.
+      chrome_version: The Chrome version to write in the manifest. Defaults
+        to None, in which case no version is written.
+      retries: Number of retries for updating the status. Defaults to
+        manifest_version.NUM_RETRIES.
 
     Raises:
       GenerateBuildSpecException in case of failure to generate a buildspec
@@ -351,6 +375,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     self._GenerateBlameListSinceLKGM()
     new_manifest = self.CreateManifest()
+
+    # For Chrome PFQ, add the version of Chrome to use.
+    if chrome_version:
+      self._AddChromeVersionToManifest(new_manifest, chrome_version)
+
     # For the Commit Queue, apply the validation pool as part of checkout.
     if validation_pool:
       # If we have nothing that could apply from the validation pool and

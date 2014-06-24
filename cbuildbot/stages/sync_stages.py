@@ -24,9 +24,11 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+from chromite.scripts import cros_mark_chrome_as_stable
 
 
 PRE_CQ = validation_pool.PRE_CQ
@@ -545,6 +547,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
+    self._chrome_version = None
 
   def _GetInitializedManager(self, internal):
     """Returns an initialized lkgm manager.
@@ -592,7 +595,8 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
         'Manifest manager instantiated with wrong class.'
 
     if self._run.config.master:
-      manifest = self.manifest_manager.CreateNewCandidate()
+      manifest = self.manifest_manager.CreateNewCandidate(
+          chrome_version=self._chrome_version)
       if MasterSlaveSyncStage.sub_manager:
         MasterSlaveSyncStage.sub_manager.CreateFromManifest(
             manifest, dashboard_url=self.ConstructDashboardURL())
@@ -600,6 +604,21 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     else:
       return self.manifest_manager.GetLatestCandidate(
           dashboard_url=self.ConstructDashboardURL())
+
+  def GetLatestChromeVersion(self):
+    """Returns the version of Chrome to uprev."""
+    return cros_mark_chrome_as_stable.GetLatestRelease(gclient.GetBaseURLs()[0])
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Performs the stage."""
+    if (self._chrome_rev == constants.CHROME_REV_LATEST and
+        self._run.config.master):
+      # PFQ master needs to determine what version of Chrome to build
+      # for all slaves.
+      self._chrome_version = self.GetLatestChromeVersion()
+
+    ManifestVersionedSyncStage.PerformStage(self)
 
 
 class CommitQueueSyncStage(MasterSlaveSyncStage):

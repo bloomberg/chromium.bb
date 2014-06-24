@@ -479,6 +479,28 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.manager._GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()
 
+  def testAddChromeVersionToManifest(self):
+    """Tests whether we can write the chrome version to the manifest file."""
+    with tempfile.NamedTemporaryFile() as f:
+      # Create fake but empty manifest file.
+      new_doc = minidom.getDOMImplementation().createDocument(
+          None, 'manifest', None)
+      print new_doc.toxml()
+      new_doc.writexml(f)
+      f.flush()
+
+      chrome_version = '35.0.1863.0'
+      # Write the chrome element to manifest.
+      self.manager._AddChromeVersionToManifest(f.name, chrome_version)
+
+      # Read the manifest file.
+      new_doc = minidom.parse(f.name)
+      elements = new_doc.getElementsByTagName(lkgm_manager.CHROME_ELEMENT)
+      self.assertEqual(len(elements), 1)
+      self.assertEqual(
+          elements[0].getAttribute(lkgm_manager.CHROME_VERSION_ATTR),
+          chrome_version)
+
   def testAddPatchesToManifest(self):
     """Tests whether we can add a fake patch to an empty manifest file.
 
@@ -486,14 +508,13 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     runs the AddPatchesToManifest with one mocked out GerritPatch and ensures
     the newly generated manifest has the correct patch information afterwards.
     """
-    tmp_manifest = tempfile.mktemp('manifest')
-    try:
+    with tempfile.NamedTemporaryFile() as f:
       # Create fake but empty manifest file.
-      new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
-                                                              None)
-      with open(tmp_manifest, 'w+') as manifest_file:
-        print new_doc.toxml()
-        new_doc.writexml(manifest_file)
+      new_doc = minidom.getDOMImplementation().createDocument(
+          None, 'manifest', None)
+      print new_doc.toxml()
+      new_doc.writexml(f)
+      f.flush()
 
       gerrit_patch = mock.MagicMock()
       gerrit_patch.remote = 'cros-internal'
@@ -509,9 +530,9 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       gerrit_patch.fail_count = 1
       gerrit_patch.pass_count = 1
       gerrit_patch.total_fail_count = 3
-      self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
+      self.manager._AddPatchesToManifest(f.name, [gerrit_patch])
 
-      new_doc = minidom.parse(tmp_manifest)
+      new_doc = minidom.parse(f.name)
       element = new_doc.getElementsByTagName(
           lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
       self.assertEqual(element.getAttribute(
@@ -544,9 +565,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       self.assertEqual(
           element.getAttribute(lkgm_manager.PALADIN_TOTAL_FAIL_COUNT_ATTR),
           str(gerrit_patch.total_fail_count))
-
-    finally:
-      os.remove(tmp_manifest)
 
   def testFilterProjectsFromManifest(self):
     """Tests whether we can remove internal projects from a manifest."""

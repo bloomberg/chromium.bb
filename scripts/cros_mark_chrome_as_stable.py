@@ -120,7 +120,7 @@ def _GetTipOfTrunkVersionFile(root):
   return _GetVersionContents(chrome_version_info)
 
 
-def _GetLatestRelease(base_url, branch=None):
+def GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
 
   Args:
@@ -462,12 +462,12 @@ def main(_argv):
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:
-    version_to_uprev = _GetLatestRelease(options.chrome_url)
+    version_to_uprev = GetLatestRelease(options.chrome_url)
   else:
     sticky_ebuild = _GetStickyEBuild(stable_ebuilds)
     sticky_version = sticky_ebuild.chrome_version
     sticky_branch = sticky_version.rpartition('.')[0]
-    version_to_uprev = _GetLatestRelease(options.chrome_url, sticky_branch)
+    version_to_uprev = GetLatestRelease(options.chrome_url, sticky_branch)
 
   stable_candidate = FindChromeUprevCandidate(stable_ebuilds, chrome_rev,
                                               sticky_branch)

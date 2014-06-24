@@ -196,7 +196,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
     self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL)
+    release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL)
     self.mox.VerifyAll()
     self.assertEqual('7.0.224.2', release)
 
@@ -219,8 +219,8 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
     self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL,
-                                                           '8.0.224')
+    release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL,
+                                                          '8.0.224')
     self.mox.VerifyAll()
     self.assertEqual('8.0.224.2', release)
 
