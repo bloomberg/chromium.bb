@@ -140,6 +140,11 @@ void WebRuntimeFeatures::enableSubpixelFontScaling(bool enable)
     RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMediaCapture(bool enable)
+{
+    RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaSource(bool enable)
 {
     RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
