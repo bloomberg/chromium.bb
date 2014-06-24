@@ -1627,15 +1627,10 @@ class CloseDestroysWidget : public Widget {
 };
 
 // An observer that registers that an animation has ended.
-class AnimationEndObserver
-    : public ui::ImplicitAnimationObserver {
+class AnimationEndObserver : public ui::ImplicitAnimationObserver {
  public:
-  explicit AnimationEndObserver()
-      : animation_completed_(false) {
-  }
-
-  virtual ~AnimationEndObserver() {
-  }
+  AnimationEndObserver() : animation_completed_(false) {}
+  virtual ~AnimationEndObserver() {}
 
   bool animation_completed() const { return animation_completed_; }
 
@@ -1660,7 +1655,7 @@ class WidgetBoundsObserver : public WidgetObserver {
 
   // WidgetObserver:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
-    bounds_ = widget->GetNativeWindow()->bounds();
+    bounds_ = widget->GetWindowBoundsInScreen();
   }
 
  private:
@@ -1709,7 +1704,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
     ui::ScopedAnimationDurationScaleMode animation_scale_mode(
         ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
     ui::ScopedLayerAnimationSettings animation_settings(
-        widget->GetNativeWindow()->layer()->GetAnimator());
+        widget->GetLayer()->GetAnimator());
     animation_settings.AddObserver(&animation_observer);
     widget->AddObserver(&widget_observer);
     widget->Show();
