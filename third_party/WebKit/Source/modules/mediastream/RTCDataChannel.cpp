@@ -30,6 +30,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
+#include "modules/mediastream/RTCPeerConnection.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"

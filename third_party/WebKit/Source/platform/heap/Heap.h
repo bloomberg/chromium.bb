@@ -730,6 +730,10 @@ public:
         return (new CallbackStack(first))->allocateEntry(first);
     }
 
+#ifndef NDEBUG
+    bool hasCallbackForObject(const void*);
+#endif
+
 private:
     void invokeOldestCallbacks(Visitor*);
 
@@ -929,7 +933,10 @@ public:
     static bool popAndInvokeWeakPointerCallback(Visitor*);
 
     // Register an ephemeron table for fixed-point iteration.
-    static void registerWeakTable(void* containerObject, EphemeronCallback);
+    static void registerWeakTable(void* containerObject, EphemeronCallback, EphemeronCallback);
+#ifndef NDEBUG
+    static bool weakTableRegistered(const void*);
+#endif
 
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
@@ -1475,10 +1482,17 @@ public:
         visitor->registerWeakMembers(closure, object, callback);
     }
 
-    static void registerWeakTable(Visitor* visitor, const void* closure, EphemeronCallback callback)
+    static void registerWeakTable(Visitor* visitor, const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
     {
-        visitor->registerWeakTable(closure, callback);
+        visitor->registerWeakTable(closure, iterationCallback, iterationDoneCallback);
     }
+
+#ifndef NDEBUG
+    static bool weakTableRegistered(Visitor* visitor, const void* closure)
+    {
+        return visitor->weakTableRegistered(closure);
+    }
+#endif
 
     template<typename T>
     struct ResultType {
@@ -1514,8 +1528,6 @@ public:
     {
         return *other;
     }
-
-    static bool isAlive(Visitor* visitor, void* pointer) { return visitor->isAlive(pointer); }
 
 private:
     template<typename T, size_t u, typename V> friend class WTF::Vector;

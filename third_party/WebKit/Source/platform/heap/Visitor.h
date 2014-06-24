@@ -422,12 +422,17 @@ public:
         registerWeakCell(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
     }
 
-    virtual void registerWeakTable(const void*, EphemeronCallback) = 0;
+    virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) = 0;
+#ifndef NDEBUG
+    virtual bool weakTableRegistered(const void*) = 0;
+#endif
 
     virtual bool isMarked(const void*) = 0;
 
     template<typename T> inline bool isAlive(T* obj)
     {
+        // Check that we actually know the definition of T when tracing.
+        COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
         return !!obj && ObjectAliveTrait<T>::isAlive(this, obj);
     }
     template<typename T> inline bool isAlive(const Member<T>& member)

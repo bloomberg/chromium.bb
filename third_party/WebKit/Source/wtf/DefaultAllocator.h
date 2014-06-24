@@ -118,6 +118,14 @@ public:
         ASSERT_NOT_REACHED();
     }
 
+#ifndef NDEBUG
+    static bool weakTableRegistered(...)
+    {
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+#endif
+
     template<typename T, typename Traits>
     static void trace(...)
     {

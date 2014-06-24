@@ -1134,6 +1134,7 @@ namespace WTF {
     struct WeakProcessingHashTableHelper<NoWeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
         static void process(typename Allocator::Visitor* visitor, void* closure) { }
         static void ephemeronIteration(typename Allocator::Visitor* visitor, void* closure) { }
+        static void ephemeronIterationDone(typename Allocator::Visitor* visitor, void* closure) { }
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -1168,7 +1169,6 @@ namespace WTF {
                     }
                 }
             }
-            table->m_queueFlag.clearEnqueued();
         }
 
         // Called repeatedly for tables that have both weak and strong pointers.
@@ -1186,6 +1186,16 @@ namespace WTF {
                         TraceInCollectionTrait<WeakHandlingInCollections, WeakPointersActWeak, ValueType, Traits>::trace(visitor, *element);
                 }
             }
+        }
+
+        // Called when the ephemeron iteration is done and before running the per thread
+        // weak processing. It is guaranteed to be called before any thread is resumed.
+        static void ephemeronIterationDone(typename Allocator::Visitor* visitor, void* closure)
+        {
+            typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
+            HashTableType* table = reinterpret_cast<HashTableType*>(closure);
+            ASSERT(Allocator::weakTableRegistered(visitor, table));
+            table->m_queueFlag.clearEnqueued();
         }
     };
 
@@ -1221,8 +1231,11 @@ namespace WTF {
                 // la Ephemerons:
                 // http://dl.acm.org/citation.cfm?doid=263698.263733 - see also
                 // http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
+                ASSERT(!m_queueFlag.enqueued() || Allocator::weakTableRegistered(visitor, this));
                 if (!m_queueFlag.enqueued()) {
-                    Allocator::registerWeakTable(visitor, this, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIteration);
+                    Allocator::registerWeakTable(visitor, this,
+                        WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIteration,
+                        WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIterationDone);
                     m_queueFlag.setEnqueued();
                 }
                 // We don't need to trace the elements here, since registering

@@ -275,7 +275,10 @@ public:
     }
 
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
-    virtual void registerWeakTable(const void*, EphemeronCallback) OVERRIDE { }
+    virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) OVERRIDE { }
+#ifndef NDEBUG
+    virtual bool weakTableRegistered(const void*) OVERRIDE { return false; }
+#endif
     virtual void registerWeakCell(void**, WeakPointerCallback) OVERRIDE { }
     virtual bool isMarked(const void*) OVERRIDE { return false; }
 

@@ -1343,6 +1343,22 @@ void CallbackStack::invokeOldestCallbacks(Visitor* visitor)
     }
 }
 
+#ifndef NDEBUG
+bool CallbackStack::hasCallbackForObject(const void* object)
+{
+    for (unsigned i = 0; m_buffer + i < m_current; i++) {
+        Item* item = &m_buffer[i];
+        if (item->object() == object) {
+            return true;
+        }
+    }
+    if (m_next)
+        return m_next->hasCallbackForObject(object);
+
+    return false;
+}
+#endif
+
 class MarkingVisitor : public Visitor {
 public:
 #if ENABLE(GC_TRACING)
@@ -1429,10 +1445,17 @@ public:
         Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
     }
 
-    virtual void registerWeakTable(const void* closure, EphemeronCallback callback)
+    virtual void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
     {
-        Heap::registerWeakTable(const_cast<void*>(closure), callback);
+        Heap::registerWeakTable(const_cast<void*>(closure), iterationCallback, iterationDoneCallback);
     }
+
+#ifndef NDEBUG
+    virtual bool weakTableRegistered(const void* closure)
+    {
+        return Heap::weakTableRegistered(closure);
+    }
+#endif
 
     virtual bool isMarked(const void* objectPointer) OVERRIDE
     {
@@ -1715,11 +1738,24 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
     return s_weakCallbackStack->popAndInvokeCallback(&s_weakCallbackStack, visitor);
 }
 
-void Heap::registerWeakTable(void* table, EphemeronCallback callback)
+void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
 {
     CallbackStack::Item* slot = s_ephemeronStack->allocateEntry(&s_ephemeronStack);
-    *slot = CallbackStack::Item(table, callback);
+    *slot = CallbackStack::Item(table, iterationCallback);
+
+    // We use the callback stack of weak cell pointers for the ephemeronIterationDone callbacks.
+    // These callbacks are called right after marking and before any thread commences execution
+    // so it suits our needs for telling the ephemerons that the iteration is done.
+    pushWeakCellPointerCallback(static_cast<void**>(table), iterationDoneCallback);
 }
+
+#ifndef NDEBUG
+bool Heap::weakTableRegistered(const void* table)
+{
+    ASSERT(s_ephemeronStack);
+    return s_ephemeronStack->hasCallbackForObject(table);
+}
+#endif
 
 void Heap::prepareForGC()
 {
@@ -1771,11 +1807,13 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
 
-    CallbackStack::clear(&s_ephemeronStack);
-
     // Call weak callbacks on objects that may now be pointing to dead
-    // objects.
+    // objects and call ephemeronIterationDone callbacks on weak tables
+    // to do cleanup (specifically clear the queued bits for weak hash
+    // tables).
     while (popAndInvokeWeakPointerCallback(s_markingVisitor)) { }
+
+    CallbackStack::clear(&s_ephemeronStack);
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
