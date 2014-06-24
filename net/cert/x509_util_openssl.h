@@ -23,6 +23,10 @@ namespace net {
 // into more convenient std / base datatypes.
 namespace x509_util {
 
+bool NET_EXPORT ParsePrincipalKeyAndValue(X509_NAME_ENTRY* entry,
+                                          std::string* key,
+                                          std::string* value);
+
 bool NET_EXPORT ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
                                                  int index,
                                                  std::string* key,

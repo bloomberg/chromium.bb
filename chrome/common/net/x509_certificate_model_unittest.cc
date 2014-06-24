@@ -67,6 +67,148 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
             x509_certificate_model::GetTitle(no_cn_cert2->os_cert_handle()));
 }
 
+TEST(X509CertificateModelTest, GetExtensions) {
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "root_ca_cert.pem"));
+    ASSERT_TRUE(cert.get());
+
+    x509_certificate_model::Extensions extensions;
+    x509_certificate_model::GetExtensions(
+        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    ASSERT_EQ(3U, extensions.size());
+
+    EXPECT_EQ("Certificate Basic Constraints", extensions[0].name);
+    EXPECT_EQ(
+        "critical\nIs a Certification Authority\n"
+        "Maximum number of intermediate CAs: unlimited",
+        extensions[0].value);
+
+    EXPECT_EQ("Certificate Subject Key ID", extensions[1].name);
+    EXPECT_EQ(
+        "notcrit\nKey ID: 2B 88 93 E1 D2 54 50 F4 B8 A4 20 BD B1 79 E6 0B\nAA "
+        "EB EC 1A",
+        extensions[1].value);
+
+    EXPECT_EQ("Certificate Key Usage", extensions[2].name);
+    EXPECT_EQ("critical\nCertificate Signer\nCRL Signer", extensions[2].value);
+  }
+
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "subjectAltName_sanity_check.pem"));
+    x509_certificate_model::Extensions extensions;
+    x509_certificate_model::GetExtensions(
+        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    ASSERT_EQ(2U, extensions.size());
+    EXPECT_EQ("Certificate Subject Alternative Name", extensions[1].name);
+    EXPECT_EQ(
+        "notcrit\nIP Address: 127.0.0.2\nIP Address: fe80::1\nDNS Name: "
+        "test.example\nEmail Address: test@test.example\nOID.1.2.3.4: 0C 09 69 "
+        "67 6E 6F 72 65 20 6D 65\nX.500 Name: CN = 127.0.0.3\n\n",
+        extensions[1].value);
+  }
+
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "foaf.me.chromium-test-cert.der"));
+    x509_certificate_model::Extensions extensions;
+    x509_certificate_model::GetExtensions(
+        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    ASSERT_EQ(5U, extensions.size());
+    EXPECT_EQ("Netscape Certificate Comment", extensions[1].name);
+    EXPECT_EQ("notcrit\nOpenSSL Generated Certificate", extensions[1].value);
+  }
+
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "2029_globalsign_com_cert.pem"));
+    x509_certificate_model::Extensions extensions;
+    x509_certificate_model::GetExtensions(
+        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    ASSERT_EQ(9U, extensions.size());
+
+    EXPECT_EQ("Certificate Subject Key ID", extensions[0].name);
+    EXPECT_EQ(
+        "notcrit\nKey ID: 59 BC D9 69 F7 B0 65 BB C8 34 C5 D2 C2 EF 17 78\nA6 "
+        "47 1E 8B",
+        extensions[0].value);
+
+    EXPECT_EQ("Certification Authority Key ID", extensions[1].name);
+    EXPECT_EQ(
+        "notcrit\nKey ID: 8A FC 14 1B 3D A3 59 67 A5 3B E1 73 92 A6 62 91\n7F "
+        "E4 78 30\n",
+        extensions[1].value);
+
+    EXPECT_EQ("Authority Information Access", extensions[2].name);
+    EXPECT_EQ(
+        "notcrit\nCA Issuers: "
+        "URI: http://secure.globalsign.net/cacert/SHA256extendval1.crt\n",
+        extensions[2].value);
+
+    EXPECT_EQ("CRL Distribution Points", extensions[3].name);
+    EXPECT_EQ("notcrit\nURI: http://crl.globalsign.net/SHA256ExtendVal1.crl\n",
+              extensions[3].value);
+
+    EXPECT_EQ("Certificate Basic Constraints", extensions[4].name);
+    EXPECT_EQ("notcrit\nIs not a Certification Authority\n",
+              extensions[4].value);
+
+    EXPECT_EQ("Certificate Key Usage", extensions[5].name);
+    EXPECT_EQ(
+        "critical\nSigning\nNon-repudiation\nKey Encipherment\n"
+        "Data Encipherment",
+        extensions[5].value);
+
+    EXPECT_EQ("Extended Key Usage", extensions[6].name);
+    EXPECT_EQ(
+        "notcrit\nTLS WWW Server Authentication (OID.1.3.6.1.5.5.7.3.1)\n"
+        "TLS WWW Client Authentication (OID.1.3.6.1.5.5.7.3.2)\n",
+        extensions[6].value);
+
+    EXPECT_EQ("Certificate Policies", extensions[7].name);
+    EXPECT_EQ(
+        "notcrit\nOID.1.3.6.1.4.1.4146.1.1:\n"
+        "  Certification Practice Statement Pointer:"
+        "    http://www.globalsign.net/repository/\n",
+        extensions[7].value);
+
+    EXPECT_EQ("Netscape Certificate Type", extensions[8].name);
+    EXPECT_EQ("notcrit\nSSL Client Certificate\nSSL Server Certificate",
+              extensions[8].value);
+  }
+
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "diginotar_public_ca_2025.pem"));
+    x509_certificate_model::Extensions extensions;
+    x509_certificate_model::GetExtensions(
+        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    ASSERT_EQ(7U, extensions.size());
+
+    EXPECT_EQ("Authority Information Access", extensions[0].name);
+    EXPECT_EQ(
+        "notcrit\nOCSP Responder: "
+        "URI: http://validation.diginotar.nl\n",
+        extensions[0].value);
+
+    EXPECT_EQ("Certificate Basic Constraints", extensions[2].name);
+    EXPECT_EQ(
+        "critical\nIs a Certification Authority\n"
+        "Maximum number of intermediate CAs: 0",
+        extensions[2].value);
+    EXPECT_EQ("Certificate Policies", extensions[3].name);
+    EXPECT_EQ(
+        "notcrit\nOID.2.16.528.1.1001.1.1.1.1.5.2.6.4:\n"
+        "  Certification Practice Statement Pointer:"
+        "    http://www.diginotar.nl/cps\n"
+        "  User Notice:\n"
+        "    Conditions, as mentioned on our website (www.diginotar.nl), are "
+        "applicable to all our products and services.\n",
+        extensions[3].value);
+  }
+}
+
 TEST(X509CertificateModelTest, GetTypeCA) {
   scoped_refptr<net::X509Certificate> cert(
       net::ImportCertFromFile(net::GetTestCertsDirectory(),

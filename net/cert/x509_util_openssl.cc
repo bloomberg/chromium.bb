@@ -288,14 +288,9 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   return SignAndDerEncodeCert(cert.get(), key->key(), alg, der_encoded);
 }
 
-bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
-                                      int index,
-                                      std::string* key,
-                                      std::string* value) {
-  X509_NAME_ENTRY* entry = X509_NAME_get_entry(name, index);
-  if (!entry)
-    return false;
-
+bool ParsePrincipalKeyAndValue(X509_NAME_ENTRY* entry,
+                               std::string* key,
+                               std::string* value) {
   if (key) {
     ASN1_OBJECT* object = X509_NAME_ENTRY_get_object(entry);
     key->assign(OBJ_nid2sn(OBJ_obj2nid(object)));
@@ -313,6 +308,17 @@ bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
   value->assign(reinterpret_cast<const char*>(buf), len);
   OPENSSL_free(buf);
   return true;
+}
+
+bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
+                                      int index,
+                                      std::string* key,
+                                      std::string* value) {
+  X509_NAME_ENTRY* entry = X509_NAME_get_entry(name, index);
+  if (!entry)
+    return false;
+
+  return ParsePrincipalKeyAndValue(entry, key, value);
 }
 
 bool ParsePrincipalValueByIndex(X509_NAME* name,

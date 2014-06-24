@@ -2964,6 +2964,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY" desc="description of certificate usage Encipher Only">
           Encipher Only
         </message>
+        <message name="IDS_CERT_X509_KEY_USAGE_DECIPHER_ONLY" desc="description of certificate usage Decipher Only">
+          Decipher Only
+        </message>
         <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certification Authority">
           Is a Certification Authority
         </message>
@@ -3003,6 +3006,12 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_REVOCATION_REASON_CERTIFICATE_HOLD" desc="description of certificate revocation for reason Certificate Hold">
           Certificate on Hold
         </message>
+        <message name="IDS_CERT_REVOCATION_REASON_PRIVILEGE_WITHDRAWN" desc="description of certificate revocation for reason Privilege Withdrawn">
+          Privilege Withdrawn
+        </message>
+        <message name="IDS_CERT_REVOCATION_REASON_AA_COMPROMISE" desc="description of certificate revocation for reason AA Compromise">
+          AA Compromise
+        </message>
         <message name="IDS_CERT_OCSP_RESPONDER_FORMAT" desc="format for info about OCSP responder">
           OCSP Responder: <ph name="LOCATION">$1<ex>Foo</ex></ph>
         </message>
@@ -3041,6 +3050,12 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_CERT_GENERAL_NAME_REGISTERED_ID" desc="label for the certRegisteredID general name type">
           Registered OID
+        </message>
+        <message name="IDS_CERT_EDI_PARTY_NAME" desc="format for Electronic Data Identifier (EDI) Party Name">
+          Party Name: <ph name="PARTY_NAME">$1<ex>Foo</ex></ph>
+        </message>
+        <message name="IDS_CERT_EDI_NAME_ASSIGNER" desc="format for Electronic Data Identifier (EDI) Name Assigner">
+          Name Assigner: <ph name="NAME_ASSIGNER">$1<ex>Foo</ex></ph>
         </message>
         <message name="IDS_CERT_EXT_MS_CERT_TYPE" desc="description of extension Microsoft Certificate Template Name">
           Microsoft Certificate Template Name
