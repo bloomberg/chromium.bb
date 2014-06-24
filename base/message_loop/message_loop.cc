@@ -229,14 +229,6 @@ scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
 #define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpForUI())
 #endif
 
-#if defined(OS_MACOSX)
-  // Use an OS native runloop on Mac to support timer coalescing.
-  #define MESSAGE_PUMP_DEFAULT \
-      scoped_ptr<MessagePump>(new MessagePumpCFRunLoop())
-#else
-  #define MESSAGE_PUMP_DEFAULT scoped_ptr<MessagePump>(new MessagePumpDefault())
-#endif
-
   if (type == MessageLoop::TYPE_UI) {
     if (message_pump_for_ui_factory_)
       return message_pump_for_ui_factory_();
@@ -251,7 +243,7 @@ scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
 #endif
 
   DCHECK_EQ(MessageLoop::TYPE_DEFAULT, type);
-  return MESSAGE_PUMP_DEFAULT;
+  return scoped_ptr<MessagePump>(new MessagePumpDefault());
 }
 
 void MessageLoop::AddDestructionObserver(
