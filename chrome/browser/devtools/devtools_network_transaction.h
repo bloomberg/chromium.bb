@@ -119,6 +119,9 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   DevToolsNetworkController* controller_;
   base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
 
+  // Modified request. Should be destructed after |network_transaction_|
+  scoped_ptr<net::HttpRequestInfo> custom_request_;
+
   // Real network transaction.
   scoped_ptr<net::HttpTransaction> network_transaction_;
 
@@ -135,8 +138,6 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
 
   // Value of "X-DevTools-Emulate-Network-Conditions-Client-Id" request header.
   std::string client_id_;
-
-  scoped_ptr<net::HttpRequestInfo> custom_request_;
 
   enum CallbackType {
       NONE,
