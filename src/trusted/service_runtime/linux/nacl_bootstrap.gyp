@@ -56,7 +56,10 @@
       # would be if gyp were to really build properly for the host.
       # TODO(bradnelson): Clean up with proper cross support.
       'cflags/': [['exclude', '^-m.*'],
-                  ['exclude', '^--sysroot=.*']],
+                  ['exclude', '^--sysroot=.*'],
+                  # Drop flags such as -fsanitize-memory-track-origins=. See
+                  # the comment below.
+                  ['exclude', '^-fsanitize-memory']],
       'ldflags/': [['exclude', '^-m.*'],
                    ['exclude', '^--sysroot=.*']],
       'cflags!': [
@@ -71,6 +74,7 @@
       ],
       'ldflags!': [
         '-fsanitize=memory',
+        '-stdlib=libc++',
       ],
     },
     {
