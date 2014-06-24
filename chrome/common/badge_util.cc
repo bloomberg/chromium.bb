@@ -4,6 +4,8 @@
 
 #include "chrome/common/badge_util.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
@@ -113,12 +115,24 @@ void PaintBadge(gfx::Canvas* canvas,
   canvas->Save();
 
   SkPaint* text_paint = badge_util::GetBadgeTextPaintSingleton();
-  text_paint->setTextSize(SkFloatToScalar(kTextSize));
   text_paint->setColor(text_color);
+  float scale = canvas->image_scale();
 
-  // Calculate text width. We clamp it to a max size.
-  SkScalar sk_text_width = text_paint->measureText(text.c_str(), text.size());
-  int text_width = std::min(kMaxTextWidth, SkScalarFloorToInt(sk_text_width));
+  // Calculate text width. Font width may not be linear with respect to the
+  // scale factor (e.g. when hinting is applied), so we need to use the font
+  // size that canvas actually uses when drawing a text.
+  text_paint->setTextSize(SkFloatToScalar(kTextSize) * scale);
+  SkScalar sk_text_width_in_pixel =
+      text_paint->measureText(text.c_str(), text.size());
+  text_paint->setTextSize(SkFloatToScalar(kTextSize));
+
+  // We clamp the width to a max size. SkPaint::measureText returns the width in
+  // pixel (as a result of scale multiplier), so convert sk_text_width_in_pixel
+  // back to DIP (density independent pixel) first.
+  int text_width =
+      std::min(kMaxTextWidth,
+               static_cast<int>(
+                   std::ceil(SkScalarToFloat(sk_text_width_in_pixel) / scale)));
 
   // Calculate badge size. It is clamped to a min width just because it looks
   // silly if it is too skinny.
