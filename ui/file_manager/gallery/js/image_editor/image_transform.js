@@ -128,7 +128,7 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
   this.editor_.hideOverlappingTools();
-  window.removeEventListener(this.onResizedBound_);
+  window.removeEventListener('resize', this.onResizedBound_);
   this.onResizedBound_ = null;
 };
 
