@@ -12,6 +12,7 @@ trials are entirely ignored by this script.
 
 import commands
 import extract_histograms
+import hashlib
 import logging
 import optparse
 import os
@@ -181,11 +182,25 @@ def readXmlHistograms(histograms_file_location):
   return set(extract_histograms.ExtractNames(histograms))
 
 
+def hashHistogramName(name):
+  """Computes the hash of a histogram name.
+
+  Args:
+    name: The string to hash (a histogram name).
+
+  Returns:
+    Histogram hash as a string representing a hex number (with leading 0x).
+  """
+  return '0x' + hashlib.md5(name).hexdigest()[:16]
+
+
 def main():
   # Find default paths.
   default_root = findDefaultRoot()
   default_histograms_path = os.path.join(
       default_root, 'tools/metrics/histograms/histograms.xml')
+  default_extra_histograms_path = os.path.join(
+      default_root, 'tools/histograms/histograms.xml')
 
   # Parse command line options
   parser = optparse.OptionParser()
@@ -199,6 +214,13 @@ def main():
     default=default_histograms_path,
     help='read histogram definitions from FILE (relative to --root-directory) '
          '[optional, defaults to "%s"]' % default_histograms_path,
+    metavar='FILE')
+  parser.add_option(
+    '--exrta_histograms-file', dest='extra_histograms_file_location',
+    default=default_extra_histograms_path,
+    help='read additional histogram definitions from FILE (relative to '
+         '--root-directory) [optional, defaults to "%s"]' %
+         default_extra_histograms_path,
     metavar='FILE')
 
   (options, args) = parser.parse_args()
@@ -215,16 +237,21 @@ def main():
     sys.exit(1)
   chromium_histograms = readChromiumHistograms()
   xml_histograms = readXmlHistograms(options.histograms_file_location)
+  unmapped_histograms = chromium_histograms - xml_histograms
 
-  unmapped_histograms = sorted(chromium_histograms - xml_histograms)
+  if os.path.isfile(options.extra_histograms_file_location):
+    xml_histograms2 = readXmlHistograms(options.extra_histograms_file_location)
+    unmapped_histograms -= xml_histograms2
+  else:
+    logging.warning('No such file: %s', options.extra_histograms_file_location)
+
   if len(unmapped_histograms):
     logging.info('')
     logging.info('')
-    logging.info('Histograms in Chromium but not in %s:' %
-                 options.histograms_file_location)
+    logging.info('Histograms in Chromium but not in XML files:')
     logging.info('-------------------------------------------------')
-    for histogram in unmapped_histograms:
-      logging.info('  %s', histogram)
+    for histogram in sorted(unmapped_histograms):
+      logging.info('  %s - %s', histogram, hashHistogramName(histogram))
   else:
     logging.info('Success!  No unmapped histograms found.')
 
