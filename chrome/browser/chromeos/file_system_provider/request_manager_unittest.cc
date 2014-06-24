@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -21,6 +23,53 @@
 namespace chromeos {
 namespace file_system_provider {
 namespace {
+
+// Fake implementation for the notification manager. Simulates user action on
+// a notification.
+class FakeNotificationManager : public NotificationManagerInterface {
+ public:
+  FakeNotificationManager() {}
+  virtual ~FakeNotificationManager() {}
+
+  // NotificationManagerInterface overrides:
+  virtual void ShowUnresponsiveNotification(
+      int id,
+      const NotificationCallback& callback) OVERRIDE {
+    callbacks_[id] = callback;
+  }
+
+  virtual void HideUnresponsiveNotification(int id) OVERRIDE {
+    callbacks_.erase(id);
+  }
+
+  // Aborts all of the virtually shown notifications.
+  void Abort() { OnNotificationResult(ABORT); }
+
+  // Discards all of the virtually shown notifications.
+  void Continue() { OnNotificationResult(CONTINUE); }
+
+  // Returns number of currently shown notifications.
+  size_t size() { return callbacks_.size(); }
+
+ private:
+  typedef std::map<int, NotificationCallback> CallbackMap;
+
+  // Handles a notification result by calling all registered callbacks and
+  // clearing the list.
+  void OnNotificationResult(NotificationResult result) {
+    CallbackMap::iterator it = callbacks_.begin();
+    while (it != callbacks_.end()) {
+      CallbackMap::iterator current_it = it++;
+      NotificationCallback callback = current_it->second;
+      callbacks_.erase(current_it);
+      callback.Run(result);
+    }
+  }
+
+  CallbackMap callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeNotificationManager);
+};
 
 // Logs calls of the success and error callbacks on requests.
 class EventLogger {
@@ -259,10 +308,12 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
   virtual ~FileSystemProviderRequestManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    request_manager_.reset(new RequestManager());
+    notification_manager_.reset(new FakeNotificationManager);
+    request_manager_.reset(new RequestManager(notification_manager_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<FakeNotificationManager> notification_manager_;
   scoped_ptr<RequestManager> request_manager_;
 };
 
@@ -603,7 +654,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
   int request_id;
 
   {
-    RequestManager request_manager;
+    RequestManager request_manager(NULL);
     request_manager.AddObserver(&observer);
 
     request_id = request_manager.CreateRequest(
@@ -658,6 +709,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
+  EXPECT_EQ(0u, notification_manager_->size());
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
@@ -668,6 +720,11 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
 
   // Wait until the request is timeouted.
   base::RunLoop().RunUntilIdle();
+
+  // Abort the request.
+  EXPECT_EQ(1u, notification_manager_->size());
+  notification_manager_->Abort();
+  EXPECT_EQ(0u, notification_manager_->size());
 
   ASSERT_EQ(1u, logger.error_events().size());
   EventLogger::ErrorEvent* event = logger.error_events()[0];
@@ -680,6 +737,47 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
   EXPECT_EQ(request_id, observer.timeouted()[0].request_id());
   ASSERT_EQ(1u, observer.destroyed().size());
   EXPECT_EQ(request_id, observer.destroyed()[0].request_id());
+
+  request_manager_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderRequestManagerTest, ContinueOnTimeout) {
+  EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
+
+  request_manager_->SetTimeoutForTesting(base::TimeDelta::FromSeconds(0));
+  const int request_id = request_manager_->CreateRequest(
+      TESTING,
+      make_scoped_ptr<RequestManager::HandlerInterface>(
+          new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
+  EXPECT_EQ(1, request_id);
+  EXPECT_EQ(0u, logger.success_events().size());
+  EXPECT_EQ(0u, logger.error_events().size());
+  EXPECT_EQ(0u, notification_manager_->size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
+
+  // Wait until the request is timeouted.
+  base::RunLoop().RunUntilIdle();
+
+  // Let the extension more time by closing the notification.
+  EXPECT_EQ(1u, notification_manager_->size());
+  notification_manager_->Continue();
+  EXPECT_EQ(0u, notification_manager_->size());
+
+  // The request is still active.
+  EXPECT_EQ(0u, logger.success_events().size());
+  EXPECT_EQ(0u, logger.error_events().size());
+
+  // Wait until the request is timeouted again.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, notification_manager_->size());
 
   request_manager_->RemoveObserver(&observer);
 }

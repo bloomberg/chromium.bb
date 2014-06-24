@@ -39,10 +39,13 @@ std::string RequestTypeToString(RequestType type) {
   return "";
 }
 
-RequestManager::RequestManager()
-    : next_id_(1),
+RequestManager::RequestManager(
+    NotificationManagerInterface* notification_manager)
+    : notification_manager_(notification_manager),
+      next_id_(1),
       timeout_(base::TimeDelta::FromSeconds(kDefaultTimeout)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 RequestManager::~RequestManager() {
   // Abort all of the active requests.
@@ -77,12 +80,8 @@ int RequestManager::CreateRequest(RequestType type,
 
   Request* request = new Request;
   request->handler = handler.Pass();
-  request->timeout_timer.Start(FROM_HERE,
-                               timeout_,
-                               base::Bind(&RequestManager::OnRequestTimeout,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          request_id));
   requests_[request_id] = request;
+  ResetTimer(request_id);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestCreated(request_id, type));
 
@@ -112,10 +111,13 @@ bool RequestManager::FulfillRequest(int request_id,
   FOR_EACH_OBSERVER(
       Observer, observers_, OnRequestFulfilled(request_id, has_more));
 
-  if (!has_more)
+  if (!has_more) {
     DestroyRequest(request_id);
-  else
-    request_it->second->timeout_timer.Reset();
+  } else {
+    if (notification_manager_)
+      notification_manager_->HideUnresponsiveNotification(request_id);
+    ResetTimer(request_id);
+  }
 
   return true;
 }
@@ -159,9 +161,48 @@ RequestManager::Request::~Request() {}
 void RequestManager::OnRequestTimeout(int request_id) {
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestTimeouted(request_id));
 
+  if (!notification_manager_) {
+    RejectRequest(request_id,
+                  scoped_ptr<RequestValue>(new RequestValue()),
+                  base::File::FILE_ERROR_ABORT);
+    return;
+  }
+
+  notification_manager_->ShowUnresponsiveNotification(
+      request_id,
+      base::Bind(&RequestManager::OnUnresponsiveNotificationResult,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 request_id));
+}
+
+void RequestManager::OnUnresponsiveNotificationResult(
+    int request_id,
+    NotificationManagerInterface::NotificationResult result) {
+  RequestMap::iterator request_it = requests_.find(request_id);
+  if (request_it == requests_.end())
+    return;
+
+  if (result == NotificationManagerInterface::CONTINUE) {
+    ResetTimer(request_id);
+    return;
+  }
+
   RejectRequest(request_id,
                 scoped_ptr<RequestValue>(new RequestValue()),
                 base::File::FILE_ERROR_ABORT);
+}
+
+void RequestManager::ResetTimer(int request_id) {
+  RequestMap::iterator request_it = requests_.find(request_id);
+  if (request_it == requests_.end())
+    return;
+
+  request_it->second->timeout_timer.Start(
+      FROM_HERE,
+      timeout_,
+      base::Bind(&RequestManager::OnRequestTimeout,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 request_id));
 }
 
 void RequestManager::DestroyRequest(int request_id) {
@@ -171,6 +212,9 @@ void RequestManager::DestroyRequest(int request_id) {
 
   delete request_it->second;
   requests_.erase(request_it);
+
+  if (notification_manager_)
+    notification_manager_->HideUnresponsiveNotification(request_id);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestDestroyed(request_id));
 

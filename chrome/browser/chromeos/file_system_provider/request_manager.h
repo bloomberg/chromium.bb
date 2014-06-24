@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 
@@ -88,7 +89,7 @@ class RequestManager {
     virtual void OnRequestTimeouted(int request_id) = 0;
   };
 
-  RequestManager();
+  explicit RequestManager(NotificationManagerInterface* notification_manager);
   virtual ~RequestManager();
 
   // Creates a request and returns its request id (greater than 0). Returns 0 in
@@ -144,7 +145,17 @@ class RequestManager {
   // Called when a request with |request_id| timeouts.
   void OnRequestTimeout(int request_id);
 
+  // Called when an user either aborts the unresponsive request or lets it
+  // continue.
+  void OnUnresponsiveNotificationResult(
+      int request_id,
+      NotificationManagerInterface::NotificationResult result);
+
+  // Resets the timeout timer for the specified request.
+  void ResetTimer(int request_id);
+
   RequestMap requests_;
+  NotificationManagerInterface* notification_manager_;  // Not owned.
   int next_id_;
   base::TimeDelta timeout_;
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_;

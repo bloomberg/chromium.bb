@@ -8,7 +8,6 @@
 
 #include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "extensions/browser/event_router.h"
 #include "net/base/io_buffer.h"
 
 namespace chromeos {
@@ -241,7 +240,7 @@ RequestManager* FakeProvidedFileSystem::GetRequestManager() {
 }
 
 ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(
-    extensions::EventRouter* event_router,
+    Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {
   return new FakeProvidedFileSystem(file_system_info);
 }

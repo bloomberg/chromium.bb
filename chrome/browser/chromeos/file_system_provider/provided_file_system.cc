@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/files/file.h"
+#include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "extensions/browser/event_router.h"
 
@@ -24,10 +26,14 @@ namespace chromeos {
 namespace file_system_provider {
 
 ProvidedFileSystem::ProvidedFileSystem(
-    extensions::EventRouter* event_router,
+    Profile* profile,
     const ProvidedFileSystemInfo& file_system_info)
-    : event_router_(event_router),
+    : profile_(profile),
+      event_router_(extensions::EventRouter::Get(profile)),  // May be NULL.
       file_system_info_(file_system_info),
+      notification_manager_(
+          new NotificationManager(profile_, file_system_info_)),
+      request_manager_(notification_manager_.get()),
       weak_ptr_factory_(this) {
 }
 

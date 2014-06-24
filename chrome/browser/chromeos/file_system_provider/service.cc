@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -28,13 +27,12 @@ namespace {
 // Maximum number of file systems to be mounted in the same time, per profile.
 const size_t kMaxFileSystems = 16;
 
-// Default factory for provided file systems. The |event_router| must not be
-// NULL.
+// Default factory for provided file systems. |profile| must not be NULL.
 ProvidedFileSystemInterface* CreateProvidedFileSystem(
-    extensions::EventRouter* event_router,
+    Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {
-  DCHECK(event_router);
-  return new ProvidedFileSystem(event_router, file_system_info);
+  DCHECK(profile);
+  return new ProvidedFileSystem(profile, file_system_info);
 }
 
 }  // namespace
@@ -152,11 +150,8 @@ bool Service::MountFileSystem(const std::string& extension_id,
   ProvidedFileSystemInfo file_system_info(
       extension_id, file_system_id, file_system_name, mount_path);
 
-  // The event router may be NULL for unit tests.
-  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
-
   ProvidedFileSystemInterface* file_system =
-      file_system_factory_.Run(router, file_system_info);
+      file_system_factory_.Run(profile_, file_system_info);
   DCHECK(file_system);
   file_system_map_[FileSystemKey(extension_id, file_system_id)] = file_system;
   mount_point_name_to_key_map_[mount_point_name] =
