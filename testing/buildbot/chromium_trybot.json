@@ -168,5 +168,16 @@
       "test": "display_unittests",
       "platforms": ["linux"]
     }
+  ],
+
+  "gtest_tests_filter_exclusions": [
+    ".*gyp[i]?",
+    "chrome/test/data/.*",
+    "content/test/data/.*",
+    "DEPS",
+    "testing/buildbot/.*"
+  ],
+
+  "filter_builders": [
   ]
 }
