@@ -72,7 +72,7 @@ void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value)
     if (m_resolver.isEmpty())
         return;
     m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
-    m_resolver.clear();
+    clear();
 }
 
 void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
@@ -80,7 +80,7 @@ void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
     if (m_resolver.isEmpty())
         return;
     m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
-    m_resolver.clear();
+    clear();
 }
 
 ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> value)

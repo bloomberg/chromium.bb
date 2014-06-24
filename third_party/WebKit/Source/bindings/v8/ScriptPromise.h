@@ -114,6 +114,7 @@ public:
         ScriptPromise promise() const;
         void resolve(v8::Local<v8::Value>);
         void reject(v8::Local<v8::Value>);
+        void clear() { m_resolver.clear(); }
 
     private:
         ScriptValue m_resolver;

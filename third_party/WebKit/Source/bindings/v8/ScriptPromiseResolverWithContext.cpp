@@ -54,6 +54,7 @@ void ScriptPromiseResolverWithContext::keepAliveWhilePending()
 
 void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
 {
+    ASSERT(m_state == Resolving || m_state == Rejecting);
     ScriptState::Scope scope(m_scriptState.get());
     resolveOrRejectImmediately();
 }
@@ -83,6 +84,7 @@ void ScriptPromiseResolverWithContext::clear()
         return;
     ResolutionState state = m_state;
     m_state = ResolvedOrRejected;
+    m_resolver.clear();
     m_value.clear();
     if (m_mode == KeepAliveWhilePending) {
         // |ref| was called in |keepAliveWhilePending|.
