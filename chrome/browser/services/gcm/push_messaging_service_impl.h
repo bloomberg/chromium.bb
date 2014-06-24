@@ -48,8 +48,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   virtual void Register(
       const std::string& app_id,
       const std::string& sender_id,
-      int renderer_id,
-      int router_id,
       const content::PushMessagingService::RegisterCallback& callback) OVERRIDE;
 
  private:
@@ -58,12 +56,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       GCMClient::Result result);
-
-  void DidRequestPermission(
-      const std::string& sender_id,
-      const std::string& app_id,
-      const content::PushMessagingService::RegisterCallback& callback,
-      bool allow);
 
   GCMProfileService* gcm_profile_service_;  // It owns us.
 

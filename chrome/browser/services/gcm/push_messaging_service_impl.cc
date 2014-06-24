@@ -10,18 +10,13 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/web_contents.h"
 
 namespace gcm {
 
@@ -132,8 +127,6 @@ void PushMessagingServiceImpl::OnSendError(
 void PushMessagingServiceImpl::Register(
     const std::string& app_id,
     const std::string& sender_id,
-    int renderer_id,
-    int render_view_id,
     const content::PushMessagingService::RegisterCallback& callback) {
   if (!gcm_profile_service_->driver()) {
     NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
@@ -141,7 +134,7 @@ void PushMessagingServiceImpl::Register(
 
   if (profile_->GetPrefs()->GetInteger(
           prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
-    DidRegister(app_id, callback, std::string(), GCMClient::UNKNOWN_ERROR);
+    DidRegister(app_id, callback, "", GCMClient::UNKNOWN_ERROR);
     return;
   }
 
@@ -150,36 +143,12 @@ void PushMessagingServiceImpl::Register(
   if (gcm_profile_service_->driver()->GetAppHandler(kAppIdPrefix) != this)
     gcm_profile_service_->driver()->AddAppHandler(kAppIdPrefix, this);
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(renderer_id, render_view_id);
-
-  // The page doesn't exist any more.
-  if (!web_contents)
-    return;
-
-  // TODO(miguelg) need to send this over IPC when bubble support is
-  // implemented.
-  int bridge_id = -1;
-
-  const PermissionRequestID id(renderer_id, render_view_id, bridge_id, GURL());
-
-  GURL embedder = web_contents->GetURL();
-  gcm::PushMessagingPermissionContext* permission_context =
-      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
-
-  if (permission_context == NULL) {
-    DidRegister(app_id, callback, std::string(), GCMClient::UNKNOWN_ERROR);
-    return;
-  }
-
-  permission_context->RequestPermission(
-      web_contents,
-      id,
-      embedder,
-      false,  // TODO(miguelg): implement user_gesture, needed for bubbles.
-      base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
+  std::vector<std::string> sender_ids(1, sender_id);
+  gcm_profile_service_->driver()->Register(
+      app_id,
+      sender_ids,
+      base::Bind(&PushMessagingServiceImpl::DidRegister,
                  weak_factory_.GetWeakPtr(),
-                 sender_id,
                  app_id,
                  callback));
 }
@@ -199,33 +168,6 @@ void PushMessagingServiceImpl::DidRegister(
     profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
                                      registration_count + 1);
   }
-}
-
-void PushMessagingServiceImpl::DidRequestPermission(
-    const std::string& sender_id,
-    const std::string& app_id,
-    const content::PushMessagingService::RegisterCallback& register_callback,
-    bool allow) {
-  if (!allow) {
-    // TODO(miguelg) extend the error enum to allow for pemission failure.
-    DidRegister(app_id, register_callback, std::string(),
-                GCMClient::UNKNOWN_ERROR);
-    return;
-  }
-
-  // The GCMDriver could be NULL if GCMProfileService has been shut down.
-  if (!gcm_profile_service_->driver())
-    return;
-
-  std::vector<std::string> sender_ids(1, sender_id);
-
-  gcm_profile_service_->driver()->Register(
-      app_id,
-      sender_ids,
-      base::Bind(&PushMessagingServiceImpl::DidRegister,
-                 weak_factory_.GetWeakPtr(),
-                 app_id,
-                 register_callback));
 }
 
 // TODO(johnme): Unregister should decrement the pref, and call
