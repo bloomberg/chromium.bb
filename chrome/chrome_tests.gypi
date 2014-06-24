@@ -1366,8 +1366,8 @@
         'browser/task_manager/task_manager_browsertest_util.h',
         'browser/themes/theme_service_browsertest.cc',
         'browser/translate/translate_browsertest.cc',
-        'browser/translate/translate_browser_test_utils.cc',
-        'browser/translate/translate_browser_test_utils.h',
+        'browser/translate/cld_data_harness.cc',
+        'browser/translate/cld_data_harness.h',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/app_list/app_list_controller_browsertest.cc',
         'browser/ui/app_list/app_list_service_views_browsertest.cc',
@@ -1646,6 +1646,24 @@
         },
       },
       'conditions': [
+        ['cld2_data_source=="component"', {
+          'sources': [
+            'browser/translate/component_cld_data_harness.cc',
+            'browser/translate/component_cld_data_harness.h',
+          ]},
+        ],
+        ['cld2_data_source=="standalone"', {
+          'sources': [
+            'browser/translate/standalone_cld_data_harness.cc',
+            'browser/translate/standalone_cld_data_harness.h',
+          ]},
+        ],
+        ['cld2_data_source=="static"', {
+          'sources': [
+            'browser/translate/static_cld_data_harness.cc',
+            'browser/translate/static_cld_data_harness.h',
+          ]},
+        ],
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',

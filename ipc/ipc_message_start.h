@@ -102,6 +102,7 @@ enum IPCMessageStart {
   ChromeExtensionMsgStart,
   MojoMsgStart,
   TranslateMsgStart,
+  CldDataProviderMsgStart,
   PushMessagingMsgStart,
   GinJavaBridgeMsgStart,
   BatteryStatusMsgStart,

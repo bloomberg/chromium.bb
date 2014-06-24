@@ -155,8 +155,6 @@ const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const base::FilePath::CharType kCRLSetFilename[] =
     FPL("Certificate Revocation Lists");
-const base::FilePath::CharType kCLDDataFilename[] =
-    FPL("cld2_data.bin");
 const base::FilePath::CharType kCustomDictionaryFileName[] =
     FPL("Custom Dictionary.txt");
 const base::FilePath::CharType kExtensionActivityLogFilename[] =

@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/translate/translate_browser_test_utils.h"
+#include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -19,17 +20,18 @@
 
 class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
-  TranslateBubbleViewBrowserTest() {}
+  TranslateBubbleViewBrowserTest()
+      : cld_data_harness(test::CreateCldDataHarness()) {}
   virtual ~TranslateBubbleViewBrowserTest() {}
   virtual void SetUpOnMainThread() OVERRIDE {
     // We can't Init() until PathService has been initialized. This happens
     // very late in the test fixture setup process.
-    dynamic_data_scope.Init();
+    cld_data_harness->Init();
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
  private:
-  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
+  scoped_ptr<test::CldDataHarness> cld_data_harness;
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };
 

@@ -42,7 +42,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
@@ -182,6 +181,10 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/keystone_glue.h"
+#endif
+
+#if defined(CLD_DATA_FROM_COMPONENT)
+#include "chrome/browser/component_updater/cld_component_installer.h"
 #endif
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
@@ -404,7 +407,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   g_browser_process->crl_set_fetcher()->DeleteFromDisk();
 #endif
 
-#if defined(CLD2_DYNAMIC_MODE) && defined(CLD2_IS_COMPONENT)
+#if defined(CLD_DATA_FROM_COMPONENT)
   RegisterCldComponent(cus);
 #endif
 

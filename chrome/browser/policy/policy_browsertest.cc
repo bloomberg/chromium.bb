@@ -57,7 +57,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/translate_browser_test_utils.h"
+#include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
@@ -1870,8 +1870,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
 
-  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
-  ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
+  scoped_ptr<test::CldDataHarness> cld_data_scope =
+      test::CreateCldDataHarness();
+  ASSERT_NO_FATAL_FAILURE(cld_data_scope->Init());
 
   // Verifies that translate can be forced enabled or disabled by policy.
 

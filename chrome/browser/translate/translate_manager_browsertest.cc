@@ -4,10 +4,11 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/translate_browser_test_utils.h"
+#include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,8 +28,9 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {};
 // settings.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        MAYBE_PRE_TranslateSessionRestore) {
-  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
-  ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
+  scoped_ptr<test::CldDataHarness> cld_data_harness =
+      test::CreateCldDataHarness();
+  ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
@@ -62,8 +64,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        MAYBE_TranslateSessionRestore) {
-  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
-  ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
+  scoped_ptr<test::CldDataHarness> cld_data_harness =
+      test::CreateCldDataHarness();
+  ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::Source<content::WebContents> source(current_web_contents);

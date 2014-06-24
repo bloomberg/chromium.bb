@@ -158,7 +158,7 @@
           'msvs_disabled_warnings': [4267],
         }],
         # Dynamic or vanilla mode
-        ['cld2_dynamic==1',
+        ['cld2_data_source!="static"',
           {
             # Enable dynamic mode, which allows CLD to read its data from a file
             # instead of requiring the data to be linked into the library.

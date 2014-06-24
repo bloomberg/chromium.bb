@@ -130,9 +130,24 @@
             '..',
           ],
           'sources': [
+            'translate/content/browser/browser_cld_data_provider.h',
             'translate/content/browser/content_translate_driver.cc',
             'translate/content/browser/content_translate_driver.h',
            ],
+          'conditions': [
+             ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
+              'sources': [
+                'translate/content/browser/data_file_browser_cld_data_provider.cc',
+                'translate/content/browser/data_file_browser_cld_data_provider.h',
+              ]},
+            ],
+            ['cld2_data_source=="static"', {
+              'sources': [
+                'translate/content/browser/static_browser_cld_data_provider.cc',
+                'translate/content/browser/static_browser_cld_data_provider.h',
+              ]},
+            ],
+          ],
         },
         {
           'target_name': 'translate_content_common',
@@ -151,6 +166,43 @@
             'translate/content/common/translate_messages.cc',
             'translate/content/common/translate_messages.h',
            ],
+           'conditions': [
+             ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
+               'sources': [
+                 'translate/content/common/data_file_cld_data_provider_messages.cc',
+                 'translate/content/common/data_file_cld_data_provider_messages.h',
+               ]},
+             ],
+           ],
+        },
+        {
+          'target_name': 'translate_content_renderer',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'translate/content/renderer/renderer_cld_data_provider.h',
+           ],
+          'conditions': [
+            ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
+              'sources': [
+                'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
+                'translate/content/renderer/data_file_renderer_cld_data_provider.h',
+              ]},
+            ],
+            ['cld2_data_source=="static"', {
+              'sources': [
+                'translate/content/renderer/static_renderer_cld_data_provider.cc',
+                'translate/content/renderer/static_renderer_cld_data_provider.h',
+              ]},
+            ],
+          ],
         },
       ],
     }],

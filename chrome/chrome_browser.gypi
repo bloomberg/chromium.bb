@@ -443,8 +443,6 @@
         'browser/common/cancelable_request.h',
         'browser/component_updater/background_downloader_win.cc',
         'browser/component_updater/background_downloader_win.h',
-        'browser/component_updater/cld_component_installer.cc',
-        'browser/component_updater/cld_component_installer.h',
         'browser/component_updater/component_patcher.cc',
         'browser/component_updater/component_patcher.h',
         'browser/component_updater/component_patcher_operation.cc',
@@ -2749,6 +2747,12 @@
             'browser/media_galleries/fileapi/iphoto_file_util.h',
           ],
         }],
+        ['cld2_data_source=="component"', {
+          'sources': [
+            'browser/component_updater/cld_component_installer.cc',
+            'browser/component_updater/cld_component_installer.h',
+          ]},
+        ],
         ['enable_extensions==1', {
           'sources': [
             # Only extension API implementations should go here.

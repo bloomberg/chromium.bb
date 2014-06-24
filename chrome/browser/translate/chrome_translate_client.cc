@@ -40,17 +40,10 @@
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/files/file.h"
+#if defined(CLD_DATA_FROM_STANDALONE)
 #include "base/path_service.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
-#endif
-
-#if defined(CLD2_IS_COMPONENT)
-#include "chrome/browser/component_updater/cld_component_installer.h"
+#include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 #endif
 
 namespace {
@@ -59,25 +52,46 @@ namespace {
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
 
+#if defined(CLD_DATA_FROM_STANDALONE)
+// This build uses a standalone CLD2 data file.
+// TODO(andrewhayden): Make the data file path into a gyp/gn define
+// If you change this, also update standalone_cld_data_harness.cc
+// accordingly!
+const base::FilePath::CharType kCldDataFileName[] =
+    FILE_PATH_LITERAL("cld2_data.bin");
+
+bool g_cld_file_path_initialized_ = false;
+
+void InitCldFilePath() {
+  VLOG(1) << "Initializing CLD file path for the first time.";
+  base::FilePath path;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
+    LOG(WARNING) << "Unable to locate user data directory";
+    return;  // Chrome isn't properly installed
+  }
+  g_cld_file_path_initialized_ = true;
+  path = path.Append(kCldDataFileName);
+  VLOG(1) << "Setting CLD data file path: " << path.value();
+  translate::DataFileBrowserCldDataProvider::SetCldDataFilePath(path);
+}
+#endif
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);
-
-#if defined(CLD2_DYNAMIC_MODE)
-// Statics defined in the .h file:
-base::File* ChromeTranslateClient::s_cached_file_ = NULL;
-uint64 ChromeTranslateClient::s_cached_data_offset_ = 0;
-uint64 ChromeTranslateClient::s_cached_data_length_ = 0;
-base::LazyInstance<base::Lock> ChromeTranslateClient::s_file_lock_ =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       translate_driver_(&web_contents->GetController()),
       translate_manager_(new TranslateManager(this, prefs::kAcceptLanguages)),
+      cld_data_provider_(translate::CreateBrowserCldDataProviderFor(
+          web_contents->GetRenderViewHost())),
       weak_pointer_factory_(this) {
+#if defined(CLD_DATA_FROM_STANDALONE)
+  if (!g_cld_file_path_initialized_)
+    InitCldFilePath();
+#endif
 }
 
 ChromeTranslateClient::~ChromeTranslateClient() {
@@ -257,12 +271,12 @@ bool ChromeTranslateClient::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
                       OnLanguageDetermined)
   IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
-#if defined(CLD2_DYNAMIC_MODE)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NeedCLDData, OnCLDDataRequested)
-#endif
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
+  if (!handled) {
+    handled = cld_data_provider_->OnMessageReceived(message);
+  }
   return handled;
 }
 
@@ -332,141 +346,6 @@ void ChromeTranslateClient::WebContentsDestroyed() {
   // with NULL WebContents.
   translate_manager_.reset();
 }
-
-#if defined(CLD2_DYNAMIC_MODE)
-void ChromeTranslateClient::OnCLDDataRequested() {
-  // Quickly try to read s_cached_file_. If valid, the file handle is
-  // cached and can be used immediately. Else, queue the caching task to the
-  // blocking pool.
-  base::File* handle = NULL;
-  uint64 data_offset = 0;
-  uint64 data_length = 0;
-  {
-    base::AutoLock lock(s_file_lock_.Get());
-    handle = s_cached_file_;
-    data_offset = s_cached_data_offset_;
-    data_length = s_cached_data_length_;
-  }
-
-  if (handle && handle->IsValid()) {
-    // Cached data available. Respond to the request.
-    SendCLDDataAvailable(handle, data_offset, data_length);
-    return;
-  }
-
-  // Else, we don't have the data file yet. Queue a caching attempt.
-  // The caching attempt happens in the blocking pool because it may involve
-  // arbitrary filesystem access.
-  // After the caching attempt is made, we call MaybeSendCLDDataAvailable
-  // to pass the file handle to the renderer. This only results in an IPC
-  // message if the caching attempt was successful.
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ChromeTranslateClient::HandleCLDDataRequest),
-      base::Bind(&ChromeTranslateClient::MaybeSendCLDDataAvailable,
-                 weak_pointer_factory_.GetWeakPtr()));
-}
-
-void ChromeTranslateClient::MaybeSendCLDDataAvailable() {
-  base::File* handle = NULL;
-  uint64 data_offset = 0;
-  uint64 data_length = 0;
-  {
-    base::AutoLock lock(s_file_lock_.Get());
-    handle = s_cached_file_;
-    data_offset = s_cached_data_offset_;
-    data_length = s_cached_data_length_;
-  }
-
-  if (handle && handle->IsValid())
-    SendCLDDataAvailable(handle, data_offset, data_length);
-}
-
-void ChromeTranslateClient::SendCLDDataAvailable(const base::File* handle,
-                                                 const uint64 data_offset,
-                                                 const uint64 data_length) {
-  // Data available, respond to the request.
-  IPC::PlatformFileForTransit ipc_platform_file = IPC::GetFileHandleForProcess(
-      handle->GetPlatformFile(),
-      GetWebContents()->GetRenderViewHost()->GetProcess()->GetHandle(),
-      false);
-  // In general, sending a response from within the code path that is processing
-  // a request is discouraged because there is potential for deadlock (if the
-  // methods are sent synchronously) or loops (if the response can trigger a
-  // new request). Neither of these concerns is relevant in this code, so
-  // sending the response from within the code path of the request handler is
-  // safe.
-  Send(new ChromeViewMsg_CLDDataAvailable(
-      GetWebContents()->GetRenderViewHost()->GetRoutingID(),
-      ipc_platform_file,
-      data_offset,
-      data_length));
-}
-
-void ChromeTranslateClient::HandleCLDDataRequest() {
-  // Because this function involves arbitrary file system access, it must run
-  // on the blocking pool.
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  {
-    base::AutoLock lock(s_file_lock_.Get());
-    if (s_cached_file_)
-      return;  // Already done, duplicate request
-  }
-
-#if defined(CLD2_IS_COMPONENT)
-  base::FilePath path = component_updater::GetLatestCldDataFile();
-  if (path.empty())
-    return;
-#else  // CLD2 data is at a well-known file path
-  base::FilePath path;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
-    LOG(WARNING) << "Unable to locate user data directory";
-    return;  // Chrome isn't properly installed.
-  }
-  path = path.Append(chrome::kCLDDataFilename);
-#endif
-
-  // If the file exists, we can send an IPC-safe construct back to the
-  // renderer process immediately; otherwise, nothing to do here.
-  if (!base::PathExists(path))
-    return;
-
-  // Attempt to open the file for reading.
-  scoped_ptr<base::File> file(
-      new base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-  if (!file->IsValid()) {
-    LOG(WARNING) << "CLD data file exists but cannot be opened";
-    return;
-  }
-
-  base::File::Info file_info;
-  if (!file->GetInfo(&file_info)) {
-    LOG(WARNING) << "CLD data file exists but cannot be inspected";
-    return;
-  }
-
-  // For now, our offset and length are simply 0 and the length of the file,
-  // respectively. If we later decide to include the CLD2 data file inside of
-  // a larger binary context, these params can be twiddled appropriately.
-  const uint64 data_offset = 0;
-  const uint64 data_length = file_info.size;
-
-  {
-    base::AutoLock lock(s_file_lock_.Get());
-    if (s_cached_file_) {
-      // Idempotence: Racing another request on the blocking pool, abort.
-    } else {
-      // Else, this request has taken care of it all. Cache all info.
-      s_cached_file_ = file.release();
-      s_cached_data_offset_ = data_offset;
-      s_cached_data_length_ = data_length;
-    }
-  }
-}
-
-#endif  // defined(CLD2_DYNAMIC_MODE)
 
 void ChromeTranslateClient::InitiateTranslation(const std::string& page_lang,
                                                 int attempt) {

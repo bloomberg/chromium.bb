@@ -10,10 +10,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
-#if defined(CLD2_DYNAMIC_MODE)
-#include "ipc/ipc_platform_file.h"
-#endif
-
 #define IPC_MESSAGE_START TranslateMsgStart
 
 IPC_ENUM_TRAITS(TranslateErrors::Type)
@@ -43,17 +39,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
                     std::string /* BCP 47/RFC 5646 language code to translate
                                    to */)
 
-#if defined(CLD2_DYNAMIC_MODE)
-// Informs the renderer process that Compact Language Detector (CLD) data is
-// available and provides an IPC::PlatformFileForTransit obtained from
-// IPC::GetFileHandleForProcess(...)
-// See also: ChromeViewHostMsg_NeedCLDData
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_CLDDataAvailable,
-                    IPC::PlatformFileForTransit /* ipc_file_handle */,
-                    uint64 /* data_offset */,
-                    uint64 /* data_length */)
-#endif
-
 //-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.
@@ -74,12 +59,3 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,
 // contents.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
                     int /* page id */)
-
-#if defined(CLD2_DYNAMIC_MODE)
-// Informs the browser process that Compact Language Detector (CLD) data is
-// required by the originating renderer. The browser process should respond
-// with a ChromeViewMsg_CLDDataAvailable if the data is available, else it
-// should go unanswered (the renderer will ask again later).
-// See also: ChromeViewMsg_CLDDataAvailable
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_NeedCLDData)
-#endif

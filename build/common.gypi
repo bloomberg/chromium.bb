@@ -457,19 +457,13 @@
       #   2: Large tables, high accuracy
       'cld2_table_size%': 2,
 
-      # Set the way CLD is compiled. Only evaluated if cld_version == 2.
-      #   0: static, language scoring tables compiled into the binary
-      #   1: dynamic, language scoring tables live in a data file that must
-      #      be loaded at runtime.
-      'cld2_dynamic%': 0,
-
-      # Whether CLD2 is a component. Only evaluated if cld_version == 2 and
-      # cld2_dynamic == 1.
-      #   0: Not a component. If cld2_dynamic == 1, it is up to the distribution
-      #      to ensure that the data file is provided if desired.
-      #   1: Componentized. CLD data should be obtained via the Component
-      #      Updater.
-      'cld2_is_component%': 0,
+      # The data acquisition mode for CLD2. Possible values are:
+      #   static:     CLD2 data is statically linked to the executable.
+      #   standalone: CLD2 data is provided in a standalone file that is
+      #               bundled with the executable.
+      #   component:  CLD2 data is provided as a Chrome "component" and is
+      #               downloaded via the component updater.
+      'cld2_data_source': 'static',
 
       # Enable spell checker.
       'enable_spellcheck%': 1,
@@ -694,8 +688,6 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
-          'cld2_dynamic%': 0,
-          'cld2_is_component%': 0,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -745,7 +737,6 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
-          'cld2_dynamic%': 0,
           'enable_printing%': 0,
           'enable_session_service%': 0,
           'enable_themes%': 0,
@@ -1102,8 +1093,7 @@
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
-    'cld2_dynamic%': '<(cld2_dynamic)',
-    'cld2_is_component%': '<(cld2_is_component)',
+    'cld2_data_source%': '<(cld2_data_source)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_file_support%': '<(disable_file_support)',
     'disable_ftp_support%': '<(disable_ftp_support)',
@@ -2710,11 +2700,19 @@
       ['cld_version!=0', {
         'defines': ['CLD_VERSION=<(cld_version)'],
       }],
-      ['cld2_dynamic!=0', {
-        'defines': ['CLD2_DYNAMIC_MODE=1'],
+      ['cld2_data_source=="static"', {
+        'defines': ['CLD_DATA_FROM_STATIC'],
+      }, {
+        # CLD2 headers use this #define to control the visibility of dynamic
+        # mode functions. We use these functions, so we must define here for
+        # our #includes to work right.
+        'defines': ['CLD2_DYNAMIC_MODE'],
       }],
-      ['cld2_is_component!=0', {
-        'defines': ['CLD2_IS_COMPONENT=1'],
+      ['cld2_data_source=="standalone"', {
+        'defines': ['CLD_DATA_FROM_STANDALONE'],
+      }],
+      ['cld2_data_source=="component"', {
+        'defines': ['CLD_DATA_FROM_COMPONENT'],
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
