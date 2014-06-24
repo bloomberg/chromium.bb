@@ -48,7 +48,7 @@ const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
 const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
 
 // Stores settings that can be modified both by a supervised user and their
-// manager. See ManagedUserSharedSettingsService for a description of
+// manager. See SupervisedUserSharedSettingsService for a description of
 // the format.
 const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 

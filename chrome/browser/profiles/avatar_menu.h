@@ -58,7 +58,7 @@ class AvatarMenu : public content::NotificationObserver {
     bool signin_required;
 
     // Whether or not the current profile is a supervised user
-    // (see ManagedUserService).
+    // (see SupervisedUserService).
     bool supervised;
 
     // The index in the menu of this profile, used by views to refer to

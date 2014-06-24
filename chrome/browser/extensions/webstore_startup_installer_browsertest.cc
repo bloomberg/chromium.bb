@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   EXPECT_TRUE(extension_service->extensions()->Contains(kTestExtensionId));
 }
 
-class WebstoreStartupInstallerManagedUsersTest
+class WebstoreStartupInstallerSupervisedUsersTest
     : public WebstoreStartupInstallerTest {
  public:
   // InProcessBrowserTest overrides:
@@ -181,7 +181,7 @@ class WebstoreStartupInstallerManagedUsersTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerManagedUsersTest,
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerSupervisedUsersTest,
                        InstallProhibited) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).

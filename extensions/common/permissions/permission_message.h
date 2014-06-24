@@ -42,7 +42,7 @@ class PermissionMessage {
     kTtsEngine,
     kContentSettings,
     kPrivacy,
-    kManagedMode,
+    kSupervisedUser,
     kInput,
     kAudioCapture,
     kVideoCapture,

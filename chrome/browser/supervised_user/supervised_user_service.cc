@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
+#include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -342,7 +342,8 @@ void SupervisedUserService::OnStateChanged() {
 void SupervisedUserService::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (!extensions::ManagedModeInfo::GetContentPackSiteList(extension).empty()) {
+  if (!extensions::SupervisedUserInfo::GetContentPackSiteList(extension)
+           .empty()) {
     UpdateSiteLists();
   }
 }
@@ -350,7 +351,8 @@ void SupervisedUserService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
-  if (!extensions::ManagedModeInfo::GetContentPackSiteList(extension).empty()) {
+  if (!extensions::SupervisedUserInfo::GetContentPackSiteList(extension)
+           .empty()) {
     UpdateSiteLists();
   }
 }
@@ -402,7 +404,7 @@ SupervisedUserService::GetActiveSiteLists() {
       continue;
 
     extensions::ExtensionResource site_list =
-        extensions::ManagedModeInfo::GetContentPackSiteList(extension);
+        extensions::SupervisedUserInfo::GetContentPackSiteList(extension);
     if (!site_list.empty()) {
       site_lists.push_back(new SupervisedUserSiteList(extension->id(),
                                                       site_list.GetFilePath()));

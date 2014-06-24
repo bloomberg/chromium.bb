@@ -998,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   EXPECT_EQ(1U, infobar_service->infobar_count());
 }
 
-class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
+class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -1006,8 +1006,8 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
-                       StartupManagedModeProfile) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
+                       StartupSupervisedUserProfile) {
   StartupBrowserCreator browser_creator;
 
   // Do a simple non-process-startup browser launch.

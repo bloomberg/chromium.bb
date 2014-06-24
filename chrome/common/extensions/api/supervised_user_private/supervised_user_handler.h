@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_API_SUPERVISED_USER_PRIVATE_SUPERVISED_USER_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_API_SUPERVISED_USER_PRIVATE_SUPERVISED_USER_HANDLER_H_
 
 #include <string>
 
@@ -16,37 +16,38 @@
 
 namespace extensions {
 
-struct ManagedModeInfo : public Extension::ManifestData {
-  ManagedModeInfo();
-  virtual ~ManagedModeInfo();
+struct SupervisedUserInfo : public Extension::ManifestData {
+  SupervisedUserInfo();
+  virtual ~SupervisedUserInfo();
 
   static bool IsContentPack(const Extension* extension);
   static ExtensionResource GetContentPackSiteList(const Extension* extension);
 
-  // A file containing a list of sites for Managed Mode.
+  // A file containing a list of sites for a supervised user.
   base::FilePath site_list;
 };
 
-// Parses the "content_pack" manifest key for Managed Mode.
-class ManagedModeHandler : public ManifestHandler {
+// Parses the "content_pack" manifest key for a supervised user.
+class SupervisedUserHandler : public ManifestHandler {
  public:
-  ManagedModeHandler();
-  virtual ~ManagedModeHandler();
+  SupervisedUserHandler();
+  virtual ~SupervisedUserHandler();
 
   virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
-  bool LoadSites(ManagedModeInfo* info,
+  bool LoadSites(SupervisedUserInfo* info,
                  const base::DictionaryValue* content_pack_value,
                  base::string16* error);
-  bool LoadConfigurations(ManagedModeInfo* info,
+  bool LoadConfigurations(SupervisedUserInfo* info,
                           const base::DictionaryValue* content_pack_value,
                           base::string16* error);
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedModeHandler);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserHandler);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_HANDLER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_API_SUPERVISED_USER_PRIVATE_SUPERVISED_USER_HANDLER_H_

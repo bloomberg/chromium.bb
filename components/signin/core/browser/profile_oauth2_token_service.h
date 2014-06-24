@@ -55,8 +55,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // profile, otherwise startup will cause unneeded work on the IO thread.  The
   // primary account is specified with the |primary_account_id| argument and
   // should not be empty.  For a regular profile, the primary account id comes
-  // from SigninManager.  For a managed account, the id comes from
-  // ManagedUserService.
+  // from SigninManager.  For a supervised user, the id comes from
+  // SupervisedUserService.
   virtual void LoadCredentials(const std::string& primary_account_id);
 
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,

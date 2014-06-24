@@ -15,11 +15,11 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #endif
-#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
+#include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
@@ -58,7 +58,6 @@ void RegisterChromeManifestHandlers() {
 #if defined(OS_CHROMEOS)
   (new InputComponentsHandler)->Register();
 #endif
-  (new ManagedModeHandler)->Register();
   (new MimeTypesHandlerParser)->Register();
   (new MinimumChromeVersionChecker)->Register();
   (new NaClModulesHandler)->Register();
@@ -72,6 +71,7 @@ void RegisterChromeManifestHandlers() {
   (new SocketsManifestHandler)->Register();
   (new SpellcheckHandler)->Register();
   (new StorageSchemaManifestHandler)->Register();
+  (new SupervisedUserHandler)->Register();
   (new SystemIndicatorHandler)->Register();
   (new ThemeHandler)->Register();
   (new TtsEngineManifestHandler)->Register();

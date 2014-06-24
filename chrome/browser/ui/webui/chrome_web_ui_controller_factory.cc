@@ -283,7 +283,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InstantUI>;
   if (url.host() == chrome::kChromeUIInvalidationsHost)
     return &NewWebUI<InvalidationsUI>;
-  if (url.host() == chrome::kChromeUIManagedUserPassphrasePageHost)
+  if (url.host() == chrome::kChromeUISupervisedUserPassphrasePageHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUIMemoryInternalsHost)
     return &NewWebUI<MemoryInternalsUI>;

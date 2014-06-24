@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
+#include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,40 +15,40 @@ namespace extensions {
 
 namespace keys = manifest_keys;
 
-ManagedModeInfo::ManagedModeInfo() {
+SupervisedUserInfo::SupervisedUserInfo() {
 }
 
-ManagedModeInfo::~ManagedModeInfo() {
+SupervisedUserInfo::~SupervisedUserInfo() {
 }
 
 // static
-bool ManagedModeInfo::IsContentPack(const Extension* extension) {
-  ManagedModeInfo* info = static_cast<ManagedModeInfo*>(
+bool SupervisedUserInfo::IsContentPack(const Extension* extension) {
+  SupervisedUserInfo* info = static_cast<SupervisedUserInfo*>(
       extension->GetManifestData(keys::kContentPack));
   return info ? !info->site_list.empty() : false;
 }
 
 // static
-ExtensionResource ManagedModeInfo::GetContentPackSiteList(
+ExtensionResource SupervisedUserInfo::GetContentPackSiteList(
     const Extension* extension) {
-  ManagedModeInfo* info = static_cast<ManagedModeInfo*>(
-    extension->GetManifestData(keys::kContentPack));
-  return info && !info->site_list.empty() ?
-      extension->GetResource(info->site_list) :
-      ExtensionResource();
+  SupervisedUserInfo* info = static_cast<SupervisedUserInfo*>(
+      extension->GetManifestData(keys::kContentPack));
+  return info && !info->site_list.empty()
+             ? extension->GetResource(info->site_list)
+             : ExtensionResource();
 }
 
-ManagedModeHandler::ManagedModeHandler() {
+SupervisedUserHandler::SupervisedUserHandler() {
 }
 
-ManagedModeHandler::~ManagedModeHandler() {
+SupervisedUserHandler::~SupervisedUserHandler() {
 }
 
-bool ManagedModeHandler::Parse(Extension* extension, base::string16* error) {
+bool SupervisedUserHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kContentPack))
     return true;
 
-  scoped_ptr<ManagedModeInfo> info(new ManagedModeInfo);
+  scoped_ptr<SupervisedUserInfo> info(new SupervisedUserInfo);
   const base::DictionaryValue* content_pack_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kContentPack,
                                             &content_pack_value)) {
@@ -65,12 +65,12 @@ bool ManagedModeHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> ManagedModeHandler::Keys() const {
+const std::vector<std::string> SupervisedUserHandler::Keys() const {
   return SingleKey(keys::kContentPack);
 }
 
-bool ManagedModeHandler::LoadSites(
-    ManagedModeInfo* info,
+bool SupervisedUserHandler::LoadSites(
+    SupervisedUserInfo* info,
     const base::DictionaryValue* content_pack_value,
     base::string16* error) {
   if (!content_pack_value->HasKey(keys::kContentPackSites))
@@ -88,8 +88,8 @@ bool ManagedModeHandler::LoadSites(
   return true;
 }
 
-bool ManagedModeHandler::LoadConfigurations(
-    ManagedModeInfo* info,
+bool SupervisedUserHandler::LoadConfigurations(
+    SupervisedUserInfo* info,
     const base::DictionaryValue* content_pack_value,
     base::string16* error) {
   NOTIMPLEMENTED();
