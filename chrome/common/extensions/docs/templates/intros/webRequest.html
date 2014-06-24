@@ -58,8 +58,10 @@ event definitions:<br/>
   <dd>Fires each time that an HTTP(S) response header is received. Due
   to redirects and authentication requests this can happen multiple times per
   request. This event is intended to allow extensions to add, modify, and delete
-  response headers, such as incoming Set-Cookie headers. It also allows you to
-  redirect the request.</dd>
+  response headers, such as incoming Set-Cookie headers. The caching directives
+  are processed before this event is triggered, so modifying headers such as
+  Cache-Control has no influence on the browser's cache.
+  It also allows you to redirect the request.</dd>
   <dt><code>onAuthRequired</code> (optionally synchronous)</dt>
   <dd>Fires when a request requires authentication of the user. This event can
   be handled synchronously to provide authentication credentials. Note that
@@ -253,6 +255,16 @@ be <i>internally</i> consistent. Comparing one event to another event will give
 you the correct offset between them, but comparing them to the current time
 inside the extension (via <code>(new Date()).getTime()</code>, for instance)
 might give unexpected results.
+</p>
+
+<h3 id="error_handling">Error handling</h3>
+<p>
+If you try to register an event with invalid arguments, then a JavaScript error
+will be thrown, and the event handler will not be registered.
+
+If an error is thrown while an event is handled, or if an event handler returns
+an invalid blocking response, an error message is logged to your extension's
+console and the handler is ignored for that request.
 </p>
 
 <h2 id="examples">Examples</h2>
