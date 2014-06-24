@@ -305,6 +305,7 @@ int HarfBuzzShaper::HarfBuzzRun::characterIndexForXPosition(float targetX)
     if (targetX <= currentAdvance)
         return rtl() ? m_numCharacters : 0;
 
+    currentX = currentAdvance;
     ++glyphIndex;
     while (glyphIndex < m_numGlyphs) {
         unsigned prevCharacterIndex = m_glyphToCharacterIndexes[glyphIndex - 1];

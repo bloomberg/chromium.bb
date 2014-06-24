@@ -1077,3 +1077,9 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Fai
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
 
 crbug.com/328961 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
+
+Bug(bashi) fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
+Bug(bashi) fast/text/atsui-rtl-override-selection.html [ NeedsRebaseline ]
+Bug(bashi) fast/text/atsui-pointtooffset-calls-cg.html [ NeedsRebaseline ]
+Bug(bashi) virtual/antialiasedtext/fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
+Bug(bashi) virtual/antialiasedtext/fast/text/atsui-pointtooffset-calls-cg.html [ NeedsRebaseline ]
