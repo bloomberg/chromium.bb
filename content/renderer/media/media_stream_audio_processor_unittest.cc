@@ -384,4 +384,26 @@ TEST_F(MediaStreamAudioProcessorTest, TestAllSampleRates) {
   audio_processor = NULL;
 }
 
+// Test that if we have an AEC dump message filter created, we are getting it
+// correctly in MSAP. Any IPC messages will be deleted since no sender in the
+// filter will be created.
+TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
+  base::MessageLoopForUI message_loop;
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_(
+      new AecDumpMessageFilter(message_loop.message_loop_proxy(),
+                               message_loop.message_loop_proxy()));
+
+  MockMediaConstraintFactory constraint_factory;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), 0,
+          webrtc_audio_device.get()));
+
+  EXPECT_TRUE(audio_processor->aec_dump_message_filter_);
+
+  audio_processor = NULL;
+}
+
 }  // namespace content

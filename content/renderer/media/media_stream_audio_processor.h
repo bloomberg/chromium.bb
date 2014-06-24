@@ -111,6 +111,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
  private:
   friend class MediaStreamAudioProcessorTest;
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamAudioProcessorTest,
+                           GetAecDumpMessageFilter);
 
   class MediaStreamAudioConverter;
 

@@ -102,6 +102,7 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, CallWithAecDump);
   FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest,
                            CallWithAecDumpEnabledThenDisabled);
+  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, TwoCallsWithAecDump);
   FRIEND_TEST_ALL_PREFIXES(WebRTCInternalsTest,
                            AecRecordingFileSelectionCanceled);
 
