@@ -482,31 +482,30 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   if (state_ == STATE_TERMINATING)
     return;
 
-  if (!extension_ime_util::IsExtensionIME(id) &&
-      !extension_ime_util::IsComponentExtensionIME(id)) {
-    DVLOG(1) << id << " is not a valid extension input method ID.";
-    return;
-  }
-
   DCHECK(engine);
+
+  profile_engine_map_[GetProfile()][id] = engine;
+
+  if (extension_ime_util::IsComponentExtensionIME(id))
+    return;
+
+  CHECK(extension_ime_util::IsExtensionIME(id))
+      << id << "is not a valid extension input method ID";
 
   const InputMethodDescriptor& descriptor = engine->GetDescriptor();
   extra_input_methods_[id] = descriptor;
-  if (Contains(enabled_extension_imes_, id) &&
-      !extension_ime_util::IsComponentExtensionIME(id)) {
+
+  if (Contains(enabled_extension_imes_, id)) {
     if (!Contains(active_input_method_ids_, id)) {
       active_input_method_ids_.push_back(id);
     } else {
       DVLOG(1) << "AddInputMethodExtension: alread added: "
                << id << ", " << descriptor.name();
-      // Call Start() anyway, just in case.
     }
 
     // Ensure that the input method daemon is running.
     MaybeInitializeCandidateWindowController();
   }
-
-  profile_engine_map_[GetProfile()][id] = engine;
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
@@ -519,13 +518,17 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
     active_input_method_ids_.erase(i);
   extra_input_methods_.erase(id);
 
-  // If |current_input_method| is no longer in |active_input_method_ids_|,
-  // switch to the first one in |active_input_method_ids_|.
-  ChangeInputMethod(current_input_method_.id());
-
-  if (IMEBridge::Get()->GetCurrentEngineHandler() ==
-      profile_engine_map_[GetProfile()][id])
+  EngineMap& engine_map = profile_engine_map_[GetProfile()];
+  if (IMEBridge::Get()->GetCurrentEngineHandler() == engine_map[id])
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
+  engine_map.erase(id);
+
+  // No need to switch input method when terminating.
+  if (state_ != STATE_TERMINATING) {
+    // If |current_input_method| is no longer in |active_input_method_ids_|,
+    // switch to the first one in |active_input_method_ids_|.
+    ChangeInputMethod(current_input_method_.id());
+  }
 }
 
 void InputMethodManagerImpl::GetInputMethodExtensions(
