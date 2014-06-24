@@ -404,6 +404,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
+  device_color_profile_.push_back('0');
 }
 
 RenderWidget::~RenderWidget() {
