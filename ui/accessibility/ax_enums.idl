@@ -16,6 +16,7 @@
     blur,
     checked_state_changed,
     children_changed,
+    destroyed,
     focus,
     hide,
     hover,

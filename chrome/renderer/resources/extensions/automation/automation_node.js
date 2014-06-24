@@ -5,9 +5,13 @@
 var AutomationEvent = require('automationEvent').AutomationEvent;
 var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
-var utils = require('utils');
 var IsInteractPermitted =
     requireNative('automationInternal').IsInteractPermitted;
+
+var lastError = require('lastError');
+var logging = requireNative('logging');
+var schema = requireNative('automationInternal').GetSchemaAdditions();
+var utils = require('utils');
 
 /**
  * A single node in the Automation tree.
@@ -276,7 +280,12 @@ AutomationRootNodeImpl.prototype = {
     }
     nodeImpl.loaded = false;
     nodeImpl.id = id;
-    this.axNodeDataCache_[id] = undefined;
+    delete this.axNodeDataCache_[id];
+  },
+
+  destroy: function() {
+    this.dispatchEvent(schema.EventType.destroyed);
+    this.invalidate(this.wrapper);
   },
 
   update: function(data) {

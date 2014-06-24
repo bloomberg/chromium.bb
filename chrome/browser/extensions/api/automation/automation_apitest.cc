@@ -183,4 +183,10 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
 }
 #endif
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, CloseTab) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "close_tab.html"))
+      << message_;
+}
+
 }  // namespace extensions

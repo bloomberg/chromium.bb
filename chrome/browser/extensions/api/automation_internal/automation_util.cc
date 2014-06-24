@@ -156,6 +156,17 @@ void DispatchAccessibilityEventsToAutomation(
   }
 }
 
+void DispatchTreeDestroyedEventToAutomation(
+    int process_id,
+    int routing_id,
+    content::BrowserContext* browser_context) {
+  DispatchEventInternal(
+      browser_context,
+      api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
+      api::automation_internal::OnAccessibilityTreeDestroyed::Create(
+          process_id, routing_id));
+}
+
 }  // namespace automation_util
 
 }  // namespace extensions

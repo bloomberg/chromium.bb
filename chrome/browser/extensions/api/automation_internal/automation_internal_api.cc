@@ -78,6 +78,14 @@ class AutomationWebContentsObserver
         details, browser_context_);
   }
 
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    automation_util::DispatchTreeDestroyedEventToAutomation(
+        render_view_host->GetProcess()->GetID(),
+        render_view_host->GetRoutingID(),
+        browser_context_);
+  }
+
  private:
   friend class content::WebContentsUserData<AutomationWebContentsObserver>;
 

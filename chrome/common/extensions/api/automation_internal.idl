@@ -99,5 +99,7 @@ namespace automationInternal {
   interface Events {
     // Fired when an accessibility event occurs
     static void onAccessibilityEvent(AXEventParams update);
+
+    static void onAccessibilityTreeDestroyed(long processID, long routingID);
   };
 };
