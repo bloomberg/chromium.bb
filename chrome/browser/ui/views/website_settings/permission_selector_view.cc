@@ -45,7 +45,7 @@ class PermissionMenuButton : public views::MenuButton,
                        bool show_menu_marker);
   virtual ~PermissionMenuButton();
 
-  // Overridden from views::TextButton.
+  // Overridden from views::LabelButton.
   virtual void SetText(const base::string16& text) OVERRIDE;
 
   // Overridden from views::View.

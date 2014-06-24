@@ -26,8 +26,7 @@ void BackButton::SetLeadingMargin(int margin) {
 
   UpdateThemedBorder();
 
-  // Similarly fiddle the focus border. Value consistent with LabelButton
-  // and TextButton.
+  // Similarly fiddle the focus border. Value consistent with LabelButton.
   // TODO(gbillock): Refactor this magic number somewhere global to views,
   // probably a FocusBorder constant.
   const int kFocusRectInset = 3;

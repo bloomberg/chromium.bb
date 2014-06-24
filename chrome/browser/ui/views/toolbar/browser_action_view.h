@@ -158,7 +158,7 @@ class BrowserActionButton : public views::MenuButton,
   // Overriden from ExtensionActionIconFactory::Observer.
   virtual void OnIconUpdated() OVERRIDE;
 
-  // MenuButton behavior overrides.  These methods all default to TextButton
+  // MenuButton behavior overrides.  These methods all default to LabelButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
   // behavior.  MenuButton has the notion of a child popup being shown where the
   // button will stay in the pushed state until the "menu" (a popup in this

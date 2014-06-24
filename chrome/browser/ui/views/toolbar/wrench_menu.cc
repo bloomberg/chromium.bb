@@ -147,7 +147,7 @@ class MenuButtonBorder : public views::Border {
 };
 
 // Combination border/background for the buttons contained in the menu. The
-// painting of the border/background is done here as TextButton does not always
+// painting of the border/background is done here as LabelButton does not always
 // paint the border.
 class InMenuButtonBackground : public views::Background {
  public:
