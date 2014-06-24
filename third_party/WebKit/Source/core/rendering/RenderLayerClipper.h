@@ -45,7 +45,7 @@
 #ifndef RenderLayerClipper_h
 #define RenderLayerClipper_h
 
-#include "core/rendering/ClipRect.h"
+#include "core/rendering/ClipRectsCache.h"
 #include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.
 
 namespace WebCore {
