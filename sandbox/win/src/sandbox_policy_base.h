@@ -157,6 +157,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;
+  static IntegrityLevel alternate_desktop_integrity_level_label_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };

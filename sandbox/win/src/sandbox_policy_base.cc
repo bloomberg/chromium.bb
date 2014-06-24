@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/sandbox_policy_base.h"
 
+#include <sddl.h>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -75,6 +77,8 @@ SANDBOX_INTERCEPT MitigationFlags g_shared_delayed_mitigations;
 // Initializes static members.
 HWINSTA PolicyBase::alternate_winstation_handle_ = NULL;
 HDESK PolicyBase::alternate_desktop_handle_ = NULL;
+IntegrityLevel PolicyBase::alternate_desktop_integrity_level_label_ =
+    INTEGRITY_LEVEL_SYSTEM;
 
 PolicyBase::PolicyBase()
     : ref_count(1),
@@ -517,8 +521,28 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
   // with the process and therefore with any thread that is not impersonating.
   DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
                                        integrity_level_, PRIMARY);
-  if (ERROR_SUCCESS != result) {
+  if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
+
+  // If we're launching on the alternate desktop we need to make sure the
+  // integrity label on the object is no higher than the sandboxed process's
+  // integrity level. So, we lower the label on the desktop process if it's
+  // not already low enough for our process.
+  if (use_alternate_desktop_ &&
+      integrity_level_ != INTEGRITY_LEVEL_LAST &&
+      alternate_desktop_integrity_level_label_ < integrity_level_ &&
+      base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
+    // Integrity label enum is reversed (higher level is a lower value).
+    static_assert(INTEGRITY_LEVEL_SYSTEM < INTEGRITY_LEVEL_UNTRUSTED,
+                  "Integrity level ordering reversed.");
+    result = SetObjectIntegrityLabel(alternate_desktop_handle_,
+                                     SE_WINDOW_OBJECT,
+                                     L"",
+                                     GetIntegrityLevelString(integrity_level_));
+    if (ERROR_SUCCESS != result)
+      return SBOX_ERROR_GENERIC;
+
+    alternate_desktop_integrity_level_label_ = integrity_level_;
   }
 
   if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer()) {
