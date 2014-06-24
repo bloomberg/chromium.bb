@@ -22,11 +22,13 @@
 {
   "accessibilityFeatures.modify": {
     "channel": "stable",
-    "extension_types": ["extension", "platform_app"]
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"]
   },
   "accessibilityFeatures.read": {
     "channel": "stable",
-    "extension_types": ["extension", "platform_app"]
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"]
   },
   "accessibilityPrivate": {
     "channel": "stable",
@@ -249,6 +251,7 @@
   "chromeosInfoPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // http://crbug.com/293683
       "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // http://crbug.com/293683
@@ -396,6 +399,7 @@
   "enterprise.platformKeysPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "657FEC7E77355CA205B0E226586621F86B33F611",  // Dogfood
       "5894126C625EF31852F215ED301A5FF1F9B7D026"   // Test
@@ -421,12 +425,14 @@
   },
   "fileBrowserHandler": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos"]
   },
   "fileBrowserPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "fileSystem": [{
     "channel": "stable",
@@ -473,7 +479,8 @@
   "firstRunPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "fontSettings": {
     "channel": "stable",
@@ -549,11 +556,14 @@
   "input": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
-    "inplies_full_url_access": true
+    // TODO(kalman): Um what does this inply?
+    "inplies_full_url_access": true,
+    "platforms": ["chromeos"]
   },
   "inputMethodPrivate": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "2462D64ACB971A7E708757159C2B17761D4FF54A",  // Citrix Receiver
       "3010EF507AFEF487EEA9CDE2930EC94867C60936",  // Citrix Receiver Beta
@@ -569,6 +579,7 @@
   "ledger": {
     "channel": "trunk",
     "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "AFA728615D3A82D4017BDECEE86978543194D198",  // http://crbug.com/387999
       "0C0426C12F94156F330FFAF346A976BA8878DE78"   // http://crbug.com/387999
@@ -663,7 +674,8 @@
   "mediaPlayerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "metricsPrivate": {
     "channel": "stable",
@@ -727,6 +739,7 @@
   "networkingPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos", "mac", "win"],
     "whitelist": [
       "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // http://crbug.com/293683
       "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // http://crbug.com/293683
@@ -762,7 +775,8 @@
   "echoPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "pageCapture": {
     "channel": "stable",
@@ -954,6 +968,7 @@
   "terminalPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "0EA6B717932AD64C469C1CCB6911457733295907",  // HTerm
       "58B0C2968C335964D5433E89CA4D86628A0E3D4B"   // HTerm dev
@@ -995,23 +1010,26 @@
   ],
   "virtualKeyboardPrivate": {
     "channel": "stable",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "3F50C3A83839D9C76334BCE81CDEC06174F266AF",  // System-level virtual kbd
       "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Official XKB virtual kbd
       "CFBF7EE448FA48960FFDA7CEB30F7A21B26AA981",  // Official m17n virtual kbd
       "F94EE6AB36D6C6588670B2B01EB65212D9C64E33",  // Public XKB virtual kbd
       "3E03D9B67FDD31B2438D1CF5070573415DCB3CBA"  // Public m17n virtual kbd
-    ],
-    "extension_types": ["extension"]
+    ]
   },
   "wallpaper": {
     "channel": "dev",
-    "extension_types": ["platform_app"]
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"]
   },
   "wallpaperPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "webNavigation": {
     "channel": "stable",
