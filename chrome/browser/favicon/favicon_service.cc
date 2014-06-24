@@ -312,7 +312,15 @@ void FaviconService::SetFavicons(const GURL& page_url,
   image_skia.EnsureRepsForSupportedScales();
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
   std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
+  const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
   for (size_t i = 0; i < image_reps.size(); ++i) {
+    // Don't save if the scale isn't one of supported favicon scale.
+    if (std::find(favicon_scales.begin(),
+                  favicon_scales.end(),
+                  image_reps[i].scale()) == favicon_scales.end()) {
+      continue;
+    }
+
     scoped_refptr<base::RefCountedBytes> bitmap_data(
         new base::RefCountedBytes());
     if (gfx::PNGCodec::EncodeBGRASkBitmap(image_reps[i].sk_bitmap(),
@@ -328,7 +336,6 @@ void FaviconService::SetFavicons(const GURL& page_url,
       favicon_bitmap_data.push_back(bitmap_data_element);
     }
   }
-
   history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data);
 }
 

@@ -21,8 +21,9 @@ class Size;
 extern const float kSelectFaviconFramesInvalidScore;
 
 // Takes a list of all bitmaps found in a .ico file, and creates an
-// ImageSkia that's |desired_size_in_dip| x |desired_size_in_dip| big. This
-// function adds a representation at every entry in |favicon_scales|.
+// ImageSkia that's |desired_size_in_dip| x |desired_size_in_dip| big.
+// Bitmaps are selected by using |SelectFaviconFrameIndices| and the
+// platform's supported favicon scales (favicon_base::GetFaviconScales()).
 // If |desired_size_in_dip| is 0, the largest bitmap is returned unmodified.
 // |original_sizes| are the original sizes of the bitmaps. (For instance,
 // WebContents::DownloadImage() does resampling if it is passed a max size.)
@@ -34,11 +35,13 @@ extern const float kSelectFaviconFramesInvalidScore;
 // If the resampling algorithm is modified, the resampling done in
 // FaviconUtil::SelectFaviconFramesFromPNGs() should probably be modified too as
 // it inspired by this method.
-gfx::ImageSkia SelectFaviconFrames(const std::vector<SkBitmap>& bitmaps,
-                                   const std::vector<gfx::Size>& original_sizes,
-                                   const std::vector<float>& favicon_scales,
-                                   int desired_size_in_dip,
-                                   float* score);
+// If an unsupported scale (not in the favicon_base::GetFaviconScales())
+// is requested, the ImageSkia will automatically scales using lancoz3.
+gfx::ImageSkia CreateFaviconImageSkia(
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_sizes,
+    int desired_size_in_dip,
+    float* score);
 
 // Takes a list of the pixel sizes of a favicon's favicon bitmaps and returns
 // the indices of the best sizes to use to create an ImageSkia with

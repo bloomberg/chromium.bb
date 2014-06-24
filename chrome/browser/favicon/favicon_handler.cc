@@ -427,11 +427,10 @@ void FaviconHandler::OnDidDownloadFavicon(
       if (index != -1)
         image_skia = gfx::ImageSkia(gfx::ImageSkiaRep(bitmaps[index], 1));
     } else {
-      image_skia = SelectFaviconFrames(bitmaps,
-                                       original_bitmap_sizes,
-                                       favicon_base::GetFaviconScales(),
-                                       preferred_icon_size(),
-                                       &score);
+      image_skia = CreateFaviconImageSkia(bitmaps,
+                                          original_bitmap_sizes,
+                                          preferred_icon_size(),
+                                          &score);
     }
 
     if (!image_skia.isNull()) {
