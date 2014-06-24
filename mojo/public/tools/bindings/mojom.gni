@@ -72,6 +72,7 @@ template("mojom") {
       "{{source}}",
       "--use_chromium_bundled_pylibs",
       "-d", rebase_path("//", root_build_dir),
+      "-I", rebase_path("//", root_build_dir),
       "-o", rebase_path(target_gen_dir, root_build_dir),
     ]
   }

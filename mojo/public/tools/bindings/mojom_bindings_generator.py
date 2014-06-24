@@ -76,6 +76,14 @@ def MakeImportStackMessage(imported_filename_stack):
                     zip(imported_filename_stack[1:], imported_filename_stack)]))
 
 
+def FindImportFile(dir, file, search_dirs):
+  for search_dir in [dir] + search_dirs:
+    path = os.path.join(search_dir, file)
+    if os.path.isfile(path):
+      return path
+  return os.path.join(dir, file);
+
+
 # Disable check for dangerous default arguments (they're "private" keyword
 # arguments; note that we want |_processed_files| to memoize across invocations
 # of |ProcessFile()|):
@@ -117,7 +125,9 @@ def ProcessFile(args, remaining_args, generator_modules, filename,
   # Process all our imports first and collect the module object for each.
   # We use these to generate proper type info.
   for import_data in mojom['imports']:
-    import_filename = os.path.join(dirname, import_data['filename'])
+    import_filename = FindImportFile(dirname,
+                                     import_data['filename'],
+                                     args.import_directories);
     import_data['module'] = ProcessFile(
         args, remaining_args, generator_modules, import_filename,
         _processed_files=_processed_files,
@@ -160,6 +170,9 @@ def main():
                       help="comma-separated list of generators")
   parser.add_argument("--debug_print_intermediate", action="store_true",
                       help="print the intermediate representation")
+  parser.add_argument("-I", dest="import_directories", action="append",
+                      metavar="directory", default=[],
+                      help="add a directory to be searched for import files")
   parser.add_argument("--use_chromium_bundled_pylibs", action="store_true",
                       help="use Python modules bundled in the Chromium source")
   (args, remaining_args) = parser.parse_known_args()

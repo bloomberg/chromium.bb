@@ -13,6 +13,9 @@
         'mojom_bindings_generator':
             '<(DEPTH)/mojo/public/tools/bindings/mojom_bindings_generator.py',
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
+        'mojom_import_args%': [
+	  '-I<(DEPTH)'
+        ],
       },
       'inputs': [
         '<(mojom_bindings_generator)',
@@ -73,6 +76,7 @@
         './<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom',
         '--use_chromium_bundled_pylibs',
         '-d', '<(DEPTH)',
+        '<@(mojom_import_args)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)',
         '--java_output_directory=<(java_out_dir)',
       ],

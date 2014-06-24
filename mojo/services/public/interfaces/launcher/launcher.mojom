@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "../navigation/navigation.mojom"
+import "mojo/services/public/interfaces/navigation/navigation.mojom"
 
 module mojo.launcher {
 
