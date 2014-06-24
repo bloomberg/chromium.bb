@@ -93,8 +93,6 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
     content::BrowserContext* context) {
-  // TODO(thestig): Remove after investigating http://crbug.com/387866
-  CHECK(context);
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
 
