@@ -134,7 +134,7 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
       continue;
     WebElement elem = child.to<WebElement>();
 
-    if (!elem.hasTagName("link") || !elem.hasAttribute("rel") ||
+    if (!elem.hasHTMLTagName("link") || !elem.hasAttribute("rel") ||
         !elem.hasAttribute("href"))
       continue;
 

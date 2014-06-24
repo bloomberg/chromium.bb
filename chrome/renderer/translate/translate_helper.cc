@@ -372,7 +372,7 @@ bool TranslateHelper::IsTranslationAllowed(WebDocument* document) {
       continue;
     WebElement element = node.to<WebElement>();
     // Check if a tag is <meta>.
-    if (!element.hasTagName(meta))
+    if (!element.hasHTMLTagName(meta))
       continue;
     // Check if the tag contains name="google".
     WebString attribute = element.getAttribute(name);

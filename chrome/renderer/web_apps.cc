@@ -140,7 +140,7 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
       continue;
     WebElement elem = child.to<WebElement>();
 
-    if (elem.hasTagName("link")) {
+    if (elem.hasHTMLTagName("link")) {
       std::string rel = elem.getAttribute("rel").utf8();
       // "rel" attribute may use either "icon" or "shortcut icon".
       // see also
@@ -157,7 +157,7 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
              LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);
       }
-    } else if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
+    } else if (elem.hasHTMLTagName("meta") && elem.hasAttribute("name")) {
       std::string name = elem.getAttribute("name").utf8();
       WebString content = elem.getAttribute("content");
       if (name == "application-name") {

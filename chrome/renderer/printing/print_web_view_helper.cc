@@ -890,7 +890,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   blink::WebLocalFrame* plugin_frame = pdf_element.document().frame();
   blink::WebElement plugin_element = pdf_element;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOutOfProcessPdf)) {
-    if (!pdf_element.hasTagName("iframe")) {
+    if (!pdf_element.hasHTMLTagName("iframe")) {
       NOTREACHED();
       return;
     }

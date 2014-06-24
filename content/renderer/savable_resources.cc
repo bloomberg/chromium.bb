@@ -70,8 +70,8 @@ void GetSavableResourceLinkForElement(
     SavableResourcesResult* result) {
 
   // Handle frame and iframe tag.
-  if (element.hasTagName("iframe") ||
-      element.hasTagName("frame")) {
+  if (element.hasHTMLTagName("iframe") ||
+      element.hasHTMLTagName("frame")) {
     WebFrame* sub_frame = WebLocalFrame::fromFrameOwnerElement(element);
     if (sub_frame)
       unique_check->frames->push_back(sub_frame);

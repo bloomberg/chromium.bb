@@ -77,7 +77,7 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
     for (WebElement element = all.firstItem();
          !element.isNull(); element = all.nextItem()) {
       // Check frame tag and iframe tag
-      if (!element.hasTagName("frame") && !element.hasTagName("iframe"))
+      if (!element.hasHTMLTagName("frame") && !element.hasHTMLTagName("iframe"))
         continue;
       WebFrame* sub_frame = WebLocalFrame::fromFrameOwnerElement(element);
       if (sub_frame)
@@ -103,7 +103,7 @@ bool IsMetaElement(const WebNode& node, std::string& charset_info) {
   if (!node.isElementNode())
     return false;
   const WebElement meta = node.toConst<WebElement>();
-  if (!meta.hasTagName("meta"))
+  if (!meta.hasHTMLTagName("meta"))
     return false;
   charset_info.erase(0, charset_info.length());
   // Check the META charset declaration.
@@ -615,12 +615,12 @@ class DomSerializerTests : public ContentBrowserTest,
     int original_base_tag_count = 0;
     for (WebElement element = all.firstItem(); !element.isNull();
          element = all.nextItem()) {
-      if (element.hasTagName("base")) {
+      if (element.hasHTMLTagName("base")) {
         original_base_tag_count++;
       } else {
         // Get link.
         WebString value = GetSubResourceLinkFromElement(element);
-        if (value.isNull() && element.hasTagName("a")) {
+        if (value.isNull() && element.hasHTMLTagName("a")) {
           value = element.getAttribute("href");
           if (value.isEmpty())
             value = WebString();
@@ -663,12 +663,12 @@ class DomSerializerTests : public ContentBrowserTest,
       if (!node.isElementNode())
         continue;
       WebElement element = node.to<WebElement>();
-      if (element.hasTagName("base")) {
+      if (element.hasHTMLTagName("base")) {
         new_base_tag_count++;
       } else {
         // Get link.
         WebString value = GetSubResourceLinkFromElement(element);
-        if (value.isNull() && element.hasTagName("a")) {
+        if (value.isNull() && element.hasHTMLTagName("a")) {
           value = element.getAttribute("href");
           if (value.isEmpty())
             value = WebString();

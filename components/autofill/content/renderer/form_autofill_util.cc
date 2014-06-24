@@ -273,7 +273,7 @@ base::string16 InferLabelFromListItem(const WebFormControlElement& element) {
   WebNode parent = element.parentNode();
   CR_DEFINE_STATIC_LOCAL(WebString, kListItem, ("li"));
   while (!parent.isNull() && parent.isElementNode() &&
-         !parent.to<WebElement>().hasTagName(kListItem)) {
+         !parent.to<WebElement>().hasHTMLTagName(kListItem)) {
     parent = parent.parentNode();
   }
 
@@ -293,7 +293,7 @@ base::string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kTableCell, ("td"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
-         !parent.to<WebElement>().hasTagName(kTableCell)) {
+         !parent.to<WebElement>().hasHTMLTagName(kTableCell)) {
     parent = parent.parentNode();
   }
 
@@ -322,7 +322,7 @@ base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kTableRow, ("tr"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
-         !parent.to<WebElement>().hasTagName(kTableRow)) {
+         !parent.to<WebElement>().hasHTMLTagName(kTableRow)) {
     parent = parent.parentNode();
   }
 
@@ -389,7 +389,7 @@ base::string16 InferLabelFromDefinitionList(
   CR_DEFINE_STATIC_LOCAL(WebString, kDefinitionData, ("dd"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
-         !parent.to<WebElement>().hasTagName(kDefinitionData))
+         !parent.to<WebElement>().hasHTMLTagName(kDefinitionData))
     parent = parent.parentNode();
 
   if (parent.isNull() || !HasTagName(parent, kDefinitionData))
