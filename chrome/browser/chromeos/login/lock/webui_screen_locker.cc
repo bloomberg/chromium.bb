@@ -243,30 +243,16 @@ bool WebUIScreenLocker::IsSigninInProgress() const {
   return false;
 }
 
-void WebUIScreenLocker::Login(const UserContext& user_context) {
+void WebUIScreenLocker::Login(const UserContext& user_context,
+                              const SigninSpecifics& specifics) {
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(user_context);
-}
-
-void WebUIScreenLocker::LoginAsRetailModeUser() {
-  NOTREACHED();
-}
-
-void WebUIScreenLocker::LoginAsGuest() {
-  NOTREACHED();
 }
 
 void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::LoginAsPublicAccount(const std::string& username) {
-  NOTREACHED();
-}
-
 void WebUIScreenLocker::OnSigninScreenReady() {
-}
-
-void WebUIScreenLocker::OnUserSelected(const std::string& username) {
 }
 
 void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
@@ -298,11 +284,6 @@ void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
 
 void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
-}
-
-void WebUIScreenLocker::LoginAsKioskApp(const std::string& app_id,
-                                        bool diagnostic_mode) {
-  NOTREACHED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

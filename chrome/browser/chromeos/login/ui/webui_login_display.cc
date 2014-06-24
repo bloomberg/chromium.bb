@@ -247,28 +247,11 @@ void WebUILoginDisplay::CompleteLogin(const UserContext& user_context) {
     delegate_->CompleteLogin(user_context);
 }
 
-void WebUILoginDisplay::Login(const UserContext& user_context) {
+void WebUILoginDisplay::Login(const UserContext& user_context,
+                              const SigninSpecifics& specifics) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->Login(user_context);
-}
-
-void WebUILoginDisplay::LoginAsRetailModeUser() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->LoginAsRetailModeUser();
-}
-
-void WebUILoginDisplay::LoginAsGuest() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->LoginAsGuest();
-}
-
-void WebUILoginDisplay::LoginAsPublicAccount(const std::string& username) {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->LoginAsPublicAccount(username);
+    delegate_->Login(user_context, specifics);
 }
 
 void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
@@ -357,11 +340,6 @@ void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
 
 void WebUILoginDisplay::Signout() {
   delegate_->Signout();
-}
-
-void WebUILoginDisplay::LoginAsKioskApp(const std::string& app_id,
-                                        bool diagnostic_mode) {
-  delegate_->LoginAsKioskApp(app_id, diagnostic_mode);
 }
 
 void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
