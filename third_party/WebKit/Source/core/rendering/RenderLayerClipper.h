@@ -78,7 +78,7 @@ public:
     ClipRects* clipRects(const ClipRectsContext& context) const
     {
         ASSERT(context.clipRectsType < NumCachedClipRectsTypes);
-        return m_clipRectsCache ? m_clipRectsCache->getClipRects(context.clipRectsType, context.respectOverflowClip).get() : 0;
+        return m_clipRectsCache ? m_clipRectsCache->getClipRects(context.clipRectsType, context.respectOverflowClip) : 0;
     }
 
     // Compute and cache clip rects computed with the given layer as the root

@@ -67,7 +67,7 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
         tempContext.clipRectsType = TemporaryClipRects;
         ClipRects clipRects;
         calculateClipRects(tempContext, clipRects);
-        ASSERT(clipRects == *m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip).get());
+        ASSERT(clipRects == *m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip));
 #endif
         return; // We have the correct cached value.
     }
