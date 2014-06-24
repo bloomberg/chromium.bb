@@ -419,10 +419,6 @@ crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-1
 crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/text/decomposed-after-stacked-diacritics.html [ Failure ]
 
-Bug(eae) virtual/antialiasedtext/fast/text/line-breaks-after-ideographic-comma-or-full-stop-2.html [ NeedsRebaseline ]
-Bug(eae) virtual/antialiasedtext/fast/text/glyph-reordering.html [ NeedsRebaseline ]
-Bug(eae) virtual/antialiasedtext/fast/text/multiglyph-characters.html [ NeedsRebaseline ]
-
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 # Issues on the mac-antialiased fonts virtual test suite.
