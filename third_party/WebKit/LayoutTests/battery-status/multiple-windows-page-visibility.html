@@ -8,9 +8,12 @@ description("Test multiple windows with page visibility.");
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-testRunner.setCanOpenWindows();
-testRunner.waitUntilDone();
+// Clean-up any unused battery manager objects from previous tests.
+gc();
 jsTestIsAsync = true;
+testRunner.waitUntilDone();
+testRunner.setCanOpenWindows();
+testRunner.setCloseRemainingWindowsWhenComplete(true);
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -34,54 +37,50 @@ function checkBatteryInfo(batteryManager) {
 
 function batteryStatusFailure() {
     testFailed('failed to successfully resolve the promise');
-    finishJSTest();
+    setTimeout(finishJSTest, 0);
 }
 
 var battery;
-var firstWindow = window;
-var secondWindow = window.open("");
-
 function batteryStatusSuccess(batteryManager) {
     battery = batteryManager;
     debug('resolution in window');
     checkBatteryInfo(battery);
     battery.addEventListener('levelchange', failAndFinish);
 
+    firstWindow = window;
+    secondWindow = window.open("");
     secondWindow.navigator.getBattery().then(
         function(battery2) {
             debug('resolution in secondWindow');
             checkBatteryInfo(battery2);
-            setAndFireMockBatteryInfo(false, 10, 20, 0.6);
-            setTimeout(proceedToVisible, 100);
+            setTimeout(fireNewMockLevel, 0);
         }, batteryStatusFailure);
 
-    firstWindow.testRunner.setPageVisibility("hidden");
+    window.testRunner.setPageVisibility("hidden");
     debug("first window: page is hidden");
+}
+
+function fireNewMockLevel() {
+    setAndFireMockBatteryInfo(false, 10, 20, 0.6);
+    proceedToVisible();
 }
 
 function proceedToVisible() {
     battery.removeEventListener('levelchange', failAndFinish);
     battery.addEventListener('levelchange', onLevelChange);
-    firstWindow.testRunner.setPageVisibility("visible");
+    testRunner.setPageVisibility("visible");
     debug("first window: page is visible");
 }
 
 function onLevelChange() {
     checkBatteryInfo(battery);
-    setTimeout(cleanupAndFinish, 0);
+    battery.removeEventListener('levelchange', onLevelChange);
+    setTimeout(finishJSTest, 0);
 }
 
 function failAndFinish() {
     testFailed('received event while the page was hidden');
-    setTimeout(cleanupAndFinish, 0);
-}
-
-function cleanupAndFinish() {
-    // stops updating battery and clears current battery status.
-    firstWindow.testRunner.setPageVisibility("hidden");
-    secondWindow.testRunner.setPageVisibility("hidden");
-    secondWindow.close();
-    finishJSTest();
+    setTimeout(finishJSTest, 0);
 }
 
 debug("first window: page is visible");

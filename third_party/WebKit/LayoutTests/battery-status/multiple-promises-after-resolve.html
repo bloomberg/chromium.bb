@@ -8,8 +8,10 @@ description("Test battery status API with multiple promises after resolve.");
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-testRunner.waitUntilDone();
+// Clean-up any unused battery manager objects from previous tests.
+gc();
 jsTestIsAsync = true;
+testRunner.waitUntilDone();
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -33,7 +35,7 @@ function checkBatteryInfo(batteryManager) {
 
 function batteryStatusFailure() {
     testFailed('failed to successfully resolve the promise');
-    finishJSTest();
+    setTimeout(finishJSTest, 0);
 }
 
 function batteryStatusSuccess(battery) {
@@ -44,14 +46,8 @@ function batteryStatusSuccess(battery) {
         function(battery) {
             debug('resolution number 2');
             checkBatteryInfo(battery);
-            setTimeout(cleanupAndFinish, 0);
+            setTimeout(finishJSTest, 0);
         }, batteryStatusFailure);
-}
-
-function cleanupAndFinish() {
-    // stops updating battery and clears current battery status.
-    window.testRunner.setPageVisibility("hidden");
-    finishJSTest();
 }
 
 navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);

@@ -8,7 +8,10 @@ description("Test basic API definitions.");
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
+// Clean-up any unused battery manager objects from previous tests.
+gc();
 jsTestIsAsync = true;
+testRunner.waitUntilDone();
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -19,6 +22,7 @@ function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, leve
     testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
 }
 
+var battery;
 function batteryStatusSuccess(batteryManager) {
     debug('batteryStatusSuccess invoked');
     battery = batteryManager;
@@ -50,18 +54,12 @@ function batteryStatusSuccess(batteryManager) {
     shouldBeTrue("'ondischargingtimechange' in battery");
     shouldBeTrue("'onlevelchange' in battery");
 
-    setTimeout(cleanupAndFinish, 0);
-}
-
-function cleanupAndFinish() {
-    // stops updating battery and clears current battery status.
-    window.testRunner.setPageVisibility("hidden");
-    finishJSTest();
+    setTimeout(finishJSTest, 0);
 }
 
 function batteryStatusFailure() {
     testFailed('failed to successfully resolve the promise');
-    setTimeout(cleanupAndFinish, 0);
+    setTimeout(finishJSTest, 0);
 }
 
 promise = navigator.getBattery();

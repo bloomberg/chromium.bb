@@ -8,9 +8,12 @@ description("Test battery status API with multiple windows.");
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-testRunner.setCanOpenWindows();
-testRunner.waitUntilDone();
+// Clean-up any unused battery manager objects from previous tests.
+gc();
 jsTestIsAsync = true;
+testRunner.waitUntilDone();
+testRunner.setCanOpenWindows();
+testRunner.setCloseRemainingWindowsWhenComplete(true);
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -34,30 +37,20 @@ function checkBatteryInfo(batteryManager) {
 
 function batteryStatusFailure() {
     testFailed('failed to successfully resolve the promise');
-    finishJSTest();
+    setTimeout(finishJSTest, 0);
 }
-
-var firstWindow = window;
-var secondWindow = window.open("");
 
 function batteryStatusSuccess(battery) {
     debug('resolution in window');
     checkBatteryInfo(battery);
 
+    secondWindow = window.open("");
     secondWindow.navigator.getBattery().then(
-        function(battery) {
+        function(battery2) {
             debug('resolution in secondWindow');
-            checkBatteryInfo(battery);
-            setTimeout(cleanupAndFinish, 0);
+            checkBatteryInfo(battery2);
+            setTimeout(finishJSTest, 0);
         }, batteryStatusFailure);
-}
-
-function cleanupAndFinish() {
-    // stops updating battery and clears current battery status.
-    firstWindow.testRunner.setPageVisibility("hidden");
-    secondWindow.testRunner.setPageVisibility("hidden");
-    secondWindow.close();
-    finishJSTest();
 }
 
 navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);

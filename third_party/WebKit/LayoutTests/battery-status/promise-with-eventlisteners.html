@@ -8,7 +8,10 @@ description("Test promise resolution and event listeners callbacks.");
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
+// Clean-up any unused battery manager objects from previous tests.
+gc();
 jsTestIsAsync = true;
+testRunner.waitUntilDone();
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -40,7 +43,11 @@ function batteryStatusSuccess(batteryManager) {
     battery.addEventListener('dischargingtimechange', onDischargingTimeChange);
     battery.addEventListener('chargingtimechange', onChargingTimeChange);
     battery.addEventListener('levelchange', onLevelChange);
+    
+    setTimeout(fireNextMockBatteryInfo, 0);
+}
 
+function fireNextMockBatteryInfo() {
     setAndFireMockBatteryInfo(true, 11, 22, 0.6);
 }
 
@@ -81,26 +88,19 @@ function onLevelChange() {
     finishIfReady();
 }
 
-function cleanupAndFinish() {
-    battery.removeEventListener('chargingchange', onChargingChange);
-    battery.removeEventListener('dischargingtimechange', onDischargingTimeChange);
-    battery.removeEventListener('chargingtimechange', onChargingTimeChange);
-    battery.removeEventListener('levelchange', onLevelChange);
-
-    // stops updating battery and clears current battery status.
-    window.testRunner.setPageVisibility("hidden");
-    finishJSTest();
-}
-
 function finishIfReady() {
     if (chargingChanged == 1 && chargingTimeChanged == 1 && dischargingTimeChanged == 1 && levelChanged == 1) {
-        setTimeout(cleanupAndFinish, 0);
+        battery.removeEventListener('chargingchange', onChargingChange);
+        battery.removeEventListener('dischargingtimechange', onDischargingTimeChange);
+        battery.removeEventListener('chargingtimechange', onChargingTimeChange);
+        battery.removeEventListener('levelchange', onLevelChange);
+        setTimeout(finishJSTest, 0);
     }
 }
 
 function batteryStatusFailure() {
     testFailed('failed to successfully resolve the promise');
-    setTimeout(cleanupAndFinish, 0);
+    setTimeout(finishJSTest, 0);
 }
 
 navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);

@@ -5,9 +5,13 @@
 <script>
 description("Test with page visibility.");
 
-window.jsTestIsAsync = true;
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
+
+// Clean-up any unused battery manager objects from previous tests.
+gc();
+jsTestIsAsync = true;
+testRunner.waitUntilDone();
 
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
@@ -41,8 +45,12 @@ function batteryStatusSuccess(batteryManager) {
     battery.addEventListener('levelchange', failAndFinish);
     testRunner.setPageVisibility("hidden");
     debug("page is hidden");
+    setTimeout(fireNextMockBatteryInfo, 0);
+}
+
+function fireNextMockBatteryInfo() {
     setAndFireMockBatteryInfo(false, 10, 20, 0.55);
-    setTimeout(testWithVisiblePage, 100);
+    testWithVisiblePage();
 }
 
 function testWithVisiblePage() {
@@ -55,18 +63,13 @@ function testWithVisiblePage() {
 
 function onLevelChange() {
     checkBatteryInfo(battery);
-    setTimeout(cleanupAndFinish, 0);
-}
-
-function cleanupAndFinish() {
-    // stops updating battery and clears current battery status.
-    window.testRunner.setPageVisibility("hidden");
-    finishJSTest();
+    battery.removeEventListener('levelchange', onLevelChange);
+    setTimeout(finishJSTest, 0);
 }
 
 function failAndFinish() {
     testFailed('received event while the page was hidden');
-    setTimeout(cleanupAndFinish, 0);
+    setTimeout(finishJSTest, 0);
 }
 
 debug("page is visible");
