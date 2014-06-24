@@ -50,12 +50,6 @@
 
 namespace WebCore {
 
-enum RepaintStatus {
-    NeedsNormalRepaint = 0,
-    NeedsFullRepaint = 1 << 0,
-    NeedsFullRepaintForPositionedMovementLayout = NeedsFullRepaint | 1 << 1
-};
-
 class RenderLayer;
 class RenderLayerModelObject;
 
@@ -64,16 +58,10 @@ class RenderLayerRepainter {
 public:
     RenderLayerRepainter(RenderLayerModelObject&);
 
-    // Return a cached repaint rect, computed relative to the layer renderer's containerForPaintInvalidation.
-    LayoutRect repaintRect() const { return m_repaintRect; }
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 
-    void repaintAfterLayout(bool shouldCheckForRepaint);
     void repaintIncludingNonCompositingDescendants();
 
-    void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
-
-    void computeRepaintRects();
     void computeRepaintRectsIncludingNonCompositingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect
@@ -85,18 +73,9 @@ public:
 private:
     void repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
-    bool shouldRepaintLayer() const;
-
-    void clearRepaintRects();
-
     RenderLayer* enclosingFilterRepaintLayer() const;
 
     RenderLayerModelObject& m_renderer;
-
-    unsigned m_repaintStatus; // RepaintStatus
-
-    LayoutRect m_repaintRect; // Cached repaint rects. Used by layout.
-    LayoutPoint m_offset;
 };
 
 } // namespace WebCore

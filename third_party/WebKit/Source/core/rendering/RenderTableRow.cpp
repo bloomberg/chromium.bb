@@ -182,12 +182,8 @@ void RenderTableRow::layout()
     // parent table, and being mid-layout, that is invalid. Instead, we issue paint invalidations for our cells.
     if (selfNeedsLayout() && checkForPaintInvalidation()) {
         for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
-            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-                // FIXME: Is this needed with Repaint After Layout?
-                cell->setShouldDoFullPaintInvalidationAfterLayout(true);
-            } else {
-                cell->paintInvalidationForWholeRenderer();
-            }
+            // FIXME: Is this needed with Repaint After Layout?
+            cell->setShouldDoFullPaintInvalidationAfterLayout(true);
         }
     }
 

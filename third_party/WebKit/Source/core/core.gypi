@@ -1505,7 +1505,6 @@
             'rendering/InlineIterator.h',
             'rendering/InlineTextBox.cpp',
             'rendering/LayerFragment.h',
-            'rendering/LayoutRepainter.cpp',
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',
             'rendering/OrderIterator.h',

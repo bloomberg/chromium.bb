@@ -27,7 +27,6 @@
 #include "core/rendering/RenderGrid.h"
 
 #include "core/rendering/FastTextAutosizer.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/GridCoordinate.h"
@@ -318,7 +317,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
 
     // FIXME: Much of this method is boiler plate that matches RenderBox::layoutBlock and Render*FlexibleBox::layoutBlock.
     // It would be nice to refactor some of the duplicate code.
-    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
     LayoutState state(*this, locationOffset());
 
     LayoutSize previousSize = size();
@@ -348,8 +346,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     // we overflow or not.
     if (hasOverflowClip())
         layer()->scrollableArea()->updateAfterLayout();
-
-    repainter.repaintAfterLayout();
 
     clearNeedsLayout();
 }
@@ -986,8 +982,6 @@ void RenderGrid::layoutGridItems()
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
 
-        LayoutRect oldChildRect = child->frameRect();
-
         // FIXME: Grid items should stretch to fill their cells. Once we
         // implement grid-{column,row}-align, we can also shrink to fit. For
         // now, just size as if we were a regular child.
@@ -1005,12 +999,6 @@ void RenderGrid::layoutGridItems()
         if (child->logicalHeight() > overrideContainingBlockContentLogicalHeight
             || child->logicalWidth() > overrideContainingBlockContentLogicalWidth)
             m_gridItemsOverflowingGridArea.append(child);
-
-        // If the child moved, we have to repaint it as well as any floating/positioned
-        // descendants. An exception is if we need a layout. In this case, we know we're going to
-        // repaint ourselves (and the child) anyway.
-        if (!selfNeedsLayout() && child->checkForPaintInvalidationDuringLayout())
-            child->repaintDuringLayoutIfMoved(oldChildRect);
     }
 
     for (size_t i = 0; i < sizingData.rowTracks.size(); ++i)

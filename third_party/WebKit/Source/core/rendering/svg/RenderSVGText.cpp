@@ -30,7 +30,6 @@
 
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/style/ShadowList.h"
@@ -325,8 +324,6 @@ void RenderSVGText::layout()
 
     subtreeStyleDidChange();
 
-    LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
-
     bool updateCachedBoundariesInParents = false;
     if (m_needsTransformUpdate) {
         m_localTransform = toSVGTextElement(node())->animatedLocalTransform();
@@ -413,7 +410,6 @@ void RenderSVGText::layout()
     if (updateCachedBoundariesInParents)
         RenderSVGBlock::setNeedsBoundariesUpdate();
 
-    repainter.repaintAfterLayout();
     clearNeedsLayout();
 }
 

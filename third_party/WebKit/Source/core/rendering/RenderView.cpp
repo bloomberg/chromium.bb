@@ -177,9 +177,6 @@ void RenderView::layoutContent()
 #ifndef NDEBUG
 void RenderView::checkLayoutState()
 {
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        ASSERT(layoutDeltaMatches(LayoutSize()));
-    }
     ASSERT(!m_layoutState->next());
 }
 #endif
@@ -446,7 +443,6 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
 
 void RenderView::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
 {
-    ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!needsLayout());
 
     // We specifically need to repaint the viewRect since other renderers

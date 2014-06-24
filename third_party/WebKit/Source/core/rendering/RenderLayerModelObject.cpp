@@ -132,10 +132,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
             if (parent() && !needsLayout() && containingBlock()) {
                 // FIXME: This invalidation is overly broad. We should update to
                 // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
-                if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    layer()->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
-                else
-                    layer()->repainter().setRepaintStatus(NeedsFullRepaint);
+                layer()->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
                 // Hit in animations/interpolation/perspective-interpolation.html
                 // FIXME: I suspect we can remove this assert disabler now.
                 DisableCompositingQueryAsserts disabler;

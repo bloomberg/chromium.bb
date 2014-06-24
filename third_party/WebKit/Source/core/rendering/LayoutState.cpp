@@ -38,10 +38,6 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     , m_isPaginated(pageLogicalHeight)
     , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
     , m_cachedOffsetsEnabled(true)
-#if ASSERT_ENABLED
-    , m_layoutDeltaXSaturated(false)
-    , m_layoutDeltaYSaturated(false)
-#endif
     , m_columnInfo(0)
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
@@ -84,9 +80,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
         m_clipRect = m_next->m_clipRect;
 
     if (renderer.hasOverflowClip()) {
-        LayoutSize deltaSize = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : renderer.view()->layoutDelta();
-
-        LayoutRect clipRect(toPoint(m_paintOffset) + deltaSize, renderer.cachedSizeForOverflowClip());
+        LayoutRect clipRect(toPoint(m_paintOffset), renderer.cachedSizeForOverflowClip());
         if (m_clipped)
             m_clipRect.intersect(clipRect);
         else {
@@ -125,14 +119,6 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     if (!m_columnInfo)
         m_columnInfo = m_next->m_columnInfo;
 
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        m_layoutDelta = m_next->m_layoutDelta;
-#if ASSERT_ENABLED
-        m_layoutDeltaXSaturated = m_next->m_layoutDeltaXSaturated;
-        m_layoutDeltaYSaturated = m_next->m_layoutDeltaYSaturated;
-#endif
-    }
-
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
@@ -152,10 +138,6 @@ LayoutState::LayoutState(RenderObject& root)
     , m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
     , m_cachedOffsetsEnabled(shouldDisableLayoutStateForSubtree(root))
-#if ASSERT_ENABLED
-    , m_layoutDeltaXSaturated(false)
-    , m_layoutDeltaYSaturated(false)
-#endif
     , m_columnInfo(0)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)

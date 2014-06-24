@@ -35,7 +35,6 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestLocation.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
@@ -306,7 +305,6 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // number of columns.
     bool done = false;
     LayoutUnit pageLogicalHeight = 0;
-    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
     while (!done)
         done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
 
@@ -322,14 +320,9 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // we overflow or not.
     updateScrollInfoAfterLayout();
 
-    // Repaint with our new bounds if they are different from our old bounds.
-    bool didFullRepaint = repainter.repaintAfterLayout();
-    if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            setShouldInvalidateOverflowForPaint(true);
-        else
-            invalidatePaintForOverflow();
-    }
+    if (m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent()))
+        setShouldInvalidateOverflowForPaint(true);
+
     clearNeedsLayout();
 }
 
@@ -446,7 +439,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     return true;
 }
 
-void RenderBlockFlow::determineLogicalLeftPositionForChild(RenderBox* child, ApplyLayoutDeltaMode applyDelta)
+void RenderBlockFlow::determineLogicalLeftPositionForChild(RenderBox* child)
 {
     LayoutUnit startPosition = borderStart() + paddingStart();
     if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
@@ -462,31 +455,23 @@ void RenderBlockFlow::determineLogicalLeftPositionForChild(RenderBox* child, App
     if (child->avoidsFloats() && containsFloats() && !flowThreadContainingBlock())
         newPosition += computeStartPositionDeltaForChildAvoidingFloats(child, marginStartForChild(child));
 
-    setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child), applyDelta);
+    setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child));
 }
 
-void RenderBlockFlow::setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft, ApplyLayoutDeltaMode applyDelta)
+void RenderBlockFlow::setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft)
 {
     if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(child->x() - logicalLeft, 0));
         child->setX(logicalLeft);
     } else {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(0, child->y() - logicalLeft));
         child->setY(logicalLeft);
     }
 }
 
-void RenderBlockFlow::setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop, ApplyLayoutDeltaMode applyDelta)
+void RenderBlockFlow::setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop)
 {
     if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(0, child->y() - logicalTop));
         child->setY(logicalTop);
     } else {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(child->x() - logicalTop, 0));
         child->setX(logicalTop);
     }
 }
@@ -509,11 +494,8 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     LayoutRect oldRect = child->frameRect();
     LayoutUnit oldLogicalTop = logicalTopForChild(child);
 
-#if ASSERT_ENABLED
-    LayoutSize oldLayoutDelta = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : view()->layoutDelta();
-#endif
     // Go ahead and position the child as though it didn't collapse with the top.
-    setLogicalTopForChild(child, logicalTopEstimate, ApplyLayoutDelta);
+    setLogicalTopForChild(child, logicalTopEstimate);
 
     RenderBlock* childRenderBlock = child->isRenderBlock() ? toRenderBlock(child) : 0;
     RenderBlockFlow* childRenderBlockFlow = (childRenderBlock && child->isRenderBlockFlow()) ? toRenderBlockFlow(child) : 0;
@@ -567,7 +549,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
             atBeforeSideOfBlock && logicalTopBeforeClear == logicalTopAfterClear);
     }
 
-    setLogicalTopForChild(child, logicalTopAfterClear, ApplyLayoutDelta);
+    setLogicalTopForChild(child, logicalTopAfterClear);
 
     // Now we have a final top position. See if it really does end up being different from our estimate.
     // clearFloatsIfNeeded can also mark the child as needing a layout even though we didn't move. This happens
@@ -606,7 +588,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         marginInfo.setAtBeforeSideOfBlock(false);
 
     // Now place the child in the correct left position
-    determineLogicalLeftPositionForChild(child, ApplyLayoutDelta);
+    determineLogicalLeftPositionForChild(child);
 
     LayoutSize childOffset = child->location() - oldRect.location();
 
@@ -622,21 +604,14 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         addOverhangingFloats(childRenderBlockFlow, !childNeededLayout);
 
     if (childOffset.width() || childOffset.height()) {
-        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(childOffset);
-
         // If the child moved, we have to repaint it as well as any floating/positioned
         // descendants. An exception is if we need a layout. In this case, we know we're going to
         // repaint ourselves (and the child) anyway.
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && childHadLayout && !selfNeedsLayout())
+        if (childHadLayout && !selfNeedsLayout())
             child->repaintOverhangingFloats(true);
-        else if (childHadLayout && !selfNeedsLayout() && child->checkForPaintInvalidationDuringLayout())
-            child->repaintDuringLayoutIfMoved(oldRect);
     }
 
     if (!childHadLayout && child->checkForPaintInvalidation()) {
-        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            child->paintInvalidationForWholeRenderer();
         child->repaintOverhangingFloats(true);
     }
 
@@ -645,10 +620,6 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         LayoutUnit newHeight = applyAfterBreak(child, logicalHeight(), marginInfo);
         if (newHeight != height())
             setLogicalHeight(newHeight);
-    }
-
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        ASSERT(view()->layoutDeltaMatches(oldLayoutDelta));
     }
 }
 
@@ -660,7 +631,7 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
         // Our guess prior to pagination movement was wrong. Before we attempt to paginate, let's try again at the new
         // position.
         setLogicalHeight(logicalTopAfterClear);
-        setLogicalTopForChild(child, logicalTopAfterClear, ApplyLayoutDelta);
+        setLogicalTopForChild(child, logicalTopAfterClear);
 
         if (child->shrinkToAvoidFloats()) {
             // The child's width depends on the line width.
@@ -1948,11 +1919,7 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
             && (floatingObject->shouldPaint() || (paintAllDescendants && floatingObject->renderer()->isDescendantOf(this)))) {
 
             RenderBox* floatingRenderer = floatingObject->renderer();
-            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
-            else
-                floatingRenderer->paintInvalidationForWholeRenderer();
-
+            floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
             floatingRenderer->repaintOverhangingFloats(false);
         }
     }
@@ -2325,8 +2292,6 @@ bool RenderBlockFlow::positionNewFloats()
         childBox->setMayNeedPaintInvalidation(true);
 
         LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(childBox) : marginEndForChild(childBox);
-        LayoutRect oldRect = childBox->frameRect();
-
         if (childBox->style()->clear() & CLEFT)
             logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatLeft), logicalTop);
         if (childBox->style()->clear() & CRIGHT)
@@ -2384,11 +2349,6 @@ bool RenderBlockFlow::positionNewFloats()
 
         if (ShapeOutsideInfo* shapeOutside = childBox->shapeOutsideInfo())
             shapeOutside->setReferenceBoxLogicalSize(logicalSizeForChild(childBox));
-
-        // If the child moved, we have to repaint it.
-        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
-            && childBox->checkForPaintInvalidationDuringLayout())
-            childBox->repaintDuringLayoutIfMoved(oldRect);
     }
     return true;
 }

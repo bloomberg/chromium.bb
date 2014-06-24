@@ -409,9 +409,6 @@ private:
 
     bool paintInvalidationIsAllowed() const
     {
-        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            return true;
-
         return !isInPerformLayout() || canInvalidatePaintDuringPerformLayout();
     }
 

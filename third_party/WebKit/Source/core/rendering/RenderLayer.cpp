@@ -281,8 +281,6 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
         m_enclosingPaginationLayer = 0;
     }
 
-    repainter().repaintAfterLayout(flags & CheckForPaintInvalidation);
-
     // Go ahead and update the reflection's position and size.
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
@@ -382,7 +380,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(UpdateLayerPositionsAfterScrol
 
     if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !m_canSkipRepaintRectsUpdateOnScroll) {
         // FIXME: We could track the repaint container as we walk down the tree.
-        repainter().computeRepaintRects();
+        m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
     } else {
         // Check that RenderLayerRepainter's cached rects are correct.
         // FIXME: re-enable these assertions when the issue with table cells is resolved: https://bugs.webkit.org/show_bug.cgi?id=103432
@@ -677,7 +675,7 @@ void RenderLayer::setHasVisibleContent()
     m_visibleContentStatusDirty = false;
 
     setNeedsCompositingInputsUpdate();
-    repainter().computeRepaintRects();
+    m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
 
     if (parent())
         parent()->setAncestorChainHasVisibleDescendant();
@@ -1397,10 +1395,7 @@ void RenderLayer::removeOnlyThisLayer()
         removeChild(current);
         m_parent->addChild(current, nextSib);
 
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            current->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
-        else
-            current->repainter().setRepaintStatus(NeedsFullRepaint);
+        current->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
 
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;
@@ -3717,7 +3712,7 @@ void RenderLayer::filterNeedsPaintInvalidation()
     }
 
     if (renderer()->view()) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInPerformLayout())
+        if (renderer()->frameView()->isInPerformLayout())
             renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
         else
             renderer()->paintInvalidationForWholeRenderer();

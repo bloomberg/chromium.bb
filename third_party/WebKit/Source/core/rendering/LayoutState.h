@@ -61,19 +61,9 @@ public:
 
     void addForcedColumnBreak(const RenderBox&, const LayoutUnit& childLogicalOffset);
 
-    void addLayoutDelta(const LayoutSize& delta)
-    {
-        m_layoutDelta += delta;
-#if ASSERT_ENABLED
-            m_layoutDeltaXSaturated |= m_layoutDelta.width() == LayoutUnit::max() || m_layoutDelta.width() == LayoutUnit::min();
-            m_layoutDeltaYSaturated |= m_layoutDelta.height() == LayoutUnit::max() || m_layoutDelta.height() == LayoutUnit::min();
-#endif
-    }
-
     void setColumnInfo(ColumnInfo* columnInfo) { m_columnInfo = columnInfo; }
 
     const LayoutSize& layoutOffset() const { return m_layoutOffset; }
-    const LayoutSize& layoutDelta() const { return m_layoutDelta; }
     const LayoutSize& pageOffset() const { return m_pageOffset; }
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
@@ -97,13 +87,7 @@ public:
         return m_paintOffset;
     }
 
-
     RenderObject& renderer() const { return m_renderer; }
-
-#if ASSERT_ENABLED
-    bool layoutDeltaXSaturated() const { return m_layoutDeltaXSaturated; }
-    bool layoutDeltaYSaturated() const { return m_layoutDeltaYSaturated; }
-#endif
 
 private:
     friend class ForceHorriblySlowRectMapping;
@@ -115,10 +99,6 @@ private:
     bool m_pageLogicalHeightChanged:1;
 
     bool m_cachedOffsetsEnabled:1;
-#if ASSERT_ENABLED
-    bool m_layoutDeltaXSaturated:1;
-    bool m_layoutDeltaYSaturated:1;
-#endif
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;
     LayoutState* m_next;
@@ -131,10 +111,6 @@ private:
     LayoutSize m_paintOffset;
     // x/y offset from container. Does not include relative positioning or scroll offsets.
     LayoutSize m_layoutOffset;
-    // Transient offset from the final position of the object
-    // used to ensure that repaints happen in the correct place.
-    // This is a total delta accumulated from the root.
-    LayoutSize m_layoutDelta;
 
     // The current page height for the pagination model that encloses us.
     LayoutUnit m_pageLogicalHeight;

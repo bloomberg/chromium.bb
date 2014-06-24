@@ -128,7 +128,6 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
 {
     // Note: This is a reduced version of RenderBox::invalidateTreeAfterLayout().
     // FIXME: Should share code with RenderBox::invalidateTreeAfterLayout().
-    ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!needsLayout());
 
     if (!shouldCheckForPaintInvalidationAfterLayout())

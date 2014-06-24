@@ -1214,10 +1214,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
             if (!f->x() && !f->y() && f->checkForPaintInvalidation()) {
-                if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    f->setShouldDoFullPaintInvalidationAfterLayout(true);
-                else
-                    f->paintInvalidationForWholeRenderer();
+                f->setShouldDoFullPaintInvalidationAfterLayout(true);
             }
         }
     }
@@ -1823,8 +1820,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
         if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
             setNeedsLayoutAndFullPaintInvalidation(MarkOnlyThis);
-            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                setShouldDoFullPaintInvalidationAfterLayout(true);
+            setShouldDoFullPaintInvalidationAfterLayout(true);
         }
 
         // FIXME: This should just call deleteLineBoxTree, but that causes

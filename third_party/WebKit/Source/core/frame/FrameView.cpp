@@ -990,14 +990,7 @@ void FrameView::layout(bool allowSubtree)
     if (m_nestedLayoutCount)
         return;
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        invalidateTree(rootForThisLayout);
-    } else if (m_doFullPaintInvalidation) {
-        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
-        // the visibleContentRect(). It just happens to work out most of the time,
-        // since first layouts and printing don't have you scrolled anywhere.
-        renderView()->paintInvalidationForWholeRenderer();
-    }
+    invalidateTree(rootForThisLayout);
 
     m_doFullPaintInvalidation = false;
 
@@ -1022,7 +1015,6 @@ void FrameView::layout(bool allowSubtree)
 // See http://crbug.com/306706
 void FrameView::invalidateTree(RenderObject* root)
 {
-    ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!root->needsLayout());
     // We should only invalidate paints for the outer most layout. This works as
     // we continue to track paint invalidation rects until this function is called.
@@ -2352,7 +2344,7 @@ void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rec
     IntRect dirtyRect = rect;
     dirtyRect.moveBy(scrollbar->location());
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && isInPerformLayout()) {
+    if (isInPerformLayout()) {
         if (scrollbar == verticalScrollbar()) {
             m_verticalBarDamage = dirtyRect;
             m_hasVerticalBarDamage = true;

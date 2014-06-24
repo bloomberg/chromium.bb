@@ -200,7 +200,7 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
 
     IntRect intRect = pixelSnappedIntRect(repaintRect);
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && box().frameView()->isInPerformLayout()) {
+    if (box().frameView()->isInPerformLayout()) {
         if (scrollbar == m_vBar.get()) {
             m_verticalBarDamage = intRect;
             m_hasVerticalBarDamage = true;
@@ -376,11 +376,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
-    FloatQuad quadForFakeMouseMoveEvent;
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousPaintInvalidationRect());
-    else
-        quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
+    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousPaintInvalidationRect());
 
     quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
@@ -401,14 +397,10 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Just schedule a full repaint of our object.
     if (requiresRepaint) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-            if (box().frameView()->isInPerformLayout())
-                box().setShouldDoFullPaintInvalidationAfterLayout(true);
-            else
-                box().invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousPaintInvalidationRect()), InvalidationScroll);
-        } else {
-            box().invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
-        }
+        if (box().frameView()->isInPerformLayout())
+            box().setShouldDoFullPaintInvalidationAfterLayout(true);
+        else
+            box().invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousPaintInvalidationRect()), InvalidationScroll);
     }
 
     // Schedule the scroll DOM event.
@@ -620,9 +612,6 @@ void RenderLayerScrollableArea::updateAfterLayout()
         // Force an update since we know the scrollbars have changed things.
         if (box().document().hasAnnotatedRegions())
             box().document().setAnnotatedRegionsDirty(true);
-
-        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            box().paintInvalidationForWholeRenderer();
 
         if (box().style()->overflowX() == OAUTO || box().style()->overflowY() == OAUTO) {
             if (!m_inOverflowRelayout) {

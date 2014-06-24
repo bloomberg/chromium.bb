@@ -29,7 +29,6 @@
 
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/ImageQualityController.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGResource.h"
@@ -93,7 +92,6 @@ void RenderSVGImage::layout()
 {
     ASSERT(needsLayout());
 
-    LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) && selfNeedsLayout());
     updateImageViewport();
 
     bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
@@ -117,7 +115,6 @@ void RenderSVGImage::layout()
     if (transformOrBoundariesUpdate)
         RenderSVGModelObject::setNeedsBoundariesUpdate();
 
-    repainter.repaintAfterLayout();
     clearNeedsLayout();
 }
 

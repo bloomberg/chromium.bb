@@ -439,14 +439,6 @@ void RenderFrameSet::layout()
 {
     ASSERT(needsLayout());
 
-    bool doFullRepaint = selfNeedsLayout() && checkForPaintInvalidationDuringLayout();
-    LayoutRect oldBounds;
-    const RenderLayerModelObject* repaintContainer = 0;
-    if (doFullRepaint) {
-        repaintContainer = containerForPaintInvalidation();
-        oldBounds = boundsRectForPaintInvalidation(repaintContainer);
-    }
-
     if (!parent()->isFrameSet() && !document().printing()) {
         setWidth(view()->viewWidth());
         setHeight(view()->viewHeight());
@@ -471,13 +463,6 @@ void RenderFrameSet::layout()
     computeEdgeInfo();
 
     updateLayerTransformAfterLayout();
-
-    if (doFullRepaint) {
-        invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationFull);
-        LayoutRect newBounds = boundsRectForPaintInvalidation(repaintContainer);
-        if (newBounds != oldBounds)
-            invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), InvalidationFull);
-    }
 
     clearNeedsLayout();
 }

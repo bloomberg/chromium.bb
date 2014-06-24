@@ -35,7 +35,6 @@
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTableCaption.h"
 #include "core/rendering/RenderTableCell.h"
@@ -352,8 +351,6 @@ LayoutUnit RenderTable::convertStyleLogicalHeightToComputedHeight(const Length& 
 
 void RenderTable::layoutCaption(RenderTableCaption* caption)
 {
-    LayoutRect captionRect(caption->frameRect());
-
     if (caption->needsLayout()) {
         // The margins may not be available but ensure the caption is at least located beneath any previous sibling caption
         // so that it does not mistakenly think any floats in the previous caption intrude into it.
@@ -368,9 +365,6 @@ void RenderTable::layoutCaption(RenderTableCaption* caption)
         caption->setPaginationStrut(0);
     }
     caption->setLogicalLocation(LayoutPoint(caption->marginStart(), captionLogicalTop));
-
-    if (!selfNeedsLayout() && caption->checkForPaintInvalidationDuringLayout())
-        caption->repaintDuringLayoutIfMoved(captionRect);
 
     setLogicalHeight(logicalHeight() + caption->logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
 }
@@ -413,9 +407,7 @@ void RenderTable::layout()
     // to call this before we call borderStart/borderEnd to avoid getting a stale value.
     recalcBordersInRowDirection();
 
-    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
     SubtreeLayoutScope layouter(*this);
-
 
     // If any table section moved vertically, we will just repaint everything from that
     // section down (it is quite unlikely that any of the following sections
@@ -561,16 +553,6 @@ void RenderTable::layout()
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
-
-    bool didFullRepaint = repainter.repaintAfterLayout();
-    // Repaint with our new bounds if they are different from our old bounds.
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
-        && !didFullRepaint && sectionMoved) {
-        if (style()->isHorizontalWritingMode())
-            invalidatePaintRectangle(LayoutRect(visualOverflowRect().x(), movedSectionLogicalTop, visualOverflowRect().width(), visualOverflowRect().maxY() - movedSectionLogicalTop));
-        else
-            invalidatePaintRectangle(LayoutRect(movedSectionLogicalTop, visualOverflowRect().y(), visualOverflowRect().maxX() - movedSectionLogicalTop, visualOverflowRect().height()));
-    }
 
     m_columnLogicalWidthChanged = false;
     clearNeedsLayout();

@@ -673,7 +673,7 @@ void RenderListBox::scrollTo(int newOffset)
 
     m_indexOffset = newOffset;
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
+    if (frameView()->isInPerformLayout())
         setShouldDoFullPaintInvalidationAfterLayout(true);
     else
         paintInvalidationForWholeRenderer();
@@ -775,7 +775,7 @@ void RenderListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect&
     else
         scrollRect.move(width() - borderRight() - scrollbar->width(), borderTop());
 
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout()) {
+    if (frameView()->isInPerformLayout()) {
         m_verticalBarDamage = scrollRect;
         m_hasVerticalBarDamage = true;
     } else {

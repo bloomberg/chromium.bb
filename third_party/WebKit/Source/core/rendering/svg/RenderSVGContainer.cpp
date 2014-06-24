@@ -27,7 +27,6 @@
 
 #include "core/frame/Settings.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -56,8 +55,6 @@ void RenderSVGContainer::layout()
     // RenderSVGRoot disables layoutState for the SVG rendering tree.
     ASSERT(!view()->layoutStateCachedOffsetsEnabled());
 
-    LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) || selfWillPaint());
-
     // Allow RenderSVGViewportContainer to update its viewport.
     calcViewport();
 
@@ -73,8 +70,6 @@ void RenderSVGContainer::layout()
     if (everHadLayout() && needsLayout())
         SVGResourcesCache::clientLayoutChanged(this);
 
-    // At this point LayoutRepainter already grabbed the old bounds,
-    // recalculate them now so repaintAfterLayout() uses the new bounds.
     if (m_needsBoundariesUpdate || updatedTransform) {
         updateCachedBoundaries();
         m_needsBoundariesUpdate = false;
@@ -83,7 +78,6 @@ void RenderSVGContainer::layout()
         RenderSVGModelObject::setNeedsBoundariesUpdate();
     }
 
-    repainter.repaintAfterLayout();
     clearNeedsLayout();
 }
 

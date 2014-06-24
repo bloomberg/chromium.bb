@@ -224,9 +224,6 @@ void RenderTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth, SubtreeLa
 
     layouter.setNeedsLayout(this);
 
-    if (!table()->selfNeedsLayout() && checkForPaintInvalidationDuringLayout())
-        paintInvalidationForWholeRenderer();
-
     setLogicalWidth(tableLayoutLogicalWidth);
     setCellWidthChanged(true);
 }
@@ -360,13 +357,6 @@ LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const Render
     LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + std::max(width() + right, visualOverflowRect().maxX()), location.y() + std::max(height() + bottom, visualOverflowRect().maxY()));
 
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        if (RenderView* v = view()) {
-            // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-            // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-            r.move(v->layoutDelta());
-        }
-    }
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
     return r;
 }

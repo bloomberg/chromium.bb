@@ -98,31 +98,6 @@ public:
 
     virtual LayoutRect viewRect() const OVERRIDE;
 
-    // layoutDelta is used transiently during layout to store how far an object has moved from its
-    // last layout location, in order to repaint correctly.
-    // If we're doing a full repaint m_layoutState will be 0, but in that case layoutDelta doesn't matter.
-    LayoutSize layoutDelta() const
-    {
-        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
-        return m_layoutState ? m_layoutState->layoutDelta() : LayoutSize();
-    }
-    void addLayoutDelta(const LayoutSize& delta)
-    {
-        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
-        if (m_layoutState)
-            m_layoutState->addLayoutDelta(delta);
-    }
-
-#if ASSERT_ENABLED
-    bool layoutDeltaMatches(const LayoutSize& delta)
-    {
-        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
-        if (!m_layoutState)
-            return false;
-        return (delta.width() == m_layoutState->layoutDelta().width() || m_layoutState->layoutDeltaXSaturated()) && (delta.height() == m_layoutState->layoutDelta().height() || m_layoutState->layoutDeltaYSaturated());
-    }
-#endif
-
     bool shouldDoFullRepaintForNextLayout() const;
     bool doingFullRepaint() const { return m_frameView->needsFullPaintInvalidation(); }
 
@@ -184,6 +159,7 @@ public:
 
     void pushLayoutState(LayoutState&);
     void popLayoutState();
+
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;

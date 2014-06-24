@@ -745,12 +745,6 @@ void RenderObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-void RenderObject::setLayerNeedsFullPaintInvalidationForPositionedMovementLayout()
-{
-    ASSERT(hasLayer());
-    toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaintForPositionedMovementLayout);
-}
-
 RenderBlock* RenderObject::containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
@@ -1566,12 +1560,6 @@ void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
 
     LayoutRect dirtyRect(r);
 
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-        // paint invalidation containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-        dirtyRect.move(view()->layoutDelta());
-    }
-
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     RenderLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(dirtyRect), InvalidationPaintRectangle);
@@ -1796,11 +1784,6 @@ void RenderObject::invalidatePaintForOverflowIfNeeded()
 bool RenderObject::checkForPaintInvalidation() const
 {
     return !document().view()->needsFullPaintInvalidation() && everHadLayout();
-}
-
-bool RenderObject::checkForPaintInvalidationDuringLayout() const
-{
-    return !RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && checkForPaintInvalidation();
 }
 
 LayoutRect RenderObject::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const
@@ -2146,7 +2129,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     if (updatedDiff.needsRepaint()) {
         // Invalidate paints with the new style, e.g., for example if we go from not having
         // an outline to having an outline.
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && needsLayout())
+        if (needsLayout())
             setShouldDoFullPaintInvalidationAfterLayout(true);
         else if (!selfNeedsLayout())
             paintInvalidationForWholeRenderer();
@@ -2187,7 +2170,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
         }
 
         if (m_parent && diff.needsRepaintObject()) {
-            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && (diff.needsLayout() || needsLayout()))
+            if (diff.needsLayout() || needsLayout())
                 setShouldDoFullPaintInvalidationAfterLayout(true);
             else if (!diff.needsFullLayout() && !selfNeedsLayout())
                 paintInvalidationForWholeRenderer();

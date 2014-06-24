@@ -25,7 +25,6 @@
 #include "core/rendering/RenderReplaced.h"
 
 #include "core/rendering/GraphicsContextAnnotator.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
@@ -79,8 +78,6 @@ void RenderReplaced::layout()
 {
     ASSERT(needsLayout());
 
-    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
-
     setHeight(minimumReplacedHeight());
 
     updateLogicalWidth();
@@ -91,7 +88,6 @@ void RenderReplaced::layout()
     updateLayerTransformAfterLayout();
     invalidateBackgroundObscurationStatus();
 
-    repainter.repaintAfterLayout();
     clearNeedsLayout();
 }
 
@@ -570,7 +566,7 @@ void RenderReplaced::setSelectionState(SelectionState state)
     // We only include the space below the baseline in our layer's cached repaint rect if the
     // image is selected. Since the selection state has changed update the rect.
     if (hasLayer())
-        layer()->repainter().computeRepaintRects();
+        setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(containerForPaintInvalidation()));
 
     if (canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(isSelected());
@@ -606,14 +602,6 @@ LayoutRect RenderReplaced::clippedOverflowRectForPaintInvalidation(const RenderL
     // The selectionRect can project outside of the overflowRect, so take their union
     // for repainting to avoid selection painting glitches.
     LayoutRect r = isSelected() ? localSelectionRect() : visualOverflowRect();
-
-    RenderView* v = view();
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && v) {
-        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-        // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-        r.move(v->layoutDelta());
-    }
-
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
     return r;
 }

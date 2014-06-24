@@ -292,7 +292,6 @@ private:
 #endif
 
     void addAbsoluteRectForLayer(LayoutRect& result);
-    void setLayerNeedsFullPaintInvalidationForPositionedMovementLayout();
     bool requiresAnonymousTableWrappers(const RenderObject*) const;
 
     // Gets pseudoStyle from Shadow host(in case of input elements)
@@ -842,7 +841,6 @@ public:
     void invalidatePaintForOverflowIfNeeded();
 
     bool checkForPaintInvalidation() const;
-    bool checkForPaintInvalidationDuringLayout() const;
 
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
     // coordinate space. This method deals with outlines and overflow.
@@ -1368,11 +1366,8 @@ inline void RenderObject::setNeedsPositionedMovementLayout()
     bool alreadyNeededLayout = needsPositionedMovementLayout();
     setNeedsPositionedMovementLayout(true);
     ASSERT(!isSetNeedsLayoutForbidden());
-    if (!alreadyNeededLayout) {
+    if (!alreadyNeededLayout)
         markContainingBlocksForLayout();
-        if (hasLayer())
-            setLayerNeedsFullPaintInvalidationForPositionedMovementLayout();
-    }
 }
 
 inline bool RenderObject::preservesNewline() const

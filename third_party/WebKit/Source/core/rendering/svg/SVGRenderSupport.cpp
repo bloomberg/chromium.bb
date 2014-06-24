@@ -108,14 +108,6 @@ bool SVGRenderSupport::parentTransformDidChange(RenderObject* object)
     return !(parent && parent->isSVGContainer() && toRenderSVGContainer(parent)->didTransformToRootUpdate());
 }
 
-bool SVGRenderSupport::checkForSVGRepaintDuringLayout(RenderObject* object)
-{
-    if (!object->checkForPaintInvalidationDuringLayout())
-        return false;
-
-    return parentTransformDidChange(object);
-}
-
 // Update a bounding box taking into account the validity of the other bounding box.
 inline void SVGRenderSupport::updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, RenderObject* other, FloatRect otherBoundingBox)
 {
@@ -213,7 +205,6 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
 
     for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
         bool needsLayout = selfNeedsLayout;
-        bool childEverHadLayout = child->everHadLayout();
 
         if (transformChanged) {
             // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
@@ -251,12 +242,6 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
 
         if (child->needsLayout()) {
             child->layout();
-            // Renderers are responsible for repainting themselves when changing, except
-            // for the initial paint to avoid potential double-painting caused by non-sensical "old" bounds.
-            // We could handle this in the individual objects, but for now it's easier to have
-            // parent containers call repaint().  (RenderBlock::layout* has similar logic.)
-            if (!childEverHadLayout && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                child->paintInvalidationForWholeRenderer();
         } else if (layoutSizeChanged) {
             notlayoutedObjects.add(child);
         }

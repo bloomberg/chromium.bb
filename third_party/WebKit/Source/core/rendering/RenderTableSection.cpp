@@ -990,18 +990,11 @@ void RenderTableSection::layoutRows()
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
-                if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    view()->addLayoutDelta(childOffset);
-
                 // If the child moved, we have to repaint it as well as any floating/positioned
                 // descendants. An exception is if we need a layout. In this case, we know we're going to
                 // repaint ourselves (and the child) anyway.
-                if (!table()->selfNeedsLayout() && cell->checkForPaintInvalidation()) {
-                    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                        cell->setMayNeedPaintInvalidation(true);
-                    else
-                        cell->repaintDuringLayoutIfMoved(oldCellRect);
-                }
+                if (!table()->selfNeedsLayout() && cell->checkForPaintInvalidation())
+                    cell->setMayNeedPaintInvalidation(true);
             }
         }
         if (rowHeightIncreaseForPagination) {
@@ -1706,8 +1699,6 @@ RenderTableSection* RenderTableSection::createAnonymousWithParentRenderer(const 
 
 void RenderTableSection::setLogicalPositionForCell(RenderTableCell* cell, unsigned effectiveColumn) const
 {
-    LayoutPoint oldCellLocation = cell->location();
-
     LayoutPoint cellLocation(0, m_rowPos[cell->rowIndex()]);
     int horizontalBorderSpacing = table()->hBorderSpacing();
 
@@ -1718,9 +1709,6 @@ void RenderTableSection::setLogicalPositionForCell(RenderTableCell* cell, unsign
         cellLocation.setX(table()->columnPositions()[effectiveColumn] + horizontalBorderSpacing);
 
     cell->setLogicalLocation(cellLocation);
-
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        view()->addLayoutDelta(oldCellLocation - cell->location());
 }
 
 } // namespace WebCore

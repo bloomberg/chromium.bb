@@ -27,7 +27,6 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -168,7 +167,6 @@ void RenderSVGRoot::layout()
     ForceHorriblySlowRectMapping slowRectMapping(*this);
 
     bool needsLayout = selfNeedsLayout();
-    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout() && needsLayout);
 
     LayoutSize oldSize = size();
     updateLogicalWidth();
@@ -182,8 +180,6 @@ void RenderSVGRoot::layout()
     m_isLayoutSizeChanged = needsLayout || (svg->hasRelativeLengths() && oldSize != size());
     SVGRenderSupport::layoutChildren(this, needsLayout || SVGRenderSupport::filtersForceContainerLayout(this));
 
-    // At this point LayoutRepainter already grabbed the old bounds,
-    // recalculate them now so repaintAfterLayout() uses the new bounds.
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();
         m_needsBoundariesOrTransformUpdate = false;
@@ -202,7 +198,6 @@ void RenderSVGRoot::layout()
     m_hasBoxDecorations = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorations();
     invalidateBackgroundObscurationStatus();
 
-    repainter.repaintAfterLayout();
     clearNeedsLayout();
 }
 

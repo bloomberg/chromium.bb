@@ -24,7 +24,6 @@
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -118,7 +117,6 @@ void RenderSVGForeignObject::layout()
     ASSERT(needsLayout());
     ASSERT(!view()->layoutStateCachedOffsetsEnabled()); // RenderSVGRoot disables layoutState for the SVG rendering tree.
 
-    LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
     SVGForeignObjectElement* foreign = toSVGForeignObjectElement(node());
 
     bool updateCachedBoundariesInParents = false;
@@ -155,8 +153,6 @@ void RenderSVGForeignObject::layout()
     // Invalidate all resources of this client if our layout changed.
     if (layoutChanged)
         SVGResourcesCache::clientLayoutChanged(this);
-
-    repainter.repaintAfterLayout();
 }
 
 void RenderSVGForeignObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer,
