@@ -781,7 +781,7 @@ BrowserProcessImpl::component_updater() {
   if (!component_updater_.get()) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
       return NULL;
-    component_updater::ComponentUpdateService::Configurator* configurator =
+    component_updater::Configurator* configurator =
         component_updater::MakeChromeComponentUpdaterConfigurator(
             CommandLine::ForCurrentProcess(),
             io_thread()->system_url_request_context_getter());

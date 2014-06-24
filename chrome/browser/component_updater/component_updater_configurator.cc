@@ -87,7 +87,7 @@ std::string GetSwitchArgument(const std::vector<std::string>& vec,
 
 }  // namespace
 
-class ChromeConfigurator : public ComponentUpdateService::Configurator {
+class ChromeConfigurator : public Configurator {
  public:
   ChromeConfigurator(const CommandLine* cmdline,
                      net::URLRequestContextGetter* url_request_getter);
@@ -208,7 +208,7 @@ bool ChromeConfigurator::UseBackgroundDownloader() const {
   return background_downloads_enabled_;
 }
 
-ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
+Configurator* MakeChromeComponentUpdaterConfigurator(
     const CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);

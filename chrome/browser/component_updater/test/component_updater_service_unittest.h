@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,7 +74,7 @@ const uint8 ihfo_hash[] = {0x87, 0x5e, 0xa1, 0xa6, 0x9f, 0x85, 0xd1, 0x1e,
                            0xe7, 0xc5, 0xc8, 0xf5, 0x60, 0x19, 0x78, 0x1b,
                            0x6d, 0xe9, 0x4c, 0xeb, 0x96, 0x05, 0x42, 0x17};
 
-class TestConfigurator : public ComponentUpdateService::Configurator {
+class TestConfigurator : public Configurator {
  public:
   TestConfigurator();
   virtual ~TestConfigurator();

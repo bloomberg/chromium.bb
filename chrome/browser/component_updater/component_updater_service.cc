@@ -22,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_downloader.h"
@@ -52,7 +53,7 @@ bool IsVersionNewer(const Version& current, const std::string& proposed) {
 // Returns true if a differential update is available, it has not failed yet,
 // and the configuration allows it.
 bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
-                      const ComponentUpdateService::Configurator& config) {
+                      const Configurator& config) {
   return HasDiffUpdate(update_item) && !update_item->diff_update_failed &&
          config.DeltasEnabled();
 }
@@ -144,7 +145,7 @@ void UnblockandReapAllThrottles(CUResourceThrottle::WeakPtrVector* throttles) {
 // thread.
 class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
  public:
-  explicit CrxUpdateService(ComponentUpdateService::Configurator* config);
+  explicit CrxUpdateService(Configurator* config);
   virtual ~CrxUpdateService();
 
   // Overrides for ComponentUpdateService.
@@ -244,7 +245,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
   Status GetServiceStatus(const CrxUpdateItem::Status status);
 
-  scoped_ptr<ComponentUpdateService::Configurator> config_;
+  scoped_ptr<Configurator> config_;
 
   scoped_ptr<UpdateChecker> update_checker_;
 
@@ -273,7 +274,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
 //////////////////////////////////////////////////////////////////////////////
 
-CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
+CrxUpdateService::CrxUpdateService(Configurator* config)
     : config_(config),
       ping_manager_(
           new PingManager(config->PingUrl(), config->RequestContext())),
@@ -1088,8 +1089,7 @@ void CUResourceThrottle::Unblock() {
 
 // The component update factory. Using the component updater as a singleton
 // is the job of the browser process.
-ComponentUpdateService* ComponentUpdateServiceFactory(
-    ComponentUpdateService::Configurator* config) {
+ComponentUpdateService* ComponentUpdateServiceFactory(Configurator* config) {
   DCHECK(config);
   return new CrxUpdateService(config);
 }

@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/common/chrome_version_info.h"
