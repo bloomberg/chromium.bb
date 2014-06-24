@@ -80,18 +80,18 @@ class TestConfigurator : public Configurator {
   virtual ~TestConfigurator();
 
   // Overrrides for ComponentUpdateService::Configurator.
-  virtual int InitialDelay() OVERRIDE;
+  virtual int InitialDelay() const OVERRIDE;
   virtual int NextCheckDelay() OVERRIDE;
-  virtual int StepDelay() OVERRIDE;
+  virtual int StepDelay() const OVERRIDE;
   virtual int StepDelayMedium() OVERRIDE;
-  virtual int MinimumReCheckWait() OVERRIDE;
-  virtual int OnDemandDelay() OVERRIDE;
-  virtual GURL UpdateUrl() OVERRIDE;
-  virtual GURL PingUrl() OVERRIDE;
-  virtual std::string ExtraRequestParams() OVERRIDE;
-  virtual size_t UrlSizeLimit() OVERRIDE;
-  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
-  virtual bool InProcess() OVERRIDE;
+  virtual int MinimumReCheckWait() const OVERRIDE;
+  virtual int OnDemandDelay() const OVERRIDE;
+  virtual GURL UpdateUrl() const OVERRIDE;
+  virtual GURL PingUrl() const OVERRIDE;
+  virtual std::string ExtraRequestParams() const OVERRIDE;
+  virtual size_t UrlSizeLimit() const OVERRIDE;
+  virtual net::URLRequestContextGetter* RequestContext() const OVERRIDE;
+  virtual bool InProcess() const OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
   virtual bool UseBackgroundDownloader() const OVERRIDE;
 

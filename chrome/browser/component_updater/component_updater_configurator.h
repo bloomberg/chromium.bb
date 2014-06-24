@@ -24,32 +24,34 @@ class Configurator {
  public:
   virtual ~Configurator() {}
   // Delay in seconds from calling Start() to the first update check.
-  virtual int InitialDelay() = 0;
+  virtual int InitialDelay() const = 0;
   // Delay in seconds to every subsequent update check. 0 means don't check.
+  // This function is a mutator for testing purposes.
   virtual int NextCheckDelay() = 0;
   // Delay in seconds from each task step. Used to smooth out CPU/IO usage.
-  virtual int StepDelay() = 0;
+  virtual int StepDelay() const = 0;
   // Delay in seconds between applying updates for different components, if
-  // several updates are available at a given time.
+  // several updates are available at a given time. This function is a mutator
+  // for testing purposes.
   virtual int StepDelayMedium() = 0;
   // Minimum delta time in seconds before checking again the same component.
-  virtual int MinimumReCheckWait() = 0;
+  virtual int MinimumReCheckWait() const = 0;
   // Minimum delta time in seconds before an on-demand check is allowed
   // for the same component.
-  virtual int OnDemandDelay() = 0;
+  virtual int OnDemandDelay() const = 0;
   // The url that is going to be used update checks over Omaha protocol.
-  virtual GURL UpdateUrl() = 0;
+  virtual GURL UpdateUrl() const = 0;
   // The url where the completion pings are sent. Invalid if and only if
   // pings are disabled.
-  virtual GURL PingUrl() = 0;
+  virtual GURL PingUrl() const = 0;
   // Parameters added to each url request. It can be null if none are needed.
-  virtual std::string ExtraRequestParams() = 0;
+  virtual std::string ExtraRequestParams() const = 0;
   // How big each update request can be. Don't go above 2000.
-  virtual size_t UrlSizeLimit() = 0;
+  virtual size_t UrlSizeLimit() const = 0;
   // The source of contexts for all the url requests.
-  virtual net::URLRequestContextGetter* RequestContext() = 0;
+  virtual net::URLRequestContextGetter* RequestContext() const = 0;
   // True means that all ops are performed in this process.
-  virtual bool InProcess() = 0;
+  virtual bool InProcess() const = 0;
   // True means that this client can handle delta updates.
   virtual bool DeltasEnabled() const = 0;
   // True means that the background downloader can be used for downloading

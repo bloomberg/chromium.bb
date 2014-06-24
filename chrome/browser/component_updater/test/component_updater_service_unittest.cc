@@ -59,7 +59,7 @@ TestConfigurator::TestConfigurator()
 TestConfigurator::~TestConfigurator() {
 }
 
-int TestConfigurator::InitialDelay() {
+int TestConfigurator::InitialDelay() const {
   return initial_time_;
 }
 
@@ -75,7 +75,7 @@ int TestConfigurator::NextCheckDelay() {
   return 1;
 }
 
-int TestConfigurator::StepDelay() {
+int TestConfigurator::StepDelay() const {
   return 0;
 }
 
@@ -83,37 +83,37 @@ int TestConfigurator::StepDelayMedium() {
   return NextCheckDelay();
 }
 
-int TestConfigurator::MinimumReCheckWait() {
+int TestConfigurator::MinimumReCheckWait() const {
   return recheck_time_;
 }
 
-int TestConfigurator::OnDemandDelay() {
+int TestConfigurator::OnDemandDelay() const {
   return ondemand_time_;
 }
 
-GURL TestConfigurator::UpdateUrl() {
+GURL TestConfigurator::UpdateUrl() const {
   return GURL(POST_INTERCEPT_SCHEME
               "://" POST_INTERCEPT_HOSTNAME POST_INTERCEPT_PATH);
 }
 
-GURL TestConfigurator::PingUrl() {
+GURL TestConfigurator::PingUrl() const {
   return UpdateUrl();
 }
 
-std::string TestConfigurator::ExtraRequestParams() {
+std::string TestConfigurator::ExtraRequestParams() const {
   return "extra=\"foo\"";
 }
 
-size_t TestConfigurator::UrlSizeLimit() {
+size_t TestConfigurator::UrlSizeLimit() const {
   return 256;
 }
 
-net::URLRequestContextGetter* TestConfigurator::RequestContext() {
+net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
   return context_.get();
 }
 
 // Don't use the utility process to run code out-of-process.
-bool TestConfigurator::InProcess() {
+bool TestConfigurator::InProcess() const {
   return true;
 }
 
