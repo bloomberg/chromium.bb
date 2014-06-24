@@ -75,6 +75,22 @@ public:
     {
     }
 
+    void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
+    void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
+
+    LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
+    LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
+
+    ClipRect backgroundClipRect(const ClipRectsContext&) const;
+
+    // This method figures out our layerBounds in coordinates relative to
+    // |rootLayer|. It also computes our background and foreground clip rects
+    // for painting/event handling.
+    // Pass offsetFromRoot if known.
+    void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
+        ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
+
+private:
     ClipRects* clipRects(const ClipRectsContext& context) const
     {
         ASSERT(context.clipRectsType < NumCachedClipRectsTypes);
@@ -84,28 +100,10 @@ public:
     // Compute and cache clip rects computed with the given layer as the root
     void updateClipRects(const ClipRectsContext&);
 
-    void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
-    void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
-
-    LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
-    LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
-
-    ClipRect backgroundClipRect(const ClipRectsContext&) const;
-
-    // FIXME: The following functions should be private.
-
-    // This method figures out our layerBounds in coordinates relative to
-    // |rootLayer}. It also computes our background and foreground clip rects
-    // for painting/event handling.
-    // Pass offsetFromRoot if known.
-    void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
-        ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
-
     // Compute and return the clip rects. If useCached is true, will used previously computed clip rects on ancestors
     // (rather than computing them all from scratch up the parent chain).
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
-private:
     void parentClipRects(const ClipRectsContext&, ClipRects&) const;
 
     // The layer relative to which clipping rects for this layer are computed.
