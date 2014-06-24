@@ -196,8 +196,12 @@ void WebNode::simulateClick()
 
 WebElementCollection WebNode::getElementsByTagName(const WebString& tag) const
 {
-    if (m_private->isContainerNode())
-        return WebElementCollection(toContainerNode(m_private.get())->getElementsByTagName(tag));
+    if (m_private->isContainerNode()) {
+        // FIXME: Calling getElementsByTagNameNS here is inconsistent with the
+        // function name. This is a temporary fix for a serious bug, and should
+        // be reverted soon.
+        return WebElementCollection(toContainerNode(m_private.get())->getElementsByTagNameNS(HTMLNames::xhtmlNamespaceURI, tag));
+    }
     return WebElementCollection();
 }
 

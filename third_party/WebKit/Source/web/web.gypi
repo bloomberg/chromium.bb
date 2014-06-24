@@ -264,6 +264,8 @@
       'win/WebFontRendering.cpp',
     ],
     'web_unittest_files': [
+      'WebNodeTest.cpp',
+      # FIXME: Move the tests to Source/web/.
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
       'tests/CustomEventTest.cpp',
