@@ -9,26 +9,30 @@
 
 namespace ui {
 
+// TODO(sky): reenable these DCHECKs. We're in the process of enabling usage
+// of views from multiple threads and this causes problems. See
+// http://crbug.com/388045 for details.
+
 TextInputFocusManager* TextInputFocusManager::GetInstance() {
   TextInputFocusManager* instance = Singleton<TextInputFocusManager>::get();
-  DCHECK(instance->thread_checker_.CalledOnValidThread());
+  // DCHECK(instance->thread_checker_.CalledOnValidThread());
   return instance;
 }
 
 TextInputClient* TextInputFocusManager::GetFocusedTextInputClient() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK(thread_checker_.CalledOnValidThread());
   return focused_text_input_client_;
 }
 
 void TextInputFocusManager::FocusTextInputClient(
     TextInputClient* text_input_client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK(thread_checker_.CalledOnValidThread());
   focused_text_input_client_ = text_input_client;
 }
 
 void TextInputFocusManager::BlurTextInputClient(
     TextInputClient* text_input_client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK(thread_checker_.CalledOnValidThread());
   if (focused_text_input_client_ == text_input_client)
     focused_text_input_client_ = NULL;
 }
