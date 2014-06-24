@@ -27,7 +27,7 @@ class TestPerfControl(unittest.TestCase):
     perf = perf_control.PerfControl(self._device)
     try:
       perf.SetPerfProfilingMode()
-      for cpu in range(perf._NumCpuCores):
+      for cpu in range(perf._num_cpu_cores):
         path = perf_control.PerfControl._CPU_ONLINE_FMT % cpu
         self.assertEquals('1',
                           self._device.old_interface.GetFileContents(path)[0])
