@@ -8,21 +8,15 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/shell/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
 
-namespace base {
-class MessageLoop;
-}
-
 namespace mojo {
 namespace shell {
-
-class Context;
-
 namespace test {
 
 class ShellTestBase : public testing::Test {
@@ -30,28 +24,23 @@ class ShellTestBase : public testing::Test {
   ShellTestBase();
   virtual ~ShellTestBase();
 
-  // Should be called before any of the methods below are called.
-  void InitMojo();
-
   // Launches the given service in-process; |service_url| should typically be a
   // mojo: URL (the origin will be set to an "appropriate" file: URL).
   void LaunchServiceInProcess(const GURL& service_url,
                               const std::string& service_name,
                               ScopedMessagePipeHandle client_handle);
 
-  base::MessageLoop* message_loop() { return message_loop_.get(); }
-  Context* shell_context() { return shell_context_.get(); }
+  base::MessageLoop* message_loop() { return &message_loop_; }
+  Context* shell_context() { return &shell_context_; }
 
  private:
-  // Only set if/when |InitMojo()| is called.
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<Context> shell_context_;
+  base::MessageLoop message_loop_;
+  Context shell_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestBase);
 };
 
 }  // namespace test
-
 }  // namespace shell
 }  // namespace mojo
 

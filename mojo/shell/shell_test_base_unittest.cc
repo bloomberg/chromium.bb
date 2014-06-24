@@ -42,8 +42,6 @@ void PingCallback(base::MessageLoop* message_loop, bool* was_run) {
 }
 
 TEST_F(ShellTestBaseTest, LaunchServiceInProcess) {
-  InitMojo();
-
   InterfacePtr<mojo::test::ITestService> test_service;
 
   {
@@ -72,8 +70,6 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcess) {
 // Tests that launching a service in process fails properly if the service
 // doesn't exist.
 TEST_F(ShellTestBaseTest, LaunchServiceInProcessInvalidService) {
-  InitMojo();
-
   InterfacePtr<mojo::test::ITestService> test_service;
 
   {

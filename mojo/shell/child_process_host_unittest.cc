@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/shell/context.h"
-#include "mojo/shell/shell_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -32,7 +31,7 @@ class TestChildProcessHostDelegate : public ChildProcessHost::Delegate {
   }
 };
 
-typedef ShellTestBase ChildProcessHostTest;
+typedef testing::Test ChildProcessHostTest;
 
 TEST_F(ChildProcessHostTest, Basic) {
   base::MessageLoop message_loop(
