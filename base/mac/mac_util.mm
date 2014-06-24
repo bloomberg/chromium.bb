@@ -377,16 +377,26 @@ bool WasLaunchedAsLoginOrResumeItem() {
 }
 
 bool WasLaunchedAsLoginItemRestoreState() {
-  if (!WasLaunchedAsLoginOrResumeItem())
+  // "Reopen windows..." option was added for Lion.  Prior OS versions should
+  // not have this behavior.
+  if (IsOSSnowLeopard() || !WasLaunchedAsLoginOrResumeItem())
     return false;
+
   CFStringRef app = CFSTR("com.apple.loginwindow");
   CFStringRef save_state = CFSTR("TALLogoutSavesState");
   ScopedCFTypeRef<CFPropertyListRef> plist(
       CFPreferencesCopyAppValue(save_state, app));
-  if (plist) {
-    if (CFBooleanRef restore_state = base::mac::CFCast<CFBooleanRef>(plist))
-      return CFBooleanGetValue(restore_state);
-  }
+  // According to documentation, com.apple.loginwindow.plist does not exist on a
+  // fresh installation until the user changes a login window setting.  The
+  // "reopen windows" option is checked by default, so the plist would exist had
+  // the user unchecked it.
+  // https://developer.apple.com/library/mac/documentation/macosx/conceptual/bpsystemstartup/chapters/CustomLogin.html
+  if (!plist)
+    return true;
+
+  if (CFBooleanRef restore_state = base::mac::CFCast<CFBooleanRef>(plist))
+    return CFBooleanGetValue(restore_state);
+
   return false;
 }
 
