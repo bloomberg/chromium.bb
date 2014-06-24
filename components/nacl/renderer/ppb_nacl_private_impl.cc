@@ -1380,7 +1380,7 @@ void DownloadNexe(PP_Instance instance,
       target_file.Pass(),
       base::Bind(&DownloadNexeCompletion, request, out_file_info),
       base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                 base::Owned(tracker), url));
+                 base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 
@@ -1541,7 +1541,7 @@ void DownloadFile(PP_Instance instance,
       target_file.Pass(),
       base::Bind(&DownloadFileCompletion, callback),
       base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                 base::Owned(tracker), url));
+                 base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 
