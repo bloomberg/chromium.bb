@@ -2639,6 +2639,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
+
+    // Focus may go out of the list. Back it to the list.
+    this.currentList_.focus();
   };
 
   /**
