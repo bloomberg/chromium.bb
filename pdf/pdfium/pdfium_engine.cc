@@ -3202,7 +3202,7 @@ int CalculatePosition(FPDF_PAGE page,
   // Auto-rotate landscape pages to print correctly.
   if (settings.autorotate &&
       (dest->width() > dest->height()) != (page_width > page_height)) {
-    rotate = 1;  // 90 degrees clockwise.
+    rotate = 3;  // 90 degrees counter-clockwise.
     std::swap(page_width, page_height);
   }
 
