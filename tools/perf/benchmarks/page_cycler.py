@@ -25,6 +25,7 @@ class PageCyclerIntlArFaHe(test.Test):
   options = {'pageset_repeat': 10}
 
 
+@test.Disabled('win')  # crbug.com/388337
 class PageCyclerIntlEsFrPtBr(test.Test):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlEsFrPtBrPageSet
