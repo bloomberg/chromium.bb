@@ -397,10 +397,8 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String
     m_eventQueue = DOMWindowEventQueue::create(m_document.get());
     m_document->attach();
 
-    if (!m_frame) {
-        // FIXME: Oilpan: Remove .get() when m_document becomes Member<>.
-        return m_document.get();
-    }
+    if (!m_frame)
+        return m_document;
 
     m_frame->script().updateDocument();
     m_document->updateViewportDescription();
@@ -419,9 +417,7 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String
         if (m_document->hasTouchEventHandlers())
             m_frame->host()->chrome().client().needTouchEvents(true);
     }
-
-    // FIXME: Oilpan: Remove .get() when m_document becomes Member<>.
-    return m_document.get();
+    return m_document;
 }
 
 EventQueue* LocalDOMWindow::eventQueue() const

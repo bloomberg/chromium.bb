@@ -3559,9 +3559,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             // a Touch is a Node so using the window could be a breaking change.
             // Since we know there was no handler invoked, the specific target
             // should be completely irrelevant to the application.
-            // FIXME: Oilpan: We can remove the following .get() if EventTarget
-            // is on-heap.
-            touchTarget = m_touchSequenceDocument.get();
+            touchTarget = m_touchSequenceDocument;
             targetFrame = m_touchSequenceDocument->frame();
             knownTarget = false;
         }

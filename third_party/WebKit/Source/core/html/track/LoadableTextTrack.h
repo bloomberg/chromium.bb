@@ -66,7 +66,7 @@ private:
     virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) OVERRIDE;
     virtual void newRegionsAvailable(TextTrackLoader*) OVERRIDE;
 
-    LoadableTextTrack(HTMLTrackElement*);
+    explicit LoadableTextTrack(HTMLTrackElement*);
 
     void loadTimerFired(Timer<LoadableTextTrack>*);
 
