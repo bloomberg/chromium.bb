@@ -29,7 +29,6 @@
 
 namespace WebCore {
 
-class CSSStyleSheet;
 class Document;
 class DocumentInit;
 class DocumentType;

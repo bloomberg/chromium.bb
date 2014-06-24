@@ -45,16 +45,12 @@ namespace WebCore {
 
 class CSSFontSelector;
 class CSSStyleSheet;
-class FontSelector;
 class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
-class StyleResolver;
 class StyleRuleFontFace;
 class StyleSheet;
-class StyleSheetCollection;
 class StyleSheetContents;
-class StyleSheetList;
 
 class StyleEngine FINAL : public CSSFontSelectorClient  {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

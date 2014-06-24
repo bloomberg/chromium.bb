@@ -40,10 +40,7 @@ class ContainerNode;
 class Document;
 class Element;
 class ExceptionState;
-class Node;
-class SimpleNodeList;
 class StaticNodeList;
-class SpaceSplitString;
 
 class SelectorDataList {
 public:

@@ -40,7 +40,6 @@ class CSSComputedStyleDeclaration;
 class Element;
 class InlineBox;
 class Node;
-class Range;
 class RenderObject;
 class Text;
 

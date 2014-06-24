@@ -40,10 +40,8 @@ class Element;
 class HTMLLabelElement;
 class HTMLMapElement;
 class HitTestResult;
-class LayoutPoint;
 class IdTargetObserverRegistry;
 class Node;
-class RenderObject;
 
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
 // so that the Node destructor no longer does problematic NodeList cache manipulation in

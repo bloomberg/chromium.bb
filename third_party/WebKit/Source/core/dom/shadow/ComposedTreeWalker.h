@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class Node;
-class ShadowRoot;
 
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702

@@ -35,12 +35,10 @@
 
 namespace WebCore {
 
-class LocalDOMWindow;
-class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
 class KURL;
-template<class T> class LifecycleNotifier;
+class LocalDOMWindow;
 class ScriptCallStack;
 class ScriptState;
 class SecurityContext;

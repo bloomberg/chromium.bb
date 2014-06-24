@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class ExecutionContext;
-
 class DocumentFragment : public ContainerNode {
 public:
     static PassRefPtrWillBeRawPtr<DocumentFragment> create(Document&);

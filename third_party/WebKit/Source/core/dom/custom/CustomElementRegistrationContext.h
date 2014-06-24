@@ -44,7 +44,6 @@
 namespace WebCore {
 
 class CustomElementConstructorBuilder;
-class CustomElementDefinition;
 class Document;
 class Element;
 class ExceptionState;

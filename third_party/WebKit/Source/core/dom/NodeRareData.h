@@ -37,10 +37,6 @@
 
 namespace WebCore {
 
-class LabelsNodeList;
-class RadioNodeList;
-class TreeScope;
-
 class NodeListsNodeData FINAL : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

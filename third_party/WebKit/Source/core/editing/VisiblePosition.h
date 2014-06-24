@@ -48,6 +48,7 @@ namespace WebCore {
 
 class InlineBox;
 class Node;
+class Range;
 
 class VisiblePosition FINAL {
     DISALLOW_ALLOCATION();

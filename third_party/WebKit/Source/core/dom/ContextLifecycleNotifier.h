@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class ActiveDOMObject;
-class ContextLifecycleObserver;
 class ExecutionContext;
 
 class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext> {

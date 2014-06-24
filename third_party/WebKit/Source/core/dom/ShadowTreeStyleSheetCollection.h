@@ -32,9 +32,7 @@
 
 namespace WebCore {
 
-class CSSStyleSheet;
 class ShadowRoot;
-class StyleSheet;
 class StyleSheetCollection;
 class StyleEngine;
 

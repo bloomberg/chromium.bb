@@ -27,8 +27,6 @@
 
 namespace WebCore {
 
-class ExecutionContext;
-
 class Comment FINAL : public CharacterData {
 public:
     static PassRefPtrWillBeRawPtr<Comment> create(Document&, const String&);

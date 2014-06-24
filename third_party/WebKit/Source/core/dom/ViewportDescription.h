@@ -34,7 +34,6 @@
 
 namespace WebCore {
 
-class KURL;
 class LocalFrame;
 
 struct ViewportDescription {

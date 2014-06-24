@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
-
 // Attr can have Text children
 // therefore it has to be a fullblown Node. The plan
 // is to dynamically allocate a textchild and store the

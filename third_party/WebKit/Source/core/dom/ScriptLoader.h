@@ -29,7 +29,6 @@
 namespace WebCore {
 
 class ScriptResource;
-class ContainerNode;
 class Element;
 class ScriptLoaderClient;
 class ScriptSourceCode;

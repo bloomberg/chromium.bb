@@ -49,6 +49,7 @@ class HTMLAreaElement;
 class IntPoint;
 class IntSize;
 class Node;
+class Range;
 class RenderObject;
 class RenderListItem;
 class ScrollableArea;

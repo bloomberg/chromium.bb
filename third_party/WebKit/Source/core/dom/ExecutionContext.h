@@ -43,18 +43,12 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WTF {
-class OrdinalNumber;
-}
-
 namespace WebCore {
 
 class ContextLifecycleNotifier;
 class LocalDOMWindow;
 class ErrorEvent;
-class EventListener;
 class EventQueue;
-class EventTarget;
 class ExecutionContextTask;
 class ScriptState;
 class PublicURLManager;

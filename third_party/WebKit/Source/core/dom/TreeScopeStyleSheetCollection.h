@@ -43,11 +43,8 @@
 namespace WebCore {
 
 class ContainerNode;
-class DocumentStyleSheetCollector;
-class StyleEngine;
 class Node;
 class StyleSheetContents;
-class StyleSheetList;
 class StyleRuleFontFace;
 
 class TreeScopeStyleSheetCollection : public StyleSheetCollection {

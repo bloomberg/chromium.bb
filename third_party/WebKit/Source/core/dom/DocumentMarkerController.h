@@ -35,7 +35,6 @@
 
 namespace WebCore {
 
-class ContainerNode;
 class LayoutPoint;
 class LayoutRect;
 class Node;

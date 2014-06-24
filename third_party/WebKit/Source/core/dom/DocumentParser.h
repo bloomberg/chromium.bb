@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class Document;
-class DocumentWriter;
 class SegmentedString;
 class ScriptableDocumentParser;
 class TextResourceDecoder;

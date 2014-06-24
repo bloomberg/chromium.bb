@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class CSSPrimitiveValue;
-class Element;
 
 class TextLinkColors {
 WTF_MAKE_NONCOPYABLE(TextLinkColors);

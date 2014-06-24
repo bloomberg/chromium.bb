@@ -38,7 +38,6 @@ namespace WebCore {
 
 class Attribute;
 class ShareableElementData;
-class ShareableElementDataCacheEntry;
 
 class ElementDataCache {
 public:

@@ -36,7 +36,6 @@
 
 namespace WebCore {
 
-class Element;
 class SpaceSplitString;
 
 class SelectRuleFeatureSet {

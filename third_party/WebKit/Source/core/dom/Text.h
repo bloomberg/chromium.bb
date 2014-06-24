@@ -29,7 +29,6 @@ namespace WebCore {
 
 class ExceptionState;
 class RenderText;
-class ExecutionContext;
 
 class Text : public CharacterData {
 public:
