@@ -18,27 +18,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 
-ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
-    : devtools_callback_(base::Bind(
-          &ChromeDevToolsManagerDelegate::OnDevToolsStateChanged,
-          base::Unretained(this))),
-      devtools_callback_registered_(false) {
-  // This constructor is invoked from DevToolsManagerImpl constructor, so it
-  // shouldn't call DevToolsManager::GetInstance()
+ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
-  // This destructor is invoked from DevToolsManagerImpl destructor, so it
-  // shouldn't call DevToolsManager::GetInstance()
-}
-
-void ChromeDevToolsManagerDelegate::EnsureDevtoolsCallbackRegistered() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!devtools_callback_registered_) {
-    content::DevToolsManager::GetInstance()->AddAgentStateCallback(
-        devtools_callback_);
-    devtools_callback_registered_ = true;
-  }
 }
 
 void ChromeDevToolsManagerDelegate::Inspect(
@@ -111,7 +94,6 @@ ChromeDevToolsManagerDelegate::EmulateNetworkConditions(
   if (upload_throughput < 0.0)
     upload_throughput = 0.0;
 
-  EnsureDevtoolsCallbackRegistered();
   scoped_refptr<DevToolsNetworkConditions> conditions(
       new DevToolsNetworkConditions(
           offline, latency, download_throughput, upload_throughput));
@@ -130,7 +112,7 @@ void ChromeDevToolsManagerDelegate::UpdateNetworkState(
       agent_host->GetId(), conditions);
 }
 
-void ChromeDevToolsManagerDelegate::OnDevToolsStateChanged(
+void ChromeDevToolsManagerDelegate::DevToolsAgentStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
   scoped_refptr<DevToolsNetworkConditions> conditions;
