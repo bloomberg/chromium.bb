@@ -3,11 +3,17 @@
 // found in the LICENSE file.
 
 // File IO test player is used to test File IO CDM functionality.
-function FileIOTestPlayer() {
+function FileIOTestPlayer(video, testConfig) {
+  this.video = video;
+  this.testConfig = testConfig;
 }
 
-FileIOTestPlayer.prototype.init = function(video) {
-  InitPrefixedEMEPlayer(this, video);
+FileIOTestPlayer.prototype.init = function() {
+  PlayerUtils.initPrefixedEMEPlayer(this);
+};
+
+FileIOTestPlayer.prototype.registerEventListeners = function() {
+  PlayerUtils.registerPrefixedEMEEventListeners(this);
 };
 
 FileIOTestPlayer.prototype.onWebkitKeyMessage = function(message) {

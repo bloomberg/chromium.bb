@@ -26,12 +26,12 @@
       <td><label for='usePrefixedEME'>EME API version:</label></td>
       <td><select id='usePrefixedEME'></select></td>
     </tr>
-    <tr title='URL param useSRC=1|0'>
-      <td><label for='useSRC'>Load media by:</label></td>
+    <tr title='URL param useMSE=1|0'>
+      <td><label for='useMSE'>Load media by:</label></td>
       <td>
-        <select id='useSRC'>
-          <option value='false' selected='selected'>MSE</option>
-          <option value='true'>src</option>
+        <select id='useMSE'>
+          <option value='true' selected='selected'>MSE</option>
+          <option value='false'>src</option>
         </select>
       </td>
     </tr>
@@ -58,7 +58,10 @@
   </body>
   <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
   <script type='text/javascript'>
-    TestConfig.updateDocument();
+    var testConfig = new TestConfig();
+    testConfig.loadQueryParams();
+    // Update document with test configuration values.
+    var emeApp = new EMEApp(testConfig);
 
     function onTimeUpdate(e) {
       var video = e.target;
@@ -67,12 +70,12 @@
       // For loadSession() tests, addKey() will not be called after
       // loadSession() (the key is loaded internally). Do not check keyadded
       // and heartbeat for these tests.
-      if (!TestConfig.sessionToLoad) {
+      if (!testConfig.sessionToLoad) {
         // keyadded may be fired around the start of playback; check for it
         // after a delay to avoid timing issues.
-        if (TestConfig.usePrefixedEME && !video.receivedKeyAdded)
+        if (testConfig.usePrefixedEME && !video.receivedKeyAdded)
           Utils.failTest('Key added event not received.');
-        if (TestConfig.keySystem == EXTERNAL_CLEARKEY &&
+        if (testConfig.keySystem == EXTERNAL_CLEARKEY &&
             !video.receivedHeartbeat)
           Utils.failTest('Heartbeat keymessage event not received.');
       }
@@ -82,8 +85,8 @@
     }
 
     function Play() {
-      TestConfig.init();
-      var video = TestApp.loadPlayer();
+      // Update test configuration with UI elements values.
+      var video = emeApp.createPlayer().video;
       Utils.resetTitleChange();
       // Ended should not fire before onTimeUpdate.
       video.addEventListener('ended', Utils.failTest);

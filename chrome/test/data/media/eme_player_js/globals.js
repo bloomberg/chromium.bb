@@ -22,7 +22,7 @@ var KEY_ID = '0123456789012345';
 var KEY_ERROR = 'KEY_ERROR';
 var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
 var FILE_IO_TEST_SUCCESS = 'FILE_IO_TEST_SUCCESS';
-var PREFIXED_API_LOAD_SESSION_HEADER = "LOAD_SESSION|";
+var PREFIXED_API_LOAD_SESSION_HEADER = 'LOAD_SESSION|';
 
 // Available EME key systems to use.
 var PREFIXED_CLEARKEY = 'webkit-org.w3.clearkey';
@@ -66,7 +66,7 @@ var MEDIA_FILE_ELEMENT_ID = 'mediaFile';
 var LICENSE_SERVER_ELEMENT_ID = 'licenseServer';
 var KEYSYSTEM_ELEMENT_ID = 'keySystemList';
 var MEDIA_TYPE_ELEMENT_ID = 'mediaTypeList';
-var USE_SRC_ELEMENT_ID = 'useSRC';
+var USE_MSE_ELEMENT_ID = 'useMSE';
 var USE_PREFIXED_EME_ID = 'usePrefixedEME';
 
 // These variables get updated every second, so better to have global pointers.

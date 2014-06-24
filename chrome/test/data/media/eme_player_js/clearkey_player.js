@@ -4,17 +4,24 @@
 
 // ClearKeyPlayer responsible for playing media using Clear Key key system and
 // the unprefixed version of EME.
-function ClearKeyPlayer() {
+function ClearKeyPlayer(video, testConfig) {
+  this.video = video;
+  this.testConfig = testConfig;
 }
 
-ClearKeyPlayer.prototype.init = function(video) {
-  InitEMEPlayer(this, video);
+ClearKeyPlayer.prototype.init = function() {
+  PlayerUtils.initEMEPlayer(this);
+};
+
+ClearKeyPlayer.prototype.registerEventListeners = function() {
+  PlayerUtils.registerEMEEventListeners(this);
 };
 
 ClearKeyPlayer.prototype.onMessage = function(message) {
   Utils.timeLog('MediaKeySession onMessage', message);
-  var initData = Utils.getInitDataFromMessage(message, TestConfig.mediaType);
-  var key = Utils.getDefaultKey(TestConfig.forceInvalidResponse);
+  var initData =
+      Utils.getInitDataFromMessage(message, this.testConfig.mediaType);
+  var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   var jwkSet = Utils.createJWKData(initData, key);
   message.target.update(jwkSet);
 };

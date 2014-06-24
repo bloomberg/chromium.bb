@@ -6,18 +6,21 @@
 var MediaSourceUtils = new function() {
 }
 
-MediaSourceUtils.loadMediaSourceForTest = function() {
-  return this.loadMediaSource(TestConfig.mediaFile, TestConfig.mediaType);
+MediaSourceUtils.loadMediaSourceFromTestConfig = function(testConfig,
+                                                          appendCallbackFn) {
+  return this.loadMediaSource(testConfig.mediaFile,
+                              testConfig.mediaType,
+                              appendCallbackFn);
 };
 
-MediaSourceUtils.loadMediaSource = function(
-    mediaFiles, mediaTypes, appendCallbackFn) {
-  var mediaFiles = Utils.convertToArray(mediaFiles);
-  var mediaTypes = Utils.convertToArray(mediaTypes);
-
+MediaSourceUtils.loadMediaSource = function(mediaFiles,
+                                            mediaTypes,
+                                            appendCallbackFn) {
   if (!mediaFiles || !mediaTypes)
     Utils.failTest('Missing parameters in loadMediaSource().');
 
+  var mediaFiles = Utils.convertToArray(mediaFiles);
+  var mediaTypes = Utils.convertToArray(mediaTypes);
   var totalAppended = 0;
   function onSourceOpen(e) {
     Utils.timeLog('onSourceOpen', e);

@@ -4,11 +4,17 @@
 
 // Widevine player responsible for playing media using Widevine key system
 // and EME working draft API.
-function WidevinePlayer() {
+function WidevinePlayer(video, testConfig) {
+  this.video = video;
+  this.testConfig = testConfig;
 }
 
-WidevinePlayer.prototype.init = function(video) {
-  InitEMEPlayer(this, video);
+WidevinePlayer.prototype.init = function() {
+  PlayerUtils.initEMEPlayer(this);
+};
+
+WidevinePlayer.prototype.registerEventListeners = function() {
+  PlayerUtils.registerEMEEventListeners(this);
 };
 
 WidevinePlayer.prototype.onMessage = function(message) {
@@ -20,6 +26,6 @@ WidevinePlayer.prototype.onMessage = function(message) {
     mediaKeySession.update(key);
   }
   Utils.sendRequest('POST', 'arraybuffer', message.message,
-                    TestConfig.licenseServerURL, onSuccess,
-                    TestConfig.forceInvalidResponse);
+                    this.testConfig.licenseServerURL, onSuccess,
+                    this.testConfig.forceInvalidResponse);
 };

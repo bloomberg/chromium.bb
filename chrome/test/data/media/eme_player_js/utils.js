@@ -188,11 +188,10 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
 
   function sendRequestAttempt() {
     requestAttemptCount++;
-    if (requestAttemptCount ==  MAXIMUM_REQUEST_ATTEMPTS) {
+    if (requestAttemptCount == MAXIMUM_REQUEST_ATTEMPTS) {
       Utils.failTest('FAILED: Exceeded maximum license request attempts.');
       return;
     }
-
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.responseType = responseType;
     xmlhttp.open(requestType, serverURL, true);
@@ -205,8 +204,8 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
         Utils.timeLog('Bad response status: ' + this.status);
         Utils.timeLog('Bad response: ' + this.response);
         Utils.timeLog('Retrying request if possible in ' +
-                      LICENSE_REQUEST_RETRY_DELAY_MS + 'ms');
-        setTimeout(sendRequestAttempt, LICENSE_REQUEST_RETRY_DELAY_MS);
+                      REQUEST_RETRY_DELAY_MS + 'ms');
+        setTimeout(sendRequestAttempt, REQUEST_RETRY_DELAY_MS);
       }
     };
     Utils.timeLog('Attempt (' + requestAttemptCount +
