@@ -24,6 +24,26 @@ static inline size_t RoundUp(size_t value, size_t alignment) {
   return ((value + (alignment - 1)) & ~(alignment - 1));
 }
 
+// Rounds up |coded_size| if necessary for |format|.
+static gfx::Size AdjustCodedSize(VideoFrame::Format format,
+                                 const gfx::Size& coded_size) {
+  gfx::Size new_coded_size(coded_size);
+  switch (format) {
+    case VideoFrame::YV12:
+    case VideoFrame::YV12A:
+    case VideoFrame::I420:
+    case VideoFrame::YV12J:
+      new_coded_size.set_height(RoundUp(new_coded_size.height(), 2));
+    // Fallthrough.
+    case VideoFrame::YV16:
+      new_coded_size.set_width(RoundUp(new_coded_size.width(), 2));
+      break;
+    default:
+      break;
+  }
+  return new_coded_size;
+}
+
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     VideoFrame::Format format,
@@ -31,32 +51,19 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
+  DCHECK(format != VideoFrame::UNKNOWN &&
+         format != VideoFrame::NV12 &&
+         format != VideoFrame::NATIVE_TEXTURE);
+#if defined(VIDEO_HOLE)
+  DCHECK(format != VideoFrame::HOLE);
+#endif  // defined(VIDEO_HOLE)
+
   // Since we're creating a new YUV frame (and allocating memory for it
   // ourselves), we can pad the requested |coded_size| if necessary if the
   // request does not line up on sample boundaries.
-  gfx::Size new_coded_size(coded_size);
-  switch (format) {
-    case VideoFrame::YV24:
-      break;
-    case VideoFrame::YV12:
-    case VideoFrame::YV12A:
-    case VideoFrame::I420:
-    case VideoFrame::YV12J:
-      new_coded_size.set_height((new_coded_size.height() + 1) / 2 * 2);
-    // Fallthrough.
-    case VideoFrame::YV16:
-      new_coded_size.set_width((new_coded_size.width() + 1) / 2 * 2);
-      break;
-    case VideoFrame::UNKNOWN:
-    case VideoFrame::NV12:
-#if defined(VIDEO_HOLE)
-    case VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case VideoFrame::NATIVE_TEXTURE:
-      LOG(FATAL) << "Only YUV formats supported: " << format;
-      return NULL;
-  }
+  gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
   DCHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
+
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(format,
                      new_coded_size,
@@ -191,28 +198,30 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     base::SharedMemoryHandle handle,
     base::TimeDelta timestamp,
     const base::Closure& no_longer_needed_cb) {
-  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
+  gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+
+  if (!IsValidConfig(format, new_coded_size, visible_rect, natural_size))
     return NULL;
-  if (data_size < AllocationSize(format, coded_size))
+  if (data_size < AllocationSize(format, new_coded_size))
     return NULL;
 
   switch (format) {
     case VideoFrame::I420: {
       scoped_refptr<VideoFrame> frame(
           new VideoFrame(format,
-                         coded_size,
+                         new_coded_size,
                          visible_rect,
                          natural_size,
                          scoped_ptr<gpu::MailboxHolder>(),
                          timestamp,
                          false));
       frame->shared_memory_handle_ = handle;
-      frame->strides_[kYPlane] = coded_size.width();
-      frame->strides_[kUPlane] = coded_size.width() / 2;
-      frame->strides_[kVPlane] = coded_size.width() / 2;
+      frame->strides_[kYPlane] = new_coded_size.width();
+      frame->strides_[kUPlane] = new_coded_size.width() / 2;
+      frame->strides_[kVPlane] = new_coded_size.width() / 2;
       frame->data_[kYPlane] = data;
-      frame->data_[kUPlane] = data + coded_size.GetArea();
-      frame->data_[kVPlane] = data + (coded_size.GetArea() * 5 / 4);
+      frame->data_[kUPlane] = data + new_coded_size.GetArea();
+      frame->data_[kVPlane] = data + (new_coded_size.GetArea() * 5 / 4);
       frame->no_longer_needed_cb_ = no_longer_needed_cb;
       return frame;
     }
@@ -283,12 +292,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8* v_data,
     base::TimeDelta timestamp,
     const base::Closure& no_longer_needed_cb) {
-  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
-    return NULL;
+  gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+  CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
 
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(format,
-                     coded_size,
+                     new_coded_size,
                      visible_rect,
                      natural_size,
                      scoped_ptr<gpu::MailboxHolder>(),
@@ -312,7 +321,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const base::Closure& no_longer_needed_cb) {
   // NATIVE_TEXTURE frames need mailbox info propagated, and there's no support
   // for that here yet, see http://crbug/362521.
-  CHECK(frame->format() != NATIVE_TEXTURE);
+  CHECK_NE(frame->format(), NATIVE_TEXTURE);
 
   DCHECK(frame->visible_rect().Contains(visible_rect));
   scoped_refptr<VideoFrame> wrapped_frame(

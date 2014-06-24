@@ -396,7 +396,7 @@ void AVStreamToVideoDecoderConfig(
   if (codec == kCodecVP9) {
     // TODO(tomfinegan): libavcodec doesn't know about VP9.
     format = VideoFrame::YV12;
-    coded_size = natural_size;
+    coded_size = visible_rect.size();
   }
 
   // Pad out |coded_size| for subsampled YUV formats.

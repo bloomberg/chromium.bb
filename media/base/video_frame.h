@@ -114,6 +114,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // and plane count as given by |format|.  The shared memory handle of the
   // backing allocation, if present, can be passed in with |handle|.  When the
   // frame is destroyed, |no_longer_needed_cb.Run()| will be called.
+  // Returns NULL on failure.
   static scoped_refptr<VideoFrame> WrapExternalPackedMemory(
       Format format,
       const gfx::Size& coded_size,
@@ -136,6 +137,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // directly to a hardware device and/or to another process, or can also be
   // mapped via mmap() for CPU access.
   // When the frame is destroyed, |no_longer_needed_cb.Run()| will be called.
+  // Returns NULL on failure.
   static scoped_refptr<VideoFrame> WrapExternalDmabufs(
       Format format,
       const gfx::Size& coded_size,
