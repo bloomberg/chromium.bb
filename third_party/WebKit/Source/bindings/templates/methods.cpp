@@ -21,7 +21,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {# Security checks #}
-    {# FIXME: merge to method.is_check_security_for_frame http://crbug.com/383699 #}
+    {# FIXME: change to method.is_check_security_for_window #}
     {% if interface_name == 'EventTarget' %}
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {

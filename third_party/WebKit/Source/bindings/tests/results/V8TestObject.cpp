@@ -6411,10 +6411,11 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void voidMethodEventListenerOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEventListenerArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForMethod("voidMethodEventListenerOrNullArg", "TestObject", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -6422,15 +6423,15 @@ static void voidMethodEventListenerOrNullArgMethod(const v8::FunctionCallbackInf
     {
         eventListenerArg = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
     }
-    impl->voidMethodEventListenerOrNullArg(eventListenerArg);
+    impl->voidMethodEventListenerArg(eventListenerArg);
     if (listener && !impl->toNode())
         removeHiddenValueFromArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
 }
 
-static void voidMethodEventListenerOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodEventListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodEventListenerOrNullArgMethod(info);
+    TestObjectV8Internal::voidMethodEventListenerArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -9824,7 +9825,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0},
     {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0},
     {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1},
-    {"voidMethodEventListenerOrNullArg", TestObjectV8Internal::voidMethodEventListenerOrNullArgMethodCallback, 0, 1},
+    {"voidMethodEventListenerArg", TestObjectV8Internal::voidMethodEventListenerArgMethodCallback, 0, 1},
     {"voidMethodNodeFilterArg", TestObjectV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1},
     {"voidMethodPromiseArg", TestObjectV8Internal::voidMethodPromiseArgMethodCallback, 0, 1},
     {"voidMethodSerializedScriptValueArg", TestObjectV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1},

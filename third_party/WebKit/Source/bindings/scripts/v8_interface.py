@@ -90,10 +90,9 @@ def interface_context(interface):
     # [ActiveDOMObject]
     is_active_dom_object = 'ActiveDOMObject' in extended_attributes
 
-    # [CheckSecurity=Frame]
-    is_check_security_for_frame = has_extended_attribute_value(
-        interface, 'CheckSecurity', 'Frame')
-    if is_check_security_for_frame:
+    # [CheckSecurity]
+    is_check_security = 'CheckSecurity' in extended_attributes
+    if is_check_security:
         includes.add('bindings/v8/BindingSecurity.h')
 
     # [DependentLifetime]
@@ -152,7 +151,7 @@ def interface_context(interface):
         'interface_name': interface.name,
         'is_active_dom_object': is_active_dom_object,
         'is_audio_buffer': is_audio_buffer,
-        'is_check_security_for_frame': is_check_security_for_frame,
+        'is_check_security': is_check_security,
         'is_dependent_lifetime': is_dependent_lifetime,
         'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),

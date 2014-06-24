@@ -12,7 +12,9 @@ shouldBe('window.open.length', '2');
 shouldBe('window.showModalDialog.length', '1');
 shouldBe('window.setTimeout.length', '1');
 shouldBe('window.clearTimeout.length', '0');
-shouldBe('window.addEventListener.length', '2');
+// addEventListener.length should be 2, but legacy content calls with 0 or 1
+// argument. See http://crbug.com/249598
+shouldBe('window.addEventListener.length', '0');
 shouldBe('window.postMessage.length', '2');
 shouldBe('window.dispatchEvent.length', '1');
 shouldBe('window.openDatabase.length', '4');

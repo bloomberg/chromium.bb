@@ -86,9 +86,14 @@ public:
     virtual LocalDOMWindow* toDOMWindow();
     virtual MessagePort* toMessagePort();
 
-    // FIXME: default values should be specified in IDL, not C++
-    // http://crbug.com/258153
+    // FIXME: first 2 args to addEventListener and removeEventListener should
+    // be required (per spec), but throwing TypeError breaks legacy content.
+    // http://crbug.com/353484
+    bool addEventListener() { return false; }
+    bool addEventListener(const AtomicString& eventType) { return false; }
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
+    bool removeEventListener() { return false; }
+    bool removeEventListener(const AtomicString& eventType) { return false; }
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
     virtual void removeAllEventListeners();
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
