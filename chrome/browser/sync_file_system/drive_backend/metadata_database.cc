@@ -379,8 +379,7 @@ void MarkTrackerSetDirty(const TrackerIDSet& trackers,
     if (tracker->dirty())
       continue;
     tracker->set_dirty(true);
-    PutFileTrackerToBatch(*tracker, batch);
-    index->StoreFileTracker(tracker.Pass());
+    index->StoreFileTracker(tracker.Pass(), batch);
   }
 }
 
@@ -416,8 +415,7 @@ void MarkTrackersDirtyRecursively(int64 root_tracker_id,
         CloneFileTracker(index->GetFileTracker(tracker_id));
     tracker->set_dirty(true);
 
-    PutFileTrackerToBatch(*tracker, batch);
-    index->StoreFileTracker(tracker.Pass());
+    index->StoreFileTracker(tracker.Pass(), batch);
   }
 }
 
@@ -445,8 +443,7 @@ void RemoveAllDescendantTrackers(int64 root_tracker_id,
        itr != to_be_removed.rend(); ++itr) {
     const FileTracker* trackers = index->GetFileTracker(*itr);
     affected_file_ids.insert(trackers->file_id());
-    PutFileTrackerDeletionToBatch(*itr, batch);
-    index->RemoveFileTracker(*itr);
+    index->RemoveFileTracker(*itr, batch);
   }
 
   for (base::hash_set<std::string>::iterator itr = affected_file_ids.begin();
@@ -454,8 +451,7 @@ void RemoveAllDescendantTrackers(int64 root_tracker_id,
     TrackerIDSet trackers = index->GetFileTrackerIDsByFileID(*itr);
     if (trackers.empty()) {
       // Remove metadata that no longer has any tracker.
-      PutFileMetadataDeletionToBatch(*itr, batch);
-      index->RemoveFileMetadata(*itr);
+      index->RemoveFileMetadata(*itr, batch);
     } else {
       MarkTrackerSetDirty(trackers, index, batch);
     }
@@ -556,8 +552,7 @@ void ActivateFileTracker(int64 tracker_id,
     tracker->set_needs_folder_listing(false);
   }
 
-  PutFileTrackerToBatch(*tracker, batch);
-  index->StoreFileTracker(tracker.Pass());
+  index->StoreFileTracker(tracker.Pass(), batch);
 }
 
 void DeactivateFileTracker(int64 tracker_id,
@@ -579,8 +574,7 @@ void DeactivateFileTracker(int64 tracker_id,
 
   tracker->set_dirty(dirtying_options & MARK_ITSELF_DIRTY);
   tracker->set_active(false);
-  PutFileTrackerToBatch(*tracker, batch);
-  index->StoreFileTracker(tracker.Pass());
+  index->StoreFileTracker(tracker.Pass(), batch);
 }
 
 void RemoveFileTracker(int64 tracker_id,
@@ -598,8 +592,7 @@ void RemoveFileTracker(int64 tracker_id,
   std::string title = GetTrackerTitle(*tracker);
 
   RemoveAllDescendantTrackers(tracker_id, index, batch);
-  PutFileTrackerDeletionToBatch(tracker_id, batch);
-  index->RemoveFileTracker(tracker_id);
+  index->RemoveFileTracker(tracker_id, batch);
 
   if (dirtying_options & MARK_SAME_FILE_ID_TRACKERS_DIRTY)
     MarkTrackersDirtyByFileID(file_id, index, batch);
@@ -607,8 +600,7 @@ void RemoveFileTracker(int64 tracker_id,
     MarkTrackersDirtyByPath(parent_tracker_id, title, index, batch);
 
   if (index->GetFileTrackerIDsByFileID(file_id).empty()) {
-    PutFileMetadataDeletionToBatch(file_id, batch);
-    index->RemoveFileMetadata(file_id);
+    index->RemoveFileMetadata(file_id, batch);
   }
 }
 
@@ -801,8 +793,7 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
   tracker->set_needs_folder_listing(true);
   tracker->set_dirty(true);
 
-  PutFileTrackerToBatch(*tracker, batch.get());
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(tracker.Pass(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -832,8 +823,7 @@ void MetadataDatabase::DisableApp(const std::string& app_id,
   // other conflicting trackers won't become active.
   tracker->set_tracker_kind(TRACKER_KIND_DISABLED_APP_ROOT);
 
-  PutFileTrackerToBatch(*tracker, batch.get());
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(tracker.Pass(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -860,8 +850,7 @@ void MetadataDatabase::EnableApp(const std::string& app_id,
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
   tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
-  PutFileTrackerToBatch(*tracker, batch.get());
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(tracker.Pass(), batch.get());
 
   MarkTrackersDirtyRecursively(tracker_id, index_.get(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
@@ -889,8 +878,7 @@ void MetadataDatabase::UnregisterApp(const std::string& app_id,
   tracker->set_active(false);
   tracker->set_dirty(true);
 
-  PutFileTrackerToBatch(*tracker, batch.get());
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(tracker.Pass(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -1240,8 +1228,7 @@ void MetadataDatabase::PopulateFolderByChildList(
   folder_tracker->set_needs_folder_listing(false);
   if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker))
     folder_tracker->set_dirty(false);
-  PutFileTrackerToBatch(*folder_tracker, batch.get());
-  index_->StoreFileTracker(folder_tracker.Pass());
+  index_->StoreFileTracker(folder_tracker.Pass(), batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
 }
@@ -1342,8 +1329,7 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   } else if (tracker->dirty() && !ShouldKeepDirty(*tracker)) {
     updated_tracker->set_dirty(false);
   }
-  PutFileTrackerToBatch(*tracker, batch.get());
-  index_->StoreFileTracker(updated_tracker.Pass());
+  index_->StoreFileTracker(updated_tracker.Pass(), batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
 }
@@ -1398,8 +1384,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
       if (tracker_to_be_deactivated) {
         const std::string file_id = tracker_to_be_deactivated->file_id();
         tracker_to_be_deactivated->set_active(false);
-        PutFileTrackerToBatch(*tracker_to_be_deactivated, batch.get());
-        index_->StoreFileTracker(tracker_to_be_deactivated.Pass());
+        index_->StoreFileTracker(tracker_to_be_deactivated.Pass(), batch.get());
 
         MarkTrackersDirtyByFileID(file_id, index_.get(), batch.get());
       } else {
@@ -1417,8 +1402,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
   }
   tracker_to_be_activated->set_dirty(false);
 
-  PutFileTrackerToBatch(*tracker_to_be_activated, batch.get());
-  index_->StoreFileTracker(tracker_to_be_activated.Pass());
+  index_->StoreFileTracker(tracker_to_be_activated.Pass(), batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
   return ACTIVATION_PENDING;
@@ -1663,8 +1647,7 @@ void MetadataDatabase::CreateTrackerInternal(const FileTracker& parent_tracker,
       tracker->mutable_synced_details()->clear_md5();
     }
   }
-  PutFileTrackerToBatch(*tracker, batch);
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(tracker.Pass(), batch);
 }
 
 void MetadataDatabase::MaybeAddTrackersForNewFile(
@@ -1856,8 +1839,7 @@ void MetadataDatabase::UpdateByFileMetadata(
 
   TrackerIDSet trackers = index_->GetFileTrackerIDsByFileID(file_id);
   if (!trackers.empty()) {
-    PutFileMetadataToBatch(*metadata, batch);
-    index_->StoreFileMetadata(metadata.Pass());
+    index_->StoreFileMetadata(metadata.Pass(), batch);
 
     if (option != UPDATE_TRACKER_FOR_SYNCED_FILE)
       MarkTrackerSetDirty(trackers, index_.get(), batch);
@@ -2077,14 +2059,11 @@ void MetadataDatabase::AttachSyncRoot(
   scoped_ptr<FileTracker> sync_root_tracker =
       CreateSyncRootTracker(IncrementTrackerID(batch), *sync_root_metadata);
 
-  PutFileMetadataToBatch(*sync_root_metadata, batch);
-  PutFileTrackerToBatch(*sync_root_tracker, batch);
-
   service_metadata_->set_sync_root_tracker_id(sync_root_tracker->tracker_id());
   PutServiceMetadataToBatch(*service_metadata_, batch);
 
-  index_->StoreFileMetadata(sync_root_metadata.Pass());
-  index_->StoreFileTracker(sync_root_tracker.Pass());
+  index_->StoreFileMetadata(sync_root_metadata.Pass(), batch);
+  index_->StoreFileTracker(sync_root_tracker.Pass(), batch);
 }
 
 void MetadataDatabase::AttachInitialAppRoot(
@@ -2098,11 +2077,8 @@ void MetadataDatabase::AttachInitialAppRoot(
                                   GetSyncRootTrackerID(),
                                   *app_root_metadata);
 
-  PutFileMetadataToBatch(*app_root_metadata, batch);
-  PutFileTrackerToBatch(*app_root_tracker, batch);
-
-  index_->StoreFileMetadata(app_root_metadata.Pass());
-  index_->StoreFileTracker(app_root_tracker.Pass());
+  index_->StoreFileMetadata(app_root_metadata.Pass(), batch);
+  index_->StoreFileTracker(app_root_tracker.Pass(), batch);
 }
 
 void MetadataDatabase::DetachFromSequence() {

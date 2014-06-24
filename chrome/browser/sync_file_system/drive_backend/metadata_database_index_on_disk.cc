@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 
 #include "base/logging.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 
 namespace sync_file_system {
@@ -32,21 +33,26 @@ const FileMetadata* MetadataDatabaseIndexOnDisk::GetFileMetadata(
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileMetadata(
-    scoped_ptr<FileMetadata> metadata) {
+    scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) {
+  PutFileMetadataToBatch(*metadata.get(), batch);
   NOTIMPLEMENTED();
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileTracker(
-    scoped_ptr<FileTracker> tracker) {
+    scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) {
+  PutFileTrackerToBatch(*tracker.get(), batch);
   NOTIMPLEMENTED();
 }
 
 void MetadataDatabaseIndexOnDisk::RemoveFileMetadata(
-    const std::string& file_id) {
+    const std::string& file_id, leveldb::WriteBatch* batch) {
+  PutFileMetadataDeletionToBatch(file_id, batch);
   NOTIMPLEMENTED();
 }
 
-void MetadataDatabaseIndexOnDisk::RemoveFileTracker(int64 tracker_id) {
+void MetadataDatabaseIndexOnDisk::RemoveFileTracker(
+    int64 tracker_id, leveldb::WriteBatch* batch) {
+  PutFileTrackerDeletionToBatch(tracker_id, batch);
   NOTIMPLEMENTED();
 }
 

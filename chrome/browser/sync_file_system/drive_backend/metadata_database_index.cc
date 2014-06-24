@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 
@@ -54,11 +55,11 @@ std::string GetTrackerTitle(const FileTracker& tracker) {
 
 MetadataDatabaseIndex::MetadataDatabaseIndex(DatabaseContents* content) {
   for (size_t i = 0; i < content->file_metadata.size(); ++i)
-    StoreFileMetadata(make_scoped_ptr(content->file_metadata[i]));
+    StoreFileMetadata(make_scoped_ptr(content->file_metadata[i]), NULL);
   content->file_metadata.weak_clear();
 
   for (size_t i = 0; i < content->file_trackers.size(); ++i)
-    StoreFileTracker(make_scoped_ptr(content->file_trackers[i]));
+    StoreFileTracker(make_scoped_ptr(content->file_trackers[i]), NULL);
   content->file_trackers.weak_clear();
 
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
@@ -80,7 +81,8 @@ const FileMetadata* MetadataDatabaseIndex::GetFileMetadata(
 }
 
 void MetadataDatabaseIndex::StoreFileMetadata(
-    scoped_ptr<FileMetadata> metadata) {
+    scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) {
+  PutFileMetadataToBatch(*metadata.get(), batch);
   if (!metadata) {
     NOTREACHED();
     return;
@@ -90,7 +92,9 @@ void MetadataDatabaseIndex::StoreFileMetadata(
   metadata_by_id_.set(file_id, metadata.Pass());
 }
 
-void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker) {
+void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker,
+                                             leveldb::WriteBatch* batch) {
+  PutFileTrackerToBatch(*tracker.get(), batch);
   if (!tracker) {
     NOTREACHED();
     return;
@@ -120,11 +124,16 @@ void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker) {
   tracker_by_id_.set(tracker_id, tracker.Pass());
 }
 
-void MetadataDatabaseIndex::RemoveFileMetadata(const std::string& file_id) {
+void MetadataDatabaseIndex::RemoveFileMetadata(const std::string& file_id,
+                                               leveldb::WriteBatch* batch) {
+  PutFileMetadataDeletionToBatch(file_id, batch);
   metadata_by_id_.erase(file_id);
 }
 
-void MetadataDatabaseIndex::RemoveFileTracker(int64 tracker_id) {
+void MetadataDatabaseIndex::RemoveFileTracker(int64 tracker_id,
+                                              leveldb::WriteBatch* batch) {
+  PutFileTrackerDeletionToBatch(tracker_id, batch);
+
   FileTracker* tracker = tracker_by_id_.get(tracker_id);
   if (!tracker) {
     NOTREACHED();

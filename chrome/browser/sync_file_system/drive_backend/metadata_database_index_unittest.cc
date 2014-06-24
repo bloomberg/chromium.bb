@@ -176,14 +176,14 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
                     new_tracker_id,
                     index.GetFileTracker(kAppRootTrackerID));
   new_tracker->set_active(false);
-  index.StoreFileTracker(new_tracker.Pass());
+  index.StoreFileTracker(new_tracker.Pass(), NULL);
 
   EXPECT_EQ("file_id", index.PickMultiTrackerFileID());
   EXPECT_EQ(ParentIDAndTitle(kAppRootTrackerID, std::string("file")),
             index.PickMultiBackingFilePath());
 
-  index.RemoveFileMetadata("file_id");
-  index.RemoveFileTracker(kFileTrackerID);
+  index.RemoveFileMetadata("file_id", NULL);
+  index.RemoveFileTracker(kFileTrackerID, NULL);
 
   EXPECT_FALSE(index.GetFileMetadata("file_id"));
   EXPECT_FALSE(index.GetFileTracker(kFileTrackerID));

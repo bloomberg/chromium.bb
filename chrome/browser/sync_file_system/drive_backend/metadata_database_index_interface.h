@@ -10,6 +10,10 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace leveldb {
+class WriteBatch;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -45,17 +49,21 @@ class MetadataDatabaseIndexInterface {
 
   // Stores |metadata| and updates indexes.
   // This overwrites existing FileMetadata for the same |file_id|.
-  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) = 0;
+  virtual void StoreFileMetadata(
+      scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) = 0;
 
   // Stores |tracker| and updates indexes.
   // This overwrites existing FileTracker for the same |tracker_id|.
-  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) = 0;
+  virtual void StoreFileTracker(
+      scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) = 0;
 
   // Removes FileMetadata identified by |file_id| from indexes.
-  virtual void RemoveFileMetadata(const std::string& file_id) = 0;
+  virtual void RemoveFileMetadata(
+      const std::string& file_id, leveldb::WriteBatch* batch) = 0;
 
   // Removes FileTracker identified by |tracker_id| from indexes.
-  virtual void RemoveFileTracker(int64 tracker_id) = 0;
+  virtual void RemoveFileTracker(
+      int64 tracker_id, leveldb::WriteBatch* batch) = 0;
 
   // Returns a set of FileTracker that have |file_id| as its own.
   virtual TrackerIDSet GetFileTrackerIDsByFileID(

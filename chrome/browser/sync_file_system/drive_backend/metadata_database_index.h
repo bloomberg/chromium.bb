@@ -56,10 +56,14 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual const FileMetadata* GetFileMetadata(
       const std::string& file_id) const OVERRIDE;
   virtual const FileTracker* GetFileTracker(int64 tracker_id) const OVERRIDE;
-  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) OVERRIDE;
-  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) OVERRIDE;
-  virtual void RemoveFileMetadata(const std::string& file_id) OVERRIDE;
-  virtual void RemoveFileTracker(int64 tracker_id) OVERRIDE;
+  virtual void StoreFileMetadata(
+      scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void StoreFileTracker(
+      scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void RemoveFileMetadata(
+      const std::string& file_id, leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void RemoveFileTracker(
+      int64 tracker_id, leveldb::WriteBatch* batch) OVERRIDE;
   virtual TrackerIDSet GetFileTrackerIDsByFileID(
       const std::string& file_id) const OVERRIDE;
   virtual int64 GetAppRootTracker(const std::string& app_id) const OVERRIDE;
