@@ -59,7 +59,11 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
                        PRE_TestAdblockExtensionCrash) {
-  InstallExtensionSilently(GetExtensionService(), "adblock.crx");
+  // TODO(thestig): Remove CHECK and fold this back into
+  // InstallExtensionSilently() after fixing http://crbug.com/387866.
+  ExtensionService* service = GetExtensionService();
+  CHECK(service);
+  InstallExtensionSilently(service, "adblock.crx");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {

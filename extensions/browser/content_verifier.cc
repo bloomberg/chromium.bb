@@ -26,6 +26,8 @@ ContentVerifier::ContentVerifier(content::BrowserContext* context,
           context,
           delegate,
           base::Bind(&ContentVerifier::OnFetchComplete, this))) {
+  // TODO(thestig): Remove after investigating http://crbug.com/387866
+  CHECK(context);
 }
 
 ContentVerifier::~ContentVerifier() {
