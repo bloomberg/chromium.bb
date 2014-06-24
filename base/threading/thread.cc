@@ -51,12 +51,14 @@ struct Thread::StartupData {
 
 Thread::Options::Options()
     : message_loop_type(MessageLoop::TYPE_DEFAULT),
+      timer_slack(TIMER_SLACK_NONE),
       stack_size(0) {
 }
 
 Thread::Options::Options(MessageLoop::Type type,
                          size_t size)
     : message_loop_type(type),
+      timer_slack(TIMER_SLACK_NONE),
       stack_size(size) {
 }
 
@@ -202,6 +204,7 @@ void Thread::ThreadMain() {
     PlatformThread::SetName(name_.c_str());
     ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
     message_loop->set_thread_name(name_);
+    message_loop->SetTimerSlack(startup_data_->options.timer_slack);
     message_loop_ = message_loop.get();
 
 #if defined(OS_WIN)

@@ -66,7 +66,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   sync_thread_ = sync_thread.Pass();
   if (!sync_thread_) {
     sync_thread_.reset(new base::Thread("Chrome_SyncThread"));
-    CHECK(sync_thread_->Start());
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    CHECK(sync_thread_->StartWithOptions(options));
   }
 
   workers_[syncer::GROUP_DB] = new DatabaseModelWorker(this);
