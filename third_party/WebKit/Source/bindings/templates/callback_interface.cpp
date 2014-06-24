@@ -61,11 +61,14 @@ namespace WebCore {
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
 
-    {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else '' %}
+    {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'm_scriptState->context()->Global(), ' %}
     {% if method.idl_type == 'boolean' %}
-    return invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv);
+    v8::TryCatch exceptionCatcher;
+    exceptionCatcher.SetVerbose(true);
+    ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, m_scriptState->isolate());
+    return !exceptionCatcher.HasCaught();
     {% else %}{# void #}
-    invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv);
+    ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, m_scriptState->isolate());
     {% endif %}
 }
 

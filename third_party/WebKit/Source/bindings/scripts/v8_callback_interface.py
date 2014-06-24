@@ -44,6 +44,7 @@ CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'bindings/v8/ScopedPersistent.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
+    'bindings/v8/ScriptController.h',
     'bindings/v8/V8Binding.h',
     'core/dom/ExecutionContext.h',
     'wtf/Assertions.h',

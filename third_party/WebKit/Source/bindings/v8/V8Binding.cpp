@@ -119,19 +119,6 @@ void throwMinimumArityTypeError(ExceptionState& exceptionState, unsigned expecte
     exceptionState.throwIfNeeded();
 }
 
-bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[])
-{
-    return invokeCallback(scriptState, callback, scriptState->context()->Global(), argc, argv);
-}
-
-bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, v8::Handle<v8::Value> thisValue, int argc, v8::Handle<v8::Value> argv[])
-{
-    v8::TryCatch exceptionCatcher;
-    exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(scriptState->executionContext(), callback, thisValue, argc, argv, scriptState->isolate());
-    return !exceptionCatcher.HasCaught();
-}
-
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     virtual void* Allocate(size_t size) OVERRIDE
     {
