@@ -191,6 +191,9 @@ class SharedLibrary {
   // ARM EABI section used for stack unwinding.
   unsigned* arm_exidx_;
   size_t arm_exidx_count_;
+
+  // ARM packed relocations data, NULL if absent.
+  uint8_t* arm_packed_relocs_;
 #endif
 
   link_map_t link_map_;

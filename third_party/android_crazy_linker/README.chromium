@@ -32,3 +32,6 @@ index 5fa16df..bc03739 100644
 - Fix for crbug/373695 (NDK crazy linker: Bug in library file name handling)
 
 - Fix for crbug/386594 (Crazy linker fails to load a browser on MIPS)
+
+- Add support for unpacking packed R_ARM_RELATIVE relocation data.
+  https://code.google.com/p/chromium/issues/detail?id=385553

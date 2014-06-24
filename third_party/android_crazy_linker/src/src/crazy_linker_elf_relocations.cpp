@@ -10,6 +10,7 @@
 #include "crazy_linker_elf_symbols.h"
 #include "crazy_linker_elf_view.h"
 #include "crazy_linker_error.h"
+#include "crazy_linker_system.h"
 #include "crazy_linker_util.h"
 #include "linker_phdr.h"
 
@@ -310,6 +311,11 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
       return false;
   }
 
+#ifdef __arm__
+  if (!ApplyArmPackedRelocs(error))
+    return false;
+#endif
+
 #ifdef __mips__
   if (!RelocateMipsGot(symbols, resolver, error))
     return false;
@@ -325,6 +331,86 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
   LOG("%s: Done\n", __FUNCTION__);
   return true;
 }
+
+#ifdef __arm__
+
+void ElfRelocations::RegisterArmPackedRelocs(uint8_t* arm_packed_relocs) {
+  arm_packed_relocs_ = arm_packed_relocs;
+}
+
+// Helper class for decoding packed ARM relocation data.
+// http://en.wikipedia.org/wiki/LEB128
+class Leb128Decoder {
+ public:
+  explicit Leb128Decoder(const uint8_t* encoding)
+      : encoding_(encoding), cursor_(0) { }
+
+  uint32_t Dequeue() {
+    size_t extent = cursor_;
+    while (encoding_[extent] >> 7)
+      extent++;
+
+    uint32_t value = 0;
+    for (size_t i = extent; i > cursor_; --i) {
+      value = (value << 7) | (encoding_[i] & 127);
+    }
+    value = (value << 7) | (encoding_[cursor_] & 127);
+
+    cursor_ = extent + 1;
+    return value;
+  }
+
+ private:
+  const uint8_t* encoding_;
+  size_t cursor_;
+};
+
+bool ElfRelocations::ApplyArmPackedRelocs(Error* error) {
+  if (!arm_packed_relocs_)
+    return true;
+
+  Leb128Decoder decoder(arm_packed_relocs_);
+
+  // Check for the initial APR1 header.
+  if (decoder.Dequeue() != 'A' || decoder.Dequeue() != 'P' ||
+      decoder.Dequeue() != 'R' || decoder.Dequeue() != '1') {
+    error->Format("Bad packed relocations ident, expected APR1");
+    return false;
+  }
+
+  // Find the count of pairs and the start address.
+  size_t pairs = decoder.Dequeue();
+  const Elf32_Addr start_address = decoder.Dequeue();
+
+  // Emit initial R_ARM_RELATIVE relocation.
+  Elf32_Rel relocation = {start_address, R_ARM_RELATIVE};
+  const ELF::Addr sym_addr = 0;
+  const bool resolved = false;
+  if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
+    return false;
+
+  size_t unpacked_count = 1;
+
+  // Emit relocations for each count-delta pair.
+  while (pairs) {
+    size_t count = decoder.Dequeue();
+    const size_t delta = decoder.Dequeue();
+
+    // Emit count R_ARM_RELATIVE relocations with delta offset.
+    while (count) {
+      relocation.r_offset += delta;
+      if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
+        return false;
+      unpacked_count++;
+      count--;
+    }
+    pairs--;
+  }
+
+  RLOG("%s: unpacked_count=%d\n", __FUNCTION__, unpacked_count);
+  return true;
+}
+#endif  // __arm__
 
 bool ElfRelocations::ApplyRelaReloc(const ELF::Rela* rela,
                                     ELF::Addr sym_addr,
