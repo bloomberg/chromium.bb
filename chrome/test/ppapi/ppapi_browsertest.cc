@@ -1216,6 +1216,9 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
 // This test fails when using the legacy software mode. Reenable when the
 // software compositor is enabled crbug.com/286038
 #define MAYBE_Compositor DISABLED_Compositor
+#elif defined(OS_LINUX)
+// Flaky on Linux crbug.com/387915
+#define MAYBE_Compositor DISABLED_Compositor
 #else
 #define MAYBE_Compositor Compositor
 #endif
