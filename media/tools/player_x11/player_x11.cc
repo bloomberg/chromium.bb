@@ -86,6 +86,8 @@ static void OnStatus(media::PipelineStatus status) {}
 
 static void OnMetadata(media::PipelineMetadata metadata) {}
 
+static void OnBufferingStateChanged(media::BufferingState buffering_state) {}
+
 static void NeedKey(const std::string& type,
                     const std::vector<uint8>& init_data) {
   std::cout << "File is encrypted." << std::endl;
@@ -146,7 +148,7 @@ void InitPipeline(
   pipeline->Start(
       collection.Pass(), base::Bind(&DoNothing), base::Bind(&OnStatus),
       base::Bind(&SaveStatusAndSignal, &event, &status),
-      base::Bind(&OnMetadata), base::Bind(&DoNothing),
+      base::Bind(&OnMetadata), base::Bind(&OnBufferingStateChanged),
       base::Bind(&DoNothing));
 
   // Wait until the pipeline is fully initialized.

@@ -165,6 +165,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       playback_rate_(0.0f),
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
+      should_notify_time_changed_(false),
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
@@ -922,9 +923,7 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
   if (paused_)
     paused_time_ = pipeline_.GetMediaTime();
 
-  // Blink expects a timeChanged() in response to a seek().
-  if (time_changed)
-    client_->timeChanged();
+  should_notify_time_changed_ = time_changed;
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
@@ -979,19 +978,26 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
   InvalidateOnMainThread();
 }
 
-void WebMediaPlayerImpl::OnPipelinePrerollCompleted() {
-  DVLOG(1) << __FUNCTION__;
+void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
+    media::BufferingState buffering_state) {
+  DVLOG(1) << __FUNCTION__ << "(" << buffering_state << ")";
 
-  // Only transition to ReadyStateHaveEnoughData if we don't have
-  // any pending seeks because the transition can cause Blink to
-  // report that the most recent seek has completed.
-  if (!pending_seek_) {
-    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+  // Ignore buffering state changes until we've completed all outstanding seeks.
+  if (seeking_ || pending_seek_)
+    return;
 
-    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-    // should know when to invalidate themselves http://crbug.com/337015
-    InvalidateOnMainThread();
-  }
+  // TODO(scherkus): Handle other buffering states when Pipeline starts using
+  // them and translate them ready state changes http://crbug.com/144683
+  DCHECK_EQ(buffering_state, media::BUFFERING_HAVE_ENOUGH);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+
+  // Blink expects a timeChanged() in response to a seek().
+  if (should_notify_time_changed_)
+    client_->timeChanged();
+
+  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
+  // should know when to invalidate themselves http://crbug.com/337015
+  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1211,7 +1217,7 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelinePrerollCompleted),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged));
 }
 

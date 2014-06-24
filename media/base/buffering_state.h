@@ -21,6 +21,9 @@ enum BufferingState {
   BUFFERING_HAVE_ENOUGH,
 };
 
+// Used to indicate changes in buffering state;
+typedef base::Callback<void(BufferingState)> BufferingStateCB;
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_BUFFERING_STATE_H_

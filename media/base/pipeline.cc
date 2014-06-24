@@ -72,13 +72,13 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
                      const PipelineMetadataCB& metadata_cb,
-                     const base::Closure& preroll_completed_cb,
+                     const BufferingStateCB& buffering_state_cb,
                      const base::Closure& duration_change_cb) {
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!seek_cb.is_null());
   DCHECK(!metadata_cb.is_null());
-  DCHECK(!preroll_completed_cb.is_null());
+  DCHECK(!buffering_state_cb.is_null());
 
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
@@ -89,7 +89,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   error_cb_ = error_cb;
   seek_cb_ = seek_cb;
   metadata_cb_ = metadata_cb;
-  preroll_completed_cb_ = preroll_completed_cb;
+  buffering_state_cb_ = buffering_state_cb;
   duration_change_cb_ = duration_change_cb;
 
   task_runner_->PostTask(
@@ -399,6 +399,8 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       return DoInitialPreroll(done_cb);
 
     case kPlaying:
+      base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+
       PlaybackRateChangedTask(GetPlaybackRate());
       VolumeChangedTask(GetVolume());
 
@@ -891,12 +893,16 @@ void Pipeline::BufferingStateChanged(BufferingState* buffering_state,
   // Renderer underflowed.
   if (!was_waiting_for_enough_data && WaitingForEnoughData()) {
     StartWaitingForEnoughData();
+
+    // TODO(scherkus): Fire BUFFERING_HAVE_NOTHING callback to alert clients of
+    // underflow state http://crbug.com/144683
     return;
   }
 
   // Renderer prerolled.
   if (was_waiting_for_enough_data && !WaitingForEnoughData()) {
     StartPlayback();
+    buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
     return;
   }
 }
@@ -939,10 +945,6 @@ void Pipeline::StartPlayback() {
     clock_->SetMaxTime(clock_->Duration());
     clock_->Play();
   }
-
-  preroll_completed_cb_.Run();
-  if (!seek_cb_.is_null())
-    base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 }
 
 void Pipeline::PauseClockAndStopRendering_Locked() {

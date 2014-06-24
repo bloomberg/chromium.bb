@@ -64,7 +64,7 @@ class CallbackHelper {
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
-  MOCK_METHOD0(OnPrerollCompleted, void());
+  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD0(OnDurationChange, void());
 
  private:
@@ -208,7 +208,7 @@ class PipelineTest : public ::testing::Test {
             .WillOnce(RunCallback<1>(PIPELINE_OK));
         EXPECT_CALL(*audio_renderer_, StartRendering());
       }
-      EXPECT_CALL(callbacks_, OnPrerollCompleted());
+      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     }
 
     pipeline_->Start(
@@ -217,7 +217,7 @@ class PipelineTest : public ::testing::Test {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnPrerollCompleted,
+        base::Bind(&CallbackHelper::OnBufferingStateChange,
                    base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
@@ -277,10 +277,9 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(RunClosure<0>());
     }
 
-    EXPECT_CALL(callbacks_, OnPrerollCompleted());
-
-    // We expect a successful seek callback.
+    // We expect a successful seek callback followed by a buffering update.
     EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   }
 
   void DoSeek(const base::TimeDelta& seek_time) {
@@ -376,7 +375,7 @@ TEST_F(PipelineTest, NeverInitializes) {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnPrerollCompleted,
+        base::Bind(&CallbackHelper::OnBufferingStateChange,
                    base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
@@ -781,8 +780,8 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   EXPECT_CALL(*audio_renderer_, SetVolume(_));
   EXPECT_CALL(*audio_renderer_, StartRendering());
 
-  EXPECT_CALL(callbacks_, OnPrerollCompleted());
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   DoSeek(seek_time);
 
   EXPECT_EQ(pipeline_->GetMediaTime(), seek_time);
@@ -872,7 +871,7 @@ class PipelineTeardownTest : public PipelineTest {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnPrerollCompleted,
+        base::Bind(&CallbackHelper::OnBufferingStateChange,
                    base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
@@ -966,7 +965,7 @@ class PipelineTeardownTest : public PipelineTest {
         .WillOnce(RunClosure<0>());
 
     if (status == PIPELINE_OK)
-      EXPECT_CALL(callbacks_, OnPrerollCompleted());
+      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
 
     return status;
   }

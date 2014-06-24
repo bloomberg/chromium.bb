@@ -535,9 +535,11 @@ class PipelineIntegrationTest
       public PipelineIntegrationTestBase {
  public:
   void StartPipelineWithMediaSource(MockMediaSource* source) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+    EXPECT_CALL(*this, OnMetadata(_))
+        .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
-    EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+        .Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(), NULL),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
@@ -545,7 +547,7 @@ class PipelineIntegrationTest
         QuitOnStatusCB(PIPELINE_OK),
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnPrerollCompleted,
+        base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
         base::Closure());
 
@@ -560,9 +562,11 @@ class PipelineIntegrationTest
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+    EXPECT_CALL(*this, OnMetadata(_))
+        .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
-    EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+        .Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(),
                                encrypted_media->decryptor()),
@@ -571,7 +575,7 @@ class PipelineIntegrationTest
         QuitOnStatusCB(PIPELINE_OK),
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnPrerollCompleted,
+        base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
         base::Closure());
 

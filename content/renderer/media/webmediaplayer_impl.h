@@ -167,7 +167,7 @@ class WebMediaPlayerImpl
   void OnPipelineEnded();
   void OnPipelineError(media::PipelineStatus error);
   void OnPipelineMetadata(media::PipelineMetadata metadata);
-  void OnPipelinePrerollCompleted();
+  void OnPipelineBufferingStateChanged(media::BufferingState buffering_state);
   void OnDemuxerOpened();
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
@@ -289,6 +289,10 @@ class WebMediaPlayerImpl
   // will have effect.
   bool pending_seek_;
   double pending_seek_seconds_;
+
+  // Tracks whether to issue time changed notifications during buffering state
+  // changes.
+  bool should_notify_time_changed_;
 
   blink::WebMediaPlayerClient* client_;
 

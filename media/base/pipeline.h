@@ -85,7 +85,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   virtual ~Pipeline();
 
   // Build a pipeline to using the given filter collection to construct a filter
-  // chain, executing |seek_cb| when the initial seek/preroll has completed.
+  // chain, executing |seek_cb| when the initial seek has completed.
   //
   // |filter_collection| must be a complete collection containing a demuxer,
   // audio/video decoders, and audio/video renderers. Failing to do so will
@@ -99,9 +99,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //   |metadata_cb| will be executed when the content duration, container video
   //                 size, start time, and whether the content has audio and/or
   //                 video in supported formats are known.
-  //   |preroll_completed_cb| will be executed when all renderers have buffered
-  //                          enough data to satisfy preroll and are ready to
-  //                          start playback.
+  //   |buffering_state_cb| will be executed whenever there are changes in the
+  //                        overall buffering state of the pipeline.
   //   |duration_change_cb| optional callback that will be executed whenever the
   //                        presentation duration changes.
   // It is an error to call this method after the pipeline has already started.
@@ -110,7 +109,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
              const PipelineStatusCB& error_cb,
              const PipelineStatusCB& seek_cb,
              const PipelineMetadataCB& metadata_cb,
-             const base::Closure& preroll_completed_cb,
+             const BufferingStateCB& buffering_state_cb,
              const base::Closure& duration_change_cb);
 
   // Asynchronously stops the pipeline, executing |stop_cb| when the pipeline
@@ -409,7 +408,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   PipelineMetadataCB metadata_cb_;
-  base::Closure preroll_completed_cb_;
+  BufferingStateCB buffering_state_cb_;
   base::Closure duration_change_cb_;
 
   // Contains the demuxer and renderers to use when initializing.
