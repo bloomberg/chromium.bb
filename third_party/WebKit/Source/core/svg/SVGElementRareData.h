@@ -20,6 +20,7 @@
 #ifndef SVGElementRareData_h
 #define SVGElementRareData_h
 
+#include "core/css/CSSCursorImageValue.cpp"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/svg/SVGCursorElement.h"
