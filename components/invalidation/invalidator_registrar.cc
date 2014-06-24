@@ -18,6 +18,7 @@ InvalidatorRegistrar::InvalidatorRegistrar()
 
 InvalidatorRegistrar::~InvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(!handlers_.might_have_observers());
   CHECK(handler_to_ids_map_.empty());
 }
 

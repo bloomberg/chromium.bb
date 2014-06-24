@@ -1,5 +1,0 @@
-include_rules = [
-  #TODO(rlarocque): Move this dependency into the invalidation component.
-  #See crbug.com/259559.
-  "+sync/internal_api/public/base",
-]

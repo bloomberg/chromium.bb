@@ -175,7 +175,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "components/invalidation/invalidator_storage.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -319,7 +318,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
-  invalidation::InvalidatorStorage::RegisterPrefs(registry);
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);

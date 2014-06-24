@@ -9,10 +9,6 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-namespace policy {
-class DeviceCloudPolicyInvalidatorTest;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -48,7 +44,6 @@ class ProfileInvalidationProviderFactory
 
  private:
   friend class ProfileInvalidationProviderFactoryTestBase;
-  friend class policy::DeviceCloudPolicyInvalidatorTest;
   friend struct DefaultSingletonTraits<ProfileInvalidationProviderFactory>;
 
   ProfileInvalidationProviderFactory();
