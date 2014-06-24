@@ -144,3 +144,8 @@ virtual/softwarecompositing/webgl [ WontFix ]
 [ Snowleopard Debug ] inspector/elements/styles/pseudo-elements.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/event-listener-breakpoints.html [ WontFix ]
+
+# These two printing tests fail with the threaded compositor but they
+# aren't critical to run in this mode.
+virtual/threaded/printing/setPrinting.html [ WontFix ]
+virtual/threaded/printing/width-overflow.html [ WontFix ]

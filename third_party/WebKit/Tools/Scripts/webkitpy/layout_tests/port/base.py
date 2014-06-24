@@ -1626,7 +1626,9 @@ class Port(object):
                              ['--enable-direct-write',
                               '--enable-font-antialiasing',
                               '--force-compositing-mode']),
-
+            VirtualTestSuite('threaded',
+                             'printing',
+                             ['--enable-threaded-compositing']),
         ]
 
     @memoized
