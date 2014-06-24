@@ -66,28 +66,6 @@ static inline bool isAtShadowBoundary(const Element* element)
 }
 
 
-static void addIntrinsicMargins(RenderStyle* style)
-{
-    // Intrinsic margin value.
-    const int intrinsicMargin = 2 * style->effectiveZoom();
-
-    // FIXME: Using width/height alone and not also dealing with min-width/max-width is flawed.
-    // FIXME: Using "quirk" to decide the margin wasn't set is kind of lame.
-    if (style->width().isIntrinsicOrAuto()) {
-        if (style->marginLeft().quirk())
-            style->setMarginLeft(Length(intrinsicMargin, Fixed));
-        if (style->marginRight().quirk())
-            style->setMarginRight(Length(intrinsicMargin, Fixed));
-    }
-
-    if (style->height().isAuto()) {
-        if (style->marginTop().quirk())
-            style->setMarginTop(Length(intrinsicMargin, Fixed));
-        if (style->marginBottom().quirk())
-            style->setMarginBottom(Length(intrinsicMargin, Fixed));
-    }
-}
-
 static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool strictParsing)
 {
     switch (display) {
@@ -356,20 +334,10 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
         return;
     }
 
-    if (element.isFormControlElement()) {
-        if (isHTMLTextAreaElement(element)) {
-            // Textarea considers overflow visible as auto.
-            style->setOverflowX(style->overflowX() == OVISIBLE ? OAUTO : style->overflowX());
-            style->setOverflowY(style->overflowY() == OVISIBLE ? OAUTO : style->overflowY());
-        }
-
-        // Important: Intrinsic margins get added to controls before the theme has adjusted the style,
-        // since the theme will alter fonts and heights/widths.
-        //
-        // Don't apply intrinsic margins to image buttons. The designer knows how big the images are,
-        // so we have to treat all image buttons as though they were explicitly sized.
-        if (style->fontSize() >= 11 && (!isHTMLInputElement(element) || !toHTMLInputElement(element).isImageButton()))
-            addIntrinsicMargins(style);
+    if (isHTMLTextAreaElement(element)) {
+        // Textarea considers overflow visible as auto.
+        style->setOverflowX(style->overflowX() == OVISIBLE ? OAUTO : style->overflowX());
+        style->setOverflowY(style->overflowY() == OVISIBLE ? OAUTO : style->overflowY());
         return;
     }
 
