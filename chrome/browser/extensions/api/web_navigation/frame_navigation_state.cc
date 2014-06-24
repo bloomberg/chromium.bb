@@ -85,9 +85,7 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
       url.spec() == content::kAboutSrcDocURL) {
     return true;
   }
-  if (allow_extension_scheme_ && url.scheme() == extensions::kExtensionScheme)
-    return true;
-  return false;
+  return allow_extension_scheme_ && url.scheme() == kExtensionScheme;
 }
 
 void FrameNavigationState::TrackFrame(FrameID frame_id,
@@ -109,7 +107,7 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
   if (!is_main_frame) {
     frame_state.parent_frame_num = parent_frame_id.frame_num;
   } else {
-    DCHECK(parent_frame_id.frame_num == -1);
+    DCHECK_EQ(-1, parent_frame_id.frame_num);
     frame_state.parent_frame_num = -1;
   }
   frame_ids_.insert(frame_id);

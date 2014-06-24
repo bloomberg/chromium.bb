@@ -23,7 +23,6 @@
       'tab_capture.idl',
       'tabs.json',
       'types.json',
-      'web_navigation.json',
       'windows.json',
     ],
 
