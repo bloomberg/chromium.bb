@@ -24,6 +24,7 @@ var GeolocationOptions = options.GeolocationOptions;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
+var HotwordConfirmDialog = options.HotwordConfirmDialog;
 var ImportDataOverlay = options.ImportDataOverlay;
 var LanguageOptions = options.LanguageOptions;
 var ManageProfileOverlay = options.ManageProfileOverlay;
@@ -105,16 +106,8 @@ function load() {
             $('spelling-enabled-control').metric),
         BrowserOptions.getInstance());
   }
-  OptionsPage.registerOverlay(
-      new ConfirmDialog(
-          'hotwordConfirm',
-          loadTimeData.getString('hotwordConfirmOverlayTabTitle'),
-          'hotword-confirm-overlay',
-          $('hotword-confirm-ok'),
-          $('hotword-confirm-cancel'),
-          $('hotword-search-enable').pref,
-          $('hotword-search-enable').metric),
-      BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(new HotwordConfirmDialog(),
+                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);

@@ -1535,18 +1535,25 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (group != "" && group != "Disabled") {
-    if (HotwordServiceFactory::IsServiceAvailable(profile)) {
+  if (group != "" && group != "Disabled" &&
+      HotwordServiceFactory::IsHotwordAllowed(profile)) {
+    // Update the current error value.
+    HotwordServiceFactory::IsServiceAvailable(profile);
+    int error = HotwordServiceFactory::GetCurrentError(profile);
+    if (!error) {
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
-    } else if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
-      base::StringValue error_message(l10n_util::GetStringUTF16(
-          HotwordServiceFactory::GetCurrentError(profile)));
+    } else {
+      base::FundamentalValue enabled(
+          profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
       base::string16 hotword_help_url =
           base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
-      base::StringValue help_link(l10n_util::GetStringFUTF16(
-          IDS_HOTWORD_HELP_LINK, hotword_help_url));
+      base::StringValue error_message(l10n_util::GetStringUTF16(error));
+      if (error == IDS_HOTWORD_GENERIC_ERROR_MESSAGE) {
+        error_message = base::StringValue(
+            l10n_util::GetStringFUTF16(error, hotword_help_url));
+      }
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
-                                       error_message, help_link);
+                                       enabled, error_message);
     }
   }
 }

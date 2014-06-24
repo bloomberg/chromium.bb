@@ -46,26 +46,33 @@ cr.define('options', function() {
     },
 
     /**
-     * Assigns a value to the error message and updates the hidden state
-     * and whether the disabled section is disabled or not.
-     * @param {string} errorMsg The error message to be displayed. If none,
-     *                          there is no error.
+     * Returns the current error.
+     * @return {string} The error message to be displayed. May be undefined if
+     *     there is no error.
      */
-    set errorText(errorMsg) {
-      this.setAttribute('controlled-by', 'policy');
-      this.errorText_ = errorMsg;
-      if (errorMsg)
-        this.hidden = false;
-      if (this.disabledOnErrorSection_)
-        this.disabledOnErrorSection_.disabled = (errorMsg ? true : false);
+    get errorText() {
+      return this.errorText_;
     },
 
     /**
-     * Assigns a value to the help link variable.
-     * @param {string} helpLink The text that links to a troubleshooting page.
+     * Checks for errors and records them.
+     * @param {string} errorMsg The error message to be displayed. May be
+     *     undefined if there is no error.
      */
-    set helpLink(helpLinkText) {
-      this.helpLink_ = helpLinkText;
+    setError: function(errorMsg) {
+      this.setAttribute('controlled-by', 'policy');
+      this.errorText_ = errorMsg;
+    },
+
+    /**
+     * Changes the display to be visible if there are errors and disables
+     * the section.
+     */
+    updateBasedOnError: function() {
+      if (this.errorText_)
+        this.hidden = false;
+      if (this.disabledOnErrorSection_)
+        this.disabledOnErrorSection_.disabled = !!this.errorText_;
     },
 
     /**
@@ -90,12 +97,8 @@ cr.define('options', function() {
       var text = document.createElement('p');
       text.innerHTML = this.errorText_;
 
-      var help = document.createElement('p');
-      help.innerHTML = this.helpLink_;
-
       var textDiv = document.createElement('div');
       textDiv.appendChild(text);
-      textDiv.appendChild(help);
 
       var container = document.createElement('div');
       container.appendChild(closeButton);

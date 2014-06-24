@@ -87,6 +87,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="handler_options.js"></include>
 <include src="handler_options_list.js"></include>
 <include src="home_page_overlay.js"></include>
+<include src="hotword_confirm_dialog.js"></include>
 <include src="import_data_overlay.js"></include>
 <include src="language_add_language_overlay.js"></include>
 <if expr="not is_macosx">

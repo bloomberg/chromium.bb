@@ -183,10 +183,10 @@ cr.define('options', function() {
                     ['Options_Homepage_ShowSettings']);
       };
 
-      chrome.send('requestHotwordAvailable');
       var hotwordIndicator = $('hotword-search-setting-indicator');
       HotwordSearchSettingIndicator.decorate(hotwordIndicator);
       hotwordIndicator.disabledOnErrorSection = $('hotword-search-enable');
+      chrome.send('requestHotwordAvailable');
 
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
@@ -1009,14 +1009,15 @@ cr.define('options', function() {
 
     /**
      * Activates the Hotword section from the System settings page.
+     * @param {boolean} opt_enabled Current preference state for hotwording.
      * @param {string} opt_error The error message to display.
-     * @param {string} opt_help_link The link to a troubleshooting page.
      * @private
      */
-    showHotwordSection_: function(opt_error, opt_help_link) {
+    showHotwordSection_: function(opt_enabled, opt_error) {
       $('hotword-search').hidden = false;
-      $('hotword-search-setting-indicator').errorText = opt_error;
-      $('hotword-search-setting-indicator').helpLink = opt_help_link;
+      $('hotword-search-setting-indicator').setError(opt_error);
+      if (opt_enabled && opt_error)
+        $('hotword-search-setting-indicator').updateBasedOnError();
     },
 
     /**

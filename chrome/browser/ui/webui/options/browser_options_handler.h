@@ -275,9 +275,6 @@ class BrowserOptionsHandler
   // Callback for "requestHotwordAvailable" message.
   void HandleRequestHotwordAvailable(const base::ListValue* args);
 
-  // Callback for "requestHotwordSetupRetry" message.
-  void HandleRequestHotwordSetupRetry(const base::ListValue* args);
-
   // Callback for "launchEasyUnlockSetup" message.
   void HandleLaunchEasyUnlockSetup(const base::ListValue* args);
 
