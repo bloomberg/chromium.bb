@@ -19,8 +19,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
                             inside_border_vertical_spacing,
                             inside_border_horizontal_spacing),
       between_child_spacing_(between_child_spacing),
-      main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),
-      cross_axis_alignment_(CROSS_AXIS_ALIGNMENT_STRETCH) {
+      main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START) {
 }
 
 BoxLayout::~BoxLayout() {
@@ -39,8 +38,13 @@ void BoxLayout::Layout(View* host) {
       View* child = host->child_at(i);
       if (!child->visible())
         continue;
-      total_main_axis_size += MainAxisSizeForView(child, child_area.width()) +
-                              between_child_spacing_;
+      if (orientation_ == kHorizontal) {
+        total_main_axis_size +=
+            child->GetPreferredSize().width() + between_child_spacing_;
+      } else {
+        total_main_axis_size += child->GetHeightForWidth(child_area.width()) +
+                                between_child_spacing_;
+      }
       ++num_visible;
     }
 
@@ -72,28 +76,21 @@ void BoxLayout::Layout(View* host) {
     }
   }
 
-  int main_position = MainAxisPosition(child_area);
+  int x = child_area.x();
+  int y = child_area.y();
   for (int i = 0; i < host->child_count(); ++i) {
     View* child = host->child_at(i);
     if (child->visible()) {
-      gfx::Rect bounds(child_area);
-      SetMainAxisPosition(main_position, &bounds);
-      if (cross_axis_alignment_ != CROSS_AXIS_ALIGNMENT_STRETCH) {
-        int free_space = CrossAxisSize(bounds) - CrossAxisSizeForView(child);
-        int position = CrossAxisPosition(bounds);
-        if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_CENTER) {
-          position += free_space / 2;
-        } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
-          position += free_space;
-        }
-        SetCrossAxisPosition(position, &bounds);
-        SetCrossAxisSize(CrossAxisSizeForView(child), &bounds);
+      gfx::Rect bounds(x, y, child_area.width(), child_area.height());
+      if (orientation_ == kHorizontal) {
+        bounds.set_width(child->GetPreferredSize().width() + padding);
+        if (bounds.width() > 0)
+          x += bounds.width() + between_child_spacing_;
+      } else {
+        bounds.set_height(child->GetHeightForWidth(bounds.width()) + padding);
+        if (bounds.height() > 0)
+          y += bounds.height() + between_child_spacing_;
       }
-      int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
-      SetMainAxisSize(child_main_axis_size + padding, &bounds);
-      if (MainAxisSize(bounds) > 0)
-        main_position += MainAxisSize(bounds) + between_child_spacing_;
-
       // Clamp child view bounds to |child_area|.
       bounds.Intersect(child_area);
       child->SetBoundsRect(bounds);
@@ -122,64 +119,26 @@ int BoxLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   return GetPreferredSizeForChildWidth(host, child_width).height();
 }
 
-int BoxLayout::MainAxisSize(const gfx::Rect& rect) const {
-  return orientation_ == kHorizontal ? rect.width() : rect.height();
+int BoxLayout::MainAxisSize(const gfx::Rect& child_area) const {
+  return orientation_ == kHorizontal ? child_area.width() : child_area.height();
 }
 
-int BoxLayout::MainAxisPosition(const gfx::Rect& rect) const {
-  return orientation_ == kHorizontal ? rect.x() : rect.y();
+int BoxLayout::MainAxisPosition(const gfx::Rect& child_area) const {
+  return orientation_ == kHorizontal ? child_area.x() : child_area.y();
 }
 
-void BoxLayout::SetMainAxisSize(int size, gfx::Rect* rect) const {
+void BoxLayout::SetMainAxisSize(int size, gfx::Rect* child_area) const {
   if (orientation_ == kHorizontal)
-    rect->set_width(size);
+    child_area->set_width(size);
   else
-    rect->set_height(size);
+    child_area->set_height(size);
 }
 
-void BoxLayout::SetMainAxisPosition(int position, gfx::Rect* rect) const {
+void BoxLayout::SetMainAxisPosition(int position, gfx::Rect* child_area) const {
   if (orientation_ == kHorizontal)
-    rect->set_x(position);
+    child_area->set_x(position);
   else
-    rect->set_y(position);
-}
-
-int BoxLayout::CrossAxisSize(const gfx::Rect& rect) const {
-  return orientation_ == kVertical ? rect.width() : rect.height();
-}
-
-int BoxLayout::CrossAxisPosition(const gfx::Rect& rect) const {
-  return orientation_ == kVertical ? rect.x() : rect.y();
-}
-
-void BoxLayout::SetCrossAxisSize(int size, gfx::Rect* rect) const {
-  if (orientation_ == kVertical)
-    rect->set_width(size);
-  else
-    rect->set_height(size);
-}
-
-void BoxLayout::SetCrossAxisPosition(int position, gfx::Rect* rect) const {
-  if (orientation_ == kVertical)
-    rect->set_x(position);
-  else
-    rect->set_y(position);
-}
-
-int BoxLayout::MainAxisSizeForView(const View* view,
-                                   int child_area_width) const {
-  return orientation_ == kHorizontal
-             ? view->GetPreferredSize().width()
-             : view->GetHeightForWidth(cross_axis_alignment_ ==
-                                               CROSS_AXIS_ALIGNMENT_STRETCH
-                                           ? child_area_width
-                                           : view->GetPreferredSize().width());
-}
-
-int BoxLayout::CrossAxisSizeForView(const View* view) const {
-  return orientation_ == kVertical
-             ? view->GetPreferredSize().width()
-             : view->GetHeightForWidth(view->GetPreferredSize().width());
+    child_area->set_y(position);
 }
 
 gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
@@ -211,9 +170,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
       if (!child->visible())
         continue;
 
-      // Use the child area width for getting the height if the child is
-      // supposed to stretch. Use its preferred size otherwise.
-      int extra_height = MainAxisSizeForView(child, child_area_width);
+      int extra_height = child->GetHeightForWidth(child_area_width);
       // Only add |between_child_spacing_| if this is not the only child.
       if (height != 0 && extra_height > 0)
         height += between_child_spacing_;

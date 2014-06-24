@@ -23,10 +23,4 @@ int ProportionallySizedView::GetHeightForWidth(int w) const {
   return w * factor_;
 }
 
-gfx::Size ProportionallySizedView::GetPreferredSize() const {
-  if (preferred_width_ >= 0)
-    return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
-  return View::GetPreferredSize();
-}
-
 }  // namespace views
