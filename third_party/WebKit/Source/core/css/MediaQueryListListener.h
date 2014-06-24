@@ -30,7 +30,7 @@ namespace WebCore {
 class MediaQueryList;
 
 // See http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
-
+// FIXME: MediaQueryListListener should be implemented using callback interface
 class MediaQueryListListener : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryListListener> {
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryListListener> create(ScriptState* scriptState, const ScriptValue& value)

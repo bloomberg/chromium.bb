@@ -21,7 +21,7 @@
 #include "core/css/MediaQueryListListener.h"
 
 #include "bindings/core/v8/V8MediaQueryList.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/ScriptController.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -39,7 +39,7 @@ void MediaQueryListListener::queryChanged(MediaQueryList* query)
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Value> args[] = { toV8(query, m_scriptState->context()->Global(), m_scriptState->isolate()) };
-    invokeCallback(m_scriptState.get(), v8::Handle<v8::Function>::Cast(m_function.v8Value()), WTF_ARRAY_LENGTH(args), args);
+    ScriptController::callFunction(m_scriptState->executionContext(), v8::Handle<v8::Function>::Cast(m_function.v8Value()), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(args), args, m_scriptState->isolate());
 }
 
 }
