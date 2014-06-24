@@ -312,29 +312,14 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.
-  pp::CompletionCallback resource_info_read_cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ResourceInfoWasRead);
-  resources_->ReadResourceInfo(resource_info_read_cb);
-}
-
-void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginCoordinator::ResourceInfoWasRead (pp_error=%"
-                NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK) {
+  if (!resources_->ReadResourceInfo()) {
     ExitWithError();
     return;
   }
+
   // Second step of loading resources: call StartLoad to load pnacl-llc
   // and pnacl-ld, based on the filenames found in the resource info file.
-  pp::CompletionCallback resources_cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::ResourcesDidLoad);
-  resources_->StartLoad(resources_cb);
-}
-
-void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::ResourcesDidLoad (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK) {
+  if (!resources_->StartLoad()) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         nacl::string("The Portable Native Client (pnacl) component is not "

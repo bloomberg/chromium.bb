@@ -35,12 +35,10 @@ class PnaclResources {
 
   // Read the resource info JSON file.  This is the first step after
   // construction; it has to be completed before StartLoad is called.
-  virtual void ReadResourceInfo(
-      const pp::CompletionCallback& resource_info_read_cb);
+  bool ReadResourceInfo();
 
   // Start loading the resources.
-  virtual void StartLoad(
-      const pp::CompletionCallback& all_loaded_callback);
+  bool StartLoad();
 
   const nacl::string& GetLlcUrl() { return llc_tool_name_; }
   const nacl::string& GetLdUrl() { return ld_tool_name_; }

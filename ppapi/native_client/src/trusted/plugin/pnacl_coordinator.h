@@ -108,11 +108,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // caching metadata.
   void BitcodeStreamDidOpen(int32_t pp_error);
 
-  // Callback for when the resource info JSON file has been read.
-  void ResourceInfoWasRead(int32_t pp_error);
-
-  // Callback for when llc and ld have been downloaded.
-  void ResourcesDidLoad(int32_t pp_error);
   // Invoked when we've gotten a temp FD for the nexe, either with the nexe
   // data, or a writeable fd to save to.
   void NexeFdDidOpen(int32_t pp_error);

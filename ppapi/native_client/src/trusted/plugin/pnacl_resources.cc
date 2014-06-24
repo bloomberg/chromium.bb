@@ -31,8 +31,7 @@ PnaclResources::~PnaclResources() {
     CloseFileHandle(ld_file_handle_);
 }
 
-void PnaclResources::ReadResourceInfo(
-    const pp::CompletionCallback& resource_info_read_cb) {
+bool PnaclResources::ReadResourceInfo() {
   PP_Var pp_llc_tool_name_var;
   PP_Var pp_ld_tool_name_var;
   if (!plugin_->nacl_interface()->GetPnaclResourceInfo(
@@ -40,16 +39,13 @@ void PnaclResources::ReadResourceInfo(
           "chrome://pnacl-translator/pnacl.json",
           &pp_llc_tool_name_var,
           &pp_ld_tool_name_var)) {
-    pp::Module::Get()->core()->CallOnMainThread(0,
-                                                resource_info_read_cb,
-                                                PP_ERROR_FAILED);
-    return;
+    return false;
   }
   pp::Var llc_tool_name(pp::PASS_REF, pp_llc_tool_name_var);
   pp::Var ld_tool_name(pp::PASS_REF, pp_ld_tool_name_var);
   llc_tool_name_ = GetFullUrl(llc_tool_name.AsString());
   ld_tool_name_ = GetFullUrl(ld_tool_name.AsString());
-  pp::Module::Get()->core()->CallOnMainThread(0, resource_info_read_cb, PP_OK);
+  return true;
 }
 
 PP_FileHandle PnaclResources::TakeLlcFileHandle() {
@@ -64,8 +60,7 @@ PP_FileHandle PnaclResources::TakeLdFileHandle() {
   return to_return;
 }
 
-void PnaclResources::StartLoad(
-    const pp::CompletionCallback& all_loaded_callback) {
+bool PnaclResources::StartLoad() {
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
 
   // Do a blocking load of each of the resources.
@@ -73,13 +68,8 @@ void PnaclResources::StartLoad(
       plugin_->nacl_interface()->GetReadonlyPnaclFd(llc_tool_name_.c_str());
   ld_file_handle_ =
       plugin_->nacl_interface()->GetReadonlyPnaclFd(ld_tool_name_.c_str());
-
-  int32_t result = PP_OK;
-  if (llc_file_handle_ == PP_kInvalidFileHandle ||
-      ld_file_handle_ == PP_kInvalidFileHandle) {
-    result = PP_ERROR_FILENOTFOUND;
-  }
-  pp::Module::Get()->core()->CallOnMainThread(0, all_loaded_callback, result);
+  return (llc_file_handle_ != PP_kInvalidFileHandle &&
+          ld_file_handle_ != PP_kInvalidFileHandle);
 }
 
 }  // namespace plugin
