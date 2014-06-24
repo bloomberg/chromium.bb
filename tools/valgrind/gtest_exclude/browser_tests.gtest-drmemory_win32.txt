@@ -57,6 +57,7 @@ Ext*Api*
 Ext*Man*
 Ext*Ses*
 Ext*re*
+Ext*Crx*
 # F*
 FileSys*
 Find*
@@ -89,12 +90,15 @@ NoSe*
 Opt*WebUI*
 Out*PPAPITe*
 # P*
+Pag*ion
 Pas*erBro*
 Pe*
 Plat*Bro*
 PolicyT*.H*
 Port*
+Prefe*fs
 Print*
+Prox*
 Prer*get
 PPAPI*ib*
 # Q*
@@ -106,6 +110,7 @@ Scr*
 Soc*
 Spee*
 SRC*.Frame*
+Str*
 SyncF*
 SyncInt*.Se*
 # T*
@@ -119,6 +124,7 @@ WebViewT*
 webRtcB*
 WebUIA*
 WebC*
+WebN*ss
 WebstoreIn*
 WebstoreSt*
 # X*
