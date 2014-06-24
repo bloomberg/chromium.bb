@@ -164,7 +164,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
     {% else %}
     {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -220,7 +220,7 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v
     {% else %}
     {{cpp_class}}V8Internal::indexedPropertySetter(index, v8Value, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -265,7 +265,7 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
     {% else %}
     {{cpp_class}}V8Internal::indexedPropertyDeleter(index, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -322,7 +322,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
     {% else %}
     {{cpp_class}}V8Internal::namedPropertyGetter(name, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -381,7 +381,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
     {% else %}
     {{cpp_class}}V8Internal::namedPropertySetter(name, v8Value, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -424,7 +424,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
     {% else %}
     {{cpp_class}}V8Internal::namedPropertyQuery(name, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -471,7 +471,7 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
     {% else %}
     {{cpp_class}}V8Internal::namedPropertyDeleter(name, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -513,7 +513,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
     {% else %}
     {{cpp_class}}V8Internal::namedPropertyEnumerator(info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}
@@ -545,7 +545,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 {% endif %}

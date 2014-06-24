@@ -179,7 +179,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     {% else %}
     {{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
 {% endmacro %}
@@ -198,7 +198,7 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {{cpp_class}}V8Internal::{{cpp_class}}ConstructorGetter{{world_suffix}}(property, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
 {% endmacro %}
@@ -347,7 +347,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     {% else %}
     {{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
 {% endmacro %}

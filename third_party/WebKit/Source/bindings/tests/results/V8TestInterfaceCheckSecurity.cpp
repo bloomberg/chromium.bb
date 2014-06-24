@@ -54,7 +54,7 @@ static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::longAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -68,7 +68,7 @@ static void doNotCheckSecurityLongAttributeAttributeGetterCallback(v8::Local<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -84,7 +84,7 @@ static void doNotCheckSecurityLongAttributeAttributeSetterCallback(v8::Local<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -98,7 +98,7 @@ static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -112,7 +112,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -128,7 +128,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -142,7 +142,7 @@ static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCal
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void TestInterfaceCheckSecurityForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -191,7 +191,7 @@ static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::voidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -204,7 +204,7 @@ static void doNotCheckSecurityVoidMethodMethodCallback(const v8::FunctionCallbac
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -242,7 +242,7 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetterCallback(v8::Local
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodOriginSafeMethodGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityDoNotCheckSignatureVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -255,7 +255,7 @@ static void doNotCheckSecurityDoNotCheckSignatureVoidMethodMethodCallback(const 
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -293,7 +293,7 @@ static void doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGette
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -306,7 +306,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback(const v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -344,7 +344,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCa
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityPerWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -357,7 +357,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWor
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodForMainWorld(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -395,7 +395,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCa
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterForMainWorld(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityReadOnlyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -408,7 +408,7 @@ static void doNotCheckSecurityReadOnlyVoidMethodMethodCallback(const v8::Functio
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -446,7 +446,7 @@ static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetterCallback(v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityUnforgeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -459,7 +459,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodMethodCallback(const v8::Func
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -497,7 +497,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallbac
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -521,7 +521,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetterCallback(v8::Local<v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetter(name, v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 } // namespace TestInterfaceCheckSecurityV8Internal

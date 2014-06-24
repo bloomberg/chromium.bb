@@ -356,7 +356,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
             visitor.notifyFinished();
         }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-        TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8MinorGC");
+        TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");
     }
 }
 
@@ -373,7 +373,7 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
             visitor.notifyFinished();
         }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-        TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8MajorGC");
+        TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MajorGC");
     } else {
         MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
         v8::V8::VisitHandlesWithClassIds(&visitor);

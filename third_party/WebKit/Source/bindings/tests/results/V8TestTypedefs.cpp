@@ -57,7 +57,7 @@ static void uLongLongAttributeAttributeGetterCallback(v8::Local<v8::String>, con
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -73,7 +73,7 @@ static void uLongLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void TestTypedefsConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -117,7 +117,7 @@ static void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackIn
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -142,7 +142,7 @@ static void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallback
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::voidMethodFloatArgStringArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -167,7 +167,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::Funct
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -190,7 +190,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -216,7 +216,7 @@ static void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::Func
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -239,7 +239,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::Functi
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -262,7 +262,7 @@ static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)

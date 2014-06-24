@@ -159,9 +159,9 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
 static void timerTraceProfilerInMainThread(const char* name, int status)
 {
     if (!status) {
-        TRACE_EVENT_BEGIN0("V8", name);
+        TRACE_EVENT_BEGIN0("v8", name);
     } else {
-        TRACE_EVENT_END0("V8", name);
+        TRACE_EVENT_END0("v8", name);
     }
 }
 

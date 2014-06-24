@@ -52,7 +52,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     static const int minLengthForCachedData = 1024;
 
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
 
     // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
     // 1, whereas v8 starts at 0.
@@ -90,7 +90,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
 {
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
@@ -115,7 +115,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
     TRACE_EVENT0("v8", "v8.run");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, isolate);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
@@ -129,7 +129,7 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
 v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> function, ExecutionContext* context, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded(isolate);
@@ -145,7 +145,7 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();
@@ -155,7 +155,7 @@ v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Functio
 v8::Local<v8::Value> V8ScriptRunner::callAsFunction(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> args[])
 {
     TRACE_EVENT0("v8", "v8.callFunction");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::Local<v8::Value> result = object->CallAsFunction(receiver, argc, args);
@@ -166,7 +166,7 @@ v8::Local<v8::Value> V8ScriptRunner::callAsFunction(v8::Isolate* isolate, v8::Ha
 v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> objectTemplate)
 {
     TRACE_EVENT0("v8", "v8.newInstance");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::Local<v8::Object> result = objectTemplate->NewInstance();
@@ -177,7 +177,7 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8
 v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[])
 {
     TRACE_EVENT0("v8", "v8.newInstance");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::Local<v8::Object> result = function->NewInstance(argc, argv);
@@ -188,7 +188,7 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8
 v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* isolate, v8::Handle<v8::Function> function, ExecutionContext* context, int argc, v8::Handle<v8::Value> argv[])
 {
     TRACE_EVENT0("v8", "v8.newInstance");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope scope(isolate, context);
     v8::Local<v8::Object> result = function->NewInstance(argc, argv);
     crashIfV8IsDead();

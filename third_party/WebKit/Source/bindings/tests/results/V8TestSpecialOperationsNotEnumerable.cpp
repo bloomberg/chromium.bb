@@ -55,7 +55,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
     TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -77,7 +77,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 } // namespace TestSpecialOperationsNotEnumerableV8Internal
