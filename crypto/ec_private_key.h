@@ -86,6 +86,9 @@ class CRYPTO_EXPORT ECPrivateKey {
       bool sensitive,
       SECKEYPrivateKey** key,
       SECKEYPublicKey** public_key);
+
+  // Returns a copy of the object.
+  ECPrivateKey* Copy() const;
 #endif
 
 #if defined(USE_OPENSSL)
@@ -106,6 +109,9 @@ class CRYPTO_EXPORT ECPrivateKey {
 
   // Exports the public key to an X.509 SubjectPublicKeyInfo block.
   bool ExportPublicKey(std::vector<uint8>* output);
+
+  // Exports the public key as an EC point in the uncompressed point format.
+  bool ExportRawPublicKey(std::string* output);
 
   // Exports private key data for testing. The format of data stored into output
   // doesn't matter other than that it is consistent for the same key.

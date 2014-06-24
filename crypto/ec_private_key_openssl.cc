@@ -97,6 +97,7 @@ ECPrivateKey* ECPrivateKey::Create() {
   if (!result->key_ || !EVP_PKEY_set1_EC_KEY(result->key_, ec_key.get()))
     return NULL;
 
+  CHECK_EQ(EVP_PKEY_EC, EVP_PKEY_type(result->key_->type));
   return result.release();
 }
 
@@ -143,7 +144,7 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
   // Create a new EVP_PKEY for it.
   scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
   result->key_ = EVP_PKCS82PKEY(p8_decrypted.get());
-  if (!result->key_)
+  if (!result->key_ || EVP_PKEY_type(result->key_->type) != EVP_PKEY_EC)
     return NULL;
 
   return result.release();
@@ -186,6 +187,26 @@ bool ECPrivateKey::ExportPublicKey(std::vector<uint8>* output) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   return ExportKeyWithBio(
       key_, reinterpret_cast<ExportBioFunction>(i2d_PUBKEY_bio), output);
+}
+
+bool ECPrivateKey::ExportRawPublicKey(std::string* output) {
+  // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
+  // key, is 0x04 (meaning uncompressed) followed by the x and y field
+  // elements as 32-byte, big-endian numbers.
+  static const int kExpectedKeyLength = 65;
+
+  int len = i2d_PublicKey(key_, NULL);
+  if (len != kExpectedKeyLength)
+    return false;
+
+  uint8 buf[kExpectedKeyLength];
+  uint8* derp = buf;
+  len = i2d_PublicKey(key_, &derp);
+  if (len != kExpectedKeyLength)
+    return false;
+
+  output->assign(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
+  return true;
 }
 
 bool ECPrivateKey::ExportValue(std::vector<uint8>* output) {

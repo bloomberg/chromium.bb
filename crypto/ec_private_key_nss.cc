@@ -159,6 +159,13 @@ bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
     return false;
   }
 
+  if (SECKEY_GetPublicKeyType(*public_key) != ecKey) {
+    DLOG(ERROR) << "The public key is not an EC key";
+    SECKEY_DestroyPublicKey(*public_key);
+    *public_key = NULL;
+    return false;
+  }
+
   SECItem encoded_epki = {
     siBuffer,
     const_cast<unsigned char*>(encrypted_private_key_info),
@@ -206,6 +213,21 @@ bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
   }
 
   return true;
+}
+
+ECPrivateKey* ECPrivateKey::Copy() const {
+  scoped_ptr<ECPrivateKey> copy(new ECPrivateKey);
+  if (key_) {
+    copy->key_ = SECKEY_CopyPrivateKey(key_);
+    if (!copy->key_)
+      return NULL;
+  }
+  if (public_key_) {
+    copy->public_key_ = SECKEY_CopyPublicKey(public_key_);
+    if (!copy->public_key_)
+      return NULL;
+  }
+  return copy.release();
 }
 
 bool ECPrivateKey::ExportEncryptedPrivateKey(
@@ -264,6 +286,23 @@ bool ECPrivateKey::ExportPublicKey(std::vector<uint8>* output) {
   return true;
 }
 
+bool ECPrivateKey::ExportRawPublicKey(std::string* output) {
+  // public_key_->u.ec.publicValue is an ANSI X9.62 public key which, for
+  // a P-256 key, is 0x04 (meaning uncompressed) followed by the x and y field
+  // elements as 32-byte, big-endian numbers.
+  static const unsigned int kExpectedKeyLength = 65;
+
+  CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(public_key_));
+  const unsigned char* const data = public_key_->u.ec.publicValue.data;
+  const unsigned int len = public_key_->u.ec.publicValue.len;
+  if (len != kExpectedKeyLength || data[0] != 0x04)
+    return false;
+
+  output->assign(reinterpret_cast<const char*>(data + 1),
+                 kExpectedKeyLength - 1);
+  return true;
+}
+
 bool ECPrivateKey::ExportValue(std::vector<uint8>* output) {
   return ReadAttribute(key_, CKA_VALUE, output);
 }
@@ -315,6 +354,7 @@ ECPrivateKey* ECPrivateKey::CreateWithParams(PK11SlotInfo* slot,
     DLOG(ERROR) << "PK11_GenerateKeyPair: " << PORT_GetError();
     return NULL;
   }
+  CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
 
   return result.release();
 }
@@ -354,8 +394,10 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfoWithParams(
 
   SECKEY_DestroySubjectPublicKeyInfo(decoded_spki);
 
-  if (success)
+  if (success) {
+    CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
     return result.release();
+  }
 
   return NULL;
 }

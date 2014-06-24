@@ -16,10 +16,8 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   const std::string password1;
   const std::string password2 = "test";
 
-  scoped_ptr<crypto::ECPrivateKey> keypair1(
-      crypto::ECPrivateKey::Create());
-  scoped_ptr<crypto::ECPrivateKey> keypair2(
-      crypto::ECPrivateKey::Create());
+  scoped_ptr<crypto::ECPrivateKey> keypair1(crypto::ECPrivateKey::Create());
+  scoped_ptr<crypto::ECPrivateKey> keypair2(crypto::ECPrivateKey::Create());
   ASSERT_TRUE(keypair1.get());
   ASSERT_TRUE(keypair2.get());
 
@@ -36,12 +34,14 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   std::vector<uint8> privkey2;
   std::vector<uint8> pubkey1;
   std::vector<uint8> pubkey2;
-  ASSERT_TRUE(keypair1->ExportEncryptedPrivateKey(
-      password1, 1, &privkey1));
-  ASSERT_TRUE(keypair2->ExportEncryptedPrivateKey(
-      password2, 1, &privkey2));
+  std::string raw_pubkey1;
+  std::string raw_pubkey2;
+  ASSERT_TRUE(keypair1->ExportEncryptedPrivateKey(password1, 1, &privkey1));
+  ASSERT_TRUE(keypair2->ExportEncryptedPrivateKey(password2, 1, &privkey2));
   EXPECT_TRUE(keypair1->ExportPublicKey(&pubkey1));
   EXPECT_TRUE(keypair2->ExportPublicKey(&pubkey2));
+  EXPECT_TRUE(keypair1->ExportRawPublicKey(&raw_pubkey1));
+  EXPECT_TRUE(keypair2->ExportRawPublicKey(&raw_pubkey2));
 
   scoped_ptr<crypto::ECPrivateKey> keypair3(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
@@ -68,12 +68,51 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
 
   std::vector<uint8> pubkey3;
   std::vector<uint8> pubkey4;
+  std::string raw_pubkey3;
+  std::string raw_pubkey4;
   EXPECT_TRUE(keypair3->ExportPublicKey(&pubkey3));
   EXPECT_TRUE(keypair4->ExportPublicKey(&pubkey4));
+  EXPECT_TRUE(keypair3->ExportRawPublicKey(&raw_pubkey3));
+  EXPECT_TRUE(keypair4->ExportRawPublicKey(&raw_pubkey4));
 
   EXPECT_EQ(pubkey1, pubkey3);
   EXPECT_EQ(pubkey2, pubkey4);
+  EXPECT_EQ(raw_pubkey1, raw_pubkey3);
+  EXPECT_EQ(raw_pubkey2, raw_pubkey4);
 }
+
+#if !defined(USE_OPENSSL)
+TEST(ECPrivateKeyUnitTest, Copy) {
+  scoped_ptr<crypto::ECPrivateKey> keypair1(crypto::ECPrivateKey::Create());
+  scoped_ptr<crypto::ECPrivateKey> keypair2(keypair1->Copy());
+  ASSERT_TRUE(keypair1.get());
+  ASSERT_TRUE(keypair2.get());
+
+  std::vector<uint8> key1value;
+  std::vector<uint8> key2value;
+  EXPECT_TRUE(keypair1->ExportValue(&key1value));
+  EXPECT_TRUE(keypair2->ExportValue(&key2value));
+  EXPECT_EQ(key1value, key2value);
+
+  std::vector<uint8> key1params;
+  std::vector<uint8> key2params;
+  EXPECT_TRUE(keypair1->ExportECParams(&key1params));
+  EXPECT_TRUE(keypair2->ExportECParams(&key2params));
+  EXPECT_EQ(key1params, key2params);
+
+  std::vector<uint8> pubkey1;
+  std::vector<uint8> pubkey2;
+  EXPECT_TRUE(keypair1->ExportPublicKey(&pubkey1));
+  EXPECT_TRUE(keypair2->ExportPublicKey(&pubkey2));
+  EXPECT_EQ(pubkey1, pubkey2);
+
+  std::string raw_pubkey1;
+  std::string raw_pubkey2;
+  EXPECT_TRUE(keypair1->ExportRawPublicKey(&raw_pubkey1));
+  EXPECT_TRUE(keypair2->ExportRawPublicKey(&raw_pubkey2));
+  EXPECT_EQ(raw_pubkey1, raw_pubkey2);
+}
+#endif  // !defined(USE_OPENSSL)
 
 TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
   const std::string password1;
