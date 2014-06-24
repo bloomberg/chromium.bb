@@ -519,6 +519,11 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
   dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
 
+  // Add the waiter now, before it becomes readable to avoid a race.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 456));
+
   // Write to "local_mp", port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
             local_mp->WriteMessage(1, kHello, sizeof(kHello), NULL,
@@ -528,9 +533,6 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // here. (We don't crash if I sleep and then close.)
 
   // Wait for the dispatcher to become readable.
-  waiter.Init();
-  EXPECT_EQ(MOJO_RESULT_OK,
-            dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 456));
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(456u, context);
   dispatcher->RemoveWaiter(&waiter);
