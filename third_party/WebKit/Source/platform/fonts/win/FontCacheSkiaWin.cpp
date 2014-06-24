@@ -237,7 +237,8 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     const static FamilyMinSize minAntiAliasSizeForFont[] = {
         { L"simsun", 16 },
         { L"dotum", 12 },
-        { L"gulim", 12 }
+        { L"gulim", 12 },
+        { L"pmingliu", 11 }
     };
     size_t numFonts = WTF_ARRAY_LENGTH(minAntiAliasSizeForFont);
     for (size_t i = 0; i < numFonts; i++) {
