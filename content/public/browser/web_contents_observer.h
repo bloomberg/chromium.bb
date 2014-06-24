@@ -82,12 +82,23 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // RenderProcessHostObserver::RenderProcessExited().
   virtual void RenderProcessGone(base::TerminationStatus status) {}
 
-  // This method is invoked when a WebContents swaps its render view host with
-  // another one, possibly changing processes. The RenderViewHost that has
-  // been replaced is in |old_render_view_host|, which is NULL if the old RVH
-  // was shut down.
+  // This method is invoked when a WebContents swaps its visible RenderViewHost
+  // with another one, possibly changing processes. The RenderViewHost that has
+  // been replaced is in |old_host|, which is NULL if the old RVH was shut down.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
+
+  // This method is invoked whenever one of the current frames of a WebContents
+  // swaps its RenderFrameHost with another one; for example because that frame
+  // navigated and the new content is in a different process. The
+  // RenderFrameHost that has been replaced is in |old_host|, which can be NULL
+  // if the old RFH was shut down.
+  //
+  // This method, in combination with RenderFrameDeleted, is appropriate for
+  // observers wishing to track the set of active RenderFrameHosts -- i.e.,
+  // those hosts that would be visited by calling WebContents::ForEachFrame.
+  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
+                                      RenderFrameHost* new_host) {}
 
   // This method is invoked after the WebContents decided which RenderViewHost
   // to use for the next navigation, but before the navigation starts.

@@ -65,6 +65,13 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
     LogWhatHappened("RenderFrameCreated", render_frame_host);
   }
 
+  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
+                                      RenderFrameHost* new_host) OVERRIDE {
+    if (old_host)
+      LogWhatHappened("RenderFrameChanged(old)", old_host);
+    LogWhatHappened("RenderFrameChanged(new)", new_host);
+  }
+
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
     LogWhatHappened("RenderFrameDeleted", render_frame_host);
   }
@@ -185,6 +192,8 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   TreeWalkingWebContentsLogger activity(contents());
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
+
+  EXPECT_EQ("", activity.GetLog());
 
   // Simulate attaching a series of frames to build the frame tree.
   main_test_rfh()->OnCreateChildFrame(14, std::string());

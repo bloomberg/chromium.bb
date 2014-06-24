@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_TASK_MANAGER_WEB_CONTENTS_RESOURCE_PROVIDER_H_
 
 #include <map>
-#include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,13 +15,15 @@
 class TaskManager;
 
 namespace content {
+class RenderFrameHost;
+class SiteInstance;
 class WebContents;
 }
 
 namespace task_manager {
 
 class RendererResource;
-class TaskManagerWebContentsObserver;
+class TaskManagerWebContentsEntry;
 class WebContentsInformation;
 
 // Provides resources to the task manager on behalf of a chrome service that
@@ -47,33 +48,26 @@ class WebContentsResourceProvider : public ResourceProvider {
   // add it to the task manager.
   void OnWebContentsCreated(content::WebContents* web_contents);
 
-  // Create TaskManager resources for |web_contents|, and add them to the
-  // TaskManager.
-  bool AddToTaskManager(content::WebContents* web_contents);
+  // Remove a TaskManagerWebContentsEntry from our tracking list, and delete it.
+  void DeleteEntry(content::WebContents* web_contents,
+                   TaskManagerWebContentsEntry* entry);
 
-  // Remove the task manager resources associated with |web_contents|.
-  void RemoveFromTaskManager(content::WebContents* web_contents);
-
-  // Remove a WebContentsObserver from our tracking list, and delete it.
-  void DeleteObserver(TaskManagerWebContentsObserver* observer);
+  TaskManager* task_manager() { return task_manager_; }
+  WebContentsInformation* info() { return info_.get(); }
 
  protected:
   virtual ~WebContentsResourceProvider();
 
  private:
-  // Whether we are currently reporting to the task manager. Used to ignore
-  // notifications sent after StopUpdating().
-  bool updating_;
+  typedef std::map<content::WebContents*, TaskManagerWebContentsEntry*>
+      EntryMap;
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (the WebContentses) to the TaskManager
-  // resources. The RendererResources are owned by us and registered with
-  // the TaskManager.
-  std::map<content::WebContents*, RendererResource*> resources_;
-
-  // Set of current active WebContentsObserver instances owned by this class.
-  std::set<TaskManagerWebContentsObserver*> web_contents_observers_;
+  // For every WebContents we maintain an entry, which holds the task manager's
+  // RendererResources for that WebContents, and observes the WebContents for
+  // changes.
+  EntryMap entries_;
 
   // The WebContentsInformation that informs us when a new WebContents* is
   // created, and which serves as a RendererResource factory for our type.

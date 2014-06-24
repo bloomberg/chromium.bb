@@ -3147,8 +3147,8 @@ void WebContentsImpl::ResetLoadProgressState() {
   loading_last_progress_update_ = base::TimeTicks();
 }
 
-void WebContentsImpl::NotifySwapped(RenderViewHost* old_host,
-                                    RenderViewHost* new_host) {
+void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
+                                        RenderViewHost* new_host) {
   // After sending out a swap notification, we need to send a disconnect
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
@@ -3168,6 +3168,13 @@ void WebContentsImpl::NotifySwapped(RenderViewHost* old_host,
   // gets swapped, so we don't reuse the same embedder next time a
   // RenderViewHost is attached to this WebContents.
   RemoveBrowserPluginEmbedder();
+}
+
+void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
+                                         RenderFrameHost* new_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    RenderFrameHostChanged(old_host, new_host));
 }
 
 // TODO(avi): Remove this entire function because this notification is already
@@ -3865,15 +3872,21 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
     dialog_manager_->CancelActiveAndPendingDialogs(this);
 }
 
-void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* old_host,
-                                                     RenderViewHost* new_host) {
-  NotifySwapped(old_host, new_host);
+void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
+                                                     RenderFrameHost* new_host,
+                                                     bool is_main_frame) {
+  if (is_main_frame) {
+    NotifyViewSwapped(old_host ? old_host->GetRenderViewHost() : NULL,
+                      new_host->GetRenderViewHost());
 
-  // Make sure the visible RVH reflects the new delegate's preferences.
-  if (delegate_)
-    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
+    // Make sure the visible RVH reflects the new delegate's preferences.
+    if (delegate_)
+      view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 
-  view_->RenderViewSwappedIn(new_host);
+    view_->RenderViewSwappedIn(new_host->GetRenderViewHost());
+  }
+
+  NotifyFrameSwapped(old_host, new_host);
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

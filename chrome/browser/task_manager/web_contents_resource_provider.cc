@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -19,45 +20,240 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 
-using content::WebContents;
 using content::RenderViewHost;
+using content::RenderFrameHost;
+using content::SiteInstance;
+using content::WebContents;
 
 namespace task_manager {
 
-// A WebContentsObserver that tracks changes to a WebContents on behalf of
-// a WebContentsResourceProvider.
-class TaskManagerWebContentsObserver : public content::WebContentsObserver {
+// A resource for a process hosting out-of-process iframes.
+class SubframeResource : public RendererResource {
  public:
-  TaskManagerWebContentsObserver(WebContents* web_contents,
-                                 WebContentsResourceProvider* provider)
-      : content::WebContentsObserver(web_contents), provider_(provider) {}
+  explicit SubframeResource(WebContents* web_contents,
+                            SiteInstance* site_instance,
+                            RenderFrameHost* example_rfh);
+  virtual ~SubframeResource() {}
+
+  // Resource methods:
+  virtual Type GetType() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual WebContents* GetWebContents() const OVERRIDE;
+
+ private:
+  WebContents* web_contents_;
+  base::string16 title_;
+  DISALLOW_COPY_AND_ASSIGN(SubframeResource);
+};
+
+SubframeResource::SubframeResource(WebContents* web_contents,
+                                   SiteInstance* subframe_site_instance,
+                                   RenderFrameHost* example_rfh)
+    : RendererResource(subframe_site_instance->GetProcess()->GetHandle(),
+                       example_rfh->GetRenderViewHost()),
+      web_contents_(web_contents) {
+  int message_id = subframe_site_instance->GetBrowserContext()->IsOffTheRecord()
+                       ? IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX
+                       : IDS_TASK_MANAGER_SUBFRAME_PREFIX;
+  title_ = l10n_util::GetStringFUTF16(
+      message_id,
+      base::UTF8ToUTF16(subframe_site_instance->GetSiteURL().spec()));
+}
+
+Resource::Type SubframeResource::GetType() const {
+  return RENDERER;
+}
+
+base::string16 SubframeResource::GetTitle() const {
+  return title_;
+}
+
+gfx::ImageSkia SubframeResource::GetIcon() const {
+  return gfx::ImageSkia();
+}
+
+WebContents* SubframeResource::GetWebContents() const {
+  return web_contents_;
+}
+
+// Tracks changes to one WebContents, and manages task manager resources for
+// that WebContents, on behalf of a WebContentsResourceProvider.
+class TaskManagerWebContentsEntry : public content::WebContentsObserver {
+ public:
+  typedef std::multimap<SiteInstance*, RendererResource*> ResourceMap;
+  typedef std::pair<ResourceMap::iterator, ResourceMap::iterator> ResourceRange;
+
+  TaskManagerWebContentsEntry(WebContents* web_contents,
+                              WebContentsResourceProvider* provider)
+      : content::WebContentsObserver(web_contents),
+        provider_(provider),
+        main_frame_site_instance_(NULL) {}
+
+  virtual ~TaskManagerWebContentsEntry() {
+    for (ResourceMap::iterator j = resources_by_site_instance_.begin();
+         j != resources_by_site_instance_.end();) {
+      RendererResource* resource = j->second;
+
+      // Advance to next non-duplicate entry.
+      do {
+        ++j;
+      } while (j != resources_by_site_instance_.end() && resource == j->second);
+
+      delete resource;
+    }
+  }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host) OVERRIDE {
-    provider_->RemoveFromTaskManager(web_contents());
-    provider_->AddToTaskManager(web_contents());
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+    ClearResourceForFrame(render_frame_host);
+  }
+
+  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
+                                      RenderFrameHost* new_host) OVERRIDE {
+    if (old_host)
+      ClearResourceForFrame(old_host);
+    CreateResourceForFrame(new_host);
   }
 
   virtual void RenderViewReady() OVERRIDE {
-    provider_->RemoveFromTaskManager(web_contents());
-    provider_->AddToTaskManager(web_contents());
+    ClearAllResources();
+    CreateAllResources();
   }
 
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
-    provider_->RemoveFromTaskManager(web_contents());
+    ClearAllResources();
   }
 
   virtual void WebContentsDestroyed() OVERRIDE {
-    provider_->RemoveFromTaskManager(web_contents());
-    provider_->DeleteObserver(this);  // Deletes |this|.
+    ClearAllResources();
+    provider_->DeleteEntry(web_contents(), this);  // Deletes |this|.
+  }
+
+  // Called by WebContentsResourceProvider.
+  RendererResource* GetResourceForSiteInstance(SiteInstance* site_instance) {
+    ResourceMap::iterator i = resources_by_site_instance_.find(site_instance);
+    if (i == resources_by_site_instance_.end())
+      return NULL;
+    return i->second;
+  }
+
+  void CreateAllResources() {
+    // We'll show one row per SiteInstance in the task manager.
+    DCHECK(web_contents()->GetMainFrame() != NULL);
+    web_contents()->ForEachFrame(
+        base::Bind(&TaskManagerWebContentsEntry::CreateResourceForFrame,
+                   base::Unretained(this)));
+  }
+
+  void ClearAllResources() {
+    for (ResourceMap::iterator j = resources_by_site_instance_.begin();
+         j != resources_by_site_instance_.end();) {
+      RendererResource* resource = j->second;
+
+      // Advance to next non-duplicate entry.
+      do {
+        ++j;
+      } while (j != resources_by_site_instance_.end() && resource == j->second);
+
+      // Remove the resource from the Task Manager.
+      task_manager()->RemoveResource(resource);
+      delete resource;
+    }
+    resources_by_site_instance_.clear();
+    tracked_frame_hosts_.clear();
+  }
+
+  void ClearResourceForFrame(RenderFrameHost* render_frame_host) {
+    SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+    std::set<RenderFrameHost*>::iterator frame_set_iterator =
+        tracked_frame_hosts_.find(render_frame_host);
+    if (frame_set_iterator == tracked_frame_hosts_.end()) {
+      // We weren't tracking this RenderFrameHost.
+      return;
+    }
+    tracked_frame_hosts_.erase(frame_set_iterator);
+    ResourceRange resource_range =
+        resources_by_site_instance_.equal_range(site_instance);
+    if (resource_range.first == resource_range.second) {
+      NOTREACHED();
+      return;
+    }
+    RendererResource* resource = resource_range.first->second;
+    resources_by_site_instance_.erase(resource_range.first++);
+    if (resource_range.first == resource_range.second) {
+      // The removed entry was the sole remaining reference to that resource, so
+      // actually destroy it.
+      task_manager()->RemoveResource(resource);
+      delete resource;
+      if (site_instance == main_frame_site_instance_) {
+        main_frame_site_instance_ = NULL;
+      }
+    }
+  }
+
+  void CreateResourceForFrame(RenderFrameHost* render_frame_host) {
+    SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+
+    DCHECK_EQ(0u, tracked_frame_hosts_.count(render_frame_host));
+    tracked_frame_hosts_.insert(render_frame_host);
+
+    ResourceRange existing_resource_range =
+        resources_by_site_instance_.equal_range(site_instance);
+    bool existing_resource =
+        (existing_resource_range.first != existing_resource_range.second);
+    bool is_main_frame = (render_frame_host == web_contents()->GetMainFrame());
+    bool site_instance_is_main = (site_instance == main_frame_site_instance_);
+    scoped_ptr<RendererResource> new_resource;
+    if (!existing_resource || (is_main_frame && !site_instance_is_main)) {
+      if (is_main_frame) {
+        new_resource = info()->MakeResource(web_contents());
+        main_frame_site_instance_ = site_instance;
+      } else {
+        new_resource.reset(new SubframeResource(
+            web_contents(), site_instance, render_frame_host));
+      }
+    }
+
+    if (existing_resource) {
+      RendererResource* old_resource = existing_resource_range.first->second;
+      if (!new_resource) {
+        resources_by_site_instance_.insert(
+            std::make_pair(site_instance, old_resource));
+      } else {
+        for (ResourceMap::iterator it = existing_resource_range.first;
+             it != existing_resource_range.second;
+             ++it) {
+          it->second = new_resource.get();
+        }
+        task_manager()->RemoveResource(old_resource);
+        delete old_resource;
+      }
+    }
+
+    if (new_resource) {
+      task_manager()->AddResource(new_resource.get());
+      resources_by_site_instance_.insert(
+          std::make_pair(site_instance, new_resource.release()));
+    }
   }
 
  private:
-  WebContentsResourceProvider* provider_;
+  TaskManager* task_manager() { return provider_->task_manager(); }
+
+  WebContentsInformation* info() { return provider_->info(); }
+
+  WebContentsResourceProvider* const provider_;
+  std::set<RenderFrameHost*> tracked_frame_hosts_;
+  ResourceMap resources_by_site_instance_;
+  SiteInstance* main_frame_site_instance_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,38 +263,35 @@ class TaskManagerWebContentsObserver : public content::WebContentsObserver {
 WebContentsResourceProvider::WebContentsResourceProvider(
     TaskManager* task_manager,
     scoped_ptr<WebContentsInformation> info)
-    : updating_(false), task_manager_(task_manager), info_(info.Pass()) {}
+    : task_manager_(task_manager), info_(info.Pass()) {
+}
 
 WebContentsResourceProvider::~WebContentsResourceProvider() {}
 
 RendererResource* WebContentsResourceProvider::GetResource(int origin_pid,
                                                            int child_id,
                                                            int route_id) {
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(child_id, route_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(child_id, route_id);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
 
   // If an origin PID was specified then the request originated in a plugin
   // working on the WebContents's behalf, so ignore it.
   if (origin_pid)
     return NULL;
 
-  std::map<WebContents*, RendererResource*>::iterator res_iter =
-      resources_.find(web_contents);
+  EntryMap::const_iterator web_contents_it = entries_.find(web_contents);
 
-  if (res_iter == resources_.end()) {
+  if (web_contents_it == entries_.end()) {
     // Can happen if the tab was closed while a network request was being
     // performed.
     return NULL;
   }
-  return res_iter->second;
+
+  return web_contents_it->second->GetResourceForSiteInstance(
+      rfh->GetSiteInstance());
 }
 
 void WebContentsResourceProvider::StartUpdating() {
-  DCHECK(!updating_);
-  updating_ = true;
-
   WebContentsInformation::NewWebContentsCallback new_web_contents_callback =
       base::Bind(&WebContentsResourceProvider::OnWebContentsCreated, this);
   info_->GetAll(new_web_contents_callback);
@@ -106,19 +299,10 @@ void WebContentsResourceProvider::StartUpdating() {
 }
 
 void WebContentsResourceProvider::StopUpdating() {
-  DCHECK(updating_);
-  updating_ = false;
-
   info_->StopObservingCreation();
 
-  // Delete all observers; this dissassociates them from the WebContents too.
-  STLDeleteElements(&web_contents_observers_);
-  web_contents_observers_.clear();
-
-  // Delete all resources. We don't need to remove them from the TaskManager,
-  // because it's the TaskManager that's asking us to StopUpdating().
-  STLDeleteValues(&resources_);
-  resources_.clear();
+  // Delete all entries; this dissassociates them from the WebContents too.
+  STLDeleteValues(&entries_);
 }
 
 void WebContentsResourceProvider::OnWebContentsCreated(
@@ -130,66 +314,27 @@ void WebContentsResourceProvider::OnWebContentsCreated(
   }
 
   DCHECK(info_->CheckOwnership(web_contents));
-  if (AddToTaskManager(web_contents)) {
-    web_contents_observers_.insert(
-        new TaskManagerWebContentsObserver(web_contents, this));
-  }
-}
-
-bool WebContentsResourceProvider::AddToTaskManager(WebContents* web_contents) {
-  if (!updating_)
-    return false;
-
-  if (resources_.count(web_contents)) {
+  if (entries_.count(web_contents)) {
     // The case may happen that we have added a WebContents as part of the
     // iteration performed during StartUpdating() call but the notification that
     // it has connected was not fired yet. So when the notification happens, we
     // are already observing this WebContents and just ignore it.
-    return false;
-  }
-
-  // TODO(nick): If the RenderView is not live, then do we still want to install
-  // the WebContentsObserver? Only some of the original ResourceProviders
-  // had that check.
-  scoped_ptr<RendererResource> resource = info_->MakeResource(web_contents);
-  if (!resource)
-    return false;
-
-  task_manager_->AddResource(resource.get());
-  resources_[web_contents] = resource.release();
-  return true;
-}
-
-void WebContentsResourceProvider::RemoveFromTaskManager(
-    WebContents* web_contents) {
-  if (!updating_)
-    return;
-
-  std::map<WebContents*, RendererResource*>::iterator resource_iter =
-      resources_.find(web_contents);
-
-  if (resource_iter == resources_.end()) {
     return;
   }
-
-  RendererResource* resource = resource_iter->second;
-  task_manager_->RemoveResource(resource);
-
-  // Remove the resource from the Task Manager.
-  // And from the provider.
-  resources_.erase(resource_iter);
-
-  // Finally, delete the resource.
-  delete resource;
+  scoped_ptr<TaskManagerWebContentsEntry> entry(
+      new TaskManagerWebContentsEntry(web_contents, this));
+  entry->CreateAllResources();
+  entries_[web_contents] = entry.release();
 }
 
-void WebContentsResourceProvider::DeleteObserver(
-    TaskManagerWebContentsObserver* observer) {
-  if (!web_contents_observers_.erase(observer)) {
+void WebContentsResourceProvider::DeleteEntry(
+    WebContents* web_contents,
+    TaskManagerWebContentsEntry* entry) {
+  if (!entries_.erase(web_contents)) {
     NOTREACHED();
     return;
   }
-  delete observer;  // Typically, this is our caller. Deletion is okay.
+  delete entry;  // Typically, this is our caller. Deletion is okay.
 }
 
 }  // namespace task_manager

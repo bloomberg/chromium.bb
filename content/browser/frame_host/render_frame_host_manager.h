@@ -27,6 +27,7 @@ class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class RenderFrameHost;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderFrameHostManagerTest;
@@ -72,8 +73,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
         RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
-    virtual void NotifySwappedFromRenderManager(
-        RenderViewHost* old_host, RenderViewHost* new_host) = 0;
+    virtual void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
+                                                RenderFrameHost* new_host,
+                                                bool is_main_frame) = 0;
     virtual NavigationControllerImpl&
         GetControllerForRenderManager() = 0;
 

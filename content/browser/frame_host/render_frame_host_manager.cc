@@ -208,12 +208,11 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     if (dest_render_frame_host != render_frame_host_ &&
         dest_render_frame_host->render_view_host()->GetView()) {
       dest_render_frame_host->render_view_host()->GetView()->Hide();
-    } else if (frame_tree_node_->IsMainFrame()) {
-      // This is our primary renderer, notify here as we won't be calling
-      // CommitPending (which does the notify).  We only do this for top-level
-      // frames.
+    } else {
+      // Notify here as we won't be calling CommitPending (which does the
+      // notify).
       delegate_->NotifySwappedFromRenderManager(
-          NULL, render_frame_host_->render_view_host());
+          NULL, render_frame_host_.get(), frame_tree_node_->IsMainFrame());
     }
   }
 
@@ -1125,13 +1124,8 @@ void RenderFrameHostManager::CommitPending() {
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down
   // the RFH so that we can clean up RendererResources related to the RFH first.
-  // TODO(creis): Only do this on top-level RFHs for now, and later update it to
-  // pass the RFHs.
-  if (is_main_frame) {
-    delegate_->NotifySwappedFromRenderManager(
-        old_render_frame_host->render_view_host(),
-        render_frame_host_->render_view_host());
-  }
+  delegate_->NotifySwappedFromRenderManager(
+      old_render_frame_host.get(), render_frame_host_.get(), is_main_frame);
 
   // If the old RFH is not live, just return as there is no work to do.
   if (!old_render_frame_host->render_view_host()->IsRenderViewLive()) {
