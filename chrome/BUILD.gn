@@ -20,6 +20,19 @@ group("resources") {
   }
 }
 
+# GYP version: chrome/chrome_resources.gyp:chrome_extra_resources
+group("extra_resources") {
+  deps = [
+    "//chrome/browser/resources:invalidations_resources",
+    "//chrome/browser/resources:memory_internals_resources",
+    "//chrome/browser/resources:net_internals_resources",
+    "//chrome/browser/resources:password_manager_internals_resources",
+    "//chrome/browser/resources:signin_internals_resources",
+    "//chrome/browser/resources:sync_internals_resources",
+    "//chrome/browser/resources:translate_internals_resources",
+  ]
+}
+
 # GYP version: chrome/chrome_resources.gyp:chrome_strings
 group("strings") {
   deps = [

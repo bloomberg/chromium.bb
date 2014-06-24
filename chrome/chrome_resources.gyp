@@ -10,6 +10,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome:extra_resources
       'target_name': 'chrome_extra_resources',
       'type': 'none',
       # These resources end up in resources.pak because they are resources
@@ -17,6 +18,7 @@
       # it easier for us to reference them internally.
       'actions': [
         {
+          # GN version: //chrome/browser/resources:memory_internals_resources
           'action_name': 'generate_memory_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/memory_internals_resources.grd',
@@ -24,6 +26,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:net_internals_resources
           'action_name': 'generate_net_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/net_internals_resources.grd',
@@ -31,6 +34,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:invalidations_resources
           'action_name': 'generate_invalidations_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/invalidations_resources.grd',
@@ -38,6 +42,7 @@
           'includes': ['../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:password_manager_internals_resources
           'action_name': 'generate_password_manager_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/password_manager_internals_resources.grd',
@@ -45,6 +50,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:signin_internals_resources
           'action_name': 'generate_signin_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/signin_internals_resources.grd',
@@ -52,6 +58,7 @@
           'includes': ['../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:sync_internals_resources
           'action_name': 'generate_sync_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/sync_internals_resources.grd',
@@ -59,6 +66,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:translate_internals_resources
           'action_name': 'generate_translate_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/translate_internals_resources.grd',

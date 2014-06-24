@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //chrome/browser/devtools
       'target_name': 'debugger',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
