@@ -63,8 +63,6 @@ namespace WebCore {
 
         virtual void cancel() OVERRIDE;
 
-        bool done() const { return m_workerClientWrapper->done(); }
-
     private:
         // Creates a loader on the main thread and bridges communication between
         // the main thread and the worker context's thread where WorkerThreadableLoader runs.
