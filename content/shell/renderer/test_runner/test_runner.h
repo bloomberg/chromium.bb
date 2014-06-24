@@ -449,6 +449,9 @@ class TestRunner : public WebTestRunner,
   // Causes layout to happen as if targetted to printed pages.
   void SetPrinting();
 
+  // Clears the state from SetPrinting().
+  void ClearPrinting();
+
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
 
   // Causes WillSendRequest to clear certain headers.
@@ -534,7 +537,8 @@ class TestRunner : public WebTestRunner,
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 
   // Similar to DisplayAsyncThen(), but pass parameters of the captured
-  // snapshot (width, height, snapshot) to the callback.
+  // snapshot (width, height, snapshot) to the callback. The snapshot is in
+  // uint8 RGBA format.
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
 
   void SetMockPushClientSuccess(const std::string& end_point,

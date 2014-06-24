@@ -246,6 +246,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpBackForwardList();
   void DumpSelectionRect();
   void SetPrinting();
+  void ClearPrinting();
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
   void SetWillSendRequestClearHeader(const std::string& header);
   void DumpResourceRequestPriorities();
@@ -476,6 +477,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpBackForwardList)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("setPrinting", &TestRunnerBindings::SetPrinting)
+      .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
       .SetMethod(
            "setShouldStayOnPageAfterHandlingBeforeUnload",
            &TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload)
@@ -1159,6 +1161,11 @@ void TestRunnerBindings::DumpSelectionRect() {
 void TestRunnerBindings::SetPrinting() {
   if (runner_)
     runner_->SetPrinting();
+}
+
+void TestRunnerBindings::ClearPrinting() {
+  if (runner_)
+    runner_->ClearPrinting();
 }
 
 void TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload(
@@ -2608,6 +2615,10 @@ void TestRunner::SetPrinting() {
   is_printing_ = true;
 }
 
+void TestRunner::ClearPrinting() {
+  is_printing_ = false;
+}
+
 void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
   should_stay_on_page_after_handling_before_unload_ = value;
 }
@@ -2779,6 +2790,18 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   blink::WebArrayBuffer buffer =
       blink::WebArrayBuffer::create(snapshot.getSize(), 1);
   memcpy(buffer.data(), snapshot.getPixels(), buffer.byteLength());
+#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
+  {
+    // Skia's internal byte order is BGRA. Must swap the B and R channels in
+    // order to provide a consistent ordering to the layout tests.
+    unsigned char* pixels = static_cast<unsigned char*>(buffer.data());
+    unsigned len = buffer.byteLength();
+    for (unsigned i = 0; i < len; i += 4) {
+      std::swap(pixels[i], pixels[i + 2]);
+    }
+  }
+#endif
+
   argv[2] = blink::WebArrayBufferConverter::toV8Value(
       &buffer, context->Global(), isolate);
 
