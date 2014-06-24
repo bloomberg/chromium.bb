@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+
+<div id="sandbox"></div>
+
+<script>
+    description("Media query listeners should fire on changes to matches status.");
+
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    var sandbox = document.getElementById("sandbox");
+    var iframe = document.createElement("iframe");
+    sandbox.appendChild(iframe);
+
+    var matchMedia = iframe.contentWindow.matchMedia;
+    var mediaList = matchMedia("(max-width: 100px)");
+    var expectedValue = "";
+
+    function listener(list) {
+        window.mediaListArgument = list;
+        shouldBe("mediaList", "mediaListArgument");
+        shouldBe("mediaList.matches", expectedValue);
+    }
+
+    mediaList.addListener(listener);
+
+    shouldBe("mediaList.matches", "true");
+
+    // FIXME: You shouldn't need to touch offsetTop to force these updates.
+
+    // Should fire.
+    iframe.style.width = "200px";
+    expectedValue = "false";
+    iframe.offsetTop;
+
+    // Should not fire.
+    iframe.style.width = "250px";
+    expectedValue = "false";
+    iframe.offsetTop;
+
+    // Should fire.
+    iframe.style.width = "80px";
+    expectedValue = "true";
+    iframe.offsetTop;
+
+    // Should not fire.
+    mediaList.removeListener(listener);
+    iframe.style.width = "200px";
+    iframe.offsetTop;
+    shouldBe("mediaList.matches", "false");
+</script>
