@@ -1,4 +1,4 @@
-Test timeline records coalescing
+Test the frames are correctly built based on trace events
 
 Test: main thread only
 {

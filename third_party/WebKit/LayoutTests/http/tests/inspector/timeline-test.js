@@ -203,6 +203,22 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
     }
 }
 
+InspectorTest.dumpTimelineModelRecord = function(record, level)
+{
+    if (typeof level !== "number")
+        level = 0;
+    var prefix = "";
+    for (var i = 0; i < level ; ++i)
+        prefix = "----" + prefix;
+    if (level > 0)
+        prefix = prefix + "> ";
+    InspectorTest.addResult(prefix + record.type());
+
+    var numChildren = record.children() ? record.children().length : 0;
+    for (var i = 0; i < numChildren; ++i)
+        InspectorTest.dumpTimelineModelRecord(record.children()[i], level + 1);
+}
+
 // Dump just the record name, indenting output on separate lines for subrecords
 InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallback, level, filterTypes)
 {

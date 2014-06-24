@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function initialize_CategoryFilterTest()
+{
+    InspectorTest.dumpVisibleRecords = function()
+    {
+        var presentationModel = InspectorTest.timelinePresentationModel();
+        var records = presentationModel.filteredRecords();
+        for (var i = 0; i < records.length; ++i)
+            InspectorTest.addResult(records[i].record().type());
+    }
+}
+
+function test()
+{
+    var records = [
+        {"startTime": 1000.000,"endTime":1099.999,"type":"Program","data":{},"children":[
+            {"startTime": 1000.001,"endTime":1099.999,"type":"FunctionCall","data":{},"children":[
+                {"startTime": 1000.002,"type":"ResourceSendRequest","data":{"requestId": 1, "url": "http://example.com", "requestMethod": "GET"},"children":[]},
+                {"startTime": 1000.003,"endTime":1010.999,"type":"RecalculateStyles","data":{},"children":[]},
+                {"startTime": 1010.000,"endTime":1020.999,"type":"Layout","data":{},"children":[]}
+            ]}
+        ]}
+    ];
+
+    InspectorTest.loadTimelineRecords(records);
+
+    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
+    for (var i = 0; i < rootRecord.presentationChildren().length; ++i)
+        rootRecord.presentationChildren()[i].setCollapsed(false);
+
+    InspectorTest.addResult("Original records");
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.addResult("Visible records when 'loading' is disabled");
+    WebInspector.TimelineUIUtils.categories().loading.hidden = true;
+    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.addResult("Visible records when 'scripting' is disabled");
+    WebInspector.TimelineUIUtils.categories().scripting.hidden = true;
+    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test the set of visible records is correctly update when category filter changes</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+Test trace-specific implementation of timeline model
+
+Program
+----> FunctionCall
+--------> ResourceSendRequest
+--------> RecalculateStyles
+--------> Layout
+Program
+----> FunctionCall
+--------> ResourceSendRequest
+--------> RecalculateStyles
+--------> Layout
+
