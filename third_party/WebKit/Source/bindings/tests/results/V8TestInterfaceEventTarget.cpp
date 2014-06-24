@@ -60,13 +60,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
         return;
     }
 
-    Document* documentPtr = currentDOMWindow(isolate)->document();
-    ASSERT(documentPtr);
-    Document& document = *documentPtr;
-
-    // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceEventTarget instance
-    // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(documentPtr, info.Holder(), isolate);
+    Document& document = *toDocument(currentExecutionContext(isolate));
 
     RefPtrWillBeRawPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(document);
 
