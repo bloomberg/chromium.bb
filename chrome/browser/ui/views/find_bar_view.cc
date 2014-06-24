@@ -31,6 +31,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -230,6 +231,7 @@ void FindBarView::ClearMatchCount() {
 
 void FindBarView::SetFocusAndSelection(bool select_all) {
   find_text_->RequestFocus();
+  GetInputMethod()->ShowImeIfNeeded();
   if (select_all && !find_text_->text().empty())
     find_text_->SelectAll(true);
 }
