@@ -132,6 +132,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 
+  // Schedules an update to be run 'soon'.
+  void ScheduleUpdate();
+
+  // If an update is scheduled but not yet started, this resets the timer
+  // delaying the start time by a 'small' amount.
+  void DeferScheduledUpdate();
+
+  // Starts an update now.
+  void StartUpdate();
+
   // Sends an IPC message to the worker.
   // If the worker is not running this first tries to start it by
   // calling StartWorker internally.
@@ -278,6 +288,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ObserverList<Listener> listeners_;
   ServiceWorkerScriptCacheMap script_cache_map_;
   base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
+  base::OneShotTimer<ServiceWorkerVersion> update_timer_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

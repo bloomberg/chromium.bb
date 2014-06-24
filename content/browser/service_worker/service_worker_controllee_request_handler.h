@@ -46,6 +46,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // For sub resource case.
   void PrepareForSubResource();
 
+  bool is_main_resource_load_;
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

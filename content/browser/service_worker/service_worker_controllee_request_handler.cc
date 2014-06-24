@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
@@ -24,17 +25,28 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
                                   provider_host,
                                   blob_storage_context,
                                   resource_type),
+      is_main_resource_load_(
+          ServiceWorkerUtils::IsMainResourceType(resource_type)),
       weak_factory_(this) {
 }
 
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
+  // Navigation triggers an update to occur shortly after the page and
+  // its initial subresources load.
+  if (provider_host_ && provider_host_->active_version()) {
+    if (is_main_resource_load_)
+      provider_host_->active_version()->ScheduleUpdate();
+    else
+      provider_host_->active_version()->DeferScheduledUpdate();
+  }
 }
 
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  if (!context_ || !provider_host_) {
+  if (!context_ || !provider_host_ ||
+      request->load_flags() & net::LOAD_BYPASS_CACHE) {
     // We can't do anything other than to fall back to network.
     job_ = NULL;
     return NULL;
@@ -59,7 +71,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   job_ = new ServiceWorkerURLRequestJob(
       request, network_delegate, provider_host_, blob_storage_context_);
-  if (ServiceWorkerUtils::IsMainResourceType(resource_type_))
+  if (is_main_resource_load_)
     PrepareForMainResource(request->url());
   else
     PrepareForSubResource();

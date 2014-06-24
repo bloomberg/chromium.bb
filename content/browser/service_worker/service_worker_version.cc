@@ -29,6 +29,9 @@ namespace {
 // is also stopped without delay)
 const int64 kStopWorkerDelay = 30;  // 30 secs.
 
+// Default delay for scheduled update.
+const int kUpdateDelaySeconds = 10;
+
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);
@@ -193,6 +196,27 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
     }
   }
   stop_callbacks_.push_back(callback);
+}
+
+void ServiceWorkerVersion::ScheduleUpdate() {
+  if (update_timer_.IsRunning()) {
+    update_timer_.Reset();
+    return;
+  }
+  update_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kUpdateDelaySeconds),
+      base::Bind(&ServiceWorkerVersion::StartUpdate,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::DeferScheduledUpdate() {
+  if (update_timer_.IsRunning())
+    update_timer_.Reset();
+}
+
+void ServiceWorkerVersion::StartUpdate() {
+  update_timer_.Stop();
+  // TODO(michaeln): write me
 }
 
 void ServiceWorkerVersion::SendMessage(
