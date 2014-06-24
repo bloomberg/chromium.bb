@@ -454,7 +454,7 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
 
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
-  const std::string& current_input_method_id =
+  const std::string current_input_method_id =
       manager->GetCurrentInputMethod().id();
   std::set<std::string> input_methods_added;
 
