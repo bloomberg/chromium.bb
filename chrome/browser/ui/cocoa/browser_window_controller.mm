@@ -1385,7 +1385,10 @@ using web_modal::WebContentsModalDialogManager;
 }
 
 - (void)focusTabContents {
-  [[self window] makeFirstResponder:[tabStripController_ activeTabView]];
+  content::WebContents* const activeWebContents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (activeWebContents)
+    activeWebContents->Focus();
 }
 
 - (void)layoutTabs {

@@ -620,7 +620,13 @@ willPositionSheet:(NSWindow*)sheet
   [destWindow makeKeyAndOrderFront:self];
   [destWindow setCollectionBehavior:behavior];
 
-  [focusTracker restoreFocusInWindow:destWindow];
+  if (![focusTracker restoreFocusInWindow:destWindow]) {
+    // During certain types of fullscreen transitions, the view that had focus
+    // may have gone away (e.g., the one for a Flash FS widget).  In this case,
+    // FocusTracker will fail to restore focus to anything, so we set the focus
+    // to the tab contents as a reasonable fall-back.
+    [self focusTabContents];
+  }
   [sourceWindow orderOut:self];
 
   // We're done moving focus, so re-enable bar visibility changes.

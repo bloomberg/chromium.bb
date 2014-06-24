@@ -353,6 +353,7 @@ WebContentsImpl::WebContentsImpl(
       currentPinchZoomStepDelta_(0),
       render_view_message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
+      fullscreen_widget_had_focus_at_shutdown_(false),
       is_subframe_(false),
       touch_emulation_enabled_(false),
       last_dialog_suppressed_(false) {
@@ -1034,11 +1035,21 @@ void WebContentsImpl::Observe(int type,
   switch (type) {
     case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
       RenderWidgetHost* host = Source<RenderWidgetHost>(source).ptr();
-      for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
-           i != pending_widget_views_.end(); ++i) {
-        if (host->GetView() == i->second) {
-          pending_widget_views_.erase(i);
-          break;
+      RenderWidgetHostView* view = host->GetView();
+      if (view == GetFullscreenRenderWidgetHostView()) {
+        // We cannot just call view_->RestoreFocus() here.  On some platforms,
+        // attempting to focus the currently-invisible WebContentsView will be
+        // flat-out ignored.  Therefore, this boolean is used to track whether
+        // we will request focus after the fullscreen widget has been
+        // destroyed.
+        fullscreen_widget_had_focus_at_shutdown_ = (view && view->HasFocus());
+      } else {
+        for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
+             i != pending_widget_views_.end(); ++i) {
+          if (host->GetView() == i->second) {
+            pending_widget_views_.erase(i);
+            break;
+          }
         }
       }
       break;
@@ -1196,6 +1207,8 @@ void WebContentsImpl::RenderWidgetDeleted(
                       DidDestroyFullscreenWidget(
                           fullscreen_widget_routing_id_));
     fullscreen_widget_routing_id_ = MSG_ROUTING_NONE;
+    if (fullscreen_widget_had_focus_at_shutdown_)
+      view_->RestoreFocus();
   }
 }
 
@@ -1577,6 +1590,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
 
   if (is_fullscreen) {
     DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
+    view_->StoreFocus();
     fullscreen_widget_routing_id_ = route_id;
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
@@ -1979,24 +1993,46 @@ DropData* WebContentsImpl::GetDropData() {
 }
 
 void WebContentsImpl::Focus() {
-  view_->Focus();
+  RenderWidgetHostView* const fullscreen_view =
+      GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view)
+    fullscreen_view->Focus();
+  else
+    view_->Focus();
 }
 
 void WebContentsImpl::SetInitialFocus() {
-  view_->SetInitialFocus();
+  RenderWidgetHostView* const fullscreen_view =
+      GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view)
+    fullscreen_view->Focus();
+  else
+    view_->SetInitialFocus();
 }
 
 void WebContentsImpl::StoreFocus() {
-  view_->StoreFocus();
+  if (!GetFullscreenRenderWidgetHostView())
+    view_->StoreFocus();
 }
 
 void WebContentsImpl::RestoreFocus() {
-  view_->RestoreFocus();
+  RenderWidgetHostView* const fullscreen_view =
+      GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view)
+    fullscreen_view->Focus();
+  else
+    view_->RestoreFocus();
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
   if (ShowingInterstitialPage()) {
     GetRenderManager()->interstitial_page()->FocusThroughTabTraversal(reverse);
+    return;
+  }
+  RenderWidgetHostView* const fullscreen_view =
+      GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view) {
+    fullscreen_view->Focus();
     return;
   }
   GetRenderViewHostImpl()->SetInitialFocus(reverse);

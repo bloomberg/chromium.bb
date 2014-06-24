@@ -193,16 +193,8 @@ bool WebView::IsFocusable() const {
 }
 
 void WebView::OnFocus() {
-  if (!web_contents())
-    return;
-  if (is_embedding_fullscreen_widget_) {
-    content::RenderWidgetHostView* const current_fs_view =
-        web_contents()->GetFullscreenRenderWidgetHostView();
-    if (current_fs_view)
-      current_fs_view->Focus();
-  } else {
+  if (web_contents())
     web_contents()->Focus();
-  }
 }
 
 void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {

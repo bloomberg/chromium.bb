@@ -1124,6 +1124,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Routing id of the shown fullscreen widget or MSG_ROUTING_NONE otherwise.
   int fullscreen_widget_routing_id_;
 
+  // At the time the fullscreen widget was being shut down, did it have focus?
+  // This is used to restore focus to the WebContentsView after both: 1) the
+  // fullscreen widget is destroyed, and 2) the WebContentsDelegate has
+  // completed making layout changes to effect an exit from fullscreen mode.
+  bool fullscreen_widget_had_focus_at_shutdown_;
+
   // Maps the ids of pending image downloads to their callbacks
   typedef std::map<int, ImageDownloadCallback> ImageDownloadMap;
   ImageDownloadMap image_download_map_;
