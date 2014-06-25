@@ -304,12 +304,9 @@ class OmniboxFieldTrial {
   // autocompletions to offer.  Normally HistoryURL does not add the UWYT match
   // if there are good inline autocompletions, as the user could simply hit
   // backspace to delete the completion and get the what-you-typed match.
-  // However, in the disable inlining experiment this interaction is a lot more
-  // difficult.  The user will have to select a not-inlined suggestion and
-  // backspace (possibly a lot) to get back to the what-you-typed match.
-  // This mode is intended to alleviate the pain by always ensuring that
-  // the UWYT match appears somewhere on the list of suggestions.  Returns
-  // false if the experiment isn't active.
+  // However, for the disabling inlining experiment we want to have the UWYT
+  // always explicitly displayed at an option if possible.  Returns false if
+  // the experiment isn't active.
   static bool AddUWYTMatchEvenIfPromotedURLs();
 
   // ---------------------------------------------------------

@@ -156,10 +156,9 @@ struct HistoryURLProviderParams {
   // this to.  See comments in DoAutocomplete().
   PromoteType promote_type;
 
-  // True if we should consider adding the what you typed match.  This
-  // decision is often already summarized in |promote_type| by whether it
-  // says to promote the what you typed match.  As such, this variable is
-  // only useful when |promote_type| is FRONT_HISTORY_MATCH.
+  // True if |what_you_typed_match| is eligible for display.  If this is true,
+  // PromoteMatchesIfNecessary() may choose to place |what_you_typed_match| on
+  // |matches_| even when |promote_type| is not WHAT_YOU_TYPED_MATCH.
   bool have_what_you_typed_match;
 
   // Languages we should pass to gfx::GetCleanStringFromUrl.
@@ -249,11 +248,9 @@ class HistoryURLProvider : public HistoryProvider {
                       history::URLDatabase* db,
                       HistoryURLProviderParams* params);
 
-  // May promote either the what you typed match or first history match in
-  // params->matches to the front of |matches_|, depending on the value of
-  // params->promote_type.  Also, depending on a field trial state, if it
-  // promotes the first history match, it may decide to append the what you
-  // typed matche immediately after.
+  // May promote the what you typed match, the first history match in
+  // parmas->matches, or both to the front of |matches_|, depending on the
+  // values of params->promote_type and params->have_what_you_typed_match.
   void PromoteMatchesIfNecessary(const HistoryURLProviderParams& params);
 
   // Dispatches the results to the autocomplete controller. Called on the

@@ -767,8 +767,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   SortAndDedupMatches(&params->matches);
 
   // Try to create a shorter suggestion from the best match.
-  // We consider the what you typed match to be eligible to be displayed when
-  // there's a reasonable chance the user actually cares:
+  // We consider the what you typed match eligible for display when there's a
+  // reasonable chance the user actually cares:
   // * Their input can be opened as a URL, and
   // * We parsed the input as a URL, or it starts with an explicit "http:" or
   // "https:".
