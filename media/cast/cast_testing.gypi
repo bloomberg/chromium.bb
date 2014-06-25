@@ -226,6 +226,28 @@
       ],
     },
     {
+      'target_name': 'cast_simulator',
+      'type': 'executable',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        'cast_base',
+        'cast_sender',
+        'cast_test_utility',
+        'cast_transport',
+        '<(DEPTH)/net/net.gyp:net_test_support',
+        '<(DEPTH)/media/media.gyp:media',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+        '<(DEPTH)/third_party/opus/opus.gyp:opus',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        '<(DEPTH)/media/cast/test/simulator.cc',
+      ],
+    },
+    {
       'target_name': 'generate_barcode_video',
       'type': 'executable',
       'include_dirs': [
