@@ -2563,6 +2563,8 @@
       'browser/supervised_user/supervised_user_shared_settings_update.h',
       'browser/supervised_user/supervised_user_site_list.cc',
       'browser/supervised_user/supervised_user_site_list.h',
+      'browser/supervised_user/supervised_user_sync_data_type_controller.cc',
+      'browser/supervised_user/supervised_user_sync_data_type_controller.h',
       'browser/supervised_user/supervised_user_sync_service.cc',
       'browser/supervised_user/supervised_user_sync_service.h',
       'browser/supervised_user/supervised_user_sync_service_factory.cc',

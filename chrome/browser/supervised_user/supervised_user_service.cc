@@ -364,7 +364,6 @@ void SupervisedUserService::SetupSync() {
 
   bool sync_everything = false;
   syncer::ModelTypeSet synced_datatypes;
-  synced_datatypes.Put(syncer::SUPERVISED_USER_SETTINGS);
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.

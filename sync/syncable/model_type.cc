@@ -434,6 +434,7 @@ ModelTypeSet PriorityCoreTypes() {
 
   // The following are non-control core types.
   result.Put(SUPERVISED_USERS);
+  result.Put(SUPERVISED_USER_SETTINGS);
 
   return result;
 }

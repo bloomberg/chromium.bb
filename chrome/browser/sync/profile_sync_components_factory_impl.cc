@@ -86,6 +86,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #endif
@@ -300,30 +301,24 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
 #if defined(ENABLE_MANAGED_USERS)
-  if (profile_->IsSupervised()) {
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            MakeDisableCallbackFor(syncer::SUPERVISED_USER_SETTINGS),
-            syncer::SUPERVISED_USER_SETTINGS,
-            this));
-  } else {
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            MakeDisableCallbackFor(syncer::SUPERVISED_USERS),
-            syncer::SUPERVISED_USERS,
-            this));
-  }
   pss->RegisterDataTypeController(
-      new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            MakeDisableCallbackFor(syncer::SUPERVISED_USER_SHARED_SETTINGS),
-            syncer::SUPERVISED_USER_SHARED_SETTINGS,
-            this));
+      new SupervisedUserSyncDataTypeController(
+          MakeDisableCallbackFor(syncer::SUPERVISED_USER_SETTINGS),
+          syncer::SUPERVISED_USER_SETTINGS,
+          this,
+          profile_));
+  pss->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          MakeDisableCallbackFor(syncer::SUPERVISED_USERS),
+          syncer::SUPERVISED_USERS,
+          this,
+          profile_));
+  pss->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          MakeDisableCallbackFor(syncer::SUPERVISED_USER_SHARED_SETTINGS),
+          syncer::SUPERVISED_USER_SHARED_SETTINGS,
+          this,
+          profile_));
 #endif
 }
 
