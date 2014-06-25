@@ -85,6 +85,9 @@ void AutoTableLayout::recalcColumn(unsigned effCol)
                     // FIXME: Other browsers have a lower limit for the cell's max width.
                     const int cCellMaxWidth = 32760;
                     Length cellLogicalWidth = cell->styleOrColLogicalWidth();
+                    // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+                    if (cellLogicalWidth.isCalculated())
+                        cellLogicalWidth = Length(); // Make it Auto
                     if (cellLogicalWidth.value() > cCellMaxWidth)
                         cellLogicalWidth.setValue(cCellMaxWidth);
                     if (cellLogicalWidth.isNegative())
@@ -291,8 +294,9 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
         unsigned span = cell->colSpan();
 
         Length cellLogicalWidth = cell->styleOrColLogicalWidth();
-        if (cellLogicalWidth.isZero())
-            cellLogicalWidth = Length(); // make it Auto
+        // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+        if (cellLogicalWidth.isZero() || cellLogicalWidth.isCalculated())
+            cellLogicalWidth = Length(); // Make it Auto
 
         unsigned effCol = m_table->colToEffCol(cell->col());
         size_t lastCol = effCol;
