@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_TEST_TEST_VIEWS_H_
 #define UI_VIEWS_TEST_TEST_VIEWS_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -29,12 +30,18 @@ class ProportionallySizedView : public View {
   explicit ProportionallySizedView(int factor);
   virtual ~ProportionallySizedView();
 
+  void set_preferred_width(int width) { preferred_width_ = width; }
+
   virtual int GetHeightForWidth(int w) const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   // The multiplicative factor between width and height, i.e.
   // height = width * factor_.
   int factor_;
+
+  // The width used as the preferred size. -1 if not used.
+  int preferred_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ProportionallySizedView);
 };

@@ -47,8 +47,16 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     // in-between the child views.
   };
 
-  // TODO(calamity): Add CrossAxisAlignment property to allow cross axis
-  // alignment.
+  // This specifies where along the cross axis the children should be laid out.
+  // e.g. a horizontal layout of CROSS_AXIS_ALIGNMENT_END will result in the
+  // child views being bottom-aligned.
+  enum CrossAxisAlignment {
+    // This causes the child view to stretch to fit the host in the cross axis.
+    CROSS_AXIS_ALIGNMENT_STRETCH,
+    CROSS_AXIS_ALIGNMENT_START,
+    CROSS_AXIS_ALIGNMENT_CENTER,
+    CROSS_AXIS_ALIGNMENT_END,
+  };
 
   // Use |inside_border_horizontal_spacing| and
   // |inside_border_vertical_spacing| to add additional space between the child
@@ -64,6 +72,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     main_axis_alignment_ = main_axis_alignment;
   }
 
+  void set_cross_axis_alignment(CrossAxisAlignment cross_axis_alignment) {
+    cross_axis_alignment_ = cross_axis_alignment;
+  }
+
   void set_inside_border_insets(const gfx::Insets& insets) {
     inside_border_insets_ = insets;
   }
@@ -75,13 +87,28 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
                                          int width) const OVERRIDE;
 
  private:
-  // Returns the size and position along the main axis of |child_area|.
-  int MainAxisSize(const gfx::Rect& child_area) const;
-  int MainAxisPosition(const gfx::Rect& child_area) const;
+  // Returns the size and position along the main axis of |rect|.
+  int MainAxisSize(const gfx::Rect& rect) const;
+  int MainAxisPosition(const gfx::Rect& rect) const;
 
-  // Sets the size and position along the main axis of |child_area|.
-  void SetMainAxisSize(int size, gfx::Rect* child_area) const;
-  void SetMainAxisPosition(int position, gfx::Rect* child_area) const;
+  // Sets the size and position along the main axis of |rect|.
+  void SetMainAxisSize(int size, gfx::Rect* rect) const;
+  void SetMainAxisPosition(int position, gfx::Rect* rect) const;
+
+  // Returns the size and position along the cross axis of |rect|.
+  int CrossAxisSize(const gfx::Rect& rect) const;
+  int CrossAxisPosition(const gfx::Rect& rect) const;
+
+  // Sets the size and position along the cross axis of |rect|.
+  void SetCrossAxisSize(int size, gfx::Rect* rect) const;
+  void SetCrossAxisPosition(int size, gfx::Rect* rect) const;
+
+  // Returns the main axis size for the given view. |child_area_width| is needed
+  // to calculate the height of the view when the orientation is vertical.
+  int MainAxisSizeForView(const View* view, int child_area_width) const;
+
+  // Returns the cross axis size for the given view.
+  int CrossAxisSizeForView(const View* view) const;
 
   // The preferred size for the dialog given the width of the child area.
   gfx::Size GetPreferredSizeForChildWidth(const View* host,
@@ -102,6 +129,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // The alignment of children in the main axis. This is
   // MAIN_AXIS_ALIGNMENT_START by default.
   MainAxisAlignment main_axis_alignment_;
+
+  // The alignment of children in the cross axis. This is
+  // CROSS_AXIS_ALIGNMENT_STRETCH by default.
+  CrossAxisAlignment cross_axis_alignment_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BoxLayout);
 };

@@ -162,7 +162,8 @@ TEST_F(BoxLayoutTest, UseHeightForWidth) {
   layout_.reset(new BoxLayout(BoxLayout::kVertical, 0, 0, 0));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
-  View* v2 = new ProportionallySizedView(2);
+  ProportionallySizedView* v2 = new ProportionallySizedView(2);
+  v2->set_preferred_width(10);
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(20, 50), layout_->GetPreferredSize(host_.get()));
 
@@ -172,6 +173,18 @@ TEST_F(BoxLayoutTest, UseHeightForWidth) {
   EXPECT_EQ(gfx::Rect(0, 10, 20, 40), v2->bounds());
 
   EXPECT_EQ(110, layout_->GetPreferredHeightForWidth(host_.get(), 50));
+
+  // Test without horizontal stretching of the views.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  EXPECT_EQ(gfx::Size(20, 30).ToString(),
+            layout_->GetPreferredSize(host_.get()).ToString());
+
+  host_->SetBounds(0, 0, 20, 30);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 10, 20), v2->bounds());
+
+  EXPECT_EQ(30, layout_->GetPreferredHeightForWidth(host_.get(), 50));
 }
 
 TEST_F(BoxLayoutTest, EmptyPreferredSize) {
@@ -264,6 +277,88 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
   layout_->Layout(host_.get());
   EXPECT_EQ(gfx::Rect(10, 50, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 80, 20, 10).ToString(), v2->bounds().ToString());
+}
+
+TEST_F(BoxLayoutTest, CrossAxisAlignmentHorizontal) {
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10));
+
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v1);
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  host_->AddChildView(v2);
+
+  host_->SetBounds(0, 0, 100, 60);
+
+  // Stretch children to fill the available height by default.
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 40).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 10, 10, 40).ToString(), v2->bounds().ToString());
+
+  // Ensure same results for CROSS_AXIS_ALIGNMENT_STRETCH.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 40).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 10, 10, 40).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the start vertically.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 10, 10, 10).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the center vertically.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 20, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 25, 10, 10).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the end of the host vertically, accounting for the
+  // inside border spacing.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 30, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 40, 10, 10).ToString(), v2->bounds().ToString());
+}
+
+TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
+  layout_.reset(new BoxLayout(BoxLayout::kVertical, 10, 10, 10));
+
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v1);
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  host_->AddChildView(v2);
+
+  host_->SetBounds(0, 0, 60, 100);
+
+  // Stretch children to fill the available width by default.
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 40, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(10, 40, 40, 10).ToString(), v2->bounds().ToString());
+
+  // Ensure same results for CROSS_AXIS_ALIGNMENT_STRETCH.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 40, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(10, 40, 40, 10).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the start horizontally.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(10, 40, 10, 10).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the center horizontally.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(20, 10, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(25, 40, 10, 10).ToString(), v2->bounds().ToString());
+
+  // Aligns children to the end of the host horizontally, accounting for the
+  // inside border spacing.
+  layout_->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(30, 10, 20, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(40, 40, 10, 10).ToString(), v2->bounds().ToString());
 }
 
 }  // namespace views
