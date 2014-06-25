@@ -38,7 +38,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
-        if (!TextUtils.isEmpty(params.getLinkUrl())) menu.setHeaderTitle(params.getLinkUrl());
+        if (params.isImage() && !TextUtils.isEmpty(params.getSrcUrl()))
+            menu.setHeaderTitle(params.getSrcUrl());
+        else if (!TextUtils.isEmpty(params.getLinkUrl()) )
+            menu.setHeaderTitle(params.getLinkUrl());
 
         if (mMenuInflater == null) mMenuInflater = new MenuInflater(context);
 
