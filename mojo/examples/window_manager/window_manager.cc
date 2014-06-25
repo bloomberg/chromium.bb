@@ -118,7 +118,7 @@ class WindowManager : public Application,
     ViewManager::Create(this, this);
   }
 
-    // Overridden from ViewObserver:
+  // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED) {
       std::string app_url;

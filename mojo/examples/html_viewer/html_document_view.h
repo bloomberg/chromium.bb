@@ -5,7 +5,9 @@
 #ifndef MOJO_EXAMPLES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
 #define MOJO_EXAMPLES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
@@ -22,7 +24,8 @@ namespace examples {
 
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
-                         public blink::WebFrameClient {
+                         public blink::WebFrameClient,
+                         public view_manager::ViewObserver {
  public:
   explicit HTMLDocumentView(view_manager::ViewManager* view_manager);
   virtual ~HTMLDocumentView();
@@ -46,6 +49,10 @@ class HTMLDocumentView : public blink::WebViewClient,
       const blink::WebString& source_name,
       unsigned source_line,
       const blink::WebString& stack_trace);
+
+  // ViewObserver methods:
+  virtual void OnViewInputEvent(view_manager::View* view,
+                                const EventPtr& event) OVERRIDE;
 
   void Repaint();
 

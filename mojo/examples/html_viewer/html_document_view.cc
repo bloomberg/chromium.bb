@@ -8,14 +8,17 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "mojo/examples/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/examples/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
@@ -23,10 +26,41 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/events/event_constants.h"
 
 namespace mojo {
 namespace examples {
 namespace {
+
+int EventFlagsToWebEventModifiers(int flags) {
+  int modifiers = 0;
+
+  if (flags & ui::EF_SHIFT_DOWN)
+    modifiers |= blink::WebInputEvent::ShiftKey;
+  if (flags & ui::EF_CONTROL_DOWN)
+    modifiers |= blink::WebInputEvent::ControlKey;
+  if (flags & ui::EF_ALT_DOWN)
+    modifiers |= blink::WebInputEvent::AltKey;
+  // TODO(beng): MetaKey/META_MASK
+  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::LeftButtonDown;
+  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::MiddleButtonDown;
+  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::RightButtonDown;
+  if (flags & ui::EF_CAPS_LOCK_DOWN)
+    modifiers |= blink::WebInputEvent::CapsLockOn;
+  return modifiers;
+}
+
+int GetClickCount(int flags) {
+  if (flags & ui::EF_IS_TRIPLE_CLICK)
+    return 3;
+  else if (flags & ui::EF_IS_DOUBLE_CLICK)
+    return 2;
+
+  return 1;
+}
 
 void ConfigureSettings(blink::WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
@@ -44,9 +78,12 @@ HTMLDocumentView::HTMLDocumentView(view_manager::ViewManager* view_manager)
       web_view_(NULL),
       repaint_pending_(false),
       weak_factory_(this) {
+  view_->AddObserver(this);
 }
 
 HTMLDocumentView::~HTMLDocumentView() {
+  view_->RemoveObserver(this);
+
   if (web_view_)
     web_view_->close();
 }
@@ -109,6 +146,56 @@ void HTMLDocumentView::didAddMessageToConsole(
     unsigned source_line,
     const blink::WebString& stack_trace) {
   printf("### console: %s\n", std::string(message.text.utf8()).c_str());
+}
+
+void HTMLDocumentView::OnViewInputEvent(view_manager::View* view,
+                                        const EventPtr& event) {
+  if (event->action != ui::ET_MOUSE_PRESSED &&
+      event->action != ui::ET_MOUSE_RELEASED &&
+      event->action != ui::ET_MOUSE_ENTERED &&
+      event->action != ui::ET_MOUSE_EXITED &&
+      event->action != ui::ET_MOUSE_MOVED &&
+      event->action != ui::ET_MOUSE_DRAGGED) {
+    return;
+  }
+
+  blink::WebMouseEvent web_event;
+  web_event.x = event->location->x;
+  web_event.y = event->location->y;
+
+  web_event.modifiers = EventFlagsToWebEventModifiers(event->flags);
+  web_event.timeStampSeconds =
+      base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+
+  web_event.button = blink::WebMouseEvent::ButtonNone;
+  if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
+    web_event.button = blink::WebMouseEvent::ButtonLeft;
+  if (event->flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    web_event.button = blink::WebMouseEvent::ButtonMiddle;
+  if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    web_event.button = blink::WebMouseEvent::ButtonRight;
+
+  switch (event->action) {
+    case ui::ET_MOUSE_PRESSED:
+      web_event.type = blink::WebInputEvent::MouseDown;
+      web_event.clickCount = GetClickCount(event->flags);
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      web_event.type = blink::WebInputEvent::MouseUp;
+      web_event.clickCount = GetClickCount(event->flags);
+      break;
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+      web_event.type = blink::WebInputEvent::MouseMove;
+      break;
+    default:
+      NOTIMPLEMENTED() << "Received unexpected event: " << event->action;
+      break;
+  }
+
+  web_view_->handleInputEvent(web_event);
 }
 
 void HTMLDocumentView::Repaint() {
