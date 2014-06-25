@@ -1,557 +1,383 @@
 <meta name="doc-family" content="apps">
-<h1>Google Cloud Messaging for Chrome</h1>
+<h1 id="gcm">Google Cloud Messaging</h1>
 
-<p class="note">
-If you are looking for the new Google Cloud Messaging API, please click
-<a href="cloudMessagingV2">here</a>.
-</p>
+<p>Google Cloud Messaging (GCM) is a service for both Android-powered device and
+Chrome instances to send and receive message data from servers.
+The <a href="gcm">chrome.gcm API</a> allows the Chrome apps or extensions
+to access the GCM service for the signed-in Chrome users.
+The service works even if an app or extension isn't currently running.
+For example, calendar updates could be pushed
+to users even when their calendar app isn't open. </p>
 
-<p>
-Google Cloud Messaging for Chrome (GCM) is a service
-for signed-in Chrome users
-that helps developers send message data from servers
-to their Chrome apps and extensions.
-The service is intended to wake up an app or extension,
-and/or alert a user.
-For example, calendar updates could be pushed to users
-even when their calendaring app isn't open.
-</p>
+<p>To use both API and service, you must agree to the <a href="https://developers.google.com/terms/">Google APIs Terms of
+Service</a> and <a href="https://developers.google.com/cloud/terms/">Google Cloud Platform Terms
+of Service</a>.</p>
 
-<p>This document describes how to set up and use GCM.
-For additional information see the reference documentation
-for the <a href="pushMessaging">pushMessaging Chrome API</a> and the
-<a href="gcm_server">GCM service</a>.
-To get help with GCM or to give us feedback, see <a href="#feedback">Feedback</a>.
-</p>
+<p>This document describes how to set up and use GCM. For additional information
+see the reference documentation for the <a href="gcm">GCM Chrome API</a> and
+the <a href="http://developer.android.com/google/gcm/index.html">GCM Service</a>. To get
+help with GCM or to give us feedback, please see
+<a href="#feedback">Feedback</a>.</p>
 
-<h2 id="one">How push messaging works</h2>
+<p class="note"><strong>API Samples</strong>: Want to play with the code? Check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gcm-notifications">gcm-notifications</a>
+sample.</p>
 
-<p>
-At a glance, push messaging works like this:
-</p>
+<h2 id="enable_gcm">Enable GCM</h2>
+
+<p>To use GCM for your app or extension, do the following:</p>
 
 <ol>
-  <li>You upload your app or extension client to the Chrome Web Store.</li>
-  <li>A user installs your app or extension.</li>
-  <li>Your app or extension client requests the user's channel ID
-  and sends this ID to your server.</li>
-  <li>Your app or extension server sends a message
-  to the push messaging service.</li>
-  <li>The push messaging service routes the message
-  to all instances of Chrome where the user is signed in.</li>
-  <li>When the app or extension starts,
-  it needs to register a handler to receive the
-  $(ref:pushMessaging.onMessage) event.</li>
-  <li>When the message arrives on the client,
-  Chrome starts the app or extension, if it is not already running,
-  and calls the registered handler.</li>
+<li>Upload your app or extension client to the <a href="https://developers.google.com/chrome/web-store/docs/publish">Chrome Web
+Store</a>.</li>
+<li>A user installs your app or extension.</li>
+<li>Your app or extension client requests a registration ID using $(ref:gcm.register)
+function and sends this ID to your server together with information
+identifying the user. For more details, please see <a href="#obtain_registration_id">Obtain registration
+ID</a>.</li>
 </ol>
 
-<p>
-Diving in a bit more,
-the Chrome Web Store assigns your newly published app
-or extension a unique app ID.
-When a user installs your app or extension,
-the client needs to call $(ref:pushMessaging.getChannelId).
-The push messaging service returns a channel ID to the client;
-this ID is specifically linked to your app ID and to the user.
-Whatever method your client uses to send the channel ID to the server,
-it must be secured (https, for instance).
-For example,
-the client could send an XHR request
-to a RESTful API on your server.
-</p>
+<h2 id="receive_a_message">Receive a message</h2>
 
-<p>
-As long as Chrome is running in the background or foreground,
-even if the extension or app is not running,
-it is woken up to deliver a message.
-For this to work,
-your app or extension must register a handler to receive the event,
-similar to how they’d register for launch events.
-</p>
-
-<p>
-Your app/extension server is responsible
-for sending a push message to the service.
-In all push message requests,
-your server must include the user's channel ID
-and a valid OAuth 2.0 access token:
-the access token authorizes use of the service and
-the channel ID identifies the user and app to receive the message.
-</p>
-
-<p>
-Any messages sent are delivered
-to all instances of that application installed
-in a Chrome profile signed in as that user.
-The most recent message sent on each subchannel is automatically queued
-for delivery to instances of Chrome which are not connected to the push
-messaging service at the time. If multiple messages are sent on one subchannel
-while Chrome is disconnected, then Chrome may only receive the last one sent
-when it reconnects.
-</p>
-
-<p>
-Subchannels can also be used to implement priority schemes.
-For example,
-if you had an instant messaging app,
-requests for a phone call or video chat can go through immediately,
-instead of waiting for all the backed up chat messages to be cleared.
-</p>
-
-<h2 id="checklist">To Do Checklist</h2>
-
-<p>
-Here's a quick checklist of what you need to do
-to use the push messaging service
-(the remainder of this doc covers the steps in detail):
-</p>
+<p>At a glance, receiving a message works like this:</p>
 
 <ol>
-  <li>Register your app or extension:
-    <ul>
-      <li>Create the client ID in the Google APIs Console.</li>
-      <li>Get the refresh token to set up authorization to use the service.</li>
-    </ul>
-  </li>
-  <li>Set up your app or extension to use the service:
-  	<ul>
-  	  <li>Add the permission to the manifest.</li>
-  	  <li>Include a call to <code>getChannelId</code>
-      for any user who is to receive a message.</li>
-  	  <li>Register a handler to receive the
-  	  <code>onMessage</code> event.</li>	
-  	</ul>
-   </li>
-  <li>Publish your app in the Chrome Web Store. </li>
-  <li>Use refresh token to get a valid access token.</li>
-  <li>Send message to user.</li>
+<li>Your app or extension client should register a handler to receive the
+$(ref:gcm.onMessage) event.</li>
+<li>When your server sends a message to the user, it specifies all of the
+registration IDs that are related to that user and passes the message to the
+GCM service.</li>
+<li>GCM servers route the message to all instances of Chrome running apps or
+extensions with one of the registration IDs.</li>
+<li>When the message arrives on the client, Chrome starts the app or extension,
+if it is not already running, and calls the registered handler to process the
+message.</li>
 </ol>
 
-<h2 id="two">Register app or extension</h2>
+<p>For more details, please see <a href="#receive_messages">Receive messages</a>.</p>
 
-<h3 id="clientid">Create client ID</h3>
+<h2 id="send_a_message">Send a message</h2>
 
-<p>
-Complete the following steps to create the client ID:
-</p>
+<p>At a glance, sending a message works like this:</p>
 
 <ol>
-  <li>Login to the
-  <a href="https://code.google.com/apis/console/">Google APIs Console</a>
-  using the same Google Account that you will use to upload your app.</li>
-  <li> Create a new project by expanding the drop-down menu in the top-left corner
-  and selecting the <strong>Create...</strong> menu item.</li>
-  <li>Go to the "Services" navigation menu item and
-  turn on the <strong>Google Cloud Messaging for Chrome API</strong>.</li>
-  <li>Go to the "API Access" pane and click on the
-  <strong>Create an OAuth 2.0 client ID...</strong> blue button.</li>
-  <li>Enter the requested branding information, if needed</li>
-  <li>For “Application type” select “Web application”.</li>
-  <li>Click "more options" beside "Your site or hostname"
-  and under "Authorized Redirect URIs", enter the following URL:
-  <code>https://developers.google.com/oauthplayground</code>.</li>
-  <li>Click "Create client ID" button.</li>
+<li>Your app or extension generates a unique message ID, so that it is possible
+to find out which message failed to be queued or delivered.</li>
+<li>Your app or extension calls $(ref:gcm.send) function with an object containing
+message ID, destination ID that identifies the server, and data that consist
+of a list of key value pairs. In this step you can also provide an optional
+time-to-live for the message.</li>
+<li>The callback passed to $(ref:gcm.send) function will be called to notify the
+result. Your app or extension should check $(ref:runtime.lastError) to find out if
+the message has been successfully queued for delivery. Please refer to <a href="#error_reference">Error
+reference</a> for possible error codes that could be
+returned.</li>
+<li>In cases that the queued message could not be delivered to the GCM server,
+like network error, a $(ref:gcm.onSendError) event will be fired. Your app or
+extension can listen to this event and react to it, e.g. by trying to resend
+the message. Please refer to <a href="#error_reference">Error reference</a> for
+possible error codes that could be returned.</li>
 </ol>
 
-<p>
-The client ID and the client secret
-from this step are used in further steps.
-Be sure to keep the client ID and secret in a safe place,
-and don't expose them to outsiders.
-</p>
+<p>For more details, please see <a href="#send_messages">Send messages</a>.</p>
 
-<h3 id="refresh">Get refresh token</h3>
+<p class="note"><strong>Display messages in rich notifications format:</strong><br>
+GCM and rich notifications API are a natural fit;
+Use GCM to send and receive message data; use rich notifications to display
+the data in the user's system tray
+(see <a href="inform_users">Keep Users Informed</a>).</p>
 
-<p>
-You need two types of OAuth 2.0 tokens to authorize
-each call to the push messaging service:
-the refresh token and the access token.
-The access token authorizes each call to the service;
-however, this token expires after about an hour.
-The refresh token is used
-to 'refresh' the access token over time.
-These tokens are scoped to only send messages on behalf
-of your application or extension and nothing else.
-</p>
+<h2 id="set_up_project">Set up project</h2>
 
-<p>
-To get the refresh token and initial access token:
-</p>
+<h3 id="create_google_api_project">Create Google API project</h3>
 
 <ol>
-  <li>Open an Incognito window in Chrome;
-  this ensures that you are logged into the correct Google Account.
-  If you only have one Google Account,
-  you don't need to use an incognito window.</li>
-  <li>Go to the
-  <a href="https://developers.google.com/oauthplayground/">OAuth 2.0 Playground</a>.</li>
-  <li>Click the <img src="{{static}}/images/gearsicon.png" width="29" height="23" align="middle"/>
-  <strong>OAuth 2.0 Configuration</strong> button in the top right corner.</li>
-  <li>Check the box "Use your own OAuth credentials",
-  enter the client ID and client secret, and click "Close".</li>
-  <li>In the "Step 1" section, enter the scope
-  <code>https://www.googleapis.com/auth/gcm_for_chrome</code> into the
-  "Input your own scopes" text box and click "Authorize APIs" button.</li>
-  <li>Assuming you are in Incognito mode,
-  you should be redirected to the Google log in page.
-  Login with the same Google Account that you will use to upload your app or extension
-  to the Chrome Web Store.</li>
-  <li>After successful log in, you are redirected to a page to authorize the scopes.
-  Click "Allow access" button, redirecting you back to the OAuth 2.0 playground.</li>
-  <li>In "Step 2", click "Exchange authorization code for tokens" button.</li>
+<li>Login to the <a href="https://cloud.google.com/console/project">Google Developers
+Console</a> using the same Google Account that you will use to upload your app or extension.</li>
+<li>If you haven't created an API project yet, click <strong>Create Project</strong>.</li>
+<li>Supply a project name and click <strong>Create</strong>.</li>
+<li>Once the project has been created, a page appears that displays your project
+number. For example, <strong>Project Number: 670330094152</strong>.</li>
+<li>Copy down your project number. You will use it later on as the GCM sender ID.</li>
 </ol>
 
-<p>
-The refresh token never expires until you explicitly revoke access.
-You need to record and embed the refresh token in the app or extension server side.
-</p>
+<h3 id="enable_the_gcm_service">Enable the GCM service</h3>
 
-<p class="caution">
-<b>Be careful:</b>
-The refresh token should not be shown to anyone outside your organization;
-it should never be exposed on the client.
-If anyone gets your refresh token,
-they could potentially send messages as your server.
-</p>
+<ol>
+<li>In the sidebar on the left, select <strong>APIs &amp; auth</strong>.</li>
+<li>In the displayed list of APIs, turn the <strong>Google Cloud Messaging for
+Android</strong> toggle to ON.</li>
+</ol>
 
-<h2 id="three">Set up app or extension</h2>
+<h2 id="set_up_chrome_app_or_extension">Set up Chrome App or Extension</h2>
 
-<h3 id="manifest">Add permission to manifest</h3>
+<h3 id="add_permission_to_manifest">Add permission to manifest</h3>
 
-<p>
-To use the push messaging service,
-you must declare the <code>pushMessaging</code>
-permission in <code>manifest.json</code>:
-</p>
+<p>To use the gcm service, you must declare the <code>gcm</code> permission in
+<code>manifest.json</code>.</p>
 
-<pre data-filename="manifest.json">
+<pre data-filename="manifest.json"><code>
 "permissions": [
-  "pushMessaging",
- ]
-</pre>
+  "gcm", "storage", ...
+]
+</code></pre>
 
-<h3 id="channelid">Get channel ID</h3>
+<p>Please note that the <code>storage</code> permission is also provided here because the
+sample codes below needs to persist some data via the
+<a href="storage">chrome.storage</a> API.</p>
 
-<p>
-Similar to an email address,
-the channel ID is used to identify and send messages
-to a specific user of your app or extension.
-Your app or extension needs to send this value
-to its application server so that the server
-can trigger push messages back.
-To get the user's channel ID,
-call $(ref:pushMessaging.getChannelId).
-Use the callback function
-to send the channel ID back to your app or extension.
-</p>
+<h2 id="write_chrome_app_or_extension">Write Chrome App or Extension</h2>
 
-<pre>
-chrome.pushMessaging.getChannelId(boolean interactive, function ChannelIdCallback)
-</pre>
+<h3 id="obtain_registration_id">Obtain registration ID</h3>
 
-<p>
-When the <code>interactive</code> flag is set to true,
-the user is asked to log in if they haven't already done so
-with a warning dialog that looks something like this:
-"You must log into Chrome for the Calendar extension to receive push messages.
-Log in now?"
-</p>
+<p>Your app or extension needs to register with GCM servers before it can receive
+messages. When an app or extension registers, it receives a registration ID.
+This is achieved by calling $(ref:gcm.register) and specifying a list of senders
+identified by project numbers from Google Developers Console. Your app or
+extension should pass a callback function to verify that the registration was
+successful. If successful, the received registration ID should be sent back to
+your application server in a secure way, for example, via https. Otherwise, your
+app or extension should handle the error identified by
+<code>chrome.runtime.lastError</code> and retry later.</p>
 
-<p>
-To provide your users with a better experience,
-the interactive flag should be set to false the first time
-your app or extension calls <code>getChannelId</code>.
-Otherwise users will see the sign-in dialog
-with no context,
-even before they start your app or extension.
-If the first call fails because the user is not logged in,
-then <code>getChannelId</code> can be called again
-with the flag set to true.
-You should provide a context dialog
-before the second call is made.
-</p>
+<p>If your app or extension wishes to receive messages from the different senders,
+it can call $(ref:gcm.register) again with the new sender list and the new
+registration ID will be returned.</p>
 
-<h3 id="registerPush">Register message event handler</h3>
+<pre data-filename="background.js"><code>
+function registerCallback(registrationId) {
+  if (chrome.runtime.lastError) {
+    // When the registration fails, handle the error and retry the
+    // registration later.
+    return;
+  }
 
-<p>
-Whenever Chrome receives a pushed message for an application/extension,
-it delivers the push message to the app or extension client.
-Your app or extension must register a handler to receive the event
-whenever the app or extension starts up,
-similar to how they’d register for launch events.
-This gets added to the <code>background.js</code>, for example:
-</p>
-
-<pre>
-function setupPush() {
-  chrome.pushMessaging.onMessage.addListener(messageCallback);
+  // Send the registration ID to your application server.
+  sendRegistrationId(function(succeed) {
+    // Once the registration ID is received by your server,
+    // set the flag such that register will not be invoked
+    // next time when the app starts up.
+    if (succeed)
+      chrome.storage.local.set({registered: true});
+  });
 }
-</pre>
 
-<p>
-The app or extension need not be running when the message arrives;
-the handler can be registered after the message arrives.
-</p>
-
-<h2 id="store">Publish your app</h2>
-
-{{^is_apps}}
-<p>
-To use the push messaging service,
-you must publish your extension in the
-<a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
-</p>
-{{/is_apps}}
-
-{{?is_apps}}
-<p>
-To use the push messaging service,
-you must publish your app in the
-<a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
-</p>
-{{/is_apps}}
-
-<h2 id="five">Send messages</h2>
-
-<h3 id="access">Get new access token</h3>
-
-<p>
-You need a valid access token to push messages
-to your app or extension.
-To obtain a new access token,
-make an <code>HTTPS POST</code>
-that includes your client ID and refresh token.
-<a href="https://developers.google.com/accounts/docs/OAuth2WebServer">Using OAuth 2.0 for
-	Web Server Applications</a>
-describes this in greater detail.
-A sample request would like something like this:
-</p>
-
-<pre>
-POST /o/oauth2/token HTTP/1.1
-Host: accounts.google.com
-Content-Type: application/x-www-form-urlencoded
-
-client_id=291796959215.apps.googleusercontent.com&
-client_secret=0bKUtXN6ykk7Mj1lQxoBZ2mh&
-refresh_token=1%wMfyZvGcCxMSNEX4iTRdE0H1_Yt0wvImBz_iCuXF-UM&
-grant_type=refresh_token
-</pre>
-
-<p>
-A response from such a request is shown below:
-</p>
-
-<pre>
-{
-  "access_token":"1/fFBGRNJru1FQd44AzqT3Zg",
-  "expires_in":3920,
-  "token_type":"Bearer"
+function sendRegistrationId(callback) {
+  // Send the registration ID to your application server
+  // in a secure way.
 }
-</pre>
 
-<p class="note">
-<b>Reminder:</b>
-You should cache the access token for use
-until it expires.
-There is a rate limit on how often you can ask for access tokens.
-You may find yourself locked out of sending messages for awhile
-if you get a new access token every time you send a push message.
-</p>
+chrome.runtime.onStartup.addListener(function() {
+  chrome.storage.local.get("registered", function(result) {
+    // If already registered, bail out.
+    if (result["registered"])
+      return;
 
-<h3 id="message">Send message to user</h3>
+    // Up to 100 senders are allowed.
+    var senderIds = ["Your-Sender-ID"];
+    chrome.gcm.register(senderIds, registerCallback);
+  });
+});
+</code></pre>
 
-<p>
-Send a <code>POST</code> body that includes the channel ID and subchannel ID
-along with the message payload to the API endpoint
-<code>https://www.googleapis.com/gcm_for_chrome/v1/messages</code>.
-Here's what a sample HTTP call would look like:
-</p>
+<p>If your app or extension is installed in different profiles and/or in different
+Chrome instances, each of them will receive a different registration ID.</p>
 
-<pre>
-POST /gcm_for_chrome/v1/messages
-Host: www.googleapis.com
-Content-Type: application/json
-Authorization: Bearer 1/fFBGRNJru1FQd44AzqT3Zg
+<p>Your app or extension could call $(ref:gcm.unregister) to revoke the registration ID.
+The unregistration should only be done in rare cases, such as if your app or
+extension does not want to receive further messages, or the registration ID is
+suspected to be compromised.</p>
 
-{
-  "channelId": "08144192009958038014/aaaaaaaaaabbbbbbbbbbcccccccccc",
-  "subchannelId": "0",
-  "payload": "Thanks for installing my app!"
+<pre data-filename="background.js"><code>
+function unregisterCallback() {
+  if (chrome.runtime.lastError) {
+    // When the unregistration fails, handle the error and retry
+    // the unregistration later.
+    return;
+  }
 }
-</pre>
 
-<p>
-Messages can be coalesced.
-If you send multiple messages on subchannel 1, for instance,
-you may only see the last message and its payload.
-Also, payloads can sometimes be dropped;
-treat a payload as an optimization.
-You can always go back to the server to check
-for the contents of previous messages and
-to get data if the payload is not present.
-</p>
+chrome.gcm.unregister(unregisterCallback);
+</code></pre>
 
-<p>Here's a simple example that shows a push message
-as a text notification when it arrives:
-</p>
+<p>Your app or extension is automatically unregistered from the GCM service when a
+user uninstalls it.</p>
 
-<pre>
-function showPushMessage(message) {
-  var notification = window.webkitNotifications.createNotification(
-    '', 'New notification', message.payload + " [" + message.subchannelId + "]");
-  notification.show();
-}
-</pre>
+<h3 id="receive_messages">Receive messages</h3>
 
-<p>
-You need to add the "notifications" permission
-to <code>manifest.json</code>
-to use text notifications
-(see <a href="desktop_notifications">Desktop Notifications</a>):
-</p>
+<p>When your server sends a message to the user, it specifies all of the
+registration IDs that are related to that user and passes the message to the GCM
+service. GCM servers route the message to all instances of Chrome running apps
+or extensions with one of the registration IDs. If your app or extension has
+been installed in more than one profiles in a single Chrome instance, all of
+them can receive messages independently based on their unique registration IDs.</p>
 
-<pre data-filename="manifest.json">
-"permissions": [
-  "pushMessaging",
-  "notifications"
- ]
-</pre>
+<p>Messages from the server are delivered via the $(ref:gcm.onMessage) event. Your app
+or extension must register a handler to receive this event.</p>
 
-<h2 id="six">Error reference</h2>
+<pre data-filename="background.js"><code>
+chrome.gcm.onMessage.addListener(function(message) {
+  // A message is an object with a data property that
+  // consists of key-value pairs.
+});
+</code></pre>
 
-<p>
-Push messaging error codes indicate whether the push request was accepted or rejected.
-Rejection reasons include sender errors (for example, malformed message),
-permission errors (for example, revoked push messaging token),
-and operational errors (for example, push messaging service is currently down).
-</p>
+<p>As long as Chrome is running, even if the extension or app is not running, it is
+woken up to deliver a message.</p>
 
-<p>
-Here's a brief summary of the push messaging errors:
-</p>
+<h3 id="send_messages">Send messages</h3>
+
+<p>To send messages upstream, your app or extension should call $(ref:gcm.send) with an
+object containing:</p>
 
 <ul>
-  <li>Channel ID is invalid.</li>
-  <li>Subchannel is invalid (four subchannels available;
-  subchannel value must be 0, 1, 2, or 3).</li>
-  <li>Payload is too long (must be 256 bytes or less).</li>
-  <li>Daily message quota exceeded (10,000 message requests allowed per day).</li>
-  <li>Google Account calling the push messaging service does not own the app or extension.</li>
-  <li>An internal error has occurred.
-  This indicates something went wrong on the Google server side
-  (for example, some backend not working
-  or errors in the HTTP post such as a missing access token).</li>
+<li>Message ID that identifies the message when it fails to be queued or
+delivered. The message ID can be any kind of string. However, it is
+recommended to stay unique across the lifetime of your app or extension, even
+after it restarts. If you use the same message ID, there may be a chance that
+the previous message gets overridden. If an auto-increment counter is used to
+create the message ID, your app or extension should persist the counter value
+via <a href="storage">chrome.storage</a> API and restore it when the app
+reloads.</li>
+<li>Destination ID that identifies the server. This is the project number from the
+Google Developers Console plus the suffix "@gcm.googleapis.com".</li>
+<li>Data that consist of a list of string-to-string key value pairs (up to 4KB
+total).</li>
+<li>Time-to-live (TTL, optional). This property value must be a duration from 0 to
+2,419,200 seconds (4 weeks) and it corresponds to the maximum period of time
+for which GCM will store and try to deliver the message. If this property is
+not set, it is default to the maximum value. When a TTL is set to 0, GCM will
+try to deliver the message immediately. If the immediate effort fails, the
+message will be discarded.</li>
 </ul>
 
-<h2 id="test">Testing</h2>
+<p>When the callback passed in $(ref:gcm.send) is called without runtime error, it does
+not mean that the message was already delivered to the GCM server. Rather, it
+means that it was queued for delivery. If the message fails to reach the
+destination within the specified TTL period, for example due to network error,
+the $(ref:gcm.onSendError) will be fired.</p>
 
-<h3 id="test-local">Testing locally</h3>
+<pre data-filename="background.js"><code>
+// Substitute your own sender ID here. This is the project
+// number you got from the Google Developers Console.
+var senderId = "Your-Sender-ID";
 
-<p>
-To test push messaging locally:
-</p>
+// Make the message ID unique across the lifetime of your app.
+// One way to achieve this is to use the auto-increment counter
+// that is persisted to local storage.
 
-<ol>
-  <li><a href="packaging">Package</a> a test version of
-  your app or extension on the Extensions management page
-  (chrome://extensions).
-  Your app or extension doesn't need to be running; it just needs
-  to be installed.</li>
+// Message ID is saved to and restored from local storage.
+var messageId = 0;
+chrome.storage.local.get("messageId", function(result) {
+  if (chrome.runtime.lastError)
+    return;
+  messageId = parseInt(result["messageId"]);
+  if (isNaN(messageId))
+    messageId = 0;
+});
 
-  <li>Get the channel ID at install time using
-  {{?is_apps}}$(ref:app.runtime.onLaunched).{{/is_apps}}
-  {{^is_apps}}$(ref:runtime.onInstalled).{{/is_apps}}</li>
+// Sets up an event listener for send error.
+chrome.gcm.onSendError.addListener(sendError);
 
-  <li>Use that channel ID on the server to send a test
-  push message through the system.
-  If all goes well,
-  your app or extension should start
-  and you should receive the test push message.
-  </li>
-</ol>
+// Returns a new ID to identify the message.
+function getMessageId() {
+  messageId++;
+  chrome.storage.local.set({messageId: messageId});
+  return messageId.toString();
+}
 
-<h3 id="test-cloud">Testing in the cloud</h3>
+function sendMessage() {
+  var message = {
+    messageId: getMessageId(),
+    destinationId: senderId + "@gcm.googleapis.com",
+    timeToLive: 86400,    // 1 day
+    data: {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  };
+  chrome.gcm.send(message, function(messageId) {
+    if (chrome.runtime.lastError) {
+      // Some error occurred. Fail gracefully or try to send
+      // again.
+      return;
+    }
 
-<p>To test push messaging in the cloud, you must first make sure that the
-app or extension you are testing passes an ownership check.
-The Push Messaging server checks that the ID of an app or extension
-that calls the pushMessaging API matches the ID of the app or extension
-in the Chrome Web Store. This ownership check is designed to prevent people
-from sending messages to your app or extension without your permission.
-If your app or extension attempts to use the pushMessaging API and
-the ownership check fails, it will receive
-HTTP status code 500 (Internal Server Error).
-</p>
+    // The message has been accepted for delivery. If the message
+    // can not reach the destination, onSendError event will be
+    // fired.
+  });
+}
 
-<p>
-One circumstance in which the ownership check commonly fails is when you are
-developing an app and you run the app without uploading it and re-downloading
-it from the Chrome Web Store. In this situation your app may not have a
-<a href="manifest/key">key</a> field in its manifest.json file.
-The <code>key</code> field gives an app its Chrome Web Store ID
-(a 32 character alphabetic code, such as "bafimiidcfafikaonocgmmcpbbhfjjik").
-If you run a version of your app without a key, the app will use a
-randomly generated ID that will not match the app's ID in the Chrome Web Store.
-For example, if you upload your app to the Chrome Web Store from the directory
-original_app_dir, then download the app and unpack it to downloaded_app_dir,
-and then run the exact same app as an unpacked extension from original_app_dir,
-the manifest.json file of the app in original_app_dir would not have
-the downloaded key, and the app's ID would appear to be different than
-the ID of the downloaded app.
-</p>
+function sendError(error) {
+  console.log("Message " + error.messageId +
+      " failed to be sent: " + error.errorMessage);
+}
+</code></pre>
 
-<p>
-To test push messaging in the cloud:
-</p>
+<h3 id="messages_deleted_event">Messages deleted event</h3>
 
-<ol>
-  <li>Publish your app or extension to the Chrome Web Store.</li>
+<p>GCM will store up to 100 non-collapsible messages. After that, all messages are
+discarded from GCM, and an event $(ref:gcm.onMessagesDeleted) will be fired, which
+tells the client that it falls behind. Your app or extension should respond by
+syncing with your application server to recover the discarded messages.</p>
 
-  <li>Determine the Chrome Web Store ID of your app or extension.
-  The Chrome Web Store ID is in the URL of any dashboard
-  or Chrome Web Store page that's dedicated to your app or extension.
-  For example, the URL
-  <code>https://chrome.google.com/extensions/detail/aaaaaaaaaabbbbbbbbbbcccccccccc?hl=en</code>
-  has the ID <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.</li>
+<pre data-filename="background.js"><code>
+chrome.gcm.onMessagesDeleted.addListener(messagesDeleted);
 
+function messagesDeleted() {
+  // All messages have been discarded from GCM. Sync with
+  // your application server to recover from the situation.
+}
+</code></pre>
 
-  <li>Install your app or extension from the Chrome Web Store.</li>
+<h3 id="collapsible_messages">Collapsible messages</h3>
 
-  <li>Get the key from the installed app or extension:
+<p>GCM messages are often a tickle, telling the app or extension to contact the
+server for fresh data. In GCM, it's possible to create collapsible messages for
+this situation, wherein new messages replace older ones. When a collapse key is
+provided and multiple messages are queued up in the GCM servers for the same
+user, only the last one with any given collapse key is delivered to your app or
+extension. As a result the <code>message</code> object passed to the $(ref:gcm.onMessage) event
+will contain a <code>collapseKey</code>field. For more details about sending collapsible
+messages, please refer to <a href="http://developer.android.com/google/gcm/adv.html#collapsible">GCM Advance
+Topics</a>.</p>
 
-    <ol style="list-style-type: lower-alpha;">
-      <li>Go to your
-      <a href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a>.
-      </li>
+<h2 id="publish_your_app">Publish your app</h2>
 
-      <li>Look in the file <code>Default/Extensions/&lt;<i>ID</i>&gt;/&lt;<i>versionString</i>&gt;/manifest.json</code>.
-      </li>
+<p>To use the GCM service, you must publish your app in the <a href="https://developers.google.com/chrome/web-store/docs/publish">Chrome Web
+Store</a>.</p>
 
-      <li>Copy the key field.</li>
-    </ol>
-  </li>
+<h2 id="error_reference">Error reference</h2>
 
-  <li>Paste the key field into manifest.json in
-  the test version of your app or extension.</li>
+<p>An error could occur when a gcm API function is called. Your app or extension
+should check $(ref:runtime.lastError) for more information in your callback. The
+error code will also be passed as a parameter to $(ref:gcm.onSendError) event.</p>
 
-  <li>Install a test version of your app or extension on the
-  Extensions management page (chrome://extensions).</li>
-</ol>
+<p>Here's a brief summary of the gcm errors:</p>
 
-<p>
-Each time you reload your app or extension for testing,
-you need to check that the key is present in the manifest file.
-And anytime you wish to update the published version in the Chrome Web Store,
-you need to remove the key because the Store does not currently allow manifests
-with keys.
-</p>
+<ul>
+<li><strong>Function was called with invalid parameters</strong>: this could happen when gcm
+functions are called with bad parameters.</li>
+<li><strong>Profile was not signed in</strong>: this could happen when gcm functions are called
+from a profile that was not signed in.</li>
+<li><strong>Asynchronous operation is pending</strong>: this could happen when certain gcm
+function is called again without waiting for the callback passed in previous
+function to be called.</li>
+<li><strong>Network error occurred</strong>: this could happen when GCM server fails to reach
+due to network problem, like losing Internet connection.</li>
+<li><strong>Server error occurred</strong>: this could happen when GCM server fails to reach
+due to server problem, like server busy.</li>
+<li><strong>Time-to-live exceeded</strong>: this could happen when a message could not be
+delivered within the specific time-to-live period.</li>
+<li><strong>Unknown error occurred</strong>: this could happen due to any other internal
+errors.</li>
+</ul>
 
 <h2 id="feedback">Feedback</h2>
 
-<p>You can provide feedback about Google Cloud Messaging
-and the pushMessaging API through the Google Group
-<a target="_blank" href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome feedback</a>.
+<p>You can provide feedback about Google Cloud Messaging and the
+<a href="gcm">chrome.gcm API</a> through
+the Google Group <a href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome
+Feedback</a>.
 Use this group to ask for help, file bug reports, and request features.</p>

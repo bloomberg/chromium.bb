@@ -384,8 +384,16 @@
                 "href": "/apps/app_storage"
               },
               {
+                "title": "Keep Users Informed",
+                "href": "/apps/inform_users"
+              },
+              {
                 "title": "Cloud Messaging",
                 "href": "/apps/cloudMessaging"
+              },
+              {
+                "title": "Rich Notifications",
+                "href": "/apps/richNotifications"
               },
               {
                 "title": "User Authentication",

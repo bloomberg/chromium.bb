@@ -1,0 +1,557 @@
+<meta name="doc-family" content="apps">
+<h1>Google Cloud Messaging for Chrome V1</h1>
+
+<p class="note">
+Google Cloud Messaging for Chrome V1 will be legacy soon.
+Use the new <a href="cloudMessaging">Google Cloud Messaging API</a>.
+</p>
+
+<p>
+Google Cloud Messaging for Chrome (GCM) is a service
+for signed-in Chrome users
+that helps developers send message data from servers
+to their Chrome apps and extensions.
+The service is intended to wake up an app or extension,
+and/or alert a user.
+For example, calendar updates could be pushed to users
+even when their calendaring app isn't open.
+</p>
+
+<p>This document describes how to set up and use GCM.
+For additional information see the reference documentation
+for the <a href="pushMessaging">pushMessaging Chrome API</a> and the
+<a href="gcm_server">GCM service</a>.
+To get help with GCM or to give us feedback, see <a href="#feedback">Feedback</a>.
+</p>
+
+<h2 id="one">How push messaging works</h2>
+
+<p>
+At a glance, push messaging works like this:
+</p>
+
+<ol>
+  <li>You upload your app or extension client to the Chrome Web Store.</li>
+  <li>A user installs your app or extension.</li>
+  <li>Your app or extension client requests the user's channel ID
+  and sends this ID to your server.</li>
+  <li>Your app or extension server sends a message
+  to the push messaging service.</li>
+  <li>The push messaging service routes the message
+  to all instances of Chrome where the user is signed in.</li>
+  <li>When the app or extension starts,
+  it needs to register a handler to receive the
+  $(ref:pushMessaging.onMessage) event.</li>
+  <li>When the message arrives on the client,
+  Chrome starts the app or extension, if it is not already running,
+  and calls the registered handler.</li>
+</ol>
+
+<p>
+Diving in a bit more,
+the Chrome Web Store assigns your newly published app
+or extension a unique app ID.
+When a user installs your app or extension,
+the client needs to call $(ref:pushMessaging.getChannelId).
+The push messaging service returns a channel ID to the client;
+this ID is specifically linked to your app ID and to the user.
+Whatever method your client uses to send the channel ID to the server,
+it must be secured (https, for instance).
+For example,
+the client could send an XHR request
+to a RESTful API on your server.
+</p>
+
+<p>
+As long as Chrome is running in the background or foreground,
+even if the extension or app is not running,
+it is woken up to deliver a message.
+For this to work,
+your app or extension must register a handler to receive the event,
+similar to how they’d register for launch events.
+</p>
+
+<p>
+Your app/extension server is responsible
+for sending a push message to the service.
+In all push message requests,
+your server must include the user's channel ID
+and a valid OAuth 2.0 access token:
+the access token authorizes use of the service and
+the channel ID identifies the user and app to receive the message.
+</p>
+
+<p>
+Any messages sent are delivered
+to all instances of that application installed
+in a Chrome profile signed in as that user.
+The most recent message sent on each subchannel is automatically queued
+for delivery to instances of Chrome which are not connected to the push
+messaging service at the time. If multiple messages are sent on one subchannel
+while Chrome is disconnected, then Chrome may only receive the last one sent
+when it reconnects.
+</p>
+
+<p>
+Subchannels can also be used to implement priority schemes.
+For example,
+if you had an instant messaging app,
+requests for a phone call or video chat can go through immediately,
+instead of waiting for all the backed up chat messages to be cleared.
+</p>
+
+<h2 id="checklist">To Do Checklist</h2>
+
+<p>
+Here's a quick checklist of what you need to do
+to use the push messaging service
+(the remainder of this doc covers the steps in detail):
+</p>
+
+<ol>
+  <li>Register your app or extension:
+    <ul>
+      <li>Create the client ID in the Google APIs Console.</li>
+      <li>Get the refresh token to set up authorization to use the service.</li>
+    </ul>
+  </li>
+  <li>Set up your app or extension to use the service:
+  	<ul>
+  	  <li>Add the permission to the manifest.</li>
+  	  <li>Include a call to <code>getChannelId</code>
+      for any user who is to receive a message.</li>
+  	  <li>Register a handler to receive the
+  	  <code>onMessage</code> event.</li>	
+  	</ul>
+   </li>
+  <li>Publish your app in the Chrome Web Store. </li>
+  <li>Use refresh token to get a valid access token.</li>
+  <li>Send message to user.</li>
+</ol>
+
+<h2 id="two">Register app or extension</h2>
+
+<h3 id="clientid">Create client ID</h3>
+
+<p>
+Complete the following steps to create the client ID:
+</p>
+
+<ol>
+  <li>Login to the
+  <a href="https://code.google.com/apis/console/">Google APIs Console</a>
+  using the same Google Account that you will use to upload your app.</li>
+  <li> Create a new project by expanding the drop-down menu in the top-left corner
+  and selecting the <strong>Create...</strong> menu item.</li>
+  <li>Go to the "Services" navigation menu item and
+  turn on the <strong>Google Cloud Messaging for Chrome API</strong>.</li>
+  <li>Go to the "API Access" pane and click on the
+  <strong>Create an OAuth 2.0 client ID...</strong> blue button.</li>
+  <li>Enter the requested branding information, if needed</li>
+  <li>For “Application type” select “Web application”.</li>
+  <li>Click "more options" beside "Your site or hostname"
+  and under "Authorized Redirect URIs", enter the following URL:
+  <code>https://developers.google.com/oauthplayground</code>.</li>
+  <li>Click "Create client ID" button.</li>
+</ol>
+
+<p>
+The client ID and the client secret
+from this step are used in further steps.
+Be sure to keep the client ID and secret in a safe place,
+and don't expose them to outsiders.
+</p>
+
+<h3 id="refresh">Get refresh token</h3>
+
+<p>
+You need two types of OAuth 2.0 tokens to authorize
+each call to the push messaging service:
+the refresh token and the access token.
+The access token authorizes each call to the service;
+however, this token expires after about an hour.
+The refresh token is used
+to 'refresh' the access token over time.
+These tokens are scoped to only send messages on behalf
+of your application or extension and nothing else.
+</p>
+
+<p>
+To get the refresh token and initial access token:
+</p>
+
+<ol>
+  <li>Open an Incognito window in Chrome;
+  this ensures that you are logged into the correct Google Account.
+  If you only have one Google Account,
+  you don't need to use an incognito window.</li>
+  <li>Go to the
+  <a href="https://developers.google.com/oauthplayground/">OAuth 2.0 Playground</a>.</li>
+  <li>Click the <img src="{{static}}/images/gearsicon.png" width="29" height="23" align="middle"/>
+  <strong>OAuth 2.0 Configuration</strong> button in the top right corner.</li>
+  <li>Check the box "Use your own OAuth credentials",
+  enter the client ID and client secret, and click "Close".</li>
+  <li>In the "Step 1" section, enter the scope
+  <code>https://www.googleapis.com/auth/gcm_for_chrome</code> into the
+  "Input your own scopes" text box and click "Authorize APIs" button.</li>
+  <li>Assuming you are in Incognito mode,
+  you should be redirected to the Google log in page.
+  Login with the same Google Account that you will use to upload your app or extension
+  to the Chrome Web Store.</li>
+  <li>After successful log in, you are redirected to a page to authorize the scopes.
+  Click "Allow access" button, redirecting you back to the OAuth 2.0 playground.</li>
+  <li>In "Step 2", click "Exchange authorization code for tokens" button.</li>
+</ol>
+
+<p>
+The refresh token never expires until you explicitly revoke access.
+You need to record and embed the refresh token in the app or extension server side.
+</p>
+
+<p class="caution">
+<b>Be careful:</b>
+The refresh token should not be shown to anyone outside your organization;
+it should never be exposed on the client.
+If anyone gets your refresh token,
+they could potentially send messages as your server.
+</p>
+
+<h2 id="three">Set up app or extension</h2>
+
+<h3 id="manifest">Add permission to manifest</h3>
+
+<p>
+To use the push messaging service,
+you must declare the <code>pushMessaging</code>
+permission in <code>manifest.json</code>:
+</p>
+
+<pre data-filename="manifest.json">
+"permissions": [
+  "pushMessaging",
+ ]
+</pre>
+
+<h3 id="channelid">Get channel ID</h3>
+
+<p>
+Similar to an email address,
+the channel ID is used to identify and send messages
+to a specific user of your app or extension.
+Your app or extension needs to send this value
+to its application server so that the server
+can trigger push messages back.
+To get the user's channel ID,
+call $(ref:pushMessaging.getChannelId).
+Use the callback function
+to send the channel ID back to your app or extension.
+</p>
+
+<pre>
+chrome.pushMessaging.getChannelId(boolean interactive, function ChannelIdCallback)
+</pre>
+
+<p>
+When the <code>interactive</code> flag is set to true,
+the user is asked to log in if they haven't already done so
+with a warning dialog that looks something like this:
+"You must log into Chrome for the Calendar extension to receive push messages.
+Log in now?"
+</p>
+
+<p>
+To provide your users with a better experience,
+the interactive flag should be set to false the first time
+your app or extension calls <code>getChannelId</code>.
+Otherwise users will see the sign-in dialog
+with no context,
+even before they start your app or extension.
+If the first call fails because the user is not logged in,
+then <code>getChannelId</code> can be called again
+with the flag set to true.
+You should provide a context dialog
+before the second call is made.
+</p>
+
+<h3 id="registerPush">Register message event handler</h3>
+
+<p>
+Whenever Chrome receives a pushed message for an application/extension,
+it delivers the push message to the app or extension client.
+Your app or extension must register a handler to receive the event
+whenever the app or extension starts up,
+similar to how they’d register for launch events.
+This gets added to the <code>background.js</code>, for example:
+</p>
+
+<pre>
+function setupPush() {
+  chrome.pushMessaging.onMessage.addListener(messageCallback);
+}
+</pre>
+
+<p>
+The app or extension need not be running when the message arrives;
+the handler can be registered after the message arrives.
+</p>
+
+<h2 id="store">Publish your app</h2>
+
+{{^is_apps}}
+<p>
+To use the push messaging service,
+you must publish your extension in the
+<a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
+</p>
+{{/is_apps}}
+
+{{?is_apps}}
+<p>
+To use the push messaging service,
+you must publish your app in the
+<a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
+</p>
+{{/is_apps}}
+
+<h2 id="five">Send messages</h2>
+
+<h3 id="access">Get new access token</h3>
+
+<p>
+You need a valid access token to push messages
+to your app or extension.
+To obtain a new access token,
+make an <code>HTTPS POST</code>
+that includes your client ID and refresh token.
+<a href="https://developers.google.com/accounts/docs/OAuth2WebServer">Using OAuth 2.0 for
+	Web Server Applications</a>
+describes this in greater detail.
+A sample request would like something like this:
+</p>
+
+<pre>
+POST /o/oauth2/token HTTP/1.1
+Host: accounts.google.com
+Content-Type: application/x-www-form-urlencoded
+
+client_id=291796959215.apps.googleusercontent.com&
+client_secret=0bKUtXN6ykk7Mj1lQxoBZ2mh&
+refresh_token=1%wMfyZvGcCxMSNEX4iTRdE0H1_Yt0wvImBz_iCuXF-UM&
+grant_type=refresh_token
+</pre>
+
+<p>
+A response from such a request is shown below:
+</p>
+
+<pre>
+{
+  "access_token":"1/fFBGRNJru1FQd44AzqT3Zg",
+  "expires_in":3920,
+  "token_type":"Bearer"
+}
+</pre>
+
+<p class="note">
+<b>Reminder:</b>
+You should cache the access token for use
+until it expires.
+There is a rate limit on how often you can ask for access tokens.
+You may find yourself locked out of sending messages for awhile
+if you get a new access token every time you send a push message.
+</p>
+
+<h3 id="message">Send message to user</h3>
+
+<p>
+Send a <code>POST</code> body that includes the channel ID and subchannel ID
+along with the message payload to the API endpoint
+<code>https://www.googleapis.com/gcm_for_chrome/v1/messages</code>.
+Here's what a sample HTTP call would look like:
+</p>
+
+<pre>
+POST /gcm_for_chrome/v1/messages
+Host: www.googleapis.com
+Content-Type: application/json
+Authorization: Bearer 1/fFBGRNJru1FQd44AzqT3Zg
+
+{
+  "channelId": "08144192009958038014/aaaaaaaaaabbbbbbbbbbcccccccccc",
+  "subchannelId": "0",
+  "payload": "Thanks for installing my app!"
+}
+</pre>
+
+<p>
+Messages can be coalesced.
+If you send multiple messages on subchannel 1, for instance,
+you may only see the last message and its payload.
+Also, payloads can sometimes be dropped;
+treat a payload as an optimization.
+You can always go back to the server to check
+for the contents of previous messages and
+to get data if the payload is not present.
+</p>
+
+<p>Here's a simple example that shows a push message
+as a text notification when it arrives:
+</p>
+
+<pre>
+function showPushMessage(message) {
+  var notification = window.webkitNotifications.createNotification(
+    '', 'New notification', message.payload + " [" + message.subchannelId + "]");
+  notification.show();
+}
+</pre>
+
+<p>
+You need to add the "notifications" permission
+to <code>manifest.json</code>
+to use text notifications
+(see <a href="desktop_notifications">Desktop Notifications</a>):
+</p>
+
+<pre data-filename="manifest.json">
+"permissions": [
+  "pushMessaging",
+  "notifications"
+ ]
+</pre>
+
+<h2 id="six">Error reference</h2>
+
+<p>
+Push messaging error codes indicate whether the push request was accepted or rejected.
+Rejection reasons include sender errors (for example, malformed message),
+permission errors (for example, revoked push messaging token),
+and operational errors (for example, push messaging service is currently down).
+</p>
+
+<p>
+Here's a brief summary of the push messaging errors:
+</p>
+
+<ul>
+  <li>Channel ID is invalid.</li>
+  <li>Subchannel is invalid (four subchannels available;
+  subchannel value must be 0, 1, 2, or 3).</li>
+  <li>Payload is too long (must be 256 bytes or less).</li>
+  <li>Daily message quota exceeded (10,000 message requests allowed per day).</li>
+  <li>Google Account calling the push messaging service does not own the app or extension.</li>
+  <li>An internal error has occurred.
+  This indicates something went wrong on the Google server side
+  (for example, some backend not working
+  or errors in the HTTP post such as a missing access token).</li>
+</ul>
+
+<h2 id="test">Testing</h2>
+
+<h3 id="test-local">Testing locally</h3>
+
+<p>
+To test push messaging locally:
+</p>
+
+<ol>
+  <li><a href="packaging">Package</a> a test version of
+  your app or extension on the Extensions management page
+  (chrome://extensions).
+  Your app or extension doesn't need to be running; it just needs
+  to be installed.</li>
+
+  <li>Get the channel ID at install time using
+  {{?is_apps}}$(ref:app.runtime.onLaunched).{{/is_apps}}
+  {{^is_apps}}$(ref:runtime.onInstalled).{{/is_apps}}</li>
+
+  <li>Use that channel ID on the server to send a test
+  push message through the system.
+  If all goes well,
+  your app or extension should start
+  and you should receive the test push message.
+  </li>
+</ol>
+
+<h3 id="test-cloud">Testing in the cloud</h3>
+
+<p>To test push messaging in the cloud, you must first make sure that the
+app or extension you are testing passes an ownership check.
+The Push Messaging server checks that the ID of an app or extension
+that calls the pushMessaging API matches the ID of the app or extension
+in the Chrome Web Store. This ownership check is designed to prevent people
+from sending messages to your app or extension without your permission.
+If your app or extension attempts to use the pushMessaging API and
+the ownership check fails, it will receive
+HTTP status code 500 (Internal Server Error).
+</p>
+
+<p>
+One circumstance in which the ownership check commonly fails is when you are
+developing an app and you run the app without uploading it and re-downloading
+it from the Chrome Web Store. In this situation your app may not have a
+<a href="manifest/key">key</a> field in its manifest.json file.
+The <code>key</code> field gives an app its Chrome Web Store ID
+(a 32 character alphabetic code, such as "bafimiidcfafikaonocgmmcpbbhfjjik").
+If you run a version of your app without a key, the app will use a
+randomly generated ID that will not match the app's ID in the Chrome Web Store.
+For example, if you upload your app to the Chrome Web Store from the directory
+original_app_dir, then download the app and unpack it to downloaded_app_dir,
+and then run the exact same app as an unpacked extension from original_app_dir,
+the manifest.json file of the app in original_app_dir would not have
+the downloaded key, and the app's ID would appear to be different than
+the ID of the downloaded app.
+</p>
+
+<p>
+To test push messaging in the cloud:
+</p>
+
+<ol>
+  <li>Publish your app or extension to the Chrome Web Store.</li>
+
+  <li>Determine the Chrome Web Store ID of your app or extension.
+  The Chrome Web Store ID is in the URL of any dashboard
+  or Chrome Web Store page that's dedicated to your app or extension.
+  For example, the URL
+  <code>https://chrome.google.com/extensions/detail/aaaaaaaaaabbbbbbbbbbcccccccccc?hl=en</code>
+  has the ID <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.</li>
+
+
+  <li>Install your app or extension from the Chrome Web Store.</li>
+
+  <li>Get the key from the installed app or extension:
+
+    <ol style="list-style-type: lower-alpha;">
+      <li>Go to your
+      <a href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a>.
+      </li>
+
+      <li>Look in the file <code>Default/Extensions/&lt;<i>ID</i>&gt;/&lt;<i>versionString</i>&gt;/manifest.json</code>.
+      </li>
+
+      <li>Copy the key field.</li>
+    </ol>
+  </li>
+
+  <li>Paste the key field into manifest.json in
+  the test version of your app or extension.</li>
+
+  <li>Install a test version of your app or extension on the
+  Extensions management page (chrome://extensions).</li>
+</ol>
+
+<p>
+Each time you reload your app or extension for testing,
+you need to check that the key is present in the manifest file.
+And anytime you wish to update the published version in the Chrome Web Store,
+you need to remove the key because the Store does not currently allow manifests
+with keys.
+</p>
+
+<h2 id="feedback">Feedback</h2>
+
+<p>You can provide feedback about Google Cloud Messaging
+and the pushMessaging API through the Google Group
+<a target="_blank" href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome feedback</a>.
+Use this group to ask for help, file bug reports, and request features.</p>

@@ -136,8 +136,12 @@
   "gcm": {
     "Learn More": [
       {
-        "link": "cloudMessagingV2",
-        "text": "Google Cloud Messaging"
+        "link": "cloudMessaging",
+        "text": "Google Cloud Messaging Tutorial"
+      },
+      {
+        "link": "inform_users",
+        "text": "Keep Users Informed"
       }
     ]
   },
@@ -173,6 +177,14 @@
   "notifications": {
     "Learn More": [
       {
+        "link": "richNotifications",
+        "text": "Rich Notifications"
+      },
+      {
+        "link": "inform_users",
+        "text": "Keep Users Informed"
+      },
+      {
         "link": "https://developers.google.com/live/shows/83992232-1001/",
         "text": "Chrome Apps Office Hours: Rich Notifications"
       }
@@ -189,7 +201,7 @@
   "pushMessaging": {
     "Learn More": [
       {
-        "link": "cloudMessaging",
+        "link": "cloudMessagingV1",
         "text": "Google Cloud Messaging for Chrome"
       },
       {
