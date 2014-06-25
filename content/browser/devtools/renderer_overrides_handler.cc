@@ -205,7 +205,17 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       host->GetView());
-  gfx::Size screen_size_dip(view->GetRequestedRendererSize());
+  // TODO(vkuzkokov): do not use previous frame metadata.
+  cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
+
+  float page_scale = metadata.page_scale_factor;
+  gfx::SizeF viewport_size_dip = gfx::ScaleSize(metadata.viewport_size,
+                                                page_scale);
+
+  float total_bar_height_dip = metadata.location_bar_content_translation.y() +
+                                   metadata.overdraw_bottom_height;
+  gfx::SizeF screen_size_dip(viewport_size_dip.width(),
+                             viewport_size_dip.height() + total_bar_height_dip);
 
   std::string format;
   int quality = kDefaultScreenshotQuality;
@@ -244,18 +254,13 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
   if (scale <= 0)
     scale = 0.1;
 
-  // FIXME: do not use previous frame metadata.
-  cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
-  gfx::SizeF view_size_dip = gfx::ScaleSize(metadata.viewport_size,
-                                            metadata.page_scale_factor);
-
   gfx::Size snapshot_size_dip(gfx::ToRoundedSize(
-      gfx::ScaleSize(view_size_dip, scale)));
+      gfx::ScaleSize(viewport_size_dip, scale)));
 
   if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
-    gfx::Rect view_bounds_dip(gfx::ToRoundedSize(view_size_dip));
+    gfx::Rect viewport_bounds_dip(gfx::ToRoundedSize(viewport_size_dip));
     view->CopyFromCompositingSurface(
-        view_bounds_dip, snapshot_size_dip,
+        viewport_bounds_dip, snapshot_size_dip,
         base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
                    weak_factory_.GetWeakPtr(),
                    format, quality, last_compositor_frame_metadata_),
@@ -701,8 +706,8 @@ std::string GetQuotaClientName(quota::QuotaClient::ID id) {
       return devtools::Page::UsageItem::Id::kEnumIndexeddatabase;
     default:
       NOTREACHED();
-      return "";
   }
+  return "";
 }
 
 void QueryUsageAndQuotaOnIOThread(
