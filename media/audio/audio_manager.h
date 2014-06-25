@@ -67,14 +67,14 @@ class MEDIA_EXPORT AudioManager {
   // recording.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio IO thread (see GetTaskRunner()).
+  // Audio worker thread (see GetWorkerTaskRunner()).
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Appends a list of available output devices to |device_names|,
   // which must initially be empty.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio IO thread (see GetTaskRunner()).
+  // Audio worker thread (see GetWorkerTaskRunner()).
   virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Factory for all the supported stream formats. |params| defines parameters
@@ -167,7 +167,8 @@ class MEDIA_EXPORT AudioManager {
   // If the hardware has only an input device (e.g. a webcam), the return value
   // will be empty (which the caller can then interpret to be the default output
   // device).  Implementations that don't yet support this feature, must return
-  // an empty string.
+  // an empty string. Must be called on the audio worker thread (see
+  // GetWorkerTaskRunner()).
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
 

@@ -108,7 +108,7 @@ WebrtcAudioPrivateFunction::~WebrtcAudioPrivateFunction() {
 
 void WebrtcAudioPrivateFunction::GetOutputDeviceNames() {
   scoped_refptr<base::SingleThreadTaskRunner> audio_manager_runner =
-      AudioManager::Get()->GetTaskRunner();
+      AudioManager::Get()->GetWorkerTaskRunner();
   if (!audio_manager_runner->BelongsToCurrentThread()) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     audio_manager_runner->PostTask(
@@ -399,7 +399,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
 
   InitResourceContext();
 
-  AudioManager::Get()->GetTaskRunner()->PostTask(
+  AudioManager::Get()->GetWorkerTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                  GetDevicesOnDeviceThread, this));
@@ -408,7 +408,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
 }
 
 void WebrtcAudioPrivateGetAssociatedSinkFunction::GetDevicesOnDeviceThread() {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(AudioManager::Get()->GetWorkerTaskRunner()->BelongsToCurrentThread());
   AudioManager::Get()->GetAudioInputDeviceNames(&source_devices_);
 
   BrowserThread::PostTask(
@@ -444,7 +444,7 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
     }
   }
 
-  AudioManager::Get()->GetTaskRunner()->PostTask(
+  AudioManager::Get()->GetWorkerTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                  GetAssociatedSinkOnDeviceThread,
@@ -455,7 +455,7 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
 void
 WebrtcAudioPrivateGetAssociatedSinkFunction::GetAssociatedSinkOnDeviceThread(
     const std::string& raw_source_id) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(AudioManager::Get()->GetWorkerTaskRunner()->BelongsToCurrentThread());
 
   // We return an empty string if there is no associated output device.
   std::string raw_sink_id;
