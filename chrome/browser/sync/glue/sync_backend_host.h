@@ -16,7 +16,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
@@ -148,11 +148,11 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // initialization is complete with OnBackendInitialized().
   virtual syncer::UserShare* GetUserShare() const = 0;
 
-  // Called on |frontend_loop_| to obtain a handle to the SyncCore needed by
+  // Called on |frontend_loop_| to obtain a handle to the SyncContext needed by
   // the non-blocking sync types to communicate with the server.
   //
   // Should be called only when the backend is initialized.
-  virtual scoped_ptr<syncer::SyncCoreProxy> GetSyncCoreProxy() = 0;
+  virtual scoped_ptr<syncer::SyncContextProxy> GetSyncContextProxy() = 0;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.

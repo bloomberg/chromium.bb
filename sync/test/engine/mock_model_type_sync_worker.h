@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
-#define SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+#ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_
+#define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_
 
 #include <vector>
 
 #include "base/macros.h"
+#include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_processor_core_interface.h"
 
 namespace syncer {
 
-// Receives and records commit requests sent through the
-// NonBlockingTypeProcessorCoreInterface.
+// Receives and records commit requests sent through the ModelTypeSyncWorker.
 //
 // This class also includes features intended to help mock out server behavior.
 // It has some basic functionality to keep track of server state and generate
 // plausible UpdateResponseData and CommitResponseData messages.
-class MockNonBlockingTypeProcessorCore
-    : public NonBlockingTypeProcessorCoreInterface {
+class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
  public:
-  MockNonBlockingTypeProcessorCore();
-  virtual ~MockNonBlockingTypeProcessorCore();
+  MockModelTypeSyncWorker();
+  virtual ~MockModelTypeSyncWorker();
 
-  // Implementation of NonBlockingTypeProcessorCoreInterface.
+  // Implementation of ModelTypeSyncWorker.
   virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
 
   // Getters to inspect the requests sent to this object.
@@ -36,7 +34,7 @@ class MockNonBlockingTypeProcessorCore
       const std::string& tag_hash) const;
 
   // Functions to produce state as though it came from a real server and had
-  // been filtered through a real NonBlockinTypeProcessorCore.
+  // been filtered through a real ModelTypeSyncWorker.
 
   // Returns an UpdateResponseData representing an update received from
   // the server.  Updates server state accordingly.
@@ -74,9 +72,9 @@ class MockNonBlockingTypeProcessorCore
   // This is an essential part of the mocked server state.
   std::map<const std::string, int64> server_versions_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockNonBlockingTypeProcessorCore);
+  DISALLOW_COPY_AND_ASSIGN(MockModelTypeSyncWorker);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+#endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_

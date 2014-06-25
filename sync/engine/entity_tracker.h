@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_SYNC_THREAD_SYNC_ENTITY_H_
-#define SYNC_ENGINE_SYNC_THREAD_SYNC_ENTITY_H_
+#ifndef SYNC_ENGINE_ENTITY_TRACKER_H_
+#define SYNC_ENGINE_ENTITY_TRACKER_H_
 
 #include <string>
 
@@ -18,7 +18,7 @@ namespace syncer {
 // thread.
 //
 // It should be considered a helper class internal to the
-// NonBlockingTypeProcessorCore.
+// ModelTypeSyncWorker.
 //
 // Maintains the state associated with a particular sync entity which is
 // necessary for decision-making on the sync thread.  It can track pending
@@ -27,18 +27,17 @@ namespace syncer {
 // This object may or may not contain state associated with a pending commit.
 // If no commit is pending, the |is_commit_pending_| flag will be set to false
 // and many of this object's fields will be cleared.
-class SYNC_EXPORT SyncThreadSyncEntity {
+class SYNC_EXPORT EntityTracker {
  public:
-  ~SyncThreadSyncEntity();
+  ~EntityTracker();
 
   // Initialize a new entity based on an update response.
-  static SyncThreadSyncEntity* FromServerUpdate(
-      const std::string& id_string,
-      const std::string& client_tag_hash,
-      int64 version);
+  static EntityTracker* FromServerUpdate(const std::string& id_string,
+                                         const std::string& client_tag_hash,
+                                         int64 version);
 
   // Initialize a new entity based on a commit request.
-  static SyncThreadSyncEntity* FromCommitRequest(
+  static EntityTracker* FromCommitRequest(
       const std::string& id_string,
       const std::string& client_tag_hash,
       int64 sequence_number,
@@ -85,24 +84,24 @@ class SYNC_EXPORT SyncThreadSyncEntity {
  private:
   // Initializes received update state.  Does not initialize state related to
   // pending commits and sets |is_commit_pending_| to false.
-  SyncThreadSyncEntity(const std::string& id,
-                       const std::string& client_tag_hash,
-                       int64 highest_commit_response_version,
-                       int64 highest_gu_response_version);
+  EntityTracker(const std::string& id,
+                const std::string& client_tag_hash,
+                int64 highest_commit_response_version,
+                int64 highest_gu_response_version);
 
   // Initializes all fields.  Sets |is_commit_pending_| to true.
-  SyncThreadSyncEntity(const std::string& id,
-                       const std::string& client_tag_hash,
-                       int64 highest_commit_response_version,
-                       int64 highest_gu_response_version,
-                       bool is_commit_pending,
-                       int64 sequence_number,
-                       int64 base_version,
-                       base::Time ctime,
-                       base::Time mtime,
-                       const std::string& non_unique_name,
-                       bool deleted,
-                       const sync_pb::EntitySpecifics& specifics);
+  EntityTracker(const std::string& id,
+                const std::string& client_tag_hash,
+                int64 highest_commit_response_version,
+                int64 highest_gu_response_version,
+                bool is_commit_pending,
+                int64 sequence_number,
+                int64 base_version,
+                base::Time ctime,
+                base::Time mtime,
+                const std::string& non_unique_name,
+                bool deleted,
+                const sync_pb::EntitySpecifics& specifics);
 
   // Checks if the current state indicates a conflict.
   //
@@ -147,9 +146,9 @@ class SYNC_EXPORT SyncThreadSyncEntity {
   bool deleted_;
   sync_pb::EntitySpecifics specifics_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncThreadSyncEntity);
+  DISALLOW_COPY_AND_ASSIGN(EntityTracker);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_SYNC_THREAD_SYNC_ENTITY_H_
+#endif  // SYNC_ENGINE_ENTITY_TRACKER_H_

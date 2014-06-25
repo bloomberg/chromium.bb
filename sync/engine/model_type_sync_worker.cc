@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/non_blocking_type_processor_interface.h"
+#include "sync/engine/model_type_sync_worker.h"
 
 namespace syncer {
 
-NonBlockingTypeProcessorInterface::NonBlockingTypeProcessorInterface() {
+ModelTypeSyncWorker::ModelTypeSyncWorker() {
 }
 
-NonBlockingTypeProcessorInterface::~NonBlockingTypeProcessorInterface() {
+ModelTypeSyncWorker::~ModelTypeSyncWorker() {
 }
 
 }  // namespace syncer

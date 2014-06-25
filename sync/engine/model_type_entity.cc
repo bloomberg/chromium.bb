@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_thread_sync_entity.h"
+#include "sync/engine/model_type_entity.h"
 #include "sync/syncable/syncable_util.h"
 
 namespace syncer {
 
-scoped_ptr<ModelThreadSyncEntity> ModelThreadSyncEntity::NewLocalItem(
+scoped_ptr<ModelTypeEntity> ModelTypeEntity::NewLocalItem(
     const std::string& client_tag,
     const sync_pb::EntitySpecifics& specifics,
     base::Time now) {
-  return scoped_ptr<ModelThreadSyncEntity>(new ModelThreadSyncEntity(
+  return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(
       1,
       0,
       0,
@@ -27,7 +27,7 @@ scoped_ptr<ModelThreadSyncEntity> ModelThreadSyncEntity::NewLocalItem(
       now));
 }
 
-scoped_ptr<ModelThreadSyncEntity> ModelThreadSyncEntity::FromServerUpdate(
+scoped_ptr<ModelTypeEntity> ModelTypeEntity::FromServerUpdate(
     const std::string& id,
     const std::string& client_tag_hash,
     const std::string& non_unique_name,
@@ -36,34 +36,32 @@ scoped_ptr<ModelThreadSyncEntity> ModelThreadSyncEntity::FromServerUpdate(
     bool deleted,
     base::Time ctime,
     base::Time mtime) {
-  return scoped_ptr<ModelThreadSyncEntity>(
-      new ModelThreadSyncEntity(0,
-                                0,
-                                0,
-                                version,
-                                true,
-                                id,
-                                client_tag_hash,
-                                non_unique_name,
-                                specifics,
-                                deleted,
-                                ctime,
-                                mtime));
+  return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(0,
+                                                         0,
+                                                         0,
+                                                         version,
+                                                         true,
+                                                         id,
+                                                         client_tag_hash,
+                                                         non_unique_name,
+                                                         specifics,
+                                                         deleted,
+                                                         ctime,
+                                                         mtime));
 }
 
-ModelThreadSyncEntity::ModelThreadSyncEntity(
-    int64 sequence_number,
-    int64 commit_requested_sequence_number,
-    int64 acked_sequence_number,
-    int64 base_version,
-    bool is_dirty,
-    const std::string& id,
-    const std::string& client_tag_hash,
-    const std::string& non_unique_name,
-    const sync_pb::EntitySpecifics& specifics,
-    bool deleted,
-    base::Time ctime,
-    base::Time mtime)
+ModelTypeEntity::ModelTypeEntity(int64 sequence_number,
+                                 int64 commit_requested_sequence_number,
+                                 int64 acked_sequence_number,
+                                 int64 base_version,
+                                 bool is_dirty,
+                                 const std::string& id,
+                                 const std::string& client_tag_hash,
+                                 const std::string& non_unique_name,
+                                 const sync_pb::EntitySpecifics& specifics,
+                                 bool deleted,
+                                 base::Time ctime,
+                                 base::Time mtime)
     : sequence_number_(sequence_number),
       commit_requested_sequence_number_(commit_requested_sequence_number),
       acked_sequence_number_(acked_sequence_number),
@@ -78,30 +76,30 @@ ModelThreadSyncEntity::ModelThreadSyncEntity(
       mtime_(mtime) {
 }
 
-ModelThreadSyncEntity::~ModelThreadSyncEntity() {
+ModelTypeEntity::~ModelTypeEntity() {
 }
 
-bool ModelThreadSyncEntity::IsWriteRequired() const {
+bool ModelTypeEntity::IsWriteRequired() const {
   return is_dirty_;
 }
 
-bool ModelThreadSyncEntity::IsUnsynced() const {
+bool ModelTypeEntity::IsUnsynced() const {
   return sequence_number_ > acked_sequence_number_;
 }
 
-bool ModelThreadSyncEntity::RequiresCommitRequest() const {
+bool ModelTypeEntity::RequiresCommitRequest() const {
   return sequence_number_ > commit_requested_sequence_number_;
 }
 
-bool ModelThreadSyncEntity::UpdateIsReflection(int64 update_version) const {
+bool ModelTypeEntity::UpdateIsReflection(int64 update_version) const {
   return base_version_ >= update_version;
 }
 
-bool ModelThreadSyncEntity::UpdateIsInConflict(int64 update_version) const {
+bool ModelTypeEntity::UpdateIsInConflict(int64 update_version) const {
   return IsUnsynced() && !UpdateIsReflection(update_version);
 }
 
-void ModelThreadSyncEntity::ApplyUpdateFromServer(
+void ModelTypeEntity::ApplyUpdateFromServer(
     int64 update_version,
     bool deleted,
     const sync_pb::EntitySpecifics& specifics,
@@ -117,19 +115,19 @@ void ModelThreadSyncEntity::ApplyUpdateFromServer(
   mtime_ = mtime;
 }
 
-void ModelThreadSyncEntity::MakeLocalChange(
+void ModelTypeEntity::MakeLocalChange(
     const sync_pb::EntitySpecifics& specifics) {
   sequence_number_++;
   specifics_ = specifics;
 }
 
-void ModelThreadSyncEntity::Delete() {
+void ModelTypeEntity::Delete() {
   sequence_number_++;
   specifics_.Clear();
   deleted_ = true;
 }
 
-void ModelThreadSyncEntity::InitializeCommitRequestData(
+void ModelTypeEntity::InitializeCommitRequestData(
     CommitRequestData* request) const {
   request->id = id_;
   request->client_tag_hash = client_tag_hash_;
@@ -142,25 +140,25 @@ void ModelThreadSyncEntity::InitializeCommitRequestData(
   request->specifics.CopyFrom(specifics_);
 }
 
-void ModelThreadSyncEntity::SetCommitRequestInProgress() {
+void ModelTypeEntity::SetCommitRequestInProgress() {
   commit_requested_sequence_number_ = sequence_number_;
 }
 
-void ModelThreadSyncEntity::ReceiveCommitResponse(const std::string& id,
-                                                  int64 sequence_number,
-                                                  int64 response_version) {
+void ModelTypeEntity::ReceiveCommitResponse(const std::string& id,
+                                            int64 sequence_number,
+                                            int64 response_version) {
   id_ = id;  // The server can assign us a new ID in a commit response.
   acked_sequence_number_ = sequence_number;
   base_version_ = response_version;
 }
 
-void ModelThreadSyncEntity::ClearTransientSyncState() {
+void ModelTypeEntity::ClearTransientSyncState() {
   // If we have any unacknowledged commit requests outstatnding, they've been
   // dropped and we should forget about them.
   commit_requested_sequence_number_ = acked_sequence_number_;
 }
 
-void ModelThreadSyncEntity::ClearSyncState() {
+void ModelTypeEntity::ClearSyncState() {
   base_version_ = kUncommittedVersion;
   is_dirty_ = true;
   sequence_number_ = 1;

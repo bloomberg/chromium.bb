@@ -25,8 +25,8 @@ class CommitContributor;
 class DirectoryCommitContributor;
 class DirectoryUpdateHandler;
 class DirectoryTypeDebugInfoEmitter;
-class NonBlockingTypeProcessorCore;
-class NonBlockingTypeProcessor;
+class ModelTypeSyncWorkerImpl;
+class ModelTypeSyncProxyImpl;
 class UpdateHandler;
 struct DataTypeState;
 
@@ -51,20 +51,20 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
   // Sets the set of enabled types.
   void SetEnabledDirectoryTypes(const ModelSafeRoutingInfo& routing_info);
 
-  // Enables an off-thread type for syncing.  Connects the given processor
-  // and its task_runner to the newly created processor core.
+  // Enables an off-thread type for syncing.  Connects the given proxy
+  // and its task_runner to the newly created worker.
   //
-  // Expects that the processor's ModelType is not currently enabled.
+  // Expects that the proxy's ModelType is not currently enabled.
   void InitializeNonBlockingType(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
-      scoped_refptr<base::SequencedTaskRunner> type_task_runner,
-      base::WeakPtr<NonBlockingTypeProcessor> processor);
+      const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy);
 
   // Disables the syncing of an off-thread type.
   //
   // Expects that the type is currently enabled.
-  // Deletes the processor core associated with the type.
+  // Deletes the worker associated with the type.
   void RemoveNonBlockingType(syncer::ModelType type);
 
   // Gets the set of enabled types.
@@ -93,7 +93,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
   ScopedVector<DirectoryTypeDebugInfoEmitter>
       directory_type_debug_info_emitters_;
 
-  ScopedVector<NonBlockingTypeProcessorCore> non_blocking_type_processor_cores_;
+  ScopedVector<ModelTypeSyncWorkerImpl> model_type_sync_workers_;
 
   // Maps of UpdateHandlers and CommitContributors.
   // They do not own any of the objects they point to.

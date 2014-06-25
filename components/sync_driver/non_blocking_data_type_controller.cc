@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "sync/engine/non_blocking_type_processor.h"
+#include "sync/engine/model_type_sync_proxy_impl.h"
 
 namespace browser_sync {
 
@@ -19,30 +19,30 @@ NonBlockingDataTypeController::NonBlockingDataTypeController(
 
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
-void NonBlockingDataTypeController::InitializeProcessor(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::WeakPtr<syncer::NonBlockingTypeProcessor> processor) {
-  DCHECK(!IsTypeProcessorConnected());
+void NonBlockingDataTypeController::InitializeType(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+  DCHECK(!IsSyncProxyConnected());
   task_runner_ = task_runner;
-  processor_ = processor;
-  DCHECK(IsTypeProcessorConnected());
+  type_sync_proxy_ = type_sync_proxy;
+  DCHECK(IsSyncProxyConnected());
 
   UpdateState();
 }
 
-void NonBlockingDataTypeController::InitializeSyncCoreProxy(
-    scoped_ptr<syncer::SyncCoreProxy> proxy) {
+void NonBlockingDataTypeController::InitializeSyncContext(
+    scoped_ptr<syncer::SyncContextProxy> sync_context_proxy) {
   DCHECK(!IsSyncBackendConnected());
-  proxy_ = proxy.Pass();
+  sync_context_proxy_ = sync_context_proxy.Pass();
 
   UpdateState();
 }
 
-void NonBlockingDataTypeController::ClearSyncCoreProxy() {
-  // Never had a sync core proxy to begin with.  No change.
-  if (!proxy_)
+void NonBlockingDataTypeController::ClearSyncContext() {
+  // Never had a sync context proxy to begin with.  No change.
+  if (!sync_context_proxy_)
     return;
-  proxy_.reset();
+  sync_context_proxy_.reset();
 
   UpdateState();
 }
@@ -59,12 +59,12 @@ void NonBlockingDataTypeController::UpdateState() {
     return;
   }
 
-  // Return immediately if the processor is not ready yet.
-  if (!IsTypeProcessorConnected()) {
+  // Return immediately if the sync context proxy is not ready yet.
+  if (!IsSyncProxyConnected()) {
     return;
   }
 
-  // Send the appropriate state transition request to the processor.
+  // Send the appropriate state transition request to the type sync proxy.
   switch (GetDesiredState()) {
     case ENABLED:
       SendEnableSignal();
@@ -84,10 +84,11 @@ void NonBlockingDataTypeController::SendEnableSignal() {
   DCHECK_EQ(ENABLED, GetDesiredState());
   DVLOG(1) << "Enabling non-blocking sync type " << ModelTypeToString(type_);
 
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&syncer::NonBlockingTypeProcessor::Enable,
-                                    processor_,
-                                    base::Passed(proxy_->Clone())));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&syncer::ModelTypeSyncProxyImpl::Enable,
+                 type_sync_proxy_,
+                 base::Passed(sync_context_proxy_->Clone())));
   current_state_ = ENABLED;
 }
 
@@ -96,7 +97,7 @@ void NonBlockingDataTypeController::SendDisableSignal() {
   DVLOG(1) << "Disabling non-blocking sync type " << ModelTypeToString(type_);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer::NonBlockingTypeProcessor::Disable, processor_));
+      base::Bind(&syncer::ModelTypeSyncProxyImpl::Disable, type_sync_proxy_));
   current_state_ = DISABLED;
 }
 
@@ -104,9 +105,9 @@ void NonBlockingDataTypeController::SendDisconnectSignal() {
   DCHECK_EQ(DISCONNECTED, GetDesiredState());
   DVLOG(1) << "Disconnecting non-blocking sync type "
            << ModelTypeToString(type_);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer::NonBlockingTypeProcessor::Disconnect, processor_));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&syncer::ModelTypeSyncProxyImpl::Disconnect,
+                                    type_sync_proxy_));
   current_state_ = DISCONNECTED;
 }
 
@@ -114,19 +115,19 @@ bool NonBlockingDataTypeController::IsPreferred() const {
   return is_preferred_;
 }
 
-bool NonBlockingDataTypeController::IsTypeProcessorConnected() const {
+bool NonBlockingDataTypeController::IsSyncProxyConnected() const {
   return task_runner_ != NULL;
 }
 
 bool NonBlockingDataTypeController::IsSyncBackendConnected() const {
-  return proxy_;
+  return sync_context_proxy_;
 }
 
-NonBlockingDataTypeController::TypeProcessorState
+NonBlockingDataTypeController::TypeState
 NonBlockingDataTypeController::GetDesiredState() const {
   if (!IsPreferred()) {
     return DISABLED;
-  } else if (!IsSyncBackendConnected() || !IsTypeProcessorConnected()) {
+  } else if (!IsSyncBackendConnected() || !IsSyncProxyConnected()) {
     return DISCONNECTED;
   } else {
     return ENABLED;

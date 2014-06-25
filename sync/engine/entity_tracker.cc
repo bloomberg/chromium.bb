@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_thread_sync_entity.h"
+#include "sync/engine/entity_tracker.h"
 
 #include "base/logging.h"
 #include "sync/engine/non_blocking_sync_common.h"
@@ -12,15 +12,14 @@
 
 namespace syncer {
 
-SyncThreadSyncEntity* SyncThreadSyncEntity::FromServerUpdate(
+EntityTracker* EntityTracker::FromServerUpdate(
     const std::string& id_string,
     const std::string& client_tag_hash,
     int64 received_version) {
-  return new SyncThreadSyncEntity(
-      id_string, client_tag_hash, 0, received_version);
+  return new EntityTracker(id_string, client_tag_hash, 0, received_version);
 }
 
-SyncThreadSyncEntity* SyncThreadSyncEntity::FromCommitRequest(
+EntityTracker* EntityTracker::FromCommitRequest(
     const std::string& id_string,
     const std::string& client_tag_hash,
     int64 sequence_number,
@@ -30,26 +29,25 @@ SyncThreadSyncEntity* SyncThreadSyncEntity::FromCommitRequest(
     const std::string& non_unique_name,
     bool deleted,
     const sync_pb::EntitySpecifics& specifics) {
-  return new SyncThreadSyncEntity(id_string,
-                                  client_tag_hash,
-                                  0,
-                                  0,
-                                  true,
-                                  sequence_number,
-                                  base_version,
-                                  ctime,
-                                  mtime,
-                                  non_unique_name,
-                                  deleted,
-                                  specifics);
+  return new EntityTracker(id_string,
+                           client_tag_hash,
+                           0,
+                           0,
+                           true,
+                           sequence_number,
+                           base_version,
+                           ctime,
+                           mtime,
+                           non_unique_name,
+                           deleted,
+                           specifics);
 }
 
 // Constructor that does not set any pending commit fields.
-SyncThreadSyncEntity::SyncThreadSyncEntity(
-    const std::string& id,
-    const std::string& client_tag_hash,
-    int64 highest_commit_response_version,
-    int64 highest_gu_response_version)
+EntityTracker::EntityTracker(const std::string& id,
+                             const std::string& client_tag_hash,
+                             int64 highest_commit_response_version,
+                             int64 highest_gu_response_version)
     : id_(id),
       client_tag_hash_(client_tag_hash),
       highest_commit_response_version_(highest_commit_response_version),
@@ -60,19 +58,18 @@ SyncThreadSyncEntity::SyncThreadSyncEntity(
       deleted_(false) {
 }
 
-SyncThreadSyncEntity::SyncThreadSyncEntity(
-    const std::string& id,
-    const std::string& client_tag_hash,
-    int64 highest_commit_response_version,
-    int64 highest_gu_response_version,
-    bool is_commit_pending,
-    int64 sequence_number,
-    int64 base_version,
-    base::Time ctime,
-    base::Time mtime,
-    const std::string& non_unique_name,
-    bool deleted,
-    const sync_pb::EntitySpecifics& specifics)
+EntityTracker::EntityTracker(const std::string& id,
+                             const std::string& client_tag_hash,
+                             int64 highest_commit_response_version,
+                             int64 highest_gu_response_version,
+                             bool is_commit_pending,
+                             int64 sequence_number,
+                             int64 base_version,
+                             base::Time ctime,
+                             base::Time mtime,
+                             const std::string& non_unique_name,
+                             bool deleted,
+                             const sync_pb::EntitySpecifics& specifics)
     : id_(id),
       client_tag_hash_(client_tag_hash),
       highest_commit_response_version_(highest_commit_response_version),
@@ -87,16 +84,15 @@ SyncThreadSyncEntity::SyncThreadSyncEntity(
       specifics_(specifics) {
 }
 
-SyncThreadSyncEntity::~SyncThreadSyncEntity() {
+EntityTracker::~EntityTracker() {
 }
 
-bool SyncThreadSyncEntity::IsCommitPending() const {
+bool EntityTracker::IsCommitPending() const {
   return is_commit_pending_;
 }
 
-void SyncThreadSyncEntity::PrepareCommitProto(
-    sync_pb::SyncEntity* commit_entity,
-    int64* sequence_number) const {
+void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
+                                       int64* sequence_number) const {
   // Set ID if we have a server-assigned ID.  Otherwise, it will be up to
   // our caller to assign a client-unique initial ID.
   if (base_version_ != kUncommittedVersion) {
@@ -117,16 +113,15 @@ void SyncThreadSyncEntity::PrepareCommitProto(
   *sequence_number = sequence_number_;
 }
 
-void SyncThreadSyncEntity::RequestCommit(
-    const std::string& id,
-    const std::string& client_tag_hash,
-    int64 sequence_number,
-    int64 base_version,
-    base::Time ctime,
-    base::Time mtime,
-    const std::string& non_unique_name,
-    bool deleted,
-    const sync_pb::EntitySpecifics& specifics) {
+void EntityTracker::RequestCommit(const std::string& id,
+                                  const std::string& client_tag_hash,
+                                  int64 sequence_number,
+                                  int64 base_version,
+                                  base::Time ctime,
+                                  base::Time mtime,
+                                  const std::string& non_unique_name,
+                                  bool deleted,
+                                  const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GE(base_version, base_version_)
       << "Base version should never decrease";
 
@@ -172,9 +167,9 @@ void SyncThreadSyncEntity::RequestCommit(
   specifics_ = specifics;
 }
 
-void SyncThreadSyncEntity::ReceiveCommitResponse(const std::string& response_id,
-                                                 int64 response_version,
-                                                 int64 sequence_number) {
+void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
+                                          int64 response_version,
+                                          int64 sequence_number) {
   // Commit responses, especially after the first commit, can update our ID.
   id_ = response_id;
 
@@ -197,7 +192,7 @@ void SyncThreadSyncEntity::ReceiveCommitResponse(const std::string& response_id,
   ClearPendingCommit();
 }
 
-void SyncThreadSyncEntity::ReceiveUpdate(int64 version) {
+void EntityTracker::ReceiveUpdate(int64 version) {
   highest_gu_response_version_ =
       std::max(highest_gu_response_version_, version);
 
@@ -208,7 +203,7 @@ void SyncThreadSyncEntity::ReceiveUpdate(int64 version) {
   }
 }
 
-bool SyncThreadSyncEntity::IsInConflict() const {
+bool EntityTracker::IsInConflict() const {
   if (!is_commit_pending_)
     return false;
 
@@ -228,11 +223,11 @@ bool SyncThreadSyncEntity::IsInConflict() const {
   }
 }
 
-bool SyncThreadSyncEntity::IsServerKnown() const {
+bool EntityTracker::IsServerKnown() const {
   return base_version_ != kUncommittedVersion;
 }
 
-void SyncThreadSyncEntity::ClearPendingCommit() {
+void EntityTracker::ClearPendingCommit() {
   is_commit_pending_ = false;
 
   // Clearing the specifics might free up some memory.  It can't hurt to try.

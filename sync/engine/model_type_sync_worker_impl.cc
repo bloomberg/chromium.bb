@@ -2,54 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/non_blocking_type_processor_core.h"
+#include "sync/engine/model_type_sync_worker_impl.h"
 
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
+#include "sync/engine/entity_tracker.h"
+#include "sync/engine/model_type_sync_proxy.h"
 #include "sync/engine/non_blocking_type_commit_contribution.h"
-#include "sync/engine/non_blocking_type_processor_interface.h"
-#include "sync/engine/sync_thread_sync_entity.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/time.h"
 
 namespace syncer {
 
-NonBlockingTypeProcessorCore::NonBlockingTypeProcessorCore(
+ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     ModelType type,
     const DataTypeState& initial_state,
-    scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface)
+    scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
     : type_(type),
       data_type_state_(initial_state),
-      processor_interface_(processor_interface.Pass()),
+      type_sync_proxy_(type_sync_proxy.Pass()),
       entities_deleter_(&entities_),
       weak_ptr_factory_(this) {
 }
 
-NonBlockingTypeProcessorCore::~NonBlockingTypeProcessorCore() {
+ModelTypeSyncWorkerImpl::~ModelTypeSyncWorkerImpl() {
 }
 
-ModelType NonBlockingTypeProcessorCore::GetModelType() const {
+ModelType ModelTypeSyncWorkerImpl::GetModelType() const {
   DCHECK(CalledOnValidThread());
   return type_;
 }
 
 // UpdateHandler implementation.
-void NonBlockingTypeProcessorCore::GetDownloadProgress(
+void ModelTypeSyncWorkerImpl::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   DCHECK(CalledOnValidThread());
   progress_marker->CopyFrom(data_type_state_.progress_marker);
 }
 
-void NonBlockingTypeProcessorCore::GetDataTypeContext(
+void ModelTypeSyncWorkerImpl::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
   DCHECK(CalledOnValidThread());
   context->CopyFrom(data_type_state_.type_context);
 }
 
-SyncerError NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
+SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
@@ -82,13 +82,13 @@ SyncerError NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
       DCHECK(!client_tag_hash.empty());
       EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
       if (map_it == entities_.end()) {
-        SyncThreadSyncEntity* entity =
-            SyncThreadSyncEntity::FromServerUpdate(update_entity->id_string(),
-                                                   client_tag_hash,
-                                                   update_entity->version());
+        EntityTracker* entity =
+            EntityTracker::FromServerUpdate(update_entity->id_string(),
+                                            client_tag_hash,
+                                            update_entity->version());
         entities_.insert(std::make_pair(client_tag_hash, entity));
       } else {
-        SyncThreadSyncEntity* entity = map_it->second;
+        EntityTracker* entity = map_it->second;
         entity->ReceiveUpdate(update_entity->version());
       }
 
@@ -108,35 +108,34 @@ SyncerError NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
   }
 
   // Forward these updates to the model thread so it can do the rest.
-  processor_interface_->ReceiveUpdateResponse(data_type_state_, response_datas);
+  type_sync_proxy_->ReceiveUpdateResponse(data_type_state_, response_datas);
 
   return SYNCER_OK;
 }
 
-void NonBlockingTypeProcessorCore::ApplyUpdates(
-    sessions::StatusController* status) {
+void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
   DCHECK(CalledOnValidThread());
   // This function is called only when we've finished a download cycle, ie. we
   // got a response with changes_remaining == 0.  If this is our first download
-  // cycle, we should update our state so the NonBlockingTypeProcessor knows
-  // that it's safe to commit items now.
+  // cycle, we should update our state so the ModelTypeSyncProxy knows that
+  // it's safe to commit items now.
   if (!data_type_state_.initial_sync_done) {
     data_type_state_.initial_sync_done = true;
 
     UpdateResponseDataList empty_update_list;
-    processor_interface_->ReceiveUpdateResponse(data_type_state_,
-                                                empty_update_list);
+    type_sync_proxy_->ReceiveUpdateResponse(data_type_state_,
+                                            empty_update_list);
   }
 }
 
-void NonBlockingTypeProcessorCore::PassiveApplyUpdates(
+void ModelTypeSyncWorkerImpl::PassiveApplyUpdates(
     sessions::StatusController* status) {
   NOTREACHED()
       << "Non-blocking types should never apply updates on sync thread.  "
       << "ModelType is: " << ModelTypeToString(type_);
 }
 
-void NonBlockingTypeProcessorCore::EnqueueForCommit(
+void ModelTypeSyncWorkerImpl::EnqueueForCommit(
     const CommitRequestDataList& list) {
   DCHECK(CalledOnValidThread());
 
@@ -152,8 +151,8 @@ void NonBlockingTypeProcessorCore::EnqueueForCommit(
 }
 
 // CommitContributor implementation.
-scoped_ptr<CommitContribution>
-NonBlockingTypeProcessorCore::GetContribution(size_t max_entries) {
+scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
+    size_t max_entries) {
   DCHECK(CalledOnValidThread());
 
   size_t space_remaining = max_entries;
@@ -167,7 +166,7 @@ NonBlockingTypeProcessorCore::GetContribution(size_t max_entries) {
   for (EntityMap::const_iterator it = entities_.begin();
        it != entities_.end() && space_remaining > 0;
        ++it) {
-    SyncThreadSyncEntity* entity = it->second;
+    EntityTracker* entity = it->second;
     if (entity->IsCommitPending()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
       int64 sequence_number = -1;
@@ -187,7 +186,7 @@ NonBlockingTypeProcessorCore::GetContribution(size_t max_entries) {
       data_type_state_.type_context, commit_entities, sequence_numbers, this));
 }
 
-void NonBlockingTypeProcessorCore::StorePendingCommit(
+void ModelTypeSyncWorkerImpl::StorePendingCommit(
     const CommitRequestData& request) {
   if (!request.deleted) {
     DCHECK_EQ(type_, GetModelTypeFromSpecifics(request.specifics));
@@ -195,19 +194,19 @@ void NonBlockingTypeProcessorCore::StorePendingCommit(
 
   EntityMap::iterator map_it = entities_.find(request.client_tag_hash);
   if (map_it == entities_.end()) {
-    SyncThreadSyncEntity* entity =
-        SyncThreadSyncEntity::FromCommitRequest(request.id,
-                                                request.client_tag_hash,
-                                                request.sequence_number,
-                                                request.base_version,
-                                                request.ctime,
-                                                request.mtime,
-                                                request.non_unique_name,
-                                                request.deleted,
-                                                request.specifics);
+    EntityTracker* entity =
+        EntityTracker::FromCommitRequest(request.id,
+                                         request.client_tag_hash,
+                                         request.sequence_number,
+                                         request.base_version,
+                                         request.ctime,
+                                         request.mtime,
+                                         request.non_unique_name,
+                                         request.deleted,
+                                         request.specifics);
     entities_.insert(std::make_pair(request.client_tag_hash, entity));
   } else {
-    SyncThreadSyncEntity* entity = map_it->second;
+    EntityTracker* entity = map_it->second;
     entity->RequestCommit(request.id,
                           request.client_tag_hash,
                           request.sequence_number,
@@ -222,7 +221,7 @@ void NonBlockingTypeProcessorCore::StorePendingCommit(
   // TODO: Nudge SyncScheduler.
 }
 
-void NonBlockingTypeProcessorCore::OnCommitResponse(
+void ModelTypeSyncWorkerImpl::OnCommitResponse(
     const CommitResponseDataList& response_list) {
   for (CommitResponseDataList::const_iterator response_it =
            response_list.begin();
@@ -239,7 +238,7 @@ void NonBlockingTypeProcessorCore::OnCommitResponse(
       continue;
     }
 
-    SyncThreadSyncEntity* entity = map_it->second;
+    EntityTracker* entity = map_it->second;
     entity->ReceiveCommitResponse(response_it->id,
                                   response_it->response_version,
                                   response_it->sequence_number);
@@ -248,22 +247,21 @@ void NonBlockingTypeProcessorCore::OnCommitResponse(
   // Send the responses back to the model thread.  It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
-  processor_interface_->ReceiveCommitResponse(data_type_state_, response_list);
+  type_sync_proxy_->ReceiveCommitResponse(data_type_state_, response_list);
 }
 
-base::WeakPtr<NonBlockingTypeProcessorCore>
-NonBlockingTypeProcessorCore::AsWeakPtr() {
+base::WeakPtr<ModelTypeSyncWorkerImpl> ModelTypeSyncWorkerImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool NonBlockingTypeProcessorCore::CanCommitItems() const {
+bool ModelTypeSyncWorkerImpl::CanCommitItems() const {
   // We can't commit anything until we know the type's parent node.
   // We'll get it in the first update response.
   return !data_type_state_.type_root_id.empty() &&
          data_type_state_.initial_sync_done;
 }
 
-void NonBlockingTypeProcessorCore::HelpInitializeCommitEntity(
+void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
     sync_pb::SyncEntity* sync_entity) {
   // Initial commits need our help to generate a client ID.
   if (!sync_entity->has_id_string()) {

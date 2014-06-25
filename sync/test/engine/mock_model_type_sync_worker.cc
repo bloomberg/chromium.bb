@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/test/engine/mock_non_blocking_type_processor_core.h"
+#include "sync/test/engine/mock_model_type_sync_worker.h"
 
 #include "base/logging.h"
 
 namespace syncer {
 
-MockNonBlockingTypeProcessorCore::MockNonBlockingTypeProcessorCore() {
+MockModelTypeSyncWorker::MockModelTypeSyncWorker() {
 }
 
-MockNonBlockingTypeProcessorCore::~MockNonBlockingTypeProcessorCore() {
+MockModelTypeSyncWorker::~MockModelTypeSyncWorker() {
 }
 
-void MockNonBlockingTypeProcessorCore::RequestCommits(
+void MockModelTypeSyncWorker::RequestCommits(
     const CommitRequestDataList& list) {
   commit_request_lists_.push_back(list);
 }
 
-size_t MockNonBlockingTypeProcessorCore::GetNumCommitRequestLists() const {
+size_t MockModelTypeSyncWorker::GetNumCommitRequestLists() const {
   return commit_request_lists_.size();
 }
 
-CommitRequestDataList MockNonBlockingTypeProcessorCore::GetNthCommitRequestList(
+CommitRequestDataList MockModelTypeSyncWorker::GetNthCommitRequestList(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitRequestLists());
   return commit_request_lists_[n];
 }
 
-bool MockNonBlockingTypeProcessorCore::HasCommitRequestForTagHash(
+bool MockModelTypeSyncWorker::HasCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
@@ -49,8 +49,7 @@ bool MockNonBlockingTypeProcessorCore::HasCommitRequestForTagHash(
   return false;
 }
 
-CommitRequestData
-MockNonBlockingTypeProcessorCore::GetLatestCommitRequestForTagHash(
+CommitRequestData MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
@@ -71,7 +70,7 @@ MockNonBlockingTypeProcessorCore::GetLatestCommitRequestForTagHash(
   return CommitRequestData();
 }
 
-UpdateResponseData MockNonBlockingTypeProcessorCore::UpdateFromServer(
+UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
     int64 version_offset,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
@@ -98,7 +97,7 @@ UpdateResponseData MockNonBlockingTypeProcessorCore::UpdateFromServer(
   return data;
 }
 
-UpdateResponseData MockNonBlockingTypeProcessorCore::TombstoneFromServer(
+UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
     int64 version_offset,
     const std::string& tag_hash) {
   int64 old_version = GetServerVersion(tag_hash);
@@ -122,7 +121,7 @@ UpdateResponseData MockNonBlockingTypeProcessorCore::TombstoneFromServer(
   return data;
 }
 
-CommitResponseData MockNonBlockingTypeProcessorCore::SuccessfulCommitResponse(
+CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   const std::string& client_tag_hash = request_data.client_tag_hash;
 
@@ -150,13 +149,11 @@ CommitResponseData MockNonBlockingTypeProcessorCore::SuccessfulCommitResponse(
   return response_data;
 }
 
-std::string MockNonBlockingTypeProcessorCore::GenerateId(
-    const std::string& tag_hash) {
+std::string MockModelTypeSyncWorker::GenerateId(const std::string& tag_hash) {
   return "FakeId:" + tag_hash;
 }
 
-int64 MockNonBlockingTypeProcessorCore::GetServerVersion(
-    const std::string& tag_hash) {
+int64 MockModelTypeSyncWorker::GetServerVersion(const std::string& tag_hash) {
   std::map<const std::string, int64>::const_iterator it;
   it = server_versions_.find(tag_hash);
   if (it == server_versions_.end()) {
@@ -166,9 +163,8 @@ int64 MockNonBlockingTypeProcessorCore::GetServerVersion(
   }
 }
 
-void MockNonBlockingTypeProcessorCore::SetServerVersion(
-    const std::string& tag_hash,
-    int64 version) {
+void MockModelTypeSyncWorker::SetServerVersion(const std::string& tag_hash,
+                                               int64 version) {
   server_versions_[tag_hash] = version;
 }
 

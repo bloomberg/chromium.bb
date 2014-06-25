@@ -11,54 +11,52 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
-#include "sync/engine/non_blocking_type_processor.h"
-#include "sync/engine/non_blocking_type_processor_core_interface.h"
+#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_sync_worker.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-class NonBlockingTypeProcessorCore;
+class ModelTypeSyncWorker;
 
 namespace {
 
-// A useless instance of NonBlockingTypeProcessorCore.
-class NullNonBlockingTypeProcessorCore
-    : public NonBlockingTypeProcessorCoreInterface {
+// A useless instance of ModelTypeSyncWorker.
+class NullModelTypeSyncWorker : public ModelTypeSyncWorker {
  public:
-  NullNonBlockingTypeProcessorCore();
-  virtual ~NullNonBlockingTypeProcessorCore();
+  NullModelTypeSyncWorker();
+  virtual ~NullModelTypeSyncWorker();
 
   virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
 };
 
-NullNonBlockingTypeProcessorCore::NullNonBlockingTypeProcessorCore() {
+NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
 }
 
-NullNonBlockingTypeProcessorCore::~NullNonBlockingTypeProcessorCore() {
+NullModelTypeSyncWorker::~NullModelTypeSyncWorker() {
 }
 
-void NullNonBlockingTypeProcessorCore::RequestCommits(
+void NullModelTypeSyncWorker::RequestCommits(
     const CommitRequestDataList& list) {
   NOTREACHED() << "Not implemented.";
 }
 
 // A class that pretends to be the sync backend.
-class MockSyncCore {
+class MockSyncContext {
  public:
   void Connect(
       syncer::ModelType type,
       const scoped_refptr<base::SingleThreadTaskRunner>& model_task_runner,
-      const base::WeakPtr<syncer::NonBlockingTypeProcessor>& type_processor) {
+      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy) {
     enabled_types_.Put(type);
     model_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(
-            &syncer::NonBlockingTypeProcessor::OnConnect,
-            type_processor,
-            base::Passed(scoped_ptr<NonBlockingTypeProcessorCoreInterface>(
-                             new NullNonBlockingTypeProcessorCore()).Pass())));
+        base::Bind(&syncer::ModelTypeSyncProxyImpl::OnConnect,
+                   type_proxy,
+                   base::Passed(scoped_ptr<ModelTypeSyncWorker>(
+                                    new NullModelTypeSyncWorker()).Pass())));
   }
 
   void Disconnect(syncer::ModelType type) {
@@ -71,47 +69,48 @@ class MockSyncCore {
   syncer::ModelTypeSet enabled_types_;
 };
 
-// A proxy to the MockSyncCore that implements SyncCoreProxy.
-class MockSyncCoreProxy : public syncer::SyncCoreProxy {
+// A proxy to the MockSyncContext that implements SyncContextProxy.
+class MockSyncContextProxy : public syncer::SyncContextProxy {
  public:
-  MockSyncCoreProxy(
-      MockSyncCore* sync_core,
+  MockSyncContextProxy(
+      MockSyncContext* sync_context,
       const scoped_refptr<base::TestSimpleTaskRunner>& model_task_runner,
       const scoped_refptr<base::TestSimpleTaskRunner>& sync_task_runner)
-      : mock_sync_core_(sync_core),
+      : mock_sync_context_(sync_context),
         model_task_runner_(model_task_runner),
         sync_task_runner_(sync_task_runner) {}
-  virtual ~MockSyncCoreProxy() {}
+  virtual ~MockSyncContextProxy() {}
 
-  virtual void ConnectTypeToCore(
+  virtual void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
-      base::WeakPtr<syncer::NonBlockingTypeProcessor> type_processor) OVERRIDE {
+      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
+      OVERRIDE {
     // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument
     // to Connect().  That won't work here in this test, so we use the
     // model_task_runner_ that was injected for this purpose instead.
     sync_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&MockSyncCore::Connect,
-                                           base::Unretained(mock_sync_core_),
+                                base::Bind(&MockSyncContext::Connect,
+                                           base::Unretained(mock_sync_context_),
                                            type,
                                            model_task_runner_,
-                                           type_processor));
+                                           type_proxy));
   }
 
   virtual void Disconnect(syncer::ModelType type) OVERRIDE {
     sync_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&MockSyncCore::Disconnect,
-                                           base::Unretained(mock_sync_core_),
+                                base::Bind(&MockSyncContext::Disconnect,
+                                           base::Unretained(mock_sync_context_),
                                            type));
   }
 
-  virtual scoped_ptr<SyncCoreProxy> Clone() const OVERRIDE {
-    return scoped_ptr<SyncCoreProxy>(new MockSyncCoreProxy(
-        mock_sync_core_, model_task_runner_, sync_task_runner_));
+  virtual scoped_ptr<SyncContextProxy> Clone() const OVERRIDE {
+    return scoped_ptr<SyncContextProxy>(new MockSyncContextProxy(
+        mock_sync_context_, model_task_runner_, sync_task_runner_));
   }
 
  private:
-  MockSyncCore* mock_sync_core_;
+  MockSyncContext* mock_sync_context_;
   scoped_refptr<base::TestSimpleTaskRunner> model_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_task_runner_;
 };
@@ -121,34 +120,35 @@ class MockSyncCoreProxy : public syncer::SyncCoreProxy {
 class NonBlockingDataTypeControllerTest : public testing::Test {
  public:
   NonBlockingDataTypeControllerTest()
-      : processor_(syncer::DICTIONARY),
+      : type_sync_proxy_(syncer::DICTIONARY),
         model_thread_(new base::TestSimpleTaskRunner()),
         sync_thread_(new base::TestSimpleTaskRunner()),
         controller_(syncer::DICTIONARY, true),
-        mock_core_proxy_(&mock_sync_core_, model_thread_, sync_thread_),
+        mock_context_proxy_(&mock_sync_context_, model_thread_, sync_thread_),
         auto_run_tasks_(true) {}
 
   virtual ~NonBlockingDataTypeControllerTest() {}
 
-  // Connects the processor to the NonBlockingDataTypeController.
-  void InitProcessor() {
-    controller_.InitializeProcessor(model_thread_, processor_.AsWeakPtrForUI());
+  // Connects the sync type proxy to the NonBlockingDataTypeController.
+  void InitTypeSyncProxy() {
+    controller_.InitializeType(model_thread_,
+                               type_sync_proxy_.AsWeakPtrForUI());
     if (auto_run_tasks_) {
       RunAllTasks();
     }
   }
 
   // Connects the sync backend to the NonBlockingDataTypeController.
-  void InitSync() {
-    controller_.InitializeSyncCoreProxy(mock_core_proxy_.Clone());
+  void InitSyncBackend() {
+    controller_.InitializeSyncContext(mock_context_proxy_.Clone());
     if (auto_run_tasks_) {
       RunAllTasks();
     }
   }
 
   // Disconnects the sync backend from the NonBlockingDataTypeController.
-  void UninitializeSync() {
-    controller_.ClearSyncCoreProxy();
+  void UninitializeSyncBackend() {
+    controller_.ClearSyncContext();
     if (auto_run_tasks_) {
       RunAllTasks();
     }
@@ -169,7 +169,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
     RunQueuedModelThreadTasks();
   }
 
-  // The processor pretends to run tasks on a different thread.
+  // The sync type proxy pretends to run tasks on a different thread.
   // This function runs any posted tasks.
   void RunQueuedModelThreadTasks() { model_thread_->RunUntilIdle(); }
 
@@ -182,14 +182,14 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  syncer::NonBlockingTypeProcessor processor_;
+  syncer::ModelTypeSyncProxyImpl type_sync_proxy_;
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 
   browser_sync::NonBlockingDataTypeController controller_;
 
-  MockSyncCore mock_sync_core_;
-  MockSyncCoreProxy mock_core_proxy_;
+  MockSyncContext mock_sync_context_;
+  MockSyncContextProxy mock_context_proxy_;
 
   bool auto_run_tasks_;
 };
@@ -197,144 +197,144 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
 // Initialization when the user has disabled syncing for this type.
 TEST_F(NonBlockingDataTypeControllerTest, UserDisabled) {
   SetIsPreferred(false);
-  InitProcessor();
-  InitSync();
+  InitTypeSyncProxy();
+  InitSyncBackend();
 
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
-  UninitializeSync();
+  UninitializeSyncBackend();
 
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
-// Init the sync backend then the type processor.
+// Init the sync backend then the type sync proxy.
 TEST_F(NonBlockingDataTypeControllerTest, Enabled_SyncFirst) {
   SetIsPreferred(true);
-  InitSync();
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  InitSyncBackend();
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
-  InitProcessor();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  InitTypeSyncProxy();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
-  UninitializeSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  UninitializeSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
-// Init the type processor then the sync backend.
+// Init the type sync proxy then the sync backend.
 TEST_F(NonBlockingDataTypeControllerTest, Enabled_ProcessorFirst) {
   SetIsPreferred(true);
-  InitProcessor();
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  InitTypeSyncProxy();
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
-  InitSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  InitSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
-  UninitializeSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  UninitializeSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
 // Initialize sync then disable it with a pref change.
 TEST_F(NonBlockingDataTypeControllerTest, PreferThenNot) {
   SetIsPreferred(true);
-  InitProcessor();
-  InitSync();
+  InitTypeSyncProxy();
+  InitSyncBackend();
 
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
   SetIsPreferred(false);
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
-// Connect type processor and sync backend, then toggle prefs repeatedly.
+// Connect type sync proxy and sync backend, then toggle prefs repeatedly.
 TEST_F(NonBlockingDataTypeControllerTest, RepeatedTogglePreference) {
   SetIsPreferred(false);
-  InitProcessor();
-  InitSync();
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  InitTypeSyncProxy();
+  InitSyncBackend();
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
   SetIsPreferred(true);
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
   SetIsPreferred(false);
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
   SetIsPreferred(true);
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
   SetIsPreferred(false);
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
 // Test sync backend getting restarted while processor is connected.
 TEST_F(NonBlockingDataTypeControllerTest, RestartSyncBackend) {
   SetIsPreferred(true);
-  InitProcessor();
-  InitSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  InitTypeSyncProxy();
+  InitSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 
   // Shutting down sync backend should disconnect but not disable the type.
-  UninitializeSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  UninitializeSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
   // Brining the backend back should reconnect the type.
-  InitSync();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  InitSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 }
 
 // Test sync backend being restarted before processor connects.
 TEST_F(NonBlockingDataTypeControllerTest, RestartSyncBackendEarly) {
   SetIsPreferred(true);
 
-  // Toggle sync off and on before the type processor is available.
-  InitSync();
-  EXPECT_FALSE(processor_.IsConnected());
-  UninitializeSync();
-  EXPECT_FALSE(processor_.IsConnected());
-  InitSync();
-  EXPECT_FALSE(processor_.IsConnected());
+  // Toggle sync off and on before the type sync proxy is available.
+  InitSyncBackend();
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  UninitializeSyncBackend();
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  InitSyncBackend();
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 
   // Introduce the processor.
-  InitProcessor();
-  EXPECT_TRUE(processor_.IsConnected());
+  InitTypeSyncProxy();
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 }
 
 // Test pref toggling before the sync backend has connected.
 TEST_F(NonBlockingDataTypeControllerTest, TogglePreferenceWithoutBackend) {
   SetIsPreferred(true);
-  InitProcessor();
+  InitTypeSyncProxy();
 
   // This should emit a disable signal.
   SetIsPreferred(false);
-  EXPECT_FALSE(processor_.IsConnected());
-  EXPECT_FALSE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
 
   // This won't enable us, since we don't have a sync backend.
   SetIsPreferred(true);
-  EXPECT_FALSE(processor_.IsConnected());
-  EXPECT_FALSE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
 
   // Only now do we start sending enable signals.
-  InitSync();
-  EXPECT_TRUE(processor_.IsConnected());
-  EXPECT_TRUE(processor_.IsPreferred());
+  InitSyncBackend();
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 }
 
 // Turns off auto-task-running to test the effects of delaying a connection
@@ -347,24 +347,24 @@ TEST_F(NonBlockingDataTypeControllerTest, DelayedConnect) {
   SetAutoRunTasks(false);
 
   SetIsPreferred(true);
-  InitProcessor();
-  InitSync();
+  InitTypeSyncProxy();
+  InitSyncBackend();
 
   // Allow the model to emit the request.
   RunQueuedModelThreadTasks();
 
   // That should result in a request to connect, but it won't be
   // executed right away.
-  EXPECT_FALSE(processor_.IsConnected());
-  EXPECT_TRUE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 
   // Let the sync thread process the request and the model thread handle its
   // response.
   RunQueuedSyncThreadTasks();
   RunQueuedModelThreadTasks();
 
-  EXPECT_TRUE(processor_.IsConnected());
-  EXPECT_TRUE(processor_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 }
 
 // Send Disable signal while a connection request is in progress.
@@ -372,16 +372,16 @@ TEST_F(NonBlockingDataTypeControllerTest, DisableRacesWithOnConnect) {
   SetAutoRunTasks(false);
 
   SetIsPreferred(true);
-  InitProcessor();
-  InitSync();
+  InitTypeSyncProxy();
+  InitSyncBackend();
 
   // Allow the model to emit the request.
   RunQueuedModelThreadTasks();
 
   // That should result in a request to connect, but it won't be
   // executed right away.
-  EXPECT_FALSE(processor_.IsConnected());
-  EXPECT_TRUE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 
   // Send and execute a disable signal before the OnConnect callback returns.
   SetIsPreferred(false);
@@ -396,8 +396,8 @@ TEST_F(NonBlockingDataTypeControllerTest, DisableRacesWithOnConnect) {
   // from the UI thread earlier.  We need to make sure that doesn't happen.
   RunQueuedModelThreadTasks();
 
-  EXPECT_FALSE(processor_.IsPreferred());
-  EXPECT_FALSE(processor_.IsConnected());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
 }
 
 // Send a request to enable, then disable, then re-enable the data type.
@@ -408,23 +408,23 @@ TEST_F(NonBlockingDataTypeControllerTest, EnableDisableEnableRace) {
   SetAutoRunTasks(false);
 
   SetIsPreferred(true);
-  InitProcessor();
-  InitSync();
+  InitTypeSyncProxy();
+  InitSyncBackend();
   RunQueuedModelThreadTasks();
 
   // That was the first enable.
-  EXPECT_FALSE(processor_.IsConnected());
-  EXPECT_TRUE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 
   // Now disable.
   SetIsPreferred(false);
   RunQueuedModelThreadTasks();
-  EXPECT_FALSE(processor_.IsPreferred());
+  EXPECT_FALSE(type_sync_proxy_.IsPreferred());
 
   // And re-enable.
   SetIsPreferred(true);
   RunQueuedModelThreadTasks();
-  EXPECT_TRUE(processor_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
 
   // The sync thread has three messages related to those enables and
   // disables sittin in its queue.  Let's allow it to process them.
@@ -432,8 +432,8 @@ TEST_F(NonBlockingDataTypeControllerTest, EnableDisableEnableRace) {
 
   // Let the model thread process any messages from the sync thread.
   RunQueuedModelThreadTasks();
-  EXPECT_TRUE(processor_.IsPreferred());
-  EXPECT_TRUE(processor_.IsConnected());
+  EXPECT_TRUE(type_sync_proxy_.IsPreferred());
+  EXPECT_TRUE(type_sync_proxy_.IsConnected());
 }
 
 }  // namespace syncer

@@ -344,8 +344,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // in a message that allows the component to delete its local sync state.
   void InitializeNonBlockingType(
       syncer::ModelType type,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::WeakPtr<syncer::NonBlockingTypeProcessor> processor);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& proxy);
 
   // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
   // currently syncing, returns NULL.

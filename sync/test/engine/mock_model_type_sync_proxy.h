@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_H_
-#define SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_H_
+#ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_
+#define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_
 
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "sync/engine/model_type_sync_proxy.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_processor_interface.h"
 
 namespace syncer {
 
-// Mocks the NonBlockingTypeProcessor.
+// Mocks the ModelTypeSyncProxy.
 //
 // This mock is made simpler by not using any threads.  It does still have the
 // ability to defer execution if we need to test race conditions, though.
@@ -25,12 +25,12 @@ namespace syncer {
 //
 // It keeps a log of all received messages so tests can make assertions based
 // on their value.
-class MockNonBlockingTypeProcessor : public NonBlockingTypeProcessorInterface {
+class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
  public:
-  MockNonBlockingTypeProcessor();
-  virtual ~MockNonBlockingTypeProcessor();
+  MockModelTypeSyncProxy();
+  virtual ~MockModelTypeSyncProxy();
 
-  // Implementation of NonBlockingTypeProcessorInterface.
+  // Implementation of ModelTypeSyncProxy.
   virtual void ReceiveCommitResponse(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) OVERRIDE;
@@ -52,8 +52,8 @@ class MockNonBlockingTypeProcessor : public NonBlockingTypeProcessorInterface {
   // Generate commit or deletion requests to be sent to the server.
   // These functions update local state to keep sequence numbers consistent.
   //
-  // A real NonBlockingTypeProcessor would forward these kinds of messages
-  // directly to its attached NonBlockingTypeProcessorCore.  These methods
+  // A real ModelTypeSyncProxy would forward these kinds of messages
+  // directly to its attached ModelTypeSyncWorker.  These methods
   // return the value to the caller so the test framework can handle them as it
   // sees fit.
   CommitRequestData CommitRequest(const std::string& tag_hash,
@@ -128,9 +128,9 @@ class MockNonBlockingTypeProcessor : public NonBlockingTypeProcessorInterface {
   std::map<const std::string, int64> base_versions_;
   std::map<const std::string, std::string> assigned_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockNonBlockingTypeProcessor);
+  DISALLOW_COPY_AND_ASSIGN(MockModelTypeSyncProxy);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_H_
+#endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_

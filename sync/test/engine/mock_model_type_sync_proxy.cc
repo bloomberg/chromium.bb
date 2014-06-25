@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/test/engine/mock_non_blocking_type_processor.h"
+#include "sync/test/engine/mock_model_type_sync_proxy.h"
 
 #include "base/bind.h"
 
 namespace syncer {
 
-MockNonBlockingTypeProcessor::MockNonBlockingTypeProcessor()
-  : is_synchronous_(true) {
+MockModelTypeSyncProxy::MockModelTypeSyncProxy() : is_synchronous_(true) {
 }
 
-MockNonBlockingTypeProcessor::~MockNonBlockingTypeProcessor() {
+MockModelTypeSyncProxy::~MockModelTypeSyncProxy() {
 }
 
-void MockNonBlockingTypeProcessor::ReceiveCommitResponse(
+void MockModelTypeSyncProxy::ReceiveCommitResponse(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   base::Closure task =
-      base::Bind(&MockNonBlockingTypeProcessor::ReceiveCommitResponseImpl,
+      base::Bind(&MockModelTypeSyncProxy::ReceiveCommitResponseImpl,
                  base::Unretained(this),
                  type_state,
                  response_list);
@@ -28,11 +27,11 @@ void MockNonBlockingTypeProcessor::ReceiveCommitResponse(
     RunQueuedTasks();
 }
 
-void MockNonBlockingTypeProcessor::ReceiveUpdateResponse(
+void MockModelTypeSyncProxy::ReceiveUpdateResponse(
     const DataTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   base::Closure task =
-      base::Bind(&MockNonBlockingTypeProcessor::ReceiveUpdateResponseImpl,
+      base::Bind(&MockModelTypeSyncProxy::ReceiveUpdateResponseImpl,
                  base::Unretained(this),
                  type_state,
                  response_list);
@@ -41,12 +40,11 @@ void MockNonBlockingTypeProcessor::ReceiveUpdateResponse(
     RunQueuedTasks();
 }
 
-void MockNonBlockingTypeProcessor::SetSynchronousExecution(
-    bool is_synchronous) {
+void MockModelTypeSyncProxy::SetSynchronousExecution(bool is_synchronous) {
   is_synchronous_ = is_synchronous;
 }
 
-void MockNonBlockingTypeProcessor::RunQueuedTasks() {
+void MockModelTypeSyncProxy::RunQueuedTasks() {
   for (std::vector<base::Closure>::iterator it = pending_tasks_.begin();
        it != pending_tasks_.end();
        ++it) {
@@ -55,7 +53,7 @@ void MockNonBlockingTypeProcessor::RunQueuedTasks() {
   pending_tasks_.clear();
 }
 
-CommitRequestData MockNonBlockingTypeProcessor::CommitRequest(
+CommitRequestData MockModelTypeSyncProxy::CommitRequest(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   const int64 base_version = GetBaseVersion(tag_hash);
@@ -81,7 +79,7 @@ CommitRequestData MockNonBlockingTypeProcessor::CommitRequest(
   return data;
 }
 
-CommitRequestData MockNonBlockingTypeProcessor::DeleteRequest(
+CommitRequestData MockModelTypeSyncProxy::DeleteRequest(
     const std::string& tag_hash) {
   const int64 base_version = GetBaseVersion(tag_hash);
   CommitRequestData data;
@@ -104,48 +102,46 @@ CommitRequestData MockNonBlockingTypeProcessor::DeleteRequest(
   return data;
 }
 
-size_t MockNonBlockingTypeProcessor::GetNumUpdateResponses() const {
+size_t MockModelTypeSyncProxy::GetNumUpdateResponses() const {
   return received_update_responses_.size();
 }
 
-UpdateResponseDataList MockNonBlockingTypeProcessor::GetNthUpdateResponse(
+UpdateResponseDataList MockModelTypeSyncProxy::GetNthUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return received_update_responses_[n];
 }
 
-DataTypeState
-MockNonBlockingTypeProcessor::GetNthTypeStateReceivedInUpdateResponse(
+DataTypeState MockModelTypeSyncProxy::GetNthTypeStateReceivedInUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return type_states_received_on_update_[n];
 }
 
-size_t MockNonBlockingTypeProcessor::GetNumCommitResponses() const {
+size_t MockModelTypeSyncProxy::GetNumCommitResponses() const {
   return received_commit_responses_.size();
 }
 
-CommitResponseDataList MockNonBlockingTypeProcessor::GetNthCommitResponse(
+CommitResponseDataList MockModelTypeSyncProxy::GetNthCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return received_commit_responses_[n];
 }
 
-DataTypeState
-MockNonBlockingTypeProcessor::GetNthTypeStateReceivedInCommitResponse(
+DataTypeState MockModelTypeSyncProxy::GetNthTypeStateReceivedInCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return type_states_received_on_commit_[n];
 }
 
-bool MockNonBlockingTypeProcessor::HasUpdateResponse(
+bool MockModelTypeSyncProxy::HasUpdateResponse(
     const std::string& tag_hash) const {
   std::map<const std::string, UpdateResponseData>::const_iterator it =
       update_response_items_.find(tag_hash);
   return it != update_response_items_.end();
 }
 
-UpdateResponseData MockNonBlockingTypeProcessor::GetUpdateResponse(
+UpdateResponseData MockModelTypeSyncProxy::GetUpdateResponse(
     const std::string& tag_hash) const {
   DCHECK(HasUpdateResponse(tag_hash));
   std::map<const std::string, UpdateResponseData>::const_iterator it =
@@ -153,14 +149,14 @@ UpdateResponseData MockNonBlockingTypeProcessor::GetUpdateResponse(
   return it->second;
 }
 
-bool MockNonBlockingTypeProcessor::HasCommitResponse(
+bool MockModelTypeSyncProxy::HasCommitResponse(
     const std::string& tag_hash) const {
   std::map<const std::string, CommitResponseData>::const_iterator it =
       commit_response_items_.find(tag_hash);
   return it != commit_response_items_.end();
 }
 
-CommitResponseData MockNonBlockingTypeProcessor::GetCommitResponse(
+CommitResponseData MockModelTypeSyncProxy::GetCommitResponse(
     const std::string& tag_hash) const {
   DCHECK(HasCommitResponse(tag_hash));
   std::map<const std::string, CommitResponseData>::const_iterator it =
@@ -168,7 +164,7 @@ CommitResponseData MockNonBlockingTypeProcessor::GetCommitResponse(
   return it->second;
 }
 
-void MockNonBlockingTypeProcessor::ReceiveCommitResponseImpl(
+void MockModelTypeSyncProxy::ReceiveCommitResponseImpl(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   received_commit_responses_.push_back(response_list);
@@ -184,7 +180,7 @@ void MockNonBlockingTypeProcessor::ReceiveCommitResponseImpl(
   }
 }
 
-void MockNonBlockingTypeProcessor::ReceiveUpdateResponseImpl(
+void MockModelTypeSyncProxy::ReceiveUpdateResponseImpl(
     const DataTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   received_update_responses_.push_back(response_list);
@@ -201,7 +197,7 @@ void MockNonBlockingTypeProcessor::ReceiveUpdateResponseImpl(
 }
 
 // Fetches the sequence number as of the most recent update request.
-int64 MockNonBlockingTypeProcessor::GetCurrentSequenceNumber(
+int64 MockModelTypeSyncProxy::GetCurrentSequenceNumber(
     const std::string& tag_hash) const {
   std::map<const std::string, int64>::const_iterator it =
       sequence_numbers_.find(tag_hash);
@@ -214,7 +210,7 @@ int64 MockNonBlockingTypeProcessor::GetCurrentSequenceNumber(
 
 // The model thread should be sending us items with strictly increasing
 // sequence numbers.  Here's where we emulate that behavior.
-int64 MockNonBlockingTypeProcessor::GetNextSequenceNumber(
+int64 MockModelTypeSyncProxy::GetNextSequenceNumber(
     const std::string& tag_hash) {
   int64 sequence_number = GetCurrentSequenceNumber(tag_hash);
   sequence_number++;
@@ -222,7 +218,7 @@ int64 MockNonBlockingTypeProcessor::GetNextSequenceNumber(
   return sequence_number;
 }
 
-int64 MockNonBlockingTypeProcessor::GetBaseVersion(
+int64 MockModelTypeSyncProxy::GetBaseVersion(
     const std::string& tag_hash) const {
   std::map<const std::string, int64>::const_iterator it =
       base_versions_.find(tag_hash);
@@ -233,25 +229,24 @@ int64 MockNonBlockingTypeProcessor::GetBaseVersion(
   }
 }
 
-void MockNonBlockingTypeProcessor::SetBaseVersion(const std::string& tag_hash,
-                                                  int64 version) {
+void MockModelTypeSyncProxy::SetBaseVersion(const std::string& tag_hash,
+                                            int64 version) {
   base_versions_[tag_hash] = version;
 }
 
-bool MockNonBlockingTypeProcessor::HasServerAssignedId(
+bool MockModelTypeSyncProxy::HasServerAssignedId(
     const std::string& tag_hash) const {
   return assigned_ids_.find(tag_hash) != assigned_ids_.end();
 }
 
-const std::string& MockNonBlockingTypeProcessor::GetServerAssignedId(
+const std::string& MockModelTypeSyncProxy::GetServerAssignedId(
     const std::string& tag_hash) const {
   DCHECK(HasServerAssignedId(tag_hash));
   return assigned_ids_.find(tag_hash)->second;
 }
 
-void MockNonBlockingTypeProcessor::SetServerAssignedId(
-    const std::string& tag_hash,
-    const std::string& id) {
+void MockModelTypeSyncProxy::SetServerAssignedId(const std::string& tag_hash,
+                                                 const std::string& id) {
   assigned_ids_[tag_hash] = id;
 }
 

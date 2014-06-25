@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_thread_sync_entity.h"
+#include "sync/engine/model_type_entity.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -14,18 +14,18 @@
 
 namespace syncer {
 
-// Some simple sanity tests for the ModelThreadSyncEntity.
+// Some simple sanity tests for the ModelTypeEntity.
 //
 // A lot of the more complicated sync logic is implemented in the
-// NonBlockingTypeProcessor that owns the ModelThreadSyncEntity.  We
-// can't unit test it here.
+// ModelTypeSyncProxyImpl that owns the ModelTypeEntity.  We can't unit test it
+// here.
 //
 // Instead, we focus on simple tests to make sure that variables are getting
 // properly intialized and flags properly set.  Anything more complicated would
-// be a redundant and incomplete version of the NonBlockingTypeProcessor tests.
-class ModelThreadSyncEntityTest : public ::testing::Test {
+// be a redundant and incomplete version of the ModelTypeSyncProxyImpl tests.
+class ModelTypeEntityTest : public ::testing::Test {
  public:
-  ModelThreadSyncEntityTest()
+  ModelTypeEntityTest()
       : kServerId("ServerID"),
         kClientTag("sample.pref.name"),
         kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
@@ -45,9 +45,9 @@ class ModelThreadSyncEntityTest : public ::testing::Test {
   sync_pb::EntitySpecifics specifics;
 };
 
-TEST_F(ModelThreadSyncEntityTest, NewLocalItem) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::NewLocalItem("asdf", specifics, kCtime));
+TEST_F(ModelTypeEntityTest, NewLocalItem) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::NewLocalItem("asdf", specifics, kCtime));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_TRUE(entity->IsUnsynced());
@@ -55,17 +55,16 @@ TEST_F(ModelThreadSyncEntityTest, NewLocalItem) {
   EXPECT_TRUE(entity->UpdateIsInConflict(1));
 }
 
-TEST_F(ModelThreadSyncEntityTest, FromServerUpdate) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::FromServerUpdate(
-          kServerId,
-          kClientTagHash,
-          kClientTag,  // As non-unique name.
-          10,
-          specifics,
-          false,
-          kCtime,
-          kMtime));
+TEST_F(ModelTypeEntityTest, FromServerUpdate) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::FromServerUpdate(kServerId,
+                                        kClientTagHash,
+                                        kClientTag,  // As non-unique name.
+                                        10,
+                                        specifics,
+                                        false,
+                                        kCtime,
+                                        kMtime));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_FALSE(entity->IsUnsynced());
@@ -79,17 +78,16 @@ TEST_F(ModelThreadSyncEntityTest, FromServerUpdate) {
 // thing about them is that they don't have specifics, so it can be hard to
 // detect their type.  Fortunately, this class doesn't care about types in
 // received updates.
-TEST_F(ModelThreadSyncEntityTest, TombstoneUpdate) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::FromServerUpdate(
-          kServerId,
-          kClientTagHash,
-          kClientTag,  // As non-unique name.
-          10,
-          sync_pb::EntitySpecifics(),
-          true,
-          kCtime,
-          kMtime));
+TEST_F(ModelTypeEntityTest, TombstoneUpdate) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::FromServerUpdate(kServerId,
+                                        kClientTagHash,
+                                        kClientTag,  // As non-unique name.
+                                        10,
+                                        sync_pb::EntitySpecifics(),
+                                        true,
+                                        kCtime,
+                                        kMtime));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_FALSE(entity->IsUnsynced());
@@ -100,17 +98,16 @@ TEST_F(ModelThreadSyncEntityTest, TombstoneUpdate) {
 }
 
 // Apply a deletion update.
-TEST_F(ModelThreadSyncEntityTest, ApplyUpdate) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::FromServerUpdate(
-          kServerId,
-          kClientTagHash,
-          kClientTag,  // As non-unique name.
-          10,
-          specifics,
-          false,
-          kCtime,
-          kMtime));
+TEST_F(ModelTypeEntityTest, ApplyUpdate) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::FromServerUpdate(kServerId,
+                                        kClientTagHash,
+                                        kClientTag,  // As non-unique name.
+                                        10,
+                                        specifics,
+                                        false,
+                                        kCtime,
+                                        kMtime));
 
   // A deletion update one version later.
   entity->ApplyUpdateFromServer(11,
@@ -124,17 +121,16 @@ TEST_F(ModelThreadSyncEntityTest, ApplyUpdate) {
   EXPECT_FALSE(entity->UpdateIsReflection(12));
 }
 
-TEST_F(ModelThreadSyncEntityTest, LocalChange) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::FromServerUpdate(
-          kServerId,
-          kClientTagHash,
-          kClientTag,  // As non-unique name.
-          10,
-          specifics,
-          false,
-          kCtime,
-          kMtime));
+TEST_F(ModelTypeEntityTest, LocalChange) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::FromServerUpdate(kServerId,
+                                        kClientTagHash,
+                                        kClientTag,  // As non-unique name.
+                                        10,
+                                        specifics,
+                                        false,
+                                        kCtime,
+                                        kMtime));
 
   sync_pb::EntitySpecifics specifics2;
   specifics2.CopyFrom(specifics);
@@ -151,17 +147,16 @@ TEST_F(ModelThreadSyncEntityTest, LocalChange) {
   EXPECT_TRUE(entity->UpdateIsInConflict(11));
 }
 
-TEST_F(ModelThreadSyncEntityTest, LocalDeletion) {
-  scoped_ptr<ModelThreadSyncEntity> entity(
-      ModelThreadSyncEntity::FromServerUpdate(
-          kServerId,
-          kClientTagHash,
-          kClientTag,  // As non-unique name.
-          10,
-          specifics,
-          false,
-          kCtime,
-          kMtime));
+TEST_F(ModelTypeEntityTest, LocalDeletion) {
+  scoped_ptr<ModelTypeEntity> entity(
+      ModelTypeEntity::FromServerUpdate(kServerId,
+                                        kClientTagHash,
+                                        kClientTag,  // As non-unique name.
+                                        10,
+                                        specifics,
+                                        false,
+                                        kCtime,
+                                        kMtime));
 
   entity->Delete();
 

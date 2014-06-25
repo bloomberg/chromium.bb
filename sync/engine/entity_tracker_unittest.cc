@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_thread_sync_entity.h"
+#include "sync/engine/entity_tracker.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -14,18 +14,17 @@
 
 namespace syncer {
 
-// Some simple tests for the SyncThreadSyncEntity.
+// Some simple tests for the EntityTracker.
 //
-// The SyncThreadSyncEntity is an implementation detail of the
-// NonBlockingTypeProcessorCore.  As such, it doesn't make much sense to test
-// it exhaustively, since it already gets a lot of test coverage from the
-// NonBlockingTypeProcessorCore unit tests.
+// The EntityTracker is an implementation detail of the ModelTypeSyncWorker.
+// As such, it doesn't make much sense to test it exhaustively, since it
+// already gets a lot of test coverage from the ModelTypeSyncWorker unit tests.
 //
 // These tests are intended as a basic sanity check.  Anything more complicated
 // would be redundant.
-class SyncThreadSyncEntityTest : public ::testing::Test {
+class EntityTrackerTest : public ::testing::Test {
  public:
-  SyncThreadSyncEntityTest()
+  EntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("some.sample.tag"),
         kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
@@ -35,7 +34,7 @@ class SyncThreadSyncEntityTest : public ::testing::Test {
     specifics.mutable_preference()->set_value("pref.value");
   }
 
-  virtual ~SyncThreadSyncEntityTest() {}
+  virtual ~EntityTrackerTest() {}
 
   const std::string kServerId;
   const std::string kClientTag;
@@ -46,9 +45,9 @@ class SyncThreadSyncEntityTest : public ::testing::Test {
 };
 
 // Construct a new entity from a server update.  Then receive another update.
-TEST_F(SyncThreadSyncEntityTest, FromServerUpdate) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromServerUpdate(kServerId, kClientTagHash, 10));
+TEST_F(EntityTrackerTest, FromServerUpdate) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromServerUpdate(kServerId, kClientTagHash, 10));
   EXPECT_FALSE(entity->IsCommitPending());
 
   entity->ReceiveUpdate(20);
@@ -56,17 +55,17 @@ TEST_F(SyncThreadSyncEntityTest, FromServerUpdate) {
 }
 
 // Construct a new entity from a commit request.  Then serialize it.
-TEST_F(SyncThreadSyncEntityTest, FromCommitRequest) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromCommitRequest(kServerId,
-                                              kClientTagHash,
-                                              22,
-                                              33,
-                                              kCtime,
-                                              kMtime,
-                                              kClientTag,
-                                              false,
-                                              specifics));
+TEST_F(EntityTrackerTest, FromCommitRequest) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromCommitRequest(kServerId,
+                                       kClientTagHash,
+                                       22,
+                                       33,
+                                       kCtime,
+                                       kMtime,
+                                       kClientTag,
+                                       false,
+                                       specifics));
 
   ASSERT_TRUE(entity->IsCommitPending());
   sync_pb::SyncEntity pb_entity;
@@ -86,9 +85,9 @@ TEST_F(SyncThreadSyncEntityTest, FromCommitRequest) {
 }
 
 // Start with a server initiated entity.  Commit over top of it.
-TEST_F(SyncThreadSyncEntityTest, RequestCommit) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromServerUpdate(kServerId, kClientTagHash, 10));
+TEST_F(EntityTrackerTest, RequestCommit) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromServerUpdate(kServerId, kClientTagHash, 10));
 
   entity->RequestCommit(kServerId,
                         kClientTagHash,
@@ -105,9 +104,9 @@ TEST_F(SyncThreadSyncEntityTest, RequestCommit) {
 
 // Start with a server initiated entity.  Fail to request a commit because of
 // an out of date base version.
-TEST_F(SyncThreadSyncEntityTest, RequestCommitFailure) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromServerUpdate(kServerId, kClientTagHash, 10));
+TEST_F(EntityTrackerTest, RequestCommitFailure) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromServerUpdate(kServerId, kClientTagHash, 10));
   EXPECT_FALSE(entity->IsCommitPending());
 
   entity->RequestCommit(kServerId,
@@ -123,17 +122,17 @@ TEST_F(SyncThreadSyncEntityTest, RequestCommitFailure) {
 }
 
 // Start with a pending commit.  Clobber it with an incoming update.
-TEST_F(SyncThreadSyncEntityTest, UpdateClobbersCommit) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromCommitRequest(kServerId,
-                                              kClientTagHash,
-                                              22,
-                                              33,
-                                              kCtime,
-                                              kMtime,
-                                              kClientTag,
-                                              false,
-                                              specifics));
+TEST_F(EntityTrackerTest, UpdateClobbersCommit) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromCommitRequest(kServerId,
+                                       kClientTagHash,
+                                       22,
+                                       33,
+                                       kCtime,
+                                       kMtime,
+                                       kClientTag,
+                                       false,
+                                       specifics));
 
   EXPECT_TRUE(entity->IsCommitPending());
 
@@ -143,17 +142,17 @@ TEST_F(SyncThreadSyncEntityTest, UpdateClobbersCommit) {
 
 // Start with a pending commit.  Send it a reflected update that
 // will not override the in-progress commit.
-TEST_F(SyncThreadSyncEntityTest, ReflectedUpdateDoesntClobberCommit) {
-  scoped_ptr<SyncThreadSyncEntity> entity(
-      SyncThreadSyncEntity::FromCommitRequest(kServerId,
-                                              kClientTagHash,
-                                              22,
-                                              33,
-                                              kCtime,
-                                              kMtime,
-                                              kClientTag,
-                                              false,
-                                              specifics));
+TEST_F(EntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
+  scoped_ptr<EntityTracker> entity(
+      EntityTracker::FromCommitRequest(kServerId,
+                                       kClientTagHash,
+                                       22,
+                                       33,
+                                       kCtime,
+                                       kMtime,
+                                       kClientTag,
+                                       false,
+                                       specifics));
 
   EXPECT_TRUE(entity->IsCommitPending());
 

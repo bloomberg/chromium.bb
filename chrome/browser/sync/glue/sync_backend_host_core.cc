@@ -17,7 +17,7 @@
 #include "sync/internal_api/public/sessions/status_counters.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sessions/update_counters.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 
@@ -494,12 +494,11 @@ void SyncBackendHostCore::DoFinishInitialProcessControlTypes() {
                                synced_device_tracker_.get(),
                                sync_manager_->GetUserShare());
 
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
-      js_backend_,
-      debug_info_listener_,
-      sync_manager_->GetSyncCoreProxy());
+  host_.Call(FROM_HERE,
+             &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
+             js_backend_,
+             debug_info_listener_,
+             sync_manager_->GetSyncContextProxy());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();

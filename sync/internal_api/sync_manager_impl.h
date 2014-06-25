@@ -20,7 +20,7 @@
 #include "sync/internal_api/js_sync_manager_observer.h"
 #include "sync/internal_api/protocol_event_buffer.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/sync_encryption_handler_impl.h"
@@ -34,7 +34,7 @@ namespace syncer {
 
 class ModelTypeRegistry;
 class SyncAPIServerConnectionManager;
-class SyncCore;
+class SyncContext;
 class TypeDebugInfoObserver;
 class WriteNode;
 class WriteTransaction;
@@ -112,7 +112,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual void SaveChanges() OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
-  virtual syncer::SyncCoreProxy* GetSyncCoreProxy() OVERRIDE;
+  virtual syncer::SyncContextProxy* GetSyncContextProxy() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
@@ -308,8 +308,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
 
   // The main interface for non-blocking sync types and a thread-safe wrapper.
-  scoped_ptr<SyncCore> sync_core_;
-  scoped_ptr<SyncCoreProxy> sync_core_proxy_;
+  scoped_ptr<SyncContext> sync_context_;
+  scoped_ptr<SyncContextProxy> sync_context_proxy_;
 
   // A container of various bits of information used by the SyncScheduler to
   // create SyncSessions.  Must outlive the SyncScheduler.

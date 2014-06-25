@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer {
 
-SyncCoreProxy::SyncCoreProxy() {}
+SyncContextProxy::SyncContextProxy() {
+}
 
-SyncCoreProxy::~SyncCoreProxy() {}
+SyncContextProxy::~SyncContextProxy() {
+}
 
 }  // namespace syncer

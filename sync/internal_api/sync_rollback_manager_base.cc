@@ -234,7 +234,7 @@ std::string SyncRollbackManagerBase::GetOwnerName() const {
   return "";
 }
 
-syncer::SyncCoreProxy* SyncRollbackManagerBase::GetSyncCoreProxy() {
+syncer::SyncContextProxy* SyncRollbackManagerBase::GetSyncContextProxy() {
   return NULL;
 }
 

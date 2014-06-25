@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_MODEL_THREAD_SYNC_ENTITY_H_
-#define SYNC_ENGINE_MODEL_THREAD_SYNC_ENTITY_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_ENTITY_H_
+#define SYNC_ENGINE_MODEL_TYPE_ENTITY_H_
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace syncer {
 
 // This is the model thread's representation of a SyncEntity.
 //
-// The model thread sync entity receives updates from the model itself and
+// The model type entity receives updates from the model itself and
 // (asynchronously) from the sync server via the sync thread.  From the point
 // of view of this class, updates from the server take precedence over local
 // changes, though the model may be given an opportunity to overwrite this
@@ -29,16 +29,16 @@ namespace syncer {
 // Most of the logic related to those processes live outside this class.  This
 // class helps out a bit by offering some functions to serialize its data to
 // various formats and query the entity's status.
-class SYNC_EXPORT_PRIVATE ModelThreadSyncEntity {
+class SYNC_EXPORT_PRIVATE ModelTypeEntity {
  public:
   // Construct an instance representing a new locally-created item.
-  static scoped_ptr<ModelThreadSyncEntity> NewLocalItem(
+  static scoped_ptr<ModelTypeEntity> NewLocalItem(
       const std::string& client_tag,
       const sync_pb::EntitySpecifics& specifics,
       base::Time now);
 
   // Construct an instance representing an item newly received from the server.
-  static scoped_ptr<ModelThreadSyncEntity> FromServerUpdate(
+  static scoped_ptr<ModelTypeEntity> FromServerUpdate(
       const std::string& id,
       const std::string& client_tag_hash,
       const std::string& non_unique_name,
@@ -50,7 +50,7 @@ class SYNC_EXPORT_PRIVATE ModelThreadSyncEntity {
 
   // TODO(rlarocque): Implement FromDisk constructor when we implement storage.
 
-  ~ModelThreadSyncEntity();
+  ~ModelTypeEntity();
 
   // Returns true if this data is out of sync with local storage.
   bool IsWriteRequired() const;
@@ -113,18 +113,18 @@ class SYNC_EXPORT_PRIVATE ModelThreadSyncEntity {
   void ClearSyncState();
 
  private:
-  ModelThreadSyncEntity(int64 sequence_number,
-                        int64 commit_requested_sequence_number,
-                        int64 acked_sequence_number,
-                        int64 base_version,
-                        bool is_dirty,
-                        const std::string& id,
-                        const std::string& client_tag_hash,
-                        const std::string& non_unique_name,
-                        const sync_pb::EntitySpecifics& specifics,
-                        bool deleted,
-                        base::Time ctime,
-                        base::Time mtime);
+  ModelTypeEntity(int64 sequence_number,
+                  int64 commit_requested_sequence_number,
+                  int64 acked_sequence_number,
+                  int64 base_version,
+                  bool is_dirty,
+                  const std::string& id,
+                  const std::string& client_tag_hash,
+                  const std::string& non_unique_name,
+                  const sync_pb::EntitySpecifics& specifics,
+                  bool deleted,
+                  base::Time ctime,
+                  base::Time mtime);
 
   // A sequence number used to track in-progress commits.  Each local change
   // increments this number.
@@ -189,4 +189,4 @@ class SYNC_EXPORT_PRIVATE ModelThreadSyncEntity {
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_MODEL_THREAD_SYNC_ENTITY_H_
+#endif  // SYNC_ENGINE_MODEL_TYPE_ENTITY_H_

@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/non_blocking_type_processor.h"
+#include "sync/engine/model_type_sync_proxy_impl.h"
 
+#include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_processor_core_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/test/engine/injectable_sync_core_proxy.h"
-#include "sync/test/engine/mock_non_blocking_type_processor_core.h"
+#include "sync/test/engine/injectable_sync_context_proxy.h"
+#include "sync/test/engine/mock_model_type_sync_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 static const ModelType kModelType = PREFERENCES;
 
-// Tests the sync engine parts of NonBlockingTypeProcessor.
+// Tests the sync engine parts of ModelTypeSyncProxyImpl.
 //
-// The NonBlockingTypeProcessor contains a non-trivial amount of code dedicated
+// The ModelTypeSyncProxyImpl contains a non-trivial amount of code dedicated
 // to turning the sync engine on and off again.  That code is fairly well
 // tested in the NonBlockingDataTypeController unit tests and it doesn't need
 // to be re-tested here.
 //
 // These tests skip past initialization and focus on steady state sync engine
-// behvior.  This is where we test how the processor responds to the model's
-// requests to make changes to its data, the messages incoming fro the sync
-// server, and what happens when the two conflict.
+// behvior.  This is where we test how the type sync proxy responds to the
+// model's requests to make changes to its data, the messages incoming from the
+// sync server, and what happens when the two conflict.
 //
 // Inputs:
 // - Initial state from permanent storage. (TODO)
@@ -38,25 +38,24 @@ static const ModelType kModelType = PREFERENCES;
 // Outputs:
 // - Writes to permanent storage. (TODO)
 // - Callbacks into the model. (TODO)
-// - Requests to the sync thread.  Tested with MockNonBlockingTypeProcessorCore.
-class NonBlockingTypeProcessorTest : public ::testing::Test {
+// - Requests to the sync thread.  Tested with MockModelTypeSyncWorker.
+class ModelTypeSyncProxyImplTest : public ::testing::Test {
  public:
-  NonBlockingTypeProcessorTest();
-  virtual ~NonBlockingTypeProcessorTest();
+  ModelTypeSyncProxyImplTest();
+  virtual ~ModelTypeSyncProxyImplTest();
 
-  // Initialize with no local state.  The processor will be unable to commit
-  // until it receives notification that initial sync has completed.
+  // Initialize with no local state.  The type sync proxy will be unable to
+  // commit until it receives notification that initial sync has completed.
   void FirstTimeInitialize();
 
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
-  // Disconnect the NonBlockingTypeProcessorCore from our
-  // NonBlockingTypeProcessor.
+  // Disconnect the ModelTypeSyncWorker from our ModelTypeSyncProxyImpl.
   void Disconnect();
 
-  // Disable sync for this NonBlockingTypeProcessor.  Should cause sync state
-  // to be discarded.
+  // Disable sync for this ModelTypeSyncProxyImpl.  Should cause sync state to
+  // be discarded.
   void Disable();
 
   // Re-enable sync after Disconnect() or Disable().
@@ -67,7 +66,7 @@ class NonBlockingTypeProcessorTest : public ::testing::Test {
   void DeleteItem(const std::string& tag);
 
   // Emulates an "initial sync done" message from the
-  // NonBlockingTypeProcessorCore.
+  // ModelTypeSyncWorker.
   void OnInitialSyncDone();
 
   // Emulate updates from the server.
@@ -86,7 +85,7 @@ class NonBlockingTypeProcessorTest : public ::testing::Test {
   bool HasCommitRequestForTag(const std::string& tag);
   CommitRequestData GetLatestCommitRequestForTag(const std::string& tag);
 
-  // Sends the processor a successful commit response.
+  // Sends the type sync proxy a successful commit response.
   void SuccessfulCommitResponse(const CommitRequestData& request_data);
 
  private:
@@ -97,116 +96,116 @@ class NonBlockingTypeProcessorTest : public ::testing::Test {
   int64 GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64 version);
 
-  MockNonBlockingTypeProcessorCore* mock_processor_core_;
-  scoped_ptr<InjectableSyncCoreProxy> injectable_sync_core_proxy_;
-  scoped_ptr<NonBlockingTypeProcessor> processor_;
+  MockModelTypeSyncWorker* mock_worker_;
+  scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
+  scoped_ptr<ModelTypeSyncProxyImpl> type_sync_proxy_;
 
   DataTypeState data_type_state_;
 };
 
-NonBlockingTypeProcessorTest::NonBlockingTypeProcessorTest()
-    : mock_processor_core_(new MockNonBlockingTypeProcessorCore()),
-      injectable_sync_core_proxy_(
-          new InjectableSyncCoreProxy(mock_processor_core_)),
-      processor_(new NonBlockingTypeProcessor(kModelType)) {
+ModelTypeSyncProxyImplTest::ModelTypeSyncProxyImplTest()
+    : mock_worker_(new MockModelTypeSyncWorker()),
+      injectable_sync_context_proxy_(
+          new InjectableSyncContextProxy(mock_worker_)),
+      type_sync_proxy_(new ModelTypeSyncProxyImpl(kModelType)) {
 }
 
-NonBlockingTypeProcessorTest::~NonBlockingTypeProcessorTest() {
+ModelTypeSyncProxyImplTest::~ModelTypeSyncProxyImplTest() {
 }
 
-void NonBlockingTypeProcessorTest::FirstTimeInitialize() {
-  processor_->Enable(injectable_sync_core_proxy_->Clone());
+void ModelTypeSyncProxyImplTest::FirstTimeInitialize() {
+  type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
-void NonBlockingTypeProcessorTest::InitializeToReadyState() {
+void ModelTypeSyncProxyImplTest::InitializeToReadyState() {
   // TODO(rlarocque): This should be updated to inject on-disk state.
   // At the time this code was written, there was no support for on-disk
   // state so this was the only way to inject a data_type_state into
-  // the |processor_|.
+  // the |type_sync_proxy_|.
   FirstTimeInitialize();
   OnInitialSyncDone();
 }
 
-void NonBlockingTypeProcessorTest::Disconnect() {
-  processor_->Disconnect();
-  injectable_sync_core_proxy_.reset();
-  mock_processor_core_ = NULL;
+void ModelTypeSyncProxyImplTest::Disconnect() {
+  type_sync_proxy_->Disconnect();
+  injectable_sync_context_proxy_.reset();
+  mock_worker_ = NULL;
 }
 
-void NonBlockingTypeProcessorTest::Disable() {
-  processor_->Disable();
-  injectable_sync_core_proxy_.reset();
-  mock_processor_core_ = NULL;
+void ModelTypeSyncProxyImplTest::Disable() {
+  type_sync_proxy_->Disable();
+  injectable_sync_context_proxy_.reset();
+  mock_worker_ = NULL;
 }
 
-void NonBlockingTypeProcessorTest::ReEnable() {
-  DCHECK(!processor_->IsConnected());
+void ModelTypeSyncProxyImplTest::ReEnable() {
+  DCHECK(!type_sync_proxy_->IsConnected());
 
   // Prepare a new NonBlockingTypeProcesorCore instance, just as we would
   // if this happened in the real world.
-  mock_processor_core_ = new MockNonBlockingTypeProcessorCore();
-  injectable_sync_core_proxy_.reset(
-      new InjectableSyncCoreProxy(mock_processor_core_));
+  mock_worker_ = new MockModelTypeSyncWorker();
+  injectable_sync_context_proxy_.reset(
+      new InjectableSyncContextProxy(mock_worker_));
 
-  // Re-enable sync with the new NonBlockingTypeProcessorCore.
-  processor_->Enable(injectable_sync_core_proxy_->Clone());
+  // Re-enable sync with the new ModelTypeSyncWorker.
+  type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
-void NonBlockingTypeProcessorTest::WriteItem(const std::string& tag,
-                                             const std::string& value) {
+void ModelTypeSyncProxyImplTest::WriteItem(const std::string& tag,
+                                           const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
-  processor_->Put(tag, GenerateSpecifics(tag, value));
+  type_sync_proxy_->Put(tag, GenerateSpecifics(tag, value));
 }
 
-void NonBlockingTypeProcessorTest::DeleteItem(const std::string& tag) {
-  processor_->Delete(tag);
+void ModelTypeSyncProxyImplTest::DeleteItem(const std::string& tag) {
+  type_sync_proxy_->Delete(tag);
 }
 
-void NonBlockingTypeProcessorTest::OnInitialSyncDone() {
+void ModelTypeSyncProxyImplTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
   UpdateResponseDataList empty_update_list;
 
-  processor_->OnUpdateReceived(data_type_state_, empty_update_list);
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, empty_update_list);
 }
 
-void NonBlockingTypeProcessorTest::UpdateFromServer(int64 version_offset,
-                                                    const std::string& tag,
-                                                    const std::string& value) {
+void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
+                                                  const std::string& tag,
+                                                  const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
-  UpdateResponseData data = mock_processor_core_->UpdateFromServer(
+  UpdateResponseData data = mock_worker_->UpdateFromServer(
       version_offset, tag_hash, GenerateSpecifics(tag, value));
 
   UpdateResponseDataList list;
   list.push_back(data);
-  processor_->OnUpdateReceived(data_type_state_, list);
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, list);
 }
 
-void NonBlockingTypeProcessorTest::TombstoneFromServer(int64 version_offset,
-                                                       const std::string& tag) {
+void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
+                                                     const std::string& tag) {
   // Overwrite the existing server version if this is the new highest version.
   std::string tag_hash = GenerateTagHash(tag);
 
   UpdateResponseData data =
-      mock_processor_core_->TombstoneFromServer(version_offset, tag_hash);
+      mock_worker_->TombstoneFromServer(version_offset, tag_hash);
 
   UpdateResponseDataList list;
   list.push_back(data);
-  processor_->OnUpdateReceived(data_type_state_, list);
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, list);
 }
 
-void NonBlockingTypeProcessorTest::SuccessfulCommitResponse(
+void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
-  list.push_back(mock_processor_core_->SuccessfulCommitResponse(request_data));
-  processor_->OnCommitCompletion(data_type_state_, list);
+  list.push_back(mock_worker_->SuccessfulCommitResponse(request_data));
+  type_sync_proxy_->OnCommitCompletion(data_type_state_, list);
 }
 
-std::string NonBlockingTypeProcessorTest::GenerateTagHash(
+std::string ModelTypeSyncProxyImplTest::GenerateTagHash(
     const std::string& tag) {
   return syncable::GenerateSyncableHash(kModelType, tag);
 }
 
-sync_pb::EntitySpecifics NonBlockingTypeProcessorTest::GenerateSpecifics(
+sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
   sync_pb::EntitySpecifics specifics;
@@ -215,30 +214,30 @@ sync_pb::EntitySpecifics NonBlockingTypeProcessorTest::GenerateSpecifics(
   return specifics;
 }
 
-size_t NonBlockingTypeProcessorTest::GetNumCommitRequestLists() {
-  return mock_processor_core_->GetNumCommitRequestLists();
+size_t ModelTypeSyncProxyImplTest::GetNumCommitRequestLists() {
+  return mock_worker_->GetNumCommitRequestLists();
 }
 
-CommitRequestDataList NonBlockingTypeProcessorTest::GetNthCommitRequestList(
+CommitRequestDataList ModelTypeSyncProxyImplTest::GetNthCommitRequestList(
     size_t n) {
-  return mock_processor_core_->GetNthCommitRequestList(n);
+  return mock_worker_->GetNthCommitRequestList(n);
 }
 
-bool NonBlockingTypeProcessorTest::HasCommitRequestForTag(
+bool ModelTypeSyncProxyImplTest::HasCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_core_->HasCommitRequestForTagHash(tag_hash);
+  return mock_worker_->HasCommitRequestForTagHash(tag_hash);
 }
 
-CommitRequestData NonBlockingTypeProcessorTest::GetLatestCommitRequestForTag(
+CommitRequestData ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_core_->GetLatestCommitRequestForTagHash(tag_hash);
+  return mock_worker_->GetLatestCommitRequestForTagHash(tag_hash);
 }
 
 // Creates a new item locally.
 // Thoroughly tests the data generated by a local item creation.
-TEST_F(NonBlockingTypeProcessorTest, CreateLocalItem) {
+TEST_F(ModelTypeSyncProxyImplTest, CreateLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -261,7 +260,7 @@ TEST_F(NonBlockingTypeProcessorTest, CreateLocalItem) {
 
 // Creates a new local item then modifies it.
 // Thoroughly tests data generated by modification of server-unknown item.
-TEST_F(NonBlockingTypeProcessorTest, CreateAndModifyLocalItem) {
+TEST_F(ModelTypeSyncProxyImplTest, CreateAndModifyLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -293,7 +292,7 @@ TEST_F(NonBlockingTypeProcessorTest, CreateAndModifyLocalItem) {
 
 // Deletes an item we've never seen before.
 // Should have no effect and not crash.
-TEST_F(NonBlockingTypeProcessorTest, DeleteUnknown) {
+TEST_F(ModelTypeSyncProxyImplTest, DeleteUnknown) {
   InitializeToReadyState();
 
   DeleteItem("tag1");
@@ -305,7 +304,7 @@ TEST_F(NonBlockingTypeProcessorTest, DeleteUnknown) {
 // In this test, no commit responses are received, so the deleted item is
 // server-unknown as far as the model thread is concerned.  That behavior
 // is race-dependent; other tests are used to test other races.
-TEST_F(NonBlockingTypeProcessorTest, DeleteServerUnknown) {
+TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -330,7 +329,7 @@ TEST_F(NonBlockingTypeProcessorTest, DeleteServerUnknown) {
 // The item is created locally then enqueued for commit.  The sync thread
 // successfully commits it, but, before the commit response is picked up
 // by the model thread, the item is deleted by the model thread.
-TEST_F(NonBlockingTypeProcessorTest, DeleteServerUnknown_RacyCommitResponse) {
+TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown_RacyCommitResponse) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -354,7 +353,7 @@ TEST_F(NonBlockingTypeProcessorTest, DeleteServerUnknown_RacyCommitResponse) {
 
 // Creates two different sync items.
 // Verifies that the second has no effect on the first.
-TEST_F(NonBlockingTypeProcessorTest, TwoIndependentItems) {
+TEST_F(ModelTypeSyncProxyImplTest, TwoIndependentItems) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -373,10 +372,10 @@ TEST_F(NonBlockingTypeProcessorTest, TwoIndependentItems) {
   ASSERT_TRUE(HasCommitRequestForTag("tag2"));
 }
 
-// Starts the processor with no local state.
+// Starts the type sync proxy with no local state.
 // Verify that it waits until initial sync is complete before requesting
 // commits.
-TEST_F(NonBlockingTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
+TEST_F(ModelTypeSyncProxyImplTest, NoCommitsUntilInitialSyncDone) {
   FirstTimeInitialize();
 
   WriteItem("tag1", "value1");
@@ -391,7 +390,7 @@ TEST_F(NonBlockingTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(NonBlockingTypeProcessorTest, Disconnect) {
+TEST_F(ModelTypeSyncProxyImplTest, Disconnect) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -427,7 +426,7 @@ TEST_F(NonBlockingTypeProcessorTest, Disconnect) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on re-enable.
-TEST_F(NonBlockingTypeProcessorTest, Disable) {
+TEST_F(ModelTypeSyncProxyImplTest, Disable) {
   InitializeToReadyState();
 
   // The first item is fully committed.

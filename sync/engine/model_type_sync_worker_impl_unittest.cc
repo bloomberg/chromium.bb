@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/non_blocking_type_processor_core.h"
+#include "sync/engine/model_type_sync_worker_impl.h"
 
 #include "sync/engine/commit_contribution.h"
+#include "sync/engine/model_type_sync_proxy.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_processor_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/test/engine/mock_non_blocking_type_processor.h"
+#include "sync/test/engine/mock_model_type_sync_proxy.h"
 #include "sync/test/engine/single_type_mock_server.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,7 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
 namespace syncer {
 
-// Tests the NonBlockingTypeProcessorCore.
+// Tests the ModelTypeSyncWorkerImpl.
 //
 // This class passes messages between the model thread and sync server.
 // As such, its code is subject to lots of different race conditions.  This
@@ -40,17 +40,17 @@ namespace syncer {
 // - Update responses to the model thread.
 // - Nudges to the sync scheduler.
 //
-// We use the MockNonBlockingTypeProcessor to stub out all communication
+// We use the MockModelTypeSyncProxy to stub out all communication
 // with the model thread.  That interface is synchronous, which makes it
 // much easier to test races.
 //
 // The interface with the server is built around "pulling" data from this
 // class, so we don't have to mock out any of it.  We wrap it with some
 // convenience functions to we can emulate server behavior.
-class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
+class ModelTypeSyncWorkerImplTest : public ::testing::Test {
  public:
-  NonBlockingTypeProcessorCoreTest();
-  virtual ~NonBlockingTypeProcessorCoreTest();
+  ModelTypeSyncWorkerImplTest();
+  virtual ~ModelTypeSyncWorkerImplTest();
 
   // One of these Initialize functions should be called at the beginning of
   // each test.
@@ -67,7 +67,7 @@ class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
   // Initialize with a custom initial DataTypeState.
   void InitializeWithState(const DataTypeState& state);
 
-  // Modifications on the model thread that get sent to the core under test.
+  // Modifications on the model thread that get sent to the worker under test.
   void CommitRequest(const std::string& tag, const std::string& value);
   void DeleteRequest(const std::string& tag);
 
@@ -82,20 +82,20 @@ class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
   // thread are executed immediately.  However, this is not necessarily true.
   // The model's TaskRunner has a queue, and the tasks we post to it could
   // linger there for a while.  In the meantime, the model thread could
-  // continue posting tasks to the core based on its stale state.
+  // continue posting tasks to the worker based on its stale state.
   //
   // If you want to test those race cases, then these functions are for you.
   void SetModelThreadIsSynchronous(bool is_synchronous);
   void PumpModelThread();
 
-  // Returns true if the |core_| is ready to commit something.
+  // Returns true if the |worker_| is ready to commit something.
   bool WillCommit();
 
   // Pretend to successfully commit all outstanding unsynced items.
   // It is safe to call this only if WillCommit() returns true.
   void DoSuccessfulCommit();
 
-  // Read commit messages the core_ sent to the emulated server.
+  // Read commit messages the worker_ sent to the emulated server.
   size_t GetNumCommitMessagesOnServer() const;
   sync_pb::ClientToServerMessage GetNthCommitMessageOnServer(size_t n) const;
 
@@ -138,27 +138,27 @@ class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
                                                     const std::string& value);
 
  private:
-  // The NonBlockingTypeProcessorCore being tested.
-  scoped_ptr<NonBlockingTypeProcessorCore> core_;
+  // The ModelTypeSyncWorkerImpl being tested.
+  scoped_ptr<ModelTypeSyncWorkerImpl> worker_;
 
   // Non-owned, possibly NULL pointer.  This object belongs to the
-  // NonBlockingTypeProcessorCore under test.
-  MockNonBlockingTypeProcessor* mock_processor_;
+  // ModelTypeSyncWorkerImpl under test.
+  MockModelTypeSyncProxy* mock_type_sync_proxy_;
 
   // A mock that emulates enough of the sync server that it can be used
   // a single UpdateHandler and CommitContributor pair.  In this test
-  // harness, the |core_| is both of them.
+  // harness, the |worker_| is both of them.
   SingleTypeMockServer mock_server_;
 };
 
-NonBlockingTypeProcessorCoreTest::NonBlockingTypeProcessorCoreTest()
-    : mock_processor_(NULL), mock_server_(kModelType) {
+ModelTypeSyncWorkerImplTest::ModelTypeSyncWorkerImplTest()
+    : mock_type_sync_proxy_(NULL), mock_server_(kModelType) {
 }
 
-NonBlockingTypeProcessorCoreTest::~NonBlockingTypeProcessorCoreTest() {
+ModelTypeSyncWorkerImplTest::~ModelTypeSyncWorkerImplTest() {
 }
 
-void NonBlockingTypeProcessorCoreTest::FirstInitialize() {
+void ModelTypeSyncWorkerImplTest::FirstInitialize() {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
@@ -167,7 +167,7 @@ void NonBlockingTypeProcessorCoreTest::FirstInitialize() {
   InitializeWithState(initial_state);
 }
 
-void NonBlockingTypeProcessorCoreTest::NormalInitialize() {
+void ModelTypeSyncWorkerImplTest::NormalInitialize() {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
@@ -180,51 +180,50 @@ void NonBlockingTypeProcessorCoreTest::NormalInitialize() {
   InitializeWithState(initial_state);
 }
 
-void NonBlockingTypeProcessorCoreTest::InitializeWithState(
+void ModelTypeSyncWorkerImplTest::InitializeWithState(
     const DataTypeState& state) {
-  DCHECK(!core_);
+  DCHECK(!worker_);
 
-  // We don't get to own this interace.  The |core_| keeps a scoped_ptr to it.
-  mock_processor_ = new MockNonBlockingTypeProcessor();
-  scoped_ptr<NonBlockingTypeProcessorInterface> interface(mock_processor_);
+  // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
+  mock_type_sync_proxy_ = new MockModelTypeSyncProxy();
+  scoped_ptr<ModelTypeSyncProxy> proxy(mock_type_sync_proxy_);
 
-  core_.reset(
-      new NonBlockingTypeProcessorCore(kModelType, state, interface.Pass()));
+  worker_.reset(new ModelTypeSyncWorkerImpl(kModelType, state, proxy.Pass()));
 }
 
-void NonBlockingTypeProcessorCoreTest::CommitRequest(const std::string& name,
-                                                     const std::string& value) {
+void ModelTypeSyncWorkerImplTest::CommitRequest(const std::string& name,
+                                                const std::string& value) {
   const std::string tag_hash = GenerateTagHash(name);
-  CommitRequestData data =
-      mock_processor_->CommitRequest(tag_hash, GenerateSpecifics(name, value));
+  CommitRequestData data = mock_type_sync_proxy_->CommitRequest(
+      tag_hash, GenerateSpecifics(name, value));
   CommitRequestDataList list;
   list.push_back(data);
-  core_->EnqueueForCommit(list);
+  worker_->EnqueueForCommit(list);
 }
 
-void NonBlockingTypeProcessorCoreTest::DeleteRequest(const std::string& tag) {
+void ModelTypeSyncWorkerImplTest::DeleteRequest(const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  CommitRequestData data = mock_processor_->DeleteRequest(tag_hash);
+  CommitRequestData data = mock_type_sync_proxy_->DeleteRequest(tag_hash);
   CommitRequestDataList list;
   list.push_back(data);
-  core_->EnqueueForCommit(list);
+  worker_->EnqueueForCommit(list);
 }
 
-void NonBlockingTypeProcessorCoreTest::TriggerTypeRootUpdateFromServer() {
+void ModelTypeSyncWorkerImplTest::TriggerTypeRootUpdateFromServer() {
   sync_pb::SyncEntity entity = mock_server_.TypeRootUpdate();
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
 
   sessions::StatusController dummy_status;
 
-  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                   mock_server_.GetContext(),
-                                   entity_list,
-                                   &dummy_status);
-  core_->ApplyUpdates(&dummy_status);
+  worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                     mock_server_.GetContext(),
+                                     entity_list,
+                                     &dummy_status);
+  worker_->ApplyUpdates(&dummy_status);
 }
 
-void NonBlockingTypeProcessorCoreTest::TriggerUpdateFromServer(
+void ModelTypeSyncWorkerImplTest::TriggerUpdateFromServer(
     int64 version_offset,
     const std::string& tag,
     const std::string& value) {
@@ -235,14 +234,14 @@ void NonBlockingTypeProcessorCoreTest::TriggerUpdateFromServer(
 
   sessions::StatusController dummy_status;
 
-  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                   mock_server_.GetContext(),
-                                   entity_list,
-                                   &dummy_status);
-  core_->ApplyUpdates(&dummy_status);
+  worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                     mock_server_.GetContext(),
+                                     entity_list,
+                                     &dummy_status);
+  worker_->ApplyUpdates(&dummy_status);
 }
 
-void NonBlockingTypeProcessorCoreTest::TriggerTombstoneFromServer(
+void ModelTypeSyncWorkerImplTest::TriggerTombstoneFromServer(
     int64 version_offset,
     const std::string& tag) {
   sync_pb::SyncEntity entity =
@@ -252,24 +251,25 @@ void NonBlockingTypeProcessorCoreTest::TriggerTombstoneFromServer(
 
   sessions::StatusController dummy_status;
 
-  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                   mock_server_.GetContext(),
-                                   entity_list,
-                                   &dummy_status);
-  core_->ApplyUpdates(&dummy_status);
+  worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                     mock_server_.GetContext(),
+                                     entity_list,
+                                     &dummy_status);
+  worker_->ApplyUpdates(&dummy_status);
 }
 
-void NonBlockingTypeProcessorCoreTest::SetModelThreadIsSynchronous(
+void ModelTypeSyncWorkerImplTest::SetModelThreadIsSynchronous(
     bool is_synchronous) {
-  mock_processor_->SetSynchronousExecution(is_synchronous);
+  mock_type_sync_proxy_->SetSynchronousExecution(is_synchronous);
 }
 
-void NonBlockingTypeProcessorCoreTest::PumpModelThread() {
-  mock_processor_->RunQueuedTasks();
+void ModelTypeSyncWorkerImplTest::PumpModelThread() {
+  mock_type_sync_proxy_->RunQueuedTasks();
 }
 
-bool NonBlockingTypeProcessorCoreTest::WillCommit() {
-  scoped_ptr<CommitContribution> contribution(core_->GetContribution(INT_MAX));
+bool ModelTypeSyncWorkerImplTest::WillCommit() {
+  scoped_ptr<CommitContribution> contribution(
+      worker_->GetContribution(INT_MAX));
 
   if (contribution) {
     contribution->CleanUp();  // Gracefully abort the commit.
@@ -283,9 +283,10 @@ bool NonBlockingTypeProcessorCoreTest::WillCommit() {
 // remains blocked while the commit is in progress, so we don't need to worry
 // about other tasks being run between the time when the commit request is
 // issued and the time when the commit response is received.
-void NonBlockingTypeProcessorCoreTest::DoSuccessfulCommit() {
+void ModelTypeSyncWorkerImplTest::DoSuccessfulCommit() {
   DCHECK(WillCommit());
-  scoped_ptr<CommitContribution> contribution(core_->GetContribution(INT_MAX));
+  scoped_ptr<CommitContribution> contribution(
+      worker_->GetContribution(INT_MAX));
 
   sync_pb::ClientToServerMessage message;
   contribution->AddToCommitMessage(&message);
@@ -298,101 +299,94 @@ void NonBlockingTypeProcessorCoreTest::DoSuccessfulCommit() {
   contribution->CleanUp();
 }
 
-size_t NonBlockingTypeProcessorCoreTest::GetNumCommitMessagesOnServer() const {
+size_t ModelTypeSyncWorkerImplTest::GetNumCommitMessagesOnServer() const {
   return mock_server_.GetNumCommitMessages();
 }
 
 sync_pb::ClientToServerMessage
-NonBlockingTypeProcessorCoreTest::GetNthCommitMessageOnServer(size_t n) const {
+ModelTypeSyncWorkerImplTest::GetNthCommitMessageOnServer(size_t n) const {
   DCHECK_LT(n, GetNumCommitMessagesOnServer());
   return mock_server_.GetNthCommitMessage(n);
 }
 
-bool NonBlockingTypeProcessorCoreTest::HasCommitEntityOnServer(
+bool ModelTypeSyncWorkerImplTest::HasCommitEntityOnServer(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_server_.HasCommitEntity(tag_hash);
 }
 
-sync_pb::SyncEntity
-NonBlockingTypeProcessorCoreTest::GetLatestCommitEntityOnServer(
+sync_pb::SyncEntity ModelTypeSyncWorkerImplTest::GetLatestCommitEntityOnServer(
     const std::string& tag) const {
   DCHECK(HasCommitEntityOnServer(tag));
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_server_.GetLastCommittedEntity(tag_hash);
 }
 
-size_t NonBlockingTypeProcessorCoreTest::GetNumModelThreadUpdateResponses()
-    const {
-  return mock_processor_->GetNumUpdateResponses();
+size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadUpdateResponses() const {
+  return mock_type_sync_proxy_->GetNumUpdateResponses();
 }
 
 UpdateResponseDataList
-NonBlockingTypeProcessorCoreTest::GetNthModelThreadUpdateResponse(
+ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateResponse(size_t n) const {
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_type_sync_proxy_->GetNthUpdateResponse(n);
+}
+
+DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateState(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_processor_->GetNthUpdateResponse(n);
+  return mock_type_sync_proxy_->GetNthTypeStateReceivedInUpdateResponse(n);
 }
 
-DataTypeState NonBlockingTypeProcessorCoreTest::GetNthModelThreadUpdateState(
-    size_t n) const {
-  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_processor_->GetNthTypeStateReceivedInUpdateResponse(n);
-}
-
-bool NonBlockingTypeProcessorCoreTest::HasUpdateResponseOnModelThread(
+bool ModelTypeSyncWorkerImplTest::HasUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_->HasUpdateResponse(tag_hash);
+  return mock_type_sync_proxy_->HasUpdateResponse(tag_hash);
 }
 
-UpdateResponseData
-NonBlockingTypeProcessorCoreTest::GetUpdateResponseOnModelThread(
+UpdateResponseData ModelTypeSyncWorkerImplTest::GetUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_->GetUpdateResponse(tag_hash);
+  return mock_type_sync_proxy_->GetUpdateResponse(tag_hash);
 }
 
-size_t NonBlockingTypeProcessorCoreTest::GetNumModelThreadCommitResponses()
-    const {
-  return mock_processor_->GetNumCommitResponses();
+size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadCommitResponses() const {
+  return mock_type_sync_proxy_->GetNumCommitResponses();
 }
 
 CommitResponseDataList
-NonBlockingTypeProcessorCoreTest::GetNthModelThreadCommitResponse(
-    size_t n) const {
+ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitResponse(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
-  return mock_processor_->GetNthCommitResponse(n);
+  return mock_type_sync_proxy_->GetNthCommitResponse(n);
 }
 
-DataTypeState NonBlockingTypeProcessorCoreTest::GetNthModelThreadCommitState(
+DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitState(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
-  return mock_processor_->GetNthTypeStateReceivedInCommitResponse(n);
+  return mock_type_sync_proxy_->GetNthTypeStateReceivedInCommitResponse(n);
 }
 
-bool NonBlockingTypeProcessorCoreTest::HasCommitResponseOnModelThread(
+bool ModelTypeSyncWorkerImplTest::HasCommitResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_->HasCommitResponse(tag_hash);
+  return mock_type_sync_proxy_->HasCommitResponse(tag_hash);
 }
 
-CommitResponseData
-NonBlockingTypeProcessorCoreTest::GetCommitResponseOnModelThread(
+CommitResponseData ModelTypeSyncWorkerImplTest::GetCommitResponseOnModelThread(
     const std::string& tag) const {
   DCHECK(HasCommitResponseOnModelThread(tag));
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_processor_->GetCommitResponse(tag_hash);
+  return mock_type_sync_proxy_->GetCommitResponse(tag_hash);
 }
 
-std::string NonBlockingTypeProcessorCoreTest::GenerateTagHash(
+std::string ModelTypeSyncWorkerImplTest::GenerateTagHash(
     const std::string& tag) {
   const std::string& client_tag_hash =
       syncable::GenerateSyncableHash(kModelType, tag);
   return client_tag_hash;
 }
 
-sync_pb::EntitySpecifics NonBlockingTypeProcessorCoreTest::GenerateSpecifics(
+sync_pb::EntitySpecifics ModelTypeSyncWorkerImplTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
   sync_pb::EntitySpecifics specifics;
@@ -406,10 +400,10 @@ sync_pb::EntitySpecifics NonBlockingTypeProcessorCoreTest::GenerateSpecifics(
 //
 // This test performs sanity checks on most of the fields in these messages.
 // For the most part this is checking that the test code behaves as expected
-// and the |core_| doesn't mess up its simple task of moving around these
+// and the |worker_| doesn't mess up its simple task of moving around these
 // values.  It makes sense to have one or two tests that are this thorough, but
 // we shouldn't be this verbose in all tests.
-TEST_F(NonBlockingTypeProcessorCoreTest, SimpleCommit) {
+TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   NormalInitialize();
 
   EXPECT_FALSE(WillCommit());
@@ -454,7 +448,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SimpleCommit) {
   EXPECT_LT(0, commit_response.response_version);
 }
 
-TEST_F(NonBlockingTypeProcessorCoreTest, SimpleDelete) {
+TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
   NormalInitialize();
 
   // We can't delete an entity that was never committed.
@@ -502,7 +496,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SimpleDelete) {
 
 // The server doesn't like it when we try to delete an entity it's never heard
 // of before.  This test helps ensure we avoid that scenario.
-TEST_F(NonBlockingTypeProcessorCoreTest, NoDeleteUncommitted) {
+TEST_F(ModelTypeSyncWorkerImplTest, NoDeleteUncommitted) {
   NormalInitialize();
 
   // Request the commit of a new, never-before-seen item.
@@ -515,7 +509,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, NoDeleteUncommitted) {
 }
 
 // Verifies the sending of an "initial sync done" signal.
-TEST_F(NonBlockingTypeProcessorCoreTest, SendInitialSyncDone) {
+TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
   FirstInitialize();  // Initialize with no saved sync state.
   EXPECT_EQ(0U, GetNumModelThreadUpdateResponses());
 
@@ -524,7 +518,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SendInitialSyncDone) {
 
   // Two updates:
   // - One triggered by process updates to forward the type root ID.
-  // - One triggered by apply updates, which the core interprets to mean
+  // - One triggered by apply updates, which the worker interprets to mean
   //   "initial sync done".  This triggers a model thread update, too.
   EXPECT_EQ(2U, GetNumModelThreadUpdateResponses());
 
@@ -539,7 +533,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SendInitialSyncDone) {
 }
 
 // Commit two new entities in two separate commit messages.
-TEST_F(NonBlockingTypeProcessorCoreTest, TwoNewItemsCommittedSeparately) {
+TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
   NormalInitialize();
 
   // Commit the first of two entities.
@@ -564,7 +558,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, TwoNewItemsCommittedSeparately) {
 
   EXPECT_FALSE(WillCommit());
 
-  // The IDs assigned by the |core_| should be unique.
+  // The IDs assigned by the |worker_| should be unique.
   EXPECT_NE(tag1_entity.id_string(), tag2_entity.id_string());
 
   // Check that the committed specifics values are sane.
@@ -576,7 +570,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, TwoNewItemsCommittedSeparately) {
   EXPECT_EQ(2U, GetNumModelThreadCommitResponses());
 }
 
-TEST_F(NonBlockingTypeProcessorCoreTest, ReceiveUpdates) {
+TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
   NormalInitialize();
 
   const std::string& tag_hash = GenerateTagHash("tag1");

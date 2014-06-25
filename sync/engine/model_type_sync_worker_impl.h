@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
-#define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_
+#define SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
@@ -21,8 +21,8 @@ class SingleThreadTaskRunner;
 
 namespace syncer {
 
-class NonBlockingTypeProcessorInterface;
-class SyncThreadSyncEntity;
+class ModelTypeSyncProxy;
+class EntityTracker;
 
 // A smart cache for sync types that use message passing (rather than
 // transactions and the syncable::Directory) to communicate with the sync
@@ -44,24 +44,22 @@ class SyncThreadSyncEntity;
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
-class SYNC_EXPORT NonBlockingTypeProcessorCore
-    : public UpdateHandler,
-      public CommitContributor,
-      public base::NonThreadSafe {
+class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
+                                            public CommitContributor,
+                                            public base::NonThreadSafe {
  public:
-  NonBlockingTypeProcessorCore(
-      ModelType type,
-      const DataTypeState& initial_state,
-      scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface);
-  virtual ~NonBlockingTypeProcessorCore();
+  ModelTypeSyncWorkerImpl(ModelType type,
+                          const DataTypeState& initial_state,
+                          scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
+  virtual ~ModelTypeSyncWorkerImpl();
 
   ModelType GetModelType() const;
 
   // UpdateHandler implementation.
   virtual void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const OVERRIDE;
-  virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
-      OVERRIDE;
+  virtual void GetDataTypeContext(
+      sync_pb::DataTypeContext* context) const OVERRIDE;
   virtual SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
@@ -70,7 +68,7 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
 
-  // Entry point for NonBlockingTypeProcessor to send commit requests.
+  // Entry point for the ModelTypeSyncProxy to send commit requests.
   void EnqueueForCommit(const CommitRequestDataList& request_list);
 
   // CommitContributor implementation.
@@ -80,10 +78,10 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   // Callback for when our contribution gets a response.
   void OnCommitResponse(const CommitResponseDataList& response_list);
 
-  base::WeakPtr<NonBlockingTypeProcessorCore> AsWeakPtr();
+  base::WeakPtr<ModelTypeSyncWorkerImpl> AsWeakPtr();
 
  private:
-  typedef std::map<std::string, SyncThreadSyncEntity*> EntityMap;
+  typedef std::map<std::string, EntityTracker*> EntityMap;
 
   // Stores a single commit request in this object's internal state.
   void StorePendingCommit(const CommitRequestData& request);
@@ -94,7 +92,7 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   bool CanCommitItems() const;
 
   // Initializes the parts of a commit entity that are the responsibility of
-  // this class, and not the SyncThreadSyncEntity.  Some fields, like the
+  // this class, and not the EntityTracker.  Some fields, like the
   // client-assigned ID, can only be set by an entity with knowledge of the
   // entire data type's state.
   void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
@@ -104,10 +102,9 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   // State that applies to the entire model type.
   DataTypeState data_type_state_;
 
-  // Abstraction around the NonBlockingTypeProcessor so this class
-  // doesn't need to know about its specific implementation or
-  // which thread it's on.  This makes it easier to write tests.
-  scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface_;
+  // Pointer to the ModelTypeSyncProxy associated with this worker.
+  // This is NULL when no proxy is connected..
+  scoped_ptr<ModelTypeSyncProxy> type_sync_proxy_;
 
   // A map of per-entity information known to this object.
   //
@@ -123,9 +120,9 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   EntityMap entities_;
   STLValueDeleter<EntityMap> entities_deleter_;
 
-  base::WeakPtrFactory<NonBlockingTypeProcessorCore> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelTypeSyncWorkerImpl> weak_ptr_factory_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+#endif  // SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_IMPL_H_

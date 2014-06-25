@@ -85,7 +85,7 @@
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
+#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
@@ -397,12 +397,10 @@ void ProfileSyncService::RegisterNonBlockingType(syncer::ModelType type) {
 
 void ProfileSyncService::InitializeNonBlockingType(
     syncer::ModelType type,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::WeakPtr<syncer::NonBlockingTypeProcessor> processor) {
-  non_blocking_data_type_manager_.InitializeTypeProcessor(
-      type,
-      task_runner,
-      processor);
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+  non_blocking_data_type_manager_.InitializeType(
+      type, task_runner, type_sync_proxy);
 }
 
 bool ProfileSyncService::IsSessionsDataTypeControllerRunning() const {
@@ -1016,7 +1014,7 @@ void ProfileSyncService::PostBackendInitialization() {
   }
 
   non_blocking_data_type_manager_.ConnectSyncBackend(
-      backend_->GetSyncCoreProxy());
+      backend_->GetSyncContextProxy());
 
   if (type_debug_info_observers_.might_have_observers()) {
     backend_->EnableDirectoryTypeDebugInfoForwarding();

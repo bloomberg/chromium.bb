@@ -4,8 +4,8 @@
 
 #include "sync/engine/non_blocking_type_commit_contribution.h"
 
+#include "sync/engine/model_type_sync_worker_impl.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_processor_core.h"
 #include "sync/protocol/proto_value_conversions.h"
 
 namespace syncer {
@@ -14,8 +14,8 @@ NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     const sync_pb::DataTypeContext& context,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     const std::vector<int64>& sequence_numbers,
-    NonBlockingTypeProcessorCore* processor_core)
-    : processor_core_(processor_core),
+    ModelTypeSyncWorkerImpl* worker)
+    : worker_(worker),
       context_(context),
       entities_(entities),
       sequence_numbers_(sequence_numbers),
@@ -90,7 +90,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   // Send whatever successful responses we did get back to our parent.
   // It's the schedulers job to handle the failures.
-  processor_core_->OnCommitResponse(response_list);
+  worker_->OnCommitResponse(response_list);
 
   // Let the scheduler know about the failures.
   if (unknown_error) {

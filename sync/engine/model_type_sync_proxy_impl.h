@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
-#define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#define SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
@@ -15,16 +15,16 @@
 
 namespace syncer {
 
-class SyncCoreProxy;
-class ModelThreadSyncEntity;
-class NonBlockingTypeProcessorCoreInterface;
+class SyncContextProxy;
+class ModelTypeEntity;
+class ModelTypeSyncWorker;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
-class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
  public:
-  NonBlockingTypeProcessor(ModelType type);
-  virtual ~NonBlockingTypeProcessor();
+  ModelTypeSyncProxyImpl(ModelType type);
+  virtual ~ModelTypeSyncProxyImpl();
 
   // Returns true if this object believes that sync is preferred for this type.
   //
@@ -41,11 +41,11 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 
-  // Returns the model type handled by this processor.
+  // Returns the model type handled by this type sync proxy.
   ModelType GetModelType() const;
 
   // Starts the handshake with the sync thread.
-  void Enable(scoped_ptr<SyncCoreProxy> core_proxy);
+  void Enable(scoped_ptr<SyncContextProxy> context_proxy);
 
   // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
@@ -56,8 +56,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   void Disconnect();
 
   // Callback used to process the handshake response.
-  void OnConnect(
-      scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface);
+  void OnConnect(scoped_ptr<ModelTypeSyncWorker> worker);
 
   // Requests that an item be stored in sync.
   void Put(const std::string& client_tag,
@@ -78,17 +77,17 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
-  base::WeakPtr<NonBlockingTypeProcessor> AsWeakPtrForUI();
+  base::WeakPtr<ModelTypeSyncProxyImpl> AsWeakPtrForUI();
 
  private:
-  typedef std::map<std::string, ModelThreadSyncEntity*> EntityMap;
+  typedef std::map<std::string, ModelTypeEntity*> EntityMap;
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
 
   // Clears any state related to outstanding communications with the
-  // NonBlockingTypeProcessorCore.  Used when we want to disconnect from
-  // the current core.
+  // ModelTypeSyncWorker.  Used when we want to disconnect from
+  // the current worker.
   void ClearTransientSyncState();
 
   // Clears any state related to our communications with the current sync
@@ -103,7 +102,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   bool is_preferred_;
 
   // Whether or not this object has completed its initial handshake with the
-  // SyncCoreProxy.
+  // SyncContextProxy.
   bool is_connected_;
 
   // Our link to data type management on the sync thread.
@@ -111,14 +110,14 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   //
   // Beware of NULL pointers: This object is uninitialized when we are not
   // connected to sync.
-  scoped_ptr<SyncCoreProxy> sync_core_proxy_;
+  scoped_ptr<SyncContextProxy> sync_context_proxy_;
 
-  // Reference to the NonBlockingTypeProcessorCore.
+  // Reference to the ModelTypeSyncWorker.
   //
   // The interface hides the posting of tasks across threads as well as the
-  // NonBlockingTypeProcessorCore's implementation.  Both of these features are
+  // ModelTypeSyncWorker's implementation.  Both of these features are
   // useful in tests.
-  scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface_;
+  scoped_ptr<ModelTypeSyncWorker> worker_;
 
   // The set of sync entities known to this object.
   EntityMap entities_;
@@ -129,10 +128,10 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   // thread, we want to make sure that no tasks generated as part of the
   // now-obsolete connection to affect us.  But we also want the WeakPtr we
   // sent to the UI thread to remain valid.
-  base::WeakPtrFactory<NonBlockingTypeProcessor> weak_ptr_factory_for_ui_;
-  base::WeakPtrFactory<NonBlockingTypeProcessor> weak_ptr_factory_for_sync_;
+  base::WeakPtrFactory<ModelTypeSyncProxyImpl> weak_ptr_factory_for_ui_;
+  base::WeakPtrFactory<ModelTypeSyncProxyImpl> weak_ptr_factory_for_sync_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
+#endif  // SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_

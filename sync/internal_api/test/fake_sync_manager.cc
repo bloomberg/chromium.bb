@@ -214,8 +214,8 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-syncer::SyncCoreProxy* FakeSyncManager::GetSyncCoreProxy() {
-  return &null_sync_core_proxy_;
+syncer::SyncContextProxy* FakeSyncManager::GetSyncContextProxy() {
+  return &null_sync_context_proxy_;
 }
 
 const std::string FakeSyncManager::cache_guid() {

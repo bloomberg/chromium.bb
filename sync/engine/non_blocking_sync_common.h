@@ -47,7 +47,7 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   int64 next_client_id;
 
   // This flag is set to true when the first download cycle is complete.  The
-  // NonBlockingTypeProcessor should not attempt to commit any items until this
+  // ModelTypeSyncProxy should not attempt to commit any items until this
   // flag is set.
   bool initial_sync_done;
 };

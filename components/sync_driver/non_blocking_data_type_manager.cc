@@ -6,7 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
-#include "sync/engine/non_blocking_type_processor.h"
+#include "sync/engine/model_type_sync_proxy_impl.h"
 
 namespace browser_sync {
 
@@ -29,22 +29,22 @@ void NonBlockingDataTypeManager::RegisterType(
           enabled)));
 }
 
-void NonBlockingDataTypeManager::InitializeTypeProcessor(
-      syncer::ModelType type,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer::NonBlockingTypeProcessor>& processor) {
+void NonBlockingDataTypeManager::InitializeType(
+    syncer::ModelType type,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& proxy_impl) {
   NonBlockingDataTypeControllerMap::iterator it =
       non_blocking_data_type_controllers_.find(type);
   DCHECK(it != non_blocking_data_type_controllers_.end());
-  it->second->InitializeProcessor(task_runner, processor);
+  it->second->InitializeType(task_runner, proxy_impl);
 }
 
 void NonBlockingDataTypeManager::ConnectSyncBackend(
-    scoped_ptr<syncer::SyncCoreProxy> proxy) {
+    scoped_ptr<syncer::SyncContextProxy> proxy) {
   for (NonBlockingDataTypeControllerMap::iterator it =
        non_blocking_data_type_controllers_.begin();
        it != non_blocking_data_type_controllers_.end(); ++it) {
-    it->second->InitializeSyncCoreProxy(proxy->Clone());
+    it->second->InitializeSyncContext(proxy->Clone());
   }
 }
 
@@ -52,7 +52,7 @@ void NonBlockingDataTypeManager::DisconnectSyncBackend() {
   for (NonBlockingDataTypeControllerMap::iterator it =
        non_blocking_data_type_controllers_.begin();
        it != non_blocking_data_type_controllers_.end(); ++it) {
-    it->second->ClearSyncCoreProxy();
+    it->second->ClearSyncContext();
   }
 }
 
