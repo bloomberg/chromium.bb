@@ -81,8 +81,12 @@ Value Template::Invoke(Scope* scope,
   // Actually run the template code.
   Value result =
       definition_->block()->ExecuteBlockInScope(&template_scope, err);
-  if (err->has_error())
+  if (err->has_error()) {
+    // If there was an error, append the caller location so the error message
+    // displays a stack trace of how it got here.
+    err->AppendSubErr(Err(invocation, "whence it was called."));
     return Value();
+  }
 
   // Check for unused variables in the invocation scope. This will find typos
   // of things the caller meant to pass to the template but the template didn't
