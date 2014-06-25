@@ -26,6 +26,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"

@@ -145,8 +145,6 @@ extern const char kContextualSearchEnabled[];
 #endif
 extern const char kConfirmToQuitEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE
-extern const char kSearchProviderOverrides[];
-extern const char kSearchProviderOverridesVersion[];
 extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kDnsStartupPrefetchList[];  // OBSOLETE
@@ -505,9 +503,6 @@ extern const char kCertificateManagerWindowLastTabIndex[];
 extern const char kShowFirstRunBubbleOption[];
 
 extern const char kLastKnownIntranetRedirectOrigin[];
-
-extern const char kCountryIDAtInstall[];
-extern const char kGeoIDAtInstall[];  // OBSOLETE
 
 extern const char kShutdownType[];
 extern const char kShutdownNumProcesses[];

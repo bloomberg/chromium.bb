@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "extensions/common/extension.h"
 
 BrandcodedDefaultSettings::BrandcodedDefaultSettings() {

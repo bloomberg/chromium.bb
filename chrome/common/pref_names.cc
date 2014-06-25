@@ -344,14 +344,6 @@ const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
 // 2 - block all cookies
 const char kCookieBehavior[] = "security.cookie_behavior";
 
-// The dictionary key used when the default search providers are given
-// in the preferences file. Normally they are copied from the master
-// preferences file.
-const char kSearchProviderOverrides[] = "search_provider_overrides";
-// The format version for the dictionary above.
-const char kSearchProviderOverridesVersion[] =
-    "search_provider_overrides_version";
-
 // Boolean which specifies whether we should ask the user if we should download
 // a file (true) or just download it automatically.
 const char kPromptForDownload[] = "download.prompt_for_download";
@@ -1514,16 +1506,6 @@ const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
 const char kLastKnownIntranetRedirectOrigin[] = "browser.last_redirect_origin";
-
-// Integer containing the system Country ID the first time we checked the
-// template URL prepopulate data.  This is used to avoid adding a whole bunch of
-// new search engine choices if prepopulation runs when the user's Country ID
-// differs from their previous Country ID.  This pref does not exist until
-// prepopulation has been run at least once.
-const char kCountryIDAtInstall[] = "countryid_at_install";
-// OBSOLETE. Same as above, but uses the Windows-specific GeoID value instead.
-// Updated if found to the above key.
-const char kGeoIDAtInstall[] = "geoid_at_install";
 
 // An enum value of how the browser was shut down (see browser_shutdown.h).
 const char kShutdownType[] = "shutdown.type";

@@ -15,10 +15,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/prepopulated_engines.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -674,16 +674,7 @@ int GetCountryIDFromPrefs(PrefService* prefs) {
   // make major changes to their available search providers, which would feel
   // surprising.
   if (!prefs->HasPrefPath(prefs::kCountryIDAtInstall)) {
-    int new_country_id = GetCurrentCountryID();
-#if defined(OS_WIN)
-    // Migrate the old platform-specific value if it's present.
-    if (prefs->HasPrefPath(prefs::kGeoIDAtInstall)) {
-      int geo_id = prefs->GetInteger(prefs::kGeoIDAtInstall);
-      prefs->ClearPref(prefs::kGeoIDAtInstall);
-      new_country_id = GeoIDToCountryID(geo_id);
-    }
-#endif
-    prefs->SetInteger(prefs::kCountryIDAtInstall, new_country_id);
+    prefs->SetInteger(prefs::kCountryIDAtInstall, GetCurrentCountryID());
   }
   return prefs->GetInteger(prefs::kCountryIDAtInstall);
 }
@@ -1220,11 +1211,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kSearchProviderOverridesVersion,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  // Obsolete pref, for migration.
-  registry->RegisterIntegerPref(
-      prefs::kGeoIDAtInstall,
       -1,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
