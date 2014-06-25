@@ -78,14 +78,20 @@ in the near future:</p>
 <p>The setup process currently requires several steps.
 We&#8217;re working to reduce the number of steps in future releases.
 As the process gets easier, we&#8217;ll update this page.</p>
+<p>To install the development environment:</p>
+<blockquote>
+<div><ul class="small-gap">
+<li>Install the <a class="reference external" href="https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa">NaCl Development Environment</a>.</li>
+<li><p class="first">Navigate to: chrome://flags and:</p>
 <ul class="small-gap">
-<li><p class="first">Install the <a class="reference external" href="https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa">NaCl Development Environment</a>.</p>
-<ul class="small-gap">
+<li>Enable <strong>Native Client</strong>.</li>
+<li>Restart your browser by clicking <strong>Relaunch Now</strong>.</li>
+</ul>
+</li>
 <li>First run is slow (as it downloads and installs packages). Launch and allow
 initial install to complete before first use.</li>
 </ul>
-</li>
-</ul>
+</div></blockquote>
 <p>When initially experimenting with the development environment,
 at this time, we recommend you run it without the debugger activated.
 Once you&#8217;re ready to apply the debugger, follow these steps:</p>
@@ -97,11 +103,11 @@ Once you&#8217;re ready to apply the debugger, follow these steps:</p>
 <li>Install <a class="reference external" href="https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe">Native Client GDB</a>.</li>
 <li><p class="first">Navigate to: chrome://flags and:</p>
 <ul class="small-gap">
-<li>Enable <strong>Native Client</strong>.</li>
-<li>Enable <strong>Native Client GDB-based debugging</strong>.  (For the debugger)</li>
+<li>Enable <strong>Native Client GDB-based debugging</strong>.</li>
+<li>Restart your browser by clicking <strong>Relaunch Now</strong>.</li>
 </ul>
 </li>
-<li>NOTE: If you experience unexplained hangs, disabled GDB-based debugging
+<li>NOTE: If you experience unexplained hangs, disable GDB-based debugging
 temporarily and try again.</li>
 </ul>
 </div></blockquote>

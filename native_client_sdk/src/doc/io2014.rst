@@ -82,7 +82,14 @@ The setup process currently requires several steps.
 We're working to reduce the number of steps in future releases.
 As the process gets easier, we'll update this page.
 
-* Install the `NaCl Development Environment <https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa>`_.
+To install the development environment:
+
+  * Install the `NaCl Development Environment <https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa>`_.
+
+  * Navigate to: chrome://flags and:
+
+    * Enable **Native Client**.
+    * Restart your browser by clicking **Relaunch Now**.
 
   * First run is slow (as it downloads and installs packages). Launch and allow
     initial install to complete before first use.
@@ -98,10 +105,10 @@ Once you're ready to apply the debugger, follow these steps:
 
   * Navigate to: chrome://flags and:
 
-    * Enable **Native Client**.
-    * Enable **Native Client GDB-based debugging**.  (For the debugger)
+    * Enable **Native Client GDB-based debugging**.
+    * Restart your browser by clicking **Relaunch Now**.
 
-  * NOTE: If you experience unexplained hangs, disabled GDB-based debugging
+  * NOTE: If you experience unexplained hangs, disable GDB-based debugging
     temporarily and try again.
 
 Editor
