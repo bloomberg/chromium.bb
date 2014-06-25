@@ -88,15 +88,54 @@ bool WebcamPrivateSetFunction::RunSync() {
                        *(params->config.pan));
   }
 
+  if (params->config.pan_direction) {
+    int direction = 0;
+    switch (params->config.pan_direction) {
+      case api::webcam_private::PAN_DIRECTION_NONE:
+      case api::webcam_private::PAN_DIRECTION_STOP:
+        direction = 0;
+        break;
+
+      case api::webcam_private::PAN_DIRECTION_RIGHT:
+        direction = 1;
+        break;
+
+      case api::webcam_private::PAN_DIRECTION_LEFT:
+        direction = -1;
+        break;
+    }
+    SetWebcamParameter(fd.get(), V4L2_CID_PAN_RELATIVE, direction);
+  }
+
   if (params->config.tilt) {
     SetWebcamParameter(fd.get(), V4L2_CID_TILT_ABSOLUTE,
                        *(params->config.tilt));
+  }
+
+  if (params->config.tilt_direction) {
+    int direction = 0;
+    switch (params->config.tilt_direction) {
+      case api::webcam_private::TILT_DIRECTION_NONE:
+      case api::webcam_private::TILT_DIRECTION_STOP:
+        direction = 0;
+        break;
+
+      case api::webcam_private::TILT_DIRECTION_UP:
+        direction = 1;
+        break;
+
+      case api::webcam_private::TILT_DIRECTION_DOWN:
+        direction = -1;
+        break;
+    }
+    SetWebcamParameter(fd.get(), V4L2_CID_TILT_RELATIVE, direction);
   }
 
   if (params->config.zoom) {
     SetWebcamParameter(fd.get(), V4L2_CID_ZOOM_ABSOLUTE,
                        *(params->config.zoom));
   }
+
 
   return true;
 }

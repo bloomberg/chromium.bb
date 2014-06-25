@@ -4,10 +4,15 @@
 
 // Webcam Private API.
 namespace webcamPrivate {
+  enum PanDirection { stop, right, left };
+  enum TiltDirection { stop, up, down };
+
   dictionary WebcamConfiguration {
     double? pan;
-    double? zoom;
+    PanDirection? panDirection;
     double? tilt;
+    TiltDirection? tiltDirection;
+    double? zoom;
   };
 
   callback WebcamConfigurationCallback =
@@ -17,7 +22,6 @@ namespace webcamPrivate {
     static void get(DOMString webcamId, WebcamConfigurationCallback callback);
     static void set(DOMString webcamId, WebcamConfiguration config);
     static void reset(DOMString webcamId, WebcamConfiguration config);
-
   };
 };
 
