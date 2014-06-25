@@ -40,9 +40,9 @@ var DumpCreator = (function() {
         ' calls and for future WebRTC calls. When the box is unchecked or' +
         ' this page is closed, all ongoing recordings will be stopped and' +
         ' this recording functionality will be disabled for future WebRTC' +
-        ' calls. Recordings in multiple tabs is supported as well as multiple' +
-        ' recordings in the same tab. When enabling, you select a base' +
-        ' filename to save the dump(s) to. The base filename will have a' +
+        ' calls. Recordings in multiple tabs are supported as well as' +
+        ' multiple recordings in the same tab. When enabling, you select a' +
+        ' base filename to save the dump(s) to. The base filename will have a' +
         ' suffix appended to it as &lt;base filename&gt;.&lt;render process' +
         ' ID&gt;.&lt;recording ID&gt;. If recordings are' +
         ' disabled and then enabled using the same base filename, the' +
