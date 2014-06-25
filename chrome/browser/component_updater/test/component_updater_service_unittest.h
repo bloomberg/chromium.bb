@@ -5,19 +5,14 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_
 
-#include <list>
-#include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/test/test_configurator.h"
 #include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
@@ -73,46 +68,6 @@ const uint8 ihfo_hash[] = {0x87, 0x5e, 0xa1, 0xa6, 0x9f, 0x85, 0xd1, 0x1e,
                            0x97, 0xd4, 0x4f, 0x55, 0xbf, 0xb4, 0x13, 0xa2,
                            0xe7, 0xc5, 0xc8, 0xf5, 0x60, 0x19, 0x78, 0x1b,
                            0x6d, 0xe9, 0x4c, 0xeb, 0x96, 0x05, 0x42, 0x17};
-
-class TestConfigurator : public Configurator {
- public:
-  TestConfigurator();
-  virtual ~TestConfigurator();
-
-  // Overrrides for ComponentUpdateService::Configurator.
-  virtual int InitialDelay() const OVERRIDE;
-  virtual int NextCheckDelay() OVERRIDE;
-  virtual int StepDelay() const OVERRIDE;
-  virtual int StepDelayMedium() OVERRIDE;
-  virtual int MinimumReCheckWait() const OVERRIDE;
-  virtual int OnDemandDelay() const OVERRIDE;
-  virtual GURL UpdateUrl() const OVERRIDE;
-  virtual GURL PingUrl() const OVERRIDE;
-  virtual std::string ExtraRequestParams() const OVERRIDE;
-  virtual size_t UrlSizeLimit() const OVERRIDE;
-  virtual net::URLRequestContextGetter* RequestContext() const OVERRIDE;
-  virtual bool InProcess() const OVERRIDE;
-  virtual bool DeltasEnabled() const OVERRIDE;
-  virtual bool UseBackgroundDownloader() const OVERRIDE;
-
-  typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
-  void SetLoopCount(int times);
-  void SetRecheckTime(int seconds);
-  void SetOnDemandTime(int seconds);
-  void SetComponentUpdateService(ComponentUpdateService* cus);
-  void SetQuitClosure(const base::Closure& quit_closure);
-  void SetInitialDelay(int seconds);
-
- private:
-  int initial_time_;
-  int times_;
-  int recheck_time_;
-  int ondemand_time_;
-
-  ComponentUpdateService* cus_;
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
-  base::Closure quit_closure_;
-};
 
 class ComponentUpdaterTest : public testing::Test {
  public:
