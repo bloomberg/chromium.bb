@@ -932,16 +932,20 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
 
+  bool initialize_gpu_data_manager = true;
 #if defined(OS_ANDROID)
   // On Android, GLSurface::InitializeOneOff() must be called before initalizing
   // the GpuDataManagerImpl as it uses the GL bindings. crbug.com/326295
-  if (!gfx::GLSurface::InitializeOneOff())
-    LOG(FATAL) << "GLSurface::InitializeOneOff failed";
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(ERROR) << "GLSurface::InitializeOneOff failed";
+    initialize_gpu_data_manager = false;
+  }
 #endif
 
   // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
-  GpuDataManagerImpl::GetInstance()->Initialize();
+  if (initialize_gpu_data_manager)
+    GpuDataManagerImpl::GetInstance()->Initialize();
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;

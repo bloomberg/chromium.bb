@@ -32,7 +32,7 @@ bool GLSurface::InitializeOneOffInternal() {
 // static
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     gfx::AcceleratedWidget window) {
-
+  CHECK_NE(kGLImplementationNone, GetGLImplementation());
   if (GetGLImplementation() == kGLImplementationOSMesaGL) {
     scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless());
     if (!surface->Initialize())
@@ -55,6 +55,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 // static
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     const gfx::Size& size) {
+  CHECK_NE(kGLImplementationNone, GetGLImplementation());
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(1, size));
