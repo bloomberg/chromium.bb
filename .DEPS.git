@@ -18,7 +18,7 @@ deps = {
     'src/breakpad/src':
         Var('git_url') + '/external/google-breakpad/src.git@64dfc4d07c1b247ae69e1d4317f49950e399b9e9',
     'src/buildtools':
-        Var('git_url') + '/chromium/buildtools.git@1b99ceb70085a368f560ad13500a5ea3c4c93c0d',
+        Var('git_url') + '/chromium/buildtools.git@a072c5b27726c359a1e86b43ef5589194179a121',
     'src/chrome/browser/resources/pdf/html_office':
         Var('git_url') + '/chromium/html-office-public.git@eeff97614f65e0578529490d44d412032c3d7359',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
@@ -575,7 +575,7 @@ hooks = [
     '--bucket',
     'chromium-clang-format',
     '-s',
-    'src/third_party/clang_format/bin/win/clang-format.exe.sha1'
+    'src/buildtools/win/clang-format.exe.sha1'
 ],
     'pattern':
          '.',
@@ -592,7 +592,7 @@ hooks = [
     '--bucket',
     'chromium-clang-format',
     '-s',
-    'src/third_party/clang_format/bin/mac/clang-format.sha1'
+    'src/buildtools/mac/clang-format.sha1'
 ],
     'pattern':
          '.',
@@ -609,12 +609,63 @@ hooks = [
     '--bucket',
     'chromium-clang-format',
     '-s',
-    'src/third_party/clang_format/bin/linux/clang-format.sha1'
+    'src/buildtools/linux64/clang-format.sha1'
 ],
     'pattern':
          '.',
     'name':
          'clang_format_linux'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=win32',
+    '--no_auth',
+    '--bucket',
+    'chromium-clang-format',
+    '-s',
+    'src/third_party/clang_format/bin/win/clang-format.exe.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'clang_format_win_old'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=darwin',
+    '--no_auth',
+    '--bucket',
+    'chromium-clang-format',
+    '-s',
+    'src/third_party/clang_format/bin/mac/clang-format.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'clang_format_mac_old'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=linux*',
+    '--no_auth',
+    '--bucket',
+    'chromium-clang-format',
+    '-s',
+    'src/third_party/clang_format/bin/linux/clang-format.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'clang_format_linux_old'
 },
     {
     'action':
