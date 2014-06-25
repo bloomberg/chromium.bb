@@ -482,17 +482,31 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 
 {##############################################################################}
 {% macro generate_constructor(constructor) %}
-static void constructor{{constructor.overload_index}}(const v8::FunctionCallbackInfo<v8::Value>& info)
+{% set name = '%sConstructorCallback' % v8_class
+              if constructor.is_named_constructor else
+              'constructor%s' % (constructor.overload_index or '') %}
+static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
+    {% if constructor.is_named_constructor %}
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), isolate);
+        return;
+    }
+
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+    {% endif %}
     {% if constructor.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
     {% endif %}
     {# Overloaded constructors have length checked during overload resolution #}
-    {% if interface_length and not constructor.overload_index %}
+    {% if constructor.number_of_required_arguments and not constructor.overload_index %}
     {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
-    if (UNLIKELY(info.Length() < {{interface_length}})) {
-        {{throw_minimum_arity_type_error(constructor, interface_length)}};
+    if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
+        {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
         return;
     }
     {% endif %}
@@ -528,44 +542,4 @@ v8::Handle<v8::Object> wrapper = info.Holder();
 V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constructor_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
 {% endif %}
 v8SetReturnValue(info, wrapper);
-{% endmacro %}
-
-
-{##############################################################################}
-{% macro named_constructor_callback(constructor) %}
-static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Isolate* isolate = info.GetIsolate();
-    if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), isolate);
-        return;
-    }
-
-    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
-
-    Document& document = *toDocument(currentExecutionContext(isolate));
-
-    {% if constructor.has_exception_state %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
-    {% endif %}
-    {% if constructor.number_of_required_arguments %}
-    if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
-        {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
-        return;
-    }
-    {% endif %}
-    {% if constructor.arguments %}
-    {{generate_arguments(constructor) | indent}}
-    {% endif %}
-    {{constructor.cpp_type}} impl = {{constructor.cpp_value}};
-    {% if is_constructor_raises_exception %}
-    if (exceptionState.throwIfNeeded())
-        return;
-    {% endif %}
-
-    {{generate_constructor_wrapper(constructor) | indent}}
-}
 {% endmacro %}

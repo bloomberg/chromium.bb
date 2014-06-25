@@ -59,9 +59,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
         v8SetReturnValue(info, info.Holder());
         return;
     }
-
     Document& document = *toDocument(currentExecutionContext(isolate));
-
     RefPtrWillBeRawPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(document);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

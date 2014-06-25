@@ -59,9 +59,6 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         v8SetReturnValue(info, info.Holder());
         return;
     }
-
-    Document& document = *toDocument(currentExecutionContext(isolate));
-
     if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate());
         return;

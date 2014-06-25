@@ -84,9 +84,6 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         v8SetReturnValue(info, info.Holder());
         return;
     }
-
-    Document& document = *toDocument(currentExecutionContext(isolate));
-
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), isolate);
     if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeError(exceptionState, 1, info.Length());
@@ -119,6 +116,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         }
         TOSTRING_VOID_INTERNAL(optionalStringArg, info[5]);
     }
+    Document& document = *toDocument(currentExecutionContext(isolate));
     RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

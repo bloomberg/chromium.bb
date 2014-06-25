@@ -138,9 +138,6 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
         v8SetReturnValue(info, info.Holder());
         return;
     }
-
-    Document& document = *toDocument(currentExecutionContext(isolate));
-
     if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
