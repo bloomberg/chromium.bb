@@ -59,6 +59,14 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void OnGestureScroll(const Gesture* gesture, const GestureScroll* move);
   void OnGestureButtonsChange(const Gesture* gesture,
                               const GestureButtonsChange* move);
+  void OnGestureContactInitiated(const Gesture* gesture);
+  void OnGestureFling(const Gesture* gesture, const GestureFling* fling);
+  void OnGestureSwipe(const Gesture* gesture, const GestureSwipe* swipe);
+  void OnGestureSwipeLift(const Gesture* gesture,
+                          const GestureSwipeLift* swipelift);
+  void OnGesturePinch(const Gesture* gesture, const GesturePinch* pinch);
+  void OnGestureMetrics(const Gesture* gesture, const GestureMetrics* metrics);
+
   void Dispatch(Event* event);
   void DispatchMouseButton(unsigned int modifier, bool down);
 
