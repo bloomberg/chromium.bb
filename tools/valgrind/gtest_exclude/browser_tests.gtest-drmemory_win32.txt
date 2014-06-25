@@ -16,8 +16,9 @@ AppA*
 AppB*
 AppL*
 AppW*
-Autofill*
+Auto*
 # B*
+BaseD*
 Bac*App*.R*
 Blue*
 Bit*
@@ -27,32 +28,36 @@ Br*erC*
 Br*erN*
 Br*erT*
 # C*
+Cal*
 Cap*
 Cas*
 Clou*cy
 Clear*
 Click*
 Com*
+ChromeA*
 ChromeC*
 ChromeR*
+Col*
 Con*UITest.*
 Con*.Re*
-Con*.Se*
+Con*Se*
 Cont*ns
 Context*
-Cook*ct
+Coo*
 # D*
 Dec*
 Dev*
 Dns*
 DoNot*
-Down*Ext*.*
+Down*Ext*
+Down*UI*
 Do*adTest.*
 Drive*
 # E*
 ECK*
 Ed*
-Enc*ic
+Enc*
 Ep*
 Er*
 Exe*
@@ -61,8 +66,10 @@ Ext*.N*
 Ext*.RS*
 Ext*Api*
 Ext*Man*
-Ext*Ses*
+Ext*Se*
 Ext*re*
+Ext*Re*
+Ext*nB*
 Ext*Crx*
 # F*
 FileSys*
@@ -72,21 +79,28 @@ Font*gs
 Ftp*
 # G*
 Gcm*.R*
-GetA*.I*
+GetA*
+Ge*Br*
 # H*
 Hot*
-His*Br*
+His*
+HostR*
+Ht*
 # I*
 IE*
+Inv*
 # J*
 # K*
 # L*
 Lan*
-Laz*TP
+Lau*
+Laz*
+LoadT*
 Loc*
 Log*hs
 # M*
-Media*B*
+Med*B*
+Med*Se*
 Mock*
 MSC_C*
 MSE*
@@ -107,45 +121,57 @@ Pe*
 Plat*Bro*
 Policy*H*
 Port*
-Prefe*fs
+Prefe*
+PrefsF*
 Print*
 Prox*
 Prof*ta
-Prer*get
-Prer*st.Pre*
+Prer*
 PPA*ib*
 PPA*lT*.*
-PPAPIT.F*
+PPAPIT*.F*
 # Q*
 # R*
-Red*nt
+Red*
+Ref*
+Reg*
+Rem*De*
+Res*PRE*
 # S*
 Sa*
+Sea*Pr*
+Ses*
 Set*
 Scr*
 Soc*
-Spee*
-SRC*.Frame*
+Spe*
+SRC*.Pl*
+SRC*.Fr*
 SSL*ed
+Sup*Mo*
 Str*
 SyncF*
 SyncInt*
+Sys*Di*
 # T*
 Tab*
 Tas*
 Tran*Bu*
 Tran*ag
 # U*
+Us*
 Un*.Br*
 # V*
 # W*
 WebViewT*
 WebRtcB*
 WebUIA*
+WebUIBr*
 WebC*
 WebN*ss
 WebstoreIn*
 WebstoreSt*
+WebSo*
 # X*
 # Y*
 # Z*
