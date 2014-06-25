@@ -1,0 +1,33 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("pref_registry") {
+  sources = [
+    "pref_registry_export.h",
+    "pref_registry_syncable.cc",
+    "pref_registry_syncable.h",
+  ]
+
+  defines = [
+    "PREF_REGISTRY_IMPLEMENTATION",
+  ]
+
+  deps = [
+    "//base",
+    "//base:prefs",
+    "//base/third_party/dynamic_annotations",
+    "//ui/base",
+  ]
+}
+
+source_set("pref_registry_test_support") {
+  sources = [
+    "testing_pref_service_syncable.cc",
+    "testing_pref_service_syncable.h",
+  ]
+
+  deps = [
+    ":pref_registry",
+  ]
+}

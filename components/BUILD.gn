@@ -16,6 +16,7 @@ group("all_components") {
     "//components/navigation_metrics",
     "//components/onc",
     "//components/os_crypt",
+    "//components/pref_registry",
     "//components/query_parser",
     "//components/resources:components_resources",
     "//components/startup_metric_utils",
