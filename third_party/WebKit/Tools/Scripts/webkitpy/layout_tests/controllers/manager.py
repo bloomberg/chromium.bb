@@ -376,7 +376,7 @@ class Manager(object):
         _log.debug("Writing JSON files in %s." % self._results_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
-        times_trie = json_results_generator.test_timings_trie(self._port, initial_results.results_by_name.values())
+        times_trie = json_results_generator.test_timings_trie(initial_results.results_by_name.values())
         times_json_path = self._filesystem.join(self._results_directory, "times_ms.json")
         json_results_generator.write_json(self._filesystem, times_trie, times_json_path)
 
