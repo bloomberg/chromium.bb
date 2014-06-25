@@ -1,27 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../js-test-resources/js-test.js"></script>
-</head>
-<body>
-<script>
-description("Test EventSource with non-HTTP protocol schemes in the URL.");
-self.jsTestIsAsync = true;
-
-var count = 0;
-new EventSource("ftp://127.0.0.1").onerror =
-new EventSource("file:///etc/motd").onerror =
-new EventSource("localhost:8080/").onerror =
-new EventSource("tel:1234").onerror = function () {
-    if (this.readyState == EventSource.CLOSED) {
-        testPassed("got error event and readyState is CLOSED");
-    } else {
-        testFailed("got error event but readyState is not CLOSED");
-        this.close();
-    }
-    if (count++ == 3)
-        finishJSTest();
-};
-</script>
-</body>
-</html>
+<!DOCTYPE HTML>
+<script src="/js-test-resources/js-test.js"></script>
+<script src="script-tests/eventsource-cors-non-http.js"></script>
