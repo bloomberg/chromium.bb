@@ -408,11 +408,11 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       geolocation_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
       weak_factory_(this) {
+  RenderThread::Get()->AddRoute(routing_id_, this);
+
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
-
-  RenderThread::Get()->AddRoute(routing_id_, this);
 
   render_view_->RegisterRenderFrame(this);
 
@@ -904,11 +904,6 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   render_view_->pending_navigation_params_.reset();
 }
 
-void RenderFrameImpl::BindServiceRegistry(
-    mojo::ScopedMessagePipeHandle service_provider_handle) {
-  service_registry_.BindRemoteServiceProvider(service_provider_handle.Pass());
-}
-
 void RenderFrameImpl::OnBeforeUnload() {
   // TODO(creis): Right now, this is only called on the main frame.  Make the
   // browser process send dispatchBeforeUnloadEvent to every frame that needs
@@ -1319,10 +1314,6 @@ void RenderFrameImpl::LoadURLExternally(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
-}
-
-ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
-  return &service_registry_;
 }
 
 // blink::WebFrameClient implementation ----------------------------------------

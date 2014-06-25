@@ -188,10 +188,6 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-ServiceRegistry* MockRenderThread::GetServiceRegistry() {
-  return NULL;
-}
-
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);
   RenderViewImpl::FromRoutingID(routing_id_)->OnMessageReceived(msg);

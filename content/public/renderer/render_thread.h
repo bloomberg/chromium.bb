@@ -39,7 +39,6 @@ namespace content {
 
 class RenderProcessObserver;
 class ResourceDispatcherDelegate;
-class ServiceRegistry;
 
 class CONTENT_EXPORT RenderThread : public IPC::Sender {
  public:
@@ -137,9 +136,6 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // Release cached font.
   virtual void ReleaseCachedFonts() = 0;
 #endif
-
-  // Returns the ServiceRegistry for this thread.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
 };
 
 }  // namespace content

@@ -56,7 +56,6 @@ source_set("common") {
       "//gpu/command_buffer/client:gles2_implementation",
       "//gpu/command_buffer/service",
       "//gpu/ipc",
-      "//mojo/public/interfaces/interface_provider",
       "//ui/gl",
       "//webkit/browser:storage",
       "//webkit/common",
@@ -265,6 +264,6 @@ source_set("common") {
 
 mojom("mojo_bindings") {
   sources = [
-    "render_frame_setup.mojom",
+    "web_ui_setup.mojom",
   ]
 }

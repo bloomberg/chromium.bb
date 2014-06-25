@@ -10,7 +10,8 @@
 
 namespace content {
 
-MojoApplication::MojoApplication() {
+MojoApplication::MojoApplication(mojo::ServiceProvider* service_provider)
+    : service_provider_(service_provider) {
 }
 
 MojoApplication::~MojoApplication() {
@@ -36,7 +37,9 @@ void MojoApplication::OnActivate(
       channel_init_.Init(handle,
                          ChildProcess::current()->io_message_loop_proxy());
   DCHECK(message_pipe.is_valid());
-  service_registry_.BindRemoteServiceProvider(message_pipe.Pass());
+
+  host_service_provider_.Bind(message_pipe.Pass());
+  host_service_provider_.set_client(service_provider_);
 }
 
 }  // namespace content

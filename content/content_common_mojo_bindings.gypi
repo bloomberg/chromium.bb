@@ -12,7 +12,7 @@
         '../mojo/mojo.gyp:mojo_environment_chromium',
       ],
       'sources': [
-        'common/render_frame_setup.mojom',
+        'common/web_ui_setup.mojom',
       ],
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

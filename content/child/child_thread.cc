@@ -239,7 +239,7 @@ void ChildThread::Init() {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
-  mojo_application_.reset(new MojoApplication);
+  mojo_application_.reset(new MojoApplication(this));
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
@@ -368,6 +368,15 @@ void ChildThread::OnChannelConnected(int32 peer_pid) {
 void ChildThread::OnChannelError() {
   set_on_channel_error_called(true);
   base::MessageLoop::current()->Quit();
+}
+
+void ChildThread::ConnectToService(
+    const mojo::String& service_url,
+    const mojo::String& service_name,
+    mojo::ScopedMessagePipeHandle message_pipe,
+    const mojo::String& requestor_url) {
+  // By default, we don't expect incoming connections.
+  NOTREACHED();
 }
 
 bool ChildThread::Send(IPC::Message* msg) {

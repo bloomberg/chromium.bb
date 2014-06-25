@@ -210,6 +210,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const = 0;
 
+  // Sets the mojo handle for WebUI pages.
+  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) = 0;
+
   // Notify the render view host to select the word around the caret.
   virtual void SelectWordAroundCaret() = 0;
 

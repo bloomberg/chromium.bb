@@ -465,6 +465,8 @@
       'renderer/web_ui_mojo_context_state.h',
       'renderer/web_ui_runner.cc',
       'renderer/web_ui_runner.h',
+      'renderer/web_ui_setup_impl.cc',
+      'renderer/web_ui_setup_impl.h',
       'renderer/webclipboard_impl.cc',
       'renderer/webclipboard_impl.h',
       'renderer/webgraphicscontext3d_provider_impl.cc',

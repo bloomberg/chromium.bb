@@ -25,7 +25,6 @@ struct WebPluginParams;
 namespace content {
 class ContextMenuClient;
 class RenderView;
-class ServiceRegistry;
 struct ContextMenuParams;
 struct WebPluginInfo;
 
@@ -88,9 +87,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Return true if this frame is hidden.
   virtual bool IsHidden() = 0;
-
-  // Returns the ServiceRegistry for this frame.
-  virtual ServiceRegistry* GetServiceRegistry() = 0;
 
  protected:
   virtual ~RenderFrame() {}

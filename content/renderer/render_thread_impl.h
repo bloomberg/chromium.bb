@@ -166,7 +166,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
-  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -401,9 +400,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void AddEmbeddedWorkerRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveEmbeddedWorkerRoute(int32 routing_id);
 
-  void RegisterPendingRenderFrameConnect(int routing_id,
-                                         mojo::ScopedMessagePipeHandle handle);
-
  private:
   // ChildThread
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -428,6 +424,13 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       size_t height,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
+
+  // mojo::ServiceProvider implementation:
+  virtual void ConnectToService(
+      const mojo::String& service_url,
+      const mojo::String& service_name,
+      mojo::ScopedMessagePipeHandle message_pipe,
+      const mojo::String& requestor_url) OVERRIDE;
 
   void Init();
 
@@ -576,8 +579,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
-
-  std::map<int, mojo::MessagePipeHandle> pending_render_frame_connects_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

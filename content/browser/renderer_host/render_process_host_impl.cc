@@ -69,6 +69,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
+#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging_message_filter.h"
@@ -140,6 +141,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "mojo/common/common_type_converters.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -446,7 +448,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_self_deleted_(false),
 #endif
       pending_views_(0),
-      mojo_application_host_(new MojoApplicationHost),
       mojo_activation_required_(false),
       visible_widgets_(0),
       backgrounded_(true),
@@ -596,6 +597,7 @@ bool RenderProcessHostImpl::Init() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get());
 
   // Setup the Mojo channel.
+  mojo_application_host_.reset(new MojoApplicationHost());
   mojo_application_host_->Init();
 
   // Call the embedder first so that their IPC filters have priority.
@@ -904,12 +906,6 @@ void RenderProcessHostImpl::ResumeResponseDeferredAtStart(
 
 void RenderProcessHostImpl::NotifyTimezoneChange() {
   Send(new ViewMsg_TimezoneChange());
-}
-
-ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
-  if (!mojo_application_host_)
-    return NULL;
-  return mojo_application_host_->service_registry();
 }
 
 void RenderProcessHostImpl::AddRoute(
@@ -1938,8 +1934,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
     iter.Advance();
   }
 
-  mojo_application_host_.reset(new MojoApplicationHost);
-  mojo_activation_required_ = false;
+  mojo_application_host_.reset();
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
@@ -2259,9 +2254,17 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
-void RenderProcessHostImpl::EnsureMojoActivated() {
+void RenderProcessHostImpl::ConnectTo(
+    const base::StringPiece& service_name,
+    mojo::ScopedMessagePipeHandle handle) {
   mojo_activation_required_ = true;
   MaybeActivateMojo();
+
+  mojo_application_host_->service_provider()->ConnectToService(
+      mojo::String::From(service_name),
+      std::string(),
+      handle.Pass(),
+      mojo::String());
 }
 
 void RenderProcessHostImpl::OnAllocateGpuMemoryBuffer(uint32 width,

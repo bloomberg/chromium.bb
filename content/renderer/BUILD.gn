@@ -29,7 +29,7 @@ source_set("renderer") {
     "//gin",
     "//mojo/environment:chromium",
     "//mojo/public/js/bindings",
-    "//mojo/public/interfaces/interface_provider",
+    "//mojo/public/interfaces/service_provider",
     "//net",
     "//skia",
     "//third_party/icu",

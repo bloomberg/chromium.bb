@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
@@ -67,7 +66,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const base::string16& javascript,
       const JavaScriptResultCallback& callback) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
-  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -303,8 +301,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
-
-  ServiceRegistryImpl service_registry_;
 
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 

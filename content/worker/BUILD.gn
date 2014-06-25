@@ -24,7 +24,7 @@ source_set("worker") {
 
   deps = [
     "//base",
-    "//mojo/public/interfaces/interface_provider",
+    "//mojo/public/interfaces/service_provider",
     "//skia",
     "//third_party/WebKit/public:blink",
   ]

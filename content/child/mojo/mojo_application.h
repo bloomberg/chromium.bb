@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 #define CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 
-#include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/embedder/channel_init.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace IPC {
 class Message;
@@ -18,22 +18,27 @@ namespace content {
 // MojoApplication represents the code needed to setup a child process as a
 // Mojo application via Chrome IPC. Instantiate MojoApplication and call its
 // OnMessageReceived method to give it a shot at handling Chrome IPC messages.
-// It makes the ServiceRegistry interface available.
+// It makes the mojo::Shell interface available and calls methods on the given
+// mojo::ShellClient interface as calls come in.
 class MojoApplication {
  public:
-  MojoApplication();
-  virtual ~MojoApplication();
+  // The ShellClient pointer must remain valid for the lifetime of the
+  // MojoApplication instance.
+  explicit MojoApplication(mojo::ServiceProvider* service_provider);
+  ~MojoApplication();
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  ServiceRegistry* service_registry() { return &service_registry_; }
+  mojo::ServiceProvider* host_service_provider() {
+    return host_service_provider_.get();
+  }
 
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);
 
   mojo::embedder::ChannelInit channel_init_;
-
-  ServiceRegistryImpl service_registry_;
+  mojo::ServiceProviderPtr host_service_provider_;
+  mojo::ServiceProvider* service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplication);
 };

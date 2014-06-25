@@ -5,7 +5,6 @@
 #include "content/renderer/web_ui_mojo.h"
 
 #include "content/common/view_messages.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/web_ui_mojo_context_state.h"
@@ -85,11 +84,8 @@ void WebUIMojo::DestroyContextState(v8::Handle<v8::Context> context) {
 
 void WebUIMojo::OnDidFinishDocumentLoad() {
   did_finish_document_load_ = true;
-  mojo::MessagePipe pipe;
-  SetHandleOnContextState(pipe.handle0.Pass());
-  RenderFrame::FromWebFrame(render_view()->GetWebView()->mainFrame())->
-      GetServiceRegistry()->
-          GetRemoteInterface("webui_controller", pipe.handle1.Pass());
+  if (pending_handle_.is_valid())
+    SetHandleOnContextState(pending_handle_.Pass());
 }
 
 void WebUIMojo::SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle) {

@@ -85,7 +85,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id)
       OVERRIDE;
   virtual void NotifyTimezoneChange() OVERRIDE;
-  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

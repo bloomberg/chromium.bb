@@ -51,7 +51,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/render_frame_setup.mojom.h"
+#include "content/common/mojo/mojo_service_names.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -95,6 +95,7 @@
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
+#include "content/renderer/web_ui_setup_impl.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -263,31 +264,6 @@ void NotifyTimezoneChangeOnThisThread() {
   if (!isolate)
     return;
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
-}
-
-class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
- public:
-  virtual void GetServiceProviderForFrame(
-      int32_t frame_routing_id,
-      mojo::InterfaceRequest<mojo::IInterfaceProvider> request) OVERRIDE {
-    RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_routing_id);
-    // We can receive a GetServiceProviderForFrame message for a frame not yet
-    // created due to a race between the message and a ViewMsg_New IPC that
-    // triggers creation of the RenderFrame we want.
-    if (!frame) {
-      RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, request.PassMessagePipe());
-      return;
-    }
-
-    frame->BindServiceRegistry(request.PassMessagePipe());
-  }
-
-  virtual void OnConnectionError() OVERRIDE { delete this; }
-};
-
-void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
-  mojo::BindToRequest(new RenderFrameSetupImpl(), &request);
 }
 
 }  // namespace
@@ -532,19 +508,10 @@ void RenderThreadImpl::Init() {
     }
   }
 
-  service_registry()->AddService<RenderFrameSetup>(
-      base::Bind(CreateRenderFrameSetup));
-
   TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
-  for (std::map<int, mojo::MessagePipeHandle>::iterator it =
-           pending_render_frame_connects_.begin();
-       it != pending_render_frame_connects_.end();
-       ++it) {
-    mojo::CloseRaw(it->second);
-  }
 }
 
 void RenderThreadImpl::Shutdown() {
@@ -713,18 +680,6 @@ scoped_refptr<base::MessageLoopProxy>
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   ChildThread::GetRouter()->AddRoute(routing_id, listener);
-  std::map<int, mojo::MessagePipeHandle>::iterator it =
-      pending_render_frame_connects_.find(routing_id);
-  if (it == pending_render_frame_connects_.end())
-    return;
-
-  RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(routing_id);
-  if (!frame)
-    return;
-
-  mojo::ScopedMessagePipeHandle handle(it->second);
-  pending_render_frame_connects_.erase(it);
-  frame->BindServiceRegistry(handle.Pass());
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
@@ -746,15 +701,6 @@ void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32 routing_id) {
     devtools_agent_message_filter_->RemoveEmbeddedWorkerRouteOnMainThread(
         routing_id);
   }
-}
-
-void RenderThreadImpl::RegisterPendingRenderFrameConnect(
-    int routing_id,
-    mojo::ScopedMessagePipeHandle handle) {
-  std::pair<std::map<int, mojo::MessagePipeHandle>::iterator, bool> result =
-      pending_render_frame_connects_.insert(
-          std::make_pair(routing_id, handle.release()));
-  CHECK(result.second) << "Inserting a duplicate item.";
 }
 
 int RenderThreadImpl::GenerateRoutingID() {
@@ -1153,10 +1099,6 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
-  return service_registry();
-}
-
 bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
@@ -1235,6 +1177,19 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
   return GpuMemoryBufferImpl::CreateFromHandle(
              handle, gfx::Size(width, height), internalformat)
       .PassAs<gfx::GpuMemoryBuffer>();
+}
+
+void RenderThreadImpl::ConnectToService(
+    const mojo::String& service_url,
+    const mojo::String& service_name,
+    mojo::ScopedMessagePipeHandle message_pipe,
+    const mojo::String& requestor_url) {
+  // TODO(darin): Invent some kind of registration system to use here.
+  if (service_url.To<base::StringPiece>() == kRendererService_WebUISetup) {
+    WebUISetupImpl::Bind(message_pipe.Pass());
+  } else {
+    NOTREACHED() << "Unknown service name";
+  }
 }
 
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {

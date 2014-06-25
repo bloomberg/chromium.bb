@@ -991,9 +991,6 @@
             'public/test/content_browser_test_utils.h',
             'public/test/content_browser_test_utils_mac.mm',
           ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)',
-          ],
           'conditions': [
             ['OS=="android"', {
               'dependencies': [
