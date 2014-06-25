@@ -443,12 +443,7 @@ public:
 
     PassRefPtrWillBeRawPtr<Range> createRange();
 
-    PassRefPtrWillBeRawPtr<NodeIterator> createNodeIterator(Node* root, ExceptionState&);
-    PassRefPtrWillBeRawPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionState&);
     PassRefPtrWillBeRawPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>, ExceptionState&);
-
-    PassRefPtrWillBeRawPtr<TreeWalker> createTreeWalker(Node* root, ExceptionState&);
-    PassRefPtrWillBeRawPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, ExceptionState&);
     PassRefPtrWillBeRawPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>, ExceptionState&);
 
     // Special support for editing

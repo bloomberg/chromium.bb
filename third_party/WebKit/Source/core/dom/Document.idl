@@ -72,11 +72,11 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     // DOM Level 2 Traversal and Range (DocumentTraversal interface)
 
     [RaisesException] NodeIterator createNodeIterator(Node root,
-                                                      optional unsigned long whatToShow,
-                                                      optional NodeFilter filter);
+                                                      optional unsigned long whatToShow = 0xFFFFFFFF,
+                                                      optional NodeFilter? filter = null);
     [RaisesException] TreeWalker createTreeWalker(Node root,
-                                                  optional unsigned long whatToShow,
-                                                  optional NodeFilter filter);
+                                                  optional unsigned long whatToShow = 0xFFFFFFFF,
+                                                  optional NodeFilter? filter = null);
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 

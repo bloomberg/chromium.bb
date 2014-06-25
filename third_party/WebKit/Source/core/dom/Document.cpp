@@ -1542,57 +1542,21 @@ PassRefPtrWillBeRawPtr<Range> Document::createRange()
     return Range::create(*this);
 }
 
-PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
-    // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-    return NodeIterator::create(root, NodeFilter::SHOW_ALL, nullptr);
-}
-
-PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
-{
+    // FIXME: Probably this should be handled within the bindings layer and Type Error should be thrown.
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return nullptr;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
     // NodeFilter.
-    return NodeIterator::create(root, whatToShow, nullptr);
-}
-
-PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter, ExceptionState& exceptionState)
-{
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-    // FIXME: Ditto.
     return NodeIterator::create(root, whatToShow, filter);
-}
-
-PassRefPtrWillBeRawPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& exceptionState)
-{
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-    return TreeWalker::create(root, NodeFilter::SHOW_ALL, nullptr);
-}
-
-PassRefPtrWillBeRawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
-{
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-    return TreeWalker::create(root, whatToShow, nullptr);
 }
 
 PassRefPtrWillBeRawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
+    // FIXME: Probably this should be handled within the bindings layer and Type Error should be thrown.
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return nullptr;
