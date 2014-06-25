@@ -55,6 +55,10 @@ void LoadDataWithBaseURL(Shell* window,
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
                                                 const GURL& url,
                                                 int number_of_navigations);
+// Reloads the selected tab of |window|, blocking until the given number of
+// navigations finishes.
+void ReloadBlockUntilNavigationsComplete(Shell* window,
+                                         int number_of_navigations);
 
 // Wait until an application modal dialog is requested.
 void WaitForAppModalDialog(Shell* window);
