@@ -6231,3 +6231,9 @@
    fun:_ZN2v88internal5Debug17ProcessDebugEventENS_10DebugEventENS0_6HandleINS0_8JSObjectEEEb
    fun:_ZN2v88internal5Debug12OnDebugBreakENS0_6HandleINS0_6ObjectEEEb
 }
+{
+   bug_388668
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20data_reduction_proxy69DataReductionProxyUsageStatsTest_isDataReductionProxyUnreachable_Test8TestBodyEv
+}
