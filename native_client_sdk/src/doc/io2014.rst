@@ -19,6 +19,61 @@ Work either on-line or off-line!
   <iframe class="video" width="500" height="281"
   src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe>
 
+Limitations
+===========
+
+.. raw:: html
+
+  <b><font color="#880000">
+  NOTE: The NaCl Development Environment is not yet stable.
+  Ideally user data is preserved, but current it can be lost during updates or
+  sporadically. We're working to resolve this.
+  </font></b>
+
+These development tools are a work in progress.
+At this point, they are a learning tool and demonstration of NaCl's
+flexibility, but are not the recommended tools for a production application.
+To develop a substantial application for Native Client /
+Portable Native Client,
+we currently recommend you use the
+`Native Client SDK </native-client/sdk/download>`_.
+
+Here is a summary of feature status. We hope to overcome these limitations
+in the near future:
+
+  * NaCl Development Environment
+
+    * General
+
+      * Supported:
+
+        * Python (built-in)
+        * GCC w/ GLibC (x86-32 and x86-64 only)
+        * Lua (install with: `package -i lua && . setup-environment`)
+        * Ruby (install with: `package -i ruby && . setup-environment`)
+        * Nethack! (install with: `package -i nethack && . setup-environment`)
+
+      * Unsupported:
+
+        * Targeting Newlib
+        * Targeting PNaCl
+        * Forking in bash
+        * Pipes / Redirection
+        * Symbolic and hard links
+
+    * Missing / broken on ARM:
+
+      * Git (broken)
+      * GCC (unsupported)
+
+  * Debugger
+ 
+    * Runs reliably only on a recent Beta or Dev Channel (M36+) build.
+    * Currently unreliable on some platforms:
+      
+      * ChromeOS
+      * Mac OSX
+      * Windows
 
 Installation
 ============
@@ -27,23 +82,27 @@ The setup process currently requires several steps.
 We're working to reduce the number of steps in future releases.
 As the process gets easier, we'll update this page.
 
-You currently need to:
-
-* Navigate to: chrome://flags and:
-
-  * Enable **Native Client**.
-  * Enable **Native Client GDB-based debugging**.  (For the debugger)
-
-* Install the NaCl in-browser debugger.
-
-  * Install the `NaCl Debugger Extension <https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd>`_.
-
-  * Install `GDB <https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe>`_.
-
 * Install the `NaCl Development Environment <https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa>`_.
 
-  * First run is slow (as it downloads and installs packages).
+  * First run is slow (as it downloads and installs packages). Launch and allow
+    initial install to complete before first use.
 
+When initially experimenting with the development environment,
+at this time, we recommend you run it without the debugger activated.
+Once you're ready to apply the debugger, follow these steps:
+
+  * Install a usable version of
+    `Chrome Linux (M36+, Dev or Beta channel) <http://www.chromium.org/getting-involved/dev-channel>`_.
+  * Install the `Native Client Debugger Extension <https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd>`_.
+  * Install `Native Client GDB <https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe>`_.
+
+  * Navigate to: chrome://flags and:
+
+    * Enable **Native Client**.
+    * Enable **Native Client GDB-based debugging**.  (For the debugger)
+
+  * NOTE: If you experience unexplained hangs, disabled GDB-based debugging
+    temporarily and try again.
 
 Editor
 ======
@@ -82,6 +141,11 @@ time you start the development environment.
 
   git config --global user.name "John Doe"
   git config --global user.email johndoe@example.com
+
+You can reload you `~/.bashrc` by running:
+::
+
+  source ~/.bashrc
 
 Tour (follow the video)
 =======================
@@ -143,7 +207,7 @@ We'll need to start an editor to fix this.
 You'll want to change *hieght* to *height* on line 506.
 Then rebuild::
 
-  $ make
+  $ make -j10
 
 Lets look at the diff::
 
@@ -164,16 +228,44 @@ Then, navigate to http://localhost:5103/ to test the demo.
 If you follow along with the demo video, you will discover the sample crashes
 when you change the thread count.
 
-*Debugger walk-thru coming soon.*
+Debugging
+=========
 
-Once you've identified the problem. You'll want to stop the test server.
-Press enter to halt it.
+If you haven't installed the debugger at this point, skip to the next section.
+
+At this point, if you have the debugger installed, you should be able to open
+the developer console and view the resulting crash.
+
+You can see a backtrace with::
+
+  bt
+
+You can see active threads with::
+
+  info threads
+
+Currently, symbol information is limited for GLibC executables.
+We have improvements coming that will improve the experience further.
+
+For newlib and PNaCl executables you can retrieve full symbols information
+with::
+
+  remote get irt irt
+  add-symbol-file irt
+  remote get nexe nexe
+  add-symbol-file nexe
+
+Fix it up
+=========
+
+Return to the development environment and stop the test server,
+by pressing Ctrl-C.
 
 Open your editor again, navigate to line 485 and change *valu* to *value*.
 
 Then rebuild::
 
-  $ make
+  $ make -j10
 
 Check the diff and commit our fix::
 
@@ -187,3 +279,12 @@ Now look at your commit history::
 Run the demo again. And everything now works::
 
   $ make serve
+
+Thanks
+======
+
+Thanks for checking out our environment.
+Things are rapidly changing and in the coming months you can expect to see
+further improvements and filling out of our platform and library support.
+
+Check back at this page for the latest status.

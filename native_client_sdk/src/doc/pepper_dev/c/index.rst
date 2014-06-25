@@ -101,7 +101,7 @@ run in Chrome 37 or higher.
 
   * `PPB_VideoFrame <struct_p_p_b___video_frame__0__1.html>`_
 
-  * `PPB_View <struct_p_p_b___view__1__1.html>`_
+  * `PPB_View <struct_p_p_b___view__1__2.html>`_
 
   * `PPB_WebSocket <struct_p_p_b___web_socket__1__0.html>`_
 

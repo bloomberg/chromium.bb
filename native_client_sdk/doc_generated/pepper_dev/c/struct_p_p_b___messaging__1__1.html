@@ -72,10 +72,9 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </div>
 <div class="memdoc">
-<p><b>Note:</b> This function is not yet implemented. </p>
-<p>Please use PPB_Messaging_1_0.</p>
-<p>Registers a handler for receiving messages from JavaScript. If a handler is registered this way, it will replace PPP_Messaging, and all messages sent from JavaScript via postMessage and postMessageAndAwaitResponse will be dispatched to <code>handler</code>.</p>
-<p>The function calls will be dispatched via <code>message_loop</code>. This means that the functions will be invoked on the thread to which <code>message_loop</code> is attached, when <code>message_loop</code> is run. It is illegal to pass the main thread message loop; RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case.</p>
+<p>Registers a handler for receiving messages from JavaScript. </p>
+<p>If a handler is registered this way, it will replace PPP_Messaging, and all messages sent from JavaScript via postMessage and postMessageAndAwaitResponse will be dispatched to <code>handler</code>.</p>
+<p>The function calls will be dispatched via <code>message_loop</code>. This means that the functions will be invoked on the thread to which <code>message_loop</code> is attached, when <code>message_loop</code> is run. It is illegal to pass the main thread message loop; RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case. If you quit <code>message_loop</code> before calling Unregister(), the browser will not be able to call functions in the plugin's message handler any more. That could mean missing some messages or could cause a leak if you depend on Destroy() to free hander data. So you should, whenever possible, Unregister() the handler prior to quitting its event loop.</p>
 <p>Attempting to register a message handler when one is already registered will cause the current MessageHandler to be unregistered and replaced. In that case, no messages will be sent to the "default" message handler (PPP_Messaging). Messages will stop arriving at the prior message handler and will begin to be dispatched at the new message handler.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
@@ -99,9 +98,8 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </div>
 <div class="memdoc">
-<p><b>Note:</b> This function is not yet implemented. </p>
-<p>Please use PPB_Messaging_1_0.</p>
-<p>Unregisters the current message handler for <code>instance</code> if one is registered. After this call, the message handler (if one was registered) will have "Destroy" called on it and will receive no further messages after that point. After that point, all messages sent from JavaScript using postMessage() will be dispatched to PPP_Messaging (if the plugin supports PPP_MESSAGING_INTERFACE). Attempts to call postMessageAndAwaitResponse() from JavaScript will fail.</p>
+<p>Unregisters the current message handler for <code>instance</code> if one is registered. </p>
+<p>After this call, the message handler (if one was registered) will have "Destroy" called on it and will receive no further messages after that point. After that point, all messages sent from JavaScript using postMessage() will be dispatched to PPP_Messaging (if the plugin supports PPP_MESSAGING_INTERFACE). Attempts to call postMessageAndAwaitResponse() from JavaScript will fail.</p>
 <p>Attempting to unregister a message handler when none is registered has no effect.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
