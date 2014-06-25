@@ -27,18 +27,14 @@ void ShellTestBase::LaunchServiceInProcess(
     const GURL& service_url,
     const std::string& service_name,
     ScopedMessagePipeHandle client_handle) {
-  base::FilePath base_dir;
-  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
-  // On android, the library is bundled with the app.
 #if defined(OS_ANDROID)
+  // On Android, the library is bundled with the app.
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  // On Mac and Windows, libraries are dumped beside the executables.
-#elif defined(OS_MACOSX) || defined(OS_WIN)
-  base::FilePath service_dir(base_dir);
 #else
-  // On Linux, they're under lib/.
-  base::FilePath service_dir(base_dir.AppendASCII("lib"));
+  // On other platforms, "loadable modules" are dumped beside the executables.
+  base::FilePath service_dir;
+  CHECK(PathService::Get(base::DIR_EXE, &service_dir));
 #endif
   shell_context_.mojo_url_resolver()->set_origin(
       net::FilePathToFileURL(service_dir).spec());

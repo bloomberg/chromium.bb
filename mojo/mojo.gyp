@@ -610,6 +610,7 @@
         'mojo_service_manager',
         'mojo_shell_lib',
         'mojo_system_impl',
+        'mojo_test_service',
         'mojo_test_service_bindings',
       ],
       'sources': [

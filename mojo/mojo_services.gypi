@@ -396,7 +396,7 @@
     },
     {
       'target_name': 'mojo_test_service',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         'mojo_application',
