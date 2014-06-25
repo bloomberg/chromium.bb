@@ -126,6 +126,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   bool CanSetFocus(const Node* node) const;
   bool CanGetNodeTree(const Node* node) const;
   bool CanEmbed(const mojo::Array<uint32_t>& node_ids) const;
+  bool CanSetNodeVisibility(const Node* node, bool visible) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -206,6 +207,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void SetNodeBounds(Id node_id,
                              RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void SetNodeVisibility(Id transport_node_id,
+                                 bool visible,
+                                 const Callback<void(bool)>& callback) OVERRIDE;
   virtual void Embed(const mojo::String& url,
                      mojo::Array<uint32_t> node_ids,
                      const mojo::Callback<void(bool)>& callback) OVERRIDE;

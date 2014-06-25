@@ -270,6 +270,11 @@ void Node::SetBounds(const gfx::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
+void Node::SetVisible(bool value) {
+  if (manager_)
+    static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
+}
+
 void Node::AddObserver(NodeObserver* observer) {
   observers_.AddObserver(observer);
 }

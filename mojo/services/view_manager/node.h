@@ -61,6 +61,11 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 
   bool Contains(const Node* node) const;
 
+  // Returns true if the window is visible. This does not consider visibility
+  // of any ancestors.
+  bool IsVisible() const;
+  void SetVisible(bool value);
+
   // Sets the view associated with this node. Node does not own its View.
   void SetView(View* view);
   View* view() { return view_; }

@@ -97,6 +97,17 @@ bool Node::Contains(const Node* node) const {
   return node && window_.Contains(&(node->window_));
 }
 
+bool Node::IsVisible() const {
+  return window_.TargetVisibility();
+}
+
+void Node::SetVisible(bool value) {
+  if (value)
+    window_.Show();
+  else
+    window_.Hide();
+}
+
 void Node::SetView(View* view) {
   if (view == view_)
     return;

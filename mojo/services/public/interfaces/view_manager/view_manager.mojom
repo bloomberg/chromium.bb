@@ -13,6 +13,7 @@ struct NodeData {
   uint32 node_id;
   uint32 view_id;
   mojo.Rect bounds;
+  // TODO(sky): add visible.
 };
 
 // ViewManagerInitService is responsible for launching the client that controls
@@ -47,6 +48,11 @@ interface ViewManagerService {
 
   // Sets the specified bounds of the specified node.
   SetNodeBounds(uint32 node_id, mojo.Rect bounds) => (bool success);
+
+  // Sets the visibility of the specified node to |visible|. Connections are
+  // allowed to change the visibility of any node they have created, as well as
+  // any of their roots.
+  SetNodeVisibility(uint32 node_id, bool visible) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
   // This fails for any of the following reasons:

@@ -497,6 +497,31 @@ class SetFocusTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(SetFocusTransaction);
 };
 
+class SetVisibleTransaction : public ViewManagerTransaction {
+ public:
+  SetVisibleTransaction(Id node_id,
+                        bool visible,
+                        ViewManagerClientImpl* client)
+      : ViewManagerTransaction(client),
+        node_id_(node_id),
+        visible_(visible) {}
+  virtual ~SetVisibleTransaction() {}
+
+ private:
+  // Overridden from ViewManagerTransaction:
+  virtual void DoCommit() OVERRIDE {
+    service()->SetNodeVisibility(node_id_, visible_, ActionCompletedCallback());
+  }
+  virtual void DoActionCompleted(bool success) OVERRIDE {
+    // TODO(beng): recovery?
+  }
+
+  const Id node_id_;
+  const bool visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetVisibleTransaction);
+};
+
 ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
     : connected_(false),
       connection_id_(0),
@@ -607,6 +632,13 @@ void ViewManagerClientImpl::SetViewContents(Id view_id,
 void ViewManagerClientImpl::SetFocus(Id node_id) {
   DCHECK(connected_);
   pending_transactions_.push_back(new SetFocusTransaction(node_id, this));
+  Sync();
+}
+
+void ViewManagerClientImpl::SetVisible(Id node_id, bool visible) {
+  DCHECK(connected_);
+  pending_transactions_.push_back(
+      new SetVisibleTransaction(node_id, visible, this));
   Sync();
 }
 

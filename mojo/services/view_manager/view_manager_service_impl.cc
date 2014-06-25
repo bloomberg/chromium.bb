@@ -366,6 +366,14 @@ bool ViewManagerServiceImpl::CanEmbed(
   return node_ids.size() > 0;
 }
 
+bool ViewManagerServiceImpl::CanSetNodeVisibility(const Node* node,
+                                                  bool visibile) const {
+  return node &&
+      (node->id().connection_id == id_ ||
+       roots_.find(NodeIdToTransportId(node->id())) != roots_.end()) &&
+      node->IsVisible() != visibile;
+}
+
 bool ViewManagerServiceImpl::DeleteNodeImpl(ViewManagerServiceImpl* source,
                                             const NodeId& node_id) {
   DCHECK_EQ(node_id.connection_id, id_);
@@ -746,6 +754,21 @@ void ViewManagerServiceImpl::SetNodeBounds(
   root_node_manager_->ProcessNodeBoundsChanged(
       node, old_bounds, bounds.To<gfx::Rect>());
   callback.Run(true);
+}
+
+void ViewManagerServiceImpl::SetNodeVisibility(
+    Id transport_node_id,
+    bool visible,
+    const Callback<void(bool)>& callback) {
+  const NodeId node_id(NodeIdFromTransportId(transport_node_id));
+  Node* node = GetNode(node_id);
+  const bool success = CanSetNodeVisibility(node, visible);
+  if (success) {
+    DCHECK(node);
+    node->SetVisible(visible);
+  }
+  // TODO(sky): need to notify of visibility changes.
+  callback.Run(success);
 }
 
 void ViewManagerServiceImpl::Embed(const String& url,

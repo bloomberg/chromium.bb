@@ -58,6 +58,7 @@ class ViewManagerClientImpl : public ViewManager,
   void SetBounds(Id node_id, const gfx::Rect& bounds);
   void SetViewContents(Id view_id, const SkBitmap& contents);
   void SetFocus(Id node_id);
+  void SetVisible(Id node_id, bool visible);
 
   void Embed(const String& url, Id node_id);
 

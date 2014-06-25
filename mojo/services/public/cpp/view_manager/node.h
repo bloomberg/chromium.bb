@@ -41,6 +41,10 @@ class Node {
   const gfx::Rect& bounds() { return bounds_; }
   void SetBounds(const gfx::Rect& bounds);
 
+  // Visibility.
+  void SetVisible(bool value);
+  // TODO(sky): add accessor.
+
   // Observation.
   void AddObserver(NodeObserver* observer);
   void RemoveObserver(NodeObserver* observer);
