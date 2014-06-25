@@ -268,65 +268,69 @@ Gallery.prototype.createToolbarButton_ = function(className, title) {
  * @param {!Array.<Entry>} selectedEntries Array of selected entries.
  */
 Gallery.prototype.load = function(entries, selectedEntries) {
-  var items = [];
-  for (var index = 0; index < entries.length; ++index) {
-    items.push(new Gallery.Item(entries[index]));
-  }
-  this.dataModel_.push.apply(this.dataModel_, items);
+  // Obtain metadata.
+  var metadataPromise = new Promise(function(fulfill) {
+    this.metadataCache_.get(entries, Gallery.METADATA_TYPE, fulfill);
+  }.bind(this));
 
-  this.selectionModel_.adjustLength(this.dataModel_.length);
+  // Initialize the gallery by uisng the metadata.
+  metadataPromise.then(function(metadata) {
+    // Check the length of metadata.
+    if (entries.length !== metadata.length)
+      return Promise.reject('Failed to obtain metadata for the entries.');
 
-  // Comparing Entries by reference is not safe. Therefore we have to use URLs.
-  var entryIndexesByURLs = {};
-  for (var index = 0; index < entries.length; index++) {
-    entryIndexesByURLs[entries[index].toURL()] = index;
-  }
+    // Obtains items.
+    var items = entries.map(function(entry, i) {
+      return new Gallery.Item(entry, MetadataCache.cloneMetadata(metadata[i]));
+    });
 
-  for (var i = 0; i !== selectedEntries.length; i++) {
-    var selectedIndex = entryIndexesByURLs[selectedEntries[i].toURL()];
-    if (selectedIndex !== undefined)
-      this.selectionModel_.setIndexSelected(selectedIndex, true);
-    else
-      console.error('Cannot select ' + selectedEntries[i]);
-  }
+    // Update the models.
+    this.dataModel_.push.apply(this.dataModel_, items);
+    this.selectionModel_.adjustLength(this.dataModel_.length);
 
-  if (this.selectionModel_.selectedIndexes.length === 0)
-    this.onSelection_();
+    // Apply selection.
+    var entryIndexesByURLs = {};
+    for (var index = 0; index < entries.length; index++) {
+      entryIndexesByURLs[entries[index].toURL()] = index;
+    }
+    for (var i = 0; i !== selectedEntries.length; i++) {
+      var selectedIndex = entryIndexesByURLs[selectedEntries[i].toURL()];
+      if (selectedIndex !== undefined)
+        this.selectionModel_.setIndexSelected(selectedIndex, true);
+      else
+        console.error('Cannot select ' + selectedEntries[i]);
+    }
+    if (this.selectionModel_.selectedIndexes.length === 0)
+      this.onSelection_();
 
-  var mosaic = this.mosaicMode_ && this.mosaicMode_.getMosaic();
+    // Determine the initial mode.
+    var shouldShowMosaic = selectedEntries.length > 1 ||
+                           (this.context_.pageState &&
+                            this.context_.pageState.gallery === 'mosaic');
+    this.setCurrentMode_(shouldShowMosaic ? this.mosaicMode_ : this.slideMode_);
 
-  // Mosaic view should show up if most of the selected files are images.
-  var imagesCount = 0;
-  for (var i = 0; i !== selectedEntries.length; i++) {
-    if (FileType.getMediaType(selectedEntries[i]) === 'image')
-      imagesCount++;
-  }
-  var mostlyImages = imagesCount > (selectedEntries.length / 2.0);
-
-  var forcedMosaic = (this.context_.pageState &&
-      this.context_.pageState.gallery === 'mosaic');
-
-  var showMosaic = (mostlyImages && selectedEntries.length > 1) || forcedMosaic;
-  if (mosaic && showMosaic) {
-    this.setCurrentMode_(this.mosaicMode_);
+    // Init mosaic mode.
+    var mosaic = this.mosaicMode_.getMosaic();
     mosaic.init();
-    mosaic.show();
-    this.inactivityWatcher_.check();  // Show the toolbar.
-    cr.dispatchSimpleEvent(this, 'loaded');
-  } else {
-    this.setCurrentMode_(this.slideMode_);
-    var maybeLoadMosaic = function() {
-      if (mosaic)
-        mosaic.init();
+
+    // Do the initialization for each mode.
+    if (shouldShowMosaic) {
+      this.inactivityWatcher_.check();  // Show the toolbar.
       cr.dispatchSimpleEvent(this, 'loaded');
-    }.bind(this);
-    /* TODO: consider nice blow-up animation for the first image */
-    this.slideMode_.enter(null, function() {
-        // Flash the toolbar briefly to show it is there.
-        this.inactivityWatcher_.kick(Gallery.FIRST_FADE_TIMEOUT);
-      }.bind(this),
-      maybeLoadMosaic);
-  }
+    } else {
+      this.slideMode_.enter(
+          null,
+          function() {
+            // Flash the toolbar briefly to show it is there.
+            this.inactivityWatcher_.kick(Gallery.FIRST_FADE_TIMEOUT);
+          }.bind(this),
+          function() {
+            cr.dispatchSimpleEvent(this, 'loaded');
+          }.bind(this));
+    }
+  }.bind(this)).catch(function(error) {
+    console.error(error.stack || error);
+  });
 };
 
 /**

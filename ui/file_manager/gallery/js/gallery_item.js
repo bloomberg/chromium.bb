@@ -10,15 +10,35 @@
  * @param {FileEntry} entry Image entry.
  * @constructor
  */
-Gallery.Item = function(entry) {
+Gallery.Item = function(entry, metadata) {
+  /**
+   * @type {FileEntry}
+   * @private
+   */
   this.entry_ = entry;
+
+  /**
+   * @type {Object}
+   * @private
+   */
+  this.metadata_ = Object.freeze(metadata);
+
+  /**
+   * @type {boolean}
+   * @private
+   */
   this.original_ = true;
 };
 
 /**
  * @return {FileEntry} Image entry.
  */
-Gallery.Item.prototype.getEntry = function() { return this.entry_ };
+Gallery.Item.prototype.getEntry = function() { return this.entry_; };
+
+/**
+ * @return {Object} Metadata.
+ */
+Gallery.Item.prototype.getMetadata = function() { return this.metadata_;  };
 
 /**
  * @return {string} File name.
@@ -30,7 +50,7 @@ Gallery.Item.prototype.getFileName = function() {
 /**
  * @return {boolean} True if this image has not been created in this session.
  */
-Gallery.Item.prototype.isOriginal = function() { return this.original_ };
+Gallery.Item.prototype.isOriginal = function() { return this.original_; };
 
 // TODO: Localize?
 /**
@@ -55,7 +75,7 @@ Gallery.Item.REGEXP_COPY_N =
 /**
  * Creates a name for an edited copy of the file.
  *
- * @param {Entry} dirEntry Entry.
+ * @param {DirectoryEntry} dirEntry Entry.
  * @param {function} callback Callback.
  * @private
  */
