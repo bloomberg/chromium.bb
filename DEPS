@@ -72,7 +72,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  "buildtools_revision": "1b99ceb70085a368f560ad13500a5ea3c4c93c0d",
+  "buildtools_revision": "a072c5b27726c359a1e86b43ef5589194179a121",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFIum
   # and whatever else without interference from each other.
@@ -718,7 +718,7 @@ hooks = [
                 "--platform=win32",
                 "--no_auth",
                 "--bucket", "chromium-clang-format",
-                "-s", "src/third_party/clang_format/bin/win/clang-format.exe.sha1",
+                "-s", "src/buildtools/win/clang-format.exe.sha1",
     ],
   },
   {
@@ -729,11 +729,45 @@ hooks = [
                 "--platform=darwin",
                 "--no_auth",
                 "--bucket", "chromium-clang-format",
-                "-s", "src/third_party/clang_format/bin/mac/clang-format.sha1",
+                "-s", "src/buildtools/mac/clang-format.sha1",
     ],
   },
   {
     "name": "clang_format_linux",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "src/buildtools/linux64/clang-format.sha1",
+    ],
+  },
+  # TODO(jochen): remove these after a week.
+  {
+    "name": "clang_format_win_old",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=win32",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "src/third_party/clang_format/bin/win/clang-format.exe.sha1",
+    ],
+  },
+  {
+    "name": "clang_format_mac_old",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=darwin",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "src/third_party/clang_format/bin/mac/clang-format.sha1",
+    ],
+  },
+  {
+    "name": "clang_format_linux_old",
     "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
