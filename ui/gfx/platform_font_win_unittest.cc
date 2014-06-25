@@ -69,6 +69,22 @@ TEST(PlatformFontWinTest, DeriveFontWithHeight) {
   }
 }
 
+TEST(PlatformFontWinTest, DeriveFontWithHeight_Consistency) {
+  gfx::Font arial_12("Arial", 12);
+  ASSERT_GT(16, arial_12.GetHeight());
+  gfx::Font derived_1 = static_cast<PlatformFontWin*>(
+      arial_12.platform_font())->DeriveFontWithHeight(16, 0);
+
+  gfx::Font arial_15("Arial", 15);
+  ASSERT_LT(16, arial_15.GetHeight());
+  gfx::Font derived_2 = static_cast<PlatformFontWin*>(
+      arial_15.platform_font())->DeriveFontWithHeight(16, 0);
+
+  EXPECT_EQ(derived_1.GetFontSize(), derived_2.GetFontSize());
+  EXPECT_EQ(16, derived_1.GetHeight());
+  EXPECT_EQ(16, derived_2.GetHeight());
+}
+
 // Callback function used by DeriveFontWithHeight_MinSize() below.
 static int GetMinFontSize() {
   return 10;

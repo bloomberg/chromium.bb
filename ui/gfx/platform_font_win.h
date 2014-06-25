@@ -142,6 +142,14 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // Creates and returns a new HFONTRef from the specified HFONT.
   static HFontRef* CreateHFontRef(HFONT font);
 
+  // Creates and returns a new HFONTRef from the specified HFONT. Uses provided
+  // |font_metrics| instead of calculating new one.
+  static HFontRef* CreateHFontRef(HFONT font, const TEXTMETRIC& font_metrics);
+
+  // Returns a largest derived Font whose height does not exceed the height of
+  // |base_font|.
+  static Font DeriveWithCorrectedSize(HFONT base_font);
+
   // Creates a new PlatformFontWin with the specified HFontRef. Used when
   // constructing a Font from a HFONT we don't want to copy.
   explicit PlatformFontWin(HFontRef* hfont_ref);

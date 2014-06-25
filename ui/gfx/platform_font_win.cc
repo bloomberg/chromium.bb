@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
@@ -58,6 +59,11 @@ void SetLogFontStyle(int font_style, LOGFONT* font_info) {
   font_info->lfUnderline = (font_style & gfx::Font::UNDERLINE) != 0;
   font_info->lfItalic = (font_style & gfx::Font::ITALIC) != 0;
   font_info->lfWeight = (font_style & gfx::Font::BOLD) ? FW_BOLD : FW_NORMAL;
+}
+
+void GetTextMetricsForFont(HDC hdc, HFONT font, TEXTMETRIC* text_metrics) {
+  base::win::ScopedSelectObject scoped_font(hdc, font);
+  GetTextMetrics(hdc, text_metrics);
 }
 
 }  // namespace
@@ -116,7 +122,7 @@ Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
   SetLogFontStyle(style, &font_info);
 
   HFONT hfont = CreateFontIndirect(&font_info);
-  return Font(new PlatformFontWin(CreateHFontRef(hfont)));
+  return DeriveWithCorrectedSize(hfont);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,11 +236,16 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 
   {
     base::win::ScopedGetDC screen_dc(NULL);
-    base::win::ScopedSelectObject scoped_font(screen_dc, font);
     gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
-    GetTextMetrics(screen_dc, &font_metrics);
+    GetTextMetricsForFont(screen_dc, font, &font_metrics);
   }
 
+  return CreateHFontRef(font, font_metrics);
+}
+
+PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(
+    HFONT font,
+    const TEXTMETRIC& font_metrics) {
   const int height = std::max<int>(1, font_metrics.tmHeight);
   const int baseline = std::max<int>(1, font_metrics.tmAscent);
   const int cap_height =
@@ -252,6 +263,37 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 
   return new HFontRef(font, font_size, height, baseline, cap_height,
                       ave_char_width, style);
+}
+
+Font PlatformFontWin::DeriveWithCorrectedSize(HFONT base_font) {
+  base::win::ScopedGetDC screen_dc(NULL);
+  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+
+  base::win::ScopedGDIObject<HFONT> best_font(base_font);
+  TEXTMETRIC best_font_metrics;
+  GetTextMetricsForFont(screen_dc, best_font, &best_font_metrics);
+
+  LOGFONT font_info;
+  GetObject(base_font, sizeof(LOGFONT), &font_info);
+
+  // Set |lfHeight| to negative value to indicate it's the size, not the height.
+  font_info.lfHeight =
+      -(best_font_metrics.tmHeight - best_font_metrics.tmInternalLeading);
+
+  do {
+    // Increment font size. Prefer font with greater size if its height isn't
+    // greater than height of base font.
+    font_info.lfHeight = AdjustFontSize(font_info.lfHeight, 1);
+    base::win::ScopedGDIObject<HFONT> font(CreateFontIndirect(&font_info));
+    TEXTMETRIC font_metrics;
+    GetTextMetricsForFont(screen_dc, font, &font_metrics);
+    if (font_metrics.tmHeight > best_font_metrics.tmHeight)
+      break;
+    best_font.Set(font.release());
+    best_font_metrics = font_metrics;
+  } while (true);
+
+  return Font(new PlatformFontWin(CreateHFontRef(best_font.release())));
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
