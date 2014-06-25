@@ -31,7 +31,6 @@
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/importer/ie_importer_test_registry_overrider_win.h"
@@ -44,6 +43,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/os_crypt/ie7_password_win.h"
+#include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

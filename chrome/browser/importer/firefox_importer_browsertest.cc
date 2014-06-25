@@ -14,7 +14,6 @@
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007

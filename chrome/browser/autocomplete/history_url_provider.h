@@ -14,7 +14,7 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "components/search_engines/template_url.h"
 
 class Profile;
 class SearchTermsData;

@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
+#include "components/search_engines/template_url.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"

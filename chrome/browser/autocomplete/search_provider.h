@@ -18,8 +18,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/autocomplete/base_search_provider.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/template_url.h"
 
 class Profile;
 class SearchProviderTest;

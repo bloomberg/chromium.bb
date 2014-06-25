@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 
-#include "chrome/browser/search_engines/template_url.h"
+#include "components/search_engines/template_url.h"
 
 SearchEngineTabHelperDelegate::~SearchEngineTabHelperDelegate() {
 }

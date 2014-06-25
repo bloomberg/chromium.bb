@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url.h"
+#include "components/search_engines/template_url.h"
 
 #include <string>
 #include <vector>
@@ -24,14 +24,17 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
-#include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+// This constant is defined here as a workaround while we cannot depend on
+// src/extensions.
+// TODO(hashimoto): Remove this. crbug.com/388040
+const char kExtensionScheme[] = "chrome-extension";
 
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
@@ -1249,7 +1252,7 @@ bool TemplateURL::HasSameKeywordAs(
 TemplateURL::Type TemplateURL::GetType() const {
   if (extension_info_)
     return NORMAL_CONTROLLED_BY_EXTENSION;
-  return GURL(data_.url()).SchemeIs(extensions::kExtensionScheme) ?
+  return GURL(data_.url()).SchemeIs(kExtensionScheme) ?
       OMNIBOX_API_EXTENSION : NORMAL;
 }
 

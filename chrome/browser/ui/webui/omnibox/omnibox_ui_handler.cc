@@ -21,8 +21,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/common/common_type_converters.h"
 

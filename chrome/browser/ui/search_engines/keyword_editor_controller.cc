@@ -7,11 +7,11 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/search_engines/template_url.h"
 #include "content/public/browser/user_metrics.h"
 
 using base::UserMetricsAction;

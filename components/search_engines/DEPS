@@ -1,4 +1,8 @@
 include_rules = [
   "+components/google/core",
   "+components/history/core",
+  "+components/metrics/proto",
+  "+google_apis",
+  "+net",
+  "+ui/gfx/geometry",
 ]

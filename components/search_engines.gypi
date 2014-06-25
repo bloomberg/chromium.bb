@@ -9,7 +9,12 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../net/net.gyp:net',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
+        'component_metrics_proto',
+        'google_core_browser',
         'search_engines/prepopulated_engines.gyp:prepopulated_engines',
       ],
       'include_dirs': [
@@ -23,6 +28,8 @@
         'search_engines/search_engines_switches.h',
         'search_engines/search_terms_data.cc',
         'search_engines/search_terms_data.h',
+        'search_engines/template_url.cc',
+        'search_engines/template_url.h',
         'search_engines/template_url_data.cc',
         'search_engines/template_url_data.h',
         'search_engines/template_url_id.h',

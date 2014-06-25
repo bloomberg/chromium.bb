@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_
+#define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_
 
 #include <string>
 #include <utility>
@@ -16,7 +16,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
@@ -701,4 +701,4 @@ class TemplateURL {
   DISALLOW_COPY_AND_ASSIGN(TemplateURL);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_
