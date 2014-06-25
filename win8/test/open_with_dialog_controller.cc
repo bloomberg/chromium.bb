@@ -167,7 +167,7 @@ void OpenWithDialogController::Context::OnTimeout() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This is a LOG rather than a DLOG since it represents something that needs
   // to be investigated and fixed.
-  LOG(ERROR) << __FUNCTION__ " state: " << state_;
+  LOG(ERROR) << __FUNCTION__ << " state: " << state_;
 
   state_ = CONTEXT_FINISHED;
   NotifyClientAndDie();

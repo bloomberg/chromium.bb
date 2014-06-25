@@ -321,7 +321,7 @@ void UIAutomationClient::Context::HandleWindowOpen(
   }
 
   if (V_VT(&var) != VT_BSTR) {
-    LOG(ERROR) << __FUNCTION__ " class name is not a BSTR: " << V_VT(&var);
+    LOG(ERROR) << __FUNCTION__ << " class name is not a BSTR: " << V_VT(&var);
     return;
   }
 
