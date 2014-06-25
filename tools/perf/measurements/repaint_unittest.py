@@ -34,7 +34,6 @@ class RepaintUnitTest(
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  @test.Disabled  # http://crbug.com/368767
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
     ps.AddPage(TestRepaintPage(ps, ps.base_dir))

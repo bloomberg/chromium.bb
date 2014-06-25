@@ -9,7 +9,6 @@ from measurements import smoothness
 import page_sets
 
 
-@test.Disabled  # crbug.com/368767
 class SmoothnessTop25(test.Test):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 

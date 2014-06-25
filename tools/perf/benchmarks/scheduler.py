@@ -7,7 +7,6 @@ from measurements import smoothness
 import page_sets
 
 
-@test.Disabled('linux')  # crbug.com/368767
 class SchedulerToughSchedulingCases(test.Test):
   """Measures rendering statistics while interacting with pages that have
   challenging scheduling properties.
