@@ -224,7 +224,8 @@ def cpp_value(interface, method, number_of_arguments):
                 return '%s.get()' % argument.name
             return argument.name
         if (idl_type.is_callback_interface or
-            idl_type.name in ['NodeFilter', 'XPathNSResolver']):
+            idl_type.name in ['NodeFilter', 'NodeFilterOrNull',
+                              'XPathNSResolver', 'XPathNSResolverOrNull']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name
         return argument.name
