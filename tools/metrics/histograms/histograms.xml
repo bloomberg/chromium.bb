@@ -29936,6 +29936,54 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Stars.Goog_Related" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips with Google related urls (points to internal Google
+    resources). Logs every time user goes to chrome://boomarks.
+  </summary>
+</histogram>
+
+<histogram name="Stars.Goog_Related_20_Percent" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips with Google related urls within first 20 (points to
+    internal Google resources). Logs every time user goes to chrome://boomarks.
+  </summary>
+</histogram>
+
+<histogram name="Stars.Images_Percent" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips with images. Logs every time user goes to
+    chrome://boomarks.
+  </summary>
+</histogram>
+
+<histogram name="Stars.Images_Percent_First20" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips with images within first 20. Logs every time user goes
+    to chrome://boomarks.
+  </summary>
+</histogram>
+
+<histogram name="Stars.No_Images_Snippets" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips without images or snippets. Logs every time user goes to
+    chrome://boomarks.
+  </summary>
+</histogram>
+
+<histogram name="Stars.No_Img_No_Snippet_20_Percent" units="percent">
+  <owner>yefim@chromium.org</owner>
+  <summary>
+    Percentage of clips without images or snippets within first 20. Logs every
+    time user goes to chrome://boomarks.
+  </summary>
+</histogram>
+
 <histogram name="Startup.AppListFirstPaintColdStart" units="milliseconds">
   <owner>tapted@chromium.org</owner>
   <summary>
