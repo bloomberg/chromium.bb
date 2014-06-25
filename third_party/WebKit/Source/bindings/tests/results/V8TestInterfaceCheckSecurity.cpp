@@ -551,15 +551,26 @@ static void configureV8TestInterfaceCheckSecurityTemplate(v8::Handle<v8::Functio
     v8::Local<v8::ObjectTemplate> instanceTemplate ALLOW_UNUSED = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate ALLOW_UNUSED = functionTemplate->PrototypeTemplate();
     instanceTemplate->SetAccessCheckCallbacks(TestInterfaceCheckSecurityV8Internal::namedSecurityCheck, TestInterfaceCheckSecurityV8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestInterfaceCheckSecurity::wrapperTypeInfo)));
-    prototypeTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
-    prototypeTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityDoNotCheckSignatureVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        prototypeTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityPerWorldBindingsVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCallbackForMainWorld, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
-    } else {
-        prototypeTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityPerWorldBindingsVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
-    }
-    prototypeTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityReadOnlyVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetterCallback, 0, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
-    instanceTemplate->SetAccessor(v8AtomicString(isolate, "doNotCheckSecurityUnforgeableVoidMethod"), TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+    static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityVoidMethodOriginSafeAttributeConfiguration = {
+        "doNotCheckSecurityVoidMethod", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, 0, 0, &V8TestInterfaceCheckSecurity::wrapperTypeInfo, v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete), false
+    };
+    V8DOMConfiguration::installAttribute(prototypeTemplate, v8::Handle<v8::ObjectTemplate>(), doNotCheckSecurityVoidMethodOriginSafeAttributeConfiguration, isolate);
+    static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeAttributeConfiguration = {
+        "doNotCheckSecurityDoNotCheckSignatureVoidMethod", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, 0, 0, &V8TestInterfaceCheckSecurity::wrapperTypeInfo, v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete), false
+    };
+    V8DOMConfiguration::installAttribute(prototypeTemplate, v8::Handle<v8::ObjectTemplate>(), doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeAttributeConfiguration, isolate);
+    static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeAttributeConfiguration = {
+        "doNotCheckSecurityPerWorldBindingsVoidMethod", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterCallbackForMainWorld, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallbackForMainWorld, &V8TestInterfaceCheckSecurity::wrapperTypeInfo, v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete), false
+    };
+    V8DOMConfiguration::installAttribute(prototypeTemplate, v8::Handle<v8::ObjectTemplate>(), doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeAttributeConfiguration, isolate);
+    static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityReadOnlyVoidMethodOriginSafeAttributeConfiguration = {
+        "doNotCheckSecurityReadOnlyVoidMethod", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetterCallback, 0, 0, 0, &V8TestInterfaceCheckSecurity::wrapperTypeInfo, v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), false
+    };
+    V8DOMConfiguration::installAttribute(prototypeTemplate, v8::Handle<v8::ObjectTemplate>(), doNotCheckSecurityReadOnlyVoidMethodOriginSafeAttributeConfiguration, isolate);
+    static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityUnforgeableVoidMethodOriginSafeAttributeConfiguration = {
+        "doNotCheckSecurityUnforgeableVoidMethod", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallback, TestInterfaceCheckSecurityV8Internal::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback, 0, 0, &V8TestInterfaceCheckSecurity::wrapperTypeInfo, v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete), false
+    };
+    V8DOMConfiguration::installAttribute(instanceTemplate, v8::Handle<v8::ObjectTemplate>(), doNotCheckSecurityUnforgeableVoidMethodOriginSafeAttributeConfiguration, isolate);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());

@@ -996,15 +996,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
                               if method.overloads else
                               method.runtime_enabled_function) %}
     {% if method.is_do_not_check_security %}
-    {% if method.is_per_world_bindings %}
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        {{install_do_not_check_security_signature(method, 'ForMainWorld')}}
-    } else {
-        {{install_do_not_check_security_signature(method)}}
-    }
-    {% else %}
-    {{install_do_not_check_security_signature(method)}}
-    {% endif %}
+    {{install_do_not_check_security_signature(method) | indent}}
     {% else %}{# is_do_not_check_security #}
     {{install_custom_signature(method) | indent}}
     {% endif %}{# is_do_not_check_security #}
@@ -1043,7 +1035,6 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
 
 {######################################}
 {% macro install_do_not_check_security_signature(method, world_suffix) %}
-{# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithDoNotCheckSecuritySignature #}
 {# Methods that are [DoNotCheckSecurity] are always readable, but if they are
    changed and then accessed from a different origin, we do not return the
    underlying value, but instead return a new copy of the original function.
@@ -1054,10 +1045,21 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
 {% set setter_callback =
     '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class)
     if not method.is_read_only else '0' %}
+{% if method.is_per_world_bindings %}
+{% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
+{% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
+   if not method.is_read_only else '0' %}
+{% else %}
+{% set getter_callback_for_main_world = '0' %}
+{% set setter_callback_for_main_world = '0' %}
+{% endif %}
 {% set property_attribute =
     'static_cast<v8::PropertyAttribute>(%s)' %
     ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
-{{method.function_template}}->SetAccessor(v8AtomicString(isolate, "{{method.name}}"), {{getter_callback}}, {{setter_callback}}, v8Undefined(), v8::ALL_CAN_READ, {{property_attribute}});
+static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
+    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, false
+};
+V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
 {%- endmacro %}
 
 
