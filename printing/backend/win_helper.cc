@@ -432,39 +432,40 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
     HANDLE printer,
     const base::string16& printer_name,
     bool color) {
-  scoped_ptr<DEVMODE, base::FreeDeleter> default = CreateDevMode(printer, NULL);
-  if (!default)
-    return default.Pass();
+  scoped_ptr<DEVMODE, base::FreeDeleter> default_ticket =
+      CreateDevMode(printer, NULL);
+  if (!default_ticket)
+    return default_ticket.Pass();
 
-  if ((default->dmFields & DM_COLOR) &&
-      ((default->dmColor == DMCOLOR_COLOR) == color)) {
-    return default.Pass();
+  if ((default_ticket->dmFields & DM_COLOR) &&
+      ((default_ticket->dmColor == DMCOLOR_COLOR) == color)) {
+    return default_ticket.Pass();
   }
 
-  default->dmFields |= DM_COLOR;
-  default->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  default_ticket->dmFields |= DM_COLOR;
+  default_ticket->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
 
   DriverInfo6 info_6;
   if (!info_6.Init(printer))
-    return default.Pass();
+    return default_ticket.Pass();
 
   const DRIVER_INFO_6* p = info_6.get();
 
   // Only HP known to have issues.
   if (!p->pszMfgName || wcscmp(p->pszMfgName, L"HP") != 0)
-    return default.Pass();
+    return default_ticket.Pass();
 
   // Need XPS for this workaround.
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized())
-    return default.Pass();
+    return default_ticket.Pass();
 
   const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
   std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
   scoped_ptr<DEVMODE, base::FreeDeleter> ticket =
       printing::XpsTicketToDevMode(printer_name, xps_ticket);
   if (!ticket)
-    return default.Pass();
+    return default_ticket.Pass();
 
   return ticket.Pass();
 }
