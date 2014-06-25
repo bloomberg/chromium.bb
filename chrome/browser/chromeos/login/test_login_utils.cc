@@ -18,7 +18,7 @@ TestLoginUtils::~TestLoginUtils() {}
 
 void TestLoginUtils::PrepareProfile(
     const UserContext& user_context,
-    bool has_cookies,
+    bool has_auth_cookies,
     bool has_active_session,
     Delegate* delegate) {
   if (user_context != expected_user_context_)

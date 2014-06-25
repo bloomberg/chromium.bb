@@ -107,7 +107,7 @@ class LoginUtilsImpl
                                LoginDisplayHost* login_host) OVERRIDE;
   virtual void PrepareProfile(
       const UserContext& user_context,
-      bool has_cookies,
+      bool has_auth_cookies,
       bool has_active_session,
       LoginUtils::Delegate* delegate) OVERRIDE;
   virtual void DelegateDeleted(LoginUtils::Delegate* delegate) OVERRIDE;
@@ -286,7 +286,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
 
 void LoginUtilsImpl::PrepareProfile(
     const UserContext& user_context,
-    bool has_cookies,
+    bool has_auth_cookies,
     bool has_active_session,
     LoginUtils::Delegate* delegate) {
   // TODO(nkostylev): We have to initialize LoginUtils delegate as long
@@ -299,7 +299,7 @@ void LoginUtilsImpl::PrepareProfile(
   // directly.
   SessionManager::GetInstance()->StartSession(user_context,
                                               authenticator_,
-                                              has_cookies,
+                                              has_auth_cookies,
                                               has_active_session,
                                               this);
 }

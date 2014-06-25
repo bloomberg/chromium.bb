@@ -66,7 +66,7 @@ class LoginUtils {
   // session after browser crash so no need to start new session.
   virtual void PrepareProfile(
       const UserContext& user_context,
-      bool has_cookies,
+      bool has_auth_cookies,
       bool has_active_session,
       Delegate* delegate) = 0;
 

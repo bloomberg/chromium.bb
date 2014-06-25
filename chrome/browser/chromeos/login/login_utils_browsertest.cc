@@ -412,13 +412,13 @@ class LoginUtilsTest : public testing::Test,
     authenticator->CompleteLogin(ProfileHelper::GetSigninProfile(),
                                  user_context);
 
-    // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
-    // waiting for an IO task before proceeding.
-    const bool kHasCookies = false;
+    // Setting |kHasAuthCookies| to false prevents ProfileAuthData::Transfer
+    // from waiting for an IO task before proceeding.
+    const bool kHasAuthCookies = false;
     const bool kHasActiveSession = false;
     user_context.SetAuthFlow(UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
     LoginUtils::Get()->PrepareProfile(user_context,
-                                      kHasCookies,
+                                      kHasAuthCookies,
                                       kHasActiveSession,
                                       this);
     device_settings_test_helper.Flush();

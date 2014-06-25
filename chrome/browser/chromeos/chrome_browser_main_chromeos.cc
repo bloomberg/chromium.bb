@@ -162,7 +162,7 @@ class StubLogin : public LoginStatusConsumer,
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
       LoginUtils::Get()->PrepareProfile(user_context,
-                                        false,          // has_cookies
+                                        false,          // has_auth_cookies
                                         true,           // has_active_session
                                         this);
     } else {

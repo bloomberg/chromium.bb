@@ -27,7 +27,7 @@ class TestLoginUtils : public LoginUtils {
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE {}
   virtual void PrepareProfile(const UserContext& user_context,
-                              bool has_cookies,
+                              bool has_auth_cookies,
                               bool has_active_session,
                               Delegate* delegate) OVERRIDE;
   virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;

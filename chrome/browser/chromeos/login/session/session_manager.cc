@@ -127,7 +127,7 @@ void SessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 SessionManager::SessionManager()
     : delegate_(NULL),
-      has_web_auth_cookies_(false),
+      has_auth_cookies_(false),
       exit_after_session_restore_(false),
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
@@ -219,14 +219,14 @@ void SessionManager::OnConnectionTypeChanged(
       login_manager->ContinueSessionRestore();
     } else if (should_restore_session) {
       pending_restore_sessions_.erase((*it)->email());
-      RestoreAuthSessionImpl(user_profile, has_web_auth_cookies_);
+      RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
     }
   }
 }
 
 void SessionManager::StartSession(const UserContext& user_context,
                                   scoped_refptr<Authenticator> authenticator,
-                                  bool has_cookies,
+                                  bool has_auth_cookies,
                                   bool has_active_session,
                                   Delegate* delegate) {
   authenticator_ = authenticator;
@@ -235,7 +235,7 @@ void SessionManager::StartSession(const UserContext& user_context,
   VLOG(1) << "Starting session for " << user_context.GetUserID();
 
   PreStartSession();
-  CreateUserSession(user_context, has_cookies);
+  CreateUserSession(user_context, has_auth_cookies);
 
   if (!has_active_session)
     StartCrosSession();
@@ -261,7 +261,7 @@ void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
     pending_restore_sessions_.erase(user->email());
-    RestoreAuthSessionImpl(user_profile, false);
+    RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
   } else {
     // Even if we're online we should wait till initial
     // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
@@ -299,9 +299,9 @@ void SessionManager::SetFirstLoginPrefs(PrefService* prefs) {
 }
 
 void SessionManager::CreateUserSession(const UserContext& user_context,
-                                       bool has_cookies) {
+                                       bool has_auth_cookies) {
   user_context_ = user_context;
-  has_web_auth_cookies_ = has_cookies;
+  has_auth_cookies_ = has_auth_cookies;
   InitSessionRestoreStrategy();
 }
 
@@ -412,15 +412,17 @@ void SessionManager::UserProfileInitialized(Profile* profile,
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   if (user_context_.IsUsingOAuth()) {
-    // Transfer proxy authentication cache, cookies (optionally) and server
-    // bound certs from the profile that was used for authentication.  This
-    // profile contains cookies that auth extension should have already put in
-    // place that will ensure that the newly created session is authenticated
-    // for the websites that work with the used authentication schema.
+    // Transfers authentication-related data from the profile that was used for
+    // authentication to the user's profile. The proxy authentication state is
+    // transferred unconditionally. If the user authenticated via an auth
+    // extension, authentication cookies and server bound certificates will be
+    // transferred as well, if the user's cookie jar is empty. If the cookie jar
+    // is not empty, the authentication states in the login profile and the
+    // user's profile must be merged using /MergeSession instead.
     ProfileAuthData::Transfer(
         authenticator_->authentication_profile(),
         profile,
-        has_web_auth_cookies_,  // transfer_cookies
+        has_auth_cookies_,  // transfer_auth_cookies_and_server_bound_certs
         base::Bind(&SessionManager::CompleteProfileCreateAfterAuthTransfer,
                    AsWeakPtr(),
                    profile));
@@ -431,7 +433,7 @@ void SessionManager::UserProfileInitialized(Profile* profile,
 }
 
 void SessionManager::CompleteProfileCreateAfterAuthTransfer(Profile* profile) {
-  RestoreAuthSessionImpl(profile, has_web_auth_cookies_);
+  RestoreAuthSessionImpl(profile, has_auth_cookies_);
   FinalizePrepareProfile(profile);
 }
 
@@ -499,7 +501,7 @@ void SessionManager::InitSessionRestoreStrategy() {
           ::switches::kAppModeAuthCode));
     }
 
-    DCHECK(!has_web_auth_cookies_);
+    DCHECK(!has_auth_cookies_);
     if (!user_context_.GetAuthCode().empty()) {
       session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
     } else if (!oauth2_refresh_token_.empty()) {
@@ -512,7 +514,7 @@ void SessionManager::InitSessionRestoreStrategy() {
     return;
   }
 
-  if (has_web_auth_cookies_) {
+  if (has_auth_cookies_) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
   } else if (!user_context_.GetAuthCode().empty()) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;

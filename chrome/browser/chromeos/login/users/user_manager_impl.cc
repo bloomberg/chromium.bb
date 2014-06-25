@@ -2034,7 +2034,7 @@ void UserManagerImpl::RestorePendingUserSessions() {
     user_context.SetIsUsingOAuth(false);
     // Will call OnProfilePrepared() once profile has been loaded.
     LoginUtils::Get()->PrepareProfile(user_context,
-                                      false,          // has_cookies
+                                      false,          // has_auth_cookies
                                       true,           // has_active_session
                                       this);
   } else {

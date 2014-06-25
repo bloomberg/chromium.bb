@@ -775,7 +775,7 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
 
   StopPublicSessionAutoLoginTimer();
 
-  const bool has_cookies =
+  const bool has_auth_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
       user_context.GetAuthCode().empty();
 
@@ -800,7 +800,7 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
 
   // Will call OnProfilePrepared() in the end.
   LoginUtils::Get()->PrepareProfile(user_context,
-                                    has_cookies,
+                                    has_auth_cookies,
                                     false,          // Start session for user.
                                     this);
 }

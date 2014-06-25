@@ -64,7 +64,7 @@ class SessionManager :
   // authentication context (profile).
   void StartSession(const UserContext& user_context,
                     scoped_refptr<Authenticator> authenticator,
-                    bool has_cookies,
+                    bool has_auth_cookies,
                     bool has_active_session,
                     Delegate* delegate);
 
@@ -95,7 +95,7 @@ class SessionManager :
   virtual ~SessionManager();
 
   void CreateUserSession(const UserContext& user_context,
-                         bool has_cookies);
+                         bool has_auth_cookies);
   void PreStartSession();
   void StartCrosSession();
   void NotifyUserLoggedIn();
@@ -142,9 +142,9 @@ class SessionManager :
   UserContext user_context_;
   scoped_refptr<Authenticator> authenticator_;
 
-  // True if the authentication context cookie jar should contain
-  // authentication cookies from the authentication extension log in flow.
-  bool has_web_auth_cookies_;
+  // True if the authentication context's cookie jar contains authentication
+  // cookies from the authentication extension login flow.
+  bool has_auth_cookies_;
 
   // OAuth2 session related members.
 
