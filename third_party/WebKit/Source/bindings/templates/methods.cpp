@@ -53,23 +53,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% else %}
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
     {% endif %}
-    {# Post-call #}
-    {% if method.has_event_listener_argument %}
-    {{hidden_dependency_action(method.name) | indent}}
-    {% endif %}
 }
 {% endfilter %}
-{% endmacro %}
-
-
-{######################################}
-{% macro hidden_dependency_action(method_name) %}
-if (listener && !impl->toNode())
-    {% if method_name == 'addEventListener' %}
-    addHiddenValueToArray(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
-    {% else %}{# method_name == 'removeEventListener' #}
-    removeHiddenValueFromArray(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
-    {% endif %}
 {% endmacro %}
 
 
@@ -266,9 +251,22 @@ if (exceptionState.hadException()) {
 {% endif %}
 {# Set return value #}
 {% if method.is_constructor %}
-{{generate_constructor_wrapper(method)}}{% elif method.union_arguments %}
+{{generate_constructor_wrapper(method)}}
+{%- elif method.union_arguments %}
 {{union_type_method_call_and_set_return_value(method)}}
-{% elif v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
+{%- elif v8_set_return_value %}
+{{v8_set_return_value}};
+{%- endif %}{# None for void #}
+{# Post-set #}
+{% if interface_name == 'EventTarget' and method.name in ('addEventListener',
+                                                          'removeEventListener') %}
+{% set hidden_dependency_action = 'addHiddenValueToArray'
+       if method.name == 'addEventListener' else 'removeHiddenValueFromArray' %}
+{# Length check needed to skip action on legacy calls without enough arguments.
+   http://crbug.com/353484 #}
+if (info.Length() >= 2 && listener && !impl->toNode())
+    {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+{% endif %}
 {% endmacro %}
 
 
@@ -291,7 +289,7 @@ if (result{{loop.index0}}Enabled) {
 {% endfor %}
 {# Fall back to null if none of the union members results are returned #}
 v8SetReturnValueNull(info);
-{%- endmacro %}
+{% endmacro %}
 
 
 {######################################}

@@ -98,9 +98,6 @@ def method_context(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
-    has_event_listener_argument = any(
-        argument for argument in arguments
-        if argument.idl_type.name == 'EventListener')
     is_check_security_for_frame = (
         'CheckSecurity' in interface.extended_attributes and
         'DoNotCheckSecurity' not in extended_attributes)
@@ -125,11 +122,10 @@ def method_context(interface, method):
         'has_custom_registration': is_static or
             v8_utilities.has_extended_attribute(
                 method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
-        'has_event_listener_argument': has_event_listener_argument,
         'has_exception_state':
-            has_event_listener_argument or
             is_raises_exception or
             is_check_security_for_frame or
+            interface.name == 'EventTarget' or  # FIXME: merge with is_check_security_for_frame http://crbug.com/383699
             any(argument for argument in arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
                    argument.idl_type.may_raise_exception_on_conversion),
@@ -186,9 +182,6 @@ def argument_context(interface, method, argument, index):
         'enum_validation_expression': idl_type.enum_validation_expression,
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or argument.default_value,
-        'has_event_listener_argument': any(
-            argument_so_far for argument_so_far in method.arguments[:index]
-            if argument_so_far.idl_type.name == 'EventListener'),
         'has_type_checking_interface':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
              has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and

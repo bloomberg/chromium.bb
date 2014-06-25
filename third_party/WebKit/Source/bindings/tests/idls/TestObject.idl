@@ -364,7 +364,6 @@ interface TestObject {
     SerializedScriptValue serializedScriptValueMethod();
     XPathNSResolver xPathNSResolverMethod();
     void voidMethodDictionaryArg(Dictionary dictionaryArg);
-    void voidMethodEventListenerArg(EventListener eventListenerArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
     void voidMethodPromiseArg(Promise promiseArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);

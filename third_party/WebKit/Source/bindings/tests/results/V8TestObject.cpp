@@ -53,7 +53,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormControlsCollection.h"
@@ -6440,30 +6439,6 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEventListenerArg", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    RefPtr<EventListener> eventListenerArg;
-    {
-        eventListenerArg = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
-    }
-    impl->voidMethodEventListenerArg(eventListenerArg);
-    if (listener && !impl->toNode())
-        removeHiddenValueFromArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
-}
-
-static void voidMethodEventListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodEventListenerArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -9930,7 +9905,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0},
     {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0},
     {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1},
-    {"voidMethodEventListenerArg", TestObjectV8Internal::voidMethodEventListenerArgMethodCallback, 0, 1},
     {"voidMethodNodeFilterArg", TestObjectV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1},
     {"voidMethodPromiseArg", TestObjectV8Internal::voidMethodPromiseArgMethodCallback, 0, 1},
     {"voidMethodSerializedScriptValueArg", TestObjectV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1},
