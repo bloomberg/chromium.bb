@@ -42,12 +42,6 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
 }
 
 // static
-EventPtr TypeConverter<EventPtr, ui::KeyEvent>::ConvertFrom(
-    const ui::KeyEvent& input) {
-  return Event::From(static_cast<const ui::Event&>(input));
-}
-
-// static
 scoped_ptr<ui::Event>
 TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
     const EventPtr& input) {

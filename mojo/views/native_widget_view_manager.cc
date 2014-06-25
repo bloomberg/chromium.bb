@@ -16,7 +16,6 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/wm/core/base_focus_rules.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 
 namespace mojo {
@@ -120,8 +119,6 @@ void NativeWidgetViewManager::InitNativeWidget(
   views::Widget::InitParams params(in_params);
   params.parent = window_tree_host_->window();
   NativeWidgetAura::InitNativeWidget(params);
-  capture_client_.reset(
-      new wm::ScopedCaptureClient(window_tree_host_->window()));
 }
 
 void NativeWidgetViewManager::CompositorContentsChanged(

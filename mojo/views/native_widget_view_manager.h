@@ -18,7 +18,6 @@ class InputMethodDelegate;
 
 namespace wm {
 class FocusController;
-class ScopedCaptureClient;
 }
 
 namespace mojo {
@@ -35,7 +34,7 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   virtual ~NativeWidgetViewManager();
 
  private:
-  // Overridden from internal::NativeWidgetAura:
+  // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& in_params) OVERRIDE;
 
@@ -53,8 +52,6 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   scoped_ptr<ui::internal::InputMethodDelegate> ime_filter_;
 
   view_manager::Node* node_;
-
-  scoped_ptr<wm::ScopedCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewManager);
 };
