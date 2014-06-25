@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_in_memory_cache.h"
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,9 +19,9 @@ using std::string;
 
 namespace net {
 
-namespace {
+FilePath::StringType g_quic_in_memory_cache_dir = FILE_PATH_LITERAL("");
 
-const FilePath::CharType* g_quic_in_memory_cache_dir = FILE_PATH_LITERAL("");
+namespace {
 
 // BalsaVisitor implementation (glue) which caches response bodies.
 class CachingBalsaVisitor : public NoOpBalsaVisitor {
@@ -89,8 +88,9 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece method,
   response_headers.SetRequestFirstlineFromStringPieces(version,
                                                        response_code,
                                                        response_detail);
-  response_headers.AppendHeader("content-length",
-                                base::IntToString(body.length()));
+  response_headers.AppendHeader(
+      "content-length",
+      base::Uint64ToString(static_cast<uint64>(body.length())));
 
   AddResponse(request_headers, response_headers, body);
 }
@@ -132,7 +132,7 @@ void QuicInMemoryCache::ResetForTests() {
 
 void QuicInMemoryCache::Initialize() {
   // If there's no defined cache dir, we have no initialization to do.
-  if (g_quic_in_memory_cache_dir[0] == '\0') {
+  if (g_quic_in_memory_cache_dir.size() == 0) {
     VLOG(1) << "No cache directory found. Skipping initialization.";
     return;
   }
@@ -185,7 +185,8 @@ void QuicInMemoryCache::Initialize() {
       processed += file_contents.length();
     }
 
-    StringPiece base = file.AsUTF8Unsafe();
+    string utf8_file = file.AsUTF8Unsafe();
+    StringPiece base = utf8_file;
     if (response_headers.HasHeader("X-Original-Url")) {
       base = response_headers.GetHeader("X-Original-Url");
       response_headers.RemoveAllOfHeader("X-Original-Url");
@@ -197,8 +198,8 @@ void QuicInMemoryCache::Initialize() {
         base.remove_prefix(7);
       }
     }
-    int path_start = base.find_first_of('/');
-    DCHECK_LT(0, path_start);
+    size_t path_start = base.find_first_of('/');
+    DCHECK_LT(0U, path_start);
     StringPiece host(base.substr(0, path_start));
     StringPiece path(base.substr(path_start));
     if (path[path.length() - 1] == ',') {

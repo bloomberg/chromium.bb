@@ -48,6 +48,8 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   base::WeakPtrFactory<QuicDefaultPacketWriter> weak_factory_;
   DatagramClientSocket* socket_;
   QuicConnection* connection_;
+
+  // Whether a write is currently in flight.
   bool write_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);

@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_crypto_server_stream.h"
+#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -43,8 +44,10 @@ class QuicServerSessionVisitor {
 
 class QuicServerSession : public QuicSession {
  public:
+  // Takes ownership of connection_packet_writer
   QuicServerSession(const QuicConfig& config,
                     QuicConnection* connection,
+                    QuicPerConnectionPacketWriter* connection_packet_writer,
                     QuicServerSessionVisitor* visitor);
 
   // Override the base class to notify the owner of the connection close.
@@ -77,6 +80,7 @@ class QuicServerSession : public QuicSession {
   friend class test::QuicServerSessionPeer;
 
   scoped_ptr<QuicCryptoServerStream> crypto_stream_;
+  scoped_ptr<QuicPerConnectionPacketWriter> connection_packet_writer_;
   QuicServerSessionVisitor* visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);

@@ -177,7 +177,7 @@ QuicDispatcher::~QuicDispatcher() {
   STLDeleteElements(&closed_session_list_);
 }
 
-void QuicDispatcher::Initialize(QuicPacketWriter* writer) {
+void QuicDispatcher::Initialize(QuicServerPacketWriter* writer) {
   DCHECK(writer_ == NULL);
   writer_.reset(writer);
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
@@ -301,24 +301,16 @@ void QuicDispatcher::DeleteSessions() {
 }
 
 void QuicDispatcher::OnCanWrite() {
-  // We got an EPOLLOUT: the socket should not be blocked.
+  // We finished a write: the socket should not be blocked.
   writer_->SetWritable();
 
-  // Give each writer one attempt to write.
-  int num_writers = write_blocked_list_.size();
-  for (int i = 0; i < num_writers; ++i) {
-    if (write_blocked_list_.empty()) {
-      return;
-    }
+  // Let all the blocked writers try to write, until we're blocked again or
+  // there's no work left.
+  while (!write_blocked_list_.empty() && !writer_->IsWriteBlocked()) {
     QuicBlockedWriterInterface* blocked_writer =
         write_blocked_list_.begin()->first;
     write_blocked_list_.erase(write_blocked_list_.begin());
     blocked_writer->OnCanWrite();
-    if (writer_->IsWriteBlocked()) {
-      // We were unable to write.  Wait for the next EPOLLOUT. The writer is
-      // responsible for adding itself to the blocked list via OnWriteBlocked().
-      return;
-    }
   }
 }
 
@@ -366,9 +358,17 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
+  QuicPerConnectionPacketWriter* per_connection_packet_writer =
+      new QuicPerConnectionPacketWriter(writer_.get());
+  QuicConnection* connection =
+      CreateQuicConnection(connection_id,
+                           server_address,
+                           client_address,
+                           per_connection_packet_writer);
   QuicServerSession* session = new QuicServerSession(
       config_,
-      CreateQuicConnection(connection_id, server_address, client_address),
+      connection,
+      per_connection_packet_writer,
       this);
   session->InitializeSession(crypto_config_);
   return session;
@@ -377,28 +377,31 @@ QuicSession* QuicDispatcher::CreateQuicSession(
 QuicConnection* QuicDispatcher::CreateQuicConnection(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
-    const IPEndPoint& client_address) {
+    const IPEndPoint& client_address,
+    QuicPerConnectionPacketWriter* writer) {
+  QuicConnection* connection;
   if (FLAGS_enable_quic_stream_flow_control_2 &&
       FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Creating QuicDispatcher with all versions.";
-    return new QuicConnection(connection_id, client_address, helper_,
-                              writer_.get(), true, supported_versions_);
-  }
-
-  if (FLAGS_enable_quic_stream_flow_control_2 &&
+    connection = new QuicConnection(connection_id, client_address, helper_,
+                                    writer, true, supported_versions_);
+  } else if (FLAGS_enable_quic_stream_flow_control_2 &&
       !FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Connection flow control disabled, creating QuicDispatcher "
              << "WITHOUT version 19 or higher.";
-    return new QuicConnection(connection_id, client_address, helper_,
-                              writer_.get(), true,
-                              supported_versions_no_connection_flow_control_);
+    connection = new QuicConnection(
+        connection_id, client_address, helper_,
+        writer, true,
+        supported_versions_no_connection_flow_control_);
+  } else {
+    DVLOG(1) << "Flow control disabled, creating QuicDispatcher WITHOUT "
+             << "version 17 or higher.";
+    connection = new QuicConnection(connection_id, client_address, helper_,
+                                    writer, true,
+                                    supported_versions_no_flow_control_);
   }
-
-  DVLOG(1) << "Flow control disabled, creating QuicDispatcher WITHOUT "
-           << "version 17 or higher.";
-  return new QuicConnection(connection_id, client_address, helper_,
-                            writer_.get(), true,
-                            supported_versions_no_flow_control_);
+  writer->set_connection(connection);
+  return connection;
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {

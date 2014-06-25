@@ -33,7 +33,7 @@ class QuicSpdyServerStream : public QuicDataStream {
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
   virtual void OnFinRead() OVERRIDE;
 
-  int ParseRequestHeaders();
+  size_t ParseRequestHeaders();
 
  private:
   friend class test::QuicSpdyServerStreamPeer;

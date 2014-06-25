@@ -546,6 +546,7 @@
         'net',
         'net_derived_sources',
         'net_test_support',
+        'quic_ported_server',
       ],
       'sources': [
         '<@(net_test_sources)',
@@ -1114,6 +1115,37 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
+    {
+      # This is a temporary target which will be merged into 'net' once the
+      # dependency on balsa is eliminated and the classes are actually used.
+      'target_name': 'quic_ported_server',
+      'type': 'static_library',
+      'dependencies': [
+	'../base/base.gyp:base',
+	'../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+	'../url/url.gyp:url_lib',
+	'balsa',
+	'net',
+      ],
+      'sources': [
+	'quic/quic_dispatcher.cc',
+	'quic/quic_dispatcher.h',
+	'quic/quic_in_memory_cache.cc',
+	'quic/quic_in_memory_cache.h',
+	'quic/quic_per_connection_packet_writer.cc',
+	'quic/quic_per_connection_packet_writer.h',
+	'quic/quic_server.cc',
+	'quic/quic_server.h',
+	'quic/quic_server_packet_writer.cc',
+	'quic/quic_server_packet_writer.h',
+	'quic/quic_server_session.cc',
+	'quic/quic_server_session.h',
+	'quic/quic_spdy_server_stream.cc',
+	'quic/quic_spdy_server_stream.h',
+	'quic/quic_time_wait_list_manager.cc',
+	'quic/quic_time_wait_list_manager.h',
+      ],
+    },
   ],
   'conditions': [
     ['use_v8_in_net == 1', {
@@ -1475,10 +1507,10 @@
           'dependencies': [
             '../base/base.gyp:base',
             'net',
-            'quic_base',
+            'quic_ported_server',
           ],
           'sources': [
-            'tools/quic/quic_server_bin.cc',
+            'quic/quic_server_bin.cc',
           ],
         },
       ]

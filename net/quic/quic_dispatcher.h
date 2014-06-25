@@ -18,6 +18,7 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server_packet_writer.h"
 #include "net/quic/quic_server_session.h"
 #include "net/quic/quic_time_wait_list_manager.h"
 
@@ -36,9 +37,7 @@ namespace net {
 
 class QuicConfig;
 class QuicCryptoServerConfig;
-class QuicPacketWriterWrapper;
 class QuicSession;
-class UDPServerSocket;
 
 namespace test {
 class QuicDispatcherPeer;
@@ -46,7 +45,8 @@ class QuicDispatcherPeer;
 
 class DeleteSessionsAlarm;
 
-class QuicDispatcher : public QuicServerSessionVisitor {
+class QuicDispatcher : public QuicBlockedWriterInterface,
+                       public QuicServerSessionVisitor {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -62,7 +62,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual ~QuicDispatcher();
 
   // Takes ownership of the packet writer
-  virtual void Initialize(QuicPacketWriter* writer);
+  virtual void Initialize(QuicServerPacketWriter* writer);
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
@@ -70,14 +70,15 @@ class QuicDispatcher : public QuicServerSessionVisitor {
                              const IPEndPoint& client_address,
                              const QuicEncryptedPacket& packet);
 
-  // Called when the socket becomes writable to allow queued writes to happen.
-  virtual void OnCanWrite();
-
   // Returns true if there's anything in the blocked writer list.
   virtual bool HasPendingWrites() const;
 
   // Sends ConnectionClose frames to all connected clients.
   void Shutdown();
+
+  // QuicBlockedWriterInterface implementation:
+  // Called when the socket becomes writable to allow queued writes to happen.
+  virtual void OnCanWrite() OVERRIDE;
 
   // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
@@ -104,7 +105,8 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual QuicConnection* CreateQuicConnection(
       QuicConnectionId connection_id,
       const IPEndPoint& server_address,
-      const IPEndPoint& client_address);
+      const IPEndPoint& client_address,
+      QuicPerConnectionPacketWriter* writer);
 
   // Called by |framer_visitor_| when the public header has been parsed.
   virtual bool OnUnauthenticatedPublicHeader(
@@ -115,7 +117,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
 
   // Replaces the packet writer with |writer|. Takes ownership of |writer|.
-  void set_writer(QuicPacketWriter* writer) {
+  void set_writer(QuicServerPacketWriter* writer) {
     writer_.reset(writer);
   }
 
@@ -154,7 +156,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicConnectionHelperInterface* helper() { return helper_; }
 
-  QuicPacketWriter* writer() { return writer_.get(); }
+  QuicServerPacketWriter* writer() { return writer_.get(); }
 
  private:
   class QuicFramerVisitor;
@@ -192,7 +194,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   std::list<QuicSession*> closed_session_list_;
 
   // The writer to write to the socket with.
-  scoped_ptr<QuicPacketWriter> writer_;
+  scoped_ptr<QuicServerPacketWriter> writer_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -18,6 +19,8 @@
 template <typename T> struct DefaultSingletonTraits;
 
 namespace net {
+
+extern base::FilePath::StringType g_quic_in_memory_cache_dir;
 
 namespace test {
 class QuicInMemoryCachePeer;

@@ -64,7 +64,7 @@ void QuicSpdyServerStream::OnFinRead() {
   }
 }
 
-int QuicSpdyServerStream::ParseRequestHeaders() {
+size_t QuicSpdyServerStream::ParseRequestHeaders() {
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
   SpdyFramer framer(SPDY3);
   SpdyHeaderBlock headers;

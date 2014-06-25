@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,13 +11,14 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
-#include "net/tools/quic/quic_server.h"
+#include "net/quic/quic_in_memory_cache.h"
+#include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server.h"
 
 // The port the quic server will listen on.
-
 int32 FLAGS_port = 6121;
 
 int main(int argc, char *argv[]) {
@@ -42,8 +43,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
-    net::tools::FLAGS_quic_in_memory_cache_dir =
-        line->GetSwitchValueASCII("quic_in_memory_cache_dir");
+    net::g_quic_in_memory_cache_dir =
+        line->GetSwitchValueNative("quic_in_memory_cache_dir");
   }
 
   if (line->HasSwitch("port")) {
@@ -55,18 +56,22 @@ int main(int argc, char *argv[]) {
 
   base::AtExitManager exit_manager;
 
+  base::MessageLoopForIO message_loop;
+
   net::IPAddressNumber ip;
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
-  net::tools::QuicServer server;
+  net::QuicConfig config;
+  config.SetDefaults();
 
-  if (!server.Listen(net::IPEndPoint(ip, FLAGS_port))) {
+  net::QuicServer server(config, net::QuicSupportedVersions());
+
+  int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
+  if (rc < 0) {
     return 1;
   }
 
-  while (1) {
-    server.WaitForEvents();
-  }
+  base::RunLoop().Run();
 
   return 0;
 }
