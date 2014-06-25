@@ -800,7 +800,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.showSpinner_(true);
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
-    FileTable.decorate(this.table_, this.metadataCache_, fullPage);
+    FileTable.decorate(
+        this.table_, this.metadataCache_, this.volumeManager_, fullPage);
     FileGrid.decorate(this.grid_, this.metadataCache_, this.volumeManager_);
 
     this.previewPanel_ = new PreviewPanel(
@@ -1706,7 +1707,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.metadataCache_.get(
         entries,
         'filesystem',
-        this.updateMetadataInUI_.bind(this, 'filesystem', entries));
+        function() {
+          this.updateMetadataInUI_('filesystem', entries);
+        }.bind(this));
 
     setTimeout(this.dailyUpdateModificationTime_.bind(this),
                MILLISECONDS_IN_DAY);
@@ -1715,16 +1718,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * @param {string} type Type of metadata changed.
    * @param {Array.<Entry>} entries Array of entries.
-   * @param {Object.<string, Object>} props Map from entry URLs to metadata
-   *     props.
    * @private
    */
-  FileManager.prototype.updateMetadataInUI_ = function(
-      type, entries, properties) {
+  FileManager.prototype.updateMetadataInUI_ = function(type, entries) {
     if (this.listType_ == FileManager.ListType.DETAIL)
-      this.table_.updateListItemsMetadata(type, properties);
+      this.table_.updateListItemsMetadata(type, entries);
     else
-      this.grid_.updateListItemsMetadata(type, properties);
+      this.grid_.updateListItemsMetadata(type, entries);
     // TODO: update bottom panel thumbnails.
   };
 

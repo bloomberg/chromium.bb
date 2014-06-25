@@ -62,12 +62,13 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
  * @param {string} type Type of metadata changed.
  * @param {Object.<string, Object>} props Map from entry URLs to metadata props.
  */
-FileGrid.prototype.updateListItemsMetadata = function(type, props) {
+FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
+  var urls = util.entriesToURLs(entries);
   var boxes = this.querySelectorAll('.img-container');
   for (var i = 0; i < boxes.length; i++) {
     var box = boxes[i];
     var entry = this.dataModel.item(this.getListItemAncestor(box));
-    if (!entry || !(entry.toURL() in props))
+    if (!entry || !(entry.toURL() in urls))
       continue;
 
     FileGrid.decorateThumbnailBox(box,

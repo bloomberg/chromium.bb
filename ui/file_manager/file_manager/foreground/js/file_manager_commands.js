@@ -732,9 +732,8 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
       },
 
       // Update the user interface accoding to the cache state.
-      updateUI: function(drive) {
-        fileManager.updateMetadataInUI_(
-            'drive', [currentEntry.toURL()], [drive]);
+      updateUI: function(drive /* not used */) {
+        fileManager.updateMetadataInUI_('drive', [currentEntry]);
         if (!error)
           steps.start();
       },
