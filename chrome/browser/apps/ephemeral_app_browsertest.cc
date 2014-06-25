@@ -681,3 +681,27 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   EXPECT_TRUE(params.is_update);
   EXPECT_TRUE(params.from_ephemeral);
 }
+
+// Ephemerality was previously encoded by the Extension::IS_EPHEMERAL creation
+// flag. This was changed to an "ephemeral_app" property. Check that the prefs
+// are handled correctly.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       ExtensionPrefBackcompatibility) {
+  // Ensure that apps with the old prefs are recognized as ephemeral.
+  const Extension* app =
+      InstallExtensionWithSourceAndFlags(GetTestPath(kNotificationsTestApp),
+                                         1,
+                                         Manifest::INTERNAL,
+                                         Extension::IS_EPHEMERAL);
+  ASSERT_TRUE(app);
+  EXPECT_TRUE(extensions::util::IsEphemeralApp(app->id(), profile()));
+
+  // Ensure that when the app is promoted to an installed app, the bit in the
+  // creation flags is cleared.
+  PromoteEphemeralApp(app);
+  EXPECT_FALSE(extensions::util::IsEphemeralApp(app->id(), profile()));
+
+  int creation_flags =
+      ExtensionPrefs::Get(profile())->GetCreationFlags(app->id());
+  EXPECT_EQ(0, creation_flags & Extension::IS_EPHEMERAL);
+}

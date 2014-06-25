@@ -1503,6 +1503,11 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
       new base::StringValue(
           base::Int64ToString(install_time.ToInternalValue())));
 
+  // Some extension pref values are written conditionally. If they are not
+  // present in the delayed install data, they should be removed when the
+  // delayed install is committed.
+  extension_dict->Remove(kPrefEphemeralApp, NULL);
+
   // Commit the delayed install data.
   for (base::DictionaryValue::Iterator it(*pending_install_dict); !it.IsAtEnd();
        it.Advance()) {
@@ -1576,8 +1581,19 @@ bool ExtensionPrefs::IsEphemeralApp(const std::string& extension_id) const {
 void ExtensionPrefs::OnEphemeralAppPromoted(const std::string& extension_id) {
   DCHECK(IsEphemeralApp(extension_id));
 
-  UpdateExtensionPref(
-      extension_id, kPrefEphemeralApp, new base::FundamentalValue(false));
+  UpdateExtensionPref(extension_id, kPrefEphemeralApp, NULL);
+
+  // Ephemerality was previously stored in the creation flags, so ensure the bit
+  // is cleared.
+  int creation_flags = Extension::NO_FLAGS;
+  if (ReadPrefAsInteger(extension_id, kPrefCreationFlags, &creation_flags)) {
+    if (creation_flags & Extension::IS_EPHEMERAL) {
+      creation_flags &= ~static_cast<int>(Extension::IS_EPHEMERAL);
+      UpdateExtensionPref(extension_id,
+                          kPrefCreationFlags,
+                          new base::FundamentalValue(creation_flags));
+    }
+  }
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
@@ -2047,10 +2063,10 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->Set(kPrefBlacklist, new base::FundamentalValue(true));
 
-  // TODO(tmdiep): Delete the pref if false, don't write false.
-  bool is_ephemeral = (install_flags & kInstallFlagIsEphemeral) != 0;
-  extension_dict->Set(kPrefEphemeralApp,
-                      new base::FundamentalValue(is_ephemeral));
+  if (install_flags & kInstallFlagIsEphemeral)
+    extension_dict->Set(kPrefEphemeralApp, new base::FundamentalValue(true));
+  else
+    extension_dict->Remove(kPrefEphemeralApp, NULL);
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());
