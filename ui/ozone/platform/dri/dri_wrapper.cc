@@ -90,6 +90,11 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
                           data);
 }
 
+drmModeFB* DriWrapper::GetFramebuffer(uint32_t framebuffer) {
+  CHECK(fd_ >= 0);
+  return drmModeGetFB(fd_, framebuffer);
+}
+
 drmModePropertyRes* DriWrapper::GetProperty(drmModeConnector* connector,
                                             const char* name) {
   for (int i = 0; i < connector->count_props; ++i) {

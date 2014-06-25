@@ -42,6 +42,8 @@
         'chromeos/native_display_delegate_dri.h',
         'cursor_factory_evdev_dri.cc',
         'cursor_factory_evdev_dri.h',
+        'dri_console_buffer.cc',
+        'dri_console_buffer.h',
         'dri_buffer.cc',
         'dri_buffer.h',
         'dri_surface.cc',

@@ -4,8 +4,11 @@
 
 #include "ui/ozone/platform/dri/dri_util.h"
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <xf86drm.h>
 #include <xf86drmMode.h>
 
 namespace ui {
@@ -76,7 +79,9 @@ HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
 }
 
 ScopedVector<HardwareDisplayControllerInfo>
-GetAvailableDisplayControllerInfos(int fd, drmModeRes* resources) {
+GetAvailableDisplayControllerInfos(int fd) {
+  drmModeRes* resources = drmModeGetResources(fd);
+  DCHECK(resources) << "Failed to get DRM resources";
   ScopedVector<HardwareDisplayControllerInfo> displays;
 
   for (int i = 0; i < resources->count_connectors; ++i) {
@@ -102,6 +107,7 @@ GetAvailableDisplayControllerInfos(int fd, drmModeRes* resources) {
     displays.push_back(new HardwareDisplayControllerInfo(connector, crtc));
   }
 
+  drmModeFreeResources(resources);
   return displays.Pass();
 }
 
@@ -120,6 +126,33 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
          lhs.vscan == rhs.vscan &&
          lhs.flags == rhs.flags &&
          strcmp(lhs.name, rhs.name) == 0;
+}
+
+bool MapDumbBuffer(int fd,
+                   uint32_t handle,
+                   uint32_t size,
+                   void** pixels) {
+  struct drm_mode_map_dumb map_request;
+  map_request.handle = handle;
+  if (drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
+    DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
+                << strerror(errno);
+    return false;
+  }
+
+  *pixels = mmap(0,
+                 size,
+                 PROT_READ | PROT_WRITE,
+                 MAP_SHARED,
+                 fd,
+                 map_request.offset);
+  if (*pixels == MAP_FAILED) {
+    DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
+                << strerror(errno);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace ui

@@ -5,11 +5,13 @@
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
 
 #include "base/bind.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/chromeos/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
 #include "ui/ozone/platform/dri/chromeos/display_snapshot_dri.h"
+#include "ui/ozone/platform/dri/dri_console_buffer.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -35,6 +37,24 @@ NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
 
 void NativeDisplayDelegateDri::Initialize() {
   device_manager_->AddObserver(this);
+
+  ScopedVector<HardwareDisplayControllerInfo> displays =
+      GetAvailableDisplayControllerInfos(dri_->get_fd());
+
+  // By default all displays show the same console buffer.
+  console_buffer_.reset(
+      new DriConsoleBuffer(dri_, displays[0]->crtc()->buffer_id));
+  if (!console_buffer_->Initialize()) {
+    VLOG(1) << "Failed to initialize console buffer";
+    console_buffer_.reset();
+  } else {
+    // Clear the console buffer such that restarting Chrome will show a
+    // predetermined background.
+    //
+    // Black was chosen since Chrome's first buffer paints start with a black
+    // background.
+    console_buffer_->canvas()->clear(SK_ColorBLACK);
+  }
 }
 
 void NativeDisplayDelegateDri::GrabServer() {}
@@ -44,7 +64,8 @@ void NativeDisplayDelegateDri::UngrabServer() {}
 void NativeDisplayDelegateDri::SyncWithServer() {}
 
 void NativeDisplayDelegateDri::SetBackgroundColor(uint32_t color_argb) {
-  NOTIMPLEMENTED();
+  if (console_buffer_)
+    console_buffer_->canvas()->clear(color_argb);
 }
 
 void NativeDisplayDelegateDri::ForceDPMSOn() {
@@ -61,10 +82,8 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   ScopedVector<DisplaySnapshotDri> old_displays(cached_displays_.Pass());
   cached_modes_.clear();
 
-  drmModeRes* resources = drmModeGetResources(dri_->get_fd());
-  DCHECK(resources) << "Failed to get DRM resources";
   ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(dri_->get_fd(), resources);
+      GetAvailableDisplayControllerInfos(dri_->get_fd());
   for (size_t i = 0;
        i < displays.size() && cached_displays_.size() < kMaxDisplayCount; ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
@@ -76,8 +95,6 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
                          display->modes().begin(),
                          display->modes().end());
   }
-
-  drmModeFreeResources(resources);
 
   NotifyScreenManager(cached_displays_.get(), old_displays.get());
 

@@ -114,11 +114,8 @@ ScreenManager::FindDisplayController(uint32_t crtc, uint32_t connector) {
 }
 
 void ScreenManager::ForceInitializationOfPrimaryDisplay() {
-  drmModeRes* resources = drmModeGetResources(dri_->get_fd());
-  DCHECK(resources) << "Failed to get DRM resources";
   ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(dri_->get_fd(), resources);
-  drmModeFreeResources(resources);
+      GetAvailableDisplayControllerInfos(dri_->get_fd());
 
   CHECK_NE(0u, displays.size());
 

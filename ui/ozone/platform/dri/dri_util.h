@@ -11,7 +11,6 @@
 typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeModeInfo drmModeModeInfo;
-typedef struct _drmModeRes drmModeRes;
 
 namespace ui {
 
@@ -35,9 +34,15 @@ class HardwareDisplayControllerInfo {
 // Looks-up and parses the native display configurations returning all available
 // displays.
 ScopedVector<HardwareDisplayControllerInfo>
-GetAvailableDisplayControllerInfos(int fd, drmModeRes* resources);
+GetAvailableDisplayControllerInfos(int fd);
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
+
+// Memory maps a DRM buffer.
+bool MapDumbBuffer(int fd,
+                   uint32_t handle,
+                   uint32_t size,
+                   void** pixels);
 
 }  // namespace ui
 

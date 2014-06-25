@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace ui {
@@ -44,48 +45,26 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
-bool CreateDumbBuffer(DriWrapper* dri,
+bool CreateDumbBuffer(int fd,
                       const SkImageInfo& info,
                       uint32_t* handle,
-                      uint32_t* stride,
-                      void** pixels) {
+                      uint32_t* stride) {
   struct drm_mode_create_dumb request;
   request.width = info.width();
   request.height = info.height();
   request.bpp = info.bytesPerPixel() << 3;
   request.flags = 0;
 
-  if (drmIoctl(dri->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
+  if (drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
     DLOG(ERROR) << "Cannot create dumb buffer (" << errno << ") "
                 << strerror(errno);
     return false;
   }
 
+  DCHECK_EQ(info.getSafeSize(request.pitch), request.size);
+
   *handle = request.handle;
   *stride = request.pitch;
-
-  struct drm_mode_map_dumb map_request;
-  map_request.handle = request.handle;
-  if (drmIoctl(dri->get_fd(), DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
-    DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
-                << strerror(errno);
-    DestroyDumbBuffer(dri->get_fd(), request.handle);
-    return false;
-  }
-
-  *pixels = mmap(0,
-                 request.size,
-                 PROT_READ | PROT_WRITE,
-                 MAP_SHARED,
-                 dri->get_fd(),
-                 map_request.offset);
-  if (*pixels == MAP_FAILED) {
-    DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
-                << strerror(errno);
-    DestroyDumbBuffer(dri->get_fd(), request.handle);
-    return false;
-  }
-
   return true;
 }
 
@@ -112,8 +91,17 @@ DriBuffer::~DriBuffer() {
 
 bool DriBuffer::Initialize(const SkImageInfo& info) {
   void* pixels = NULL;
-  if (!CreateDumbBuffer(dri_, info, &handle_, &stride_, &pixels)) {
+  if (!CreateDumbBuffer(dri_->get_fd(), info, &handle_, &stride_)) {
     DLOG(ERROR) << "Cannot allocate drm dumb buffer";
+    return false;
+  }
+
+  if (!MapDumbBuffer(dri_->get_fd(),
+                     handle_,
+                     info.getSafeSize(stride_),
+                     &pixels)) {
+    DLOG(ERROR) << "Cannot map drm dumb buffer";
+    DestroyDumbBuffer(dri_->get_fd(), handle_);
     return false;
   }
 

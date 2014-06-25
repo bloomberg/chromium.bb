@@ -13,6 +13,7 @@
 typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
+typedef struct _drmModeFB drmModeFB;
 typedef struct _drmModeModeInfo drmModeModeInfo;
 typedef struct _drmModeProperty drmModePropertyRes;
 typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
@@ -63,6 +64,9 @@ class OZONE_EXPORT DriWrapper {
 
   // Deregister the given |framebuffer|.
   virtual bool RemoveFramebuffer(uint32_t framebuffer);
+
+  // Get the DRM details associated with |framebuffer|.
+  virtual drmModeFB* GetFramebuffer(uint32_t framebuffer);
 
   // Schedules a pageflip for CRTC |crtc_id|. This function will return
   // immediately. Upon completion of the pageflip event, the CRTC will be
