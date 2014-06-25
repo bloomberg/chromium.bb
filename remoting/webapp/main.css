@@ -755,13 +755,13 @@ html.apps-v2.scrollable {
 }
 
 /* mediasource-video-output is hidden by default. */
-#mediasource-video-output {
+#video-container video {
   display: none;
 }
 
 /* Use absolute positioning for mediasource-video-output so that it's rendered
  * at the same position as the plugin. */
-#video-container.mediasource-rendering #mediasource-video-output {
+#video-container.mediasource-rendering video {
   display: block;
   position: absolute;
   left: 0;
@@ -776,6 +776,6 @@ html.apps-v2.scrollable {
  * TODO(sergeyu): This is temporary solution. Ideally mouse and keyboard events
  * should be captured on JS level and passed to the plugin.
  */
-#video-container.mediasource-rendering #client-plugin-container {
+#video-container.mediasource-rendering .client-plugin-container {
   opacity: 0;
 }

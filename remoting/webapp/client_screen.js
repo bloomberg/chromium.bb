@@ -369,7 +369,7 @@ remoting.onExtensionMessage = function(type, data) {
 remoting.ensureSessionConnector_ = function() {
   if (!remoting.connector) {
     remoting.connector = new remoting.SessionConnector(
-        document.getElementById('client-plugin-container'),
+        document.getElementById('video-container'),
         remoting.onConnected,
         showConnectError_, remoting.onExtensionMessage);
   }

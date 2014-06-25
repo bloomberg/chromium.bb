@@ -23,6 +23,7 @@
 var remoting = remoting || {};
 
 /**
+ * @param {HTMLElement} container Container element for the client view.
  * @param {string} hostDisplayName A human-readable name for the host.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(boolean, function(string): void): void} fetchPin
@@ -47,15 +48,20 @@ var remoting = remoting || {};
  * @constructor
  * @extends {base.EventSource}
  */
-remoting.ClientSession = function(hostDisplayName, accessCode, fetchPin,
-                                  fetchThirdPartyToken, authenticationMethods,
-                                  hostId, hostJid, hostPublicKey, mode,
-                                  clientPairingId, clientPairedSecret) {
+remoting.ClientSession = function(container, hostDisplayName, accessCode,
+                                  fetchPin, fetchThirdPartyToken,
+                                  authenticationMethods, hostId, hostJid,
+                                  hostPublicKey, mode, clientPairingId,
+                                  clientPairedSecret) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
   /** @private */
   this.error_ = remoting.Error.NONE;
+
+  /** @type {HTMLElement}
+    * @private */
+  this.container_ = container;
 
   /** @private */
   this.hostDisplayName_ = hostDisplayName;
@@ -369,7 +375,6 @@ remoting.ClientSession.prototype.hasCapability_ = function(capability) {
 };
 
 /**
- * @param {Element} container The element to add the plugin to.
  * @param {string} id Id to use for the plugin element .
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
@@ -378,7 +383,7 @@ remoting.ClientSession.prototype.hasCapability_ = function(capability) {
  * installed plugin.
  */
 remoting.ClientSession.prototype.createClientPlugin_ =
-    function(container, id, onExtensionMessage) {
+    function(id, onExtensionMessage) {
   var plugin = /** @type {remoting.ViewerPlugin} */
       document.createElement('embed');
 
@@ -397,7 +402,7 @@ remoting.ClientSession.prototype.createClientPlugin_ =
   plugin.width = 0;
   plugin.height = 0;
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
-  container.appendChild(plugin);
+  this.container_.querySelector('.client-plugin-container').appendChild(plugin);
 
   return new remoting.ClientPlugin(plugin, onExtensionMessage);
 };
@@ -430,15 +435,13 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
 /**
  * Adds <embed> element to |container| and readies the sesion object.
  *
- * @param {Element} container The element to add the plugin to.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
-    function(container, onExtensionMessage) {
-  this.plugin_ = this.createClientPlugin_(container, this.PLUGIN_ID,
-                                          onExtensionMessage);
+    function(onExtensionMessage) {
+  this.plugin_ = this.createClientPlugin_(this.PLUGIN_ID, onExtensionMessage);
   remoting.HostSettings.load(this.hostId_,
                              this.onHostSettingsLoaded_.bind(this));
 };
@@ -533,7 +536,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.plugin_.hasFeature(
           remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
     this.video_ = /** @type {HTMLMediaElement} */(
-        document.getElementById('mediasource-video-output'));
+        this.container_.querySelector('video'));
     // Make sure that the <video> element is hidden until we get the first
     // frame.
     this.video_.style.width = '0px';
@@ -541,11 +544,9 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
 
     var renderer = new remoting.MediaSourceRenderer(this.video_);
     this.plugin_.enableMediaSourceRendering(renderer);
-    /** @type {HTMLElement} */(document.getElementById('video-container'))
-        .classList.add('mediasource-rendering');
+    this.container_.classList.add('mediasource-rendering');
   } else {
-    /** @type {HTMLElement} */(document.getElementById('video-container'))
-        .classList.remove('mediasource-rendering');
+    this.container_.classList.remove('mediasource-rendering');
   }
 
   /** @param {string} msg The IQ stanza to send. */
@@ -602,10 +603,9 @@ remoting.ClientSession.prototype.removePlugin = function() {
   }
   remoting.toolbar.setClientSession(null);
 
-  // Remove mediasource-rendering class from video-contained - this will also
+  // Remove mediasource-rendering class from the container - this will also
   // hide the <video> element.
-  /** @type {HTMLElement} */(document.getElementById('video-container'))
-      .classList.remove('mediasource-rendering');
+  this.container_.classList.remove('mediasource-rendering');
 };
 
 /**
@@ -1017,12 +1017,10 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
  * @param {boolean} ready True if the connection is ready.
  */
 remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
-  var container = /** @type {HTMLMediaElement} */(
-      document.getElementById('video-container'));
   if (!ready) {
-    container.classList.add('session-client-inactive');
+    this.container_.classList.add('session-client-inactive');
   } else {
-    container.classList.remove('session-client-inactive');
+    this.container_.classList.remove('session-client-inactive');
   }
 
   this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,

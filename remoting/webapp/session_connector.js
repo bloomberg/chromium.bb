@@ -13,7 +13,7 @@
 var remoting = remoting || {};
 
 /**
- * @param {Element} pluginParent The node under which to add the client plugin.
+ * @param {HTMLElement} clientContainer Container element for the client view.
  * @param {function(remoting.ClientSession):void} onOk Callback on success.
  * @param {function(remoting.Error):void} onError Callback on error.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
@@ -21,13 +21,13 @@ var remoting = remoting || {};
  *     false otherwise.
  * @constructor
  */
-remoting.SessionConnector = function(pluginParent, onOk, onError,
+remoting.SessionConnector = function(clientContainer, onOk, onError,
                                      onExtensionMessage) {
   /**
-   * @type {Element}
+   * @type {HTMLElement}
    * @private
    */
-  this.pluginParent_ = pluginParent;
+  this.clientContainer_ = clientContainer;
 
   /**
    * @type {function(remoting.ClientSession):void}
@@ -393,16 +393,15 @@ remoting.SessionConnector.prototype.createSession_ = function() {
   var authenticationMethods =
      'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.hostDisplayName_, this.passPhrase_, this.fetchPin_,
-      this.fetchThirdPartyToken_, authenticationMethods, this.hostId_,
-      this.hostJid_, this.hostPublicKey_, this.connectionMode_,
+      this.clientContainer_, this.hostDisplayName_, this.passPhrase_,
+      this.fetchPin_, this.fetchThirdPartyToken_, authenticationMethods,
+      this.hostId_, this.hostJid_, this.hostPublicKey_, this.connectionMode_,
       this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
       this.bound_.onStateChange);
-  this.clientSession_.createPluginAndConnect(this.pluginParent_,
-                                             this.onExtensionMessage_);
+  this.clientSession_.createPluginAndConnect(this.onExtensionMessage_);
 };
 
 /**
