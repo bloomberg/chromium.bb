@@ -261,9 +261,10 @@ class SingleTestRunner(object):
             failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
             if self._should_run_pixel_test:
                 failures.extend(self._compare_image(expected_driver_output, driver_output))
+        has_repaint_overlay = (repaint_overlay.result_contains_repaint_rects(expected_driver_output.text) or
+                               repaint_overlay.result_contains_repaint_rects(driver_output.text))
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid,
-                          has_repaint_overlay=repaint_overlay.result_contains_repaint_rects(expected_driver_output.text))
+                          pid=driver_output.pid, has_repaint_overlay=has_repaint_overlay)
 
     def _compare_testharness_test(self, driver_output, expected_driver_output):
         if expected_driver_output.image or expected_driver_output.audio or expected_driver_output.text:

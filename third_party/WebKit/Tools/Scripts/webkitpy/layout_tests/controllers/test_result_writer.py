@@ -53,7 +53,6 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
                                 test_failures.FailureTestHarnessAssertion)):
             writer.write_text_files(driver_output.text, expected_driver_output.text)
             writer.create_text_diff_and_write_result(driver_output.text, expected_driver_output.text)
-            writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)
         elif isinstance(failure, test_failures.FailureMissingImage):
             writer.write_image_files(driver_output.image, expected_image=None)
         elif isinstance(failure, test_failures.FailureMissingImageHash):
@@ -92,6 +91,8 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
                 _log.warn("reference %s was not found" % failure.reference_filename)
         else:
             assert isinstance(failure, (test_failures.FailureTimeout, test_failures.FailureReftestNoImagesGenerated))
+
+        writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)
 
 
 class TestResultWriter(object):

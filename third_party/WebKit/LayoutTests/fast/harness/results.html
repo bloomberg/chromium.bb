@@ -528,7 +528,7 @@ function toggleImages()
     }
 }
 
-function textResultLinks(test, prefix, hasRepaintOverlay)
+function textResultLinks(test, prefix)
 {
     var html = resultLink(prefix, '-expected.txt', 'expected') +
         resultLink(prefix, '-actual.txt', 'actual') +
@@ -539,9 +539,6 @@ function textResultLinks(test, prefix, hasRepaintOverlay)
 
     if (globalState().results.has_wdiff)
         html += resultLink(prefix, '-wdiff.html', 'wdiff');
-
-    if (hasRepaintOverlay)
-        html += resultLink(prefix, '-overlay.html?' + encodeURIComponent(testLinkTarget(test)), 'overlay');
 
     return html;
 }
@@ -594,7 +591,7 @@ function tableRow(testObject)
         if (testObject.is_testharness_test) {
             row += resultLink(testPrefix, '-actual.txt', 'actual');
         } else {
-            row += textResultLinks(testObject.name, testPrefix, testObject.has_repaint_overlay);
+            row += textResultLinks(testObject.name, testPrefix);
         }
     }
     
@@ -616,6 +613,9 @@ function tableRow(testObject)
         if (testObject.has_stderr)
             row += resultLink(testPrefix, '-stderr.txt', 'stderr');
     }
+
+    if (testObject.has_repaint_overlay)
+        row += resultLink(testPrefix, '-overlay.html?' + encodeURIComponent(testLinkTarget(testObject.name)), 'overlay');
 
     var actualTokens = actual.split(/\s+/);
     var cell = imageResultsCell(testObject, testPrefix, actualTokens[0]);
@@ -709,9 +709,12 @@ function testList(tests, header, tableId)
             html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
         else if (tableId == 'timeout-tests-table') {
             // FIXME: only include timeout actual/diff results here if we actually spit out results for timeout tests.
-            html += textResultLinks(test, stripExtension(test), testObject.has_repaint_overlay);
+            html += textResultLinks(test, stripExtension(test));
         }
         
+        if (testObject.has_repaint_overlay)
+            html += resultLink(stripExtension(test), '-overlay.html?' + encodeURIComponent(testLinkTarget(test)), 'overlay');
+
         html += '</td></tr></tbody>';
     }
     html += '</table></div>';
