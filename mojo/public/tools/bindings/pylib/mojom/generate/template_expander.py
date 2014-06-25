@@ -30,12 +30,16 @@ except ImportError:
 import jinja2
 
 
-def ApplyTemplate(base_dir, path_to_template, params, filters=None, **kwargs):
+def ApplyTemplate(mojo_generator, base_dir, path_to_template, params,
+                  filters=None, **kwargs):
   template_directory, template_name = os.path.split(path_to_template)
   path_to_templates = os.path.join(base_dir, template_directory)
   loader = jinja2.FileSystemLoader([path_to_templates])
+  final_kwargs = dict(mojo_generator.GetJinjaParameters())
+  final_kwargs.update(kwargs)
   jinja_env = jinja2.Environment(loader=loader, keep_trailing_newline=True,
-                                 **kwargs)
+                                 **final_kwargs)
+  jinja_env.globals.update(mojo_generator.GetGlobals());
   if filters:
     jinja_env.filters.update(filters)
   template = jinja_env.get_template(template_name)
@@ -48,7 +52,8 @@ def UseJinja(path_to_template, **kwargs):
   def RealDecorator(generator):
     def GeneratorInternal(*args, **kwargs2):
       parameters = generator(*args, **kwargs2)
-      return ApplyTemplate(base_dir, path_to_template, parameters, **kwargs)
+      return ApplyTemplate(args[0], base_dir, path_to_template, parameters,
+                           **kwargs)
     GeneratorInternal.func_name = generator.func_name
     return GeneratorInternal
   return RealDecorator

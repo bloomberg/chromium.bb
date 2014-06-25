@@ -97,3 +97,11 @@ class Generator(object):
 
   def GenerateFiles(self, args):
     raise NotImplementedError("Subclasses must override/implement this method")
+
+  def GetJinjaParameters(self):
+    """Returns default constructor parameters for the jinja environment."""
+    return {}
+
+  def GetGlobals(self):
+    """Returns global mappings for the template generation."""
+    return {}
