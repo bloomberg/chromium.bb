@@ -434,30 +434,16 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes))
     return false;
 
-  bool all_required_exist = true;
-
-  // Not part of the ONC spec yet:
-  // We don't require the type field and default to UnencryptedConfiguration.
-  std::string type = kUnencryptedConfiguration;
-  result->GetStringWithoutPathExpansion(kType, &type);
-  if (type == kUnencryptedConfiguration &&
-      !result->HasKey(kNetworkConfigurations) &&
-      !result->HasKey(kCertificates)) {
-    error_or_warning_found_ = true;
-    std::string message = MessageHeader() + "Neither the field '" +
-        kNetworkConfigurations + "' nor '" + kCertificates +
-        "is present, but at least one is required.";
-    if (error_on_missing_field_)
-      LOG(ERROR) << message;
-    else
-      LOG(WARNING) << message;
-    all_required_exist = false;
-  }
+  // Not part of the ONC spec:
+  // - We don't require the type field (we assume that it's an
+  //   UnencryptedConfiguration then).
+  // - We don't require specific toplevel objects to be present (e.g. at least
+  //   one of NetworkConfiguration or Certificates).
 
   if (IsGlobalNetworkConfigInUserImport(*result))
     return false;
 
-  return !error_on_missing_field_ || all_required_exist;
+  return true;
 }
 
 bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
