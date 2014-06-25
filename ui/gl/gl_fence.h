@@ -31,9 +31,6 @@ class GL_EXPORT GLFence {
   // client.
   virtual void ServerWait() = 0;
 
- protected:
-  static bool IsContextLost();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GLFence);
 };

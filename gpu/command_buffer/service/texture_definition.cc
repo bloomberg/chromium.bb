@@ -105,10 +105,31 @@ class NativeImageBufferEGL : public NativeImageBuffer {
                        EGLDisplay display,
                        EGLImageKHR image);
   virtual ~NativeImageBufferEGL();
+  virtual void AddClient(gfx::GLImage* client) OVERRIDE;
+  virtual void RemoveClient(gfx::GLImage* client) OVERRIDE;
+  virtual bool IsClient(gfx::GLImage* client) OVERRIDE;
   virtual void BindToTexture(GLenum target) OVERRIDE;
+  virtual void WillRead(gfx::GLImage* client) OVERRIDE;
+  virtual void WillWrite(gfx::GLImage* client) OVERRIDE;
+  virtual void DidRead(gfx::GLImage* client) OVERRIDE;
+  virtual void DidWrite(gfx::GLImage* client) OVERRIDE;
 
   EGLDisplay egl_display_;
   EGLImageKHR egl_image_;
+
+  base::Lock lock_;
+
+  struct ClientInfo {
+    ClientInfo(gfx::GLImage* client);
+    ~ClientInfo();
+
+    gfx::GLImage* client;
+    bool needs_wait_before_read;
+    linked_ptr<gfx::GLFence> read_fence;
+  };
+  std::list<ClientInfo> client_infos_;
+  scoped_ptr<gfx::GLFence> write_fence_;
+  gfx::GLImage* write_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeImageBufferEGL);
 };
@@ -142,76 +163,35 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
       make_scoped_ptr(gfx::GLFence::Create()), egl_display, egl_image);
 }
 
+NativeImageBufferEGL::ClientInfo::ClientInfo(gfx::GLImage* client)
+    : client(client), needs_wait_before_read(true) {}
+
+NativeImageBufferEGL::ClientInfo::~ClientInfo() {}
+
 NativeImageBufferEGL::NativeImageBufferEGL(scoped_ptr<gfx::GLFence> write_fence,
                                            EGLDisplay display,
                                            EGLImageKHR image)
-    : NativeImageBuffer(write_fence.Pass()),
+    : NativeImageBuffer(),
       egl_display_(display),
-      egl_image_(image) {
+      egl_image_(image),
+      write_fence_(write_fence.Pass()),
+      write_client_(NULL) {
   DCHECK(egl_display_ != EGL_NO_DISPLAY);
   DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
 }
 
 NativeImageBufferEGL::~NativeImageBufferEGL() {
+  DCHECK(client_infos_.empty());
   if (egl_image_ != EGL_NO_IMAGE_KHR)
     eglDestroyImageKHR(egl_display_, egl_image_);
 }
 
-void NativeImageBufferEGL::BindToTexture(GLenum target) {
-  DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
-  glEGLImageTargetTexture2DOES(target, egl_image_);
-  DCHECK_EQ(static_cast<EGLint>(EGL_SUCCESS), eglGetError());
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-}
-#endif
-
-class NativeImageBufferStub : public NativeImageBuffer {
- public:
-  NativeImageBufferStub() : NativeImageBuffer(scoped_ptr<gfx::GLFence>()) {}
-
- private:
-  virtual ~NativeImageBufferStub() {}
-  virtual void BindToTexture(GLenum target) OVERRIDE {}
-
-  DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
-};
-
-}  // anonymous namespace
-
-// static
-scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
-  switch (gfx::GetGLImplementation()) {
-#if !defined(OS_MACOSX)
-    case gfx::kGLImplementationEGLGLES2:
-      return NativeImageBufferEGL::Create(texture_id);
-#endif
-    case gfx::kGLImplementationMockGL:
-      return new NativeImageBufferStub;
-    default:
-      NOTREACHED();
-      return NULL;
-  }
-}
-
-NativeImageBuffer::ClientInfo::ClientInfo(gfx::GLImage* client)
-    : client(client), needs_wait_before_read(true) {}
-
-NativeImageBuffer::ClientInfo::~ClientInfo() {}
-
-NativeImageBuffer::NativeImageBuffer(scoped_ptr<gfx::GLFence> write_fence)
-    : write_fence_(write_fence.Pass()), write_client_(NULL) {
-}
-
-NativeImageBuffer::~NativeImageBuffer() {
-  DCHECK(client_infos_.empty());
-}
-
-void NativeImageBuffer::AddClient(gfx::GLImage* client) {
+void NativeImageBufferEGL::AddClient(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   client_infos_.push_back(ClientInfo(client));
 }
 
-void NativeImageBuffer::RemoveClient(gfx::GLImage* client) {
+void NativeImageBufferEGL::RemoveClient(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   if (write_client_ == client)
     write_client_ = NULL;
@@ -226,7 +206,7 @@ void NativeImageBuffer::RemoveClient(gfx::GLImage* client) {
   NOTREACHED();
 }
 
-bool NativeImageBuffer::IsClient(gfx::GLImage* client) {
+bool NativeImageBufferEGL::IsClient(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   for (std::list<ClientInfo>::iterator it = client_infos_.begin();
        it != client_infos_.end();
@@ -237,7 +217,14 @@ bool NativeImageBuffer::IsClient(gfx::GLImage* client) {
   return false;
 }
 
-void NativeImageBuffer::WillRead(gfx::GLImage* client) {
+void NativeImageBufferEGL::BindToTexture(GLenum target) {
+  DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
+  glEGLImageTargetTexture2DOES(target, egl_image_);
+  DCHECK_EQ(static_cast<EGLint>(EGL_SUCCESS), eglGetError());
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+}
+
+void NativeImageBufferEGL::WillRead(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   if (!write_fence_.get() || write_client_ == client)
     return;
@@ -256,7 +243,7 @@ void NativeImageBuffer::WillRead(gfx::GLImage* client) {
   NOTREACHED();
 }
 
-void NativeImageBuffer::WillWrite(gfx::GLImage* client) {
+void NativeImageBufferEGL::WillWrite(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   if (write_client_ != client)
     write_fence_->ServerWait();
@@ -269,7 +256,7 @@ void NativeImageBuffer::WillWrite(gfx::GLImage* client) {
   }
 }
 
-void NativeImageBuffer::DidRead(gfx::GLImage* client) {
+void NativeImageBufferEGL::DidRead(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   for (std::list<ClientInfo>::iterator it = client_infos_.begin();
        it != client_infos_.end();
@@ -282,7 +269,7 @@ void NativeImageBuffer::DidRead(gfx::GLImage* client) {
   NOTREACHED();
 }
 
-void NativeImageBuffer::DidWrite(gfx::GLImage* client) {
+void NativeImageBufferEGL::DidWrite(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   // Sharing semantics require the client to flush in order to make changes
   // visible to other clients.
@@ -292,6 +279,43 @@ void NativeImageBuffer::DidWrite(gfx::GLImage* client) {
        it != client_infos_.end();
        it++) {
     it->needs_wait_before_read = true;
+  }
+}
+
+#endif
+
+class NativeImageBufferStub : public NativeImageBuffer {
+ public:
+  NativeImageBufferStub() : NativeImageBuffer() {}
+
+ private:
+  virtual ~NativeImageBufferStub() {}
+  virtual void AddClient(gfx::GLImage* client) OVERRIDE {}
+  virtual void RemoveClient(gfx::GLImage* client) OVERRIDE {}
+  virtual bool IsClient(gfx::GLImage* client) OVERRIDE { return true; }
+  virtual void BindToTexture(GLenum target) OVERRIDE {}
+  virtual void WillRead(gfx::GLImage* client) OVERRIDE {}
+  virtual void WillWrite(gfx::GLImage* client) OVERRIDE {}
+  virtual void DidRead(gfx::GLImage* client) OVERRIDE {}
+  virtual void DidWrite(gfx::GLImage* client) OVERRIDE {}
+
+  DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
+};
+
+}  // anonymous namespace
+
+// static
+scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
+  switch (gfx::GetGLImplementation()) {
+#if !defined(OS_MACOSX)
+    case gfx::kGLImplementationEGLGLES2:
+      return NativeImageBufferEGL::Create(texture_id);
+#endif
+    case gfx::kGLImplementationMockGL:
+      return new NativeImageBufferStub;
+    default:
+      NOTREACHED();
+      return NULL;
   }
 }
 

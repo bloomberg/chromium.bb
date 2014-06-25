@@ -721,6 +721,11 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
     EXPECT_CALL(*gl, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
         .WillOnce(Return(kGlSync))
         .RetiresOnSaturation();
+#if DCHECK_IS_ON
+    EXPECT_CALL(*gl, IsSync(kGlSync))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
+#endif
   }
 
   EndQueryEXT end_cmd;
@@ -737,6 +742,11 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
         .RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
+#if DCHECK_IS_ON
+    EXPECT_CALL(*gl, IsSync(kGlSync))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
+#endif
     EXPECT_CALL(*gl, ClientWaitSync(kGlSync, _, _))
         .WillOnce(Return(GL_ALREADY_SIGNALED))
         .RetiresOnSaturation();
@@ -752,8 +762,14 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   if (query_type.is_gl) {
     EXPECT_CALL(*gl, DeleteQueriesARB(1, _)).Times(1).RetiresOnSaturation();
   }
-  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM)
+  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
+#if DCHECK_IS_ON
+    EXPECT_CALL(*gl, IsSync(kGlSync))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
+#endif
     EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
+  }
   test->ResetDecoder();
 }
 
@@ -879,6 +895,11 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
       .WillOnce(Return(kGlSync))
       .RetiresOnSaturation();
+#if DCHECK_IS_ON
+  EXPECT_CALL(*gl_, IsSync(kGlSync))
+      .WillOnce(Return(GL_TRUE))
+      .RetiresOnSaturation();
+#endif
 
   EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, 1);
@@ -886,6 +907,11 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->pending());
 
+#if DCHECK_IS_ON
+  EXPECT_CALL(*gl_, IsSync(kGlSync))
+      .WillOnce(Return(GL_TRUE))
+      .RetiresOnSaturation();
+#endif
   EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
       .WillOnce(Return(GL_TIMEOUT_EXPIRED))
       .RetiresOnSaturation();
@@ -894,6 +920,11 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_TRUE(process_success);
   EXPECT_TRUE(query->pending());
 
+#if DCHECK_IS_ON
+  EXPECT_CALL(*gl_, IsSync(kGlSync))
+      .WillOnce(Return(GL_TRUE))
+      .RetiresOnSaturation();
+#endif
   EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
       .WillOnce(Return(GL_ALREADY_SIGNALED))
       .RetiresOnSaturation();
@@ -904,6 +935,11 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   QuerySync* sync = static_cast<QuerySync*>(shared_memory_address_);
   EXPECT_EQ(static_cast<GLenum>(0), static_cast<GLenum>(sync->result));
 
+#if DCHECK_IS_ON
+  EXPECT_CALL(*gl_, IsSync(kGlSync))
+      .WillOnce(Return(GL_TRUE))
+      .RetiresOnSaturation();
+#endif
   EXPECT_CALL(*gl_, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
   ResetDecoder();
 }
