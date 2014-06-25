@@ -223,8 +223,6 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<WeakReference<Peer> > re
     } else {
         m_mainWebSocketChannel = MainThreadWebSocketChannel::create(document, this, sourceURL, lineNumber);
     }
-
-    m_syncHelper->signalWorkerThread();
 }
 
 WorkerThreadableWebSocketChannel::Peer::~Peer()
@@ -237,12 +235,15 @@ void WorkerThreadableWebSocketChannel::Peer::initialize(ExecutionContext* contex
 {
     // The caller must call destroy() to free the peer.
     *reference = new Peer(clientWrapper, *loaderProxy, context, sourceURLAtConnection, lineNumberAtConnection, syncHelper);
+    syncHelper->signalWorkerThread();
 }
 #else
-void WorkerThreadableWebSocketChannel::Peer::initialize(ExecutionContext* context, PassRefPtr<WeakReference<Peer> > reference, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, PassRefPtr<ThreadableWebSocketChannelSyncHelper> syncHelper)
+void WorkerThreadableWebSocketChannel::Peer::initialize(ExecutionContext* context, PassRefPtr<WeakReference<Peer> > reference, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, PassRefPtr<ThreadableWebSocketChannelSyncHelper> prpSyncHelper)
 {
+    RefPtr<ThreadableWebSocketChannelSyncHelper> syncHelper = prpSyncHelper;
     // The caller must call destroy() to free the peer.
     new Peer(reference, clientWrapper, *loaderProxy, context, sourceURLAtConnection, lineNumberAtConnection, syncHelper);
+    syncHelper->signalWorkerThread();
 }
 #endif
 
