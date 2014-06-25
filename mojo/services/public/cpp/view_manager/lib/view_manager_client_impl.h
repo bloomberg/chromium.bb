@@ -18,6 +18,7 @@
 class SkBitmap;
 
 namespace mojo {
+class ApplicationConnection;
 namespace view_manager {
 
 class ViewEventDispatcher;
@@ -28,7 +29,8 @@ class ViewManagerTransaction;
 class ViewManagerClientImpl : public ViewManager,
                               public InterfaceImpl<ViewManagerClient> {
  public:
-  explicit ViewManagerClientImpl(ViewManagerDelegate* delegate);
+  explicit ViewManagerClientImpl(ApplicationConnection* connection,
+                                 ViewManagerDelegate* delegate);
   virtual ~ViewManagerClientImpl();
 
   bool connected() const { return connected_; }

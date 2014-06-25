@@ -8,7 +8,8 @@
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/keyboard/keyboard_delegate.h"
 #include "mojo/examples/keyboard/keyboard_view.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -32,7 +33,7 @@ class Keyboard;
 
 class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
  public:
-  KeyboardServiceImpl(Keyboard* keyboard);
+  KeyboardServiceImpl(ApplicationConnection* connection, Keyboard* keyboard);
   virtual ~KeyboardServiceImpl() {}
 
   // KeyboardService:
@@ -44,7 +45,7 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
   DISALLOW_COPY_AND_ASSIGN(KeyboardServiceImpl);
 };
 
-class Keyboard : public Application,
+class Keyboard : public ApplicationDelegate,
                  public view_manager::ViewManagerDelegate,
                  public KeyboardDelegate {
  public:
@@ -60,11 +61,13 @@ class Keyboard : public Application,
   }
 
  private:
-  // Overridden from Application:
-  virtual void Initialize() MOJO_OVERRIDE {
+  // Overridden from ApplicationDelegate:
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
-    view_manager::ViewManager::Create(this, this);
-    AddService<KeyboardServiceImpl>(this);
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService<KeyboardServiceImpl>(this);
+    return true;
   }
 
   void CreateWidget(view_manager::Node* node) {
@@ -110,7 +113,8 @@ class Keyboard : public Application,
   DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };
 
-KeyboardServiceImpl::KeyboardServiceImpl(Keyboard* keyboard)
+KeyboardServiceImpl::KeyboardServiceImpl(ApplicationConnection* connection,
+                                         Keyboard* keyboard)
     : keyboard_(keyboard) {
   keyboard_->set_keyboard_service(this);
 }
@@ -122,7 +126,7 @@ void KeyboardServiceImpl::SetTarget(uint32_t node_id) {
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::Keyboard;
 }
 

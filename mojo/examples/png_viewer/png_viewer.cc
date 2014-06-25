@@ -5,7 +5,8 @@
 #include <algorithm>
 
 #include "base/strings/string_tokenizer.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -22,7 +23,8 @@ class PNGViewer;
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit NavigatorImpl(PNGViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(ApplicationConnection* connection,
+                         PNGViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -84,7 +86,8 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class PNGViewer : public Application, public view_manager::ViewManagerDelegate {
+class PNGViewer : public ApplicationDelegate,
+                  public view_manager::ViewManagerDelegate {
  public:
   PNGViewer() : content_view_(NULL) {}
   virtual ~PNGViewer() {}
@@ -95,10 +98,12 @@ class PNGViewer : public Application, public view_manager::ViewManagerDelegate {
   }
 
  private:
-  // Overridden from Application:
-  virtual void Initialize() OVERRIDE {
-    AddService<NavigatorImpl>(this);
-    view_manager::ViewManager::Create(this, this);
+  // Overridden from ApplicationDelegate:
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    connection->AddService<NavigatorImpl>(this);
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   // Overridden from view_manager::ViewManagerDelegate:
@@ -130,7 +135,7 @@ void NavigatorImpl::UpdateView(view_manager::Id node_id,
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::PNGViewer;
 }
 

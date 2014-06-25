@@ -11,9 +11,11 @@
 
 namespace mojo {
 
+class ApplicationConnection;
+
 class ProfileServiceImpl : public InterfaceImpl<ProfileService> {
  public:
-  ProfileServiceImpl(void* context);
+  ProfileServiceImpl(ApplicationConnection* connection);
   virtual ~ProfileServiceImpl();
 
   // |ProfileService| methods:

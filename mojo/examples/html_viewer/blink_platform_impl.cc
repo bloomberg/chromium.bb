@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "mojo/examples/html_viewer/webthread_impl.h"
 #include "mojo/examples/html_viewer/weburlloader_impl.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
@@ -46,14 +46,14 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 }  // namespace
 
-BlinkPlatformImpl::BlinkPlatformImpl(Application* app)
+BlinkPlatformImpl::BlinkPlatformImpl(ApplicationImpl* app)
     : main_loop_(base::MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread) {
-  app->ConnectTo("mojo:mojo_network_service", &network_service_);
+  app->ConnectToService("mojo:mojo_network_service", &network_service_);
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {

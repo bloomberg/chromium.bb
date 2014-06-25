@@ -23,7 +23,7 @@ int BaseKeyForMojoKey(mojo::ProfileService::PathKey key) {
 
 namespace mojo {
 
-ProfileServiceImpl::ProfileServiceImpl(void* context) {
+ProfileServiceImpl::ProfileServiceImpl(ApplicationConnection* connection) {
 }
 
 ProfileServiceImpl::~ProfileServiceImpl() {

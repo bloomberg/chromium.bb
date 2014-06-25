@@ -9,16 +9,17 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
 
-class Application;
+class ApplicationImpl;
 
 namespace shell {
 
 // ServiceLoader responsible for creating connections to the ProfileService.
-class ProfileServiceLoader : public ServiceLoader {
+class ProfileServiceLoader : public ServiceLoader, public ApplicationDelegate {
  public:
   ProfileServiceLoader();
   virtual ~ProfileServiceLoader();
@@ -28,11 +29,15 @@ class ProfileServiceLoader : public ServiceLoader {
   virtual void LoadService(
       ServiceManager* manager,
       const GURL& url,
-      ScopedMessagePipeHandle service_provider_handle) OVERRIDE;
+      ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 
-  base::ScopedPtrHashMap<uintptr_t, Application> apps_;
+  // ApplicationDelegate overrides.
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE;
+
+  base::ScopedPtrHashMap<uintptr_t, ApplicationImpl> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileServiceLoader);
 };

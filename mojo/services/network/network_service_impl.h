@@ -10,11 +10,13 @@
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 
 namespace mojo {
+class ApplicationConnection;
 class NetworkContext;
 
 class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
  public:
-  explicit NetworkServiceImpl(NetworkContext* context);
+  NetworkServiceImpl(ApplicationConnection* connection,
+                     NetworkContext* context);
   virtual ~NetworkServiceImpl();
 
   // NetworkService methods:

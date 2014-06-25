@@ -126,14 +126,14 @@ class MessageProcessor :
 // In charge of intercepting access to the service manager.
 class SpyInterceptor : public mojo::ServiceManager::Interceptor {
  private:
-  virtual mojo::ScopedMessagePipeHandle OnConnectToClient(
-    const GURL& url, mojo::ScopedMessagePipeHandle real_client) OVERRIDE {
+  virtual mojo::ServiceProviderPtr OnConnectToClient(
+    const GURL& url, mojo::ServiceProviderPtr real_client) OVERRIDE {
       if (!MustIntercept(url))
         return real_client.Pass();
 
       // You can get an invalid handle if the app (or service) is
       // created by unconventional means, for example the command line.
-      if (!real_client.is_valid())
+      if (!real_client.get())
         return real_client.Pass();
 
       mojo::ScopedMessagePipeHandle faux_client;
@@ -141,14 +141,17 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
       CreateMessagePipe(NULL, &faux_client, &interceptor);
 
       scoped_refptr<MessageProcessor> processor = new MessageProcessor();
+      mojo::ScopedMessagePipeHandle real_handle = real_client.PassMessagePipe();
       base::WorkerPool::PostTask(
           FROM_HERE,
           base::Bind(&MessageProcessor::Start,
                      processor,
-                     base::Passed(&real_client), base::Passed(&interceptor)),
+                     base::Passed(&real_handle), base::Passed(&interceptor)),
           true);
 
-      return faux_client.Pass();
+      mojo::ServiceProviderPtr faux_provider;
+      faux_provider.Bind(faux_client.Pass());
+      return faux_provider.Pass();
   }
 
   bool MustIntercept(const GURL& url) {

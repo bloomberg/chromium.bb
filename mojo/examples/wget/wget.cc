@@ -4,17 +4,18 @@
 
 #include <stdio.h>
 
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 
 namespace mojo {
 namespace examples {
 
-class WGetApp : public Application, public URLLoaderClient {
+class WGetApp : public ApplicationDelegate, public URLLoaderClient {
  public:
-  virtual void Initialize() MOJO_OVERRIDE {
-    ConnectTo("mojo:mojo_network_service", &network_service_);
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService("mojo:mojo_network_service", &network_service_);
     Start();
   }
 
@@ -109,7 +110,7 @@ class WGetApp : public Application, public URLLoaderClient {
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::WGetApp();
 }
 

@@ -4,7 +4,9 @@
 
 #include "mojo/examples/html_viewer/blink_platform_impl.h"
 #include "mojo/examples/html_viewer/html_document_view.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -20,7 +22,8 @@ class HTMLViewer;
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit NavigatorImpl(HTMLViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(ApplicationConnection* connection,
+                         HTMLViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -35,7 +38,7 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class HTMLViewer : public Application,
+class HTMLViewer : public ApplicationDelegate,
                    public view_manager::ViewManagerDelegate {
  public:
   HTMLViewer() : document_view_(NULL) {
@@ -53,13 +56,17 @@ class HTMLViewer : public Application,
   }
 
  private:
-  // Overridden from Application:
-  virtual void Initialize() OVERRIDE {
-    blink_platform_impl_.reset(new BlinkPlatformImpl(this));
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+    blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
+  }
 
-    AddService<NavigatorImpl>(this);
-    view_manager::ViewManager::Create(this, this);
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      OVERRIDE {
+    connection->AddService<NavigatorImpl>(this);
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   // Overridden from view_manager::ViewManagerDelegate:
@@ -98,7 +105,7 @@ void NavigatorImpl::Navigate(
 }
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::HTMLViewer;
 }
 

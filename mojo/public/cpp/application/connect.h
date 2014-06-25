@@ -11,12 +11,10 @@ namespace mojo {
 
 template <typename Interface>
 inline void ConnectToService(ServiceProvider* service_provider,
-                             const std::string& url,
                              InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(pipe.handle0.Pass());
-  service_provider->ConnectToService(
-      url, Interface::Name_, pipe.handle1.Pass(), std::string());
+  service_provider->ConnectToService(Interface::Name_, pipe.handle1.Pass());
 }
 
 }  // namespace mojo

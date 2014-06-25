@@ -11,22 +11,6 @@
 namespace mojo {
 namespace shell {
 
-class ShellTestHelper::TestServiceProvider : public ServiceProvider {
- public:
-  TestServiceProvider() {}
-  virtual ~TestServiceProvider() {}
-
-  // ServiceProvider:
-  virtual void ConnectToService(
-      const mojo::String& service_url,
-      const mojo::String& service_name,
-      ScopedMessagePipeHandle client_handle,
-      const mojo::String& requestor_url) OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestServiceProvider);
-};
-
 ShellTestHelper::ShellTestHelper() {
   base::CommandLine::Init(0, NULL);
   mojo::shell::InitializeLogging();
@@ -38,9 +22,6 @@ ShellTestHelper::~ShellTestHelper() {
 void ShellTestHelper::Init() {
   context_.reset(new Context);
   test_api_.reset(new ServiceManager::TestAPI(context_->service_manager()));
-  local_service_provider_.reset(new TestServiceProvider);
-  service_provider_.Bind(test_api_->GetServiceProviderHandle().Pass());
-  service_provider_.set_client(local_service_provider_.get());
 }
 
 void ShellTestHelper::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,

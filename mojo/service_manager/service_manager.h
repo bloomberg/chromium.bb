@@ -25,19 +25,13 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     explicit TestAPI(ServiceManager* manager);
     ~TestAPI();
 
-    // Returns a handle to a unique ServiceProvider instance.
-    ScopedMessagePipeHandle GetServiceProviderHandle();
-
     // Returns true if the shared instance has been created.
     static bool HasCreatedInstance();
-    // Returns true if there is a ServiceFactory for this URL.
+    // Returns true if there is a ShellImpl for this URL.
     bool HasFactoryForURL(const GURL& url) const;
 
    private:
-    class TestServiceProviderConnection;
-
     ServiceManager* manager_;
-    scoped_ptr<TestServiceProviderConnection> service_provider_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -47,8 +41,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
    public:
     virtual ~Interceptor() {}
     // Called when ServiceManager::Connect is called.
-    virtual ScopedMessagePipeHandle OnConnectToClient(
-        const GURL& url, ScopedMessagePipeHandle handle) = 0;
+    virtual ServiceProviderPtr OnConnectToClient(
+        const GURL& url, ServiceProviderPtr service_provider) = 0;
   };
 
   ServiceManager();
@@ -58,22 +52,21 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   static ServiceManager* GetInstance();
 
   // Loads a service if necessary and establishes a new client connection.
-  void ConnectToService(const GURL& service_url,
-                        const std::string& service_name,
-                        ScopedMessagePipeHandle client_handle,
-                        const GURL& requestor_url);
+  void ConnectToApplication(const GURL& application_url,
+                            const GURL& requestor_url,
+                            ServiceProviderPtr service_provider);
 
   template <typename Interface>
-  void ConnectTo(const GURL& service_url,
-                 InterfacePtr<Interface>* ptr,
-                 const GURL& requestor_url) {
-    MessagePipe pipe;
-    ptr->Bind(pipe.handle0.Pass());
-    ConnectToService(service_url,
-                     Interface::Name_,
-                     pipe.handle1.Pass(),
-                     requestor_url);
+  inline void ConnectToService(const GURL& application_url,
+                               InterfacePtr<Interface>* ptr) {
+    ScopedMessagePipeHandle service_handle =
+        ConnectToServiceByName(application_url, Interface::Name_);
+    ptr->Bind(service_handle.Pass());
   }
+
+  ScopedMessagePipeHandle ConnectToServiceByName(
+      const GURL& application_url,
+      const std::string& interface_name);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
@@ -89,18 +82,18 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   void SetInterceptor(Interceptor* interceptor);
 
  private:
-  class ServiceFactory;
+  class ShellImpl;
   typedef std::map<std::string, ServiceLoader*> SchemeToLoaderMap;
   typedef std::map<GURL, ServiceLoader*> URLToLoaderMap;
-  typedef std::map<GURL, ServiceFactory*> URLToServiceFactoryMap;
+  typedef std::map<GURL, ShellImpl*> URLToShellImplMap;
 
   // Returns the Loader to use for a url (using default if not overridden.)
   // The preference is to use a loader that's been specified for an url first,
   // then one that's been specified for a scheme, then the default.
   ServiceLoader* GetLoaderForURL(const GURL& url);
 
-  // Removes a ServiceFactory when it encounters an error.
-  void OnServiceFactoryError(ServiceFactory* service_factory);
+  // Removes a ShellImpl when it encounters an error.
+  void OnShellImplError(ShellImpl* shell_impl);
 
   // Loader management.
   URLToLoaderMap url_to_loader_;
@@ -108,7 +101,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   scoped_ptr<ServiceLoader> default_loader_;
   Interceptor* interceptor_;
 
-  URLToServiceFactoryMap url_to_service_factory_;
+  URLToShellImplMap url_to_shell_impl_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 

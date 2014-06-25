@@ -7,7 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
@@ -46,6 +48,7 @@ void WaitForAllChangesToBeAcked(ViewManagerClientImpl* client) {
 }
 
 class ConnectServiceLoader : public ServiceLoader,
+                             public ApplicationDelegate,
                              public ViewManagerDelegate {
  public:
   typedef base::Callback<void(ViewManager*, Node*)> LoadedCallback;
@@ -60,12 +63,19 @@ class ConnectServiceLoader : public ServiceLoader,
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
-    scoped_ptr<Application> app(new Application(shell_handle.Pass()));
-    ViewManager::Create(app.get(), this);
+    scoped_ptr<ApplicationImpl> app(new ApplicationImpl(this,
+                                                        shell_handle.Pass()));
     apps_.push_back(app.release());
   }
+
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE {
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      OVERRIDE {
+    ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   // Overridden from ViewManagerDelegate:
@@ -74,7 +84,7 @@ class ConnectServiceLoader : public ServiceLoader,
     callback_.Run(view_manager, root);
   }
 
-  ScopedVector<Application> apps_;
+  ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
@@ -373,9 +383,8 @@ class ViewManagerTest : public testing::Test {
         scoped_ptr<ServiceLoader>(new ConnectServiceLoader(ready_callback)),
         GURL(kEmbeddedApp1URL));
 
-    ConnectToService(test_helper_.service_provider(),
-                     "mojo:mojo_view_manager",
-                     &view_manager_init_);
+    test_helper_.service_manager()->ConnectToService(
+        GURL("mojo:mojo_view_manager"), &view_manager_init_);
     ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kWindowManagerURL));
   }
 

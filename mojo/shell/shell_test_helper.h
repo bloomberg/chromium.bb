@@ -30,28 +30,17 @@ class ShellTestHelper {
 
   void Init();
 
-  // Returns a handle to the ServiceProvider. ShellTestHelper owns the
+  // Returns a handle to the ServiceManager. ShellTestHelper owns the
   // ServiceProvider.
-  ServiceProvider* service_provider() { return service_provider_.get(); }
+  ServiceManager* service_manager() { return context_->service_manager(); }
 
   // Sets a ServiceLoader for the specified URL. |loader| is ultimately used on
   // the thread this class spawns.
   void SetLoaderForURL(scoped_ptr<ServiceLoader> loader, const GURL& url);
 
  private:
-  class TestServiceProvider;
-
   scoped_ptr<Context> context_;
-
   scoped_ptr<ServiceManager::TestAPI> test_api_;
-
-  //  ScopedMessagePipeHandle service_provider_handle_;
-
-  // Client interface for the shell.
-  scoped_ptr<TestServiceProvider> local_service_provider_;
-
-  ServiceProviderPtr service_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellTestHelper);
 };
 

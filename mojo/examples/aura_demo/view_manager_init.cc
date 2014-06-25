@@ -4,7 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace mojo {
@@ -12,13 +13,13 @@ namespace examples {
 
 // ViewManagerInit is responsible for establishing the initial connection to
 // the view manager. When established it loads |mojo_aura_demo|.
-class ViewManagerInit : public Application {
+class ViewManagerInit : public ApplicationDelegate {
  public:
   ViewManagerInit() {}
   virtual ~ViewManagerInit() {}
 
-  virtual void Initialize() OVERRIDE {
-    ConnectTo("mojo:mojo_view_manager", &view_manager_init_);
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService("mojo:mojo_view_manager", &view_manager_init_);
     view_manager_init_->EmbedRoot("mojo:mojo_aura_demo",
                                   base::Bind(&ViewManagerInit::DidConnect,
                                              base::Unretained(this)));
@@ -38,7 +39,7 @@ class ViewManagerInit : public Application {
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::ViewManagerInit();
 }
 

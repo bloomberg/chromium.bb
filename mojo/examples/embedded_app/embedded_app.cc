@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -29,7 +31,7 @@ using mojo::view_manager::ViewObserver;
 namespace mojo {
 namespace examples {
 
-class EmbeddedApp : public Application,
+class EmbeddedApp : public ApplicationDelegate,
                     public ViewManagerDelegate,
                     public ViewObserver,
                     public NodeObserver {
@@ -47,7 +49,8 @@ class EmbeddedApp : public Application,
  private:
   class Navigator : public InterfaceImpl<navigation::Navigator> {
    public:
-    explicit Navigator(EmbeddedApp* app) : app_(app) {}
+    Navigator(ApplicationConnection* connection,
+              EmbeddedApp* app) : app_(app) {}
    private:
     virtual void Navigate(
         uint32 node_id,
@@ -70,15 +73,20 @@ class EmbeddedApp : public Application,
     DISALLOW_COPY_AND_ASSIGN(Navigator);
   };
 
-  // Overridden from Application:
-  virtual void Initialize() MOJO_OVERRIDE {
-    ViewManager::Create(this, this);
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     // TODO(aa): Weird for embeddee to talk to embedder by URL. Seems like
     // embedder should be able to specify the SP embeddee receives, then
     // communication can be anonymous.
-    ConnectTo<IWindowManager>("mojo:mojo_window_manager", &window_manager_);
-    ConnectTo("mojo:mojo_window_manager", &navigator_host_);
-    AddService<Navigator>(this);
+    app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
+    app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService<Navigator>(this);
+    return true;
   }
 
   // Overridden from ViewManagerDelegate:
@@ -160,7 +168,7 @@ class EmbeddedApp : public Application,
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::EmbeddedApp;
 }
 

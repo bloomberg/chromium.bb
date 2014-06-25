@@ -4,23 +4,23 @@
 
 #include "mojo/public/cpp/application/lib/service_registry.h"
 
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/lib/service_connector.h"
 
 namespace mojo {
 namespace internal {
 
-ServiceRegistry::ServiceRegistry(Application* application)
-    : application_(application) {
-}
-
-ServiceRegistry::ServiceRegistry(
-    Application* application,
-    ScopedMessagePipeHandle service_provider_handle)
-        : application_(application) {
-  remote_service_provider_.Bind(service_provider_handle.Pass());
+ServiceRegistry::ServiceRegistry(ApplicationImpl* application_impl,
+                                 const std::string& url,
+                                 ServiceProviderPtr service_provider)
+    : application_impl_(application_impl),
+      url_(url),
+      remote_service_provider_(service_provider.Pass()) {
   remote_service_provider_.set_client(this);
 }
+
+ServiceRegistry::ServiceRegistry() : application_impl_(NULL) {}
 
 ServiceRegistry::~ServiceRegistry() {
   for (NameToServiceConnectorMap::iterator i =
@@ -35,7 +35,7 @@ void ServiceRegistry::AddServiceConnector(
     ServiceConnectorBase* service_connector) {
   RemoveServiceConnectorInternal(service_connector);
   name_to_service_connector_[service_connector->name()] = service_connector;
-  service_connector->set_registry(this);
+  service_connector->set_application_connection(this);
 }
 
 void ServiceRegistry::RemoveServiceConnector(
@@ -56,30 +56,30 @@ bool ServiceRegistry::RemoveServiceConnectorInternal(
   return true;
 }
 
-void ServiceRegistry::BindRemoteServiceProvider(
-    ScopedMessagePipeHandle service_provider_handle) {
-  remote_service_provider_.Bind(service_provider_handle.Pass());
-  remote_service_provider_.set_client(this);
+const std::string& ServiceRegistry::GetRemoteApplicationURL() {
+  return url_;
 }
 
-void ServiceRegistry::ConnectToService(const mojo::String& service_url,
-                                       const mojo::String& service_name,
-                                       ScopedMessagePipeHandle client_handle,
-                                       const mojo::String& requestor_url) {
+ServiceProvider* ServiceRegistry::GetServiceProvider() {
+  return remote_service_provider_.get();
+}
+
+ApplicationConnection* ServiceRegistry::ConnectToApplication(
+    const std::string& url) {
+  return application_impl_->ConnectToApplication(url);
+}
+
+void ServiceRegistry::ConnectToService(const mojo::String& service_name,
+                                       ScopedMessagePipeHandle client_handle) {
   if (name_to_service_connector_.find(service_name) ==
-          name_to_service_connector_.end() ||
-      !application_->AllowIncomingConnection(service_name, requestor_url)) {
+      name_to_service_connector_.end()) {
     client_handle.reset();
     return;
   }
-
   internal::ServiceConnectorBase* service_connector =
       name_to_service_connector_[service_name];
-  assert(service_connector);
-  // requestor_url is ignored because the service_connector stores the url
-  // of the requestor safely.
-  return service_connector->ConnectToService(
-      service_url, service_name, client_handle.Pass());
+  return service_connector->ConnectToService(service_name,
+                                             client_handle.Pass());
 }
 
 }  // namespace internal

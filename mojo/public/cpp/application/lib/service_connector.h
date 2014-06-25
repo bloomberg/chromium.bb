@@ -9,10 +9,11 @@
 
 #include <vector>
 
-#include "mojo/public/cpp/application/lib/service_registry.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
+class ApplicationConnection;
+
 namespace internal {
 
 template <class ServiceImpl, typename Context>
@@ -24,8 +25,10 @@ class ServiceConnector;
 template <class ServiceImpl, typename Context>
 class ServiceConnection : public ServiceImpl {
  public:
-  ServiceConnection() : ServiceImpl() {}
-  ServiceConnection(Context* context) : ServiceImpl(context) {}
+  explicit ServiceConnection(ApplicationConnection* connection)
+      : ServiceImpl(connection) {}
+  ServiceConnection(ApplicationConnection* connection,
+                    Context* context) : ServiceImpl(connection, context) {}
 
   virtual void OnConnectionError() MOJO_OVERRIDE {
     service_connector_->RemoveConnection(static_cast<ServiceImpl*>(this));
@@ -48,16 +51,21 @@ private:
 
 template <typename ServiceImpl, typename Context>
 struct ServiceConstructor {
-  static ServiceConnection<ServiceImpl, Context>* New(Context* context) {
-    return new ServiceConnection<ServiceImpl, Context>(context);
+  static ServiceConnection<ServiceImpl, Context>* New(
+      ApplicationConnection* connection,
+      Context* context) {
+    return new ServiceConnection<ServiceImpl, Context>(
+        connection, context);
   }
 };
 
 template <typename ServiceImpl>
 struct ServiceConstructor<ServiceImpl, void> {
  public:
-  static ServiceConnection<ServiceImpl, void>* New(void* context) {
-    return new ServiceConnection<ServiceImpl, void>();
+  static ServiceConnection<ServiceImpl, void>* New(
+      ApplicationConnection* connection,
+      void* context) {
+    return new ServiceConnection<ServiceImpl, void>(connection);
   }
 };
 
@@ -65,15 +73,15 @@ class ServiceConnectorBase {
  public:
   ServiceConnectorBase(const std::string& name);
   virtual ~ServiceConnectorBase();
-  virtual void ConnectToService(const std::string& url,
-                                const std::string& name,
+  virtual void ConnectToService(const std::string& name,
                                 ScopedMessagePipeHandle client_handle) = 0;
   std::string name() const { return name_; }
-  void set_registry(ServiceRegistry* registry) { registry_ = registry; }
+  void set_application_connection(ApplicationConnection* connection) {
+      application_connection_ = connection; }
 
  protected:
   std::string name_;
-  ServiceRegistry* registry_;
+  ApplicationConnection* application_connection_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceConnectorBase);
 };
@@ -94,11 +102,11 @@ class ServiceConnector : public internal::ServiceConnectorBase {
     assert(connections_.empty());  // No one should have added more!
   }
 
-  virtual void ConnectToService(const std::string& url,
-                                const std::string& name,
+  virtual void ConnectToService(const std::string& name,
                                 ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     ServiceConnection<ServiceImpl, Context>* impl =
-        ServiceConstructor<ServiceImpl, Context>::New(context_);
+        ServiceConstructor<ServiceImpl, Context>::New(application_connection_,
+                                                      context_);
     impl->set_service_connector(this);
     BindToPipe(impl, handle.Pass());
 

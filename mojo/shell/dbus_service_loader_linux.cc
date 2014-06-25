@@ -152,11 +152,11 @@ DBusServiceLoader::~DBusServiceLoader() {
 
 void DBusServiceLoader::LoadService(ServiceManager* manager,
                                     const GURL& url,
-                                    ScopedMessagePipeHandle service_handle) {
+                                    ScopedMessagePipeHandle shell_handle) {
   DCHECK(url.SchemeIs("dbus"));
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
   url_to_load_context_[url] =
-      new LoadContext(this, bus_, url, service_handle.Pass());
+      new LoadContext(this, bus_, url, shell_handle.Pass());
 }
 
 void DBusServiceLoader::OnServiceError(ServiceManager* manager,

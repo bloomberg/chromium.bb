@@ -152,7 +152,7 @@ DynamicServiceLoader::~DynamicServiceLoader() {
 
 void DynamicServiceLoader::LoadService(ServiceManager* manager,
                                        const GURL& url,
-                                       ScopedMessagePipeHandle service_handle) {
+                                       ScopedMessagePipeHandle shell_handle) {
   scoped_ptr<DynamicServiceRunner> runner = runner_factory_->Create(context_);
 
   GURL resolved_url;
@@ -167,13 +167,13 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
     loader = new LocalLoader(runner.Pass());
   } else {
     if (!network_service_.get()) {
-      context_->service_manager()->ConnectTo(GURL("mojo:mojo_network_service"),
-                                             &network_service_,
-                                             GURL());
+      context_->service_manager()->ConnectToService(
+          GURL("mojo:mojo_network_service"),
+          &network_service_);
     }
     loader = new NetworkLoader(runner.Pass(), network_service_.get());
   }
-  loader->Start(resolved_url, service_handle.Pass(), context_);
+  loader->Start(resolved_url, shell_handle.Pass(), context_);
 }
 
 void DynamicServiceLoader::OnServiceError(ServiceManager* manager,

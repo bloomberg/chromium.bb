@@ -45,11 +45,10 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcess) {
   InterfacePtr<mojo::test::ITestService> test_service;
 
   {
-    MessagePipe mp;
-    test_service.Bind(mp.handle0.Pass());
-    LaunchServiceInProcess(GURL("mojo:mojo_test_service"),
-                           mojo::test::ITestService::Name_,
-                           mp.handle1.Pass());
+    ScopedMessagePipeHandle service_handle =
+        LaunchServiceInProcess(GURL("mojo:mojo_test_service"),
+                               mojo::test::ITestService::Name_);
+    test_service.Bind(service_handle.Pass());
   }
 
   bool was_run = false;
@@ -73,11 +72,10 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcessInvalidService) {
   InterfacePtr<mojo::test::ITestService> test_service;
 
   {
-    MessagePipe mp;
-    test_service.Bind(mp.handle0.Pass());
-    LaunchServiceInProcess(GURL("mojo:non_existent_service"),
-                           mojo::test::ITestService::Name_,
-                           mp.handle1.Pass());
+    ScopedMessagePipeHandle service_handle =
+        LaunchServiceInProcess(GURL("mojo:non_existent_service"),
+                               mojo::test::ITestService::Name_);
+    test_service.Bind(service_handle.Pass());
   }
 
   bool was_run = false;

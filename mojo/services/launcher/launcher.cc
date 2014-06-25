@@ -5,7 +5,9 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
@@ -26,7 +28,8 @@ class LauncherApp;
 
 class LauncherConnection : public InterfaceImpl<Launcher> {
  public:
-  explicit LauncherConnection(LauncherApp* app) : app_(app) {}
+  LauncherConnection(ApplicationConnection* connection, LauncherApp* app)
+      : app_(app) {}
   virtual ~LauncherConnection() {}
 
  private:
@@ -91,7 +94,7 @@ class LaunchInstance : public URLLoaderClient {
   DISALLOW_COPY_AND_ASSIGN(LaunchInstance);
 };
 
-class LauncherApp : public Application {
+class LauncherApp : public ApplicationDelegate {
  public:
   LauncherApp() {
     handler_map_["text/html"] = "mojo:mojo_html_viewer";
@@ -113,10 +116,15 @@ class LauncherApp : public Application {
  private:
   typedef std::map<std::string, std::string> HandlerMap;
 
-  // Overridden from Application:
-  virtual void Initialize() OVERRIDE {
-    AddService<LauncherConnection>(this);
-    ConnectTo("mojo:mojo_network_service", &network_service_);
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService("mojo:mojo_network_service", &network_service_);
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    connection->AddService<LauncherConnection>(this);
+    return true;
   }
 
   HandlerMap handler_map_;
@@ -177,7 +185,7 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
 }  // namespace launcher
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new launcher::LauncherApp;
 }
 

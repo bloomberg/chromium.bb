@@ -8,7 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -41,13 +43,14 @@ scoped_ptr<mojo::NetworkContext> CreateContext(
   // when http://crbug.com/386485 is implemented.
   // Temporarly bind the handle to a service provider to retrieve a profile
   // service.
+  mojo::InterfacePtr<mojo::Shell> shell;
+  shell.Bind(handle->Pass());
   mojo::InterfacePtr<mojo::ServiceProvider> service_provider;
-  service_provider.Bind(handle->Pass());
+  shell->ConnectToApplication("mojo:profile_service", Get(&service_provider));
   mojo::InterfacePtr<mojo::ProfileService> profile_service;
-  ConnectToService(
-      service_provider.get(), "mojo:profile_service", &profile_service);
+  ConnectToService(service_provider.get(), &profile_service);
   // Unbind the handle to prevent any message to be read.
-  *handle = service_provider.PassMessagePipe();
+  *handle = shell.PassMessagePipe();
 
   // Use a nested message loop to synchronously call a method on the profile
   // service.
@@ -66,22 +69,36 @@ scoped_ptr<mojo::NetworkContext> CreateContext(
 
 }  // namespace
 
+class Delegate : public mojo::ApplicationDelegate {
+ public:
+  Delegate(scoped_ptr<mojo::NetworkContext> context)
+      : context_(context.Pass()) {}
+
+  virtual bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
+    connection->AddService<mojo::NetworkServiceImpl>(context_.get());
+    return true;
+  }
+
+ private:
+  scoped_ptr<mojo::NetworkContext> context_;
+};
+
 extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
+    MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
 
   // The IO message loop allows us to use net::URLRequest on this thread.
   base::MessageLoopForIO loop;
 
-  mojo::ScopedMessagePipeHandle scoped_service_provider_handle =
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(service_provider_handle));
+  mojo::ScopedMessagePipeHandle scoped_shell_handle =
+      mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle));
   scoped_ptr<mojo::NetworkContext> context =
-      CreateContext(&scoped_service_provider_handle);
+      CreateContext(&scoped_shell_handle);
 
-  mojo::Application app;
-  app.BindServiceProvider(scoped_service_provider_handle.Pass());
-  app.AddService<mojo::NetworkServiceImpl>(context.get());
+  Delegate delegate(context.Pass());
+  mojo::ApplicationImpl app(&delegate, scoped_shell_handle.Pass());
 
   loop.Run();
   return MOJO_RESULT_OK;

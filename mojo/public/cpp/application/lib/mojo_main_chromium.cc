@@ -5,18 +5,18 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 
 extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
+    MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::MessageLoop loop;
-
-  scoped_ptr<mojo::Application> app(mojo::Application::Create());
-  app->BindServiceProvider(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(service_provider_handle)));
-  app->Initialize();
+  scoped_ptr<mojo::ApplicationDelegate> delegate(
+      mojo::ApplicationDelegate::Create());
+  mojo::ApplicationImpl app(delegate.get());
+  app.BindShell(shell_handle);
   loop.Run();
 
   return MOJO_RESULT_OK;

@@ -27,7 +27,7 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundServiceLoader
   // ServiceLoader overrides:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedMessagePipeHandle service_handle) OVERRIDE;
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 
@@ -41,7 +41,7 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundServiceLoader
   void LoadServiceOnBackgroundThread(
       ServiceManager* manager,
       const GURL& url,
-      ScopedMessagePipeHandle* service_provider_handle);
+      ScopedMessagePipeHandle* shell_handle);
   void OnServiceErrorOnBackgroundThread(ServiceManager* manager,
                                         const GURL& url);
   void ShutdownOnBackgroundThread();

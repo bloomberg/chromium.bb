@@ -5,42 +5,46 @@
 #ifndef MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 #define MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 
-#include <map>
-#include <string>
-
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
 
-class Application;
+class ApplicationImpl;
 
 namespace internal {
 
 class ServiceConnectorBase;
 
-class ServiceRegistry : public ServiceProvider {
+// A ServiceRegistry represents each half of a connection between two
+// applications, allowing customization of which services are published to the
+// other.
+class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
  public:
-  ServiceRegistry(Application* application);
-  ServiceRegistry(Application* application,
-                  ScopedMessagePipeHandle service_provider_handle);
+  ServiceRegistry();
+  ServiceRegistry(ApplicationImpl* application_impl,
+                  const std::string& url,
+                  ServiceProviderPtr service_provider);
   virtual ~ServiceRegistry();
 
-  void AddServiceConnector(ServiceConnectorBase* service_connector);
-  void RemoveServiceConnector(ServiceConnectorBase* service_connector);
-
-  ServiceProvider* remote_service_provider() {
-    return remote_service_provider_.get();
-  }
-
-  void BindRemoteServiceProvider(
-      ScopedMessagePipeHandle service_provider_handle);
-
-  // ServiceProvider method.
-  virtual void ConnectToService(const mojo::String& service_url,
-                                const mojo::String& service_name,
-                                ScopedMessagePipeHandle client_handle,
-                                const mojo::String& requestor_url)
+  // ApplicationConnection overrides.
+  virtual void AddServiceConnector(ServiceConnectorBase* service_connector)
       MOJO_OVERRIDE;
+  virtual const std::string& GetRemoteApplicationURL() MOJO_OVERRIDE;
+  virtual ApplicationConnection* ConnectToApplication(
+      const std::string& url) MOJO_OVERRIDE;
+  virtual ServiceProvider* GetServiceProvider() MOJO_OVERRIDE;
+
+  virtual void RemoveServiceConnector(ServiceConnectorBase* service_connector);
+
+ private:
+  // ServiceProvider method.
+  virtual void ConnectToService(const mojo::String& service_name,
+                                ScopedMessagePipeHandle client_handle)
+      MOJO_OVERRIDE;
+
+  ApplicationImpl* application_impl_;
+  const std::string url_;
 
  private:
   bool RemoveServiceConnectorInternal(

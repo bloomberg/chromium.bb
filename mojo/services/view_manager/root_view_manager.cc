@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
-#include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/root_view_manager_delegate.h"
 #include "mojo/services/view_manager/screen_impl.h"
@@ -116,7 +116,7 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };
 
-RootViewManager::RootViewManager(ServiceProvider* service_provider,
+RootViewManager::RootViewManager(ApplicationConnection* app_connection,
                                  RootNodeManager* root_node,
                                  RootViewManagerDelegate* delegate)
     : delegate_(delegate),
@@ -125,9 +125,8 @@ RootViewManager::RootViewManager(ServiceProvider* service_provider,
   screen_.reset(ScreenImpl::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   NativeViewportPtr viewport;
-  ConnectToService(service_provider,
-                   "mojo:mojo_native_viewport_service",
-                   &viewport);
+  app_connection->ConnectToService(
+      "mojo:mojo_native_viewport_service", &viewport);
   window_tree_host_.reset(new WindowTreeHostImpl(
         viewport.Pass(),
         gfx::Rect(800, 600),

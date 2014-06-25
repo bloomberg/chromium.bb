@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -23,7 +25,8 @@ class MediaViewer;
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit NavigatorImpl(MediaViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(ApplicationConnection* connection,
+                         MediaViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -38,10 +41,11 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class MediaViewer : public Application,
+class MediaViewer : public ApplicationDelegate,
                     public view_manager::ViewManagerDelegate {
  public:
-  MediaViewer() : content_node_(NULL),
+  MediaViewer() : app_(NULL),
+                  content_node_(NULL),
                   view_manager_(NULL) {
     handler_map_["image/png"] = "mojo:mojo_png_viewer";
   }
@@ -72,7 +76,7 @@ class MediaViewer : public Application,
 
     if (navigation_details) {
       navigation::NavigatorPtr navigator;
-      ConnectTo(handler, &navigator);
+      app_->ConnectToService(handler, &navigator);
       navigator->Navigate(content_node_->id(), navigation_details.Pass(),
                           response_details.Pass());
     }
@@ -87,10 +91,17 @@ class MediaViewer : public Application,
     navigation::ResponseDetailsPtr response_details;
   };
 
-  // Overridden from Application:
-  virtual void Initialize() OVERRIDE {
-    AddService<NavigatorImpl>(this);
-    view_manager::ViewManager::Create(this, this);
+
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+    app_ = app;
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      OVERRIDE {
+    connection->AddService<NavigatorImpl>(this);
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   // Overridden from view_manager::ViewManagerDelegate:
@@ -117,6 +128,7 @@ class MediaViewer : public Application,
     return it != handler_map_.end() ? it->second : std::string();
   }
 
+  ApplicationImpl* app_;
   view_manager::Node* content_node_;
   view_manager::ViewManager* view_manager_;
   HandlerMap handler_map_;
@@ -136,7 +148,7 @@ void NavigatorImpl::Navigate(
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::MediaViewer;
 }
 

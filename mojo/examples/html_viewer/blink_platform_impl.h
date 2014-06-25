@@ -14,13 +14,13 @@
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace mojo {
-class Application;
+class ApplicationImpl;
 
 namespace examples {
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
-  explicit BlinkPlatformImpl(Application* app);
+  explicit BlinkPlatformImpl(ApplicationImpl* app);
   virtual ~BlinkPlatformImpl();
 
   // blink::Platform methods:

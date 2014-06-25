@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
@@ -16,7 +17,7 @@ class Application;
 namespace shell {
 
 // ServiceLoader responsible for creating connections to the ViewManager.
-class ViewManagerLoader : public ServiceLoader {
+class ViewManagerLoader : public ServiceLoader, public ApplicationDelegate {
  public:
   ViewManagerLoader();
   virtual ~ViewManagerLoader();
@@ -26,9 +27,13 @@ class ViewManagerLoader : public ServiceLoader {
   virtual void LoadService(
       ServiceManager* manager,
       const GURL& url,
-      ScopedMessagePipeHandle service_provider_handle) OVERRIDE;
+      ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
+
+  // ApplicationDelegate overrides.
+  virtual bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) MOJO_OVERRIDE;
 
   ScopedVector<Application> apps_;
 

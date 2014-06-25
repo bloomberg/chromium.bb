@@ -10,7 +10,7 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
@@ -103,7 +103,7 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowTreeClient);
 };
 
-class AuraDemo : public Application,
+class AuraDemo : public ApplicationDelegate,
                  public WindowTreeHostMojoDelegate,
                  public view_manager::ViewManagerDelegate {
  public:
@@ -112,7 +112,6 @@ class AuraDemo : public Application,
         window2_(NULL),
         window21_(NULL),
         view_(NULL) {
-    view_manager::ViewManager::Create(this, this);
   }
   virtual ~AuraDemo() {}
 
@@ -159,12 +158,18 @@ class AuraDemo : public Application,
     view_->SetContents(bitmap);
   }
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     aura::Env::CreateInstance(true);
     context_factory_.reset(new ContextFactoryMojo);
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
     screen_.reset(ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   scoped_ptr<DemoWindowTreeClient> window_tree_client_;
@@ -191,7 +196,7 @@ class AuraDemo : public Application,
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::AuraDemo();
 }
 

@@ -9,7 +9,8 @@
 namespace mojo {
 namespace test {
 
-TestServiceImpl::TestServiceImpl(TestServiceApplication* application)
+TestServiceImpl::TestServiceImpl(ApplicationConnection* connection,
+                                 TestServiceApplication* application)
     : application_(application) {
 }
 

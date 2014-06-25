@@ -5,6 +5,7 @@
 #include "mojo/services/view_manager/root_node_manager.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view.h"
@@ -41,12 +42,12 @@ RootNodeManager::Context::~Context() {
   aura::Env::DeleteInstance();
 }
 
-RootNodeManager::RootNodeManager(ServiceProvider* service_provider,
+RootNodeManager::RootNodeManager(ApplicationConnection* app_connection,
                                  RootViewManagerDelegate* view_manager_delegate)
-    : service_provider_(service_provider),
+    : app_connection_(app_connection),
       next_connection_id_(1),
       next_server_change_id_(1),
-      root_view_manager_(service_provider, this, view_manager_delegate),
+      root_view_manager_(app_connection, this, view_manager_delegate),
       root_(this, RootNodeId()),
       current_change_(NULL) {
 }
@@ -235,11 +236,12 @@ ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
     const String& url,
     const Array<Id>& node_ids) {
   MessagePipe pipe;
-  service_provider_->ConnectToService(
-      url,
+
+  ServiceProvider* service_provider =
+      app_connection_->ConnectToApplication(url)->GetServiceProvider();
+  service_provider->ConnectToService(
       ViewManagerServiceImpl::Client::Name_,
-      pipe.handle1.Pass(),
-      String());
+      pipe.handle1.Pass());
 
   std::string creator_url;
   ConnectionMap::const_iterator it = connection_map_.find(creator_id);

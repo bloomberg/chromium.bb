@@ -7,7 +7,9 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
@@ -54,7 +56,8 @@ const int kTextfieldHeight = 25;
 
 class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
  public:
-  explicit WindowManagerConnection(WindowManager* window_manager)
+  explicit WindowManagerConnection(ApplicationConnection* connection,
+                                   WindowManager* window_manager)
       : window_manager_(window_manager) {}
   virtual ~WindowManagerConnection() {}
 
@@ -71,7 +74,8 @@ class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
 
 class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
  public:
-  explicit NavigatorHost(WindowManager* window_manager)
+  explicit NavigatorHost(ApplicationConnection* connection,
+                         WindowManager* window_manager)
       : window_manager_(window_manager) {
   }
   virtual ~NavigatorHost() {
@@ -96,7 +100,7 @@ class KeyboardManager : public KeyboardClient {
 
   Node* node() { return node_; }
 
-  void Init(Application* application,
+  void Init(ApplicationImpl* application,
             ViewManager* view_manager,
             Node* parent,
             const gfx::Rect& bounds) {
@@ -105,7 +109,7 @@ class KeyboardManager : public KeyboardClient {
     parent->AddChild(node_);
     node_->SetBounds(bounds);
     node_->Embed("mojo:mojo_keyboard");
-    application->ConnectTo("mojo:mojo_keyboard", &keyboard_service_);
+    application->ConnectToService("mojo:mojo_keyboard", &keyboard_service_);
     keyboard_service_.set_client(this);
   }
 
@@ -151,13 +155,12 @@ class KeyboardManager : public KeyboardClient {
   DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
 };
 
-class WindowManager : public Application,
+class WindowManager : public ApplicationDelegate,
                       public ViewObserver,
                       public ViewManagerDelegate,
                       public ViewEventDispatcher {
  public:
-  WindowManager() : launcher_ui_(NULL), view_manager_(NULL) {
-  }
+  WindowManager() : launcher_ui_(NULL), view_manager_(NULL), app_(NULL) {}
   virtual ~WindowManager() {}
 
   void CloseWindow(Id node_id) {
@@ -176,7 +179,7 @@ class WindowManager : public Application,
     // this really owns |view_id|.
     if (!keyboard_manager_) {
       keyboard_manager_.reset(new KeyboardManager);
-      keyboard_manager_->Init(this, view_manager_,
+      keyboard_manager_->Init(app_, view_manager_,
                               view_manager_->GetRoots().back(),
                               gfx::Rect(0, 400, 400, 200));
     }
@@ -193,8 +196,6 @@ class WindowManager : public Application,
     uint32 source_node_id,
     navigation::Target target,
     navigation::NavigationDetailsPtr nav_details) {
-    if (!launcher_.get())
-      ConnectTo("mojo:mojo_launcher", &launcher_);
     launcher_->Launch(nav_details->url,
                       base::Bind(&WindowManager::OnLaunch,
                                  base::Unretained(this),
@@ -203,11 +204,18 @@ class WindowManager : public Application,
   }
 
  private:
-  // Overridden from Application:
-  virtual void Initialize() MOJO_OVERRIDE {
-    AddService<WindowManagerConnection>(this);
-    AddService<NavigatorHost>(this);
-    ViewManager::Create(this, this);
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app_ = app;
+    app->ConnectToService("mojo:mojo_launcher", &launcher_);
+  }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    connection->AddService<WindowManagerConnection>(this);
+    connection->AddService<NavigatorHost>(this);
+    ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   // Overridden from ViewObserver:
@@ -328,7 +336,7 @@ class WindowManager : public Application,
     node->Embed(app_url);
     if (nav_details.get()) {
       navigation::NavigatorPtr navigator;
-      ConnectTo(app_url, &navigator);
+      app_->ConnectToService(app_url, &navigator);
       navigator->Navigate(node->id(), nav_details.Pass(), response.Pass());
     }
   }
@@ -347,6 +355,7 @@ class WindowManager : public Application,
   Id content_node_id_;
 
   scoped_ptr<KeyboardManager> keyboard_manager_;
+  ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
@@ -373,7 +382,7 @@ void NavigatorHost::RequestNavigate(
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::WindowManager;
 }
 

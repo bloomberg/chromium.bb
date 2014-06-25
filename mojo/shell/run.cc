@@ -12,6 +12,15 @@
 namespace mojo {
 namespace shell {
 
+class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
+ private:
+  virtual void ConnectToService(const mojo::String& service_name,
+                                ScopedMessagePipeHandle client_handle)
+      MOJO_OVERRIDE {
+  }
+};
+
+
 void Run(Context* context, const std::vector<GURL>& app_urls) {
   KeepAlive keep_alive(context);
 
@@ -23,9 +32,13 @@ void Run(Context* context, const std::vector<GURL>& app_urls) {
   for (std::vector<GURL>::const_iterator it = app_urls.begin();
        it != app_urls.end();
        ++it) {
-    ScopedMessagePipeHandle no_handle;
-    context->service_manager()->ConnectToService(
-        *it, std::string(), no_handle.Pass(), GURL());
+    // TODO(davemoore): These leak...need refs to them.
+    StubServiceProvider* stub_sp = new StubServiceProvider;
+    ServiceProviderPtr spp;
+    BindToProxy(stub_sp, &spp);
+
+    context->service_manager()->ConnectToApplication(
+        *it, GURL(), spp.Pass());
   }
 }
 

@@ -14,7 +14,9 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/service_manager/service_manager.h"
@@ -284,7 +286,8 @@ bool ViewManagerProxy::in_embed_ = false;
 class TestViewManagerClientConnection
     : public InterfaceImpl<ViewManagerClient> {
  public:
-  TestViewManagerClientConnection() : connection_(&tracker_) {
+  TestViewManagerClientConnection(ApplicationConnection* app_connection) :
+      connection_(&tracker_) {
     tracker_.set_delegate(&connection_);
   }
 
@@ -361,7 +364,7 @@ class TestViewManagerClientConnection
 
 // Used with ViewManagerService::Embed(). Creates a
 // TestViewManagerClientConnection, which creates and owns the ViewManagerProxy.
-class EmbedServiceLoader : public ServiceLoader {
+class EmbedServiceLoader : public ServiceLoader, ApplicationDelegate {
  public:
   EmbedServiceLoader() {}
   virtual ~EmbedServiceLoader() {}
@@ -370,16 +373,23 @@ class EmbedServiceLoader : public ServiceLoader {
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
-    scoped_ptr<Application> app(new Application(shell_handle.Pass()));
-    app->AddService<TestViewManagerClientConnection>();
+    scoped_ptr<ApplicationImpl> app(new ApplicationImpl(this,
+                                                        shell_handle.Pass()));
     apps_.push_back(app.release());
   }
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE {
   }
 
+  // ApplicationDelegate
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      OVERRIDE {
+    connection->AddService<TestViewManagerClientConnection>();
+    return true;
+  }
+
  private:
-  ScopedVector<Application> apps_;
+  ScopedVector<ApplicationImpl> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbedServiceLoader);
 };
@@ -432,9 +442,9 @@ class ViewManagerTest : public testing::Test {
         scoped_ptr<ServiceLoader>(new EmbedServiceLoader()),
         GURL(kTestServiceURL));
 
-    ConnectToService(test_helper_.service_provider(),
-                     "mojo:mojo_view_manager",
-                     &view_manager_init_);
+    test_helper_.service_manager()->ConnectToService(
+        GURL("mojo:mojo_view_manager"),
+        &view_manager_init_);
     ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kTestServiceURL));
 
     connection_ = ViewManagerProxy::WaitForInstance();

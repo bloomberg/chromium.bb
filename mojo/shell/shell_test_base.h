@@ -26,9 +26,9 @@ class ShellTestBase : public testing::Test {
 
   // Launches the given service in-process; |service_url| should typically be a
   // mojo: URL (the origin will be set to an "appropriate" file: URL).
-  void LaunchServiceInProcess(const GURL& service_url,
-                              const std::string& service_name,
-                              ScopedMessagePipeHandle client_handle);
+  ScopedMessagePipeHandle LaunchServiceInProcess(
+      const GURL& service_url,
+      const std::string& service_name);
 
   base::MessageLoop* message_loop() { return &message_loop_; }
   Context* shell_context() { return &shell_context_; }

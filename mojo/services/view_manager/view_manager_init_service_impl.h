@@ -16,6 +16,7 @@
 
 namespace mojo {
 
+class ApplicationConnection;
 class ServiceProvider;
 
 namespace view_manager {
@@ -34,7 +35,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
     : public InterfaceImpl<ViewManagerInitService>,
       public RootViewManagerDelegate {
  public:
-  explicit ViewManagerInitServiceImpl(ServiceProvider* service_provider);
+  explicit ViewManagerInitServiceImpl(ApplicationConnection* connection);
   virtual ~ViewManagerInitServiceImpl();
 
  private:

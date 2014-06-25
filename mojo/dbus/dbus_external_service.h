@@ -8,7 +8,9 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "mojo/embedder/channel_init.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
 
@@ -48,12 +50,19 @@ class DBusExternalServiceBase {
 };
 
 template <class ServiceImpl>
-class DBusExternalService : public DBusExternalServiceBase {
+class DBusExternalService : public DBusExternalServiceBase,
+                            public ApplicationDelegate {
  public:
   explicit DBusExternalService(const std::string& service_name)
       : DBusExternalServiceBase(service_name) {
   }
   virtual ~DBusExternalService() {}
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    connection->AddService<ServiceImpl>();
+    return true;
+  }
 
  protected:
   virtual void Connect(ScopedMessagePipeHandle client_handle) OVERRIDE {
@@ -74,8 +83,7 @@ class DBusExternalService : public DBusExternalServiceBase {
     }
     virtual void Activate(ScopedMessagePipeHandle service_provider_handle)
         OVERRIDE {
-      app_.reset(new Application(service_provider_handle.Pass()));
-      app_->AddService<ServiceImpl>();
+      app_.reset(new ApplicationImpl(service_, service_provider_handle.Pass()));
     }
    private:
     DBusExternalService* service_;

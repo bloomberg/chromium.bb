@@ -6,7 +6,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -112,7 +114,7 @@ class KeyboardManager : public views::FocusChangeListener,
 
 // This is the basics of creating a views widget with a textfield.
 // TODO: cleanup!
-class Browser : public Application,
+class Browser : public ApplicationDelegate,
                 public view_manager::ViewManagerDelegate,
                 public views::TextfieldController,
                 public view_manager::NodeObserver {
@@ -123,12 +125,17 @@ class Browser : public Application,
   }
 
  private:
-  // Overridden from Application:
-  virtual void Initialize() MOJO_OVERRIDE {
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
-    view_manager::ViewManager::Create(this, this);
-    ConnectTo("mojo:mojo_window_manager", &navigator_host_);
-    ConnectTo("mojo:mojo_window_manager", &window_manager_);
+    app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
+    app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
+ }
+
+  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
+      MOJO_OVERRIDE {
+    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    return true;
   }
 
   void CreateWidget(view_manager::Node* node) {
@@ -206,7 +213,7 @@ class Browser : public Application,
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::Browser;
 }
 

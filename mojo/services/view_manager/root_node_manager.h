@@ -23,7 +23,7 @@ class Event;
 
 namespace mojo {
 
-class ServiceProvider;
+class ApplicationConnection;
 
 namespace view_manager {
 namespace service {
@@ -81,7 +81,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  RootNodeManager(ServiceProvider* service_provider,
+  RootNodeManager(ApplicationConnection* app_connection,
                   RootViewManagerDelegate* view_manager_delegate);
   virtual ~RootNodeManager();
 
@@ -198,7 +198,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   Context context_;
 
-  ServiceProvider* service_provider_;
+  ApplicationConnection* app_connection_;
 
   // ID to use for next ViewManagerServiceImpl.
   ConnectionSpecificId next_connection_id_;

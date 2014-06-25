@@ -9,13 +9,15 @@
 #include "mojo/services/test_service/test_service.mojom.h"
 
 namespace mojo {
+class ApplicationConnection;
 namespace test {
 
 class TestServiceApplication;
 
 class TestServiceImpl : public InterfaceImpl<ITestService> {
  public:
-  explicit TestServiceImpl(TestServiceApplication* application);
+  explicit TestServiceImpl(ApplicationConnection* connection,
+                           TestServiceApplication* application);
   virtual ~TestServiceImpl();
 
   // |ITestService| methods:

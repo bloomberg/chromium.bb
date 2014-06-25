@@ -16,8 +16,8 @@ class BackgroundServiceLoader::BackgroundLoader {
 
   void LoadService(ServiceManager* manager,
                    const GURL& url,
-                   ScopedMessagePipeHandle service_provider_handle) {
-    loader_->LoadService(manager, url, service_provider_handle.Pass());
+                   ScopedMessagePipeHandle shell_handle) {
+    loader_->LoadService(manager, url, shell_handle.Pass());
   }
 
   void OnServiceError(ServiceManager* manager, const GURL& url) {
@@ -54,7 +54,7 @@ BackgroundServiceLoader::~BackgroundServiceLoader() {
 void BackgroundServiceLoader::LoadService(
     ServiceManager* manager,
     const GURL& url,
-    ScopedMessagePipeHandle service_handle) {
+    ScopedMessagePipeHandle shell_handle) {
   const int kDefaultStackSize = 0;
   if (!thread_.IsRunning())
     thread_.StartWithOptions(
@@ -64,7 +64,7 @@ void BackgroundServiceLoader::LoadService(
       base::Bind(&BackgroundServiceLoader::LoadServiceOnBackgroundThread,
                  base::Unretained(this), manager, url,
                  base::Owned(
-                    new ScopedMessagePipeHandle(service_handle.Pass()))));
+                    new ScopedMessagePipeHandle(shell_handle.Pass()))));
 }
 
 void BackgroundServiceLoader::OnServiceError(ServiceManager* manager,
@@ -80,11 +80,11 @@ void BackgroundServiceLoader::OnServiceError(ServiceManager* manager,
 void BackgroundServiceLoader::LoadServiceOnBackgroundThread(
     ServiceManager* manager,
     const GURL& url,
-    ScopedMessagePipeHandle* service_provider_handle) {
+    ScopedMessagePipeHandle* shell_handle) {
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
   background_loader_->LoadService(
-      manager, url, service_provider_handle->Pass());
+      manager, url, shell_handle->Pass());
 }
 
 void BackgroundServiceLoader::OnServiceErrorOnBackgroundThread(

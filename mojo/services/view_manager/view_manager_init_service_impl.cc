@@ -9,6 +9,7 @@
 #include "mojo/services/view_manager/view_manager_service_impl.h"
 
 namespace mojo {
+class ApplicationConnection;
 namespace view_manager {
 namespace service {
 
@@ -17,9 +18,8 @@ ViewManagerInitServiceImpl::ConnectParams::ConnectParams() {}
 ViewManagerInitServiceImpl::ConnectParams::~ConnectParams() {}
 
 ViewManagerInitServiceImpl::ViewManagerInitServiceImpl(
-    ServiceProvider* service_provider)
-    : service_provider_(service_provider),
-      root_node_manager_(service_provider, this),
+    ApplicationConnection* connection)
+    : root_node_manager_(connection, this),
       is_tree_host_ready_(false) {
 }
 

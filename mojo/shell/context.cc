@@ -10,7 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/service_manager/background_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
@@ -67,8 +67,8 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
  private:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedMessagePipeHandle service_handle) OVERRIDE {
-    app_.reset(::CreateNativeViewportService(context_, service_handle.Pass()));
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE {
+    app_.reset(::CreateNativeViewportService(context_, shell_handle.Pass()));
   }
 
   virtual void OnServiceError(ServiceManager* manager,
@@ -76,7 +76,7 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
   }
 
   Context* context_;
-  scoped_ptr<Application> app_;
+  scoped_ptr<ApplicationImpl> app_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewportServiceLoader);
 };
 

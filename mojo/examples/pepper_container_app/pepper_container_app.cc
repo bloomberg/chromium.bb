@@ -11,7 +11,8 @@
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -22,19 +23,18 @@
 namespace mojo {
 namespace examples {
 
-class PepperContainerApp: public Application,
+class PepperContainerApp: public ApplicationDelegate,
                           public NativeViewportClient,
                           public MojoPpapiGlobals::Delegate {
  public:
   explicit PepperContainerApp()
-      : Application(),
-        ppapi_globals_(this),
+      : ppapi_globals_(this),
         plugin_module_(new PluginModule) {}
 
   virtual ~PepperContainerApp() {}
 
-  virtual void Initialize() MOJO_OVERRIDE {
-    ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
     RectPtr rect(Rect::New());
@@ -103,7 +103,7 @@ class PepperContainerApp: public Application,
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::PepperContainerApp();
 }
 

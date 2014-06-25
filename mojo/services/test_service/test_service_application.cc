@@ -6,6 +6,7 @@
 
 #include <assert.h>
 
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/services/test_service/test_service_impl.h"
 
@@ -18,8 +19,10 @@ TestServiceApplication::TestServiceApplication() : ref_count_(0) {
 TestServiceApplication::~TestServiceApplication() {
 }
 
-void TestServiceApplication::Initialize() {
-  AddService<TestServiceImpl>(this);
+bool TestServiceApplication::ConfigureIncomingConnection(
+    ApplicationConnection* connection) {
+  connection->AddService<TestServiceImpl>(this);
+  return true;
 }
 
 void TestServiceApplication::AddRef() {
@@ -37,7 +40,7 @@ void TestServiceApplication::ReleaseRef() {
 }  // namespace test
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new mojo::test::TestServiceApplication();
 }
 

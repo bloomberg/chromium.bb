@@ -12,7 +12,7 @@
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 
 namespace mojo {
-class Application;
+class ApplicationConnection;
 namespace view_manager {
 
 class Node;
@@ -23,7 +23,8 @@ class ViewManagerDelegate;
 class ViewManager {
  public:
   // Delegate is owned by the caller.
-  static void Create(Application* application, ViewManagerDelegate* delegate);
+  static void ConfigureIncomingConnection(ApplicationConnection* connection,
+                                          ViewManagerDelegate* delegate);
 
   // Sets the event dispatcher. Can only be called by the app rendering to the
   // root Node of the hierarchy.

@@ -63,7 +63,7 @@ class DBusServiceLoader : public ServiceLoader {
   // "/org/chromium/MojoImpl".
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedMessagePipeHandle service_handle) OVERRIDE;
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
 
   virtual void OnServiceError(ServiceManager* manager, const GURL& url)
       OVERRIDE;

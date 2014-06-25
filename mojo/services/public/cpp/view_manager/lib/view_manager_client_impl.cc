@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
@@ -522,7 +522,8 @@ class SetVisibleTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(SetVisibleTransaction);
 };
 
-ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
+ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
+                                             ViewManagerDelegate* delegate)
     : connected_(false),
       connection_id_(0),
       next_id_(1),
@@ -644,7 +645,8 @@ void ViewManagerClientImpl::SetVisible(Id node_id, bool visible) {
 
 void ViewManagerClientImpl::Embed(const String& url, Id node_id) {
   DCHECK(connected_);
-  pending_transactions_.push_back(new EmbedTransaction(url, node_id, this));
+  pending_transactions_.push_back(
+      new EmbedTransaction(url, node_id, this));
   Sync();
 }
 
@@ -890,9 +892,10 @@ void ViewManagerClientImpl::RemoveRoot(Node* root) {
 // ViewManager, public:
 
 // static
-void ViewManager::Create(Application* application,
-                         ViewManagerDelegate* delegate) {
-  application->AddService<ViewManagerClientImpl>(delegate);
+void ViewManager::ConfigureIncomingConnection(
+    ApplicationConnection* connection,
+    ViewManagerDelegate* delegate) {
+  connection->AddService<ViewManagerClientImpl>(delegate);
 }
 
 }  // namespace view_manager

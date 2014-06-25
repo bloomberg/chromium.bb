@@ -23,10 +23,12 @@ ShellTestBase::ShellTestBase() {
 ShellTestBase::~ShellTestBase() {
 }
 
-void ShellTestBase::LaunchServiceInProcess(
+ScopedMessagePipeHandle ShellTestBase::LaunchServiceInProcess(
     const GURL& service_url,
-    const std::string& service_name,
-    ScopedMessagePipeHandle client_handle) {
+    const std::string& service_name) {
+  base::FilePath base_dir;
+  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
+  // On android, the library is bundled with the app.
 #if defined(OS_ANDROID)
   // On Android, the library is bundled with the app.
   base::FilePath service_dir;
@@ -39,8 +41,8 @@ void ShellTestBase::LaunchServiceInProcess(
   shell_context_.mojo_url_resolver()->set_origin(
       net::FilePathToFileURL(service_dir).spec());
 
-  shell_context_.service_manager()->ConnectToService(
-      service_url, service_name, client_handle.Pass(), GURL());
+  return shell_context_.service_manager()->ConnectToServiceByName(
+      service_url, service_name).Pass();
 }
 
 }  // namespace test

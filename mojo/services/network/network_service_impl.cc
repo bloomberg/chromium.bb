@@ -8,15 +8,15 @@
 
 namespace mojo {
 
-NetworkServiceImpl::NetworkServiceImpl(NetworkContext* context)
+NetworkServiceImpl::NetworkServiceImpl(ApplicationConnection* connection,
+                                       NetworkContext* context)
     : context_(context) {
 }
 
 NetworkServiceImpl::~NetworkServiceImpl() {
 }
 
-void NetworkServiceImpl::CreateURLLoader(
-    InterfaceRequest<URLLoader> loader) {
+void NetworkServiceImpl::CreateURLLoader(InterfaceRequest<URLLoader> loader) {
   BindToRequest(new URLLoaderImpl(context_), &loader);
 }
 

@@ -7,7 +7,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -17,14 +18,14 @@
 namespace mojo {
 namespace examples {
 
-class DBusEchoApp : public Application {
+class DBusEchoApp : public ApplicationDelegate {
  public:
   DBusEchoApp() {}
   virtual ~DBusEchoApp() {}
 
-  virtual void Initialize() MOJO_OVERRIDE {
-    ConnectTo("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
-              &echo_service_);
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService(
+        "dbus:org.chromium.EchoService/org/chromium/MojoImpl", &echo_service_);
 
     echo_service_->Echo(
         String::From("who"),
@@ -44,7 +45,7 @@ class DBusEchoApp : public Application {
 }  // namespace examples
 
 // static
-Application* Application::Create() {
+ApplicationDelegate* ApplicationDelegate::Create() {
   return new examples::DBusEchoApp();
 }
 

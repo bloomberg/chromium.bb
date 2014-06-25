@@ -17,7 +17,6 @@ class TestConnector : public ServiceConnectorBase {
       : ServiceConnectorBase(name), delete_count_(delete_count) {}
   virtual ~TestConnector() { (*delete_count_)++; }
   virtual void ConnectToService(
-      const std::string& url,
       const std::string& name,
       ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE {}
  private:
@@ -29,14 +28,14 @@ TEST(ServiceRegistryTest, Ownership) {
 
   // Destruction.
   {
-    ServiceRegistry registry(NULL);
+    ServiceRegistry registry;
     registry.AddServiceConnector(new TestConnector("TC1", &delete_count));
   }
   EXPECT_EQ(1, delete_count);
 
   // Removal.
   {
-    ServiceRegistry registry(NULL);
+    ServiceRegistry registry;
     ServiceConnectorBase* c = new TestConnector("TC1", &delete_count);
     registry.AddServiceConnector(c);
     registry.RemoveServiceConnector(c);
@@ -45,7 +44,7 @@ TEST(ServiceRegistryTest, Ownership) {
 
   // Multiple.
   {
-    ServiceRegistry registry(NULL);
+    ServiceRegistry registry;
     registry.AddServiceConnector(new TestConnector("TC1", &delete_count));
     registry.AddServiceConnector(new TestConnector("TC2", &delete_count));
   }
@@ -53,7 +52,7 @@ TEST(ServiceRegistryTest, Ownership) {
 
   // Re-addition.
   {
-    ServiceRegistry registry(NULL);
+    ServiceRegistry registry;
     registry.AddServiceConnector(new TestConnector("TC1", &delete_count));
     registry.AddServiceConnector(new TestConnector("TC1", &delete_count));
     EXPECT_EQ(5, delete_count);

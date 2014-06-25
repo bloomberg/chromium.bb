@@ -14,11 +14,17 @@ interface TestClient {
 };
 
 interface TestA {
-  LoadB();
+  CallB();
+  CallCFromB();
 };
 
 interface TestB {
-  Test();
+  B() => ();
+  CallC() => ();
+};
+
+interface TestC {
+  C() => ();
 };
 
 }
