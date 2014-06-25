@@ -101,17 +101,42 @@ void MapperOnLiveWireless(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperADT1(
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonPrimary] = input.buttons[0];
+  mapped->buttons[kButtonSecondary] = input.buttons[1];
+  mapped->buttons[kButtonTertiary] = input.buttons[3];
+  mapped->buttons[kButtonQuaternary] = input.buttons[4];
+  mapped->buttons[kButtonLeftShoulder] = input.buttons[6];
+  mapped->buttons[kButtonRightShoulder] = input.buttons[7];
+  mapped->buttons[kButtonLeftTrigger] = AxisToButton(input.axes[4]);
+  mapped->buttons[kButtonRightTrigger] = AxisToButton(input.axes[3]);
+  mapped->buttons[kButtonBackSelect] = NullButton();
+  mapped->buttons[kButtonStart] = NullButton();
+  mapped->buttons[kButtonLeftThumbstick] = input.buttons[13];
+  mapped->buttons[kButtonRightThumbstick] = input.buttons[14];
+  mapped->buttons[kButtonMeta] = input.buttons[12];
+  mapped->axes[kAxisRightStickY] = input.axes[5];
+  DpadFromAxis(mapped, input.axes[9]);
+
+  mapped->buttonsLength = kNumButtons;
+  mapped->axesLength = kNumAxes;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
   // http://www.linux-usb.org/usb.ids
-  { "046d", "c216", MapperLogitechDualAction },  // Logitech DualAction
-  { "0079", "0011", Mapper2Axes8Keys },  // 2Axes 8Keys Game Pad
-  { "054c", "05c4", MapperDualshock4 },  // Playstation Dualshock 4
-  { "2378", "1008", MapperOnLiveWireless },  // OnLive Controller (Bluetooth)
-  { "2378", "100a", MapperOnLiveWireless },  // OnLive Controller (Wired)
+  { "046d", "c216", MapperLogitechDualAction }, // Logitech DualAction
+  { "0079", "0011", Mapper2Axes8Keys },         // 2Axes 8Keys Game Pad
+  { "054c", "05c4", MapperDualshock4 },         // Playstation Dualshock 4
+  { "2378", "1008", MapperOnLiveWireless },     // OnLive Controller (Bluetooth)
+  { "2378", "100a", MapperOnLiveWireless },     // OnLive Controller (Wired)
+  { "18d1", "2c40", MapperADT1 },               // ADT-1 Controller
 };
 
 }  // namespace

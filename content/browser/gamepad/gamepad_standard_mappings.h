@@ -62,6 +62,7 @@ blink::WebGamepadButton AxisNegativeAsButton(float input);
 blink::WebGamepadButton AxisPositiveAsButton(float input);
 blink::WebGamepadButton ButtonFromButtonAndAxis(
     blink::WebGamepadButton button, float axis);
+blink::WebGamepadButton NullButton();
 void DpadFromAxis(blink::WebGamepad* mapped, float dir);
 
 }  // namespace content

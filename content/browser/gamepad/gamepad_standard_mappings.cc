@@ -30,6 +30,10 @@ blink::WebGamepadButton ButtonFromButtonAndAxis(
   return blink::WebGamepadButton(button.pressed, value);
 }
 
+blink::WebGamepadButton NullButton() {
+  return blink::WebGamepadButton(false, 0.0);
+}
+
 void DpadFromAxis(blink::WebGamepad* mapped, float dir) {
   bool up = false;
   bool right = false;

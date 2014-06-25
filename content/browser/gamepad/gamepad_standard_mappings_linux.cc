@@ -170,6 +170,25 @@ void MapperOnLiveWireless(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperADT1(
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonLeftTrigger] = AxisToButton(input.axes[5]);
+  mapped->buttons[kButtonRightTrigger] = AxisToButton(input.axes[4]);
+  mapped->buttons[kButtonBackSelect] = NullButton();
+  mapped->buttons[kButtonStart] = NullButton();
+  mapped->buttons[kButtonLeftThumbstick] = input.buttons[7];
+  mapped->buttons[kButtonRightThumbstick] = input.buttons[8];
+  mapped->buttons[kButtonDpadUp] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[kButtonDpadDown] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[kButtonDpadLeft] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[kButtonDpadRight] = AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[kButtonMeta] = input.buttons[6];
+
+  mapped->buttonsLength = kNumButtons;
+  mapped->axesLength = kNumAxes;
+}
 
 struct MappingData {
   const char* const vendor_id;
@@ -177,7 +196,7 @@ struct MappingData {
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
   // http://www.linux-usb.org/usb.ids
-  { "0079", "0006", MapperDragonRiseGeneric }, // DragonRise Generic USB
+  { "0079", "0006", MapperDragonRiseGeneric },  // DragonRise Generic USB
   { "045e", "028e", MapperXInputStyleGamepad }, // Xbox 360 Controller
   { "045e", "028f", MapperXInputStyleGamepad }, // Xbox 360 Wireless Controller
   { "046d", "c21d", MapperXInputStyleGamepad }, // Logitech F310
@@ -185,11 +204,12 @@ struct MappingData {
   { "046d", "c21f", MapperXInputStyleGamepad }, // Logitech F710
   { "054c", "0268", MapperPlaystationSixAxis }, // Playstation SIXAXIS
   { "054c", "05c4", MapperDualshock4 },         // Playstation Dualshock 4
-  { "0925", "0005", MapperLakeviewResearch }, // SmartJoy PLUS Adapter
-  { "0925", "8866", MapperLakeviewResearch }, // WiseGroup MP-8866
-  { "0e8f", "0003", MapperXGEAR }, // XFXforce XGEAR PS2 Controller
-  { "2378", "1008", MapperOnLiveWireless }, // OnLive Controller (Bluetooth)
-  { "2378", "100a", MapperOnLiveWireless }, // OnLive Controller (Wired)
+  { "0925", "0005", MapperLakeviewResearch },   // SmartJoy PLUS Adapter
+  { "0925", "8866", MapperLakeviewResearch },   // WiseGroup MP-8866
+  { "0e8f", "0003", MapperXGEAR },              // XFXforce XGEAR PS2 Controller
+  { "2378", "1008", MapperOnLiveWireless },     // OnLive Controller (Bluetooth)
+  { "2378", "100a", MapperOnLiveWireless },     // OnLive Controller (Wired)
+  { "18d1", "2c40", MapperADT1 },               // ADT-1 Controller
 };
 
 }  // namespace
