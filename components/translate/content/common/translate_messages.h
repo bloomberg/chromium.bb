@@ -32,16 +32,25 @@ IPC_STRUCT_TRAITS_END()
 // Tells the renderer to translate the page contents from one language to
 // another.
 IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
-                    int /* page id */,
+                    int /* page_seq_no */,
                     std::string, /* the script injected in the page */
                     std::string, /* BCP 47/RFC 5646 language code the page
                                     is in */
                     std::string /* BCP 47/RFC 5646 language code to translate
                                    to */)
 
+// Tells the renderer to revert the text of translated page to its original
+// contents.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
+                    int /* page id */)
+
 //-----------------------------------------------------------------------------
-// Misc messages
+// Host messages
 // These are messages sent from the renderer to the browser process.
+
+// Notification that the current page was assigned a sequence number.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
+                    int /* page_seq_no */)
 
 // Notification that the language for the tab has been determined.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
@@ -49,13 +58,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
                     bool /* whether the page needs translation */)
 
 // Notifies the browser that a page has been translated.
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,
-                    int,                  /* page id */
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageTranslated,
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
-
-// Tells the renderer to revert the text of translated page to its original
-// contents.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
-                    int /* page id */)

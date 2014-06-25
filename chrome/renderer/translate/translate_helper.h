@@ -35,7 +35,7 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
-  void PageCaptured(int page_id, const base::string16& contents);
+  void PageCaptured(const base::string16& contents);
 
   // Lets the translation system know that we are preparing to navigate to
   // the specified URL. If there is anything that can or should be done before
@@ -45,11 +45,11 @@ class TranslateHelper : public content::RenderViewObserver {
  protected:
   // The following methods are protected so they can be overridden in
   // unit-tests.
-  void OnTranslatePage(int page_id,
+  void OnTranslatePage(int page_seq_no,
                        const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
-  void OnRevertTranslation(int page_id);
+  void OnRevertTranslation(int page_seq_no);
 
   // Returns true if the translate library is available, meaning the JavaScript
   // has already been injected in that page.
@@ -124,6 +124,9 @@ class TranslateHelper : public content::RenderViewObserver {
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // Informs us that the page's text has been extracted.
+  void PageCapturedImpl(int page_seq_no, const base::string16& contents);
+
   // Cancels any translation that is currently being performed.  This does not
   // revert existing translations.
   void CancelPendingTranslation();
@@ -131,11 +134,11 @@ class TranslateHelper : public content::RenderViewObserver {
   // Checks if the current running page translation is finished or errored and
   // notifies the browser accordingly.  If the translation has not terminated,
   // posts a task to check again later.
-  void CheckTranslateStatus();
+  void CheckTranslateStatus(int page_seq_no);
 
   // Called by TranslatePage to do the actual translation.  |count| is used to
   // limit the number of retries.
-  void TranslatePageImpl(int count);
+  void TranslatePageImpl(int page_seq_no, int count);
 
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
@@ -164,9 +167,9 @@ class TranslateHelper : public content::RenderViewObserver {
   // Callback triggered when CLD data becomes available.
   void OnCldDataAvailable();
 
-  // ID to represent a page which TranslateHelper captured and determined a
-  // content language.
-  int page_id_;
+  // An ever-increasing sequence number of the current page, used to match up
+  // translation requests with responses.
+  int page_seq_no_;
 
   // The states associated with the current translation.
   bool translation_pending_;
@@ -190,13 +193,12 @@ class TranslateHelper : public content::RenderViewObserver {
   bool cld_data_polling_canceled_;
 
   // Whether or not a PageCaptured event arrived prior to CLD data becoming
-  // available. If true, deferred_page_id_ contains the most recent page ID
-  // and deferred_contents_ contains the most recent contents.
+  // available. If true, deferred_contents_ contains the most recent contents.
   bool deferred_page_capture_;
 
   // The ID of the page most recently reported to PageCaptured if
   // deferred_page_capture_ is true.
-  int deferred_page_id_;
+  int deferred_page_seq_no_;
 
   // The contents of the page most recently reported to PageCaptured if
   // deferred_page_capture_ is true.

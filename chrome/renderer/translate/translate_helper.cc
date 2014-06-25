@@ -76,15 +76,14 @@ bool g_cld_callback_set = false;
 //
 TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
-      page_id_(-1),
+      page_seq_no_(0),
       translation_pending_(false),
       weak_method_factory_(this),
       cld_data_provider_(translate::CreateRendererCldDataProviderFor(this)),
       cld_data_polling_started_(false),
       cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
-      deferred_page_id_(-1),
-      deferred_contents_(ASCIIToUTF16("")) {
+      deferred_page_seq_no_(-1) {
 }
 
 TranslateHelper::~TranslateHelper() {
@@ -93,7 +92,11 @@ TranslateHelper::~TranslateHelper() {
 }
 
 void TranslateHelper::PrepareForUrl(const GURL& url) {
+  ++page_seq_no_;
+  Send(new ChromeViewHostMsg_TranslateAssignedSequenceNumber(
+      routing_id(), page_seq_no_));
   deferred_page_capture_ = false;
+  deferred_page_seq_no_ = -1;
   deferred_contents_.clear();
   if (cld_data_polling_started_)
     return;
@@ -118,15 +121,12 @@ void TranslateHelper::PrepareForUrl(const GURL& url) {
   TranslateHelper::SendCldDataRequest(0, 1000);
 }
 
-void TranslateHelper::DeferPageCaptured(const int page_id,
-                                        const base::string16& contents) {
-  deferred_page_capture_ = true;
-  deferred_page_id_ = page_id;
-  deferred_contents_ = contents;
+void TranslateHelper::PageCaptured(const base::string16& contents) {
+  PageCapturedImpl(page_seq_no_, contents);
 }
 
-void TranslateHelper::PageCaptured(int page_id,
-                                   const base::string16& contents) {
+void TranslateHelper::PageCapturedImpl(int page_seq_no,
+                                       const base::string16& contents) {
   // Get the document language as set by WebKit from the http-equiv
   // meta tag for "content-language".  This may or may not also
   // have a value derived from the actual Content-Language HTTP
@@ -137,7 +137,7 @@ void TranslateHelper::PageCaptured(int page_id,
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
   WebFrame* main_frame = GetMainFrame();
-  if (!main_frame || render_view()->GetPageId() != page_id)
+  if (!main_frame || page_seq_no_ != page_seq_no)
     return;
 
   // TODO(andrewhayden): UMA insertion point here: Track if data is available.
@@ -145,11 +145,12 @@ void TranslateHelper::PageCaptured(int page_id,
   if (!cld_data_provider_->IsCldDataAvailable()) {
     // We're in dynamic mode and CLD data isn't loaded. Retry when CLD data
     // is loaded, if ever.
-    TranslateHelper::DeferPageCaptured(page_id, contents);
+    deferred_page_capture_ = true;
+    deferred_page_seq_no_ = page_seq_no;
+    deferred_contents_ = contents;
     return;
   }
 
-  page_id_ = page_id;
   WebDocument document = main_frame->document();
   std::string content_language = document.contentLanguage().utf8();
   WebElement html_element = document.documentElement();
@@ -376,14 +377,12 @@ bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void TranslateHelper::OnTranslatePage(int page_id,
+void TranslateHelper::OnTranslatePage(int page_seq_no,
                                       const std::string& translate_script,
                                       const std::string& source_lang,
                                       const std::string& target_lang) {
   WebFrame* main_frame = GetMainFrame();
-  if (!main_frame ||
-      page_id_ != page_id ||
-      render_view()->GetPageId() != page_id)
+  if (!main_frame || page_seq_no_ != page_seq_no)
     return;  // We navigated away, nothing to do.
 
   // A similar translation is already under way, nothing to do.
@@ -429,11 +428,11 @@ void TranslateHelper::OnTranslatePage(int page_id,
     DCHECK(IsTranslateLibAvailable());
   }
 
-  TranslatePageImpl(0);
+  TranslatePageImpl(page_seq_no, 0);
 }
 
-void TranslateHelper::OnRevertTranslation(int page_id) {
-  if (page_id_ != page_id || render_view()->GetPageId() != page_id)
+void TranslateHelper::OnRevertTranslation(int page_seq_no) {
+  if (page_seq_no_ != page_seq_no)
     return;  // We navigated away, nothing to do.
 
   if (!IsTranslateLibAvailable()) {
@@ -446,10 +445,10 @@ void TranslateHelper::OnRevertTranslation(int page_id) {
   ExecuteScript("cr.googleTranslate.revert()");
 }
 
-void TranslateHelper::CheckTranslateStatus() {
+void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
   // If this is not the same page, the translation has been canceled.  If the
   // view is gone, the page is closing.
-  if (page_id_ != render_view()->GetPageId() || !render_view()->GetWebView())
+  if (page_seq_no_ != page_seq_no || !render_view()->GetWebView())
     return;
 
   // First check if there was an error.
@@ -489,8 +488,8 @@ void TranslateHelper::CheckTranslateStatus() {
 
     // Notify the browser we are done.
     render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-        render_view()->GetRoutingID(), render_view()->GetPageId(),
-        actual_source_lang, target_lang_, TranslateErrors::NONE));
+        render_view()->GetRoutingID(), actual_source_lang, target_lang_,
+        TranslateErrors::NONE));
     return;
   }
 
@@ -498,13 +497,13 @@ void TranslateHelper::CheckTranslateStatus() {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
-                 weak_method_factory_.GetWeakPtr()),
+                 weak_method_factory_.GetWeakPtr(), page_seq_no),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
-void TranslateHelper::TranslatePageImpl(int count) {
+void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
-  if (page_id_ != render_view()->GetPageId() || !render_view()->GetWebView())
+  if (page_seq_no_ != page_seq_no || !render_view()->GetWebView())
     return;
 
   if (!IsTranslateLibReady()) {
@@ -518,7 +517,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
         FROM_HERE,
         base::Bind(&TranslateHelper::TranslatePageImpl,
                    weak_method_factory_.GetWeakPtr(),
-                   count),
+                   page_seq_no, count),
         AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
@@ -538,7 +537,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
-                 weak_method_factory_.GetWeakPtr()),
+                 weak_method_factory_.GetWeakPtr(), page_seq_no),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
@@ -547,8 +546,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
   translation_pending_ = false;
   // Notify the browser there was an error.
   render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-      render_view()->GetRoutingID(), page_id_, source_lang_,
-      target_lang_, error));
+      render_view()->GetRoutingID(), source_lang_, target_lang_, error));
 }
 
 WebFrame* TranslateHelper::GetMainFrame() {
@@ -605,8 +603,8 @@ void TranslateHelper::SendCldDataRequest(const int delay_millis,
 void TranslateHelper::OnCldDataAvailable() {
   if (deferred_page_capture_) {
     deferred_page_capture_ = false; // Don't do this a second time.
-    PageCaptured(deferred_page_id_, deferred_contents_);
-    deferred_page_id_ = -1; // Clean up for sanity
+    PageCapturedImpl(deferred_page_seq_no_, deferred_contents_);
+    deferred_page_seq_no_ = -1; // Clean up for sanity
     deferred_contents_.clear(); // Clean up for sanity
   }
 }

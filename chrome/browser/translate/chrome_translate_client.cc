@@ -275,6 +275,8 @@ void ChromeTranslateClient::ShowReportLanguageDetectionErrorUI(
 bool ChromeTranslateClient::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeTranslateClient, message)
+  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
+                      OnTranslateAssignedSequenceNumber)
   IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
                       OnLanguageDetermined)
   IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
@@ -370,13 +372,17 @@ void ChromeTranslateClient::InitiateTranslation(const std::string& page_lang,
         base::Bind(&ChromeTranslateClient::InitiateTranslation,
                    weak_pointer_factory_.GetWeakPtr(),
                    page_lang,
-                   ++attempt),
+                   attempt + 1),
         base::TimeDelta::FromMilliseconds(backoff));
     return;
   }
 
   translate_manager_->InitiateTranslation(
       TranslateDownloadManager::GetLanguageCode(page_lang));
+}
+
+void ChromeTranslateClient::OnTranslateAssignedSequenceNumber(int page_seq_no) {
+  translate_manager_->set_current_seq_no(page_seq_no);
 }
 
 void ChromeTranslateClient::OnLanguageDetermined(
@@ -394,8 +400,7 @@ void ChromeTranslateClient::OnLanguageDetermined(
       content::Details<const LanguageDetectionDetails>(&details));
 }
 
-void ChromeTranslateClient::OnPageTranslated(int32 page_id,
-                                             const std::string& original_lang,
+void ChromeTranslateClient::OnPageTranslated(const std::string& original_lang,
                                              const std::string& translated_lang,
                                              TranslateErrors::Type error_type) {
   DCHECK(web_contents());

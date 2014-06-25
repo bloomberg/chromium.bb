@@ -24,12 +24,13 @@ class TranslateDriver {
   virtual void OnIsPageTranslatedChanged() = 0;
 
   // Translates the page contents from |source_lang| to |target_lang|.
-  virtual void TranslatePage(const std::string& translate_script,
+  virtual void TranslatePage(int page_seq_no,
+                             const std::string& translate_script,
                              const std::string& source_lang,
                              const std::string& target_lang) = 0;
 
   // Reverts the contents of the page to its original language.
-  virtual void RevertTranslation() = 0;
+  virtual void RevertTranslation(int page_seq_no) = 0;
 
   // Returns whether the user is currently operating in off-the-record mode.
   virtual bool IsOffTheRecord() = 0;
@@ -49,10 +50,6 @@ class TranslateDriver {
 
   // Returns whether the driver has access to the current page.
   virtual bool HasCurrentPage() = 0;
-
-  // Returns an int identifying the current page. Should only be called if
-  // |HasCurrentPage()| is true.
-  virtual int GetCurrentPageID() = 0;
 
   // Opens |url| in a new tab.
   virtual void OpenUrlInNewTab(const GURL& url) = 0;

@@ -70,7 +70,8 @@ TranslateManager::RegisterTranslateErrorCallback(
 TranslateManager::TranslateManager(
     TranslateClient* translate_client,
     const std::string& accept_languages_pref_name)
-    : accept_languages_pref_name_(accept_languages_pref_name),
+    : page_seq_no_(0),
+      accept_languages_pref_name_(accept_languages_pref_name),
       translate_client_(translate_client),
       translate_driver_(translate_client_->GetTranslateDriver()),
       language_state_(translate_driver_),
@@ -246,13 +247,13 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   // script.  Once it is downloaded we'll do the translate.
   TranslateScript::RequestCallback callback = base::Bind(
       &TranslateManager::OnTranslateScriptFetchComplete, GetWeakPtr(),
-      translate_driver_->GetCurrentPageID(), source_lang, target_lang);
+      source_lang, target_lang);
 
   script->Request(callback);
 }
 
 void TranslateManager::RevertTranslation() {
-  translate_driver_->RevertTranslation();
+  translate_driver_->RevertTranslation(page_seq_no_);
   language_state_.SetCurrentLanguage(language_state_.original_language());
 }
 
@@ -281,7 +282,8 @@ void TranslateManager::DoTranslatePage(const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
   language_state_.set_translation_pending(true);
-  translate_driver_->TranslatePage(translate_script, source_lang, target_lang);
+  translate_driver_->TranslatePage(
+      page_seq_no_, translate_script, source_lang, target_lang);
 }
 
 void TranslateManager::PageTranslated(const std::string& source_lang,
@@ -313,16 +315,12 @@ void TranslateManager::PageTranslated(const std::string& source_lang,
 }
 
 void TranslateManager::OnTranslateScriptFetchComplete(
-    int page_id,
     const std::string& source_lang,
     const std::string& target_lang,
     bool success,
     const std::string& data) {
-  if (!translate_driver_->HasCurrentPage() ||
-      translate_driver_->GetCurrentPageID() != page_id) {
-    // We navigated away from the page the translation was triggered on.
+  if (!translate_driver_->HasCurrentPage())
     return;
-  }
 
   if (success) {
     // Translate the page.

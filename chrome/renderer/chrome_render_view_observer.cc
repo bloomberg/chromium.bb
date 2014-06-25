@@ -421,7 +421,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
   if (translate_helper_)
-    translate_helper_->PageCaptured(page_id, contents);
+    translate_helper_->PageCaptured(contents);
 
   // TODO(shess): Is indexing "Full text search" indexing?  In that
   // case more of this can go.

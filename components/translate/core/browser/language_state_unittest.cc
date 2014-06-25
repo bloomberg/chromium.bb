@@ -41,11 +41,12 @@ class MockTranslateDriver : public TranslateDriver {
     return false;
   }
 
-  virtual void TranslatePage(const std::string& translate_script,
+  virtual void TranslatePage(int page_seq_no,
+                             const std::string& translate_script,
                              const std::string& source_lang,
                              const std::string& target_lang) OVERRIDE {}
 
-  virtual void RevertTranslation() OVERRIDE {}
+  virtual void RevertTranslation(int page_seq_no) OVERRIDE {}
 
   virtual bool IsOffTheRecord() OVERRIDE { return false; }
 
@@ -62,8 +63,6 @@ class MockTranslateDriver : public TranslateDriver {
   virtual const GURL& GetVisibleURL() OVERRIDE { return GURL::EmptyGURL(); }
 
   virtual bool HasCurrentPage() OVERRIDE { return true; }
-
-  virtual int GetCurrentPageID() OVERRIDE { return 0; }
 
   virtual void OpenUrlInNewTab(const GURL& url) OVERRIDE {}
 

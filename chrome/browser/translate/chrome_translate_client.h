@@ -114,10 +114,12 @@ class ChromeTranslateClient
 
   // Initiates translation once the page is finished loading.
   void InitiateTranslation(const std::string& page_lang, int attempt);
+
+  // IPC handlers.
+  void OnTranslateAssignedSequenceNumber(int page_seq_no);
   void OnLanguageDetermined(const LanguageDetectionDetails& details,
                             bool page_needs_translation);
-  void OnPageTranslated(int32 page_id,
-                        const std::string& original_lang,
+  void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 

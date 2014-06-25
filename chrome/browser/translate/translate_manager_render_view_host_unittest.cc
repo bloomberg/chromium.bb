@@ -118,7 +118,7 @@ class TranslateManagerRenderViewHostTest
     content::RenderViewHostTester::TestOnMessageReceived(
         rvh(),
         ChromeViewHostMsg_PageTranslated(
-            routing_id, 0, source_lang, target_lang, error));
+            routing_id, source_lang, target_lang, error));
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
@@ -127,8 +127,7 @@ class TranslateManagerRenderViewHostTest
         0, source_lang, target_lang, TranslateErrors::NONE);
   }
 
-  bool GetTranslateMessage(int* page_id,
-                           std::string* original_lang,
+  bool GetTranslateMessage(std::string* original_lang,
                            std::string* target_lang) {
     const IPC::Message* message = process()->sink().GetFirstMessageMatching(
         ChromeViewMsg_TranslatePage::ID);
@@ -136,8 +135,7 @@ class TranslateManagerRenderViewHostTest
       return false;
     Tuple4<int, std::string, std::string, std::string> translate_param;
     ChromeViewMsg_TranslatePage::Read(message, &translate_param);
-    if (page_id)
-      *page_id = translate_param.a;
+    // Ignore translate_param.a which is the page seq no.
     // Ignore translate_param.b which is the script injected in the page.
     if (original_lang)
       *original_lang = translate_param.c;
@@ -427,9 +425,8 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   SimulateTranslateScriptURLFetch(true);
 
   // Test that we sent the right message to the renderer.
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
 
@@ -447,7 +444,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   std::string new_original_lang = infobar->language_code_at(0);
   infobar->UpdateOriginalLanguageIndex(0);
   infobar->Translate();
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ("en", target_lang);
   // Simulate the render notifying the translation has been done.
@@ -460,7 +457,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   std::string new_target_lang = infobar->language_code_at(1);
   infobar->UpdateTargetLanguageIndex(1);
   infobar->Translate();
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
   // Simulate the render notifying the translation has been done.
@@ -503,7 +500,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateScriptNotAvailable) {
   SimulateTranslateScriptURLFetch(false);
 
   // We should not have sent any message to translate to the renderer.
-  EXPECT_FALSE(GetTranslateMessage(NULL, NULL, NULL));
+  EXPECT_FALSE(GetTranslateMessage(NULL, NULL));
 
   // And we should have an error infobar showing.
   infobar = GetTranslateInfoBar();
@@ -744,10 +741,8 @@ TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
   SimulateNavigation(GURL("http://news.google.fr"), "fr", true);
 
   // This should have automatically triggered a translation.
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
-  EXPECT_EQ(1, page_id);
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
 
@@ -756,7 +751,7 @@ TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
   SimulateNavigation(GURL("http://news.google.es"), "es", true);
 
   // This should not have triggered a translate.
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
 }
 
 // Tests that multiple OnPageContents do not cause multiple infobars.
@@ -1256,16 +1251,15 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATING, infobar->translate_step());
   SimulateTranslateScriptURLFetch(true);
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
   process()->sink().ClearMessages();
 
   // Try another language, it should not be autotranslated.
   SimulateNavigation(GURL("http://www.google.es"), "es", true);
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
   EXPECT_TRUE(CloseTranslateInfoBar());
 
@@ -1275,7 +1269,7 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
       static_cast<TestingProfile*>(web_contents()->GetBrowserContext());
   test_profile->ForceIncognito(true);
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
   EXPECT_TRUE(CloseTranslateInfoBar());
   test_profile->ForceIncognito(false);  // Get back to non incognito.
@@ -1285,7 +1279,7 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs->RemoveLanguagePairFromWhitelist("fr", "en");
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
@@ -1333,9 +1327,8 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATING, infobar->translate_step());
   SimulateTranslateScriptURLFetch(true);
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
   process()->sink().ClearMessages();
@@ -1360,14 +1353,14 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   process()->sink().ClearMessages();
   menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   // No message expected since the translation should have been ignored.
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
 
   // Now test that selecting translate in the context menu AFTER the page has
   // been translated does nothing.
@@ -1375,7 +1368,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   process()->sink().ClearMessages();
   menu.reset(CreateContextMenu());
   menu->Init();
@@ -1383,7 +1376,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   SimulateOnPageTranslated("de", "en");
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   // No message expected since the translation should have been ignored.
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
 
   // Test that the translate context menu is enabled when the page is in an
   // unknown language.
@@ -1452,9 +1445,8 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   // once in the test as it is cached).
   SimulateTranslateScriptURLFetch(true);
   // That should have triggered a page translate.
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   process()->sink().ClearMessages();
 
   // Now test that declining the translation causes a "never translate" button
@@ -1481,7 +1473,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   infobar->NeverTranslatePageLanguage();
   EXPECT_TRUE(translate_prefs->IsBlockedLanguage("de"));
   // No translation should have occured and the infobar should be gone.
-  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
   process()->sink().ClearMessages();
   ASSERT_TRUE(GetTranslateInfoBar() == NULL);
 }
@@ -1537,9 +1529,8 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   // Now simulate the URL fetch.
   SimulateTranslateScriptURLFetch(true);
   // Now the message should have been sent.
-  int page_id = 0;
   std::string original_lang, target_lang;
-  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("es", original_lang);
   EXPECT_EQ("en", target_lang);
 }
@@ -1619,7 +1610,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleTranslateScriptNotAvailable) {
   SimulateTranslateScriptURLFetch(false);
 
   // We should not have sent any message to translate to the renderer.
-  EXPECT_FALSE(GetTranslateMessage(NULL, NULL, NULL));
+  EXPECT_FALSE(GetTranslateMessage(NULL, NULL));
 
   // And we should have an error infobar showing.
   bubble = factory->model();

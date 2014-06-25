@@ -42,6 +42,10 @@ class TranslateManager {
   // Cannot return NULL.
   TranslateClient* translate_client() { return translate_client_; }
 
+  // Sets the sequence number of the current page, for use while sending
+  // messages to the renderer.
+  void set_current_seq_no(int page_seq_no) { page_seq_no_ = page_seq_no; }
+
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:
@@ -63,7 +67,7 @@ class TranslateManager {
                      const std::string& target_lang,
                      bool triggered_from_menu);
 
-  // Starts the translation process for a page in the |page_lang| language.
+  // Starts the translation process for the page in the |page_lang| language.
   void InitiateTranslation(const std::string& page_lang);
 
   // Shows the after translate or error infobar depending on the details.
@@ -100,11 +104,13 @@ class TranslateManager {
 
   // Called when the Translate script has been fetched.
   // Initiates the translation.
-  void OnTranslateScriptFetchComplete(int page_id,
-                                      const std::string& source_lang,
+  void OnTranslateScriptFetchComplete(const std::string& source_lang,
                                       const std::string& target_lang,
                                       bool success,
                                       const std::string& data);
+
+  // Sequence number of the current page.
+  int page_seq_no_;
 
   // Preference name for the Accept-Languages HTTP header.
   std::string accept_languages_pref_name_;
