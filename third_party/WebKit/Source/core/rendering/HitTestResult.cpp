@@ -422,9 +422,6 @@ bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestReques
     if (!node)
         return true;
 
-    if (request.disallowsShadowContent())
-        node = node->document().ancestorInThisScope(node);
-
     mutableRectBasedTestResult().add(node);
 
     bool regionFilled = rect.contains(locationInContainer.boundingBox());
@@ -441,9 +438,6 @@ bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestReques
     // If node is null, return true so the hit test can continue.
     if (!node)
         return true;
-
-    if (request.disallowsShadowContent())
-        node = node->document().ancestorInThisScope(node);
 
     mutableRectBasedTestResult().add(node);
 

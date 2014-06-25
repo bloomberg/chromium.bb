@@ -145,7 +145,7 @@
 
     [RaisesException] NodeList nodesFromRect(Document document, long x, long y,
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,
-        boolean ignoreClipping, boolean allowShadowContent, boolean allowChildFrameContent);
+        boolean ignoreClipping, boolean allowChildFrameContent);
 
     void emitInspectorDidBeginFrame(optional long frameId);
     void emitInspectorDidCancelFrame();

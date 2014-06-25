@@ -42,7 +42,7 @@ function check(x, y, topPadding, rightPadding, bottomPadding, leftPadding, list,
   if (!doc)
     doc = document;
 
-  var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, false /* allow shadow content */, false /* allow child-frame content */);
+  var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, false /* allow child-frame content */);
   if (!nodes)
     return;
 
@@ -63,36 +63,6 @@ function check(x, y, topPadding, rightPadding, bottomPadding, leftPadding, list,
                 "[" + topPadding + "," + rightPadding +
                 "," + bottomPadding + "," + leftPadding + "]" +
                 " - " + nodeToString(nodes[i]));
-      return;
-    }
-  }
-
-  testPassed("All correct nodes found for rect");
-}
-
-function checkShadowContent(x, y, topPadding, rightPadding, bottomPadding, leftPadding, shadowContent, doc)
-{
-  if (!window.internals)
-    return;
-
-  if (!doc)
-    doc = document;
-
-  var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, true /* allowShadowContent */, false /* allow child-frame content */);
-  if (!nodes)
-    return;
-
-  for (var j = 0; j < shadowContent.length; j++) {
-    var found = false;
-    for (var i = 0; i < nodes.length; i++) {
-      if (internals.shadowPseudoId(nodes[i]) == shadowContent[j]) {
-          found = true;
-          break;
-      }
-    }
-
-    if (!found) {
-      testFailed("Pseudo Id not found: " + shadowContent[j]);
       return;
     }
   }
@@ -145,7 +115,7 @@ function checkPoint(left, top, expectedNodeString, doc)
 
 function nodesFromRectAsString(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding)
 {
-    var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, false /* allow shadow content */, true /* allow child-frame content */);
+    var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, true /* allow child-frame content */);
     if (!nodes)
         return "";
 

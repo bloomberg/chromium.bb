@@ -243,7 +243,7 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y)
     if (!frameView->visibleContentRect().contains(point))
         return HitTestResult();
 
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(point);
     document->renderView()->hitTest(request, result);
     return result;
