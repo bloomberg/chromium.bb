@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -29,7 +30,8 @@ class View;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
+class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
+                                         public FocusChangeListener {
  public:
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidget(NativeWidgetMac* parent);
@@ -38,6 +40,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
   // Initialize the bridge, "retains" ownership of |window|.
   void Init(base::scoped_nsobject<NSWindow> window,
             const Widget::InitParams& params);
+
+  // Sets or clears the focus manager to use for tracking focused views.
+  // This does NOT take ownership of |focus_manager|.
+  void SetFocusManager(FocusManager* focus_manager);
 
   // Set or clears the views::View bridged by the content view. This does NOT
   // take ownership of |view|.
@@ -66,6 +72,13 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   scoped_ptr<ui::InputMethod> input_method_;
+  FocusManager* focus_manager_;  // Weak. Owned by our Widget.
+
+  // Overridden from FocusChangeListener:
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
 };

@@ -14,11 +14,12 @@
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/ime/null_input_method.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
 BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
-    : native_widget_mac_(parent) {
+    : native_widget_mac_(parent), focus_manager_(NULL) {
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
@@ -26,6 +27,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
 
 BridgedNativeWidget::~BridgedNativeWidget() {
   RemoveOrDestroyChildren();
+  SetFocusManager(NULL);
   SetRootView(NULL);
   if ([window_ delegate]) {
     // If the delegate is still set, it means OnWindowWillClose has not been
@@ -47,6 +49,19 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
     // but it will maintain relative positioning of the window layer and origin.
     [[params.parent window] addChildWindow:window_ ordered:NSWindowAbove];
   }
+}
+
+void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
+  if (focus_manager_ == focus_manager)
+    return;
+
+  if (focus_manager_)
+    focus_manager_->RemoveFocusChangeListener(this);
+
+  if (focus_manager)
+    focus_manager->AddFocusChangeListener(this);
+
+  focus_manager_ = focus_manager;
 }
 
 void BridgedNativeWidget::SetRootView(views::View* view) {
@@ -96,10 +111,21 @@ ui::InputMethod* BridgedNativeWidget::GetHostInputMethod() {
 void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   // Mac key events don't go through this, but some unit tests that use
   // MockInputMethod do.
-  Widget* widget = [bridged_view_ hostedView]->GetWidget();
-  widget->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
-  if (!key.handled() && widget->GetFocusManager())
-    widget->GetFocusManager()->OnKeyEvent(key);
+  DCHECK(focus_manager_);
+  native_widget_mac_->GetWidget()->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
+  if (!key.handled())
+    focus_manager_->OnKeyEvent(key);
+}
+
+void BridgedNativeWidget::OnWillChangeFocus(View* focused_before,
+                                            View* focused_now) {
+}
+
+void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
+                                           View* focused_now) {
+  ui::TextInputClient* input_client =
+      focused_now ? focused_now->GetTextInputClient() : NULL;
+  [bridged_view_ setTextInputClient:input_client];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

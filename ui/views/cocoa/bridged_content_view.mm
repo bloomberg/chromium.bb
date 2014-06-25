@@ -5,12 +5,25 @@
 #import "ui/views/cocoa/bridged_content_view.h"
 
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
+#include "grit/ui_strings.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/canvas_paint_mac.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
+
+@interface BridgedContentView ()
+
+// Execute a command on the currently focused TextInputClient.
+// |commandId| should be a resource ID from ui_strings.grd.
+- (void)doCommandByID:(int)commandId;
+
+@end
 
 @implementation BridgedContentView
 
 @synthesize hostedView = hostedView_;
+@synthesize textInputClient = textInputClient_;
 
 - (id)initWithView:(views::View*)viewToHost {
   DCHECK(viewToHost);
@@ -29,6 +42,13 @@
   hostedView_ = NULL;
 }
 
+// BridgedContentView private implementation.
+
+- (void)doCommandByID:(int)commandId {
+  if (textInputClient_ && textInputClient_->IsEditingCommandEnabled(commandId))
+    textInputClient_->ExecuteEditingCommand(commandId);
+}
+
 // NSView implementation.
 
 - (void)setFrameSize:(NSSize)newSize {
@@ -45,6 +65,120 @@
 
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
   hostedView_->Paint(&canvas, views::CullSet());
+}
+
+- (void)keyDown:(NSEvent*)theEvent {
+  if (textInputClient_)
+    [self interpretKeyEvents:@[ theEvent ]];
+  else
+    [super keyDown:theEvent];
+}
+
+- (void)deleteBackward:(id)sender {
+  [self doCommandByID:IDS_DELETE_BACKWARD];
+}
+
+- (void)deleteForward:(id)sender {
+  [self doCommandByID:IDS_DELETE_FORWARD];
+}
+
+- (void)moveLeft:(id)sender {
+  [self doCommandByID:IDS_MOVE_LEFT];
+}
+
+- (void)moveRight:(id)sender {
+  [self doCommandByID:IDS_MOVE_RIGHT];
+}
+
+// NSTextInputClient protocol implementation.
+
+- (NSAttributedString*)
+    attributedSubstringForProposedRange:(NSRange)range
+                            actualRange:(NSRangePointer)actualRange {
+  base::string16 substring;
+  if (textInputClient_) {
+    gfx::Range textRange;
+    textInputClient_->GetTextRange(&textRange);
+    gfx::Range subrange = textRange.Intersect(gfx::Range(range));
+    textInputClient_->GetTextFromRange(subrange, &substring);
+    if (actualRange)
+      *actualRange = subrange.ToNSRange();
+  }
+  return [[[NSAttributedString alloc]
+      initWithString:base::SysUTF16ToNSString(substring)] autorelease];
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)aPoint {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+- (void)doCommandBySelector:(SEL)selector {
+  if ([self respondsToSelector:selector])
+    [self performSelector:selector withObject:nil];
+  else
+    [[self nextResponder] doCommandBySelector:selector];
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)range
+                         actualRange:(NSRangePointer)actualRange {
+  NOTIMPLEMENTED();
+  return NSZeroRect;
+}
+
+- (BOOL)hasMarkedText {
+  return textInputClient_ && textInputClient_->HasCompositionText();
+}
+
+- (void)insertText:(id)text replacementRange:(NSRange)replacementRange {
+  if (!textInputClient_)
+    return;
+
+  if ([text isKindOfClass:[NSAttributedString class]])
+    text = [text string];
+  textInputClient_->DeleteRange(gfx::Range(replacementRange));
+  textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+}
+
+- (NSRange)markedRange {
+  if (!textInputClient_)
+    return NSMakeRange(NSNotFound, 0);
+
+  gfx::Range range;
+  textInputClient_->GetCompositionTextRange(&range);
+  return range.ToNSRange();
+}
+
+- (NSRange)selectedRange {
+  if (!textInputClient_)
+    return NSMakeRange(NSNotFound, 0);
+
+  gfx::Range range;
+  textInputClient_->GetSelectionRange(&range);
+  return range.ToNSRange();
+}
+
+- (void)setMarkedText:(id)text
+        selectedRange:(NSRange)selectedRange
+     replacementRange:(NSRange)replacementRange {
+  if (!textInputClient_)
+    return;
+
+  if ([text isKindOfClass:[NSAttributedString class]])
+    text = [text string];
+  ui::CompositionText composition;
+  composition.text = base::SysNSStringToUTF16(text);
+  composition.selection = gfx::Range(selectedRange);
+  textInputClient_->SetCompositionText(composition);
+}
+
+- (void)unmarkText {
+  if (textInputClient_)
+    textInputClient_->ConfirmCompositionText();
+}
+
+- (NSArray*)validAttributesForMarkedText {
+  return @[];
 }
 
 @end

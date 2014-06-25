@@ -63,6 +63,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   bridge_->Init(window, params);
 
   delegate_->OnNativeWidgetCreated(true);
+
+  bridge_->SetFocusManager(GetWidget()->GetFocusManager());
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
