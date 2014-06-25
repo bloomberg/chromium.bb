@@ -5,7 +5,9 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -18,9 +20,11 @@
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -47,6 +51,65 @@ class BrowserLayoutManager : public views::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(BrowserLayoutManager);
 };
 
+// KeyboardManager handles notifying the windowmanager when views are focused.
+// To use create one and KeyboardManager will take care of all other details.
+//
+// TODO(sky): it would be nice if this were put in NativeWidgetViewManager, but
+// that requires NativeWidgetViewManager to take an IWindowManager. That may be
+// desirable anyway...
+class KeyboardManager : public views::FocusChangeListener,
+                        public views::WidgetObserver {
+ public:
+  KeyboardManager(views::Widget* widget,
+                  IWindowManager* window_manager,
+                  view_manager::Node* node)
+      : widget_(widget),
+        window_manager_(window_manager),
+        node_(node),
+        last_view_id_(0) {
+    widget_->AddObserver(this);
+    widget_->GetFocusManager()->AddFocusChangeListener(this);
+  }
+
+ private:
+  virtual ~KeyboardManager() {
+    widget_->GetFocusManager()->RemoveFocusChangeListener(this);
+    widget_->RemoveObserver(this);
+  }
+
+  // views::FocusChangeListener:
+  virtual void OnWillChangeFocus(views::View* focused_before,
+                                 views::View* focused_now) OVERRIDE {
+  }
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) OVERRIDE {
+    if (focused_now &&
+        focused_now->GetClassName() == views::Textfield::kViewClassName) {
+      const gfx::Rect bounds_in_widget =
+          focused_now->ConvertRectToWidget(
+              gfx::Rect(focused_now->bounds().size()));
+      last_view_id_ = node_->active_view()->id();
+      window_manager_->ShowKeyboard(last_view_id_,
+                                    Rect::From(bounds_in_widget));
+    } else {
+      window_manager_->HideKeyboard(last_view_id_);
+      last_view_id_ = 0;
+    }
+  }
+
+  // views::WidgetObserver:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    delete this;
+  }
+
+  views::Widget* widget_;
+  IWindowManager* window_manager_;
+  view_manager::Node* node_;
+  view_manager::Id last_view_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
+};
+
 // This is the basics of creating a views widget with a textfield.
 // TODO: cleanup!
 class Browser : public Application,
@@ -65,6 +128,7 @@ class Browser : public Application,
     views_init_.reset(new ViewsInit);
     view_manager::ViewManager::Create(this, this);
     ConnectTo("mojo:mojo_window_manager", &navigator_host_);
+    ConnectTo("mojo:mojo_window_manager", &window_manager_);
   }
 
   void CreateWidget(view_manager::Node* node) {
@@ -83,6 +147,8 @@ class Browser : public Application,
     params.delegate = widget_delegate;
     params.bounds = gfx::Rect(node->bounds().width(), node->bounds().height());
     widget_->Init(params);
+    // KeyboardManager handles deleting itself when the widget is destroyed.
+    new KeyboardManager(widget_, window_manager_.get(), node);
     widget_->Show();
     textfield->RequestFocus();
   }
@@ -132,6 +198,7 @@ class Browser : public Application,
   view_manager::Node* root_;
   views::Widget* widget_;
   navigation::NavigatorHostPtr navigator_host_;
+  IWindowManagerPtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

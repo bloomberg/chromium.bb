@@ -19,6 +19,12 @@ class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::Event> {
 };
 
 template<>
+class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::KeyEvent> {
+ public:
+  static EventPtr ConvertFrom(const ui::KeyEvent& input);
+};
+
+template<>
 class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr,
                                              scoped_ptr<ui::Event> > {
  public:
