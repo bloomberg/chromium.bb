@@ -163,6 +163,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Return the canonical host for |server|, or end if none exists.
   CanonicalHostMap::const_iterator GetCanonicalHost(HostPortPair server) const;
 
+  void RemoveCanonicalHost(const HostPortPair& server);
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
 

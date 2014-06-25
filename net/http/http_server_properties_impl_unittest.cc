@@ -421,6 +421,54 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(canonical_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+
+  PortAlternateProtocolPair canonical_protocol;
+  canonical_protocol.port = 1234;
+  canonical_protocol.protocol = QUIC;
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol);
+
+  impl_.ClearAlternateProtocol(canonical_port_pair);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+
+  PortAlternateProtocolPair canonical_protocol;
+  canonical_protocol.port = 1234;
+  canonical_protocol.protocol = QUIC;
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol);
+
+  impl_.SetBrokenAlternateProtocol(canonical_port_pair);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+
+  PortAlternateProtocolPair canonical_protocol;
+  canonical_protocol.port = 1234;
+  canonical_protocol.protocol = QUIC;
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol);
+
+  impl_.Clear();
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
 
 TEST_F(SpdySettingsServerPropertiesTest, Initialize) {

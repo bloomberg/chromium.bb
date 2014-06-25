@@ -155,6 +155,7 @@ void HttpServerPropertiesImpl::Clear() {
   DCHECK(CalledOnValidThread());
   spdy_servers_map_.Clear();
   alternate_protocol_map_.Clear();
+  canonical_host_to_origin_map_.clear();
   spdy_settings_map_.Clear();
 }
 
@@ -302,6 +303,11 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   entry.server = server;
   entry.when = base::TimeTicks::Now() + delay * (1 << (count - 1));
   broken_alternate_protocol_list_.push_back(entry);
+
+  // Do not leave this host as canonical so that we don't infer the other
+  // hosts are also broken without testing them first.
+  RemoveCanonicalHost(server);
+
   // If this is the only entry in the list, schedule an expiration task.
   // Otherwse it will be rescheduled automatically when the pending
   // task runs.
@@ -325,6 +331,8 @@ void HttpServerPropertiesImpl::ClearAlternateProtocol(
   AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(server);
   if (it != alternate_protocol_map_.end())
     alternate_protocol_map_.Erase(it);
+
+  RemoveCanonicalHost(server);
 }
 
 const AlternateProtocolMap&
@@ -417,6 +425,18 @@ HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
   }
 
   return canonical_host_to_origin_map_.end();
+}
+
+void HttpServerPropertiesImpl::RemoveCanonicalHost(
+    const HostPortPair& server) {
+  CanonicalHostMap::const_iterator canonical = GetCanonicalHost(server);
+  if (canonical == canonical_host_to_origin_map_.end())
+    return;
+
+  if (!canonical->second.Equals(server))
+    return;
+
+  canonical_host_to_origin_map_.erase(canonical->first);
 }
 
 void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
