@@ -26,7 +26,6 @@ class LabelButton;
 class Link;
 class LinkListener;
 class MenuButton;
-class MenuButtonListener;
 class MenuRunner;
 }  // namespace views
 
