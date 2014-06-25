@@ -7,10 +7,10 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 
-bool ImeController::HandleNextIme() {
+void ImeController::HandleNextIme() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->SwitchToNextInputMethod();
+  manager->SwitchToNextInputMethod();
 }
 
 bool ImeController::HandlePreviousIme(const ui::Accelerator& accelerator) {

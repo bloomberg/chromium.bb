@@ -229,7 +229,7 @@ bool HandleNewWindow() {
   return true;
 }
 
-bool HandleNextIme(ImeControlDelegate* ime_control_delegate,
+void HandleNextIme(ImeControlDelegate* ime_control_delegate,
                    ui::EventType previous_event_type,
                    ui::KeyboardCode previous_key_code) {
   // This check is necessary e.g. not to process the Shift+Alt+
@@ -247,12 +247,11 @@ bool HandleNextIme(ImeControlDelegate* ime_control_delegate,
       previous_key_code != ui::VKEY_SPACE) {
     // We totally ignore this accelerator.
     // TODO(mazda): Fix crbug.com/158217
-    return false;
+    return;
   }
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
   if (ime_control_delegate)
-    return ime_control_delegate->HandleNextIme();
-  return false;
+    ime_control_delegate->HandleNextIme();
 }
 
 bool HandleOpenFeedbackPage() {
@@ -1034,8 +1033,11 @@ bool AcceleratorController::PerformAction(int action,
     case SHOW_TASK_MANAGER:
       return HandleShowTaskManager();
     case NEXT_IME:
-      return HandleNextIme(
+      HandleNextIme(
           ime_control_delegate_.get(), previous_event_type, previous_key_code);
+      // NEXT_IME is bound to Alt-Shift key up event. To be consistent with
+      // Windows behavior, do not consume the key event here.
+      return false;
     case PREVIOUS_IME:
       return HandlePreviousIme(ime_control_delegate_.get(), accelerator);
     case PRINT_UI_HIERARCHIES:

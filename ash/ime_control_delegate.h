@@ -16,8 +16,15 @@ class ImeControlDelegate {
  public:
   virtual ~ImeControlDelegate() {}
 
-  virtual bool HandleNextIme() = 0;
+  // Changes the IME to what is listed next. This function do nothing if there
+  // is only one IME is enabled.
+  virtual void HandleNextIme() = 0;
+
+  // Changes the IME to previously selected one. If there is no previously
+  // selected IMEs, chooses the next listed IME. This function returns false if
+  // there is only one IME is enabled.
   virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) = 0;
+
   // Switches to another IME depending on the |accelerator|.
   virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) = 0;
 
