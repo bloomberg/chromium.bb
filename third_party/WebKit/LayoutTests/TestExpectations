@@ -1117,6 +1117,9 @@ crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
+# Rebaseline needed after https://src.chromium.org/viewvc/chrome?view=rev&revision=279565
+crbug.com/381683 fast/dom/Window/property-access-on-cached-window-after-frame-removed-and-gced.html [ NeedsRebaseline ]
+
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
 crbug.com/302005 fast/text-autosizing/nested-child.html [ ImageOnlyFailure ]
