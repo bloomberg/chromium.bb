@@ -1445,13 +1445,16 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         base::Bind(&LayerTreeHostImplDidBeginTracingCallback));
   }
 
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"),
-      "cc::LayerTreeHostImpl",
-      id_,
-      TracedValue::FromValue(AsValueWithFrame(frame).release()));
+  {
+    TRACE_EVENT0("cc", "DrawLayers.FrameViewerTracing");
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+       TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
+       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
+       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"),
+       "cc::LayerTreeHostImpl",
+       id_,
+       TracedValue::FromValue(AsValueWithFrame(frame).release()));
+  }
 
   // Because the contents of the HUD depend on everything else in the frame, the
   // contents of its texture are updated as the last thing before the frame is
