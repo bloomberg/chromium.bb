@@ -33274,7 +33274,7 @@
         "images": [
             "test"
         ],
-        "important": false,
+        "important": true,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "official.xml",
@@ -71305,7 +71305,7 @@
             "base",
             "dev"
         ],
-        "important": false,
+        "important": true,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "official.xml",
