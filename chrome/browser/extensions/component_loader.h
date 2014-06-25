@@ -138,9 +138,10 @@ class ComponentLoader {
   void AddImageLoaderExtension();
   void AddNetworkSpeechSynthesisExtension();
 
-  void AddWithName(int manifest_resource_id,
-                   const base::FilePath& root_directory,
-                   const std::string& name);
+  void AddWithNameAndDescription(int manifest_resource_id,
+                                 const base::FilePath& root_directory,
+                                 int name_string_id,
+                                 int description_string_id);
   void AddChromeApp();
   void AddKeyboardApp();
   void AddWebStoreApp();

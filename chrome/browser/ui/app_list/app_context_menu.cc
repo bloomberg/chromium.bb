@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
@@ -117,12 +115,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
 
-    // Don't display the app info dialog for the Store app or the Genius app.
-    // TODO(sashab): Update the metadata for these apps so their dialogs can be
-    // re-enabled (see crbug.com/383713).
-    if (controller_->CanDoShowAppInfoFlow() &&
-        app_id_ != extension_misc::kWebStoreAppId &&
-        app_id_ != genius_app::kGeniusAppId) {
+    if (controller_->CanDoShowAppInfoFlow()) {
       menu_model_->AddItemWithStringId(SHOW_APP_INFO,
                                        IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }

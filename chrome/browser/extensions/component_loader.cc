@@ -66,7 +66,9 @@ namespace {
 
 static bool enable_background_extensions_during_testing = false;
 
-std::string LookupWebstoreName() {
+int LookupWebstoreNameStringId() {
+  // TODO(sashab): Remove code; this experiment isn't used anymore. See
+  // crbug.com/388143.
   const char kWebStoreNameFieldTrialName[] = "WebStoreName";
   const char kStoreControl[] = "StoreControl";
   const char kWebStore[] = "WebStore";
@@ -87,7 +89,7 @@ std::string LookupWebstoreName() {
       base::FieldTrialList::FindFullName(kWebStoreNameFieldTrialName);
   NameMap::iterator it = names.find(field_trial_name);
   int string_id = it == names.end() ? names[kStoreControl] : it->second;
-  return l10n_util::GetStringUTF8(string_id);
+  return string_id;
 }
 
 std::string GenerateId(const base::DictionaryValue* manifest,
@@ -297,12 +299,17 @@ void ComponentLoader::AddFileManagerExtension() {
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
     base::FilePath filemgr_extension_path(
         command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath));
-    Add(IDR_FILEMANAGER_MANIFEST, filemgr_extension_path);
+    AddWithNameAndDescription(IDR_FILEMANAGER_MANIFEST,
+                              filemgr_extension_path,
+                              IDS_FILEMANAGER_APP_NAME,
+                              IDS_FILEMANAGER_APP_DESCRIPTION);
     return;
   }
 #endif  // NDEBUG
-  Add(IDR_FILEMANAGER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("file_manager")));
+  AddWithNameAndDescription(IDR_FILEMANAGER_MANIFEST,
+                            base::FilePath(FILE_PATH_LITERAL("file_manager")),
+                            IDS_FILEMANAGER_APP_NAME,
+                            IDS_FILEMANAGER_APP_DESCRIPTION);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -391,9 +398,11 @@ std::string ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
 }
 #endif
 
-void ComponentLoader::AddWithName(int manifest_resource_id,
-                                  const base::FilePath& root_directory,
-                                  const std::string& name) {
+void ComponentLoader::AddWithNameAndDescription(
+    int manifest_resource_id,
+    const base::FilePath& root_directory,
+    int name_string_id,
+    int description_string_id) {
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id).as_string();
@@ -403,17 +412,20 @@ void ComponentLoader::AddWithName(int manifest_resource_id,
   base::DictionaryValue* manifest = ParseManifest(manifest_contents);
 
   if (manifest) {
-    // Update manifest to use a proper name.
-    manifest->SetString(manifest_keys::kName, name);
+    manifest->SetString(manifest_keys::kName,
+                        l10n_util::GetStringUTF8(name_string_id));
+    manifest->SetString(manifest_keys::kDescription,
+                        l10n_util::GetStringUTF8(description_string_id));
     Add(manifest, root_directory);
   }
 }
 
 void ComponentLoader::AddChromeApp() {
 #if defined(ENABLE_APP_LIST)
-  AddWithName(IDR_CHROME_APP_MANIFEST,
-              base::FilePath(FILE_PATH_LITERAL("chrome_app")),
-              l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
+  AddWithNameAndDescription(IDR_CHROME_APP_MANIFEST,
+                            base::FilePath(FILE_PATH_LITERAL("chrome_app")),
+                            IDS_SHORT_PRODUCT_NAME,
+                            IDS_CHROME_SHORTCUT_DESCRIPTION);
 #endif
 }
 
@@ -424,9 +436,10 @@ void ComponentLoader::AddKeyboardApp() {
 }
 
 void ComponentLoader::AddWebStoreApp() {
-  AddWithName(IDR_WEBSTORE_MANIFEST,
-              base::FilePath(FILE_PATH_LITERAL("web_store")),
-              LookupWebstoreName());
+  AddWithNameAndDescription(IDR_WEBSTORE_MANIFEST,
+                            base::FilePath(FILE_PATH_LITERAL("web_store")),
+                            LookupWebstoreNameStringId(),
+                            IDS_WEBSTORE_APP_DESCRIPTION);
 }
 
 // static
@@ -509,10 +522,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // Since this is a v2 app it has a background page.
   if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-    AddWithName(IDR_GENIUS_APP_MANIFEST,
-                base::FilePath(FILE_PATH_LITERAL(
-                    "/usr/share/chromeos-assets/genius_app")),
-                l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME));
+    AddWithNameAndDescription(IDR_GENIUS_APP_MANIFEST,
+                              base::FilePath(FILE_PATH_LITERAL(
+                                  "/usr/share/chromeos-assets/genius_app")),
+                              IDS_GENIUS_APP_NAME,
+                              IDS_GENIUS_APP_DESCRIPTION);
   }
 #endif
 

@@ -12968,7 +12968,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_BUTTON" desc="The confirmation button that is used in the manage passwords bubble when confirming blacklisting a site.">
       Delete saved passwords
     </message>
-    
+
     <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
       No passwords saved.
     </message>
@@ -14094,6 +14094,14 @@ Do you accept?
     </message>
     <message name="IDS_IDENTITY_INTERNALS_REVOKE" desc="Label on a revoke token button.">
       Revoke
+    </message>
+
+    <!-- Translated apps strings -->
+    <message name="IDS_CHROME_SHORTCUT_DESCRIPTION" desc="Description for the Chrome app shortcut in the app launcher.">
+      A fast, simple, and secure web browser, built for the modern web.
+    </message>
+    <message name="IDS_WEBSTORE_APP_DESCRIPTION" desc="Description for the WebStore app.">
+      Discover great apps, games, extensions and themes for Google Chrome.
     </message>
 
     <!-- WebStore name experiment names -->
