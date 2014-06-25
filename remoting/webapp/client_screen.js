@@ -77,30 +77,6 @@ remoting.disconnect = function() {
 };
 
 /**
- * Sends a Ctrl-Alt-Del sequence to the remoting client.
- *
- * @return {void} Nothing.
- */
-remoting.sendCtrlAltDel = function() {
-  if (remoting.clientSession) {
-    console.log('Sending Ctrl-Alt-Del.');
-    remoting.clientSession.sendCtrlAltDel();
-  }
-};
-
-/**
- * Sends a Print Screen keypress to the remoting client.
- *
- * @return {void} Nothing.
- */
-remoting.sendPrintScreen = function() {
-  if (remoting.clientSession) {
-    console.log('Sending Print Screen.');
-    remoting.clientSession.sendPrintScreen();
-  }
-};
-
-/**
  * Callback function called when the state of the client plugin changes. The
  * current and previous states are available via the |state| member variable.
  *
@@ -335,8 +311,6 @@ remoting.onConnected = function(clientSession) {
   remoting.clientSession = clientSession;
   remoting.clientSession.addEventListener('stateChanged', onClientStateChange_);
   setConnectionInterruptedButtonsText_();
-  var connectedTo = document.getElementById('connected-to');
-  connectedTo.innerText = remoting.connector.getHostDisplayName();
   document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
   remoting.toolbar.center();

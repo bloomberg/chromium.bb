@@ -105,6 +105,7 @@ function onLoad() {
   var auth_actions = [
       { event: 'click', id: 'auth-button', fn: doAuthRedirect },
       { event: 'click', id: 'cancel-connect-button', fn: goHome },
+      { event: 'click', id: 'sign-out', fn:remoting.signOut },
       { event: 'click', id: 'token-refresh-error-ok', fn: goHome },
       { event: 'click', id: 'token-refresh-error-sign-in', fn: fixAuthError }
   ];
