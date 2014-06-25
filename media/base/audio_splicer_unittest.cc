@@ -682,4 +682,42 @@ TEST_F(AudioSplicerTest, IncorrectlyMarkedSpliceWithGap) {
   EXPECT_FALSE(splicer_.HasNextBuffer());
 }
 
+// Test behavior when a splice frame is incorrectly marked and there is a gap
+// between what's in the pre splice and post splice that is too large to recover
+// from.
+// +--------+
+// |11111111|
+// +--------+
+//                    +------+
+//                    |222222|
+//                    +------+
+// Results in an error and not a crash.
+TEST_F(AudioSplicerTest, IncorrectlyMarkedSpliceWithBadGap) {
+  const int kBufferSize =
+      input_timestamp_helper_.GetFramesToTarget(max_crossfade_duration()) * 2;
+  const int kGapSize = kBufferSize +
+                       input_timestamp_helper_.GetFramesToTarget(
+                           base::TimeDelta::FromMilliseconds(
+                               AudioSplicer::kMaxTimeDeltaInMilliseconds + 1));
+
+  scoped_refptr<AudioBuffer> first_buffer =
+      GetNextInputBuffer(1.0f, kBufferSize);
+  scoped_refptr<AudioBuffer> gap_buffer =
+      GetNextInputBuffer(0.0f, kGapSize);
+  splicer_.SetSpliceTimestamp(input_timestamp_helper_.GetTimestamp());
+  scoped_refptr<AudioBuffer> second_buffer =
+      GetNextInputBuffer(0.0f, kBufferSize);
+
+  // The splicer should pass through the first buffer since it's not part of the
+  // splice.
+  EXPECT_TRUE(AddInput(first_buffer));
+  VerifyNextBuffer(first_buffer);
+
+  // Do not add |gap_buffer|.
+
+  // |second_buffer| will complete the supposed splice.
+  splicer_.SetSpliceTimestamp(kNoTimestamp());
+  EXPECT_FALSE(AddInput(second_buffer));
+}
+
 }  // namespace media

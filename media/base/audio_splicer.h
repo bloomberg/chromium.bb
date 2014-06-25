@@ -27,6 +27,12 @@ class MEDIA_EXPORT AudioSplicer {
   enum {
     // The number of ms to crossfade before trimming when buffers overlap.
     kCrossfadeDurationInMilliseconds = 5,
+
+    // Largest gap or overlap allowed between buffers.  Anything larger than
+    // this will trigger an error.  This is an arbitrary value, but the initial
+    // selection of 50ms roughly represents the duration of 2 compressed AAC or
+    // MP3 frames.
+    kMaxTimeDeltaInMilliseconds = 50,
   };
 
   // Resets the splicer state by clearing the output buffers queue and resetting

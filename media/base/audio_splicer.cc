@@ -16,12 +16,6 @@
 
 namespace media {
 
-// Largest gap or overlap allowed by this class. Anything
-// larger than this will trigger an error.
-// This is an arbitrary value, but the initial selection of 50ms
-// roughly represents the duration of 2 compressed AAC or MP3 frames.
-static const int kMaxTimeDeltaInMilliseconds = 50;
-
 // Minimum gap size needed before the splicer will take action to
 // fill a gap. This avoids periodically inserting and then dropping samples
 // when the buffer timestamps are slightly off because of timestamp rounding
@@ -143,7 +137,8 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
       output_timestamp_helper_.GetTimestamp();
   const base::TimeDelta delta = timestamp - expected_timestamp;
 
-  if (std::abs(delta.InMilliseconds()) > kMaxTimeDeltaInMilliseconds) {
+  if (std::abs(delta.InMilliseconds()) >
+      AudioSplicer::kMaxTimeDeltaInMilliseconds) {
     DVLOG(1) << "Timestamp delta too large: " << delta.InMicroseconds() << "us";
     return false;
   }
@@ -310,7 +305,12 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   if (pre_splice_sanitizer_->GetFrameCount() <=
       output_ts_helper.GetFramesToTarget(splice_timestamp_)) {
     CHECK(pre_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
-    CHECK(post_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
+
+    // If the file contains incorrectly muxed timestamps, there may be huge gaps
+    // between the demuxed and decoded timestamps.
+    if (!post_splice_sanitizer_->DrainInto(output_sanitizer_.get()))
+      return false;
+
     reset_splice_timestamps();
     return true;
   }
