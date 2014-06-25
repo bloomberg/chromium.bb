@@ -53,4 +53,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, BigFile) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Evil) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/evil",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions
