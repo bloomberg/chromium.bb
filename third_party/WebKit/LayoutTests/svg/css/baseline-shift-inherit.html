@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+text {
+  baseline-shift: inherit;
+}
+</style>
+<svg height="0"><text></text></svg>
+<script>
+setup(function() {
+  window.svg = document.querySelector('svg');
+  window.textElement = document.querySelector('text');
+});
+['baseline', 'sub', 'super', '10px', '100%'].forEach(function(item) {
+  test(function() {
+    svg.style.setProperty('baseline-shift', item);
+    assert_equals(getComputedStyle(textElement).baselineShift, item);
+  }, 'Inheritance of the baseline-shift property - ' + item + '.');
+});
+</script>

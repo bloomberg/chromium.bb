@@ -1363,6 +1363,15 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontFeatureSettings(Style
         state.fontBuilder().setFeatureSettingsValue(value);
 }
 
+void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)
+{
+    const SVGRenderStyle* parentSvgStyle = state.parentStyle()->svgStyle();
+    EBaselineShift baselineShift = parentSvgStyle->baselineShift();
+    SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
+    svgStyle->setBaselineShift(baselineShift);
+    if (baselineShift == BS_LENGTH)
+        svgStyle->setBaselineShiftValue(parentSvgStyle->baselineShiftValue());
+}
 
 void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverState& state, CSSValue* value)
 {

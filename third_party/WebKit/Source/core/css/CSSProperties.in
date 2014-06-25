@@ -277,7 +277,7 @@ transform-style name_for_methods=TransformStyle3D
 -webkit-writing-mode custom_value
 
 alignment-baseline svg
-baseline-shift svg, custom_value
+baseline-shift svg, custom_inherit, custom_value
 buffered-rendering svg
 clip-path svg, type_name=String, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule svg, type_name=WindRule
