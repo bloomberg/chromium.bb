@@ -42,25 +42,44 @@ class SyncChromeStage(generic_stages.BuilderStage,
     self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self).HandleSkip()
 
+  def _GetChromeVersionFromMetadata(self):
+    """Return the Chrome version from metadata; None if is does not exist."""
+    version_dict = self._run.attrs.metadata.GetDict().get('version')
+    return None if not version_dict else version_dict.get('chrome')
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    # Perform chrome uprev.
-    chrome_atom_to_build = None
     if self._chrome_rev:
+      if (self._chrome_rev == constants.CHROME_REV_SPEC and
+          self._run.options.chrome_version):
+        self.chrome_version = self._run.options.chrome_version
+        cros_build_lib.Info(
+            'Using chrome version from options.chrome_version: %s',
+            self.chrome_version)
+      else:
+        self.chrome_version = self._GetChromeVersionFromMetadata()
+        if self.chrome_version:
+          cros_build_lib.Info(
+              'Using chrome version from the metadata dictionary: %s',
+              self.chrome_version)
+
+      # Perform chrome uprev.
+      chrome_atom_to_build = None
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._run.manifest_branch,
           self._chrome_rev, self._boards,
-          chrome_version=self._run.options.chrome_version)
+          chrome_version=self.chrome_version)
 
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
-      kwargs['revision'] = self._run.options.chrome_version
+      kwargs['revision'] = self.chrome_version
       cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
-      self.chrome_version = self._run.options.chrome_version
     else:
-      kwargs['tag'] = self._run.DetermineChromeVersion()
+      if not self.chrome_version:
+        self.chrome_version = self._run.DetermineChromeVersion()
+
+      kwargs['tag'] = self.chrome_version
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
-      self.chrome_version = kwargs['tag']
 
     useflags = self._run.config.useflags
     commands.SyncChrome(self._build_root, self._run.options.chrome_root,

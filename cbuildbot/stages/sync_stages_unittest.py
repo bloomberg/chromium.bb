@@ -72,6 +72,8 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     # pylint: disable=E1120
     self.mox.StubOutWithMock(sync_stages.ManifestVersionedSyncStage,
                              'Initialize')
+    self.mox.StubOutWithMock(sync_stages.ManifestVersionedSyncStage,
+                             '_SetChromeVersionIfApplicable')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
@@ -84,6 +86,8 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
         ).AndReturn(self.next_version)
     self.manager.GetLatestPassingSpec().AndReturn(None)
 
+    sync_stages.ManifestVersionedSyncStage._SetChromeVersionIfApplicable(
+        self.next_version)
     sync_stages.SyncStage.ManifestCheckout(self.next_version)
 
     self.mox.ReplayAll()

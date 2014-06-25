@@ -79,7 +79,6 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
         'time': {
             'start': start_time_stamp,
         },
-        'version': version,
 
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
@@ -95,6 +94,11 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
 
     logging.info('Metadata being written: %s', metadata)
     self._run.attrs.metadata.UpdateWithDict(metadata)
+    # Update 'version' separately to avoid overwriting the existing
+    # entries in it (e.g. PFQ builders may have written the Chrome
+    # version to uprev).
+    logging.info("Metadata 'version' being written: %s", version)
+    self._run.attrs.metadata.UpdateKeyDictWithDict('version', version)
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
 

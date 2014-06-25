@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 from xml.etree import ElementTree
+from xml.dom import minidom
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
@@ -462,6 +463,28 @@ class ManifestVersionedSyncStage(SyncStage):
         dry_run=dry_run,
         master=self._run.config.master))
 
+  def _SetChromeVersionIfApplicable(self, manifest):
+    """If 'chrome' is in |manifest|, write the version to the BuilderRun object.
+
+    Args:
+      manifest: Path to the manifest.
+    """
+    manifest_dom = minidom.parse(manifest)
+    elements = manifest_dom.getElementsByTagName(lkgm_manager.CHROME_ELEMENT)
+
+    if elements:
+      chrome_version = elements[0].getAttribute(
+          lkgm_manager.CHROME_VERSION_ATTR)
+      logging.info(
+          'Chrome version was found in the manifest: %s', chrome_version)
+      # Update the metadata dictionary. This is necessary because the
+      # metadata dictionary is preserved through re-executions, so
+      # SyncChromeStage can read the version from the dictionary
+      # later. This is easier than parsing the manifest again after
+      # the re-execution.
+      self._run.attrs.metadata.UpdateKeyDictWithDict(
+          'version', {'chrome': chrome_version})
+
   def GetNextManifest(self):
     """Uses the initialized manifest manager to get the next manifest."""
     assert self.manifest_manager, \
@@ -528,6 +551,7 @@ class ManifestVersionedSyncStage(SyncStage):
       self._Print('\nRELEASETAG: %s\n' % (
           self.manifest_manager.current_version))
 
+    self._SetChromeVersionIfApplicable(next_manifest)
     # To keep local trybots working, remove restricted checkouts from the
     # official manifest we get from manifest-versions.
     with self.LocalizeManifest(
