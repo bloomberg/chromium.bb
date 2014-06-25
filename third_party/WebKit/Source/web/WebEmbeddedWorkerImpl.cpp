@@ -331,9 +331,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     if (m_askedToTerminate)
         return;
 
-    // FIXME: startMode is deprecated, switch to waitForDebuggerMode once chromium is setting that value.
     WorkerThreadStartMode startMode =
-        (m_workerStartData.startMode == WebEmbeddedWorkerStartModePauseOnStart)
+        (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger)
         ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
 
     OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
