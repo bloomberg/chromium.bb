@@ -32,6 +32,9 @@ extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
 extern const char kEventZoomChange[];
 
+// Event related constants.
+extern const char kWebViewEventPrefix[];
+
 // Parameters/properties on events.
 extern const char kContextMenuItems[];
 extern const char kDefaultPromptText[];

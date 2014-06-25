@@ -37506,7 +37506,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="394" label="COOKIES_GETALLCOOKIESTORES"/>
   <int value="395" label="MEDIAGALLERIESPRIVATE_ADDGALLERYWATCH"/>
   <int value="396" label="MEDIAGALLERIESPRIVATE_REMOVEGALLERYWATCH"/>
-  <int value="397" label="WEBVIEW_EXECUTESCRIPT"/>
+  <int value="397" label="DELETED_WEBVIEW_EXECUTESCRIPT"/>
   <int value="398" label="NOTIFICATIONS_UPDATE"/>
   <int value="399" label="NOTIFICATIONS_CLEAR"/>
   <int value="400" label="DELETED_SESSIONRESTORE_GETRECENTLYCLOSED"/>
@@ -37578,7 +37578,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="466"
       label="EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED"/>
   <int value="467" label="RUNTIME_GETPLATFORMINFO"/>
-  <int value="468" label="WEBVIEW_INSERTCSS"/>
+  <int value="468" label="DELETED_WEBVIEW_INSERTCSS"/>
   <int value="469" label="METRICSPRIVATE_GETISCRASHRECORDINGENABLED"/>
   <int value="470" label="IDENTITYPRIVATE_GETSTRINGS"/>
   <int value="471" label="NOTIFICATIONS_GET_ALL"/>
@@ -37608,12 +37608,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="494" label="DIAGNOSTICS_SENDPACKET"/>
   <int value="495" label="METRICSPRIVATE_GETFIELDTRIAL"/>
   <int value="496" label="FILEBROWSERPRIVATE_ZOOM"/>
-  <int value="497" label="WEBVIEW_GO"/>
+  <int value="497" label="DELETED_WEBVIEW_GO"/>
   <int value="498" label="WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION"/>
   <int value="499" label="FILEBROWSERPRIVATE_REQUESTACCESSTOKEN"/>
-  <int value="500" label="WEBVIEW_STOP"/>
-  <int value="501" label="WEBVIEW_RELOAD"/>
-  <int value="502" label="WEBVIEW_TERMINATE"/>
+  <int value="500" label="DELETED_WEBVIEW_STOP"/>
+  <int value="501" label="DELETED_WEBVIEW_RELOAD"/>
+  <int value="502" label="DELETED_WEBVIEW_TERMINATE"/>
   <int value="503" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_GET"/>
   <int value="504" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_SET"/>
   <int value="505" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_CLEAR"/>
@@ -37644,7 +37644,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="528" label="LOGPRIVATE_GETHISTORICAL"/>
   <int value="529" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
   <int value="530" label="METRICSPRIVATE_GETVARIATIONPARAMS"/>
-  <int value="531" label="WEBVIEW_SETPERMISSION"/>
+  <int value="531" label="DELETED_WEBVIEW_SETPERMISSION"/>
   <int value="532" label="DESKTOPCAPTURE_CHOOSEDESKTOPMEDIA"/>
   <int value="533" label="APP_CURRENTWINDOWINTERNAL_SETSHAPE"/>
   <int value="534" label="PROCESSES_GETPROCESSINFO"/>
@@ -37664,7 +37664,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="548" label="SOCKETS_UDP_GETJOINEDGROUPS"/>
   <int value="549" label="SIGNED_IN_DEVICES_GET"/>
   <int value="550" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
-  <int value="551" label="WEBVIEW_CLEARDATA"/>
+  <int value="551" label="DELETED_WEBVIEW_CLEARDATA"/>
   <int value="552" label="SESSIONS_GETRECENTLYCLOSED"/>
   <int value="553" label="SESSIONS_GETDEVICES"/>
   <int value="554" label="SESSIONS_RESTORE"/>
@@ -37694,7 +37694,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="578" label="WEBRTCLOGGINGPRIVATE_STOP"/>
   <int value="579" label="WEBRTCLOGGINGPRIVATE_UPLOAD"/>
   <int value="580" label="WEBRTCLOGGINGPRIVATE_DISCARD"/>
-  <int value="581" label="WEBVIEW_OVERRIDEUSERAGENT"/>
+  <int value="581" label="DELETED_WEBVIEW_OVERRIDEUSERAGENT"/>
   <int value="582" label="PRINCIPALSPRIVATE_SHOWAVATARBUBBLE"/>
   <int value="583" label="PRINCIPALSPRIVATE_SIGNOUT"/>
   <int value="584" label="CAST_CHANNEL_OPEN"/>
@@ -37761,7 +37761,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="645" label="FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS"/>
   <int value="646" label="FIRSTRUNPRIVATE_LAUNCHTUTORIAL"/>
   <int value="647" label="SOCKETS_UDP_SETPAUSED"/>
-  <int value="648" label="WEBVIEW_CAPTUREVISIBLEREGION"/>
+  <int value="648" label="DELETED_WEBVIEW_CAPTUREVISIBLEREGION"/>
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
   <int value="651" label="VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD"/>
@@ -37796,8 +37796,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="679" label="HOTWORDPRIVATE_GETSTATUS"/>
   <int value="680" label="APP_CURRENTWINDOWINTERNAL_SETBADGEICON"/>
   <int value="681" label="APP_CURRENTWINDOWINTERNAL_CLEARBADGE"/>
-  <int value="682" label="WEBVIEW_SETZOOM"/>
-  <int value="683" label="WEBVIEW_GETZOOM"/>
+  <int value="682" label="DELETED_WEBVIEW_SETZOOM"/>
+  <int value="683" label="DELETED_WEBVIEW_GETZOOM"/>
   <int value="684" label="DEVELOPERPRIVATE_REQUESTFILESOURCE"/>
   <int value="685" label="DEVELOPERPRIVATE_OPENDEVTOOLS"/>
   <int value="686" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIES"/>
@@ -37807,12 +37807,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="690" label="SCREENLOCKPRIVATE_SETAUTHTYPE"/>
   <int value="691" label="SCREENLOCKPRIVATE_GETAUTHTYPE"/>
   <int value="692" label="SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>
-  <int value="693" label="WEBVIEW_FIND"/>
-  <int value="694" label="WEBVIEW_STOPFINDING"/>
-  <int value="695" label="WEBVIEW_CONTEXTMENUSCREATE"/>
-  <int value="696" label="WEBVIEW_CONTEXTMENUSUPDATE"/>
-  <int value="697" label="WEBVIEW_CONTEXTMENUSREMOVE"/>
-  <int value="698" label="WEBVIEW_CONTEXTMENUSREMOVEALL"/>
+  <int value="693" label="DELETED_WEBVIEW_FIND"/>
+  <int value="694" label="DELETED_WEBVIEW_STOPFINDING"/>
+  <int value="695" label="DELETED_WEBVIEW_CONTEXTMENUSCREATE"/>
+  <int value="696" label="DELETED_WEBVIEW_CONTEXTMENUSUPDATE"/>
+  <int value="697" label="DELETED_WEBVIEW_CONTEXTMENUSREMOVE"/>
+  <int value="698" label="DELETED_WEBVIEW_CONTEXTMENUSREMOVEALL"/>
   <int value="699" label="AUTOMATIONINTERNAL_ENABLETAB"/>
   <int value="700" label="APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS"/>
   <int value="701" label="BLUETOOTH_GETDEVICE"/>
@@ -37871,7 +37871,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="DELETED_FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR"/>
   <int value="752" label="BROWSER_OPENTAB"/>
   <int value="753" label="MANAGEMENT_CREATEAPPSHORTCUT"/>
-  <int value="754" label="WEBVIEW_SHOWCONTEXTMENU"/>
+  <int value="754" label="DELETED_WEBVIEW_SHOWCONTEXTMENU"/>
   <int value="755" label="WEBRTCLOGGINGPRIVATE_STARTRTPDUMP"/>
   <int value="756" label="WEBRTCLOGGINGPRIVATE_STOPRTPDUMP"/>
   <int value="757" label="AUTOMATIONINTERNAL_ENABLEDESKTOP"/>
@@ -37899,7 +37899,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="773"
       label="DELETED_FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR"/>
   <int value="774" label="NETWORKINGPRIVATE_GETNETWORKS"/>
-  <int value="775" label="WEBVIEW_SETNAME"/>
+  <int value="775" label="DELETED_WEBVIEW_SETNAME"/>
   <int value="776" label="ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY"/>
   <int value="777" label="ENTERPRISE_PLATFORMKEYSINTERNAL_SIGN"/>
   <int value="778" label="ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS"/>
@@ -37911,7 +37911,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="784" label="MANAGEMENT_SETLAUNCHTYPE"/>
   <int value="785" label="MANAGEMENT_GENERATEAPPFORLINK"/>
   <int value="786" label="GUESTVIEWINTERNAL_ALLOCATEINSTANCEID"/>
-  <int value="787" label="WEBVIEW_NAVIGATE"/>
+  <int value="787" label="DELETED_WEBVIEW_NAVIGATE"/>
   <int value="788" label="INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD"/>
   <int value="789" label="INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD"/>
   <int value="790" label="INPUTMETHODPRIVATE_GETINPUTMETHODS"/>
@@ -37925,6 +37925,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="798"
       label="FILESYSTEMPROVIDERINTERNAL_OPERATIONREQUESTEDSUCCESS"/>
   <int value="799" label="GUESTVIEWINTERNAL_CREATEGUEST"/>
+  <int value="800" label="WEBVIEWINTERNAL_CAPTUREVISIBLEREGION"/>
+  <int value="801" label="WEBVIEWINTERNAL_CONTEXTMENUSCREATE"/>
+  <int value="802" label="WEBVIEWINTERNAL_CONTEXTMENUSREMOVE"/>
+  <int value="803" label="WEBVIEWINTERNAL_CONTEXTMENUSREMOVEALL"/>
+  <int value="804" label="WEBVIEWINTERNAL_CONTEXTMENUSUPDATE"/>
+  <int value="805" label="WEBVIEWINTERNAL_CLEARDATA"/>
+  <int value="806" label="WEBVIEWINTERNAL_EXECUTESCRIPT"/>
+  <int value="807" label="WEBVIEWINTERNAL_FIND"/>
+  <int value="808" label="WEBVIEWINTERNAL_GETZOOM"/>
+  <int value="809" label="WEBVIEWINTERNAL_GO"/>
+  <int value="810" label="WEBVIEWINTERNAL_INSERTCSS"/>
+  <int value="811" label="WEBVIEWINTERNAL_NAVIGATE"/>
+  <int value="812" label="WEBVIEWINTERNAL_OVERRIDEUSERAGENT"/>
+  <int value="813" label="WEBVIEWINTERNAL_RELOAD"/>
+  <int value="814" label="WEBVIEWINTERNAL_SETNAME"/>
+  <int value="815" label="WEBVIEWINTERNAL_SETPERMISSION"/>
+  <int value="816" label="WEBVIEWINTERNAL_SETZOOM"/>
+  <int value="817" label="WEBVIEWINTERNAL_SHOWCONTEXTMENU"/>
+  <int value="818" label="WEBVIEWINTERNAL_STOP"/>
+  <int value="819" label="WEBVIEWINTERNAL_STOPFINDING"/>
+  <int value="820" label="WEBVIEWINTERNAL_TERMINATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

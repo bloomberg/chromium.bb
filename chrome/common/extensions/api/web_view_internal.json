@@ -1,11 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 [
   {
-    "namespace": "webview",
+    "namespace": "webViewInternal",
     "description": "none",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
+    },
     "dependencies": ["contextMenusInternal"],
     "types": [
       {

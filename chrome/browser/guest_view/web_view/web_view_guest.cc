@@ -10,7 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/extensions/api/webview/webview_api.h"
+#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -716,7 +716,7 @@ double WebViewGuest::GetZoom() {
 void WebViewGuest::Find(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    scoped_refptr<extensions::WebviewFindFunction> find_function) {
+    scoped_refptr<extensions::WebViewInternalFindFunction> find_function) {
   find_helper_.Find(guest_web_contents(), search_text, options, find_function);
 }
 

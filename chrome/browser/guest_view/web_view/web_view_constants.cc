@@ -7,27 +7,30 @@
 namespace webview {
 
 // Events.
-const char kEventClose[] = "webview.onClose";
-const char kEventConsoleMessage[] = "webview.onConsoleMessage";
-const char kEventContentLoad[] = "webview.onContentLoad";
-const char kEventContextMenu[] = "webview.contextmenu";
-const char kEventDialog[] = "webview.onDialog";
-const char kEventExit[] = "webview.onExit";
-const char kEventFindReply[] = "webview.onFindReply";
-const char kEventFrameNameChanged[] = "webview.onFrameNameChanged";
-const char kEventLoadAbort[] = "webview.onLoadAbort";
-const char kEventLoadCommit[] = "webview.onLoadCommit";
-const char kEventLoadProgress[] = "webview.onLoadProgress";
-const char kEventLoadRedirect[] = "webview.onLoadRedirect";
-const char kEventLoadStart[] = "webview.onLoadStart";
-const char kEventLoadStop[] = "webview.onLoadStop";
-const char kEventMessage[] = "webview.onMessage";
-const char kEventNewWindow[] = "webview.onNewWindow";
-const char kEventPermissionRequest[] = "webview.onPermissionRequest";
-const char kEventResponsive[] = "webview.onResponsive";
-const char kEventSizeChanged[] = "webview.onSizeChanged";
-const char kEventUnresponsive[] = "webview.onUnresponsive";
-const char kEventZoomChange[] = "webview.onZoomChange";
+const char kEventClose[] = "webViewInternal.onClose";
+const char kEventConsoleMessage[] = "webViewInternal.onConsoleMessage";
+const char kEventContentLoad[] = "webViewInternal.onContentLoad";
+const char kEventContextMenu[] = "webViewInternal.contextmenu";
+const char kEventDialog[] = "webViewInternal.onDialog";
+const char kEventExit[] = "webViewInternal.onExit";
+const char kEventFindReply[] = "webViewInternal.onFindReply";
+const char kEventFrameNameChanged[] = "webViewInternal.onFrameNameChanged";
+const char kEventLoadAbort[] = "webViewInternal.onLoadAbort";
+const char kEventLoadCommit[] = "webViewInternal.onLoadCommit";
+const char kEventLoadProgress[] = "webViewInternal.onLoadProgress";
+const char kEventLoadRedirect[] = "webViewInternal.onLoadRedirect";
+const char kEventLoadStart[] = "webViewInternal.onLoadStart";
+const char kEventLoadStop[] = "webViewInternal.onLoadStop";
+const char kEventMessage[] = "webViewInternal.onMessage";
+const char kEventNewWindow[] = "webViewInternal.onNewWindow";
+const char kEventPermissionRequest[] = "webViewInternal.onPermissionRequest";
+const char kEventResponsive[] = "webViewInternal.onResponsive";
+const char kEventSizeChanged[] = "webViewInternal.onSizeChanged";
+const char kEventUnresponsive[] = "webViewInternal.onUnresponsive";
+const char kEventZoomChange[] = "webViewInternal.onZoomChange";
+
+// Event related constants.
+const char kWebViewEventPrefix[] = "webViewInternal.";
 
 // Parameters/properties on events.
 const char kContextMenuItems[] = "items";

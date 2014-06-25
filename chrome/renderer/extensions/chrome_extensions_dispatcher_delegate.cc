@@ -236,7 +236,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
 
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
-  source_map->RegisterSource("webview", IDR_WEBVIEW_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("webViewInternal",
+                             IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
   source_map->RegisterSource("webView", IDR_WEB_VIEW_JS);

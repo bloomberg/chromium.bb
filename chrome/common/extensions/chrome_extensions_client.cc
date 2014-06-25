@@ -260,7 +260,7 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
                               IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
   api->RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
   api->RegisterSchemaResource("webViewRequest",
-                              IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
+                              IDR_EXTENSION_API_JSON_WEB_VIEW_REQUEST);
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 

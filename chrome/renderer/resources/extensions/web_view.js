@@ -10,7 +10,9 @@ var DocumentNatives = requireNative('document_natives');
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
-var WebView = require('webview').WebView;
+// TODO(lazyboy): Rename this to WebViewInternal and call WebViewInternal
+// something else.
+var WebView = require('webViewInternal').WebView;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 
 var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
