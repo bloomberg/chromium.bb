@@ -34,6 +34,7 @@ const char kSyncAppList[] = "sync.app_list";
 const char kSyncAppNotifications[] = "sync.app_notifications";
 const char kSyncAppSettings[] = "sync.app_settings";
 const char kSyncApps[] = "sync.apps";
+const char kSyncArticles[] = "sync.articles";
 const char kSyncAutofillProfile[] = "sync.autofill_profile";
 const char kSyncAutofill[] = "sync.autofill";
 const char kSyncBookmarks[] = "sync.bookmarks";
@@ -43,16 +44,15 @@ const char kSyncExtensions[] = "sync.extensions";
 const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
-const char kSyncSupervisedUserSettings[] = "sync.managed_user_settings";
-const char kSyncSupervisedUserSharedSettings[] =
-    "sync.managed_user_shared_settings";
-const char kSyncSupervisedUsers[] = "sync.managed_users";
-const char kSyncArticles[] = "sync.articles";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
 const char kSyncPriorityPreferences[] = "sync.priority_preferences";
 const char kSyncSearchEngines[] = "sync.search_engines";
 const char kSyncSessions[] = "sync.sessions";
+const char kSyncSupervisedUserSettings[] = "sync.managed_user_settings";
+const char kSyncSupervisedUserSharedSettings[] =
+    "sync.managed_user_shared_settings";
+const char kSyncSupervisedUsers[] = "sync.managed_users";
 const char kSyncSyncedNotificationAppInfo[] =
     "sync.synced_notification_app_info";
 const char kSyncSyncedNotifications[] = "sync.synced_notifications";

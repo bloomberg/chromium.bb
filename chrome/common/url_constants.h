@@ -308,13 +308,13 @@ extern const char kExtensionsSubPage[];
 extern const char kHandlerSettingsSubPage[];
 extern const char kImportDataSubPage[];
 extern const char kLanguageOptionsSubPage[];
-extern const char kSupervisedUserSettingsSubPage[];
 extern const char kManageProfileSubPage[];
 extern const char kPasswordManagerSubPage[];
 extern const char kResetProfileSettingsSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSearchSubPage[];
 extern const char kSearchUsersSubPage[];
+extern const char kSupervisedUserSettingsSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];

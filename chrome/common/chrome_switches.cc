@@ -821,15 +821,6 @@ const char kMalwareInterstitialV3History[]  = "malware-interstitial-v3-history";
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Sets the supervised user ID for any loaded or newly created profile to the
-// given value. Pass an empty string to mark the profile as non-supervised.
-// Used for testing.
-const char kSupervisedUserId[]              = "managed-user-id";
-
-// Used to authenticate requests to the Sync service for supervised users.
-// Setting this switch also causes Sync to be set up for a supervised user.
-const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
-
 // Use to opt-in user into Finch experiment groups.
 const char kManualEnhancedBookmarks[] = "manual-enhanced-bookmarks";
 const char kManualEnhancedBookmarksOptout[] =
@@ -1171,6 +1162,15 @@ const char kSuggestionNtpGaussianFilter[]   = "suggestion-ntp-gaussian-filter";
 // Enables a linear dropoff to the relevancy of visits with respect to the time
 // of day.
 const char kSuggestionNtpLinearFilter[]     = "suggestion-ntp-linear-filter";
+
+// Sets the supervised user ID for any loaded or newly created profile to the
+// given value. Pass an empty string to mark the profile as non-supervised.
+// Used for testing.
+const char kSupervisedUserId[]              = "managed-user-id";
+
+// Used to authenticate requests to the Sync service for supervised users.
+// Setting this switch also causes Sync to be set up for a supervised user.
+const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
 
 // This flag causes sync to retry very quickly (see polling_constants.h) the
 // when it encounters an error, as the first step towards exponential backoff.

@@ -321,13 +321,13 @@ const char kExtensionsSubPage[] = "extensions";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";
 const char kLanguageOptionsSubPage[] = "languages";
-const char kSupervisedUserSettingsSubPage[] = "managedUser";
 const char kManageProfileSubPage[] = "manageProfile";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSearchSubPage[] = "search";
 const char kSearchUsersSubPage[] = "search#Users";
+const char kSupervisedUserSettingsSubPage[] = "managedUser";
 const char kSyncSetupSubPage[] = "syncSetup";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";

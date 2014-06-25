@@ -27,30 +27,15 @@ const char kDefaultAppsInstalled[] = "default_apps_installed";
 // handling code reads local state, while extension APIs use profile pref.
 const char kDisableScreenshots[] = "disable_screenshots";
 
+// If set to true profiles are created in ephemeral mode and do not store their
+// data in the profile folder on disk but only in memory.
+const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
+
 // A boolean specifying whether the New Tab page is the home page or not.
 const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
-
-// Maps host names to whether the host is manually allowed or blocked.
-const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
-// Maps URLs to whether the URL is manually allowed or blocked.
-const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
-
-// Stores the email address associated with the google account of the custodian
-// of the supervised user, set when the supervised user is created.
-const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
-
-// Stores the display name associated with the google account of the custodian
-// of the supervised user, updated (if possible) each time the supervised user
-// starts a session.
-const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
-
-// Stores settings that can be modified both by a supervised user and their
-// manager. See SupervisedUserSharedSettingsService for a description of
-// the format.
-const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
@@ -85,6 +70,11 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 // higher.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
+// Serialized migration time of kURLsToRestoreOnStartup (see
+// base::Time::ToInternalValue for details on serialization format).
+const char kRestoreStartupURLsMigrationTime[] =
+    "session.startup_urls_migration_time";
+
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.startup_urls";
@@ -92,14 +82,24 @@ const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 // Old startup url pref name for kURLsToRestoreOnStartup.
 const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 
-// Serialized migration time of kURLsToRestoreOnStartup (see
-// base::Time::ToInternalValue for details on serialization format).
-const char kRestoreStartupURLsMigrationTime[] =
-    "session.startup_urls_migration_time";
+// Maps host names to whether the host is manually allowed or blocked.
+const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
+// Maps URLs to whether the URL is manually allowed or blocked.
+const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
 
-// If set to true profiles are created in ephemeral mode and do not store their
-// data in the profile folder on disk but only in memory.
-const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
+// Stores the email address associated with the google account of the custodian
+// of the supervised user, set when the supervised user is created.
+const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
+
+// Stores the display name associated with the google account of the custodian
+// of the supervised user, updated (if possible) each time the supervised user
+// starts a session.
+const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
+
+// Stores settings that can be modified both by a supervised user and their
+// manager. See SupervisedUserSharedSettingsService for a description of
+// the format.
+const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state

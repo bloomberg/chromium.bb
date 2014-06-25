@@ -20,8 +20,8 @@
 
 using base::DictionaryValue;
 using base::Value;
-using syncer::SUPERVISED_USER_SHARED_SETTINGS;
 using syncer::ModelType;
+using syncer::SUPERVISED_USER_SHARED_SETTINGS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncChangeProcessor;
