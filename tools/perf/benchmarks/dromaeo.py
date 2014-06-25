@@ -148,3 +148,9 @@ class DromaeoJslibTraversePrototype(_DromaeoBenchmark):
   tag = 'jslibtraverseprototype'
   query_param = 'jslib-traverse-prototype'
 
+
+class DromaeoCSSQueryJquery(_DromaeoBenchmark):
+  """Dromaeo CSS Query jquery JavaScript benchmark"""
+  tag = 'cssqueryjquery'
+  query_param = 'cssquery-jquery'
+
