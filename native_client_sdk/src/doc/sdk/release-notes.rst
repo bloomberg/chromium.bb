@@ -1,4 +1,4 @@
-B.. _sdk-release-notes:
+.. _sdk-release-notes:
 
 #############
 Release Notes
