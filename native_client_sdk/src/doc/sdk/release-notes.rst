@@ -1,4 +1,4 @@
-.. _sdk-release-notes:
+B.. _sdk-release-notes:
 
 #############
 Release Notes
@@ -10,7 +10,7 @@ Chrome/Pepper 37 (20 June 2014)
 PNaCl
 -----
 
-* 2–5% translation time improvement.
+* 2–10% translation time improvement.
 * Improved vector load/store and shuffle performance.
 
 Pepper
