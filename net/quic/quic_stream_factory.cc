@@ -85,7 +85,8 @@ bool IsEcdsaSupported() {
 }
 
 QuicConfig InitializeQuicConfig(bool enable_pacing,
-                                bool enable_time_based_loss_detection) {
+                                bool enable_time_based_loss_detection,
+                                QuicTagVector connection_options) {
   QuicConfig config;
   config.SetDefaults();
   config.EnablePacing(enable_pacing);
@@ -94,6 +95,7 @@ QuicConfig InitializeQuicConfig(bool enable_pacing,
   config.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
+  config.SetCongestionOptionsToSend(connection_options);
   return config;
 }
 
@@ -458,7 +460,8 @@ QuicStreamFactory::QuicStreamFactory(
     const QuicVersionVector& supported_versions,
     bool enable_port_selection,
     bool enable_pacing,
-    bool enable_time_based_loss_detection)
+    bool enable_time_based_loss_detection,
+    QuicTagVector connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -470,7 +473,8 @@ QuicStreamFactory::QuicStreamFactory(
       clock_(clock),
       max_packet_length_(max_packet_length),
       config_(InitializeQuicConfig(enable_pacing,
-                                   enable_time_based_loss_detection)),
+                                   enable_time_based_loss_detection,
+                                   connection_options)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
       port_seed_(random_generator_->RandUint64()),

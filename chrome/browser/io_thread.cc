@@ -43,6 +43,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
@@ -285,6 +286,18 @@ int GetSwitchValueAsInt(const CommandLine& command_line,
     return 0;
   }
   return value;
+}
+
+// Returns the value associated with |key| in |params| or "" if the
+// key is not present in the map.
+const std::string& GetVariationParam(
+    const std::map<std::string, std::string>& params,
+    const std::string& key) {
+  std::map<std::string, std::string>::const_iterator it = params.find(key);
+  if (it == params.end())
+    return base::EmptyString();
+
+  return it->second;
 }
 
 }  // namespace
@@ -939,58 +952,65 @@ void IOThread::ClearHostCache() {
 
 void IOThread::InitializeNetworkSessionParams(
     net::HttpNetworkSession::Params* params) {
-  params->host_resolver = globals_->host_resolver.get();
-  params->cert_verifier = globals_->cert_verifier.get();
-  params->server_bound_cert_service =
-      globals_->system_server_bound_cert_service.get();
-  params->transport_security_state = globals_->transport_security_state.get();
-  params->ssl_config_service = globals_->ssl_config_service.get();
-  params->http_auth_handler_factory = globals_->http_auth_handler_factory.get();
-  params->http_server_properties =
-      globals_->http_server_properties->GetWeakPtr();
-  params->network_delegate = globals_->system_network_delegate.get();
-  params->host_mapping_rules = globals_->host_mapping_rules.get();
-  params->ignore_certificate_errors = globals_->ignore_certificate_errors;
-  params->testing_fixed_http_port = globals_->testing_fixed_http_port;
-  params->testing_fixed_https_port = globals_->testing_fixed_https_port;
+  InitializeNetworkSessionParamsFromGlobals(*globals_, params);
+}
 
-  globals_->initial_max_spdy_concurrent_streams.CopyToIfSet(
+// static
+void IOThread::InitializeNetworkSessionParamsFromGlobals(
+    const IOThread::Globals& globals,
+    net::HttpNetworkSession::Params* params) {
+  params->host_resolver = globals.host_resolver.get();
+  params->cert_verifier = globals.cert_verifier.get();
+  params->server_bound_cert_service =
+      globals.system_server_bound_cert_service.get();
+  params->transport_security_state = globals.transport_security_state.get();
+  params->ssl_config_service = globals.ssl_config_service.get();
+  params->http_auth_handler_factory = globals.http_auth_handler_factory.get();
+  params->http_server_properties =
+      globals.http_server_properties->GetWeakPtr();
+  params->network_delegate = globals.system_network_delegate.get();
+  params->host_mapping_rules = globals.host_mapping_rules.get();
+  params->ignore_certificate_errors = globals.ignore_certificate_errors;
+  params->testing_fixed_http_port = globals.testing_fixed_http_port;
+  params->testing_fixed_https_port = globals.testing_fixed_https_port;
+
+  globals.initial_max_spdy_concurrent_streams.CopyToIfSet(
       &params->spdy_initial_max_concurrent_streams);
-  globals_->force_spdy_single_domain.CopyToIfSet(
+  globals.force_spdy_single_domain.CopyToIfSet(
       &params->force_spdy_single_domain);
-  globals_->enable_spdy_compression.CopyToIfSet(
+  globals.enable_spdy_compression.CopyToIfSet(
       &params->enable_spdy_compression);
-  globals_->enable_spdy_ping_based_connection_checking.CopyToIfSet(
+  globals.enable_spdy_ping_based_connection_checking.CopyToIfSet(
       &params->enable_spdy_ping_based_connection_checking);
-  globals_->spdy_default_protocol.CopyToIfSet(
+  globals.spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
-  params->next_protos = globals_->next_protos;
-  globals_->trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
-  globals_->force_spdy_over_ssl.CopyToIfSet(&params->force_spdy_over_ssl);
-  globals_->force_spdy_always.CopyToIfSet(&params->force_spdy_always);
-  globals_->forced_spdy_exclusions = params->forced_spdy_exclusions;
-  globals_->use_alternate_protocols.CopyToIfSet(
+  params->next_protos = globals.next_protos;
+  globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
+  globals.force_spdy_over_ssl.CopyToIfSet(&params->force_spdy_over_ssl);
+  globals.force_spdy_always.CopyToIfSet(&params->force_spdy_always);
+  params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
+  globals.use_alternate_protocols.CopyToIfSet(
       &params->use_alternate_protocols);
-  globals_->enable_websocket_over_spdy.CopyToIfSet(
+  globals.enable_websocket_over_spdy.CopyToIfSet(
       &params->enable_websocket_over_spdy);
 
-  globals_->enable_quic.CopyToIfSet(&params->enable_quic);
-  globals_->enable_quic_pacing.CopyToIfSet(
+  globals.enable_quic.CopyToIfSet(&params->enable_quic);
+  globals.enable_quic_pacing.CopyToIfSet(
       &params->enable_quic_pacing);
-  globals_->enable_quic_time_based_loss_detection.CopyToIfSet(
+  globals.enable_quic_time_based_loss_detection.CopyToIfSet(
       &params->enable_quic_time_based_loss_detection);
-  globals_->enable_quic_persist_server_info.CopyToIfSet(
-      &params->enable_quic_persist_server_info);
-  globals_->enable_quic_port_selection.CopyToIfSet(
+  globals.enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
-  globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
-  globals_->quic_user_agent_id.CopyToIfSet(&params->quic_user_agent_id);
-  globals_->quic_supported_versions.CopyToIfSet(
+  globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
+  globals.quic_user_agent_id.CopyToIfSet(&params->quic_user_agent_id);
+  globals.quic_supported_versions.CopyToIfSet(
       &params->quic_supported_versions);
-  globals_->origin_to_force_quic_on.CopyToIfSet(
+  params->quic_connection_options = globals.quic_connection_options;
+
+  globals.origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
-      globals_->enable_user_alternate_protocol_ports;
+      globals.enable_user_alternate_protocol_ports;
 }
 
 base::TimeTicks IOThread::creation_time() const {
@@ -1066,26 +1086,42 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   // Always fetch the field trial group to ensure it is reported correctly.
   // The command line flags will be associated with a group that is reported
   // so long as trial is actually queried.
-  std::string quic_trial_group =
+  std::string group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);
+  VariationParameters params;
+  if (!chrome_variations::GetVariationParams(kQuicFieldTrialName, &params)) {
+    params.clear();
+  }
 
+  ConfigureQuicGlobals(command_line, group, params, globals_);
+}
+
+// static
+void IOThread::ConfigureQuicGlobals(
+    const base::CommandLine& command_line,
+    base::StringPiece quic_trial_group,
+    const VariationParameters& quic_trial_params,
+    IOThread::Globals* globals) {
   bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
-  globals_->enable_quic.set(enable_quic);
+  globals->enable_quic.set(enable_quic);
   if (enable_quic) {
-    globals_->enable_quic_pacing.set(
-        ShouldEnableQuicPacing(command_line, quic_trial_group));
-    globals_->enable_quic_time_based_loss_detection.set(
-        ShouldEnableQuicTimeBasedLossDetection(command_line, quic_trial_group));
-    globals_->enable_quic_persist_server_info.set(
-        ShouldEnableQuicPersistServerInfo(command_line));
-    globals_->enable_quic_port_selection.set(
+    globals->enable_quic_pacing.set(
+        ShouldEnableQuicPacing(command_line, quic_trial_group,
+                               quic_trial_params));
+    globals->enable_quic_time_based_loss_detection.set(
+        ShouldEnableQuicTimeBasedLossDetection(command_line, quic_trial_group,
+                                               quic_trial_params));
+    globals->enable_quic_port_selection.set(
         ShouldEnableQuicPortSelection(command_line));
+    globals->quic_connection_options =
+        GetQuicConnectionOptions(command_line, quic_trial_params);
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
-                                                    quic_trial_group);
+                                                    quic_trial_group,
+                                                    quic_trial_params);
   if (max_packet_length != 0) {
-    globals_->quic_max_packet_length.set(max_packet_length);
+    globals->quic_max_packet_length.set(max_packet_length);
   }
 
   std::string quic_user_agent_id =
@@ -1093,13 +1129,13 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   quic_user_agent_id.append(1, ' ');
   chrome::VersionInfo version_info;
   quic_user_agent_id.append(version_info.ProductNameAndVersionForUserAgent());
-  globals_->quic_user_agent_id.set(quic_user_agent_id);
+  globals->quic_user_agent_id.set(quic_user_agent_id);
 
-  net::QuicVersion version = GetQuicVersion(command_line);
+  net::QuicVersion version = GetQuicVersion(command_line, quic_trial_params);
   if (version != net::QUIC_VERSION_UNSUPPORTED) {
     net::QuicVersionVector supported_versions;
     supported_versions.push_back(version);
-    globals_->quic_supported_versions.set(supported_versions);
+    globals->quic_supported_versions.set(supported_versions);
   }
 
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
@@ -1107,7 +1143,7 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
         net::HostPortPair::FromString(
             command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn));
     if (!quic_origin.IsEmpty()) {
-      globals_->origin_to_force_quic_on.set(quic_origin);
+      globals->origin_to_force_quic_on.set(quic_origin);
     }
   }
 }
@@ -1135,38 +1171,82 @@ bool IOThread::ShouldEnableQuicPortSelection(
   return false;  // Default to disabling port selection on all channels.
 }
 
-bool IOThread::ShouldEnableQuicPacing(const CommandLine& command_line,
-                                      base::StringPiece quic_trial_group) {
+bool IOThread::ShouldEnableQuicPacing(
+    const CommandLine& command_line,
+    base::StringPiece quic_trial_group,
+    const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kEnableQuicPacing))
     return true;
 
   if (command_line.HasSwitch(switches::kDisableQuicPacing))
     return false;
 
+  if (LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "enable_pacing"),
+      "true"))
+    return true;
+
   return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
+}
+
+net::QuicTagVector IOThread::GetQuicConnectionOptions(
+    const CommandLine& command_line,
+    const VariationParameters& quic_trial_params) {
+  if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
+    return ParseQuicConnectionOptions(
+        command_line.GetSwitchValueASCII(switches::kQuicConnectionOptions));
+  }
+
+  VariationParameters::const_iterator it =
+      quic_trial_params.find("congestion_options");
+  if (it == quic_trial_params.end())
+    return net::QuicTagVector();
+
+  return ParseQuicConnectionOptions(it->second);
+}
+
+net::QuicTagVector IOThread::ParseQuicConnectionOptions(
+    const std::string& connection_options) {
+  net::QuicTagVector options;
+  std::vector<std::string> tokens;
+  base::SplitString(connection_options, ',', &tokens);
+  // Tokens are expected to be no more than 4 characters long, but we
+  // handle overflow gracefully.
+  for (std::vector<std::string>::iterator token = tokens.begin();
+       token != tokens.end(); ++token) {
+    uint32 option = 0;
+    for (size_t i = token->length() ; i > 0; --i) {
+      option <<= 8;
+      option |= static_cast<unsigned char>((*token)[i - 1]);
+    }
+    options.push_back(static_cast<net::QuicTag>(option));
+  }
+  return options;
 }
 
 bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
     const CommandLine& command_line,
-    base::StringPiece quic_trial_group) {
+    base::StringPiece quic_trial_group,
+    const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kEnableQuicTimeBasedLossDetection))
     return true;
 
   if (command_line.HasSwitch(switches::kDisableQuicTimeBasedLossDetection))
     return false;
 
+  if (LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "enable_time_based_loss_detection"),
+      "true"))
+    return true;
+
   return quic_trial_group.ends_with(
       kQuicFieldTrialTimeBasedLossDetectionSuffix);
 }
 
-// TODO(rtenneti): Delete this method after the merge.
-bool IOThread::ShouldEnableQuicPersistServerInfo(
-    const CommandLine& command_line) {
-  return true;
-}
-
-size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
-                                        base::StringPiece quic_trial_group) {
+size_t IOThread::GetQuicMaxPacketLength(
+    const CommandLine& command_line,
+    base::StringPiece quic_trial_group,
+    const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
     unsigned value;
     if (!base::StringToUint(
@@ -1174,6 +1254,13 @@ size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
             &value)) {
       return 0;
     }
+    return value;
+  }
+
+  unsigned value;
+  if (base::StringToUint(GetVariationParam(quic_trial_params,
+                                           "max_packet_length"),
+                         &value)) {
     return value;
   }
 
@@ -1191,25 +1278,31 @@ size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
     return 0;
   }
   length_str.remove_suffix(strlen(kQuicFieldTrialPacketLengthSuffix));
-  unsigned value;
   if (!base::StringToUint(length_str, &value)) {
     return 0;
   }
   return value;
 }
 
-net::QuicVersion IOThread::GetQuicVersion(const CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kQuicVersion)) {
-    return net::QUIC_VERSION_UNSUPPORTED;
+net::QuicVersion IOThread::GetQuicVersion(
+    const CommandLine& command_line,
+    const VariationParameters& quic_trial_params) {
+  if (command_line.HasSwitch(switches::kQuicVersion)) {
+    return ParseQuicVersion(
+        command_line.GetSwitchValueASCII(switches::kQuicVersion));
   }
+
+  return ParseQuicVersion(GetVariationParam(quic_trial_params, "quic_version"));
+}
+
+net::QuicVersion IOThread::ParseQuicVersion(const std::string& quic_version) {
   net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
-  std::string version_flag =
-      command_line.GetSwitchValueASCII(switches::kQuicVersion);
   for (size_t i = 0; i < supported_versions.size(); ++i) {
     net::QuicVersion version = supported_versions[i];
-    if (net::QuicVersionToString(version) == version_flag) {
+    if (net::QuicVersionToString(version) == quic_version) {
       return version;
     }
   }
+
   return net::QUIC_VERSION_UNSUPPORTED;
 }

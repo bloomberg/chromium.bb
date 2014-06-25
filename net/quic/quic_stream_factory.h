@@ -99,7 +99,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicVersionVector& supported_versions,
       bool enable_port_selection,
       bool enable_pacing,
-      bool enable_time_based_loss_detection);
+      bool enable_time_based_loss_detection,
+      QuicTagVector connection_options);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be

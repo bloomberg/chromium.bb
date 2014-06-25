@@ -93,7 +93,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  base::WeakPtr<HttpServerProperties>(), cert_verifier_.get(),
                  &crypto_client_stream_factory_, &random_generator_, clock_,
                  kDefaultMaxPacketSize, std::string(),
-                 SupportedVersions(GetParam()), true, true, true),
+                 SupportedVersions(GetParam()), true, true, true,
+                 QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
         privacy_mode_(PRIVACY_MODE_DISABLED) {

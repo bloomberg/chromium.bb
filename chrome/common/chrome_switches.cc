@@ -1036,6 +1036,10 @@ const char kProxyPacUrl[]                   = "proxy-pac-url";
 // affects HTTP and HTTPS requests.
 const char kProxyServer[]                   = "proxy-server";
 
+// Specifies a comma separated list of QUIC connection options to send to
+// the server.
+const char kQuicConnectionOptions[]         = "quic-connection-options";
+
 // Specifies the maximum length for a QUIC packet.
 const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 

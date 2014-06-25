@@ -119,6 +119,7 @@ class NET_EXPORT HttpNetworkSession
     bool enable_user_alternate_protocol_ports;
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
     QuicVersionVector quic_supported_versions;
+    QuicTagVector quic_connection_options;
   };
 
   enum SocketPoolType {
