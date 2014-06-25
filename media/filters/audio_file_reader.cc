@@ -20,6 +20,7 @@ AudioFileReader::AudioFileReader(FFmpegURLProtocol* protocol)
       protocol_(protocol),
       channels_(0),
       sample_rate_(0),
+      end_padding_(0),
       av_sample_format_(0) {
 }
 
@@ -59,9 +60,20 @@ bool AudioFileReader::OpenDemuxer() {
     return false;
 
   const int result = avformat_find_stream_info(format_context, NULL);
-  DLOG_IF(WARNING, result < 0)
-      << "AudioFileReader::Open() : error in avformat_find_stream_info()";
-  return result >= 0;
+  if (result < 0) {
+    DLOG(WARNING)
+        << "AudioFileReader::Open() : error in avformat_find_stream_info()";
+    return false;
+  }
+
+  // Attempt to extract end padding for mp3 files.
+  if (strcmp(format_context->iformat->name, "mp3") == 0 &&
+      (av_opt_get_int(format_context->priv_data, "end_pad", 0, &end_padding_) <
+           0 ||
+       end_padding_ < 0)) {
+    end_padding_ = 0;
+  }
+  return true;
 }
 
 bool AudioFileReader::OpenDecoder() {
@@ -219,6 +231,12 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
       current_frame += frames_read;
     } while (packet_temp.size > 0);
     av_free_packet(&packet);
+  }
+
+  // If decoding completed successfully try to strip end padding.
+  if (continue_decoding && end_padding_ <= current_frame) {
+    DCHECK_GE(end_padding_, 0);
+    current_frame -= end_padding_;
   }
 
   // Zero any remaining frames.

@@ -195,12 +195,12 @@ TEST_F(AudioFileReaderTest, WaveF32LE) {
 #if defined(USE_PROPRIETARY_CODECS)
 TEST_F(AudioFileReaderTest, MP3) {
   RunTest("sfx.mp3",
-          "3.05,2.87,3.00,3.32,3.58,4.08,",
+          "5.59,7.11,6.63,6.23,5.58,5.22,",
           1,
           44100,
           base::TimeDelta::FromMicroseconds(313470),
           13825,
-          12719);
+          10496);
 }
 
 TEST_F(AudioFileReaderTest, CorruptMP3) {

@@ -87,6 +87,7 @@ class MEDIA_EXPORT AudioFileReader {
   FFmpegURLProtocol* protocol_;
   int channels_;
   int sample_rate_;
+  int64_t end_padding_;
 
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
   int av_sample_format_;
