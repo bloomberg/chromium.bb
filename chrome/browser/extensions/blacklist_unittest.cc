@@ -192,8 +192,8 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
   EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, states_bcd[b]);
   EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states_bcd[c]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_bcd[d]);
-  EXPECT_EQ(states_abc.end(), states_abc.find(e));
-  EXPECT_EQ(states_bcd.end(), states_bcd.find(e));
+  EXPECT_EQ(0U, states_abc.count(e));
+  EXPECT_EQ(0U, states_bcd.count(e));
 
   int old_request_count = tester.fetcher()->request_count();
   Blacklist::BlacklistStateMap states_ad;
@@ -203,7 +203,7 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(BLACKLISTED_MALWARE, states_ad[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_ad[d]);
-  EXPECT_EQ(states_ad.end(), states_ad.find(e));
+  EXPECT_EQ(0U, states_ad.count(e));
   EXPECT_EQ(old_request_count, tester.fetcher()->request_count());
 }
 
@@ -243,7 +243,7 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
 
   EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states[b]);
-  EXPECT_EQ(states.end(), states.find(c));
+  EXPECT_EQ(0U, states.count(c));
 
   Blacklist::BlacklistStateMap cached_states;
 
@@ -256,7 +256,7 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
   EXPECT_FALSE(fetcher_tester.HandleFetcher(2));
   EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, cached_states[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, cached_states[b]);
-  EXPECT_EQ(cached_states.end(), cached_states.find(c));
+  EXPECT_EQ(0U, cached_states.count(c));
 }
 
 }  // namespace extensions

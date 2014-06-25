@@ -162,15 +162,24 @@ TEST_P(PreferenceValidationDelegateValues, Value) {
 INSTANTIATE_TEST_CASE_P(
     Values,
     PreferenceValidationDelegateValues,
+    // On Android, make_tuple(..., "null") doesn't compile due to the error:
+    // testing/gtest/include/gtest/internal/gtest-tuple.h:246:48:
+    //   error: array used as initializer
     testing::Values(
-        std::tr1::make_tuple(base::Value::TYPE_NULL, "null"),
-        std::tr1::make_tuple(base::Value::TYPE_BOOLEAN, "false"),
-        std::tr1::make_tuple(base::Value::TYPE_INTEGER, "47"),
-        std::tr1::make_tuple(base::Value::TYPE_DOUBLE, "0.47"),
-        std::tr1::make_tuple(base::Value::TYPE_STRING, "i have a spleen"),
+        std::tr1::make_tuple(base::Value::TYPE_NULL,
+                             const_cast<char*>("null")),
+        std::tr1::make_tuple(base::Value::TYPE_BOOLEAN,
+                             const_cast<char*>("false")),
+        std::tr1::make_tuple(base::Value::TYPE_INTEGER,
+                             const_cast<char*>("47")),
+        std::tr1::make_tuple(base::Value::TYPE_DOUBLE,
+                             const_cast<char*>("0.47")),
+        std::tr1::make_tuple(base::Value::TYPE_STRING,
+                             const_cast<char*>("i have a spleen")),
         std::tr1::make_tuple(base::Value::TYPE_DICTIONARY,
-                             "{\"forty-seven\":47,\"twenty-two\":22}"),
-        std::tr1::make_tuple(base::Value::TYPE_LIST, "[22,47]")));
+            const_cast<char*>("{\"forty-seven\":47,\"twenty-two\":22}")),
+        std::tr1::make_tuple(base::Value::TYPE_LIST,
+                             const_cast<char*>("[22,47]"))));
 
 // Tests that no incidents are reported for relevant combinations of ValueState.
 class PreferenceValidationDelegateNoIncident

@@ -80,22 +80,37 @@ TEST_F(PhishingScorerTest, HasValidModel) {
 TEST_F(PhishingScorerTest, PageTerms) {
   scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
-  base::hash_set<std::string> expected_page_terms;
-  expected_page_terms.insert("token one");
-  expected_page_terms.insert("token two");
-  EXPECT_THAT(scorer->page_terms(),
-              ::testing::ContainerEq(expected_page_terms));
+
+  // Use std::vector instead of base::hash_set for comparison.
+  // On Android, EXPECT_THAT(..., ContainerEq(...)) doesn't support
+  // std::hash_set, but std::vector works fine.
+  std::vector<std::string> expected_page_terms;
+  expected_page_terms.push_back("token one");
+  expected_page_terms.push_back("token two");
+  std::sort(expected_page_terms.begin(), expected_page_terms.end());
+
+  base::hash_set<std::string> page_terms = scorer->page_terms();
+  std::vector<std::string> page_terms_v(page_terms.begin(), page_terms.end());
+  std::sort(page_terms_v.begin(), page_terms_v.end());
+
+  EXPECT_THAT(page_terms_v, ::testing::ContainerEq(expected_page_terms));
 }
 
 TEST_F(PhishingScorerTest, PageWords) {
   scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
-  base::hash_set<uint32> expected_page_words;
-  expected_page_words.insert(1000U);
-  expected_page_words.insert(2000U);
-  expected_page_words.insert(3000U);
-  EXPECT_THAT(scorer->page_words(),
-              ::testing::ContainerEq(expected_page_words));
+  std::vector<uint32> expected_page_words;
+  expected_page_words.push_back(1000U);
+  expected_page_words.push_back(2000U);
+  expected_page_words.push_back(3000U);
+  std::sort(expected_page_words.begin(), expected_page_words.end());
+
+  base::hash_set<uint32> page_words = scorer->page_words();
+  std::vector<uint32> page_words_v(page_words.begin(), page_words.end());
+  std::sort(page_words_v.begin(), page_words_v.end());
+
+  EXPECT_THAT(page_words_v, ::testing::ContainerEq(expected_page_words));
+
   EXPECT_EQ(2U, scorer->max_words_per_term());
   EXPECT_EQ(12345U, scorer->murmurhash3_seed());
   EXPECT_EQ(10U, scorer->max_shingles_per_page());
