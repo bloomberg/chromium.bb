@@ -452,6 +452,8 @@
         'common',
         'test_support_common',
         '../base/base.gyp:base',
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system_impl',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',

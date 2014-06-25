@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
@@ -222,6 +223,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  blink::WebNavigationPolicy policy) OVERRIDE;
   virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
   virtual bool IsHidden() OVERRIDE;
+  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -396,6 +398,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
   // this back to private member.
   void OnNavigate(const FrameMsg_Navigate_Params& params);
+
+  // Binds this render frame's service registry to a handle to the remote
+  // service registry.
+  void BindServiceRegistry(
+      mojo::ScopedMessagePipeHandle service_provider_handle);
 
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
@@ -630,6 +637,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
+
+  ServiceRegistryImpl service_registry_;
 
   // The screen orientation dispatcher attached to the view, lazily initialized.
   ScreenOrientationDispatcher* screen_orientation_dispatcher_;

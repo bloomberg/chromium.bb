@@ -16,6 +16,7 @@ include_rules = [
 
   "+grit",  # For generated headers
   "+media/base",
+  "+mojo/embedder",
   "+sandbox/win/tests",
   "+webkit/glue",
   "+win8/test",

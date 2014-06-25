@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/transition_request_manager.h"
@@ -25,6 +26,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -162,6 +164,16 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   g_routing_id_frame_map.Get().insert(std::make_pair(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
       this));
+
+  if (GetProcess()->GetServiceRegistry()) {
+    RenderFrameSetupPtr setup;
+    GetProcess()->GetServiceRegistry()->GetRemoteInterface(&setup);
+    mojo::IInterfaceProviderPtr service_provider;
+    setup->GetServiceProviderForFrame(routing_id_,
+                                      mojo::Get(&service_provider));
+    service_registry_.BindRemoteServiceProvider(
+        service_provider.PassMessagePipe());
+  }
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -240,6 +252,11 @@ void RenderFrameHostImpl::ExecuteJavaScript(
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
+}
+
+ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
+  static_cast<RenderProcessHostImpl*>(GetProcess())->EnsureMojoActivated();
+  return &service_registry_;
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {

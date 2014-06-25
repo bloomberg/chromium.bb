@@ -71,6 +71,7 @@ class MockRenderThread : public RenderThread {
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
+  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.

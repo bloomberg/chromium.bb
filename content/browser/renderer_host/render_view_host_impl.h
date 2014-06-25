@@ -209,7 +209,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebPreferences& prefs) OVERRIDE;
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const OVERRIDE;
-  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) OVERRIDE;
   virtual void SelectWordAroundCaret() OVERRIDE;
 
 #if defined(OS_ANDROID)
