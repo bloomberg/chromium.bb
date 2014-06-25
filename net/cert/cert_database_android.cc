@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/observer_list_threadsafe.h"
 #include "net/base/net_errors.h"
+#include "net/ssl/openssl_client_key_store.h"
 
 namespace net {
 
@@ -38,6 +39,12 @@ int CertDatabase::AddUserCert(X509Certificate* cert) {
 
 void CertDatabase::OnAndroidKeyStoreChanged() {
   NotifyObserversOfCertAdded(NULL);
+  // Dump the OpenSSLClientKeyStore to drop references to now disconnected
+  // PrivateKeys stored in the in-memory key store. Note: this assumes that
+  // every SSLClientAuthCache is dumped as part of notifying
+  // OnCertAdded. Otherwise client auth decisions will be silently converted to
+  // no-certificate decisions. See https://crbug.com/382696
+  OpenSSLClientKeyStore::GetInstance()->Flush();
 }
 
 void CertDatabase::OnAndroidKeyChainChanged() {

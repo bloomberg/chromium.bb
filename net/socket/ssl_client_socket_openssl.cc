@@ -320,9 +320,6 @@ void SSLClientSocket::ClearSessionCache() {
   SSLClientSocketOpenSSL::SSLContext* context =
       SSLClientSocketOpenSSL::SSLContext::GetInstance();
   context->session_cache()->Flush();
-#if defined(USE_OPENSSL_CERTS)
-  OpenSSLClientKeyStore::GetInstance()->Flush();
-#endif
 }
 
 SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
