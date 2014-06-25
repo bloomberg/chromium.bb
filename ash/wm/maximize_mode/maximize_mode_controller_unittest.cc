@@ -14,8 +14,6 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
-#include "ash/wm/maximize_mode/internal_input_device_list.h"
-#include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/vector3d_f.h"
@@ -30,54 +28,6 @@ namespace ash {
 namespace {
 
 const float kDegreesToRadians = 3.14159265f / 180.0f;
-
-// Filter to count the number of events seen.
-class EventCounter : public ui::EventHandler {
- public:
-  EventCounter();
-  virtual ~EventCounter();
-
-  // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
-
-  void reset() {
-    event_count_ = 0;
-  }
-
-  size_t event_count() const { return event_count_; }
-
- private:
-  size_t event_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventCounter);
-};
-
-EventCounter::EventCounter() : event_count_(0) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
-}
-
-EventCounter::~EventCounter() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-}
-
-void EventCounter::OnEvent(ui::Event* event) {
-  event_count_++;
-}
-
-// A test internal input device list which pretends that all events are from
-// internal devices to allow verifying that the event blocking works.
-class TestInternalInputDeviceList : public InternalInputDeviceList {
- public:
-  TestInternalInputDeviceList() {}
-  virtual ~TestInternalInputDeviceList() {}
-
-  virtual bool IsEventFromInternalDevice(const ui::Event* event) OVERRIDE {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestInternalInputDeviceList);
-};
 
 }  // namespace
 
@@ -128,13 +78,6 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   bool IsMaximizeModeStarted() {
     return maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled();
-  }
-
-  // Overrides the internal input device list for the current event targeters
-  // with one which always returns true.
-  void InstallTestInternalDeviceList() {
-    maximize_mode_controller()->event_blocker_->internal_devices_.reset(
-        new TestInternalInputDeviceList);
   }
 
   gfx::Display::Rotation GetInternalDisplayRotation() const {
@@ -320,78 +263,6 @@ TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
-// Tests that maximize mode blocks keyboard and mouse events but not touch
-// events.
-TEST_F(MaximizeModeControllerTest, BlocksKeyboardAndMouse) {
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::test::EventGenerator event_generator(root, root);
-  EventCounter counter;
-
-  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
-  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  event_generator.ClickLeftButton();
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  event_generator.ScrollSequence(
-      gfx::Point(), base::TimeDelta::FromMilliseconds(5), 0, 100, 5, 2);
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  event_generator.MoveMouseWheel(0, 10);
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  event_generator.PressTouch();
-  event_generator.ReleaseTouch();
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  // Open up 270 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
-                             gfx::Vector3dF(1.0f, 0.0f, 0.0f));
-  ASSERT_TRUE(IsMaximizeModeStarted());
-  InstallTestInternalDeviceList();
-
-  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
-  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
-  EXPECT_EQ(0u, counter.event_count());
-  counter.reset();
-
-  event_generator.ClickLeftButton();
-  EXPECT_EQ(0u, counter.event_count());
-  counter.reset();
-
-  event_generator.ScrollSequence(
-      gfx::Point(), base::TimeDelta::FromMilliseconds(5), 0, 100, 5, 2);
-  EXPECT_EQ(0u, counter.event_count());
-  counter.reset();
-
-  event_generator.MoveMouseWheel(0, 10);
-  EXPECT_EQ(0u, counter.event_count());
-  counter.reset();
-
-  // Touch should not be blocked.
-  event_generator.PressTouch();
-  event_generator.ReleaseTouch();
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-
-  gfx::Vector3dF base;
-
-  // Lid open 90 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
-                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-
-  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
-  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
-  EXPECT_GT(counter.event_count(), 0u);
-  counter.reset();
-}
-
 #if defined(OS_CHROMEOS)
 // Tests that a screenshot can be taken in maximize mode by holding volume down
 // and pressing power.
@@ -421,57 +292,6 @@ TEST_F(MaximizeModeControllerTest, Screenshot) {
   event_generator.ReleaseKey(ui::VKEY_VOLUME_DOWN, 0);
 }
 #endif  // OS_CHROMEOS
-
-#if defined(USE_X11)
-// Tests that maximize mode allows volume up/down events originating
-// from dedicated buttons versus remapped keyboard buttons.
-TEST_F(MaximizeModeControllerTest, AllowsVolumeControl) {
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::test::EventGenerator event_generator(root, root);
-
-  TestVolumeControlDelegate* volume_delegate =
-      new TestVolumeControlDelegate(true);
-  ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate>(volume_delegate).Pass());
-
-  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-  ASSERT_TRUE(IsMaximizeModeStarted());
-
-  ui::ScopedXI2Event xevent;
-
-  // Verify F9 button event is blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_down_count());
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
-  ui::KeyEvent press_f9(xevent, false /* is_char */);
-  press_f9.set_flags(ui::EF_FUNCTION_KEY);
-  event_generator.Dispatch(&press_f9);
-  EXPECT_EQ(0, volume_delegate->handle_volume_down_count());
-
-  // Verify F10 button event is blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_up_count());
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
-  ui::KeyEvent press_f10(xevent, false /* is_char */);
-  press_f10.set_flags(ui::EF_FUNCTION_KEY);
-  event_generator.Dispatch(&press_f10);
-  EXPECT_EQ(0, volume_delegate->handle_volume_up_count());
-
-  // Verify volume down button event is not blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_down_count());
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
-  ui::KeyEvent press_vol_down(xevent, false /* is_char */);
-  event_generator.Dispatch(&press_vol_down);
-  EXPECT_EQ(1, volume_delegate->handle_volume_down_count());
-
-  // Verify volume up event is not blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_up_count());
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
-  ui::KeyEvent press_vol_up(xevent, false /* is_char */);
-  event_generator.Dispatch(&press_vol_up);
-  EXPECT_EQ(1, volume_delegate->handle_volume_up_count());
-}
-#endif  // defined(USE_X11)
 
 TEST_F(MaximizeModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cstring>
+#include <set>
 
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
@@ -13,12 +14,14 @@
 #undef Bool
 #undef None
 
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -443,6 +446,66 @@ TEST_F(EventsXTest, FunctionKeyEvents) {
   // Max function key code plus 1.
   EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
+
+// Verifies that the type of events from a disabled keyboard is ET_UNKNOWN, but
+// that an exception list of keys can still be processed.
+TEST_F(EventsXTest, DisableKeyboard) {
+  DeviceDataManagerX11* device_data_manager =
+      static_cast<DeviceDataManagerX11*>(
+          DeviceDataManager::GetInstance());
+  scoped_ptr<std::set<KeyboardCode> > excepted_keys(new std::set<KeyboardCode>);
+  excepted_keys->insert(VKEY_B);
+  device_data_manager->DisableKeyboard(excepted_keys.Pass());
+
+  Display* display = gfx::GetXDisplay();
+  XEvent event;
+
+  // A is not allowed on the blocked keyboard, and should return ET_UNKNOWN.
+  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_A), 0);
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(&event));
+
+  // The B key is allowed as an exception, and should return KEY_PRESSED.
+  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_B), 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(&event));
+
+  device_data_manager->EnableKeyboard();
+
+  // A key returns KEY_PRESSED as per usual now that keyboard was re-enabled.
+  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_A), 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(&event));
+}
+
+#if defined(USE_XI2_MT)
+// Verifies that the type of events from a disabled mouse is ET_UNKNOWN.
+TEST_F(EventsXTest, DisableMouse) {
+  DeviceDataManagerX11* device_data_manager =
+      static_cast<DeviceDataManagerX11*>(
+          DeviceDataManager::GetInstance());
+  unsigned int blocked_device_id = 1;
+  unsigned int other_device_id = 2;
+  std::vector<unsigned int> device_list;
+  device_list.push_back(blocked_device_id);
+  device_list.push_back(other_device_id);
+  TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
+
+  device_data_manager->DisableDevice(blocked_device_id);
+
+  ScopedXI2Event xev;
+  xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
+      EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+
+  xev.InitGenericButtonEvent(other_device_id, ET_MOUSE_PRESSED, gfx::Point(),
+      EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(xev));
+
+  device_data_manager->EnableDevice(blocked_device_id);
+
+  xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
+      EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(xev));
+}
+#endif  // defined(USE_XI2_MT)
 
 #if !defined(OS_CHROMEOS)
 TEST_F(EventsXTest, ImeFabricatedKeyEvents) {

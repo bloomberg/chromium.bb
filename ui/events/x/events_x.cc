@@ -271,6 +271,15 @@ void UpdateDeviceList() {
 }
 
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
+  // Allow the DeviceDataManager to block the event. If blocked return
+  // ET_UNKNOWN as the type so this event will not be further processed.
+  // NOTE: During some events unittests there is no device data manager.
+  if (DeviceDataManager::HasInstance() &&
+      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance())->
+          IsEventBlocked(native_event)) {
+    return ET_UNKNOWN;
+  }
+
   switch (native_event->type) {
     case KeyPress:
       return ET_KEY_PRESSED;
