@@ -46,7 +46,7 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ServerBoundCertStore::ServerBoundCertList ServerBoundCertList;
-typedef std::map<GURL, std::list<appcache::AppCacheInfo> > AppCacheInfoMap;
+typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
 } // namespace

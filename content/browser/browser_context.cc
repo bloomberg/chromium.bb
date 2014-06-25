@@ -69,7 +69,7 @@ StoragePartition* GetStoragePartitionFromConfig(
 
 void SaveSessionStateOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    appcache::AppCacheServiceImpl* appcache_service) {
+    AppCacheServiceImpl* appcache_service) {
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
   context->cookie_store()->GetCookieMonster()->
       SetForceKeepSessionState();
@@ -236,7 +236,7 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         base::Bind(
             &SaveSessionStateOnIOThread,
             make_scoped_refptr(browser_context->GetRequestContext()),
-            static_cast<appcache::AppCacheServiceImpl*>(
+            static_cast<AppCacheServiceImpl*>(
                 storage_partition->GetAppCacheService())));
   }
 

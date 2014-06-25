@@ -40,7 +40,6 @@
 #include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/common/blob/blob_data.h"
 
-using appcache::AppCacheServiceImpl;
 using fileapi::FileSystemContext;
 using webkit_blob::BlobStorageContext;
 

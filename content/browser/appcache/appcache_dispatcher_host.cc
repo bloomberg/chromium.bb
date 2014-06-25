@@ -103,7 +103,7 @@ void AppCacheDispatcherHost::OnSelectCache(
       BadMessageReceived();
     }
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
+    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
   }
 }
 
@@ -115,7 +115,7 @@ void AppCacheDispatcherHost::OnSelectCacheForWorker(
       BadMessageReceived();
     }
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
+    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
   }
 }
 
@@ -125,7 +125,7 @@ void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(
     if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
       BadMessageReceived();
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
+    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
   }
 }
 
@@ -141,7 +141,7 @@ void AppCacheDispatcherHost::OnMarkAsForeignEntry(
 }
 
 void AppCacheDispatcherHost::OnGetResourceList(
-    int host_id, std::vector<appcache::AppCacheResourceInfo>* params) {
+    int host_id, std::vector<AppCacheResourceInfo>* params) {
   if (appcache_service_.get())
     backend_impl_.GetResourceList(host_id, params);
 }
@@ -162,7 +162,7 @@ void AppCacheDispatcherHost::OnGetStatus(int host_id, IPC::Message* reply_msg) {
     return;
   }
 
-  GetStatusCallback(appcache::APPCACHE_STATUS_UNCACHED, reply_msg);
+  GetStatusCallback(APPCACHE_STATUS_UNCACHED, reply_msg);
 }
 
 void AppCacheDispatcherHost::OnStartUpdate(int host_id,
@@ -205,7 +205,7 @@ void AppCacheDispatcherHost::OnSwapCache(int host_id, IPC::Message* reply_msg) {
 }
 
 void AppCacheDispatcherHost::GetStatusCallback(
-    appcache::AppCacheStatus status, void* param) {
+    AppCacheStatus status, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
   DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
   AppCacheHostMsg_GetStatus::WriteReplyParams(reply_msg, status);

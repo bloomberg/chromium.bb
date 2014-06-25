@@ -13,18 +13,13 @@
 #include "base/pickle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache_response.h"
 
-using appcache::AppCacheStorage;
-using appcache::AppCacheResponseInfo;
-using appcache::AppCacheResponseReader;
-using appcache::AppCacheResponseWriter;
-using appcache::HttpResponseInfoIOBuffer;
 using net::IOBuffer;
 using net::WrappedIOBuffer;
 

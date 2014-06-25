@@ -6,6 +6,8 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/appcache/appcache_database.h"
+#include "content/browser/appcache/appcache_entry.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -14,14 +16,6 @@
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "webkit/browser/appcache/appcache_database.h"
-#include "webkit/browser/appcache/appcache_entry.h"
-
-using appcache::AppCacheDatabase;
-using appcache::AppCacheEntry;
-using appcache::APPCACHE_FALLBACK_NAMESPACE;
-using appcache::APPCACHE_INTERCEPT_NAMESPACE;
-using appcache::APPCACHE_NETWORK_NAMESPACE;
 
 namespace {
 

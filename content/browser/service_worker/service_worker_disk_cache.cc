@@ -8,15 +8,12 @@ namespace content {
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64 response_id, ServiceWorkerDiskCache* disk_cache)
-    : appcache::AppCacheResponseReader(response_id, 0, disk_cache) {
+    : AppCacheResponseReader(response_id, 0, disk_cache) {
 }
 
 ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
     int64 response_id, ServiceWorkerDiskCache* disk_cache)
-    : appcache::AppCacheResponseWriter(response_id, 0, disk_cache) {
-}
-
-HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {
+    : AppCacheResponseWriter(response_id, 0, disk_cache) {
 }
 
 }  // namespace content

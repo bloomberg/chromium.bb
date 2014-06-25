@@ -54,8 +54,8 @@ void AppCacheBackendProxy::MarkAsForeignEntry(
                                     cache_document_was_loaded_from));
 }
 
-appcache::AppCacheStatus AppCacheBackendProxy::GetStatus(int host_id) {
-  appcache::AppCacheStatus status = appcache::APPCACHE_STATUS_UNCACHED;
+AppCacheStatus AppCacheBackendProxy::GetStatus(int host_id) {
+  AppCacheStatus status = APPCACHE_STATUS_UNCACHED;
   sender_->Send(new AppCacheHostMsg_GetStatus(host_id, &status));
   return status;
 }
@@ -73,7 +73,7 @@ bool AppCacheBackendProxy::SwapCache(int host_id) {
 }
 
 void AppCacheBackendProxy::GetResourceList(
-    int host_id, std::vector<appcache::AppCacheResourceInfo>* resource_infos) {
+    int host_id, std::vector<AppCacheResourceInfo>* resource_infos) {
   sender_->Send(new AppCacheHostMsg_GetResourceList(host_id, resource_infos));
 }
 

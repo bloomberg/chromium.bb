@@ -168,8 +168,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (OriginAppCacheInfoMap::const_iterator it = map.begin();
        it != map.end();
        ++it) {
-    const appcache::AppCacheInfoVector& info_vector = it->second;
-    for (appcache::AppCacheInfoVector::const_iterator info =
+    const content::AppCacheInfoVector& info_vector = it->second;
+    for (content::AppCacheInfoVector::const_iterator info =
              info_vector.begin();
          info != info_vector.end();
          ++info) {

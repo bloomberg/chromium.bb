@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/child/appcache/appcache_backend_proxy.h"
+#include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_listener.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace content {
 
@@ -22,7 +22,7 @@ namespace content {
 class AppCacheDispatcher : public IPC::Listener {
  public:
   AppCacheDispatcher(IPC::Sender* sender,
-                     appcache::AppCacheFrontend* frontend);
+                     AppCacheFrontend* frontend);
   virtual ~AppCacheDispatcher();
 
   AppCacheBackendProxy* backend_proxy() { return &backend_proxy_; }
@@ -32,20 +32,20 @@ class AppCacheDispatcher : public IPC::Listener {
 
  private:
   // Ipc message handlers
-  void OnCacheSelected(int host_id, const appcache::AppCacheInfo& info);
+  void OnCacheSelected(int host_id, const AppCacheInfo& info);
   void OnStatusChanged(const std::vector<int>& host_ids,
-                       appcache::AppCacheStatus status);
+                       AppCacheStatus status);
   void OnEventRaised(const std::vector<int>& host_ids,
-                     appcache::AppCacheEventID event_id);
+                     AppCacheEventID event_id);
   void OnProgressEventRaised(const std::vector<int>& host_ids,
                              const GURL& url, int num_total, int num_complete);
   void OnErrorEventRaised(const std::vector<int>& host_ids,
-                          const appcache::AppCacheErrorDetails& details);
+                          const AppCacheErrorDetails& details);
   void OnLogMessage(int host_id, int log_level, const std::string& message);
   void OnContentBlocked(int host_id, const GURL& manifest_url);
 
   AppCacheBackendProxy backend_proxy_;
-  scoped_ptr<appcache::AppCacheFrontend> frontend_;
+  scoped_ptr<AppCacheFrontend> frontend_;
 };
 
 }  // namespace content

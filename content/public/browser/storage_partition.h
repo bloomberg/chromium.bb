@@ -12,7 +12,7 @@
 
 class GURL;
 
-namespace appcache {
+namespace content {
 class AppCacheService;
 }
 
@@ -52,7 +52,7 @@ class StoragePartition {
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
-  virtual appcache::AppCacheService* GetAppCacheService() = 0;
+  virtual AppCacheService* GetAppCacheService() = 0;
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;

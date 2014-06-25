@@ -18,7 +18,7 @@
 
 class GURL;
 
-namespace appcache {
+namespace content {
 class AppCacheServiceImpl;
 }
 
@@ -48,7 +48,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
       content::ResourceContext* resource_context,
       bool is_incognito,
-      appcache::AppCacheServiceImpl* appcache_service,
+      AppCacheServiceImpl* appcache_service,
       ChromeBlobStorageContext* blob_storage_context);
 
   // Adds a DataSource to the collection of data sources.

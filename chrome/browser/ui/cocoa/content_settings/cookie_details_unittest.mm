@@ -107,7 +107,7 @@ TEST_F(CookiesDetailsTest, CreateForTreeAppCache) {
   base::scoped_nsobject<CocoaCookieDetails> details;
 
   GURL url("http://chromium.org/stuff.manifest");
-  appcache::AppCacheInfo info;
+  content::AppCacheInfo info;
   info.creation_time = base::Time::Now();
   info.last_update_time = base::Time::Now();
   info.last_access_time = base::Time::Now();

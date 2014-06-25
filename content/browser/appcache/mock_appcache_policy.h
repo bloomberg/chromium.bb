@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
 
 #include "base/compiler_specific.h"
+#include "content/browser/appcache/appcache_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/appcache/appcache_policy.h"
 
 namespace content {
 
-class MockAppCachePolicy : public appcache::AppCachePolicy {
+class MockAppCachePolicy : public AppCachePolicy {
  public:
   MockAppCachePolicy();
   virtual ~MockAppCachePolicy();

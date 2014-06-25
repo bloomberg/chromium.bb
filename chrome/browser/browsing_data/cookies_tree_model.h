@@ -111,7 +111,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const BrowsingDataLocalStorageHelper::LocalStorageInfo*
         session_storage_info);
     DetailedInfo& InitAppCache(const GURL& origin,
-                               const appcache::AppCacheInfo* appcache_info);
+                               const content::AppCacheInfo* appcache_info);
     DetailedInfo& InitIndexedDB(
         const content::IndexedDBInfo* indexed_db_info);
     DetailedInfo& InitFileSystem(
@@ -129,7 +129,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo*
         session_storage_info;
-    const appcache::AppCacheInfo* appcache_info;
+    const content::AppCacheInfo* appcache_info;
     const content::IndexedDBInfo* indexed_db_info;
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
@@ -288,7 +288,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   // CookieTreeAppCacheNode is valid.
   explicit CookieTreeAppCacheNode(
       const GURL& origin_url,
-      std::list<appcache::AppCacheInfo>::iterator appcache_info);
+      std::list<content::AppCacheInfo>::iterator appcache_info);
   virtual ~CookieTreeAppCacheNode();
 
   virtual void DeleteStoredObjects() OVERRIDE;
@@ -296,7 +296,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
 
  private:
   GURL origin_url_;
-  std::list<appcache::AppCacheInfo>::iterator appcache_info_;
+  std::list<content::AppCacheInfo>::iterator appcache_info_;
   DISALLOW_COPY_AND_ASSIGN(CookieTreeAppCacheNode);
 };
 

@@ -10,7 +10,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using appcache::AppCacheBackend;
 using blink::WebApplicationCacheHostClient;
 using blink::WebConsoleMessage;
 
@@ -25,7 +24,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
 }
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
-    appcache::AppCacheLogLevel log_level, const std::string& message) {
+    AppCacheLogLevel log_level, const std::string& message) {
   if (RenderThreadImpl::current()->layout_test_mode())
     return;
 
@@ -47,7 +46,7 @@ void RendererWebApplicationCacheHostImpl::OnContentBlocked(
 }
 
 void RendererWebApplicationCacheHostImpl::OnCacheSelected(
-    const appcache::AppCacheInfo& info) {
+    const AppCacheInfo& info) {
   if (!info.manifest_url.is_empty()) {
     RenderThreadImpl::current()->Send(new ViewHostMsg_AppCacheAccessed(
         routing_id_, info.manifest_url, false));

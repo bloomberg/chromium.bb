@@ -6,11 +6,9 @@
 #define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
 
 #include "base/compiler_specific.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
-
-using appcache::AppCacheServiceImpl;
 
 namespace content {
 

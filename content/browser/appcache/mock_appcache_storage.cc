@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_entry.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
+#include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_entry.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 
 // This is a quick and easy 'mock' implementation of the storage interface
 // that doesn't put anything to disk.
@@ -24,13 +24,6 @@
 // Delegate callbacks are made asyncly to appropiately mimic what will
 // happen with a real disk-backed storage impl that involves IO on a
 // background thread.
-
-using appcache::AppCacheResponseWriter;
-using appcache::AppCacheServiceImpl;
-using appcache::APPCACHE_FALLBACK_NAMESPACE;
-using appcache::APPCACHE_INTERCEPT_NAMESPACE;
-using appcache::kAppCacheNoCacheId;
-using appcache::AppCacheNamespaceType;
 
 namespace content {
 

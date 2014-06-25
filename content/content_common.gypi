@@ -32,6 +32,7 @@
   ],
   'variables': {
     'public_common_sources': [
+      'public/common/appcache_info.h',
       'public/common/bindings_policy.h',
       'public/common/child_process_host.h',
       'public/common/child_process_host_delegate.cc',
@@ -146,6 +147,8 @@
       'common/android/surface_texture_lookup.h',
       'common/android/surface_texture_peer.cc',
       'common/android/surface_texture_peer.h',
+      'common/appcache_interfaces.cc',
+      'common/appcache_interfaces.h',
       'common/appcache_messages.h',
       'common/battery_status_messages.h',
       'common/browser_plugin/browser_plugin_constants.cc',

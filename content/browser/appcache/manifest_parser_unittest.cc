@@ -4,17 +4,9 @@
 
 #include <string>
 
+#include "content/browser/appcache/manifest_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/appcache/manifest_parser.h"
-
-using appcache::Manifest;
-using appcache::NamespaceVector;
-using appcache::APPCACHE_FALLBACK_NAMESPACE;
-using appcache::APPCACHE_INTERCEPT_NAMESPACE;
-using appcache::APPCACHE_NETWORK_NAMESPACE;
-using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
-using appcache::PARSE_MANIFEST_PER_STANDARD;
 
 namespace content {
 
@@ -167,7 +159,7 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
   EXPECT_TRUE(manifest.intercept_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  const NamespaceVector& online = manifest.online_whitelist_namespaces;
+  const AppCacheNamespaceVector& online = manifest.online_whitelist_namespaces;
   const size_t kExpected = 6;
   ASSERT_EQ(kExpected, online.size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE, online[0].type);
@@ -213,7 +205,7 @@ TEST(AppCacheManifestParserTest, FallbackUrls) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
+  const AppCacheNamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 5;
   ASSERT_EQ(kExpected, fallbacks.size());
   EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);
@@ -264,7 +256,7 @@ TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
+  const AppCacheNamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, fallbacks.size());
   EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);
@@ -308,7 +300,7 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  const NamespaceVector& intercepts = manifest.intercept_namespaces;
+  const AppCacheNamespaceVector& intercepts = manifest.intercept_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, intercepts.size());
   EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE, intercepts[0].type);
@@ -372,7 +364,7 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
   EXPECT_TRUE(urls.find("http://combo.com:99/explicit-2") != urls.end());
   EXPECT_TRUE(urls.find("http://www.diff.com/explicit-3") != urls.end());
 
-  const NamespaceVector& online = manifest.online_whitelist_namespaces;
+  const AppCacheNamespaceVector& online = manifest.online_whitelist_namespaces;
   expected = 4;
   ASSERT_EQ(expected, online.size());
   EXPECT_EQ(GURL("http://combo.com/whitelist-1"),
@@ -384,7 +376,7 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
   EXPECT_EQ(GURL("http://combo.com:99/whitelist-4"),
                  online[3].namespace_url);
 
-  const NamespaceVector& fallbacks = manifest.fallback_namespaces;
+  const AppCacheNamespaceVector& fallbacks = manifest.fallback_namespaces;
   expected = 2;
   ASSERT_EQ(expected, fallbacks.size());
   EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);

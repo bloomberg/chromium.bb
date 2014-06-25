@@ -8,23 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
-
-using appcache::AppCache;
-using appcache::AppCacheEntry;
-using appcache::AppCacheGroup;
-using appcache::AppCacheInfo;
-using appcache::AppCacheInfoCollection;
-using appcache::AppCacheInfoVector;
-using appcache::AppCacheResponseReader;
-using appcache::AppCacheServiceImpl;
-using appcache::HttpResponseInfoIOBuffer;
 
 namespace content {
 namespace {
@@ -199,7 +189,7 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   delete_completion_count_ = 0;
 
   // Should succeed given an empty info collection.
-  mock_storage()->SimulateGetAllInfo(new AppCacheInfoCollection);
+  mock_storage()->SimulateGetAllInfo(new content::AppCacheInfoCollection);
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
   base::RunLoop().RunUntilIdle();

@@ -12,6 +12,8 @@
 #include "base/pickle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -22,17 +24,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_url_request_job.h"
 
-using appcache::AppCacheEntry;
-using appcache::AppCacheStorage;
-using appcache::AppCacheResponseInfo;
-using appcache::AppCacheResponseReader;
-using appcache::AppCacheResponseWriter;
-using appcache::AppCacheURLRequestJob;
-using appcache::HttpResponseInfoIOBuffer;
-using appcache::kAppCacheNoCacheId;
 using net::IOBuffer;
 using net::WrappedIOBuffer;
 

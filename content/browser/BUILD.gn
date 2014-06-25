@@ -6,6 +6,12 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/browser/browser.gni")
 
+config("storage_config") {
+  if (is_android) {
+    defines = [ "APPCACHE_USE_SIMPLE_CACHE" ]
+  }
+}
+
 source_set("browser") {
   # Only targets in the content tree can depend directly on this target.
   visibility = [ "//content/*" ]

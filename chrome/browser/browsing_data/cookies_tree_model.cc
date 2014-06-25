@@ -214,7 +214,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSessionStorage(
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
     const GURL& origin,
-    const appcache::AppCacheInfo* appcache_info) {
+    const content::AppCacheInfo* appcache_info) {
   Init(TYPE_APPCACHE);
   this->appcache_info = appcache_info;
   this->origin = origin;
@@ -301,7 +301,7 @@ CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
 
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
     const GURL& origin_url,
-    std::list<appcache::AppCacheInfo>::iterator appcache_info)
+    std::list<content::AppCacheInfo>::iterator appcache_info)
     : CookieTreeNode(base::UTF8ToUTF16(appcache_info->manifest_url.spec())),
       origin_url_(origin_url),
       appcache_info_(appcache_info) {
@@ -1046,7 +1046,7 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     LocalDataContainer* container,
     ScopedBatchUpdateNotifier* notifier,
     const base::string16& filter) {
-  using appcache::AppCacheInfo;
+  using content::AppCacheInfo;
   typedef std::map<GURL, std::list<AppCacheInfo> > InfoByOrigin;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
 

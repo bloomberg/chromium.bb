@@ -7,6 +7,10 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -15,35 +19,6 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_update_job.h"
-
-using appcache::AppCache;
-using appcache::AppCacheEntry;
-using appcache::AppCacheFrontend;
-using appcache::AppCacheHost;
-using appcache::AppCacheGroup;
-using appcache::AppCacheResponseInfo;
-using appcache::AppCacheUpdateJob;
-using appcache::AppCacheResponseWriter;
-using appcache::APPCACHE_CACHED_EVENT;
-using appcache::APPCACHE_CHECKING_EVENT;
-using appcache::APPCACHE_DOWNLOADING_EVENT;
-using appcache::APPCACHE_ERROR_EVENT;
-using appcache::AppCacheEventID;
-using appcache::APPCACHE_FALLBACK_NAMESPACE;
-using appcache::HttpResponseInfoIOBuffer;
-using appcache::kAppCacheNoCacheId;
-using appcache::kAppCacheNoResponseId;
-using appcache::Namespace;
-using appcache::APPCACHE_NETWORK_NAMESPACE;
-using appcache::APPCACHE_NO_UPDATE_EVENT;
-using appcache::APPCACHE_OBSOLETE_EVENT;
-using appcache::APPCACHE_PROGRESS_EVENT;
-using appcache::APPCACHE_UPDATE_READY_EVENT;
-using appcache::AppCacheStatus;
 
 namespace content {
 class AppCacheUpdateJobTest;
@@ -227,7 +202,8 @@ class MockHttpServerJobFactory
   }
 };
 
-inline bool operator==(const Namespace& lhs, const Namespace& rhs) {
+inline bool operator==(const AppCacheNamespace& lhs,
+    const AppCacheNamespace& rhs) {
   return lhs.type == rhs.type &&
          lhs.namespace_url == rhs.namespace_url &&
          lhs.target_url == rhs.target_url;
@@ -244,7 +220,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnCacheSelected(
-      int host_id, const appcache::AppCacheInfo& info) OVERRIDE {
+      int host_id, const AppCacheInfo& info) OVERRIDE {
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
@@ -268,7 +244,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::AppCacheErrorDetails& details)
+                                  const AppCacheErrorDetails& details)
       OVERRIDE {
     error_message_ = details.message;
     OnEventRaised(host_ids, APPCACHE_ERROR_EVENT);
@@ -306,7 +282,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnLogMessage(int host_id,
-                            appcache::AppCacheLogLevel log_level,
+                            AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE {
   }
 
@@ -3273,7 +3249,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
     EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                    Namespace(
+                    AppCacheNamespace(
                         APPCACHE_FALLBACK_NAMESPACE,
                         MockHttpServer::GetMockUrl("files/fallback1"),
                         MockHttpServer::GetMockUrl("files/fallback1a"),
@@ -3301,7 +3277,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
     EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                    Namespace(
+                    AppCacheNamespace(
                         APPCACHE_FALLBACK_NAMESPACE,
                         MockHttpServer::GetMockUrl("files/fallback1"),
                         MockHttpServer::GetMockUrl("files/explicit1"),
@@ -3309,7 +3285,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
     EXPECT_TRUE(cache->online_whitelist_namespaces_[0] ==
-                    Namespace(
+                    AppCacheNamespace(
                         APPCACHE_NETWORK_NAMESPACE,
                         MockHttpServer::GetMockUrl("files/online1"),
                         GURL(), false));
@@ -3498,7 +3474,7 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
 
   EXPECT_EQ(expected, events[1].first.size());
   EXPECT_EQ(host.host_id(), events[1].first[0]);
-  EXPECT_EQ(appcache::APPCACHE_DOWNLOADING_EVENT, events[1].second);
+  EXPECT_EQ(APPCACHE_DOWNLOADING_EVENT, events[1].second);
 
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 }

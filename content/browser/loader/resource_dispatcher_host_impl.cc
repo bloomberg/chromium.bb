@@ -54,6 +54,7 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/ssl_status_serialization.h"
@@ -94,7 +95,6 @@
 #include "webkit/browser/blob/blob_url_request_job_factory.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using base::Time;

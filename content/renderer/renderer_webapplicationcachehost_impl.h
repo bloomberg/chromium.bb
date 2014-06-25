@@ -15,13 +15,13 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      appcache::AppCacheBackend* backend);
+      AppCacheBackend* backend);
 
   // WebApplicationCacheHostImpl:
-  virtual void OnLogMessage(appcache::AppCacheLogLevel log_level,
+  virtual void OnLogMessage(AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE;
   virtual void OnContentBlocked(const GURL& manifest_url) OVERRIDE;
-  virtual void OnCacheSelected(const appcache::AppCacheInfo& info) OVERRIDE;
+  virtual void OnCacheSelected(const AppCacheInfo& info) OVERRIDE;
 
  private:
   RenderViewImpl* GetRenderView();

@@ -7,13 +7,13 @@
 
 #include <vector>
 
+#include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_sender.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace content {
 
 // Sends appcache related messages to the main process.
-class AppCacheBackendProxy : public appcache::AppCacheBackend {
+class AppCacheBackendProxy : public AppCacheBackend {
  public:
   explicit AppCacheBackendProxy(IPC::Sender* sender) : sender_(sender) {}
 
@@ -38,12 +38,12 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
       int host_id,
       const GURL& document_url,
       int64 cache_document_was_loaded_from) OVERRIDE;
-  virtual appcache::AppCacheStatus GetStatus(int host_id) OVERRIDE;
+  virtual AppCacheStatus GetStatus(int host_id) OVERRIDE;
   virtual bool StartUpdate(int host_id) OVERRIDE;
   virtual bool SwapCache(int host_id) OVERRIDE;
   virtual void GetResourceList(
       int host_id,
-      std::vector<appcache::AppCacheResourceInfo>* resource_infos) OVERRIDE;
+      std::vector<AppCacheResourceInfo>* resource_infos) OVERRIDE;
 
  private:
   IPC::Sender* sender_;

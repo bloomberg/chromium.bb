@@ -13,7 +13,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "net/base/completion_callback.h"
 
-namespace appcache {
+namespace content {
 class AppCacheService;
 }
 
@@ -26,7 +26,7 @@ class OfflineResourceThrottle
       public base::SupportsWeakPtr<OfflineResourceThrottle> {
  public:
   OfflineResourceThrottle(net::URLRequest* request,
-                          appcache::AppCacheService* appcache_service);
+                          content::AppCacheService* appcache_service);
   virtual ~OfflineResourceThrottle();
 
   // content::ResourceThrottle implementation:
@@ -49,7 +49,7 @@ class OfflineResourceThrottle
 
   net::URLRequest* request_;
   // Safe to keep a pointer around since AppCacheService outlives all requests.
-  appcache::AppCacheService* appcache_service_;
+  content::AppCacheService* appcache_service_;
   net::CancelableCompletionCallback appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceThrottle);

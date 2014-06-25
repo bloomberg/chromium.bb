@@ -14,22 +14,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_disk_cache.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_storage.h"
-
-using appcache::AppCache;
-using appcache::AppCacheDiskCache;
-using appcache::AppCacheEntry;
-using appcache::AppCacheGroup;
-using appcache::AppCacheInfoCollection;
-using appcache::AppCacheResponseReader;
-using appcache::AppCacheResponseWriter;
-using appcache::AppCacheServiceImpl;
-using appcache::AppCacheStorage;
-using appcache::kAppCacheNoCacheId;
+#include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_disk_cache.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_storage.h"
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, DeleteAppCachesForOrigin);

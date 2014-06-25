@@ -4,15 +4,15 @@
 
 #include "content/public/common/resource_response_info.h"
 
+#include "content/public/common/appcache_info.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace content {
 
 ResourceResponseInfo::ResourceResponseInfo()
     : content_length(-1),
       encoded_data_length(-1),
-      appcache_id(appcache::kAppCacheNoCacheId),
+      appcache_id(kAppCacheNoCacheId),
       was_fetched_via_spdy(false),
       was_npn_negotiated(false),
       was_alternate_protocol_available(false),

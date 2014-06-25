@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "content/public/browser/appcache_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -24,7 +25,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "url/url_constants.h"
-#include "webkit/browser/appcache/appcache_service.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -60,7 +60,7 @@ void ShowOfflinePage(
 
 OfflineResourceThrottle::OfflineResourceThrottle(
     net::URLRequest* request,
-    appcache::AppCacheService* appcache_service)
+    content::AppCacheService* appcache_service)
     : request_(request),
       appcache_service_(appcache_service) {
   DCHECK(appcache_service);

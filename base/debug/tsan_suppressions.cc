@@ -289,7 +289,7 @@ char kTSanDefaultSuppressions[] =
 "deadlock:g_type_add_interface_static\n"
 
 // http:://crbug.com/386385
-"race:appcache::AppCacheStorageImpl::DatabaseTask::CallRunCompleted\n"
+"race:content::AppCacheStorageImpl::DatabaseTask::CallRunCompleted\n"
 
 // http://crbug.com/388730
 "race:g_next_user_script_id\n"

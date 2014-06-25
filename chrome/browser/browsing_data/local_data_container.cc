@@ -108,9 +108,9 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
 }
 
 void LocalDataContainer::OnAppCacheModelInfoLoaded() {
-  using appcache::AppCacheInfo;
-  using appcache::AppCacheInfoCollection;
-  using appcache::AppCacheInfoVector;
+  using content::AppCacheInfo;
+  using content::AppCacheInfoCollection;
+  using content::AppCacheInfoVector;
   typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
 
   scoped_refptr<AppCacheInfoCollection> appcache_info =

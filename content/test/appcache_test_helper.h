@@ -7,9 +7,9 @@
 
 #include <set>
 
-#include "webkit/browser/appcache/appcache_storage.h"
+#include "content/browser/appcache/appcache_storage.h"
 
-namespace appcache {
+namespace content {
 class AppCacheServiceImpl;
 }
 
@@ -17,19 +17,19 @@ namespace content {
 
 // Helper class for inserting data into a ChromeAppCacheService and reading it
 // back.
-class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
+class AppCacheTestHelper : public AppCacheStorage::Delegate {
  public:
   AppCacheTestHelper();
   virtual ~AppCacheTestHelper();
-  void AddGroupAndCache(appcache::AppCacheServiceImpl* appcache_service,
+  void AddGroupAndCache(AppCacheServiceImpl* appcache_service,
                         const GURL& manifest_url);
 
-  void GetOriginsWithCaches(appcache::AppCacheServiceImpl* appcache_service,
+  void GetOriginsWithCaches(AppCacheServiceImpl* appcache_service,
                             std::set<GURL>* origins);
  private:
   virtual void OnGroupAndNewestCacheStored(
-      appcache::AppCacheGroup* group,
-      appcache::AppCache* newest_cache,
+      AppCacheGroup* group,
+      AppCache* newest_cache,
       bool success,
       bool would_exceed_quota) OVERRIDE;
   void OnGotAppCacheInfo(int rv);
@@ -37,7 +37,7 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
   int group_id_;
   int appcache_id_;
   int response_id_;
-  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
+  scoped_refptr<AppCacheInfoCollection> appcache_info_;
   std::set<GURL>* origins_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheTestHelper);

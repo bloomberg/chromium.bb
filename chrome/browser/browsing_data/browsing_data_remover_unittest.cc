@@ -142,7 +142,7 @@ class TestStoragePartition : public StoragePartition {
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE {
     return NULL;
   }
-  virtual appcache::AppCacheService* GetAppCacheService() OVERRIDE {
+  virtual content::AppCacheService* GetAppCacheService() OVERRIDE {
     return NULL;
   }
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE {

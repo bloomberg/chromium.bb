@@ -4,19 +4,12 @@
 
 #include "content/browser/appcache/appcache_interceptor.h"
 
-#include "webkit/browser/appcache/appcache_backend_impl.h"
-#include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_request_handler.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
-#include "webkit/browser/appcache/appcache_url_request_job.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
-
-using appcache::AppCacheBackendImpl;
-using appcache::AppCacheHost;
-using appcache::AppCacheRequestHandler;
-using appcache::AppCacheServiceImpl;
-using appcache::kAppCacheNoCacheId;
-using appcache::kAppCacheNoHostId;
+#include "content/browser/appcache/appcache_backend_impl.h"
+#include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_request_handler.h"
+#include "content/browser/appcache/appcache_service_impl.h"
+#include "content/browser/appcache/appcache_url_request_job.h"
+#include "content/common/appcache_interfaces.h"
 
 namespace content {
 

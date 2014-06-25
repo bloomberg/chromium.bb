@@ -5,47 +5,40 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/common/appcache_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_update_job.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
-
-using appcache::AppCache;
-using appcache::AppCacheFrontend;
-using appcache::AppCacheGroup;
-using appcache::AppCacheHost;
-using appcache::AppCacheServiceImpl;
-using appcache::AppCacheUpdateJob;
 
 namespace {
 
-class TestAppCacheFrontend : public appcache::AppCacheFrontend {
+class TestAppCacheFrontend : public content::AppCacheFrontend {
  public:
   TestAppCacheFrontend()
       : last_host_id_(-1), last_cache_id_(-1),
-        last_status_(appcache::APPCACHE_STATUS_OBSOLETE) {
+        last_status_(content::APPCACHE_STATUS_OBSOLETE) {
   }
 
   virtual void OnCacheSelected(
-      int host_id, const appcache::AppCacheInfo& info) OVERRIDE {
+      int host_id, const content::AppCacheInfo& info) OVERRIDE {
     last_host_id_ = host_id;
     last_cache_id_ = info.cache_id;
     last_status_ = info.status;
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               appcache::AppCacheStatus status) OVERRIDE {
+                               content::AppCacheStatus status) OVERRIDE {
   }
 
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             appcache::AppCacheEventID event_id) OVERRIDE {
+                             content::AppCacheEventID event_id) OVERRIDE {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::AppCacheErrorDetails& details)
+                                  const content::AppCacheErrorDetails& details)
       OVERRIDE {}
 
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
@@ -53,7 +46,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
                                      int num_total, int num_complete) OVERRIDE {
   }
 
-  virtual void OnLogMessage(int host_id, appcache::AppCacheLogLevel log_level,
+  virtual void OnLogMessage(int host_id, content::AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE {
   }
 
@@ -63,7 +56,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
 
   int last_host_id_;
   int64 last_cache_id_;
-  appcache::AppCacheStatus last_status_;
+  content::AppCacheStatus last_status_;
 };
 
 }  // namespace anon
@@ -197,12 +190,12 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   host1.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host1.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_IDLE);
+  EXPECT_EQ(frontend.last_status_, APPCACHE_STATUS_IDLE);
 
   host2.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_IDLE);
+  EXPECT_EQ(frontend.last_status_, APPCACHE_STATUS_IDLE);
 
   AppCache* cache2 = new AppCache(service.storage(), 222);
   cache2->set_complete(true);
@@ -214,8 +207,8 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   host1.AssociateNoCache(GURL());
   host2.AssociateNoCache(GURL());
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
-  EXPECT_EQ(frontend.last_cache_id_, appcache::kAppCacheNoCacheId);
-  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_UNCACHED);
+  EXPECT_EQ(frontend.last_cache_id_, kAppCacheNoCacheId);
+  EXPECT_EQ(frontend.last_status_, APPCACHE_STATUS_UNCACHED);
 }
 
 TEST_F(AppCacheGroupTest, StartUpdate) {

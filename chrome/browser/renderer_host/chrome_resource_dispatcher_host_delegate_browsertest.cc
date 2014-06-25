@@ -60,7 +60,7 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
   virtual void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      appcache::AppCacheService* appcache_service,
+      content::AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,

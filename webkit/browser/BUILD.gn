@@ -2,54 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("storage_config") {
-  if (is_android) {
-    defines = [ "APPCACHE_USE_SIMPLE_CACHE" ]
-  }
-}
-
 component("storage") {
   output_name = "webkit_storage_browser"
   sources = [
     "webkit_storage_browser_export.h",
-    "appcache/appcache.cc",
-    "appcache/appcache.h",
-    "appcache/appcache_backend_impl.cc",
-    "appcache/appcache_backend_impl.h",
-    "appcache/appcache_database.cc",
-    "appcache/appcache_database.h",
-    "appcache/appcache_disk_cache.cc",
-    "appcache/appcache_disk_cache.h",
-    "appcache/appcache_entry.h",
-    "appcache/appcache_executable_handler.h",
-    "appcache/appcache_group.cc",
-    "appcache/appcache_group.h",
-    "appcache/appcache_histograms.cc",
-    "appcache/appcache_histograms.h",
-    "appcache/appcache_host.cc",
-    "appcache/appcache_host.h",
-    "appcache/appcache_policy.h",
-    "appcache/appcache_quota_client.cc",
-    "appcache/appcache_quota_client.h",
-    "appcache/appcache_request_handler.cc",
-    "appcache/appcache_request_handler.h",
-    "appcache/appcache_response.cc",
-    "appcache/appcache_response.h",
-    "appcache/appcache_service_impl.cc",
-    "appcache/appcache_service_impl.h",
-    "appcache/appcache_service.h",
-    "appcache/appcache_storage.cc",
-    "appcache/appcache_storage.h",
-    "appcache/appcache_storage_impl.cc",
-    "appcache/appcache_storage_impl.h",
-    "appcache/appcache_working_set.cc",
-    "appcache/appcache_working_set.h",
-    "appcache/appcache_update_job.cc",
-    "appcache/appcache_update_job.h",
-    "appcache/appcache_url_request_job.cc",
-    "appcache/appcache_url_request_job.h",
-    "appcache/manifest_parser.cc",
-    "appcache/manifest_parser.h",
     "blob/blob_data_handle.cc",
     "blob/blob_data_handle.h",
     "blob/blob_storage_context.cc",
@@ -198,7 +154,6 @@ component("storage") {
 
   defines = [ "WEBKIT_STORAGE_BROWSER_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  direct_dependent_configs = [ ":storage_config" ]
   if (is_win) {
     cflags = [ "/wd4267" ]  # TODO(jschuh): fix size_t to int truncations.
   }

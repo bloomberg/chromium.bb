@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_entry.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_entry.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
 
 namespace content {
 
@@ -24,23 +24,23 @@ AppCacheTestHelper::AppCacheTestHelper()
 AppCacheTestHelper::~AppCacheTestHelper() {}
 
 void AppCacheTestHelper::OnGroupAndNewestCacheStored(
-    appcache::AppCacheGroup* /*group*/,
-    appcache::AppCache* /*newest_cache*/,
+    AppCacheGroup* /*group*/,
+    AppCache* /*newest_cache*/,
     bool success,
     bool /*would_exceed_quota*/) {
   ASSERT_TRUE(success);
   base::MessageLoop::current()->Quit();
 }
 
-void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheServiceImpl*
+void AppCacheTestHelper::AddGroupAndCache(AppCacheServiceImpl*
     appcache_service, const GURL& manifest_url) {
-  appcache::AppCacheGroup* appcache_group =
-      new appcache::AppCacheGroup(appcache_service->storage(),
+  AppCacheGroup* appcache_group =
+      new AppCacheGroup(appcache_service->storage(),
                                   manifest_url,
                                   ++group_id_);
-  appcache::AppCache* appcache = new appcache::AppCache(
+  AppCache* appcache = new AppCache(
       appcache_service->storage(), ++appcache_id_);
-  appcache::AppCacheEntry entry(appcache::AppCacheEntry::MANIFEST,
+  AppCacheEntry entry(AppCacheEntry::MANIFEST,
                                 ++response_id_);
   appcache->AddEntry(manifest_url, entry);
   appcache->set_complete(true);
@@ -52,9 +52,9 @@ void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheServiceImpl*
   base::MessageLoop::current()->Run();
 }
 
-void AppCacheTestHelper::GetOriginsWithCaches(appcache::AppCacheServiceImpl*
+void AppCacheTestHelper::GetOriginsWithCaches(AppCacheServiceImpl*
     appcache_service, std::set<GURL>* origins) {
-  appcache_info_ = new appcache::AppCacheInfoCollection;
+  appcache_info_ = new AppCacheInfoCollection;
   origins_ = origins;
   appcache_service->GetAllAppCacheInfo(
       appcache_info_.get(),
@@ -66,7 +66,7 @@ void AppCacheTestHelper::GetOriginsWithCaches(appcache::AppCacheServiceImpl*
 }
 
 void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
-  typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
+  typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
 
   origins_->clear();
   for (InfoByOrigin::const_iterator origin =

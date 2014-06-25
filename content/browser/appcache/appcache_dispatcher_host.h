@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
+#include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/browser/appcache/appcache_backend_impl.h"
 
 namespace content {
 class ChromeAppCacheService;
@@ -54,19 +54,19 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   void OnSwapCache(int host_id, IPC::Message* reply_msg);
   void OnGetResourceList(
       int host_id,
-      std::vector<appcache::AppCacheResourceInfo>* resource_infos);
-  void GetStatusCallback(appcache::AppCacheStatus status, void* param);
+      std::vector<AppCacheResourceInfo>* resource_infos);
+  void GetStatusCallback(AppCacheStatus status, void* param);
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);
 
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
-  appcache::AppCacheBackendImpl backend_impl_;
+  AppCacheBackendImpl backend_impl_;
 
-  appcache::GetStatusCallback get_status_callback_;
-  appcache::StartUpdateCallback start_update_callback_;
-  appcache::SwapCacheCallback swap_cache_callback_;
+  content::GetStatusCallback get_status_callback_;
+  content::StartUpdateCallback start_update_callback_;
+  content::SwapCacheCallback swap_cache_callback_;
   scoped_ptr<IPC::Message> pending_reply_msg_;
 
   // The corresponding ChildProcessHost object's id().

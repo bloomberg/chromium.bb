@@ -13,7 +13,7 @@ class URLRequest;
 class URLRequestJob;
 }
 
-namespace appcache {
+namespace content {
 class AppCacheServiceImpl;
 }
 
@@ -24,12 +24,12 @@ class ViewAppCacheInternalsJobFactory {
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      appcache::AppCacheServiceImpl* service);
+      AppCacheServiceImpl* service);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ViewAppCacheInternalsJobFactory);
 };
 
-}  // namespace appcache
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_APPCACHE_VIEW_APPCACHE_INTERNALS_JOB_H_

@@ -168,7 +168,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyType, "app_cache");
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
-      const appcache::AppCacheInfo& appcache_info =
+      const content::AppCacheInfo& appcache_info =
           *node.GetDetailedInfo().appcache_info;
 
       dict->SetString(kKeyManifest, appcache_info.manifest_url.spec());

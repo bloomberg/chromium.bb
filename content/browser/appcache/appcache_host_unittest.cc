@@ -6,29 +6,15 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_backend_impl.h"
+#include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_backend_impl.h"
-#include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/quota/quota_manager.h"
-
-using appcache::AppCache;
-using appcache::AppCacheBackendImpl;
-using appcache::AppCacheEntry;
-using appcache::AppCacheFrontend;
-using appcache::AppCacheGroup;
-using appcache::AppCacheHost;
-using appcache::kAppCacheNoCacheId;
-using appcache::APPCACHE_ERROR_EVENT;
-using appcache::APPCACHE_STATUS_OBSOLETE;
-using appcache::APPCACHE_OBSOLETE_EVENT;
-using appcache::APPCACHE_PROGRESS_EVENT;
-using appcache::AppCacheStatus;
-using appcache::APPCACHE_STATUS_UNCACHED;
 
 namespace content {
 
@@ -50,32 +36,32 @@ class AppCacheHostTest : public testing::Test {
    public:
     MockFrontend()
         : last_host_id_(-222), last_cache_id_(-222),
-          last_status_(appcache::APPCACHE_STATUS_OBSOLETE),
-          last_status_changed_(appcache::APPCACHE_STATUS_OBSOLETE),
-          last_event_id_(appcache::APPCACHE_OBSOLETE_EVENT),
+          last_status_(APPCACHE_STATUS_OBSOLETE),
+          last_status_changed_(APPCACHE_STATUS_OBSOLETE),
+          last_event_id_(APPCACHE_OBSOLETE_EVENT),
           content_blocked_(false) {
     }
 
     virtual void OnCacheSelected(
-        int host_id, const appcache::AppCacheInfo& info) OVERRIDE {
+        int host_id, const AppCacheInfo& info) OVERRIDE {
       last_host_id_ = host_id;
       last_cache_id_ = info.cache_id;
       last_status_ = info.status;
     }
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 appcache::AppCacheStatus status) OVERRIDE {
+                                 AppCacheStatus status) OVERRIDE {
       last_status_changed_ = status;
     }
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               appcache::AppCacheEventID event_id) OVERRIDE {
+                               AppCacheEventID event_id) OVERRIDE {
       last_event_id_ = event_id;
     }
 
     virtual void OnErrorEventRaised(
         const std::vector<int>& host_ids,
-        const appcache::AppCacheErrorDetails& details) OVERRIDE {
+        const AppCacheErrorDetails& details) OVERRIDE {
       last_event_id_ = APPCACHE_ERROR_EVENT;
     }
 
@@ -87,7 +73,7 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnLogMessage(int host_id,
-                              appcache::AppCacheLogLevel log_level,
+                              AppCacheLogLevel log_level,
                               const std::string& message) OVERRIDE {
     }
 
@@ -98,9 +84,9 @@ class AppCacheHostTest : public testing::Test {
 
     int last_host_id_;
     int64 last_cache_id_;
-    appcache::AppCacheStatus last_status_;
-    appcache::AppCacheStatus last_status_changed_;
-    appcache::AppCacheEventID last_event_id_;
+    AppCacheStatus last_status_;
+    AppCacheStatus last_status_changed_;
+    AppCacheEventID last_event_id_;
     bool content_blocked_;
   };
 
@@ -172,9 +158,9 @@ class AppCacheHostTest : public testing::Test {
   MockFrontend mock_frontend_;
 
   // Mock callbacks we expect to receive from the 'host'
-  appcache::GetStatusCallback get_status_callback_;
-  appcache::StartUpdateCallback start_update_callback_;
-  appcache::SwapCacheCallback swap_cache_callback_;
+  content::GetStatusCallback get_status_callback_;
+  content::StartUpdateCallback start_update_callback_;
+  content::SwapCacheCallback swap_cache_callback_;
 
   AppCacheStatus last_status_result_;
   bool last_swap_result_;
@@ -387,11 +373,11 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 
   host.AssociateCompleteCache(cache1);
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
-  EXPECT_EQ(appcache::APPCACHE_STATUS_IDLE, host.GetStatus());
+  EXPECT_EQ(APPCACHE_STATUS_IDLE, host.GetStatus());
   // verify OnCacheSelected was called
   EXPECT_EQ(host.host_id(), mock_frontend_.last_host_id_);
   EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
-  EXPECT_EQ(appcache::APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
+  EXPECT_EQ(APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
 
   AppCache* cache2 = new AppCache(service_.storage(), 222);
   cache2->set_complete(true);

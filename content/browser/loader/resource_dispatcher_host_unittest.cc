@@ -24,6 +24,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/worker_host/worker_service_impl.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -50,7 +51,6 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
@@ -139,7 +139,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.origin_pid = 0;
   request.resource_type = type;
   request.request_context = 0;
-  request.appcache_host_id = appcache::kAppCacheNoHostId;
+  request.appcache_host_id = kAppCacheNoHostId;
   request.download_to_file = false;
   request.is_main_frame = true;
   request.parent_is_main_frame = false;
@@ -662,7 +662,7 @@ class TestResourceDispatcherHostDelegate
   virtual void RequestBeginning(
       net::URLRequest* request,
       ResourceContext* resource_context,
-      appcache::AppCacheService* appcache_service,
+      AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,

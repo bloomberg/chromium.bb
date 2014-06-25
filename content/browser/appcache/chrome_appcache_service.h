@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/browser/appcache/appcache_policy.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 #include "content/common/content_export.h"
-#include "webkit/browser/appcache/appcache_policy.h"
-#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace base {
@@ -40,8 +40,8 @@ struct ChromeAppCacheServiceDeleter;
 class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
                                         ChromeAppCacheServiceDeleter>,
-      NON_EXPORTED_BASE(public appcache::AppCacheServiceImpl),
-      NON_EXPORTED_BASE(public appcache::AppCachePolicy) {
+      NON_EXPORTED_BASE(public AppCacheServiceImpl),
+      NON_EXPORTED_BASE(public AppCachePolicy) {
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
 

@@ -16,7 +16,7 @@
 
 class GURL;
 
-namespace appcache {
+namespace content {
 class AppCacheService;
 }
 

@@ -22,8 +22,6 @@
       'defines': ['WEBKIT_STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [
         'common/webkit_storage_common_export.h',
-        'common/appcache/appcache_interfaces.cc',
-        'common/appcache/appcache_interfaces.h',
         'common/blob/blob_data.cc',
         'common/blob/blob_data.h',
         'common/blob/scoped_file.cc',
