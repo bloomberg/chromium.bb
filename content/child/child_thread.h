@@ -13,10 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/tracked_objects.h"
+#include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace base {
 class MessageLoop;
@@ -44,7 +44,6 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
-class MojoApplication;
 class ServiceWorkerDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
@@ -56,10 +55,7 @@ class WebSocketDispatcher;
 struct RequestInfo;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThread
-    : public IPC::Listener,
-      public IPC::Sender,
-      public NON_EXPORTED_BASE(mojo::ServiceProvider) {
+class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
  public:
   // Creates the thread.
   ChildThread();
@@ -153,6 +149,10 @@ class CONTENT_EXPORT ChildThread
   static void ShutdownThread();
 #endif
 
+  ServiceRegistry* service_registry() const {
+    return mojo_application_->service_registry();
+  }
+
  protected:
   friend class ChildProcess;
 
@@ -169,13 +169,6 @@ class CONTENT_EXPORT ChildThread
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
-
-  // mojo::ServiceProvider implementation:
-  virtual void ConnectToService(
-      const mojo::String& service_url,
-      const mojo::String& service_name,
-      mojo::ScopedMessagePipeHandle message_pipe,
-      const mojo::String& requestor_url) OVERRIDE;
 
  private:
   class ChildThreadMessageRouter : public MessageRouter {

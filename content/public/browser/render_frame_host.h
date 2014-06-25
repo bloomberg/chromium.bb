@@ -21,6 +21,7 @@ class Value;
 namespace content {
 class RenderProcessHost;
 class RenderViewHost;
+class ServiceRegistry;
 class SiteInstance;
 
 // The interface provides a communication conduit with a frame in the renderer.
@@ -73,6 +74,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Temporary until we get rid of RenderViewHost.
   virtual RenderViewHost* GetRenderViewHost() = 0;
+
+  // Returns the ServiceRegistry for this frame.
+  virtual ServiceRegistry* GetServiceRegistry() = 0;
 
  private:
   // This interface should only be implemented inside content.

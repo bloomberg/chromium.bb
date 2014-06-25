@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -42,10 +43,15 @@ class MojoWebUIController : public content::WebUIController {
       mojo::ScopedMessagePipeHandle handle_to_page) = 0;
 
  private:
+  // Invoked in response to a connection from the renderer.
+  void CreateAndStoreUIHandler(mojo::ScopedMessagePipeHandle handle);
+
   // Bindings files are registered here.
   content::WebUIDataSource* mojo_data_source_;
 
   scoped_ptr<MojoWebUIHandler> ui_handler_;
+
+  base::WeakPtrFactory<MojoWebUIController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIController);
 };

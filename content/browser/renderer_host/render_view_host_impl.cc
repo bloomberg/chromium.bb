@@ -48,11 +48,9 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
-#include "content/common/mojo/mojo_service_names.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
-#include "content/common/web_ui_setup.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -654,27 +652,6 @@ void RenderViewHostImpl::SetHasPendingCrossSiteRequest(
     bool has_pending_request) {
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
       GetProcess()->GetID(), GetRoutingID(), has_pending_request);
-}
-
-void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
-  // Never grant any bindings to browser plugin guests.
-  if (GetProcess()->IsIsolatedGuest()) {
-    NOTREACHED() << "Never grant bindings to a guest process.";
-    return;
-  }
-
-  if ((enabled_bindings_ & BINDINGS_POLICY_WEB_UI) == 0) {
-    NOTREACHED() << "You must grant bindings before setting the handle";
-    return;
-  }
-
-  DCHECK(renderer_initialized_);
-
-  WebUISetupPtr web_ui_setup;
-  static_cast<RenderProcessHostImpl*>(GetProcess())->ConnectTo(
-      kRendererService_WebUISetup, &web_ui_setup);
-
-  web_ui_setup->SetWebUIHandle(GetRoutingID(), handle.Pass());
 }
 
 #if defined(OS_ANDROID)
