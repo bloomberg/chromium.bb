@@ -27,6 +27,7 @@
 #include "grit/platform_locale_settings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/common/webpreferences.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
@@ -129,9 +130,11 @@ void RegisterFontFamilyMapObserver(
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-// On Windows with DirectWrite we want to use an alternate fixed font like
+// On Windows with antialising we want to use an alternate fixed font like
 // Consolas, which looks much better than Courier New.
-bool ShouldUseAlternateDefaultFixedFont() {
+bool ShouldUseAlternateDefaultFixedFont(const std::string& script) {
+  if (!StartsWithASCII(script, "courier", false))
+    return false;
   UINT smooth_type = 0;
   SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smooth_type, 0);
   return (base::win::GetVersion() >= base::win::VERSION_WIN7) &&
@@ -473,7 +476,8 @@ void PrefsTabHelper::RegisterProfilePrefs(
 
 #if defined(OS_WIN)
     if (pref.pref_name == prefs::kWebKitFixedFontFamily) {
-      if (ShouldUseAlternateDefaultFixedFont())
+      if (ShouldUseAlternateDefaultFixedFont(
+              l10n_util::GetStringUTF8(pref.resource_id)))
         pref.resource_id = IDS_FIXED_FONT_FAMILY_ALT_WIN;
     }
 #endif
