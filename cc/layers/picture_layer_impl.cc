@@ -178,7 +178,7 @@ void PictureLayerImpl::AppendQuads(
     gfx::Rect geometry_rect = rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
-        geometry_rect, draw_transform());
+        geometry_rect, scaled_draw_transform);
     if (visible_geometry_rect.IsEmpty())
       return;
 
@@ -264,7 +264,7 @@ void PictureLayerImpl::AppendQuads(
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
-        geometry_rect, draw_transform());
+        geometry_rect, scaled_draw_transform);
     if (visible_geometry_rect.IsEmpty())
       continue;
 
