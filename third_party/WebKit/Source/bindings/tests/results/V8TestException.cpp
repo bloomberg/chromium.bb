@@ -51,7 +51,7 @@ static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCall
 
 static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -65,7 +65,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInf
 
 static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestExceptionV8Internal::readonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -78,7 +78,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestExceptionV8Internal::toStringMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }

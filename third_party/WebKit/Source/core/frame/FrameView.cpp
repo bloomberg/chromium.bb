@@ -844,7 +844,7 @@ void FrameView::layout(bool allowSubtree)
         return;
 
     TRACE_EVENT0("blink", "FrameView::layout");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "Layout");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
 
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtr<FrameView> protector(this);

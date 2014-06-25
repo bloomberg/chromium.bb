@@ -158,7 +158,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {% set getter = indexed_property_getter %}
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
     {% if getter.is_custom %}
     {{v8_class}}::indexedPropertyGetterCustom(index, info);
     {% else %}
@@ -214,7 +214,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
     {% if setter.is_custom %}
     {{v8_class}}::indexedPropertySetterCustom(index, v8Value, info);
     {% else %}
@@ -259,7 +259,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
     {% if deleter.is_custom %}
     {{v8_class}}::indexedPropertyDeleterCustom(index, info);
     {% else %}
@@ -316,7 +316,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 {% set getter = named_property_getter %}
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if getter.is_custom %}
     {{v8_class}}::namedPropertyGetterCustom(name, info);
     {% else %}
@@ -375,7 +375,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
 {% set setter = named_property_setter %}
 static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if setter.is_custom %}
     {{v8_class}}::namedPropertySetterCustom(name, v8Value, info);
     {% else %}
@@ -418,7 +418,7 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {% set getter = named_property_getter %}
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if getter.is_custom_property_query %}
     {{v8_class}}::namedPropertyQueryCustom(name, info);
     {% else %}
@@ -465,7 +465,7 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if deleter.is_custom %}
     {{v8_class}}::namedPropertyDeleterCustom(name, info);
     {% else %}
@@ -507,7 +507,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {% set getter = named_property_getter %}
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     {% if getter.is_custom_property_enumerator %}
     {{v8_class}}::namedPropertyEnumeratorCustom(info);
     {% else %}
@@ -543,7 +543,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
 
 static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -571,7 +571,7 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
     if (!result.IsEmpty())
         return result;
 
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
     result = v8::FunctionTemplate::New(isolate, {{v8_class}}ConstructorCallback);
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
@@ -831,7 +831,7 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
 {% if constructors or has_custom_constructor or has_event_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     {% if measure_as %}
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{measure_as}});
     {% endif %}
@@ -1211,7 +1211,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
     if (DOMWrapperWorld::current(isolate).isMainWorld()) {
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
@@ -1221,7 +1221,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
     } else {
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);

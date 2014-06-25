@@ -310,10 +310,10 @@ public:
         , m_safePointScope(stackState)
         , m_parkedAllThreads(false)
     {
-        TRACE_EVENT0("Blink", "Heap::GCScope");
+        TRACE_EVENT0("blink", "Heap::GCScope");
         const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
         if (m_state->isMainThread())
-            TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCWaiting");
+            TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkGCWaiting");
 
         m_state->checkThread();
 
@@ -1779,8 +1779,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     s_lastGCWasConservative = false;
 
-    TRACE_EVENT0("Blink", "Heap::collectGarbage");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BlinkGC");
+    TRACE_EVENT0("blink", "Heap::collectGarbage");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();

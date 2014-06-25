@@ -58,7 +58,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInf
 
 static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -72,7 +72,7 @@ static void initializedByEventConstructorReadonlyStringAttributeAttributeGetter(
 
 static void initializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -86,7 +86,7 @@ static void initializedByEventConstructorReadonlyAnyAttributeAttributeGetter(con
 
 static void initializedByEventConstructorReadonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyAnyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -100,7 +100,7 @@ static void initializedByEventConstructorReadonlyBooleanAttributeAttributeGetter
 
 static void initializedByEventConstructorReadonlyBooleanAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyBooleanAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -114,7 +114,7 @@ static void initializedByEventConstructorReadonlyLongAttributeAttributeGetter(co
 
 static void initializedByEventConstructorReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -135,7 +135,7 @@ static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGet
 
 static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -156,7 +156,7 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttr
 
 static void initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -170,7 +170,7 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribut
 
 static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -197,7 +197,7 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
 
 static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -211,7 +211,7 @@ static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttrib
 
 static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
@@ -226,7 +226,7 @@ static void implementedAsInitializedByEventConstructorReadonlyStringAttributeAtt
 
 static void implementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventConstructorV8Internal::implementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -240,7 +240,7 @@ static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAt
 
 static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
@@ -338,7 +338,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
 
 void V8TestInterfaceEventConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceEventConstructor"), info.GetIsolate());
         return;

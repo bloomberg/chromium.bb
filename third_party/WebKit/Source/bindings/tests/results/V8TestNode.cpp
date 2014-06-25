@@ -52,7 +52,7 @@ static void hrefAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 
 static void hrefAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestNodeV8Internal::hrefAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -67,7 +67,7 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
 
 static void hrefAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestNodeV8Internal::hrefAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -81,7 +81,7 @@ static void hrefThrowsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>&
 
 static void hrefThrowsAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestNodeV8Internal::hrefThrowsAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -98,7 +98,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Pr
 
 static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestNodeV8Internal::hrefThrowsAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -112,7 +112,7 @@ static void hrefCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value
 
 static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestNodeV8Internal::hrefCallWithAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -127,7 +127,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 
 static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestNodeV8Internal::hrefCallWithAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -152,7 +152,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestNodeAttributes[] =
 
 void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestNode"), info.GetIsolate());
         return;

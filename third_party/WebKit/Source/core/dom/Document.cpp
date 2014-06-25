@@ -1827,7 +1827,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     RefPtr<LocalFrame> protect(m_frame);
 
     TRACE_EVENT0("blink", "Document::updateRenderTree");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "UpdateRenderTree");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateRenderTree");
 
     m_styleRecalcElementCounter = 0;
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "frame", frame());

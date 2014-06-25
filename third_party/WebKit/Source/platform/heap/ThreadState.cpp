@@ -836,11 +836,11 @@ void ThreadState::performPendingSweep()
     if (!sweepRequested())
         return;
 
-    TRACE_EVENT0("Blink", "ThreadState::performPendingSweep");
+    TRACE_EVENT0("blink", "ThreadState::performPendingSweep");
     double timeStamp = WTF::currentTimeMS();
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
     if (isMainThread())
-        TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCSweeping");
+        TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkGCSweeping");
 
     m_sweepInProgress = true;
     // Disallow allocation during weak processing.

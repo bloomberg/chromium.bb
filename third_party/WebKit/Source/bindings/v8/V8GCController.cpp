@@ -349,7 +349,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
     TRACE_EVENT_BEGIN0("v8", "minorGC");
     if (isMainThread()) {
         {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMMinorGC");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
             v8::HandleScope scope(isolate);
             MinorGCWrapperVisitor visitor(isolate);
             v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
@@ -367,7 +367,7 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
     TRACE_EVENT_BEGIN0("v8", "majorGC");
     if (isMainThread()) {
         {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMMajorGC");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMajorGC");
             MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
             v8::V8::VisitHandlesWithClassIds(&visitor);
             visitor.notifyFinished();

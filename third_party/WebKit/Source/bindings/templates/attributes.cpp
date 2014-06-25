@@ -157,7 +157,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
@@ -190,7 +190,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
@@ -310,7 +310,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     {% if attribute.is_expose_js_accessors %}
     v8::Local<v8::Value> v8Value = info[0];
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}

@@ -399,7 +399,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
     {% if method.measure_as %}
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
@@ -473,7 +473,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 
 static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }

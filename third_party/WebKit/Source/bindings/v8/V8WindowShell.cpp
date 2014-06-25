@@ -189,7 +189,7 @@ bool V8WindowShell::initializeIfNeeded()
 bool V8WindowShell::initialize()
 {
     TRACE_EVENT0("v8", "V8WindowShell::initialize");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "InitializeWindow");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "InitializeWindow");
 
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
