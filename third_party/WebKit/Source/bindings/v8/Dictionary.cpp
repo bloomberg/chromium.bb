@@ -448,7 +448,7 @@ bool Dictionary::get(const String& key, RefPtr<ArrayBufferView>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeMember<MIDIPort>& value) const
+bool Dictionary::get(const String& key, Member<MIDIPort>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

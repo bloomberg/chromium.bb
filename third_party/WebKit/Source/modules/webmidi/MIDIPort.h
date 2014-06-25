@@ -34,16 +34,13 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class MIDIAccess;
 
-class MIDIPort : public RefCountedWillBeRefCountedGarbageCollected<MIDIPort>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(MIDIPort);
+class MIDIPort : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIPort>, public ScriptWrappable, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 public:
     enum MIDIPortTypeCode {
@@ -78,7 +75,7 @@ private:
     String m_name;
     MIDIPortTypeCode m_type;
     String m_version;
-    RawPtrWillBeMember<MIDIAccess> m_access;
+    Member<MIDIAccess> m_access;
 };
 
 } // namespace WebCore

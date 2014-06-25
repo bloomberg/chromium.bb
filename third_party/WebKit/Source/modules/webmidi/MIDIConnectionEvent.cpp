@@ -38,7 +38,7 @@ MIDIConnectionEvent::MIDIConnectionEvent()
     ScriptWrappable::init(this);
 }
 
-MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<MIDIPort> port)
+MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, MIDIPort* port)
     : Event(type, false, false)
     , m_port(port)
 {
@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create()
     return adoptRefWillBeNoop(new MIDIConnectionEvent());
 }
 
-PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create(const AtomicString& type, PassRefPtrWillBeRawPtr<MIDIPort> port)
+PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create(const AtomicString& type, MIDIPort* port)
 {
     return adoptRefWillBeNoop(new MIDIConnectionEvent(type, port));
 }

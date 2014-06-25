@@ -41,8 +41,6 @@
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIOutput.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -50,13 +48,13 @@ namespace WebCore {
 class ExecutionContext;
 struct MIDIOptions;
 
-class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
-    REFCOUNTED_EVENT_TARGET(MIDIAccess);
+class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIAccess>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:
-    static PassRefPtrWillBeRawPtr<MIDIAccess> create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
+    static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
-        RefPtrWillBeRawPtr<MIDIAccess> access = adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(accessor, sysexEnabled, ports, executionContext));
+        MIDIAccess* access = new MIDIAccess(accessor, sysexEnabled, ports, executionContext);
         access->suspendIfNeeded();
         return access;
     }

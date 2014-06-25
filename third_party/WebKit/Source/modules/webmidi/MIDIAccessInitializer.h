@@ -12,7 +12,6 @@
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RawPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

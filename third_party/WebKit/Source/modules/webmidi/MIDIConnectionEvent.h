@@ -42,16 +42,16 @@ struct MIDIConnectionEventInit : public EventInit {
     {
     }
 
-    RefPtrWillBeMember<MIDIPort> port;
+    Member<MIDIPort> port;
 };
 
 class MIDIConnectionEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create();
-    static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString&, PassRefPtrWillBeRawPtr<MIDIPort>);
+    static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString&, MIDIPort*);
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString&, const MIDIConnectionEventInit&);
 
-    PassRefPtrWillBeRawPtr<MIDIPort> port() { return m_port; }
+    MIDIPort* port() { return m_port; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIConnectionEvent; }
 
@@ -59,10 +59,10 @@ public:
 
 private:
     MIDIConnectionEvent();
-    MIDIConnectionEvent(const AtomicString&, PassRefPtrWillBeRawPtr<MIDIPort>);
+    MIDIConnectionEvent(const AtomicString&, MIDIPort*);
     MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit&);
 
-    RefPtrWillBeMember<MIDIPort> m_port;
+    PersistentWillBeMember<MIDIPort> m_port;
 };
 
 } // namespace WebCore
