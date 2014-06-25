@@ -5,19 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_DEFINITION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_DEFINITION_H_
 
-#include <list>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "ui/gl/gl_fence.h"
 
 namespace gfx {
-class GLFence;
 class GLImage;
 }
 

@@ -4,12 +4,18 @@
 
 #include "gpu/command_buffer/service/texture_definition.h"
 
+#include <list>
+
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/scoped_binders.h"
 
 #if !defined(OS_MACOSX)
+#include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -101,9 +107,7 @@ class NativeImageBufferEGL : public NativeImageBuffer {
   static scoped_refptr<NativeImageBufferEGL> Create(GLuint texture_id);
 
  private:
-  NativeImageBufferEGL(scoped_ptr<gfx::GLFence> write_fence,
-                       EGLDisplay display,
-                       EGLImageKHR image);
+  NativeImageBufferEGL(EGLDisplay display, EGLImageKHR image);
   virtual ~NativeImageBufferEGL();
   virtual void AddClient(gfx::GLImage* client) OVERRIDE;
   virtual void RemoveClient(gfx::GLImage* client) OVERRIDE;
@@ -159,8 +163,7 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   if (egl_image == EGL_NO_IMAGE_KHR)
     return NULL;
 
-  return new NativeImageBufferEGL(
-      make_scoped_ptr(gfx::GLFence::Create()), egl_display, egl_image);
+  return new NativeImageBufferEGL(egl_display, egl_image);
 }
 
 NativeImageBufferEGL::ClientInfo::ClientInfo(gfx::GLImage* client)
@@ -168,13 +171,12 @@ NativeImageBufferEGL::ClientInfo::ClientInfo(gfx::GLImage* client)
 
 NativeImageBufferEGL::ClientInfo::~ClientInfo() {}
 
-NativeImageBufferEGL::NativeImageBufferEGL(scoped_ptr<gfx::GLFence> write_fence,
-                                           EGLDisplay display,
+NativeImageBufferEGL::NativeImageBufferEGL(EGLDisplay display,
                                            EGLImageKHR image)
     : NativeImageBuffer(),
       egl_display_(display),
       egl_image_(image),
-      write_fence_(write_fence.Pass()),
+      write_fence_(new gfx::GLFenceEGL(true)),
       write_client_(NULL) {
   DCHECK(egl_display_ != EGL_NO_DISPLAY);
   DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
@@ -262,7 +264,7 @@ void NativeImageBufferEGL::DidRead(gfx::GLImage* client) {
        it != client_infos_.end();
        it++) {
     if (it->client == client) {
-      it->read_fence = make_linked_ptr(gfx::GLFence::Create());
+      it->read_fence = make_linked_ptr(new gfx::GLFenceEGL(true));
       return;
     }
   }
@@ -273,7 +275,7 @@ void NativeImageBufferEGL::DidWrite(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
   // Sharing semantics require the client to flush in order to make changes
   // visible to other clients.
-  write_fence_.reset(gfx::GLFence::CreateWithoutFlush());
+  write_fence_.reset(new gfx::GLFenceEGL(false));
   write_client_ = client;
   for (std::list<ClientInfo>::iterator it = client_infos_.begin();
        it != client_infos_.end();
