@@ -161,7 +161,8 @@ for variant in "-lts-quantal" "-lts-raring" "-lts-saucy"; do
     mesa_variant="${variant}"
   fi
 done
-dev_list="${dev_list} libgbm-dev${mesa_variant}"
+dev_list="${dev_list} libgbm-dev${mesa_variant}
+          libgles2-mesa-dev${mesa_variant}"
 nacl_list="${nacl_list} libgl1-mesa-glx${mesa_variant}:i386"
 
 # Some package names have changed over time
