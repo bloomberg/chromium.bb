@@ -256,11 +256,6 @@ void WebDevToolsAgentImpl::detach()
     m_attached = false;
 }
 
-void WebDevToolsAgentImpl::didNavigate()
-{
-    ClientMessageLoopAdapter::didNavigate();
-}
-
 void WebDevToolsAgentImpl::continueProgram()
 {
     ClientMessageLoopAdapter::didNavigate();
