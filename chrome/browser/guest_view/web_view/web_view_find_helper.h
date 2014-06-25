@@ -15,16 +15,15 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
-class WebViewInternalFindFunction;
+class WebviewFindFunction;
 } // namespace extensions
 class WebViewGuest;
 
-// Helper class for find requests and replies for the web_view_internal find
-// API.
-class WebViewFindHelper {
+// Helper class for find requests and replies for the webview find API.
+class WebviewFindHelper {
  public:
-  explicit WebViewFindHelper(WebViewGuest* webview_guest);
-  ~WebViewFindHelper();
+  explicit WebviewFindHelper(WebViewGuest* webview_guest);
+  ~WebviewFindHelper();
 
   // Cancels all find requests in progress and calls their callback functions.
   void CancelAllFindSessions();
@@ -37,11 +36,10 @@ class WebViewFindHelper {
   void EndFindSession(int session_request_id, bool canceled);
 
   // Helper function for WebViewGuest::Find().
-  void Find(
-      content::WebContents* guest_web_contents,
-      const base::string16& search_text,
-      const blink::WebFindOptions& options,
-      scoped_refptr<extensions::WebViewInternalFindFunction> find_function);
+  void Find(content::WebContents* guest_web_contents,
+            const base::string16& search_text,
+            const blink::WebFindOptions& options,
+            scoped_refptr<extensions::WebviewFindFunction> find_function);
 
   // Helper function for WeViewGuest:FindReply().
   void FindReply(int request_id,
@@ -71,7 +69,7 @@ class WebViewFindHelper {
     int active_match_ordinal_;
     gfx::Rect selection_rect_;
 
-    friend void WebViewFindHelper::EndFindSession(int session_request_id,
+    friend void WebviewFindHelper::EndFindSession(int session_request_id,
                                                   bool canceled);
 
     DISALLOW_COPY_AND_ASSIGN(FindResults);
@@ -102,11 +100,10 @@ class WebViewFindHelper {
   // Handles all information about a find request and its results.
   class FindInfo {
    public:
-    FindInfo(
-        int request_id,
-        const base::string16& search_text,
-        const blink::WebFindOptions& options,
-        scoped_refptr<extensions::WebViewInternalFindFunction> find_function);
+    FindInfo(int request_id,
+             const base::string16& search_text,
+             const blink::WebFindOptions& options,
+             scoped_refptr<extensions::WebviewFindFunction> find_function);
     ~FindInfo();
 
     // Add another request to |find_next_requests_|.
@@ -146,7 +143,7 @@ class WebViewFindHelper {
     const int request_id_;
     const base::string16 search_text_;
     blink::WebFindOptions options_;
-    scoped_refptr<extensions::WebViewInternalFindFunction> find_function_;
+    scoped_refptr<extensions::WebviewFindFunction> find_function_;
     FindResults find_results_;
 
     // A find reply has been received for this find request.
@@ -159,7 +156,7 @@ class WebViewFindHelper {
     // Weak pointer used to access the find info of fin.
     base::WeakPtrFactory<FindInfo> weak_ptr_factory_;
 
-    friend void WebViewFindHelper::EndFindSession(int session_request_id,
+    friend void WebviewFindHelper::EndFindSession(int session_request_id,
                                                   bool canceled);
 
     DISALLOW_COPY_AND_ASSIGN(FindInfo);
@@ -183,7 +180,7 @@ class WebViewFindHelper {
   typedef std::map<int, linked_ptr<FindInfo> > FindInfoMap;
   FindInfoMap find_info_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewFindHelper);
+  DISALLOW_COPY_AND_ASSIGN(WebviewFindHelper);
 };
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_

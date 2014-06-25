@@ -11,7 +11,7 @@
 // TODO(lazyboy): Share common code /w context_menus_custom_bindings.js.
 
 var EventBindings = require('event_bindings');
-var binding = require('binding').Binding.create('webViewInternal');
+var binding = require('binding').Binding.create('webview');
 var contextMenuNatives = requireNative('context_menus');
 var sendRequest = require('sendRequest').sendRequest;
 
@@ -23,7 +23,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   webviewContextMenus.stringIdHandlers = {};
 
   // Per item event handler.
-  var ename = 'webViewInternal.contextMenus';
+  var ename = 'webview.contextMenus';
   webviewContextMenus.event = new EventBindings.Event(ename);
 
   webviewContextMenus.getIdFromCreateProperties = function(prop) {

@@ -20,7 +20,7 @@
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
-#include "chrome/common/extensions/api/web_view_internal.h"
+#include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -41,7 +41,7 @@ using extensions::ExtensionSystem;
 namespace extensions {
 
 namespace context_menus = api::context_menus;
-namespace web_view = api::web_view_internal;
+namespace webview = api::webview;
 
 namespace {
 
@@ -300,8 +300,7 @@ bool MenuItem::PopulateURLPatterns(
 
 // static
 const char MenuManager::kOnContextMenus[] = "contextMenus";
-const char MenuManager::kOnWebviewContextMenus[] =
-    "webViewInternal.contextMenus";
+const char MenuManager::kOnWebviewContextMenus[] = "webview.contextMenus";
 
 MenuManager::MenuManager(Profile* profile, StateStore* store)
     : extension_registry_observer_(this), profile_(profile), store_(store) {
@@ -655,7 +654,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
 
   WebViewGuest* webview_guest = WebViewGuest::FromWebContents(web_contents);
   if (webview_guest) {
-    // This is used in web_view_internalcustom_bindings.js.
+    // This is used in webview_custom_bindings.js.
     // The property is not exposed to developer API.
     properties->SetInteger("webviewInstanceId",
                            webview_guest->view_instance_id());
@@ -710,7 +709,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   {
     // Dispatch to .contextMenus.onClicked handler.
     scoped_ptr<Event> event(
-        new Event(webview_guest ? web_view::OnClicked::kEventName
+        new Event(webview_guest ? webview::OnClicked::kEventName
                                 : context_menus::OnClicked::kEventName,
                   args.Pass()));
     event->restrict_to_browser_context = profile;

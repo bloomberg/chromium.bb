@@ -9,7 +9,6 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
@@ -32,23 +31,20 @@ namespace extensions {
 namespace {
 
 const char kWebRequest[] = "declarativeWebRequest.";
+const char kWebView[] = "webview.";
 const char kWebViewExpectedError[] = "Webview event with Webview ID expected.";
 
 bool IsWebViewEvent(const std::string& event_name) {
   // Sample event names:
-  // webViewInternal.onRequest.
-  // webViewInternal.onMessage.
-  return event_name.compare(0,
-                            strlen(webview::kWebViewEventPrefix),
-                            webview::kWebViewEventPrefix) == 0;
+  // webview.onRequest.
+  // webview.OnMessage.
+  return event_name.compare(0, strlen(kWebView), kWebView) == 0;
 }
 
 std::string GetWebRequestEventName(const std::string& event_name) {
   std::string web_request_event_name(event_name);
-  if (IsWebViewEvent(web_request_event_name)) {
-    web_request_event_name.replace(
-        0, strlen(webview::kWebViewEventPrefix), kWebRequest);
-  }
+  if (IsWebViewEvent(web_request_event_name))
+    web_request_event_name.replace(0, strlen(kWebView), kWebRequest);
   return web_request_event_name;
 }
 

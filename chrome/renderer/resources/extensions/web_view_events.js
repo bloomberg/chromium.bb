@@ -12,15 +12,15 @@ var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
-var WebView = require('webViewInternal').WebView;
+var WebView = require('webview').WebView;
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
   return new EventBindings.Event(name, undefined, eventOpts);
 };
 
-var FrameNameChangedEvent = CreateEvent('webViewInternal.onFrameNameChanged');
-var WebRequestMessageEvent = CreateEvent('webViewInternal.onMessage');
+var FrameNameChangedEvent = CreateEvent('webview.onFrameNameChanged');
+var WebRequestMessageEvent = CreateEvent('webview.onMessage');
 
 // WEB_VIEW_EVENTS is a map of stable <webview> DOM event names to their
 //     associated extension event descriptor objects.
@@ -38,19 +38,19 @@ var WebRequestMessageEvent = CreateEvent('webViewInternal.onMessage');
 //     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EVENTS = {
   'close': {
-    evt: CreateEvent('webViewInternal.onClose'),
+    evt: CreateEvent('webview.onClose'),
     fields: []
   },
   'consolemessage': {
-    evt: CreateEvent('webViewInternal.onConsoleMessage'),
+    evt: CreateEvent('webview.onConsoleMessage'),
     fields: ['level', 'message', 'line', 'sourceId']
   },
   'contentload': {
-    evt: CreateEvent('webViewInternal.onContentLoad'),
+    evt: CreateEvent('webview.onContentLoad'),
     fields: []
   },
   'contextmenu': {
-    evt: CreateEvent('webViewInternal.contextmenu'),
+    evt: CreateEvent('webview.contextmenu'),
     cancelable: true,
     customHandler: function(handler, event, webViewEvent) {
       handler.handleContextMenu(event, webViewEvent);
@@ -62,11 +62,11 @@ var WEB_VIEW_EVENTS = {
     customHandler: function(handler, event, webViewEvent) {
       handler.handleDialogEvent(event, webViewEvent);
     },
-    evt: CreateEvent('webViewInternal.onDialog'),
+    evt: CreateEvent('webview.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
   },
   'exit': {
-     evt: CreateEvent('webViewInternal.onExit'),
+     evt: CreateEvent('webview.onExit'),
      fields: ['processId', 'reason']
   },
   'loadabort': {
@@ -74,30 +74,30 @@ var WEB_VIEW_EVENTS = {
     customHandler: function(handler, event, webViewEvent) {
       handler.handleLoadAbortEvent(event, webViewEvent);
     },
-    evt: CreateEvent('webViewInternal.onLoadAbort'),
+    evt: CreateEvent('webview.onLoadAbort'),
     fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
     customHandler: function(handler, event, webViewEvent) {
       handler.handleLoadCommitEvent(event, webViewEvent);
     },
-    evt: CreateEvent('webViewInternal.onLoadCommit'),
+    evt: CreateEvent('webview.onLoadCommit'),
     fields: ['url', 'isTopLevel']
   },
   'loadprogress': {
-    evt: CreateEvent('webViewInternal.onLoadProgress'),
+    evt: CreateEvent('webview.onLoadProgress'),
     fields: ['url', 'progress']
   },
   'loadredirect': {
-    evt: CreateEvent('webViewInternal.onLoadRedirect'),
+    evt: CreateEvent('webview.onLoadRedirect'),
     fields: ['isTopLevel', 'oldUrl', 'newUrl']
   },
   'loadstart': {
-    evt: CreateEvent('webViewInternal.onLoadStart'),
+    evt: CreateEvent('webview.onLoadStart'),
     fields: ['url', 'isTopLevel']
   },
   'loadstop': {
-    evt: CreateEvent('webViewInternal.onLoadStop'),
+    evt: CreateEvent('webview.onLoadStop'),
     fields: []
   },
   'newwindow': {
@@ -105,7 +105,7 @@ var WEB_VIEW_EVENTS = {
     customHandler: function(handler, event, webViewEvent) {
       handler.handleNewWindowEvent(event, webViewEvent);
     },
-    evt: CreateEvent('webViewInternal.onNewWindow'),
+    evt: CreateEvent('webview.onNewWindow'),
     fields: [
       'initialHeight',
       'initialWidth',
@@ -119,7 +119,7 @@ var WEB_VIEW_EVENTS = {
     customHandler: function(handler, event, webViewEvent) {
       handler.handlePermissionEvent(event, webViewEvent);
     },
-    evt: CreateEvent('webViewInternal.onPermissionRequest'),
+    evt: CreateEvent('webview.onPermissionRequest'),
     fields: [
       'identifier',
       'lastUnlockedBySelf',
@@ -131,18 +131,18 @@ var WEB_VIEW_EVENTS = {
     ]
   },
   'responsive': {
-    evt: CreateEvent('webViewInternal.onResponsive'),
+    evt: CreateEvent('webview.onResponsive'),
     fields: ['processId']
   },
   'sizechanged': {
-    evt: CreateEvent('webViewInternal.onSizeChanged'),
+    evt: CreateEvent('webview.onSizeChanged'),
     customHandler: function(handler, event, webViewEvent) {
       handler.handleSizeChangedEvent(event, webViewEvent);
     },
     fields: ['oldHeight', 'oldWidth', 'newHeight', 'newWidth']
   },
   'unresponsive': {
-    evt: CreateEvent('webViewInternal.onUnresponsive'),
+    evt: CreateEvent('webview.onUnresponsive'),
     fields: ['processId']
   }
 };
@@ -201,7 +201,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
       if (!self[webRequestEvent.name]) {
         self[webRequestEvent.name] =
             new WebRequestEvent(
-                'webViewInternal.' + webRequestEvent.name,
+                'webview.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.extraParameters, webRequestEvent.options,
                 self.viewInstanceId);
@@ -220,7 +220,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
             DeclarativeWebRequestEvent : EventBindings.Event;
         self[webRequestEvent.name] =
             new EventClass(
-                'webViewInternal.' + webRequestEvent.name,
+                'webview.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.options,
                 self.viewInstanceId);
@@ -392,7 +392,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       'An action has already been taken for this "newwindow" event.';
 
   var ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH = '<webview>: ' +
-      'Unable to attach the new window to the provided webViewInternal.';
+      'Unable to attach the new window to the provided webview.';
 
   var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
 

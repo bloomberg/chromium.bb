@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
+#include "chrome/browser/extensions/api/webview/webview_api.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
@@ -23,7 +23,7 @@ using content::WebContents;
 using extensions::api::tabs::InjectDetails;
 using extensions::api::webview::SetPermission::Params;
 namespace helpers = extensions::context_menus_api_helpers;
-namespace webview = extensions::api::web_view_internal;
+namespace webview = extensions::api::webview;
 
 namespace extensions {
 
@@ -46,7 +46,7 @@ int MaskForKey(const char* key) {
 
 }  // namespace
 
-bool WebViewInternalExtensionFunction::RunAsync() {
+bool WebviewExtensionFunction::RunAsync() {
   int instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
   WebViewGuest* guest = WebViewGuest::From(
@@ -58,8 +58,8 @@ bool WebViewInternalExtensionFunction::RunAsync() {
 }
 
 // TODO(lazyboy): Add checks similar to
-// WebViewInternalExtensionFunction::RunAsyncSafe(WebViewGuest*).
-bool WebViewInternalContextMenusCreateFunction::RunAsync() {
+// WebviewExtensionFunction::RunAsyncSafe(WebViewGuest*).
+bool WebviewContextMenusCreateFunction::RunAsync() {
   scoped_ptr<webview::ContextMenusCreate::Params> params(
       webview::ContextMenusCreate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -71,7 +71,7 @@ bool WebViewInternalContextMenusCreateFunction::RunAsync() {
   if (params->create_properties.id.get()) {
     id.string_uid = *params->create_properties.id;
   } else {
-    // The Generated Id is added by web_view_internal_custom_bindings.js.
+    // The Generated Id is added by webview_custom_bindings.js.
     base::DictionaryValue* properties = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &properties));
     EXTENSION_FUNCTION_VALIDATE(
@@ -89,7 +89,7 @@ bool WebViewInternalContextMenusCreateFunction::RunAsync() {
   return success;
 }
 
-bool WebViewInternalNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::Navigate::Params> params(
       webview::Navigate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -98,7 +98,7 @@ bool WebViewInternalNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-bool WebViewInternalContextMenusUpdateFunction::RunAsync() {
+bool WebviewContextMenusUpdateFunction::RunAsync() {
   scoped_ptr<webview::ContextMenusUpdate::Params> params(
       webview::ContextMenusUpdate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -121,7 +121,7 @@ bool WebViewInternalContextMenusUpdateFunction::RunAsync() {
   return success;
 }
 
-bool WebViewInternalContextMenusRemoveFunction::RunAsync() {
+bool WebviewContextMenusRemoveFunction::RunAsync() {
   scoped_ptr<webview::ContextMenusRemove::Params> params(
       webview::ContextMenusRemove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -157,7 +157,7 @@ bool WebViewInternalContextMenusRemoveFunction::RunAsync() {
   return success;
 }
 
-bool WebViewInternalContextMenusRemoveAllFunction::RunAsync() {
+bool WebviewContextMenusRemoveAllFunction::RunAsync() {
   scoped_ptr<webview::ContextMenusRemoveAll::Params> params(
       webview::ContextMenusRemoveAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -172,17 +172,15 @@ bool WebViewInternalContextMenusRemoveAllFunction::RunAsync() {
   return true;
 }
 
-WebViewInternalClearDataFunction::WebViewInternalClearDataFunction()
-    : remove_mask_(0), bad_message_(false) {
-}
+WebviewClearDataFunction::WebviewClearDataFunction()
+    : remove_mask_(0), bad_message_(false) {}
 
-WebViewInternalClearDataFunction::~WebViewInternalClearDataFunction() {
-}
+WebviewClearDataFunction::~WebviewClearDataFunction() {}
 
 // Parses the |dataToRemove| argument to generate the remove mask. Sets
 // |bad_message_| (like EXTENSION_FUNCTION_VALIDATE would if this were a bool
 // method) if 'dataToRemove' is not present.
-uint32 WebViewInternalClearDataFunction::GetRemovalMask() {
+uint32 WebviewClearDataFunction::GetRemovalMask() {
   base::DictionaryValue* data_to_remove;
   if (!args_->GetDictionary(2, &data_to_remove)) {
     bad_message_ = true;
@@ -190,7 +188,8 @@ uint32 WebViewInternalClearDataFunction::GetRemovalMask() {
   }
 
   uint32 remove_mask = 0;
-  for (base::DictionaryValue::Iterator i(*data_to_remove); !i.IsAtEnd();
+  for (base::DictionaryValue::Iterator i(*data_to_remove);
+       !i.IsAtEnd();
        i.Advance()) {
     bool selected = false;
     if (!i.value().GetAsBoolean(&selected)) {
@@ -206,7 +205,7 @@ uint32 WebViewInternalClearDataFunction::GetRemovalMask() {
 
 // TODO(lazyboy): Parameters in this extension function are similar (or a
 // sub-set) to BrowsingDataRemoverFunction. How can we share this code?
-bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
@@ -223,22 +222,23 @@ bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
   // gives developers milliseconds, so do a quick conversion before populating
   // the object. Also, Time::FromDoubleT converts double time 0 to empty Time
   // object. So we need to do special handling here.
-  remove_since_ = (ms_since_epoch == 0)
-                      ? base::Time::UnixEpoch()
-                      : base::Time::FromDoubleT(ms_since_epoch / 1000.0);
+  remove_since_ = (ms_since_epoch == 0) ?
+      base::Time::UnixEpoch() :
+      base::Time::FromDoubleT(ms_since_epoch / 1000.0);
 
   remove_mask_ = GetRemovalMask();
   if (bad_message_)
     return false;
 
-  AddRef();  // Balanced below or in WebViewInternalClearDataFunction::Done().
+  AddRef();  // Balanced below or in WebviewClearDataFunction::Done().
 
   bool scheduled = false;
   if (remove_mask_) {
     scheduled = guest->ClearData(
         remove_since_,
         remove_mask_,
-        base::Bind(&WebViewInternalClearDataFunction::ClearDataDone, this));
+        base::Bind(&WebviewClearDataFunction::ClearDataDone,
+                   this));
   }
   if (!remove_mask_ || !scheduled) {
     SendResponse(false);
@@ -250,19 +250,18 @@ bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-void WebViewInternalClearDataFunction::ClearDataDone() {
+void WebviewClearDataFunction::ClearDataDone() {
   Release();  // Balanced in RunAsync().
   SendResponse(true);
 }
 
-WebViewInternalExecuteCodeFunction::WebViewInternalExecuteCodeFunction()
-    : guest_instance_id_(0), guest_src_(GURL::EmptyGURL()) {
+WebviewExecuteCodeFunction::WebviewExecuteCodeFunction()
+    : guest_instance_id_(0), guest_src_(GURL::EmptyGURL()) {}
+
+WebviewExecuteCodeFunction::~WebviewExecuteCodeFunction() {
 }
 
-WebViewInternalExecuteCodeFunction::~WebViewInternalExecuteCodeFunction() {
-}
-
-bool WebViewInternalExecuteCodeFunction::Init() {
+bool WebviewExecuteCodeFunction::Init() {
   if (details_.get())
     return true;
 
@@ -291,16 +290,15 @@ bool WebViewInternalExecuteCodeFunction::Init() {
   return true;
 }
 
-bool WebViewInternalExecuteCodeFunction::ShouldInsertCSS() const {
+bool WebviewExecuteCodeFunction::ShouldInsertCSS() const {
   return false;
 }
 
-bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage() {
+bool WebviewExecuteCodeFunction::CanExecuteScriptOnPage() {
   return true;
 }
 
-extensions::ScriptExecutor*
-WebViewInternalExecuteCodeFunction::GetScriptExecutor() {
+extensions::ScriptExecutor* WebviewExecuteCodeFunction::GetScriptExecutor() {
   WebViewGuest* guest = WebViewGuest::From(
       render_view_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
@@ -309,72 +307,70 @@ WebViewInternalExecuteCodeFunction::GetScriptExecutor() {
   return guest->script_executor();
 }
 
-bool WebViewInternalExecuteCodeFunction::IsWebView() const {
+bool WebviewExecuteCodeFunction::IsWebView() const {
   return true;
 }
 
-const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
+const GURL& WebviewExecuteCodeFunction::GetWebViewSrc() const {
   return guest_src_;
 }
 
-WebViewInternalExecuteScriptFunction::WebViewInternalExecuteScriptFunction() {
+WebviewExecuteScriptFunction::WebviewExecuteScriptFunction() {
 }
 
-void WebViewInternalExecuteScriptFunction::OnExecuteCodeFinished(
+void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     const std::string& error,
     int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& result) {
   if (error.empty())
     SetResult(result.DeepCopy());
-  WebViewInternalExecuteCodeFunction::OnExecuteCodeFinished(
-      error, on_page_id, on_url, result);
+  WebviewExecuteCodeFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
+                                                    result);
 }
 
-WebViewInternalInsertCSSFunction::WebViewInternalInsertCSSFunction() {
+WebviewInsertCSSFunction::WebviewInsertCSSFunction() {
 }
 
-bool WebViewInternalInsertCSSFunction::ShouldInsertCSS() const {
+bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }
 
-WebViewInternalCaptureVisibleRegionFunction::
-    WebViewInternalCaptureVisibleRegionFunction() {
+WebviewCaptureVisibleRegionFunction::WebviewCaptureVisibleRegionFunction() {
 }
 
-WebViewInternalCaptureVisibleRegionFunction::
-    ~WebViewInternalCaptureVisibleRegionFunction() {
+WebviewCaptureVisibleRegionFunction::~WebviewCaptureVisibleRegionFunction() {
 }
 
-bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
+bool WebviewCaptureVisibleRegionFunction::IsScreenshotEnabled() {
   return true;
 }
 
-WebContents* WebViewInternalCaptureVisibleRegionFunction::GetWebContentsForID(
+WebContents* WebviewCaptureVisibleRegionFunction::GetWebContentsForID(
     int instance_id) {
   WebViewGuest* guest = WebViewGuest::From(
       render_view_host()->GetProcess()->GetID(), instance_id);
   return guest ? guest->guest_web_contents() : NULL;
 }
 
-void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
+void WebviewCaptureVisibleRegionFunction::OnCaptureFailure(
     FailureReason reason) {
   SendResponse(false);
 }
 
-WebViewInternalSetNameFunction::WebViewInternalSetNameFunction() {
+WebviewSetNameFunction::WebviewSetNameFunction() {
 }
 
-WebViewInternalSetNameFunction::~WebViewInternalSetNameFunction() {
+WebviewSetNameFunction::~WebviewSetNameFunction() {
 }
 
-WebViewInternalSetZoomFunction::WebViewInternalSetZoomFunction() {
+WebviewSetZoomFunction::WebviewSetZoomFunction() {
 }
 
-WebViewInternalSetZoomFunction::~WebViewInternalSetZoomFunction() {
+WebviewSetZoomFunction::~WebviewSetZoomFunction() {
 }
 
-bool WebViewInternalSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::SetName::Params> params(
       webview::SetName::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -383,7 +379,7 @@ bool WebViewInternalSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-bool WebViewInternalSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::SetZoom::Params> params(
       webview::SetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -393,13 +389,13 @@ bool WebViewInternalSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalGetZoomFunction::WebViewInternalGetZoomFunction() {
+WebviewGetZoomFunction::WebviewGetZoomFunction() {
 }
 
-WebViewInternalGetZoomFunction::~WebViewInternalGetZoomFunction() {
+WebviewGetZoomFunction::~WebviewGetZoomFunction() {
 }
 
-bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::GetZoom::Params> params(
       webview::GetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -410,21 +406,22 @@ bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalFindFunction::WebViewInternalFindFunction() {
+WebviewFindFunction::WebviewFindFunction() {
 }
 
-WebViewInternalFindFunction::~WebViewInternalFindFunction() {
+WebviewFindFunction::~WebviewFindFunction() {
 }
 
-bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewFindFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::Find::Params> params(
       webview::Find::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Convert the std::string search_text to string16.
   base::string16 search_text;
-  base::UTF8ToUTF16(
-      params->search_text.c_str(), params->search_text.length(), &search_text);
+  base::UTF8ToUTF16(params->search_text.c_str(),
+                    params->search_text.length(),
+                    &search_text);
 
   // Set the find options to their default values.
   blink::WebFindOptions options;
@@ -439,13 +436,13 @@ bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalStopFindingFunction::WebViewInternalStopFindingFunction() {
+WebviewStopFindingFunction::WebviewStopFindingFunction() {
 }
 
-WebViewInternalStopFindingFunction::~WebViewInternalStopFindingFunction() {
+WebviewStopFindingFunction::~WebviewStopFindingFunction() {
 }
 
-bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::StopFinding::Params> params(
       webview::StopFinding::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -470,13 +467,13 @@ bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalGoFunction::WebViewInternalGoFunction() {
+WebviewGoFunction::WebviewGoFunction() {
 }
 
-WebViewInternalGoFunction::~WebViewInternalGoFunction() {
+WebviewGoFunction::~WebviewGoFunction() {
 }
 
-bool WebViewInternalGoFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewGoFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -484,24 +481,24 @@ bool WebViewInternalGoFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalReloadFunction::WebViewInternalReloadFunction() {
+WebviewReloadFunction::WebviewReloadFunction() {
 }
 
-WebViewInternalReloadFunction::~WebViewInternalReloadFunction() {
+WebviewReloadFunction::~WebviewReloadFunction() {
 }
 
-bool WebViewInternalReloadFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewReloadFunction::RunAsyncSafe(WebViewGuest* guest) {
   guest->Reload();
   return true;
 }
 
-WebViewInternalSetPermissionFunction::WebViewInternalSetPermissionFunction() {
+WebviewSetPermissionFunction::WebviewSetPermissionFunction() {
 }
 
-WebViewInternalSetPermissionFunction::~WebViewInternalSetPermissionFunction() {
+WebviewSetPermissionFunction::~WebviewSetPermissionFunction() {
 }
 
-bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::SetPermission::Params> params(
       webview::SetPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -535,15 +532,13 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalShowContextMenuFunction::
-    WebViewInternalShowContextMenuFunction() {
+WebviewShowContextMenuFunction::WebviewShowContextMenuFunction() {
 }
 
-WebViewInternalShowContextMenuFunction::
-    ~WebViewInternalShowContextMenuFunction() {
+WebviewShowContextMenuFunction::~WebviewShowContextMenuFunction() {
 }
 
-bool WebViewInternalShowContextMenuFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewShowContextMenuFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::ShowContextMenu::Params> params(
       webview::ShowContextMenu::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -556,42 +551,39 @@ bool WebViewInternalShowContextMenuFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
-WebViewInternalOverrideUserAgentFunction::
-    WebViewInternalOverrideUserAgentFunction() {
+WebviewOverrideUserAgentFunction::WebviewOverrideUserAgentFunction() {
 }
 
-WebViewInternalOverrideUserAgentFunction::
-    ~WebViewInternalOverrideUserAgentFunction() {
+WebviewOverrideUserAgentFunction::~WebviewOverrideUserAgentFunction() {
 }
 
-bool WebViewInternalOverrideUserAgentFunction::RunAsyncSafe(
-    WebViewGuest* guest) {
-  scoped_ptr<webview::OverrideUserAgent::Params> params(
-      webview::OverrideUserAgent::Params::Create(*args_));
+bool WebviewOverrideUserAgentFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<extensions::api::webview::OverrideUserAgent::Params> params(
+      extensions::api::webview::OverrideUserAgent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   guest->SetUserAgentOverride(params->user_agent_override);
   return true;
 }
 
-WebViewInternalStopFunction::WebViewInternalStopFunction() {
+WebviewStopFunction::WebviewStopFunction() {
 }
 
-WebViewInternalStopFunction::~WebViewInternalStopFunction() {
+WebviewStopFunction::~WebviewStopFunction() {
 }
 
-bool WebViewInternalStopFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewStopFunction::RunAsyncSafe(WebViewGuest* guest) {
   guest->Stop();
   return true;
 }
 
-WebViewInternalTerminateFunction::WebViewInternalTerminateFunction() {
+WebviewTerminateFunction::WebviewTerminateFunction() {
 }
 
-WebViewInternalTerminateFunction::~WebViewInternalTerminateFunction() {
+WebviewTerminateFunction::~WebviewTerminateFunction() {
 }
 
-bool WebViewInternalTerminateFunction::RunAsyncSafe(WebViewGuest* guest) {
+bool WebviewTerminateFunction::RunAsyncSafe(WebViewGuest* guest) {
   guest->Terminate();
   return true;
 }

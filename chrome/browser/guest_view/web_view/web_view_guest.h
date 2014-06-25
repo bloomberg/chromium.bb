@@ -13,7 +13,7 @@
 #include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
-#include "chrome/common/extensions/api/web_view_internal.h"
+#include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -22,13 +22,13 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif
 
-namespace webview_api = extensions::api::web_view_internal;
+namespace webview_api = extensions::api::webview;
 
 class RenderViewContextMenu;
 
 namespace extensions {
 class ScriptExecutor;
-class WebViewInternalFindFunction;
+class WebviewFindFunction;
 }  // namespace extensions
 
 namespace ui {
@@ -167,10 +167,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   double GetZoom();
 
   // Begin or continue a find request.
-  void Find(
-      const base::string16& search_text,
-      const blink::WebFindOptions& options,
-      scoped_refptr<extensions::WebViewInternalFindFunction> find_function);
+  void Find(const base::string16& search_text,
+            const blink::WebFindOptions& options,
+            scoped_refptr<extensions::WebviewFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.
   void StopFinding(content::StopFindAction);
@@ -469,12 +468,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   std::string name_;
 
   // Handles find requests and replies for the webview find API.
-  WebViewFindHelper find_helper_;
+  WebviewFindHelper find_helper_;
 
   // Handles the JavaScript dialog requests.
   JavaScriptDialogHelper javascript_dialog_helper_;
 
-  friend void WebViewFindHelper::DispatchFindUpdateEvent(bool canceled,
+  friend void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
                                                          bool final_update);
 
   // Holds the RenderViewContextMenu that has been built but yet to be

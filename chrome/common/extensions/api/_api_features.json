@@ -739,7 +739,7 @@
     "dependencies": ["permission:webstorePrivate"],
     "contexts": ["blessed_extension"]
   },
-  "webViewInternal": {
+  "webview": {
     "internal": true,
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension", "unblessed_extension"]
