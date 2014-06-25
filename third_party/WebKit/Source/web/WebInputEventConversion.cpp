@@ -753,10 +753,10 @@ static void addTouchPoints(const Widget* widget, const AtomicString& touchType, 
         point.id = touch->identifier();
         point.screenPosition = touch->screenLocation();
         point.position = convertAbsoluteLocationForRenderObjectFloat(touch->absoluteLocation(), *renderObject);
-        point.radiusX = touch->webkitRadiusX();
-        point.radiusY = touch->webkitRadiusY();
+        point.radiusX = touch->radiusX();
+        point.radiusY = touch->radiusY();
         point.rotationAngle = touch->webkitRotationAngle();
-        point.force = touch->webkitForce();
+        point.force = touch->force();
         point.state = toWebTouchPointState(touchType);
 
         touchPoints[i] = point;

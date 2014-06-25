@@ -11,6 +11,9 @@ PASS touch.pageX is 100
 PASS touch.pageY is 101
 PASS touch.screenX is 102
 PASS touch.screenY is 103
+PASS touch.radiusX is 5
+PASS touch.radiusY is 3
+PASS touch.force is 10
 PASS touch.webkitRadiusX is 5
 PASS touch.webkitRadiusY is 3
 PASS touch.webkitRotationAngle is 10
@@ -22,6 +25,9 @@ PASS emptyTouch.pageX is 0
 PASS emptyTouch.pageY is 0
 PASS emptyTouch.screenX is 0
 PASS emptyTouch.screenY is 0
+PASS emptyTouch.radiusX is 0
+PASS emptyTouch.radiusY is 0
+FAIL emptyTouch.force should be NaN. Was 0.
 PASS emptyTouch.webkitRadiusX is 0
 PASS emptyTouch.webkitRadiusY is 0
 FAIL emptyTouch.webkitRotationAngle should be NaN. Was 0.
@@ -33,6 +39,9 @@ PASS badParamsTouch.pageX is 0
 PASS badParamsTouch.pageY is 0
 PASS badParamsTouch.screenX is 0
 PASS badParamsTouch.screenY is 104
+PASS badParamsTouch.radiusX is 0
+PASS badParamsTouch.radiusY is 0
+FAIL badParamsTouch.force should be NaN. Was 0.
 PASS badParamsTouch.webkitRadiusX is 0
 PASS badParamsTouch.webkitRadiusY is 0
 FAIL badParamsTouch.webkitRotationAngle should be NaN. Was 0.
