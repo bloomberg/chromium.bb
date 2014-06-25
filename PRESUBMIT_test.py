@@ -413,52 +413,6 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
-class CheckContradictoryNotreachedUseTest(unittest.TestCase):
-  def testValid(self):
-    lines = ['{',
-             '  // NOTREACHED();',
-             '  /* NOTREACHED(); */',
-             "  char a = '\\\\', b = '\\0', c = '\\'';",
-             '  char d[] = "NOTREACHED();";',
-             '  NOTREACHED(); // blah',
-             '  /* comment */',
-             '  // line continuation \\',
-             '  still inside comment',
-             '  // comment followed by empty line',
-             '',
-             '  ;; ; ;;;',
-             '}',
-             'switch (i) {',
-             '  case 7: NOTREACHED(); break;',
-             '}']
-    output = PRESUBMIT._CheckContradictoryNotreachedUseInFile(
-        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
-    self.assertEqual(0, len(output))
-
-  def testInvalid(self):
-    lines = ['{',
-             '  NOTREACHED();',
-             '  return;',
-             '}',
-             '{',
-             '  NOTREACHED();',
-             '  /* */',
-             '  return;',
-             '  /* */',
-             '}',
-             '{',
-             '  NOTREACHED();',
-             '  // trailing space, not a line continuation \\ ',
-             '  return;',
-             '}',
-             'switch (i) {',
-             '  case 7: NOTREACHED(); some_thing(); break;',
-             '}']
-    output = PRESUBMIT._CheckContradictoryNotreachedUseInFile(
-        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
-    self.assertEqual(4, len(output))
-
-
 class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
   def testFilesToCheckForIncomingDeps(self):
     changed_lines = [
