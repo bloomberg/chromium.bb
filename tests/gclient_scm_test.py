@@ -1267,16 +1267,18 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).MultipleTimes().AndReturn(self.fake_hash_2)
 
     # Ensure that we call git svn fetch if our LKGR is > the git-svn HEAD rev.
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Fetch', True)
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture', True)
     gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
                                 cwd=self.base_path).AndReturn('blah')
-    gclient_scm.scm.GIT.Capture(['fetch'], cwd=self.base_path)
+    # pylint: disable=E1120
     gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
     error = subprocess2.CalledProcessError(1, 'cmd', '/cwd', 'stdout', 'stderr')
     gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
                                 cwd=self.base_path).AndRaise(error)
+    gclient_scm.GitWrapper._Fetch(options)
     gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
-    gclient_scm.scm.GIT.Capture(['fetch', 'origin'], cwd=self.base_path)
+    gclient_scm.GitWrapper._Fetch(options)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
     gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(

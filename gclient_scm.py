@@ -300,9 +300,7 @@ class GitWrapper(SCMWrapper):
       quiet = ['--quiet']
     self._UpdateBranchHeads(options, fetch=False)
 
-    cfg = gclient_utils.DefaultIndexPackConfig(self.url)
-    fetch_cmd = cfg + ['fetch', self.remote, '--prune']
-    self._Run(fetch_cmd + quiet, options, retry=True)
+    self._Fetch(options, prune=True, quiet=options.verbose)
     self._Run(['reset', '--hard', revision] + quiet, options)
     if file_list is not None:
       files = self._Capture(['ls-files']).splitlines()
@@ -722,7 +720,7 @@ class GitWrapper(SCMWrapper):
             logging.debug('Looking for git-svn configuration optimizations.')
             if scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
                              cwd=self.checkout_path):
-              scm.GIT.Capture(['fetch'], cwd=self.checkout_path)
+              self._Fetch(options)
           except subprocess2.CalledProcessError:
             logging.debug('git config --get svn-remote.svn.fetch failed, '
                           'ignoring possible optimization.')
@@ -750,7 +748,7 @@ class GitWrapper(SCMWrapper):
       else:
         # May exist in origin, but we don't have it yet, so fetch and look
         # again.
-        scm.GIT.Capture(['fetch', self.remote], cwd=self.checkout_path)
+        self._Fetch(options)
         if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
           sha1 = rev
 
@@ -1037,6 +1035,24 @@ class GitWrapper(SCMWrapper):
     checkout_args.append(ref)
     return self._Capture(checkout_args)
 
+  def _Fetch(self, options, remote=None, prune=False, quiet=False):
+    cfg = gclient_utils.DefaultIndexPackConfig(self.url)
+    fetch_cmd =  cfg + [
+        'fetch',
+        remote or self.remote,
+    ]
+
+    if prune:
+      fetch_cmd.append('--prune')
+    if options.verbose:
+      fetch_cmd.append('--verbose')
+    elif quiet:
+      fetch_cmd.append('--quiet')
+    self._Run(fetch_cmd, options, show_header=options.verbose, retry=True)
+
+    # Return the revision that was fetched; this will be stored in 'FETCH_HEAD'
+    return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
+
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
@@ -1045,21 +1061,19 @@ class GitWrapper(SCMWrapper):
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
       if fetch:
-        cfg = gclient_utils.DefaultIndexPackConfig(self.url)
-        fetch_cmd =  cfg + ['fetch', self.remote]
-        if options.verbose:
-          fetch_cmd.append('--verbose')
-        self._Run(fetch_cmd, options, retry=True)
+        self._Fetch(options)
 
-  def _Run(self, args, options, **kwargs):
+  def _Run(self, args, options, show_header=True, **kwargs):
+    # Disable 'unused options' warning | pylint: disable=W0613
     cwd = kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stdout', self.out_fh)
     kwargs['filter_fn'] = self.filter
     kwargs.setdefault('print_stdout', False)
     env = scm.GIT.ApplyEnvVars(kwargs)
     cmd = ['git'] + args
-    header = "running '%s' in '%s'" % (' '.join(cmd), cwd)
-    self.filter(header)
+    if show_header:
+      header = "running '%s' in '%s'" % (' '.join(cmd), cwd)
+      self.filter(header)
     return gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 
