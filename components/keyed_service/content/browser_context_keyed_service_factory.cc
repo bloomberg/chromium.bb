@@ -136,6 +136,11 @@ void BrowserContextKeyedServiceFactory::SetEmptyTestingFactory(
   SetTestingFactory(context, NULL);
 }
 
+bool BrowserContextKeyedServiceFactory::HasTestingFactory(
+    content::BrowserContext* context) {
+  return testing_factories_.find(context) != testing_factories_.end();
+}
+
 void BrowserContextKeyedServiceFactory::CreateServiceNow(
     content::BrowserContext* context) {
   GetServiceForBrowserContext(context, true);

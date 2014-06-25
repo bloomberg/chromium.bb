@@ -133,6 +133,9 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   // subclasses that they should disable testing.
   virtual void SetEmptyTestingFactory(content::BrowserContext* context) = 0;
 
+  // Returns true if a testing factory function has been set for |context|.
+  virtual bool HasTestingFactory(content::BrowserContext* context) = 0;
+
   // We also need a generalized, non-returning method that generates the object
   // now for when we're creating the context.
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;

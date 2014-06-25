@@ -99,6 +99,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
 
   virtual void SetEmptyTestingFactory(content::BrowserContext* context)
       OVERRIDE;
+  virtual bool HasTestingFactory(content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
 
  private:

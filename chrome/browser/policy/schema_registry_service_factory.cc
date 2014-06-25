@@ -146,6 +146,11 @@ void SchemaRegistryServiceFactory::BrowserContextDestroyed(
 void SchemaRegistryServiceFactory::SetEmptyTestingFactory(
     content::BrowserContext* context) {}
 
+bool SchemaRegistryServiceFactory::HasTestingFactory(
+    content::BrowserContext* context) {
+  return false;
+}
+
 void SchemaRegistryServiceFactory::CreateServiceNow(
     content::BrowserContext* context) {}
 

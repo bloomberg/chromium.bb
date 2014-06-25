@@ -241,6 +241,11 @@ void UserCloudPolicyManagerFactoryChromeOS::BrowserContextDestroyed(
 void UserCloudPolicyManagerFactoryChromeOS::SetEmptyTestingFactory(
     content::BrowserContext* context) {}
 
+bool UserCloudPolicyManagerFactoryChromeOS::HasTestingFactory(
+    content::BrowserContext* context) {
+  return false;
+}
+
 void UserCloudPolicyManagerFactoryChromeOS::CreateServiceNow(
     content::BrowserContext* context) {}
 

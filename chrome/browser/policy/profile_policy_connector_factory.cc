@@ -141,6 +141,11 @@ void ProfilePolicyConnectorFactory::BrowserContextDestroyed(
 void ProfilePolicyConnectorFactory::SetEmptyTestingFactory(
     content::BrowserContext* context) {}
 
+bool ProfilePolicyConnectorFactory::HasTestingFactory(
+    content::BrowserContext* context) {
+  return false;
+}
+
 void ProfilePolicyConnectorFactory::CreateServiceNow(
     content::BrowserContext* context) {}
 

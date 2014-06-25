@@ -123,6 +123,11 @@ void RefcountedBrowserContextKeyedServiceFactory::SetEmptyTestingFactory(
   SetTestingFactory(context, NULL);
 }
 
+bool RefcountedBrowserContextKeyedServiceFactory::HasTestingFactory(
+    content::BrowserContext* context) {
+  return testing_factories_.find(context) != testing_factories_.end();
+}
+
 void RefcountedBrowserContextKeyedServiceFactory::CreateServiceNow(
     content::BrowserContext* context) {
   GetServiceForBrowserContext(context, true);

@@ -112,6 +112,7 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* context) OVERRIDE;
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;
+  virtual bool HasTestingFactory(content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 

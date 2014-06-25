@@ -201,6 +201,11 @@ void UserCloudPolicyManagerFactory::BrowserContextDestroyed(
 void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(
     content::BrowserContext* context) {}
 
+bool UserCloudPolicyManagerFactory::HasTestingFactory(
+    content::BrowserContext* context) {
+  return testing_factory_ != NULL;
+}
+
 // If there's a TestingFactory set, then create a service during BrowserContext
 // initialization.
 bool UserCloudPolicyManagerFactory::ServiceIsCreatedWithBrowserContext() const {
