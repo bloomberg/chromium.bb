@@ -44,6 +44,7 @@ TouchExplorationController::TouchExplorationController(
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
 
+
 TouchExplorationController::~TouchExplorationController() {
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
 }
@@ -66,10 +67,20 @@ bool TouchExplorationController::IsInNoFingersDownStateForTesting() const {
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     const ui::Event& event,
     scoped_ptr<ui::Event>* rewritten_event) {
-  if (!event.IsTouchEvent())
+  if (!event.IsTouchEvent()) {
+    if (event.IsKeyEvent()) {
+      const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
+      VLOG(0) << "\nKeyboard event: " << key_event.name() << "\n"
+              << " Key code: " << key_event.key_code()
+              << ", Flags: " << key_event.flags()
+              << ", Is char: " << key_event.is_char();
+    }
+    if(event.IsGestureEvent()){
+      VLOG(0) << "\n Gesture event " << event.name();
+    }
     return ui::EVENT_REWRITE_CONTINUE;
-  const ui::TouchEvent& touch_event =
-      static_cast<const ui::TouchEvent&>(event);
+  }
+  const ui::TouchEvent& touch_event = static_cast<const ui::TouchEvent&>(event);
 
   // If the tap timer should have fired by now but hasn't, run it now and
   // stop the timer. This is important so that behavior is consistent with
@@ -133,7 +144,6 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event, rewritten_event);
   }
-
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
 }
@@ -157,7 +167,6 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     VLOG_STATE();
     return ui::EVENT_REWRITE_DISCARD;
   }
-
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
 }
@@ -190,7 +199,6 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
       VLOG_STATE();
       return InTouchExploration(event, rewritten_event);
     }
-
     return EVENT_REWRITE_DISCARD;
   }
   NOTREACHED() << "Unexpected event type received.";
@@ -333,7 +341,7 @@ ui::EventRewriteStatus TouchExplorationController::InPassthroughMinusOne(
     (*rewritten_event)->set_flags(event.flags());
     return ui::EVENT_REWRITE_REWRITTEN;
   }
-
+  NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -412,7 +420,6 @@ void TouchExplorationController::DispatchEvent(ui::Event* event) {
     event_handler_for_testing_->OnEvent(event);
     return;
   }
-
   ui::EventDispatchDetails result ALLOW_UNUSED =
       root_window_->GetHost()->dispatcher()->OnEventFromSource(event);
 }
@@ -458,19 +465,28 @@ void TouchExplorationController::VlogState(const char* function_name) {
 void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
                                            const char* function_name) {
   CHECK(touch_event.IsTouchEvent());
-  if (prev_event_ == NULL || prev_event_->type() != touch_event.type() ||
-      prev_event_->touch_id() != touch_event.touch_id()) {
-    const std::string type = EnumEventTypeToString(touch_event.type());
-    const gfx::PointF& location = touch_event.location_f();
-    const int touch_id = touch_event.touch_id();
-
-    VLOG(0) << "\n Function name: " << function_name
-            << "\n Event Type: " << type
-            << "\n Location: " << location.ToString()
-            << "\n Touch ID: " << touch_id
-            << "\n Number of fingers down: " << current_touch_ids_.size();
-    prev_event_.reset(new TouchEvent(touch_event));
+  if (prev_event_ != NULL &&
+      prev_event_->type() == touch_event.type() &&
+      prev_event_->touch_id() == touch_event.touch_id()){
+    return;
   }
+  // The above statement prevents events of the same type and id from being
+  // printed in a row. However, if two fingers are down, they would both be
+  // moving and alternating printing move events unless we check for this.
+  if (prev_event_ != NULL &&
+      prev_event_->type() == ET_TOUCH_MOVED &&
+      touch_event.type() == ET_TOUCH_MOVED){
+    return;
+  }
+  const std::string& type = touch_event.name();
+  const gfx::PointF& location = touch_event.location_f();
+  const int touch_id = touch_event.touch_id();
+
+  VLOG(0) << "\n Function name: " << function_name
+          << "\n Event Type: " << type
+          << "\n Location: " << location.ToString()
+          << "\n Touch ID: " << touch_id;
+  prev_event_.reset(new TouchEvent(touch_event));
 }
 
 const char* TouchExplorationController::EnumStateToString(State state) {
@@ -493,24 +509,6 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "TOUCH_EXPLORE_SECOND_PRESS";
   }
   return "Not a state";
-}
-
-std::string TouchExplorationController::EnumEventTypeToString(
-    ui::EventType type) {
-  // Add more cases later. For now, these are the most frequently seen
-  // event types.
-  switch (type) {
-    case ET_TOUCH_RELEASED:
-      return "ET_TOUCH_RELEASED";
-    case ET_TOUCH_PRESSED:
-      return "ET_TOUCH_PRESSED";
-    case ET_TOUCH_MOVED:
-      return "ET_TOUCH_MOVED";
-    case ET_TOUCH_CANCELLED:
-      return "ET_TOUCH_CANCELLED";
-    default:
-      return base::IntToString(type);
-  }
 }
 
 }  // namespace ui

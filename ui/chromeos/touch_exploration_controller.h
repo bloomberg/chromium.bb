@@ -194,8 +194,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
   // Gets enum name from integer value.
   const char* EnumStateToString(State state);
 
-  std::string EnumEventTypeToString(ui::EventType type);
-
   aura::Window* root_window_;
 
   // A set of touch ids for fingers currently touching the screen.
