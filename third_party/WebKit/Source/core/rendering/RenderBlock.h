@@ -172,6 +172,8 @@ public:
     void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap);
     RenderBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const;
 
+    virtual void setSelectionState(SelectionState) OVERRIDE;
+
     LayoutRect logicalRectToPhysicalRect(const LayoutPoint& physicalPosition, const LayoutRect& logicalRect);
 
     // Helper methods for computing line counts and heights for line counts.

@@ -2519,6 +2519,14 @@ RenderBlock* RenderBlock::blockBeforeWithinSelectionRoot(LayoutSize& offset) con
     return beforeBlock;
 }
 
+void RenderBlock::setSelectionState(SelectionState state)
+{
+    RenderBox::setSelectionState(state);
+
+    if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
+        inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
+}
+
 void RenderBlock::insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*& descendantsMap, TrackedContainerMap*& containerMap)
 {
     if (!descendantsMap) {
