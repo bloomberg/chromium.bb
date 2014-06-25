@@ -18,6 +18,20 @@
 namespace mojo {
 namespace services {
 
+bool override_redirect = false;
+
+namespace test {
+
+void EnableTestNativeViewport() {
+  // Without the override_redirect BlockUntilWindowMapped() may never finish
+  // (we don't necessarily get the mapped notify). This often happens with
+  // tests.
+  // TODO: decide if we really want the override redirect here.
+  override_redirect = true;
+}
+
+}  // namespace test
+
 class NativeViewportX11 : public NativeViewport,
                           public ui::PlatformEventDispatcher {
  public:
@@ -38,11 +52,7 @@ class NativeViewportX11 : public NativeViewport,
 
     XSetWindowAttributes swa;
     memset(&swa, 0, sizeof(swa));
-    // Without the override_redirect BlockUntilWindowMapped() may never finish
-    // (we don't necessarily get the mapped nofity). This often happens with
-    // tests.
-    // TODO: decide if we really want the override redirect here.
-    swa.override_redirect = True;
+    swa.override_redirect = override_redirect ? True : False;
 
     bounds_ = bounds;
     window_ = XCreateWindow(

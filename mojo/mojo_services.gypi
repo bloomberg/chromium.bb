@@ -520,6 +520,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../third_party/mesa/mesa.gyp:osmesa',
+                'mojo_native_viewport_service',
               ],
             }],
             ['use_x11==1', {

@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "mojo/services/native_viewport/native_viewport_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -55,6 +56,12 @@ class NativeViewport {
   static scoped_ptr<NativeViewport> Create(shell::Context* context,
                                            NativeViewportDelegate* delegate);
 };
+
+#if defined(USE_X11)
+namespace test {
+MOJO_NATIVE_VIEWPORT_EXPORT void EnableTestNativeViewport();
+}
+#endif
 
 }  // namespace services
 }  // namespace mojo
