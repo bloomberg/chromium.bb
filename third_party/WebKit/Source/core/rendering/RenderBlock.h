@@ -326,7 +326,6 @@ protected:
 
     void setDesiredColumnCountAndWidth(int, LayoutUnit);
 
-    bool avoidsOrIgnoresFloats() { return isFloatingOrOutOfFlowPositioned() || avoidsFloats(); }
 public:
     virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool = false);
 protected:
@@ -387,6 +386,8 @@ private:
     void paintCarets(PaintInfo&, const LayoutPoint&);
 
     bool hasCaret() const;
+
+    virtual bool avoidsFloats() const OVERRIDE;
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
@@ -466,6 +467,8 @@ protected:
     // For a page height of 800px, the first rule will return 800 if the value passed in is 0. The second rule will simply return 0.
     enum PageBoundaryRule { ExcludePageBoundary, IncludePageBoundary };
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
+
+    bool createsBlockFormattingContext() const;
 
 public:
     LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
