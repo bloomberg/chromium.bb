@@ -43,13 +43,6 @@ typedef nacl_abi___dev_t nacl_abi_dev_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_DEV NACL_PRI_(d, 64)
-#define NACL_PRIiNACL_DEV NACL_PRI_(i, 64)
-#define NACL_PRIoNACL_DEV NACL_PRI_(o, 64)
-#define NACL_PRIuNACL_DEV NACL_PRI_(u, 64)
-#define NACL_PRIxNACL_DEV NACL_PRI_(x, 64)
-#define NACL_PRIXNACL_DEV NACL_PRI_(X, 64)
-
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
 typedef uint64_t nacl_abi___ino_t;
@@ -57,13 +50,6 @@ typedef uint64_t nacl_abi___ino_t;
 typedef nacl_abi___ino_t nacl_abi_ino_t;
 #endif
 #endif
-
-#define NACL_PRIdNACL_INO NACL_PRI_(d, 64)
-#define NACL_PRIiNACL_INO NACL_PRI_(i, 64)
-#define NACL_PRIoNACL_INO NACL_PRI_(o, 64)
-#define NACL_PRIuNACL_INO NACL_PRI_(u, 64)
-#define NACL_PRIxNACL_INO NACL_PRI_(x, 64)
-#define NACL_PRIXNACL_INO NACL_PRI_(X, 64)
 
 #ifndef nacl_abi___mode_t_defined
 #define nacl_abi___mode_t_defined
@@ -73,13 +59,6 @@ typedef nacl_abi___mode_t nacl_abi_mode_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_MODE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_MODE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_MODE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_MODE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_MODE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_MODE NACL_PRI_(X, NACL_ABI_WORDSIZE)
-
 #ifndef nacl_abi___nlink_t_defined
 #define nacl_abi___nlink_t_defined
 typedef uint32_t nacl_abi___nlink_t;
@@ -87,13 +66,6 @@ typedef uint32_t nacl_abi___nlink_t;
 typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #endif
 #endif
-
-#define NACL_PRIdNACL_NLINK NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_NLINK NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_NLINK NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_NLINK NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_NLINK NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_NLINK NACL_PRI_(X, NACL_ABI_WORDSIZE)
 
 #ifndef nacl_abi___uid_t_defined
 #define nacl_abi___uid_t_defined
@@ -103,13 +75,6 @@ typedef nacl_abi___uid_t nacl_abi_uid_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_UID NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_UID NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_UID NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_UID NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_UID NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_UID NACL_PRI_(X, NACL_ABI_WORDSIZE)
-
 #ifndef nacl_abi___gid_t_defined
 #define nacl_abi___gid_t_defined
 typedef uint32_t nacl_abi___gid_t;
@@ -117,13 +82,6 @@ typedef uint32_t nacl_abi___gid_t;
 typedef nacl_abi___gid_t nacl_abi_gid_t;
 #endif
 #endif
-
-#define NACL_PRIdNACL_GID NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_GID NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_GID NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_GID NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_GID NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_GID NACL_PRI_(X, NACL_ABI_WORDSIZE)
 
 #ifndef nacl_abi___off_t_defined
 #define nacl_abi___off_t_defined
@@ -164,13 +122,6 @@ typedef int32_t nacl_abi___blksize_t;
 typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #endif
 
-#define NACL_PRIdNACL_BLKSIZE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_BLKSIZE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_BLKSIZE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_BLKSIZE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_BLKSIZE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_BLKSIZE NACL_PRI_(X, NACL_ABI_WORDSIZE)
-
 #endif
 
 
@@ -179,13 +130,6 @@ typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 typedef int32_t nacl_abi___blkcnt_t;
 typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 #endif
-
-#define NACL_PRIdNACL_BLKCNT NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_BLKCNT NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_BLKCNT NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_BLKCNT NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_BLKCNT NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_BLKCNT NACL_PRI_(X, NACL_ABI_WORDSIZE)
 
 #ifndef nacl_abi___time_t_defined
 #define nacl_abi___time_t_defined

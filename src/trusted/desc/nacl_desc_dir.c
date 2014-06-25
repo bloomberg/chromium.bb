@@ -59,8 +59,6 @@ int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
 static void NaClDescDirDescDtor(struct NaClRefCount *vself) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
 
-  NaClLog(4, "NaClDescDirDescDtor(0x%08"NACL_PRIxPTR").\n",
-          (uintptr_t) vself);
   NaClHostDirClose(self->hd);
   free(self->hd);
   self->hd = NULL;
@@ -106,21 +104,8 @@ static ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
                                        void                    *dirp,
                                        size_t                  count) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
-  struct nacl_abi_dirent *direntp = (struct nacl_abi_dirent *) dirp;
-  ssize_t retval;
 
-  NaClLog(3, "NaClDescDirDescGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
-          (uintptr_t) dirp, count);
-  retval = NaClHostDirGetdents(self->hd, dirp, count);
-  NaClLog(3,
-          "NaClDescDirDescGetdents(d_ino=%"NACL_PRIuNACL_INO", "
-          "d_off=%"NACL_PRIuNACL_OFF", d_reclen=%u, "
-          "d_name='%s')\n",
-          direntp->nacl_abi_d_ino,
-          direntp->nacl_abi_d_off,
-          direntp->nacl_abi_d_reclen,
-          direntp->nacl_abi_d_name);
-  return retval;
+  return NaClHostDirGetdents(self->hd, dirp, count);
 }
 
 static ssize_t NaClDescDirDescRead(struct NaClDesc         *vself,
