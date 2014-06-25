@@ -1101,6 +1101,13 @@ paladin.add_config('x86-generic-asan-paladin',
   important=False,
 )
 
+paladin.add_config('mipsel-o32-generic-paladin',
+  brillo_non_testable,
+  boards=['mipsel-o32-generic'],
+  important=False,
+  paladin_builder_name='mipsel-o32-generic paladin',
+)
+
 incremental.add_config('amd64-generic-asan-paladin',
   asan,
   boards=['amd64-generic'],
@@ -1369,13 +1376,26 @@ _x86_full_boards = _x86_release_boards | frozenset([
   'x86-pineview',
 ])
 
+_mips_release_boards = frozenset([
+])
+_mips_full_boards = _mips_release_boards | frozenset([
+  'mipseb-n32-generic',
+  'mipseb-n64-generic',
+  'mipseb-o32-generic',
+  'mipsel-n32-generic',
+  'mipsel-n64-generic',
+  'mipsel-o32-generic',
+])
+
 _all_release_boards = (
     _arm_release_boards |
-    _x86_release_boards
+    _x86_release_boards |
+    _mips_release_boards
 )
 _all_full_boards = (
     _arm_full_boards |
-    _x86_full_boards
+    _x86_full_boards |
+    _mips_full_boards
 )
 
 def _AddFullConfigs():
@@ -1819,13 +1839,6 @@ internal_paladin.add_config('x86-zgb-paladin',
   boards=['x86-zgb'],
   important=False,
   paladin_builder_name='x86-zgb paladin',
-)
-
-internal_paladin.add_config('mipsel-o32-generic-paladin',
-  brillo_non_testable,
-  boards=['mipsel-o32-generic'],
-  important=False,
-  paladin_builder_name='mipsel-o32-generic paladin',
 )
 
 internal_paladin.add_config('link_freon-paladin',
