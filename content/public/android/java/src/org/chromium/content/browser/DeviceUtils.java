@@ -16,21 +16,11 @@ import org.chromium.ui.base.DeviceFormFactor;
 public class DeviceUtils {
 
     /**
-     * @param context Android's context
-     * @return        Whether the app is should treat the device as a tablet for layout.
-     */
-    // TODO(tedchoc): Transition all call sites to use DeviceFormFactor directly.  Then
-    //                remove this method.
-    public static boolean isTablet(Context context) {
-        return DeviceFormFactor.isTablet(context);
-    }
-
-    /**
      * Appends the switch specifying which user agent should be used for this device.
      * @param context The context for the caller activity.
      */
     public static void addDeviceSpecificUserAgentSwitch(Context context) {
-        if (!isTablet(context)) {
+        if (!DeviceFormFactor.isTablet(context)) {
             CommandLine.getInstance().appendSwitch(ContentSwitches.USE_MOBILE_UA);
         }
     }

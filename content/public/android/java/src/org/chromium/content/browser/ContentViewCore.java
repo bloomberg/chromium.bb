@@ -74,6 +74,7 @@ import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -2404,7 +2405,7 @@ public class ContentViewCore
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
         hidePopups();
-        if (DeviceUtils.isTablet(mContext) && !multiple) {
+        if (DeviceFormFactor.isTablet(mContext) && !multiple) {
             mSelectPopup = new SelectPopupDropdown(this, popupItems, bounds, selectedIndices);
         } else {
             mSelectPopup = new SelectPopupDialog(this, popupItems, multiple, selectedIndices);
