@@ -284,6 +284,7 @@
             '../ipc/ipc.gyp:ipc',
             '../third_party/WebKit/public/blink.gyp:blink_minimal',
             '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
           ],
           'include_dirs': [
             '..',

@@ -16,5 +16,6 @@ include_rules = [
   "+third_party/skia/include",
   "+ui/android",
   "+ui/base",
+  "+ui/gfx",
   "+webkit",
 ]

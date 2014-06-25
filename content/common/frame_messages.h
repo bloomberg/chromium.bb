@@ -17,6 +17,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_state.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT

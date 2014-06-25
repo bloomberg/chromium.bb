@@ -17,6 +17,7 @@
     '../ui/events/ipc/events_ipc.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
+    '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
     '../url/url.gyp:url_lib',
   ],

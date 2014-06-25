@@ -24,6 +24,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart

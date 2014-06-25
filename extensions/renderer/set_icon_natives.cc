@@ -12,6 +12,7 @@
 #include "extensions/renderer/script_context.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 
 namespace {
 

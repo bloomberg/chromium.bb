@@ -25,19 +25,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-class SkBitmap;
-
 namespace content {
 class PageState;
 }
-
-namespace gfx {
-class Point;
-class Rect;
-class RectF;
-class Size;
-class Vector2d;
-}  // namespace gfx
 
 namespace net {
 class HostPortPair;
@@ -83,70 +73,6 @@ struct CONTENT_EXPORT ParamTraits<content::PageState> {
   typedef content::PageState param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::Point> {
-  typedef gfx::Point param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::PointF> {
-  typedef gfx::PointF param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::Size> {
-  typedef gfx::Size param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::SizeF> {
-  typedef gfx::SizeF param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::Vector2d> {
-  typedef gfx::Vector2d param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::Vector2dF> {
-  typedef gfx::Vector2dF param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::Rect> {
-  typedef gfx::Rect param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<gfx::RectF> {
-  typedef gfx::RectF param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -203,18 +129,6 @@ struct ParamTraits<TransportDIB::Id> {
   }
 };
 #endif
-
-template <>
-struct CONTENT_EXPORT ParamTraits<SkBitmap> {
-  typedef SkBitmap param_type;
-  static void Write(Message* m, const param_type& p);
-
-  // Note: This function expects parameter |r| to be of type &SkBitmap since
-  // r->SetConfig() and r->SetPixels() are called.
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-
-  static void Log(const param_type& p, std::string* l);
-};
 
 }  // namespace IPC
 
