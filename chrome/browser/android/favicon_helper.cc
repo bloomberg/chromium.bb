@@ -165,7 +165,6 @@ void FaviconHelper::GetLargestRawFaviconForUrl(
       base::Bind(&OnFaviconRawBitmapResultAvailable,
                  base::Owned(j_scoped_favicon_callback));
   favicon_service->GetLargestRawFaviconForPageURL(
-      profile,
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
       icon_types,
       static_cast<int>(j_min_size_threshold_px),

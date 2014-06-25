@@ -84,7 +84,7 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.
   int threshold_to_get_any_largest_icon = launcher_large_icon_size_ - 1;
-  favicon_service->GetLargestRawFaviconForPageURL(profile, url_, icon_types,
+  favicon_service->GetLargestRawFaviconForPageURL(url_, icon_types,
       threshold_to_get_any_largest_icon,
       base::Bind(&ShortcutBuilder::FinishAddingShortcut,
                  base::Unretained(this)),

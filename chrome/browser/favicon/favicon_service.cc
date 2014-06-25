@@ -213,7 +213,6 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFaviconForPageURL(
 
 base::CancelableTaskTracker::TaskId
 FaviconService::GetLargestRawFaviconForPageURL(
-    Profile* profile,
     const GURL& page_url,
     const std::vector<int>& icon_types,
     int minimum_size_in_pixels,
@@ -228,7 +227,7 @@ FaviconService::GetLargestRawFaviconForPageURL(
       page_url.SchemeIs(extensions::kExtensionScheme)) {
     std::vector<int> desired_sizes_in_pixel;
     desired_sizes_in_pixel.push_back(0);
-    return GetFaviconForChromeURL(profile,
+    return GetFaviconForChromeURL(profile_,
                                   page_url,
                                   desired_sizes_in_pixel,
                                   favicon_results_callback,
