@@ -10,8 +10,8 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -20,10 +20,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/vector3d_f.h"
-
-#if defined(USE_X11)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
-#endif
 
 namespace ash {
 
@@ -354,9 +350,7 @@ void MaximizeModeController::EnterMaximizeMode() {
   current_rotation_ = user_rotation_ = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
   EnableMaximizeModeWindowManager(true);
-#if defined(USE_X11)
-  event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
-#endif
+  event_blocker_.reset(new MaximizeModeEventBlocker);
 #if defined(OS_CHROMEOS)
   event_handler_.reset(new ScreenshotActionHandler);
 #endif

@@ -48,11 +48,6 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
   return instance_;
 }
 
-// static
-bool DeviceDataManager::HasInstance() {
-  return instance_ != NULL;
-}
-
 void DeviceDataManager::ClearTouchTransformerRecord() {
   for (int i = 0; i < kMaxDeviceNum; i++) {
     touch_device_transformer_map_[i] = gfx::Transform();

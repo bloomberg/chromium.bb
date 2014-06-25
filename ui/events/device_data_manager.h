@@ -21,7 +21,6 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
 
   static void CreateInstance();
   static DeviceDataManager* GetInstance();
-  static bool HasInstance();
 
   void ClearTouchTransformerRecord();
   void UpdateTouchInfoForDisplay(int64_t display_id,
