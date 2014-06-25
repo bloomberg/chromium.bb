@@ -473,7 +473,8 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 };
 
 // Verifies when capture is released the TooltipController resets state.
-TEST_F(TooltipControllerCaptureTest, CloseOnCaptureLost) {
+// Flaky on all builders.  http://crbug.com/388268
+TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
   view_->GetWidget()->SetCapture(view_);
   RunAllPendingInMessageLoop();
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
