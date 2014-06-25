@@ -117,17 +117,13 @@ bool Plugin::LoadHelperNaClModule(PP_FileHandle file_handle,
   // We can't use pp::BlockUntilComplete() inside an in-process plugin, so we
   // have to roll our own blocking logic, similar to WaitForSelLdrStart()
   // above, except without timeout logic.
-  bool nexe_started = false;
-  pp::CompletionCallback nexe_started_callback = callback_factory_.NewCallback(
-      &Plugin::SignalNexeStarted, &nexe_started, service_runtime);
   pp::Module::Get()->core()->CallOnMainThread(
       0,
       callback_factory_.NewCallback(
           &Plugin::LoadNexeAndStart,
-          service_runtime, info, nexe_started_callback));
-  service_runtime->WaitForNexeStart();
-
-  return nexe_started;
+          service_runtime,
+          info));
+  return service_runtime->WaitForNexeStart();
 }
 
 void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
@@ -148,13 +144,6 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
                                    ServiceRuntime* service_runtime) {
   *started = (pp_error == PP_OK);
   service_runtime->SignalStartSelLdrDone();
-}
-
-void Plugin::SignalNexeStarted(int32_t pp_error,
-                               bool* started,
-                               ServiceRuntime* service_runtime) {
-  *started = (pp_error == PP_OK);
-  service_runtime->SignalNexeStarted();
 }
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
@@ -209,20 +198,18 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   // We don't take any action once nexe loading has completed, so pass an empty
   // callback here for |callback|.
   pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::LoadNexeAndStart,
-      service_runtime, file_info_for_srpc, pp::CompletionCallback());
+      &Plugin::LoadNexeAndStart, service_runtime, file_info_for_srpc);
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
 
 void Plugin::LoadNexeAndStart(int32_t pp_error,
                               ServiceRuntime* service_runtime,
-                              PP_NaClFileInfo file_info,
-                              const pp::CompletionCallback& callback) {
+                              PP_NaClFileInfo file_info) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   if (pp_error != PP_OK)
     return;
-  service_runtime->LoadNexeAndStart(file_info, callback);
+  service_runtime->LoadNexeAndStart(file_info);
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern() {

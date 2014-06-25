@@ -161,17 +161,10 @@ class Plugin : public pp::Instance {
                              bool* started,
                              ServiceRuntime* service_runtime);
 
-  // Signals that the nexe is started.
-  // This is invoked on the main thread.
-  void SignalNexeStarted(int32_t pp_error,
-                         bool* started,
-                         ServiceRuntime* service_runtime);
-
   // This is invoked on the main thread.
   void LoadNexeAndStart(int32_t pp_error,
                         ServiceRuntime* service_runtime,
-                        PP_NaClFileInfo file_info,
-                        const pp::CompletionCallback& callback);
+                        PP_NaClFileInfo file_info);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr

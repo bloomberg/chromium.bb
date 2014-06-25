@@ -170,24 +170,23 @@ class ServiceRuntime {
   void SignalStartSelLdrDone();
 
   // If starting the nexe from a background thread, wait for the nexe to
-  // actually start.
-  void WaitForNexeStart();
+  // actually start. Returns |true| is the nexe started successfully.
+  bool WaitForNexeStart();
 
   // Signal to waiting threads that LoadNexeAndStart is complete (either
   // successfully or unsuccessfully).
-  void SignalNexeStarted();
+  void SignalNexeStarted(bool ok);
 
   // Establish an SrpcClient to the sel_ldr instance and load the nexe.
   // The nexe to be started is passed through |file_info|.
-  // Upon completion |callback| is invoked with status code.
   // This function must be called on the main thread.
-  void LoadNexeAndStart(PP_NaClFileInfo file_info,
-                        const pp::CompletionCallback& callback);
+  // This function must only be called once.
+  void LoadNexeAndStart(PP_NaClFileInfo file_info);
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
 
-  bool Log(int severity, const nacl::string& msg);
+  bool RemoteLog(int severity, const nacl::string& msg);
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
@@ -204,17 +203,13 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  struct LoadNexeAndStartData;
-  void LoadNexeAndStartAfterLoadModule(
-      LoadNexeAndStartData* data, int32_t pp_error);
-  void DidLoadNexeAndStart(LoadNexeAndStartData* data, int32_t pp_error);
+  bool LoadNexeAndStartInternal(const PP_NaClFileInfo& file_info);
 
   bool SetupCommandChannel();
   bool InitReverseService();
-  void LoadModule(PP_NaClFileInfo file_info,
-                  pp::CompletionCallback callback);
-  void DidLoadModule(pp::CompletionCallback callback, int32_t pp_error);
+  bool LoadModule(const PP_NaClFileInfo& file_info);
   bool StartModule();
+  void ReapLogs();
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
@@ -231,7 +226,8 @@ class ServiceRuntime {
   NaClMutex mu_;
   NaClCondVar cond_;
   bool start_sel_ldr_done_;
-  bool nexe_started_;
+  bool start_nexe_done_;
+  bool nexe_started_ok_;
 };
 
 }  // namespace plugin
