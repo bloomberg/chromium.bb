@@ -236,7 +236,9 @@
     'device_orientation': {
       'filepath': 'Source/modules/device_orientation/' \
                   '|LayoutTests/fast/dom/DeviceMotion/' \
-                  '|LayoutTests/fast/dom/DeviceOrientation/'
+                  '|LayoutTests/fast/dom/DeviceOrientation/' \
+                  '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base' \
+                  '|Source/core/frame/DeviceSingleWindowEventController'
     },
     'activity_logger': {
       'filepath': 'public/web/WebDOMActivityLogger.h' \
@@ -272,7 +274,8 @@
     },
     'battery_status': {
       'filepath': 'Source/modules/battery/' \
-                  '|LayoutTests/battery-status/'
+                  '|LayoutTests/battery-status/' \
+                  '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base'
     },
     'device_light': {
       'filepath': 'Source/modules/device_light/' \
