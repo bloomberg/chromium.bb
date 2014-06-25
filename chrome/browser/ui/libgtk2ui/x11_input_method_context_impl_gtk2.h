@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/event_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/glib/glib_integers.h"
@@ -13,6 +14,7 @@
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/gfx/rect.h"
 
+typedef union _GdkEvent GdkEvent;
 typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkIMContext GtkIMContext;
 
@@ -34,8 +36,24 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
   virtual void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) OVERRIDE;
 
  private:
+  // Resets the cache of X modifier keycodes.
+  // TODO(yukishiino): We should call this method whenever X keyboard mapping
+  // changes, for example when a user switched to another keyboard layout.
+  void ResetXModifierKeycodesCache();
+
+  // Constructs a GdkEventKey from a XKeyEvent and returns it.  Otherwise,
+  // returns NULL.  The returned GdkEvent must be freed by gdk_event_free.
+  GdkEvent* GdkEventFromNativeEvent(const base::NativeEvent& native_event);
+
   // Returns true if the hardware |keycode| is assigned to a modifier key.
   bool IsKeycodeModifierKey(unsigned int keycode) const;
+
+  // Returns true if one of |keycodes| is pressed.  |keybits| is a bit vector
+  // returned by XQueryKeymap, and |num_keys| is the number of keys in
+  // |keybits|.
+  bool IsAnyOfKeycodesPressed(const std::vector<int>& keycodes,
+                              const char* keybits,
+                              int num_keys) const;
 
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|
   // and |gtk_multicontext_|.
@@ -69,6 +87,11 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
 
   // A set of hardware keycodes of modifier keys.
   base::hash_set<unsigned int> modifier_keycodes_;
+
+  // A list of keycodes of each modifier key.
+  std::vector<int> meta_keycodes_;
+  std::vector<int> super_keycodes_;
+  std::vector<int> hyper_keycodes_;
 
   // The helper class to trap GTK+'s "commit" signal for direct input key
   // events.

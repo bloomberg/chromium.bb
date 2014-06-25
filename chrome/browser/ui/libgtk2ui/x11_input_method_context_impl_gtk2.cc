@@ -13,7 +13,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
-#include "base/event_types.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
@@ -21,77 +20,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/x/x11_types.h"
-
-namespace {
-
-// Constructs a GdkEventKey from a XKeyEvent and returns it.  Otherwise,
-// returns NULL.  The returned GdkEvent must be freed by gdk_event_free.
-GdkEvent* GdkEventFromXKeyEvent(XKeyEvent& xkey, bool is_modifier) {
-  DCHECK(xkey.type == KeyPress || xkey.type == KeyRelease);
-
-  // Get a GdkDisplay.
-  GdkDisplay* display = gdk_x11_lookup_xdisplay(xkey.display);
-  if (!display) {
-    // Fall back to the default display.
-    display = gdk_display_get_default();
-  }
-  if (!display) {
-    LOG(ERROR) << "Cannot get a GdkDisplay for a key event.";
-    return NULL;
-  }
-  // Get a keysym and group.
-  KeySym keysym = NoSymbol;
-  guint8 keyboard_group = 0;
-  XLookupString(&xkey, NULL, 0, &keysym, NULL);
-  GdkKeymap* keymap = gdk_keymap_get_for_display(display);
-  GdkKeymapKey* keys = NULL;
-  guint* keyvals = NULL;
-  gint n_entries = 0;
-  if (keymap &&
-      gdk_keymap_get_entries_for_keycode(keymap, xkey.keycode,
-                                         &keys, &keyvals, &n_entries)) {
-    for (gint i = 0; i < n_entries; ++i) {
-      if (keyvals[i] == keysym) {
-        keyboard_group = keys[i].group;
-        break;
-      }
-    }
-  }
-  g_free(keys);
-  keys = NULL;
-  g_free(keyvals);
-  keyvals = NULL;
-  // Get a GdkWindow.
-  GdkWindow* window = gdk_x11_window_lookup_for_display(display, xkey.window);
-  if (window)
-    g_object_ref(window);
-  else
-    window = gdk_x11_window_foreign_new_for_display(display, xkey.window);
-  if (!window) {
-    LOG(ERROR) << "Cannot get a GdkWindow for a key event.";
-    return NULL;
-  }
-
-  // Create a GdkEvent.
-  GdkEventType event_type = xkey.type == KeyPress ?
-                            GDK_KEY_PRESS : GDK_KEY_RELEASE;
-  GdkEvent* event = gdk_event_new(event_type);
-  event->key.type = event_type;
-  event->key.window = window;
-  // GdkEventKey and XKeyEvent share the same definition for time and state.
-  event->key.send_event = xkey.send_event;
-  event->key.time = xkey.time;
-  event->key.state = xkey.state;
-  event->key.keyval = keysym;
-  event->key.length = 0;
-  event->key.string = NULL;
-  event->key.hardware_keycode = xkey.keycode;
-  event->key.group = keyboard_group;
-  event->key.is_modifier = is_modifier;
-  return event;
-}
-
-}  // namespace
 
 namespace libgtk2ui {
 
@@ -104,14 +32,7 @@ X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
       gdk_last_set_client_window_(NULL) {
   CHECK(delegate_);
 
-  {
-    XModifierKeymap* keymap = XGetModifierMapping(gfx::GetXDisplay());
-    for (int i = 0; i < 8 * keymap->max_keypermod; ++i) {
-      if (keymap->modifiermap[i])
-        modifier_keycodes_.insert(keymap->modifiermap[i]);
-    }
-    XFreeModifiermap(keymap);
-  }
+  ResetXModifierKeycodesCache();
 
   gtk_context_simple_ = gtk_im_context_simple_new();
   gtk_multicontext_ = gtk_im_multicontext_new();
@@ -156,10 +77,7 @@ bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
     return false;
 
   // Translate a XKeyEvent to a GdkEventKey.
-  const base::NativeEvent& native_key_event = key_event.native_event();
-  GdkEvent* event = GdkEventFromXKeyEvent(
-      native_key_event->xkey,
-      IsKeycodeModifierKey(native_key_event->xkey.keycode));
+  GdkEvent* event = GdkEventFromNativeEvent(key_event.native_event());
   if (!event) {
     LOG(ERROR) << "Cannot translate a XKeyEvent to a GdkEvent.";
     return false;
@@ -227,9 +145,144 @@ void X11InputMethodContextImplGtk2::OnCaretBoundsChanged(
 
 // private:
 
+void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
+  modifier_keycodes_.clear();
+  meta_keycodes_.clear();
+  super_keycodes_.clear();
+  hyper_keycodes_.clear();
+
+  Display* display = gfx::GetXDisplay();
+  const XModifierKeymap* modmap = XGetModifierMapping(display);
+  int min_keycode = 0;
+  int max_keycode = 0;
+  int keysyms_per_keycode = 1;
+  XDisplayKeycodes(display, &min_keycode, &max_keycode);
+  const KeySym* keysyms = XGetKeyboardMapping(
+      display, min_keycode, max_keycode - min_keycode + 1,
+      &keysyms_per_keycode);
+  for (int i = 0; i < 8 * modmap->max_keypermod; ++i) {
+    const int keycode = modmap->modifiermap[i];
+    if (!keycode)
+      continue;
+    modifier_keycodes_.insert(keycode);
+
+    if (!keysyms)
+      continue;
+    for (int j = 0; j < keysyms_per_keycode; ++j) {
+      switch (keysyms[(keycode - min_keycode) * keysyms_per_keycode + j]) {
+        case XK_Meta_L:
+        case XK_Meta_R:
+          meta_keycodes_.push_back(keycode);
+          break;
+        case XK_Super_L:
+        case XK_Super_R:
+          super_keycodes_.push_back(keycode);
+          break;
+        case XK_Hyper_L:
+        case XK_Hyper_R:
+          hyper_keycodes_.push_back(keycode);
+          break;
+      }
+    }
+  }
+  XFree(const_cast<KeySym*>(keysyms));
+  XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
+}
+
+GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
+    const base::NativeEvent& native_event) {
+  const XKeyEvent& xkey = native_event->xkey;
+  DCHECK(xkey.type == KeyPress || xkey.type == KeyRelease);
+
+  // Get a GdkDisplay.
+  GdkDisplay* display = gdk_x11_lookup_xdisplay(xkey.display);
+  if (!display) {
+    // Fall back to the default display.
+    display = gdk_display_get_default();
+  }
+  if (!display) {
+    LOG(ERROR) << "Cannot get a GdkDisplay for a key event.";
+    return NULL;
+  }
+  // Get a keysym and group.
+  KeySym keysym = NoSymbol;
+  guint8 keyboard_group = 0;
+  XLookupString(&native_event->xkey, NULL, 0, &keysym, NULL);
+  GdkKeymap* keymap = gdk_keymap_get_for_display(display);
+  GdkKeymapKey* keys = NULL;
+  guint* keyvals = NULL;
+  gint n_entries = 0;
+  if (keymap &&
+      gdk_keymap_get_entries_for_keycode(keymap, xkey.keycode,
+                                         &keys, &keyvals, &n_entries)) {
+    for (gint i = 0; i < n_entries; ++i) {
+      if (keyvals[i] == keysym) {
+        keyboard_group = keys[i].group;
+        break;
+      }
+    }
+  }
+  g_free(keys);
+  keys = NULL;
+  g_free(keyvals);
+  keyvals = NULL;
+  // Get a GdkWindow.
+  GdkWindow* window = gdk_x11_window_lookup_for_display(display, xkey.window);
+  if (window)
+    g_object_ref(window);
+  else
+    window = gdk_x11_window_foreign_new_for_display(display, xkey.window);
+  if (!window) {
+    LOG(ERROR) << "Cannot get a GdkWindow for a key event.";
+    return NULL;
+  }
+
+  // Create a GdkEvent.
+  GdkEventType event_type = xkey.type == KeyPress ?
+                            GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  GdkEvent* event = gdk_event_new(event_type);
+  event->key.type = event_type;
+  event->key.window = window;
+  // GdkEventKey and XKeyEvent share the same definition for time and state.
+  event->key.send_event = xkey.send_event;
+  event->key.time = xkey.time;
+  event->key.state = xkey.state;
+  event->key.keyval = keysym;
+  event->key.length = 0;
+  event->key.string = NULL;
+  event->key.hardware_keycode = xkey.keycode;
+  event->key.group = keyboard_group;
+  event->key.is_modifier = IsKeycodeModifierKey(xkey.keycode);
+
+  char keybits[32] = {0};
+  XQueryKeymap(xkey.display, keybits);
+  if (IsAnyOfKeycodesPressed(meta_keycodes_, keybits, sizeof keybits * 8))
+    event->key.state |= GDK_META_MASK;
+  if (IsAnyOfKeycodesPressed(super_keycodes_, keybits, sizeof keybits * 8))
+    event->key.state |= GDK_SUPER_MASK;
+  if (IsAnyOfKeycodesPressed(hyper_keycodes_, keybits, sizeof keybits * 8))
+    event->key.state |= GDK_HYPER_MASK;
+
+  return event;
+}
+
 bool X11InputMethodContextImplGtk2::IsKeycodeModifierKey(
     unsigned int keycode) const {
   return modifier_keycodes_.find(keycode) != modifier_keycodes_.end();
+}
+
+bool X11InputMethodContextImplGtk2::IsAnyOfKeycodesPressed(
+    const std::vector<int>& keycodes,
+    const char* keybits,
+    int num_keys) const {
+  for (size_t i = 0; i < keycodes.size(); ++i) {
+    const int keycode = keycodes[i];
+    if (keycode < 0 || num_keys <= keycode)
+      continue;
+    if (keybits[keycode / 8] & 1 << (keycode % 8))
+      return true;
+  }
+  return false;
 }
 
 // GtkIMContext event handlers.
