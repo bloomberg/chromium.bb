@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -108,6 +109,86 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
 
 const std::string LevelDBTraceTansaction::s_class_name = "LevelDBTransaction";
 
+class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
+ public:
+  LevelDBTraceIteratorImpl(scoped_ptr<leveldb::Iterator> iterator, int inst_num)
+      : LevelDBIteratorImpl(iterator.Pass()),
+        is_valid_tracer_(s_class_name, "IsValid", inst_num),
+        seek_to_last_tracer_(s_class_name, "SeekToLast", inst_num),
+        seek_tracer_(s_class_name, "Seek", inst_num),
+        next_tracer_(s_class_name, "Next", inst_num),
+        prev_tracer_(s_class_name, "Prev", inst_num),
+        key_tracer_(s_class_name, "Key", inst_num),
+        value_tracer_(s_class_name, "Value", inst_num) {}
+  virtual ~LevelDBTraceIteratorImpl() {}
+
+ private:
+  virtual bool IsValid() const OVERRIDE {
+    is_valid_tracer_.log_call();
+    return LevelDBIteratorImpl::IsValid();
+  }
+  virtual leveldb::Status SeekToLast() OVERRIDE {
+    seek_to_last_tracer_.log_call();
+    return LevelDBIteratorImpl::SeekToLast();
+  }
+  virtual leveldb::Status Seek(const base::StringPiece& target) OVERRIDE {
+    seek_tracer_.log_call();
+    return LevelDBIteratorImpl::Seek(target);
+  }
+  virtual leveldb::Status Next() OVERRIDE {
+    next_tracer_.log_call();
+    return LevelDBIteratorImpl::Next();
+  }
+  virtual leveldb::Status Prev() OVERRIDE {
+    prev_tracer_.log_call();
+    return LevelDBIteratorImpl::Prev();
+  }
+  virtual base::StringPiece Key() const OVERRIDE {
+    key_tracer_.log_call();
+    return LevelDBIteratorImpl::Key();
+  }
+  virtual base::StringPiece Value() const OVERRIDE {
+    value_tracer_.log_call();
+    return LevelDBIteratorImpl::Value();
+  }
+
+  const static std::string s_class_name;
+
+  mutable FunctionTracer is_valid_tracer_;
+  mutable FunctionTracer seek_to_last_tracer_;
+  mutable FunctionTracer seek_tracer_;
+  mutable FunctionTracer next_tracer_;
+  mutable FunctionTracer prev_tracer_;
+  mutable FunctionTracer key_tracer_;
+  mutable FunctionTracer value_tracer_;
+};
+
+const std::string LevelDBTraceIteratorImpl::s_class_name = "LevelDBIterator";
+
+class LevelDBTestIteratorImpl : public content::LevelDBIteratorImpl {
+ public:
+  LevelDBTestIteratorImpl(scoped_ptr<leveldb::Iterator> iterator,
+                          FailMethod fail_method,
+                          int fail_on_call_num)
+      : LevelDBIteratorImpl(iterator.Pass()),
+        fail_method_(fail_method),
+        fail_on_call_num_(fail_on_call_num),
+        current_call_num_(0) {}
+  virtual ~LevelDBTestIteratorImpl() {}
+
+ private:
+  virtual leveldb::Status Seek(const base::StringPiece& target) OVERRIDE {
+    if (fail_method_ != FAIL_METHOD_SEEK ||
+        ++current_call_num_ != fail_on_call_num_)
+      return LevelDBIteratorImpl::Seek(target);
+    return leveldb::Status::Corruption("Corrupted for test");
+  }
+
+  FailMethod fail_method_;
+  int fail_on_call_num_;
+  int current_call_num_;
+};
+
 MockBrowserTestIndexedDBClassFactory::MockBrowserTestIndexedDBClassFactory()
     : failure_class_(FAIL_CLASS_NOTHING),
       failure_method_(FAIL_METHOD_NOTHING),
@@ -135,6 +216,27 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
           fail_on_call_num_[FAIL_CLASS_LEVELDB_TRANSACTION]);
     } else {
       return IndexedDBClassFactory::CreateLevelDBTransaction(db);
+    }
+  }
+}
+
+LevelDBIteratorImpl* MockBrowserTestIndexedDBClassFactory::CreateIteratorImpl(
+    scoped_ptr<leveldb::Iterator> iterator) {
+  instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] =
+      instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] + 1;
+  if (only_trace_calls_) {
+    return new LevelDBTraceIteratorImpl(
+        iterator.Pass(), instance_count_[FAIL_CLASS_LEVELDB_ITERATOR]);
+  } else {
+    if (failure_class_ == FAIL_CLASS_LEVELDB_ITERATOR &&
+        instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] ==
+            fail_on_instance_num_[FAIL_CLASS_LEVELDB_ITERATOR]) {
+      return new LevelDBTestIteratorImpl(
+          iterator.Pass(),
+          failure_method_,
+          fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
+    } else {
+      return new LevelDBIteratorImpl(iterator.Pass());
     }
   }
 }

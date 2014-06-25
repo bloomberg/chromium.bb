@@ -6,10 +6,16 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CLASS_FACTORY_H_
 
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+
+namespace leveldb {
+class Iterator;
+}  // namespace leveldb
 
 namespace content {
 
+class LevelDBIteratorImpl;
 class LevelDBDatabase;
 class LevelDBTransaction;
 
@@ -23,6 +29,8 @@ class CONTENT_EXPORT IndexedDBClassFactory {
 
   static void SetIndexedDBClassFactoryGetter(GetterCallback* cb);
 
+  virtual LevelDBIteratorImpl* CreateIteratorImpl(
+      scoped_ptr<leveldb::Iterator> iterator);
   virtual LevelDBTransaction* CreateLevelDBTransaction(LevelDBDatabase* db);
 
  protected:

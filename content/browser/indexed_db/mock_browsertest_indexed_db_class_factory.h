@@ -16,6 +16,7 @@ class LevelDBDatabase;
 
 enum FailClass {
   FAIL_CLASS_NOTHING,
+  FAIL_CLASS_LEVELDB_ITERATOR,
   FAIL_CLASS_LEVELDB_TRANSACTION,
 };
 
@@ -23,6 +24,7 @@ enum FailMethod {
   FAIL_METHOD_NOTHING,
   FAIL_METHOD_COMMIT,
   FAIL_METHOD_GET,
+  FAIL_METHOD_SEEK,
 };
 
 class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
@@ -31,6 +33,8 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
   virtual ~MockBrowserTestIndexedDBClassFactory();
   virtual LevelDBTransaction* CreateLevelDBTransaction(
       LevelDBDatabase* db) OVERRIDE;
+  virtual LevelDBIteratorImpl* CreateIteratorImpl(
+      scoped_ptr<leveldb::Iterator> iterator) OVERRIDE;
 
   void FailOperation(FailClass failure_class,
                      FailMethod failure_method,

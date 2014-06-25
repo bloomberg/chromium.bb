@@ -6,11 +6,12 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_H_
 
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
 
-class LevelDBIterator {
+class CONTENT_EXPORT LevelDBIterator {
  public:
   virtual ~LevelDBIterator() {}
   virtual bool IsValid() const = 0;

@@ -551,6 +551,14 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
       else {
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
       }
+    } else if (fail_class == "LevelDBIterator") {
+      failure_class = FAIL_CLASS_LEVELDB_ITERATOR;
+      if (fail_method == "Seek")
+        failure_method = FAIL_METHOD_SEEK;
+      else
+        NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
+    } else {
+      NOTREACHED() << "Unknown class: \"" << fail_class << "\"";
     }
 
     DCHECK_GE(instance_num, 1);

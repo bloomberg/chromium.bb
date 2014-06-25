@@ -739,6 +739,8 @@
       'browser/indexed_db/leveldb/leveldb_database.cc',
       'browser/indexed_db/leveldb/leveldb_database.h',
       'browser/indexed_db/leveldb/leveldb_iterator.h',
+      'browser/indexed_db/leveldb/leveldb_iterator_impl.cc',
+      'browser/indexed_db/leveldb/leveldb_iterator_impl.h',
       'browser/indexed_db/leveldb/leveldb_transaction.cc',
       'browser/indexed_db/leveldb/leveldb_transaction.h',
       'browser/indexed_db/leveldb/leveldb_write_batch.cc',

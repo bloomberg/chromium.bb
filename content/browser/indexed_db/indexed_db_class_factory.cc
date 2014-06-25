@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 
 namespace content {
@@ -25,6 +26,11 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
 LevelDBTransaction* IndexedDBClassFactory::CreateLevelDBTransaction(
     LevelDBDatabase* db) {
   return new LevelDBTransaction(db);
+}
+
+content::LevelDBIteratorImpl* IndexedDBClassFactory::CreateIteratorImpl(
+    scoped_ptr<leveldb::Iterator> iterator) {
+  return new LevelDBIteratorImpl(iterator.Pass());
 }
 
 }  // namespace content
