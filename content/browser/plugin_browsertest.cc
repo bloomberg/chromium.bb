@@ -378,7 +378,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequestFailWrite)) {
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(EnsureScriptingWorksInDestroy)) {
+// Flaky on Windows x86.  http://crbug.com/388245
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_EnsureScriptingWorksInDestroy) {
   LoadAndWait(GetURL("ensure_scripting_works_in_destroy.html"));
 }
 
