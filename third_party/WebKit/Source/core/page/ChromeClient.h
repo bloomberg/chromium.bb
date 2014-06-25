@@ -39,12 +39,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-
-#ifndef __OBJC__
-class NSMenu;
-class NSResponder;
-#endif
-
 namespace WebCore {
 
 class AXObject;
