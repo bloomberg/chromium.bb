@@ -91,7 +91,7 @@ def GetSnapshotDownloadSite():
   For other platform, it is blink snapshot build.
   Because there is no linux32 blink snapshot build.
   """
-  if _GetDownloadPlatform() == 'Linux':
+  if _GetDownloadPlatform() in ('Linux', 'Linux_x64', 'Mac'):
     return Site.CHROMIUM_SNAPSHOT
   else:
     return Site.BLINK_SNAPSHOT
