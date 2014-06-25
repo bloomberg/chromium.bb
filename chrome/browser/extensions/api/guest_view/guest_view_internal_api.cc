@@ -40,18 +40,25 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
   GuestViewManager* guest_view_manager =
       GuestViewManager::FromBrowserContext(browser_context());
 
-  content::WebContents* guest_web_contents =
-      guest_view_manager->CreateGuest(view_type,
-                                      extension_id(),
-                                      render_view_host()->GetProcess()->GetID(),
-                                      *create_params);
-  if (!guest_web_contents)
-    return false;
+  GuestViewManager::WebContentsCreatedCallback callback =
+      base::Bind(&GuestViewInternalCreateGuestFunction::CreateGuestCallback,
+                 this);
+  guest_view_manager->CreateGuest(view_type,
+                                  extension_id(),
+                                  render_view_host()->GetProcess()->GetID(),
+                                  *create_params,
+                                  callback);
 
+  return true;
+}
+
+void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
+    content::WebContents* guest_web_contents) {
+  if (!guest_web_contents)
+    return;
   GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
   SetResult(base::Value::CreateIntegerValue(guest->GetGuestInstanceID()));
   SendResponse(true);
-  return true;
 }
 
 }  // namespace extensions

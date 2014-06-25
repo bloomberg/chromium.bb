@@ -20,6 +20,7 @@ class GuestViewInternalCreateGuestFunction : public AsyncExtensionFunction {
   virtual bool RunAsync() OVERRIDE FINAL;
 
  private:
+  void CreateGuestCallback(content::WebContents* guest_web_contents);
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalCreateGuestFunction);
 };
 

@@ -65,19 +65,23 @@ int GuestViewManager::GetNextInstanceID() {
   return ++current_instance_id_;
 }
 
-content::WebContents* GuestViewManager::CreateGuest(
+void GuestViewManager::CreateGuest(
     const std::string& view_type,
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
-    const base::DictionaryValue& create_params) {
+    const base::DictionaryValue& create_params,
+    const WebContentsCreatedCallback& callback) {
   int guest_instance_id = GetNextInstanceID();
-  GuestViewBase* guest = GuestViewBase::Create(guest_instance_id, view_type);
-  if (!guest)
-    return NULL;
+  GuestViewBase* guest =
+      GuestViewBase::Create(context_, guest_instance_id, view_type);
+  if (!guest) {
+    callback.Run(NULL);
+    return;
+  }
   guest->Init(embedder_extension_id,
               embedder_render_process_id,
-              create_params);
-  return guest->guest_web_contents();
+              create_params,
+              callback);
 }
 
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
@@ -86,7 +90,8 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     int embedder_render_process_id,
     const content::WebContents::CreateParams& create_params) {
   int guest_instance_id = GetNextInstanceID();
-  GuestViewBase* guest = GuestViewBase::Create(guest_instance_id, view_type);
+  GuestViewBase* guest =
+      GuestViewBase::Create(context_, guest_instance_id, view_type);
   if (!guest)
     return NULL;
   content::WebContents::CreateParams guest_create_params(create_params);

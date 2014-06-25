@@ -212,8 +212,9 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
 
 }  // namespace
 
-WebViewGuest::WebViewGuest(int guest_instance_id)
-   :  GuestView<WebViewGuest>(guest_instance_id),
+WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
+                           int guest_instance_id)
+   :  GuestView<WebViewGuest>(browser_context, guest_instance_id),
       pending_context_menu_request_id_(0),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
@@ -627,7 +628,7 @@ void WebViewGuest::OnUpdateFrameName(bool is_top_level,
   ReportFrameNameChange(name);
 }
 
-WebViewGuest* WebViewGuest::CreateNewGuestWebViewWindow(
+void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
       GuestViewManager::FromBrowserContext(browser_context());
@@ -640,14 +641,19 @@ WebViewGuest* WebViewGuest::CreateNewGuestWebViewWindow(
   base::DictionaryValue create_params;
   create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
-  WebContents* new_guest_web_contents =
-      guest_manager->CreateGuest(
-          WebViewGuest::Type,
-          embedder_extension_id(),
-          embedder_web_contents()->GetRenderProcessHost()->GetID(),
-          create_params);
-  WebViewGuest* new_guest =
-      WebViewGuest::FromWebContents(new_guest_web_contents);
+  guest_manager->CreateGuest(
+      WebViewGuest::Type,
+      embedder_extension_id(),
+      embedder_web_contents()->GetRenderProcessHost()->GetID(),
+      create_params,
+      base::Bind(&WebViewGuest::NewGuestWebViewCallback,
+                 base::Unretained(this), params));
+}
+
+void WebViewGuest::NewGuestWebViewCallback(
+    const content::OpenURLParams& params,
+    content::WebContents* guest_web_contents) {
+  WebViewGuest* new_guest = WebViewGuest::FromWebContents(guest_web_contents);
   new_guest->SetOpener(this);
 
   // Take ownership of |new_guest|.
@@ -658,8 +664,6 @@ WebViewGuest* WebViewGuest::CreateNewGuestWebViewWindow(
   RequestNewWindowPermission(params.disposition, gfx::Rect(),
                              params.user_gesture,
                              new_guest->guest_web_contents());
-
-  return new_guest;
 }
 
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
@@ -1541,7 +1545,8 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
     return source;
   }
 
-  return CreateNewGuestWebViewWindow(params)->guest_web_contents();
+  CreateNewGuestWebViewWindow(params);
+  return NULL;
 }
 
 void WebViewGuest::WebContentsCreated(WebContents* source_contents,

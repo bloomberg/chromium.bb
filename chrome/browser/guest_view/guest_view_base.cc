@@ -66,10 +66,11 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
 
-GuestViewBase::GuestViewBase(int guest_instance_id)
+GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
+                             int guest_instance_id)
     : embedder_web_contents_(NULL),
       embedder_render_process_id_(0),
-      browser_context_(NULL),
+      browser_context_(browser_context),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
@@ -79,7 +80,8 @@ GuestViewBase::GuestViewBase(int guest_instance_id)
 void GuestViewBase::Init(
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
-    const base::DictionaryValue& create_params) {
+    const base::DictionaryValue& create_params,
+    const WebContentsCreatedCallback& callback) {
   if (initialized_)
     return;
   initialized_ = true;
@@ -87,10 +89,11 @@ void GuestViewBase::Init(
   CreateWebContents(embedder_extension_id,
                     embedder_render_process_id,
                     create_params,
-                    base::Bind(&GuestViewBase::InitWithWebContents,
+                    base::Bind(&GuestViewBase::CompleteCreateWebContents,
                                AsWeakPtr(),
                                embedder_extension_id,
-                               embedder_render_process_id));
+                               embedder_render_process_id,
+                               callback));
 }
 
 void GuestViewBase::InitWithWebContents(
@@ -101,7 +104,6 @@ void GuestViewBase::InitWithWebContents(
   content::RenderProcessHost* embedder_render_process_host =
       content::RenderProcessHost::FromID(embedder_render_process_id);
 
-  browser_context_ = guest_web_contents->GetBrowserContext();
   embedder_extension_id_ = embedder_extension_id;
   embedder_render_process_id_ = embedder_render_process_host->GetID();
   embedder_render_process_host->AddObserver(this);
@@ -119,10 +121,11 @@ void GuestViewBase::InitWithWebContents(
 
 // static
 GuestViewBase* GuestViewBase::Create(
+    content::BrowserContext* browser_context,
     int guest_instance_id,
     const std::string& view_type) {
   if (view_type == "webview") {
-    return new WebViewGuest(guest_instance_id);
+    return new WebViewGuest(browser_context, guest_instance_id);
   }
   NOTREACHED();
   return NULL;
@@ -327,4 +330,19 @@ void GuestViewBase::SendQueuedEvents() {
     pending_events_.pop_front();
     DispatchEvent(event_ptr.release());
   }
+}
+
+void GuestViewBase::CompleteCreateWebContents(
+    const std::string& embedder_extension_id,
+    int embedder_render_process_id,
+    const WebContentsCreatedCallback& callback,
+    content::WebContents* guest_web_contents) {
+  if (!guest_web_contents) {
+    callback.Run(NULL);
+    return;
+  }
+  InitWithWebContents(embedder_extension_id,
+                      embedder_render_process_id,
+                      guest_web_contents);
+  callback.Run(guest_web_contents);
 }

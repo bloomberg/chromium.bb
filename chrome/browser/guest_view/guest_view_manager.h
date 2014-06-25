@@ -51,11 +51,14 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   int GetNextInstanceID();
 
-  content::WebContents* CreateGuest(
+  typedef base::Callback<void(content::WebContents*)>
+      WebContentsCreatedCallback;
+  void CreateGuest(
       const std::string& view_type,
       const std::string& embedder_extension_id,
       int embedder_render_process_id,
-      const base::DictionaryValue& create_params);
+      const base::DictionaryValue& create_params,
+      const WebContentsCreatedCallback& callback);
 
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,

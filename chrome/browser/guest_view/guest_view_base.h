@@ -52,7 +52,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return NULL;
   }
 
-  static GuestViewBase* Create(int guest_instance_id,
+  static GuestViewBase* Create(content::BrowserContext* browser_context,
+                               int guest_instance_id,
                                const std::string& view_type);
 
   static GuestViewBase* FromWebContents(content::WebContents* web_contents);
@@ -130,7 +131,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // newly created WebContents.
   void Init(const std::string& embedder_extension_id,
             int embedder_render_process_id,
-            const base::DictionaryValue& create_params);
+            const base::DictionaryValue& create_params,
+            const WebContentsCreatedCallback& callback);
 
   void InitWithWebContents(
       const std::string& embedder_extension_id,
@@ -203,7 +205,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const base::DictionaryValue& extra_params) OVERRIDE FINAL;
 
  protected:
-  explicit GuestViewBase(int guest_instance_id);
+  GuestViewBase(content::BrowserContext* browser_context,
+                int guest_instance_id);
 
   virtual ~GuestViewBase();
 
@@ -214,6 +217,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   class EmbedderWebContentsObserver;
 
   void SendQueuedEvents();
+
+  void CompleteCreateWebContents(const std::string& embedder_extension_id,
+                                 int embedder_render_process_id,
+                                 const WebContentsCreatedCallback& callback,
+                                 content::WebContents* guest_web_contents);
 
   // WebContentsObserver implementation.
   virtual void DidStopLoading(

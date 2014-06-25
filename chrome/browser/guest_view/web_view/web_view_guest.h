@@ -44,7 +44,8 @@ class SimpleMenuModel;
 class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
-  explicit WebViewGuest(int guest_instance_id);
+  WebViewGuest(content::BrowserContext* browser_context,
+               int guest_instance_id);
 
   // For WebViewGuest, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
@@ -430,8 +431,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void OnUpdateFrameName(bool is_top_level, const std::string& name);
 
   // Creates a new guest window owned by this WebViewGuest.
-  WebViewGuest* CreateNewGuestWebViewWindow(
-      const content::OpenURLParams& params);
+  void CreateNewGuestWebViewWindow(const content::OpenURLParams& params);
+
+  void NewGuestWebViewCallback(const content::OpenURLParams& params,
+                               content::WebContents* guest_web_contents);
 
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 
