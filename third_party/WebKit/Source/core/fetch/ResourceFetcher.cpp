@@ -438,10 +438,10 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
         }
     }
     // FIXME: We need a way to access the top-level frame's mixedContentChecker when that frame
-    // is in a different process from the current frame. Until that is done, we fail loading
-    // mixed content in remote frames.
+    // is in a different process from the current frame. Until that is done, we always allow
+    // loads in remote frames.
     if (frame() && !frame()->tree().top()->isLocalFrame())
-        return false;
+        return true;
     if (treatment == TreatAsActiveContent) {
         if (LocalFrame* f = frame()) {
             if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
