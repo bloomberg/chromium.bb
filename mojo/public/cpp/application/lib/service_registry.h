@@ -5,6 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 #define MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 
+#include <map>
+#include <string>
+
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
@@ -40,6 +43,9 @@ class ServiceRegistry : public ServiceProvider {
       MOJO_OVERRIDE;
 
  private:
+  bool RemoveServiceConnectorInternal(
+      ServiceConnectorBase* service_connector);
+
   Application* application_;
   typedef std::map<std::string, ServiceConnectorBase*>
       NameToServiceConnectorMap;

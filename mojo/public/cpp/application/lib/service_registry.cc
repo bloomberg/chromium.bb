@@ -33,19 +33,27 @@ ServiceRegistry::~ServiceRegistry() {
 
 void ServiceRegistry::AddServiceConnector(
     ServiceConnectorBase* service_connector) {
+  RemoveServiceConnectorInternal(service_connector);
   name_to_service_connector_[service_connector->name()] = service_connector;
   service_connector->set_registry(this);
 }
 
 void ServiceRegistry::RemoveServiceConnector(
     ServiceConnectorBase* service_connector) {
-  NameToServiceConnectorMap::iterator it =
-      name_to_service_connector_.find(service_connector->name());
-  assert(it != name_to_service_connector_.end());
-  delete it->second;
-  name_to_service_connector_.erase(it);
+  RemoveServiceConnectorInternal(service_connector);
   if (name_to_service_connector_.empty())
     remote_service_provider_.reset();
+}
+
+bool ServiceRegistry::RemoveServiceConnectorInternal(
+    ServiceConnectorBase* service_connector) {
+  NameToServiceConnectorMap::iterator it =
+      name_to_service_connector_.find(service_connector->name());
+  if (it == name_to_service_connector_.end())
+    return false;
+  delete it->second;
+  name_to_service_connector_.erase(it);
+  return true;
 }
 
 void ServiceRegistry::BindRemoteServiceProvider(

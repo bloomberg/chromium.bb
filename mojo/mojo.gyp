@@ -45,6 +45,7 @@
         'mojo_network_service',
         'mojo_pepper_container_app',
         'mojo_profile_service',
+        'mojo_public_application_unittests',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
         'mojo_public_environment_unittests',
