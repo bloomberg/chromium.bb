@@ -305,6 +305,15 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       if (bounds.IsEmpty())
         return true;
 
+      // Only windows of type WINDOW_TYPE_NORMAL or WINDOW_TYPE_PANEL need to be
+      // adjusted to have minimum visibility, because they are positioned by the
+      // user and user should always be able to interact with them. Other
+      // windows are positioned programmatically.
+      if (window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+          window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
+        return true;
+      }
+
       // Use entire display instead of workarea because the workarea can
       // be further shrunk by the docked area. The logic ensures 30%
       // visibility which should be enough to see where the window gets

@@ -162,6 +162,19 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   EXPECT_EQ("10,-500 200x200", window2->GetBoundsInScreen().ToString());
 }
 
+TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
+  UpdateDisplay("300x400");
+
+  // Create a popup window out of display boundaries and make sure it is not
+  // moved to have minimum visibility.
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegateAndType(NULL,
+                                                 ui::wm::WINDOW_TYPE_POPUP,
+                                                 0,
+                                                 gfx::Rect(400, 100, 50, 50)));
+  EXPECT_EQ("400,100 50x50", window->GetBoundsInScreen().ToString());
+}
+
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   if (!SupportsHostWindowResize())
     return;
