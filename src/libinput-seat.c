@@ -252,8 +252,9 @@ udev_input_enable(struct udev_input *input)
 }
 
 static void
-libinput_log_func(enum libinput_log_priority priority, void *user_data,
-		     const char *format, va_list args)
+libinput_log_func(struct libinput *libinput,
+		  enum libinput_log_priority priority,
+		  const char *format, va_list args)
 {
 	weston_vlog(format, args);
 }
@@ -268,25 +269,34 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c, struct ud
 
 	input->compositor = c;
 
-	libinput_log_set_handler(&libinput_log_func, NULL);
-
 	log_priority = getenv("WESTON_LIBINPUT_LOG_PRIORITY");
 
-	if (log_priority) {
-		if (strcmp(log_priority, "debug") == 0) {
-			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_DEBUG);
-		} else if (strcmp(log_priority, "info") == 0) {
-			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_INFO);
-		} else if (strcmp(log_priority, "error") == 0) {
-			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_ERROR);
-		}
-	}
-
-	input->libinput = libinput_udev_create_for_seat(&libinput_interface, input,
-							udev, seat_id);
+	input->libinput = libinput_udev_create_context(&libinput_interface,
+						       input, udev);
 	if (!input->libinput) {
 		return -1;
 	}
+
+	libinput_log_set_handler(input->libinput, &libinput_log_func);
+
+	if (log_priority) {
+		if (strcmp(log_priority, "debug") == 0) {
+			libinput_log_set_priority(input->libinput,
+						  LIBINPUT_LOG_PRIORITY_DEBUG);
+		} else if (strcmp(log_priority, "info") == 0) {
+			libinput_log_set_priority(input->libinput,
+						  LIBINPUT_LOG_PRIORITY_INFO);
+		} else if (strcmp(log_priority, "error") == 0) {
+			libinput_log_set_priority(input->libinput,
+						  LIBINPUT_LOG_PRIORITY_ERROR);
+		}
+	}
+
+	if (libinput_udev_assign_seat(input->libinput, seat_id) != 0) {
+		libinput_unref(input->libinput);
+		return -1;
+	}
+
 	process_events(input);
 
 	return udev_input_enable(input);
@@ -300,7 +310,7 @@ udev_input_destroy(struct udev_input *input)
 	wl_event_source_remove(input->libinput_source);
 	wl_list_for_each_safe(seat, next, &input->compositor->seat_list, base.link)
 		udev_seat_destroy(seat);
-	libinput_destroy(input->libinput);
+	libinput_unref(input->libinput);
 }
 
 static void
