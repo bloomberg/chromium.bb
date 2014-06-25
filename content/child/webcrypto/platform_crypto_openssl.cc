@@ -167,7 +167,7 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
   }
 
   Status ConsumeWithStatus(const unsigned char* data, unsigned int size) {
-    crypto::OpenSSLErrStackTracer(FROM_HERE);
+    crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
     Status error = Init();
     if (!error.IsSuccess())
       return error;
@@ -215,7 +215,7 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
   }
 
   Status FinishInternal(unsigned char* result, unsigned int* result_size) {
-    crypto::OpenSSLErrStackTracer(FROM_HERE);
+    crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
     Status error = Init();
     if (!error.IsSuccess())
       return error;
@@ -279,7 +279,7 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
   if (keylen_bytes == 0)
     return Status::ErrorGenerateKeyLength();
 
-  crypto::OpenSSLErrStackTracer(FROM_HERE);
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
   if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
@@ -335,6 +335,8 @@ Status SignHmac(SymKey* key,
                 const blink::WebCryptoAlgorithm& hash,
                 const CryptoData& data,
                 std::vector<uint8>* buffer) {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
   const EVP_MD* digest_algorithm = GetDigest(hash.id());
   if (!digest_algorithm)
     return Status::ErrorUnsupported();
@@ -353,8 +355,6 @@ Status SignHmac(SymKey* key,
   buffer->resize(hmac_expected_length);
   crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
       Uint8VectorStart(buffer), hmac_expected_length);
-
-  crypto::OpenSSLErrStackTracer(FROM_HERE);
 
   unsigned int hmac_actual_length;
   unsigned char* const success = HMAC(digest_algorithm,
