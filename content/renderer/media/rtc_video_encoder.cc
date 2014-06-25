@@ -521,6 +521,7 @@ RTCVideoEncoder::RTCVideoEncoder(
 }
 
 RTCVideoEncoder::~RTCVideoEncoder() {
+  DVLOG(3) << "~RTCVideoEncoder";
   DCHECK(thread_checker_.CalledOnValidThread());
   Release();
   DCHECK(!impl_);
@@ -561,8 +562,6 @@ int32_t RTCVideoEncoder::Encode(
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::VideoFrameType>* frame_types) {
   DVLOG(3) << "Encode()";
-  // TODO(sheu): figure out why this check fails.
-  // DCHECK(thread_checker_.CalledOnValidThread());
   if (!impl_) {
     DVLOG(3) << "Encode(): returning impl_status_=" << impl_status_;
     return impl_status_;
@@ -617,7 +616,6 @@ int32_t RTCVideoEncoder::Release() {
 int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss, int rtt) {
   DVLOG(3) << "SetChannelParameters(): packet_loss=" << packet_loss
            << ", rtt=" << rtt;
-  DCHECK(thread_checker_.CalledOnValidThread());
   // Ignored.
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -625,7 +623,6 @@ int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss, int rtt) {
 int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   DVLOG(3) << "SetRates(): new_bit_rate=" << new_bit_rate
            << ", frame_rate=" << frame_rate;
-  DCHECK(thread_checker_.CalledOnValidThread());
   if (!impl_) {
     DVLOG(3) << "SetRates(): returning " << impl_status_;
     return impl_status_;
