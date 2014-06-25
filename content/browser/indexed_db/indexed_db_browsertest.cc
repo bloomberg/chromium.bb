@@ -605,7 +605,8 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
 
 INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
                         IndexedDBBrowserCorruptionTest,
-                        ::testing::Values("get",
+                        ::testing::Values("failGetBlobJournal",
+                                          "get",
                                           "iterate",
                                           "failTransactionCommit",
                                           "clearObjectStore"));

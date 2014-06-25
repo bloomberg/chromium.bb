@@ -562,7 +562,7 @@ static leveldb::Status GetBlobJournal(const StringPiece& leveldb_key,
   bool found = false;
   leveldb::Status s = leveldb_transaction->Get(leveldb_key, &data, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR_UNTESTED(READ_BLOB_JOURNAL);
+    INTERNAL_READ_ERROR(READ_BLOB_JOURNAL);
     return s;
   }
   journal->clear();
@@ -570,7 +570,7 @@ static leveldb::Status GetBlobJournal(const StringPiece& leveldb_key,
     return leveldb::Status::OK();
   StringPiece slice(data);
   if (!DecodeBlobJournal(&slice, journal)) {
-    INTERNAL_READ_ERROR_UNTESTED(DECODE_BLOB_JOURNAL);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(DECODE_BLOB_JOURNAL);
     s = InternalInconsistencyStatus();
   }
   return s;
@@ -4011,7 +4011,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
 
   s = backing_store_->CleanUpBlobJournal(BlobJournalKey::Encode());
   if (!s.ok()) {
-    INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+    INTERNAL_WRITE_ERROR(TRANSACTION_COMMIT_METHOD);
     transaction_ = NULL;
     return s;
   }
@@ -4137,11 +4137,12 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
 
 void IndexedDBBackingStore::Transaction::Rollback() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Rollback");
-  DCHECK(transaction_.get());
   if (chained_blob_writer_) {
     chained_blob_writer_->Abort();
     chained_blob_writer_ = NULL;
   }
+  if (transaction_.get() == NULL)
+    return;
   transaction_->Rollback();
   transaction_ = NULL;
 }
