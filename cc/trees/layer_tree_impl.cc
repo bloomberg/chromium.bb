@@ -221,10 +221,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   else
     target_tree->ResetContentsTexturesPurged();
 
-  // Always reset this flag on activation, as we would only have activated
-  // if we were in a good state.
-  target_tree->ResetRequiresHighResToDraw();
-
   if (ViewportSizeInvalid())
     target_tree->SetViewportSizeInvalid();
   else
@@ -576,9 +572,6 @@ static void DidBecomeActiveRecursive(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::DidBecomeActive() {
-  if (!root_layer())
-    return;
-
   if (next_activation_forces_redraw_) {
     layer_tree_host_impl_->SetFullRootLayerDamage();
     next_activation_forces_redraw_ = false;
@@ -586,10 +579,16 @@ void LayerTreeImpl::DidBecomeActive() {
 
   if (scrolling_layer_id_from_previous_tree_) {
     currently_scrolling_layer_ = LayerTreeHostCommon::FindLayerInSubtree(
-        root_layer_.get(), scrolling_layer_id_from_previous_tree_);
+        root_layer(), scrolling_layer_id_from_previous_tree_);
   }
 
-  DidBecomeActiveRecursive(root_layer());
+  // Always reset this flag on activation, as we would only have activated
+  // if we were in a good state.
+  ResetRequiresHighResToDraw();
+
+  if (root_layer())
+    DidBecomeActiveRecursive(root_layer());
+
   devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
                                                  source_frame_number_);
 }
