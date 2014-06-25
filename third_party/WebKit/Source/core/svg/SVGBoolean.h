@@ -31,11 +31,11 @@
 #ifndef SVGBoolean_h
 #define SVGBoolean_h
 
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace WebCore {
 
-class SVGBoolean : public SVGPropertyBase {
+class SVGBoolean : public SVGPropertyHelper<SVGBoolean> {
 public:
     // SVGBoolean does not have a tear-off type.
     typedef void TearOffType;
@@ -47,7 +47,6 @@ public:
     }
 
     PassRefPtr<SVGBoolean> clone() const { return create(m_value); }
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
@@ -66,8 +65,7 @@ public:
 
 private:
     SVGBoolean(bool value)
-        : SVGPropertyBase(classType())
-        , m_value(value)
+        : m_value(value)
     {
     }
 

@@ -43,13 +43,6 @@ SVGNumberList::~SVGNumberList()
 {
 }
 
-PassRefPtr<SVGPropertyBase> SVGNumberList::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();
-    svgNumberList->setValueAsString(value, IGNORE_EXCEPTION);
-    return svgNumberList.release();
-}
-
 String SVGNumberList::valueAsString() const
 {
     StringBuilder builder;

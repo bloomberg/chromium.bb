@@ -78,16 +78,14 @@ float SVGMarkerOrientEnumeration::calculateDistance(PassRefPtr<SVGPropertyBase> 
 }
 
 SVGAngle::SVGAngle()
-    : SVGPropertyBase(classType())
-    , m_unitType(SVG_ANGLETYPE_UNSPECIFIED)
+    : m_unitType(SVG_ANGLETYPE_UNSPECIFIED)
     , m_valueInSpecifiedUnits(0)
     , m_orientType(SVGMarkerOrientEnumeration::create(this))
 {
 }
 
 SVGAngle::SVGAngle(SVGAngleType unitType, float valueInSpecifiedUnits, SVGMarkerOrientType orientType)
-    : SVGPropertyBase(classType())
-    , m_unitType(unitType)
+    : m_unitType(unitType)
     , m_valueInSpecifiedUnits(valueInSpecifiedUnits)
     , m_orientType(SVGMarkerOrientEnumeration::create(this))
 {
@@ -101,13 +99,6 @@ SVGAngle::~SVGAngle()
 PassRefPtr<SVGAngle> SVGAngle::clone() const
 {
     return adoptRef(new SVGAngle(m_unitType, m_valueInSpecifiedUnits, m_orientType->enumValue()));
-}
-
-PassRefPtr<SVGPropertyBase> SVGAngle::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGAngle> point = create();
-    point->setValueAsString(value, IGNORE_EXCEPTION);
-    return point.release();
 }
 
 float SVGAngle::value() const

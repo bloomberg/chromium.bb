@@ -39,13 +39,6 @@
 
 namespace WebCore {
 
-PassRefPtr<SVGPropertyBase> SVGBoolean::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGBoolean> svgBoolean = create();
-    svgBoolean->setValueAsString(value, IGNORE_EXCEPTION);
-    return svgBoolean.release();
-}
-
 String SVGBoolean::valueAsString() const
 {
     return m_value ? "true" : "false";

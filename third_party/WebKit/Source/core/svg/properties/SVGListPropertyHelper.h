@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
@@ -43,12 +43,11 @@ namespace WebCore {
 // This is an implementation of the SVG*List property spec:
 // http://www.w3.org/TR/SVG/single-page.html#types-InterfaceSVGLengthList
 template<typename Derived, typename ItemProperty>
-class SVGListPropertyHelper : public SVGPropertyBase {
+class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
 public:
     typedef ItemProperty ItemPropertyType;
 
     SVGListPropertyHelper()
-        : SVGPropertyBase(Derived::classType())
     {
     }
 

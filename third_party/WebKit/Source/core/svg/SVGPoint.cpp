@@ -43,26 +43,17 @@
 namespace WebCore {
 
 SVGPoint::SVGPoint()
-    : SVGPropertyBase(classType())
 {
 }
 
 SVGPoint::SVGPoint(const FloatPoint& point)
-    : SVGPropertyBase(classType())
-    , m_value(point)
+    : m_value(point)
 {
 }
 
 PassRefPtr<SVGPoint> SVGPoint::clone() const
 {
     return SVGPoint::create(m_value);
-}
-
-PassRefPtr<SVGPropertyBase> SVGPoint::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGPoint> point = SVGPoint::create();
-    point->setValueAsString(value, IGNORE_EXCEPTION);
-    return point.release();
 }
 
 template<typename CharType>

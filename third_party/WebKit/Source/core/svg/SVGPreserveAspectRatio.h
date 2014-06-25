@@ -21,7 +21,7 @@
 #ifndef SVGPreserveAspectRatio_h
 #define SVGPreserveAspectRatio_h
 
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace WebCore {
 
@@ -29,7 +29,7 @@ class AffineTransform;
 class FloatRect;
 class SVGPreserveAspectRatioTearOff;
 
-class SVGPreserveAspectRatio : public SVGPropertyBase {
+class SVGPreserveAspectRatio : public SVGPropertyHelper<SVGPreserveAspectRatio> {
 public:
     enum SVGPreserveAspectRatioType {
         SVG_PRESERVEASPECTRATIO_UNKNOWN = 0,
@@ -59,7 +59,6 @@ public:
     }
 
     virtual PassRefPtr<SVGPreserveAspectRatio> clone() const;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     bool operator==(const SVGPreserveAspectRatio&) const;
     bool operator!=(const SVGPreserveAspectRatio& other) const { return !operator==(other); }

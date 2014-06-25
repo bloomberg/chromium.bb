@@ -33,11 +33,11 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace WebCore {
 
-class SVGInteger : public SVGPropertyBase {
+class SVGInteger : public SVGPropertyHelper<SVGInteger> {
 public:
     typedef void TearOffType;
     typedef int PrimitiveType;
@@ -48,7 +48,6 @@ public:
     }
 
     virtual PassRefPtr<SVGInteger> clone() const;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     int value() const { return m_value; }
     void setValue(int value) { m_value = value; }

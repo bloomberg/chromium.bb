@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGStringList.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
@@ -28,7 +29,6 @@
 namespace WebCore {
 
 SVGStringList::SVGStringList()
-    : SVGPropertyBase(classType())
 {
 }
 
@@ -116,13 +116,6 @@ void SVGStringList::setValueAsString(const String& data, ExceptionState&)
         const UChar* end = ptr + data.length();
         parseInternal(ptr, end);
     }
-}
-
-PassRefPtr<SVGPropertyBase> SVGStringList::cloneForAnimation(const String& string) const
-{
-    RefPtr<SVGStringList> svgStringList = create();
-    svgStringList->setValueAsString(string, IGNORE_EXCEPTION);
-    return svgStringList.release();
 }
 
 String SVGStringList::valueAsString() const

@@ -37,21 +37,13 @@
 namespace WebCore {
 
 SVGNumber::SVGNumber(float value)
-    : SVGPropertyBase(classType())
-    , m_value(value)
+    : m_value(value)
 {
 }
 
 PassRefPtr<SVGNumber> SVGNumber::clone() const
 {
     return create(m_value);
-}
-
-PassRefPtr<SVGPropertyBase> SVGNumber::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGNumber> svgNumber = create();
-    svgNumber->setValueAsString(value, IGNORE_EXCEPTION);
-    return svgNumber.release();
 }
 
 String SVGNumber::valueAsString() const

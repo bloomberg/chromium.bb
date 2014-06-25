@@ -44,13 +44,6 @@ SVGPointList::~SVGPointList()
 {
 }
 
-PassRefPtr<SVGPropertyBase> SVGPointList::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGPointList> svgPointList = SVGPointList::create();
-    svgPointList->setValueAsString(value, IGNORE_EXCEPTION);
-    return svgPointList.release();
-}
-
 String SVGPointList::valueAsString() const
 {
     StringBuilder builder;

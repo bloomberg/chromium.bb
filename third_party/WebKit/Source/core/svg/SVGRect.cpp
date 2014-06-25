@@ -33,20 +33,17 @@
 namespace WebCore {
 
 SVGRect::SVGRect()
-    : SVGPropertyBase(classType())
-    , m_isValid(true)
+    : m_isValid(true)
 {
 }
 
 SVGRect::SVGRect(InvalidSVGRectTag)
-    : SVGPropertyBase(classType())
 {
     setInvalid();
 }
 
 SVGRect::SVGRect(const FloatRect& rect)
-    : SVGPropertyBase(classType())
-    , m_isValid(true)
+    : m_isValid(true)
     , m_value(rect)
 {
 }
@@ -54,13 +51,6 @@ SVGRect::SVGRect(const FloatRect& rect)
 PassRefPtr<SVGRect> SVGRect::clone() const
 {
     return SVGRect::create(m_value);
-}
-
-PassRefPtr<SVGPropertyBase> SVGRect::cloneForAnimation(const String& value) const
-{
-    RefPtr<SVGRect> rect = SVGRect::create();
-    rect->setValueAsString(value, IGNORE_EXCEPTION);
-    return rect.release();
 }
 
 template<typename CharType>

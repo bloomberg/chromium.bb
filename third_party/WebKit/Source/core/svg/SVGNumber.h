@@ -32,14 +32,13 @@
 #define SVGNumber_h
 
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace WebCore {
 
 class SVGNumberTearOff;
 
-class SVGNumber : public SVGPropertyBase {
+class SVGNumber : public SVGPropertyHelper<SVGNumber> {
 public:
     // SVGNumber has a tear-off type, but SVGAnimatedNumber uses primitive type.
     typedef SVGNumberTearOff TearOffType;
@@ -51,7 +50,6 @@ public:
     }
 
     virtual PassRefPtr<SVGNumber> clone() const;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     float value() const { return m_value; }
     void setValue(float value) { m_value = value; }

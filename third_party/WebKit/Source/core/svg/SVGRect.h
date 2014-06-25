@@ -20,14 +20,14 @@
 #ifndef SVGRect_h
 #define SVGRect_h
 
-#include "core/svg/properties/SVGProperty.h"
+#include "core/svg/properties/SVGPropertyHelper.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 
 class SVGRectTearOff;
 
-class SVGRect : public SVGPropertyBase {
+class SVGRect : public SVGPropertyHelper<SVGRect> {
 public:
     typedef SVGRectTearOff TearOffType;
 
@@ -49,7 +49,6 @@ public:
     }
 
     PassRefPtr<SVGRect> clone() const;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     const FloatRect& value() const { return m_value; }
     void setValue(const FloatRect& v) { m_value = v; }

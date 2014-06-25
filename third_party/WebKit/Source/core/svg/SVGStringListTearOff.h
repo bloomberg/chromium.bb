@@ -31,6 +31,7 @@
 #ifndef SVGStringListTearOff_h
 #define SVGStringListTearOff_h
 
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
