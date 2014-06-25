@@ -19,12 +19,20 @@ vars = {
   "googlecode_url": "http://%s.googlecode.com/svn",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "chromium_git": "https://chromium.googlesource.com",
-}
+
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling build tools
+  # and whatever else without interference from each other.
+  "buildtools_revision": "10a5251e71445a832953f1374bbbbe60ad019144",
+  }
 
 deps = {
   "breakpad":
     ((Var("googlecode_url") % "google-breakpad") + "/trunk@" +
      Var('breakpad_rev')),
+  "buildtools":
+    Var("chromium_git") + "/chromium/buildtools.git@" +
+     Var("buildtools_revision"),
   "testing/gtest":
     (Var("googlecode_url") % "googletest") + "/trunk@" + Var("gtest_rev"),
   "third_party":
@@ -82,6 +90,12 @@ hooks = [
                "sync", "--extract",
     ],
   },
+  # Update clang
+  {
+    "name": "clang",
+    "pattern": ".",
+    "action": ["python", "tools/clang/scripts/update.py", "--if-needed"],
+  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     "name": "gn_win",
@@ -91,7 +105,7 @@ hooks = [
                 "--platform=win32",
                 "--no_auth",
                 "--bucket", "chromium-gn",
-                "-s", "native_client/tools/gn/bin/win/gn.exe.sha1",
+                "-s", "buildtools/win/gn.exe.sha1",
     ],
   },
   {
@@ -102,29 +116,7 @@ hooks = [
                 "--platform=darwin",
                 "--no_auth",
                 "--bucket", "chromium-gn",
-                "-s", "native_client/tools/gn/bin/mac/gn.sha1",
-    ],
-  },
-  {
-    "name": "gn_linux",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "native_client/tools/gn/bin/linux/gn.sha1",
-    ],
-  },
-  {
-    "name": "gn_linux",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "native_client/tools/gn/bin/linux/gn.sha1",
+                "-s", "buildtools/mac/gn.sha1",
     ],
   },
   {
@@ -135,14 +127,19 @@ hooks = [
                 "--platform=linux*",
                 "--no_auth",
                 "--bucket", "chromium-gn",
-                "-s", "native_client/tools/gn/bin/linux/gn32.sha1",
+                "-s", "buildtools/linux32/gn.sha1",
     ],
   },
-  # Update clang
   {
-    "name": "clang",
+    "name": "gn_linux64",
     "pattern": ".",
-    "action": ["python", "tools/clang/scripts/update.py", "--if-needed"],
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "buildtools/linux64/gn.sha1",
+    ],
   },
   # Run GYP, do this last to make sure all the tools are present first.
   {

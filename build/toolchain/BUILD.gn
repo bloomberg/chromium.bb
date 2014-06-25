@@ -180,9 +180,11 @@ template("prep_toolchain") {
         ":${target_name}_crti_x86_32",
         ":${target_name}_crtn_x86_32",
         ":${target_name}_crt1_x86_32",
+        ":${target_name}_libnacl_x86_32",
         ":${target_name}_crti_x86_64",
         ":${target_name}_crtn_x86_64",
         ":${target_name}_crt1_x86_64",
+        ":${target_name}_libnacl_x86_64",
 
       ]
     } else {
@@ -195,6 +197,7 @@ template("prep_toolchain") {
         ":${target_name}_crti_arm",
         ":${target_name}_crtn_arm",
         ":${target_name}_crt1_arm",
+        ":${target_name}_libnacl_arm",
       ]
     }
   }

@@ -14,13 +14,6 @@
 # combinations of the real targets.
 #
 
-group("trusted") {
-  deps = [
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
-  ]
-}
-
 #
 # TODO(noelallen) : BUG# 386243
 # Remove the need for a target to prep all toolchains once a Cooked toolchain
@@ -32,6 +25,25 @@ group("prep_toolchains") {
     "//native_client/build/toolchain:prep_arm_newlib",
   ]
 }
+
+group("trusted_arm") {
+  deps = [
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_arm)",
+  ]
+}
+
+group("trusted_32") {
+  deps = [
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
+  ]
+}
+
+group("trusted_64") {
+  deps = [
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
+  ]
+}
+
 
 #
 # This is the root untrusted target which will build all trusted components

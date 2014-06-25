@@ -218,13 +218,18 @@ def BuildScript(status, context):
     Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
 
   # Make sure our GN build is working.
-  if context.Linux() and context['arch'] == '64':
+  gn_path = None
+  if context.Linux() and context['arch'] != 'arm':
+    gn_path = '../buildtools/linux32/gn'
+    targets = ['trusted_' + context['arch'], 'untrusted']
+
+  if gn_path:
     with Step('gn_compile', status):
       Command(context,
-              cmd=['tools/gn/bin/linux/gn32', '--dotfile=../native_client/.gn',
+              cmd=[gn_path, '--dotfile=../native_client/.gn',
                    '--root=..', 'gen', '../out'])
       Command(context, cmd=['ninja', '-C', '../out', '-j10', 'prep_toolchains'])
-      Command(context, cmd=['ninja', '-C', '../out', '-j10'])
+      Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
 
   # Make sure our Gyp build is working.
   if not context['no_gyp']:

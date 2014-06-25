@@ -42,6 +42,7 @@ declare_args() {
   is_chrome_branded = false
   is_chromeos = false
   is_ios = false
+  is_android_webview_build = false
 
   is_asan = false
   is_lsan = false
