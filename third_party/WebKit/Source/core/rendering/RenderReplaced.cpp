@@ -205,25 +205,6 @@ bool RenderReplaced::shouldPaint(PaintInfo& paintInfo, const LayoutPoint& paintO
     return true;
 }
 
-static inline RenderBlock* firstContainingBlockWithLogicalWidth(const RenderReplaced* replaced)
-{
-    // We have to lookup the containing block, which has an explicit width, which must not be equal to our direct containing block.
-    // If the embedded document appears _after_ we performed the initial layout, our intrinsic size is 300x150. If our containing
-    // block doesn't provide an explicit width, it's set to the 300 default, coming from the initial layout run.
-    RenderBlock* containingBlock = replaced->containingBlock();
-    if (!containingBlock)
-        return 0;
-
-    for (; !containingBlock->isRenderView() && !containingBlock->isBody(); containingBlock = containingBlock->containingBlock()) {
-        if (containingBlock->style()->logicalWidth().isSpecified()
-            && containingBlock->style()->logicalMinWidth().isSpecified()
-            && (containingBlock->style()->logicalMaxWidth().isSpecified() || containingBlock->style()->logicalMaxWidth().isUndefined()))
-            return containingBlock;
-    }
-
-    return 0;
-}
-
 bool RenderReplaced::hasReplacedLogicalHeight() const
 {
     if (style()->logicalHeight().isAuto())
@@ -388,20 +369,7 @@ LayoutUnit RenderReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
                     return 0;
                 // The aforementioned 'constraint equation' used for block-level, non-replaced elements in normal flow:
                 // 'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' = width of containing block
-                LayoutUnit logicalWidth;
-                // FIXME: This walking up the containgBlock chain to find the first one with a specified width is bonkers.
-                // If nothing else, it requires making sure that computeReplacedLogicalWidthRespectingMinMaxWidth cannot
-                // depend on the width of the replaced element or we infinite loop. Right now we do that in
-                // firstContainingBlockWithLogicalWidth by checking that width/min-width/max-width are all specified.
-                //
-                // Firefox 27 seems to only do this if the <svg> has a viewbox.
-                if (RenderBlock* blockWithWidth = firstContainingBlockWithLogicalWidth(this)) {
-                    logicalWidth = blockWithWidth->computeReplacedLogicalWidthRespectingMinMaxWidth(blockWithWidth->computeReplacedLogicalWidthUsing(blockWithWidth->style()->logicalWidth()), shouldComputePreferred);
-                } else {
-                    // FIXME: If shouldComputePreferred == ComputePreferred, then we're reading this during preferred width
-                    // computation, at which point this is reading stale data from a previous layout.
-                    logicalWidth = containingBlock()->availableLogicalWidth();
-                }
+                LayoutUnit logicalWidth = containingBlock()->availableLogicalWidth();
 
                 // This solves above equation for 'width' (== logicalWidth).
                 LayoutUnit marginStart = minimumValueForLength(style()->marginStart(), logicalWidth);
