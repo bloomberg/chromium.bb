@@ -244,10 +244,6 @@ const char kDisableComponentExtensionsWithBackgroundPages[] =
 
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
-// Disables establishing certificate revocation information by downloading a
-// set of CRLs rather than performing on-line checks.
-const char kDisableCRLSets[]                = "disable-crl-sets";
-
 // Disables installation of default apps on first run. This is used during
 // automated testing.
 const char kDisableDefaultApps[]            = "disable-default-apps";

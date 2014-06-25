@@ -77,7 +77,6 @@ extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableComponentExtensionsWithBackgroundPages[];
 extern const char kDisableComponentUpdate[];
-extern const char kDisableCRLSets[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscovery[];
 extern const char kDisableDeviceDiscoveryNotifications[];

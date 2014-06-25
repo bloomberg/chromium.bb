@@ -399,8 +399,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
   // network.
-  if (!command_line.HasSwitch(switches::kDisableCRLSets))
-    g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+  g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 #elif defined(OS_ANDROID)
   // The CRLSet component was enabled for some releases. This code attempts to
   // delete it from the local disk of those how may have downloaded it.
