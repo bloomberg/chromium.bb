@@ -878,9 +878,6 @@ const char kZygoteProcess[]                 = "zygote";
 // NS and AGC will be done in PeerConnection instead of MediaStreamTrack.
 const char kDisableAudioTrackProcessing[]    = "disable-audio-track-processing";
 
-// Disables WebRTC device enumeration.
-const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
-
 // Disables HW decode acceleration for WebRTC.
 const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 

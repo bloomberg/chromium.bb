@@ -608,13 +608,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_WEBRTC)
   {
-    "disable-device-enumeration",
-    IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_NAME,
-    IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableDeviceEnumeration)
-  },
-  {
     "disable-webrtc-hw-decoding",
     IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_NAME,
     IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_DESCRIPTION,

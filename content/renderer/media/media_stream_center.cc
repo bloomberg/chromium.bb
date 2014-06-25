@@ -92,15 +92,12 @@ MediaStreamCenter::~MediaStreamCenter() {}
 
 bool MediaStreamCenter::getMediaStreamTrackSources(
     const blink::WebMediaStreamTrackSourcesRequest& request) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDeviceEnumeration)) {
-    int request_id = next_request_id_++;
-    requests_.insert(std::make_pair(request_id, request));
-    RenderThread::Get()->Send(new MediaStreamHostMsg_GetSources(
-        request_id, GURL(request.origin().utf8())));
-    return true;
-  }
-  return false;
+  int request_id = next_request_id_++;
+  requests_.insert(std::make_pair(request_id, request));
+  RenderThread::Get()->Send(new MediaStreamHostMsg_GetSources(
+      request_id,
+      GURL(request.origin().utf8())));
+  return true;
 }
 
 void MediaStreamCenter::didCreateMediaStreamTrack(
