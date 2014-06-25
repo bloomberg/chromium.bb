@@ -184,7 +184,7 @@ MDRawModule
   base_of_image                   = 0x400000
   size_of_image                   = 0x2d000
   checksum                        = 0x0
-  time_date_stamp                 = 0x45d35f6c
+  time_date_stamp                 = 0x45d35f6c 2007-02-14 19:13:48
   module_name_rva                 = 0x78a
   version_info.signature          = 0x0
   version_info.struct_version     = 0x0
@@ -216,7 +216,7 @@ MDRawModule
   base_of_image                   = 0x7c900000
   size_of_image                   = 0xb0000
   checksum                        = 0xaf2f7
-  time_date_stamp                 = 0x411096b4
+  time_date_stamp                 = 0x411096b4 2004-08-04 07:56:36
   module_name_rva                 = 0x7ae
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -248,7 +248,7 @@ MDRawModule
   base_of_image                   = 0x7c800000
   size_of_image                   = 0xf4000
   checksum                        = 0xf724d
-  time_date_stamp                 = 0x44ab9a84
+  time_date_stamp                 = 0x44ab9a84 2006-07-05 10:55:00
   module_name_rva                 = 0x7ee
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -280,7 +280,7 @@ MDRawModule
   base_of_image                   = 0x774e0000
   size_of_image                   = 0x13d000
   checksum                        = 0x13dc6b
-  time_date_stamp                 = 0x42e5be93
+  time_date_stamp                 = 0x42e5be93 2005-07-26 04:39:47
   module_name_rva                 = 0x834
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -312,7 +312,7 @@ MDRawModule
   base_of_image                   = 0x77dd0000
   size_of_image                   = 0x9b000
   checksum                        = 0xa0de4
-  time_date_stamp                 = 0x411096a7
+  time_date_stamp                 = 0x411096a7 2004-08-04 07:56:23
   module_name_rva                 = 0x874
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -344,7 +344,7 @@ MDRawModule
   base_of_image                   = 0x77e70000
   size_of_image                   = 0x91000
   checksum                        = 0x9c482
-  time_date_stamp                 = 0x411096ae
+  time_date_stamp                 = 0x411096ae 2004-08-04 07:56:30
   module_name_rva                 = 0x8ba
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -376,7 +376,7 @@ MDRawModule
   base_of_image                   = 0x77f10000
   size_of_image                   = 0x47000
   checksum                        = 0x4d0d0
-  time_date_stamp                 = 0x43b34feb
+  time_date_stamp                 = 0x43b34feb 2005-12-29 02:54:35
   module_name_rva                 = 0x8fc
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -408,7 +408,7 @@ MDRawModule
   base_of_image                   = 0x77d40000
   size_of_image                   = 0x90000
   checksum                        = 0x9505c
-  time_date_stamp                 = 0x42260159
+  time_date_stamp                 = 0x42260159 2005-03-02 18:09:29
   module_name_rva                 = 0x93c
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -440,7 +440,7 @@ MDRawModule
   base_of_image                   = 0x77c10000
   size_of_image                   = 0x58000
   checksum                        = 0x57cd3
-  time_date_stamp                 = 0x41109752
+  time_date_stamp                 = 0x41109752 2004-08-04 07:59:14
   module_name_rva                 = 0x97e
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -472,7 +472,7 @@ MDRawModule
   base_of_image                   = 0x76390000
   size_of_image                   = 0x1d000
   checksum                        = 0x2a024
-  time_date_stamp                 = 0x411096ae
+  time_date_stamp                 = 0x411096ae 2004-08-04 07:56:30
   module_name_rva                 = 0x9c0
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -504,7 +504,7 @@ MDRawModule
   base_of_image                   = 0x59a60000
   size_of_image                   = 0xa1000
   checksum                        = 0xa8824
-  time_date_stamp                 = 0x4110969a
+  time_date_stamp                 = 0x4110969a 2004-08-04 07:56:10
   module_name_rva                 = 0xa00
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -536,7 +536,7 @@ MDRawModule
   base_of_image                   = 0x77c00000
   size_of_image                   = 0x8000
   checksum                        = 0x11d78
-  time_date_stamp                 = 0x411096b7
+  time_date_stamp                 = 0x411096b7 2004-08-04 07:56:39
   module_name_rva                 = 0xa44
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -568,7 +568,7 @@ MDRawModule
   base_of_image                   = 0x76bf0000
   size_of_image                   = 0xb000
   checksum                        = 0xa29b
-  time_date_stamp                 = 0x411096ca
+  time_date_stamp                 = 0x411096ca 2004-08-04 07:56:58
   module_name_rva                 = 0xa88
   version_info.signature          = 0xfeef04bd
   version_info.struct_version     = 0x10000
@@ -670,7 +670,7 @@ MDRawContextX86
   extended_registers[512]      = 0x7f0200000000220000000000000000000000000000000000801f0000ffff00000000000018b72200000100000000000018b72200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004509917c4e09917c38b622002400020024b42200020000009041917c0070fd7f0510907cccb22200000000009cb3220018ee907c7009917cc0e4977c6f3e917c623e917c08020000dcb62200b4b622001e000000000000000000000000000000000000002eb42200000000000f000000020000001e00200000fcfd7f2f63796764726976652f632f444f43554d457e312f4d4d454e544f7e312f4c4f43414c537e312f54656d7000000000000000000130b422000000004300000000000000001efcfd7f4509917c4e09917c5ad9000008b32200b4b62200
 
 MDRawSystemInfo
-  processor_architecture                     = 0
+  processor_architecture                     = 0x0
   processor_level                            = 6
   processor_revision                         = 0xd08
   number_of_processors                       = 1
@@ -678,9 +678,10 @@ MDRawSystemInfo
   major_version                              = 5
   minor_version                              = 1
   build_number                               = 2600
-  platform_id                                = 2
+  platform_id                                = 0x2
   csd_version_rva                            = 0x768
   suite_mask                                 = 0x100
+  cpu.x86_cpu_info (valid):
   cpu.x86_cpu_info.vendor_id[0]              = 0x756e6547
   cpu.x86_cpu_info.vendor_id[1]              = 0x49656e69
   cpu.x86_cpu_info.vendor_id[2]              = 0x6c65746e
@@ -693,10 +694,10 @@ MDRawSystemInfo
 MDRawMiscInfo
   size_of_info                 = 24
   flags1                       = 0x3
-  process_id                   = 0xf5c
-  process_create_time          = 0x45d35f73
-  process_user_time            = 0x0
-  process_kernel_time          = 0x0
+  process_id                   = 3932
+  process_create_time          = 0x45d35f73 2007-02-14 19:13:55
+  process_user_time            = 0
+  process_kernel_time          = 0
 
 MDRawBreakpadInfo
   validity             = 0x3
