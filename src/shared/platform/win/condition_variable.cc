@@ -100,10 +100,10 @@ int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, TimeTicks abs_time) {
   TimeDelta relative_time = abs_time - NaClWinUnixTimeBaseNow();
 #endif
   NaClLog(4,
-          "TimedWaitAbs: req'd abs_time %"NACL_PRId64" ticks (uS)\n",
+          "TimedWaitAbs: req'd abs_time %" NACL_PRId64 " ticks (uS)\n",
           abs_time.ticks_for_testing());
   NaClLog(4,
-          "TimedWaitAbs: relative_time  %"NACL_PRId64" ticks (uS)\n",
+          "TimedWaitAbs: relative_time  %" NACL_PRId64 " ticks (uS)\n",
           relative_time.InMicroseconds());
   if (relative_time.InMicroseconds() < 0) {
     NaClLog(4, "TimedWaitAbs: time already passed!\n");
