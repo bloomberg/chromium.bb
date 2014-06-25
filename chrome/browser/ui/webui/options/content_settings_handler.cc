@@ -107,6 +107,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
   {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
+  {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging"},
 #if defined(OS_CHROMEOS)
   {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
 #endif
@@ -414,6 +415,11 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "midiSysExAllow", IDS_MIDI_SYSEX_ALLOW_RADIO },
     { "midiSysExAsk", IDS_MIDI_SYSEX_ASK_RADIO },
     { "midiSysExBlock", IDS_MIDI_SYSEX_BLOCK_RADIO },
+    // Push messaging strings
+    { "push-messaging_header", IDS_PUSH_MESSAGES_TAB_LABEL },
+    { "pushMessagingAllow", IDS_PUSH_MESSSAGING_ALLOW_RADIO },
+    { "pushMessagingAsk", IDS_PUSH_MESSSAGING_ASK_RADIO },
+    { "pushMessagingBlock", IDS_PUSH_MESSSAGING_BLOCK_RADIO },
     { "zoomlevels_header", IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL },
     { "zoomLevelsManage", IDS_ZOOMLEVELS_MANAGE_BUTTON },
   };

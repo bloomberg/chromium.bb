@@ -41,6 +41,7 @@ const char* kTypeNames[] = {
   "ppapi-broker",
   "multiple-automatic-downloads",
   "midi-sysex",
+  "push-messaging",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)

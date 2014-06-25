@@ -25,15 +25,15 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnRegister(int routing_id,
+  void OnRegister(int render_view_id,
                   int callbacks_id,
                   const std::string& sender_id);
 
-  void DoRegister(int routing_id,
+  void DoRegister(int render_view_id,
                   int callbacks_id,
                   const std::string& sender_id);
 
-  void DidRegister(int routing_id,
+  void DidRegister(int render_view_id,
                    int callbacks_id,
                    const GURL& endpoint,
                    const std::string& registration_id,
