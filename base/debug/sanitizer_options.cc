@@ -85,11 +85,13 @@ const char *__asan_default_options() {
 //   report_thread_leaks=0 - do not report unjoined threads at the end of
 //     the program execution.
 //   print_suppressions=1 - print the list of matched suppressions.
+//   history_size=7 - make the history buffer proportional to 2^7 (the maximum
+//     value) to keep more stack traces.
 //   strip_path_prefix=Release/../../ - prefixes up to and including this
 //     substring will be stripped from source file paths in symbolized reports.
 const char kTsanDefaultOptions[] =
     "detect_deadlocks=1 second_deadlock_stack=1 report_signal_unsafe=0 "
-    "report_thread_leaks=0 print_suppressions=1 "
+    "report_thread_leaks=0 print_suppressions=1 history_size=7 "
     "strip_path_prefix=Release/../../ ";
 
 extern "C"
