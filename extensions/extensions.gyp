@@ -423,6 +423,8 @@
         'browser/renderer_startup_helper.h',
         'browser/runtime_data.cc',
         'browser/runtime_data.h',
+        'browser/state_store.cc',
+        'browser/state_store.h',
         'browser/update_observer.h',
         'browser/value_store/leveldb_value_store.cc',
         'browser/value_store/leveldb_value_store.h',

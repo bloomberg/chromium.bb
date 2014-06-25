@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/value_store/value_store_frontend.h"
 
-class Profile;
-
 namespace content {
 class BrowserContext;
 }
@@ -27,19 +25,19 @@ namespace extensions {
 class ExtensionRegistry;
 
 // A storage area for per-extension state that needs to be persisted to disk.
-class StateStore
-    : public base::SupportsWeakPtr<StateStore>,
-      public ExtensionRegistryObserver,
-      public content::NotificationObserver {
+class StateStore : public base::SupportsWeakPtr<StateStore>,
+                   public ExtensionRegistryObserver,
+                   public content::NotificationObserver {
  public:
   typedef ValueStoreFrontend::ReadCallback ReadCallback;
 
   // If |deferred_load| is true, we won't load the database until the first
   // page has been loaded.
-  StateStore(Profile* profile, const base::FilePath& db_path,
+  StateStore(content::BrowserContext* context,
+             const base::FilePath& db_path,
              bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
-  StateStore(Profile* profile, scoped_ptr<ValueStore> store);
+  StateStore(content::BrowserContext* context, scoped_ptr<ValueStore> store);
   virtual ~StateStore();
 
   // Register a key for removal upon extension install/uninstall. We remove

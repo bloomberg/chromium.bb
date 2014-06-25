@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -16,6 +15,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/state_store.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace {

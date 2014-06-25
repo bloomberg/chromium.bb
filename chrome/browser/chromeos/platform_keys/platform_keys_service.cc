@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
-#include "chrome/browser/extensions/state_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/state_store.h"
 
 using content::BrowserThread;
 

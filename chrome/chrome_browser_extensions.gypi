@@ -899,8 +899,6 @@
         'browser/extensions/standard_management_policy_provider.h',
         'browser/extensions/startup_helper.cc',
         'browser/extensions/startup_helper.h',
-        'browser/extensions/state_store.cc',
-        'browser/extensions/state_store.h',
         'browser/extensions/suspicious_extension_bubble_controller.cc',
         'browser/extensions/suspicious_extension_bubble_controller.h',
         'browser/extensions/suggest_permission_util.h',

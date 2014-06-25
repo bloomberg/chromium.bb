@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/state_store.h"
+#include "extensions/browser/state_store.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_registry.h"
@@ -65,32 +65,35 @@ void StateStore::DelayedTaskQueue::SetReady() {
   pending_tasks_.clear();
 }
 
-StateStore::StateStore(Profile* profile,
+StateStore::StateStore(content::BrowserContext* context,
                        const base::FilePath& db_path,
                        bool deferred_load)
     : db_path_(db_path),
       task_queue_(new DelayedTaskQueue()),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 
   if (deferred_load) {
     // Don't Init until the first page is loaded or the session restored.
-    registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                   content::NotificationService::
-                       AllBrowserContextsAndSources());
-    registrar_.Add(this, chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-                   content::NotificationService::
-                       AllBrowserContextsAndSources());
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_SESSION_RESTORE_DONE,
+        content::NotificationService::AllBrowserContextsAndSources());
   } else {
     Init();
   }
 }
 
-StateStore::StateStore(Profile* profile, scoped_ptr<ValueStore> value_store)
+StateStore::StateStore(content::BrowserContext* context,
+                       scoped_ptr<ValueStore> value_store)
     : store_(value_store.Pass()),
       task_queue_(new DelayedTaskQueue()),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 
   // This constructor is for testing. No need to delay Init.
   Init();
@@ -106,28 +109,31 @@ void StateStore::RegisterKey(const std::string& key) {
 void StateStore::GetExtensionValue(const std::string& extension_id,
                                    const std::string& key,
                                    ReadCallback callback) {
-  task_queue_->InvokeWhenReady(
-      base::Bind(&ValueStoreFrontend::Get, base::Unretained(&store_),
-                 GetFullKey(extension_id, key), callback));
+  task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Get,
+                                          base::Unretained(&store_),
+                                          GetFullKey(extension_id, key),
+                                          callback));
 }
 
-void StateStore::SetExtensionValue(
-    const std::string& extension_id,
-    const std::string& key,
-    scoped_ptr<base::Value> value) {
-  task_queue_->InvokeWhenReady(
-      base::Bind(&ValueStoreFrontend::Set, base::Unretained(&store_),
-                 GetFullKey(extension_id, key), base::Passed(&value)));
+void StateStore::SetExtensionValue(const std::string& extension_id,
+                                   const std::string& key,
+                                   scoped_ptr<base::Value> value) {
+  task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Set,
+                                          base::Unretained(&store_),
+                                          GetFullKey(extension_id, key),
+                                          base::Passed(&value)));
 }
 
 void StateStore::RemoveExtensionValue(const std::string& extension_id,
                                       const std::string& key) {
-  task_queue_->InvokeWhenReady(
-      base::Bind(&ValueStoreFrontend::Remove, base::Unretained(&store_),
-                 GetFullKey(extension_id, key)));
+  task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Remove,
+                                          base::Unretained(&store_),
+                                          GetFullKey(extension_id, key)));
 }
 
-bool StateStore::IsInitialized() const { return task_queue_->ready(); }
+bool StateStore::IsInitialized() const {
+  return task_queue_->ready();
+}
 
 void StateStore::Observe(int type,
                          const content::NotificationSource& source,
@@ -136,7 +142,8 @@ void StateStore::Observe(int type,
          type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
   registrar_.RemoveAll();
 
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&StateStore::Init, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kInitDelaySeconds));
 }
@@ -164,10 +171,11 @@ void StateStore::Init() {
 
 void StateStore::RemoveKeysForExtension(const std::string& extension_id) {
   for (std::set<std::string>::iterator key = registered_keys_.begin();
-       key != registered_keys_.end(); ++key) {
-    task_queue_->InvokeWhenReady(
-        base::Bind(&ValueStoreFrontend::Remove, base::Unretained(&store_),
-                   GetFullKey(extension_id, *key)));
+       key != registered_keys_.end();
+       ++key) {
+    task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Remove,
+                                            base::Unretained(&store_),
+                                            GetFullKey(extension_id, *key)));
   }
 }
 
