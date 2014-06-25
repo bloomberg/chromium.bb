@@ -33,6 +33,7 @@ Extends IdlType and IdlUnionType with property |union_arguments|.
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+from idl_definitions import IdlArgument
 from idl_types import IdlType, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
@@ -178,7 +179,7 @@ def argument_context(interface, method, argument, index):
                                            used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's
-        'default_value': str(argument.default_value) if argument.default_value else None,
+        'default_value': argument.default_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or argument.default_value,
@@ -328,5 +329,12 @@ def union_arguments(idl_type):
             for i in range(len(idl_type.member_types))
             for arg in ['result%sEnabled' % i, 'result%s' % i]]
 
+
+def argument_default_cpp_value(argument):
+    if not argument.default_value:
+        return None
+    return argument.idl_type.literal_cpp_value(argument.default_value)
+
 IdlType.union_arguments = property(lambda self: None)
 IdlUnionType.union_arguments = property(union_arguments)
+IdlArgument.default_cpp_value = property(argument_default_cpp_value)

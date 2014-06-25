@@ -450,7 +450,7 @@ def default_node_to_idl_literal(node):
             raise ValueError('Unsupported string value: %r' % value)
         return IdlLiteral(idl_type, value)
     if idl_type == 'integer':
-        return IdlLiteral(idl_type, int(node.GetProperty('NAME')))
+        return IdlLiteral(idl_type, int(node.GetProperty('NAME'), base=0))
     if idl_type == 'float':
         return IdlLiteral(idl_type, float(node.GetProperty('VALUE')))
     if idl_type == 'boolean':

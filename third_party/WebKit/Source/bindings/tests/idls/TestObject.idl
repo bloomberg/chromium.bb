@@ -389,7 +389,9 @@ interface TestObject {
     // Optional arguments with defaults
     void voidMethodDefaultByteStringArg(optional ByteString defaultByteStringArg = "foo");
     void voidMethodDefaultStringArg(optional DOMString defaultStringArg = "foo");
-    void voidMethodDefaultLongArg(optional long defaultLongArg = 10);
+    void voidMethodDefaultIntegerArgs(optional long defaultLongArg = 10,
+                                      optional long long defaultLongLongArg = -10,
+                                      optional unsigned long defaultUnsignedArg = 0xFFFFFFFF);
     void voidMethodDefaultDoubleArg(optional double defaultDoubleArg = 0.5);
     void voidMethodDefaultTrueBooleanArg(optional boolean defaultBooleanArg = true);
     void voidMethodDefaultFalseBooleanArg(optional boolean defaultBooleanArg = false);

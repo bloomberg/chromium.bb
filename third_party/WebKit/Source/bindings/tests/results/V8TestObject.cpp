@@ -6921,11 +6921,13 @@ static void voidMethodDefaultStringArgMethodCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodDefaultLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultIntegerArgs", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     int defaultLongArg;
+    long long defaultLongLongArg;
+    unsigned defaultUnsignedArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
@@ -6934,14 +6936,24 @@ static void voidMethodDefaultLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
         } else {
             defaultLongArg = 10;
         }
+        if (info.Length() > 1) {
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongLongArg, toInt64(info[1], exceptionState), exceptionState);
+        } else {
+            defaultLongLongArg = -10;
+        }
+        if (info.Length() > 2) {
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUnsignedArg, toUInt32(info[2], exceptionState), exceptionState);
+        } else {
+            defaultUnsignedArg = 4294967295u;
+        }
     }
-    impl->voidMethodDefaultLongArg(defaultLongArg);
+    impl->voidMethodDefaultIntegerArgs(defaultLongArg, defaultLongLongArg, defaultUnsignedArg);
 }
 
-static void voidMethodDefaultLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodDefaultIntegerArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodDefaultLongArgMethod(info);
+    TestObjectV8Internal::voidMethodDefaultIntegerArgsMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -9924,7 +9936,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodOptionalDictionaryArg", TestObjectV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0},
     {"voidMethodDefaultByteStringArg", TestObjectV8Internal::voidMethodDefaultByteStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultStringArg", TestObjectV8Internal::voidMethodDefaultStringArgMethodCallback, 0, 0},
-    {"voidMethodDefaultLongArg", TestObjectV8Internal::voidMethodDefaultLongArgMethodCallback, 0, 0},
+    {"voidMethodDefaultIntegerArgs", TestObjectV8Internal::voidMethodDefaultIntegerArgsMethodCallback, 0, 0},
     {"voidMethodDefaultDoubleArg", TestObjectV8Internal::voidMethodDefaultDoubleArgMethodCallback, 0, 0},
     {"voidMethodDefaultTrueBooleanArg", TestObjectV8Internal::voidMethodDefaultTrueBooleanArgMethodCallback, 0, 0},
     {"voidMethodDefaultFalseBooleanArg", TestObjectV8Internal::voidMethodDefaultFalseBooleanArgMethodCallback, 0, 0},

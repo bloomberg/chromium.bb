@@ -694,3 +694,14 @@ def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', crea
     return statement
 
 IdlType.cpp_value_to_v8_value = cpp_value_to_v8_value
+
+
+def literal_cpp_value(idl_type, idl_literal):
+    """Converts an expression that is a valid C++ literal for this type."""
+    # FIXME: add validation that idl_type and idl_literal are compatible
+    literal_value = str(idl_literal)
+    if idl_type.base_type in CPP_UNSIGNED_TYPES:
+        return literal_value + 'u'
+    return literal_value
+
+IdlType.literal_cpp_value = literal_cpp_value
