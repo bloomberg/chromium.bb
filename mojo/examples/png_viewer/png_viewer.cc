@@ -18,11 +18,11 @@
 namespace mojo {
 namespace examples {
 
-class ImageViewer;
+class PNGViewer;
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit NavigatorImpl(ImageViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(PNGViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -79,16 +79,15 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
     return 0;
   }
 
-  ImageViewer* viewer_;
+  PNGViewer* viewer_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class ImageViewer : public Application,
-                    public view_manager::ViewManagerDelegate {
+class PNGViewer : public Application, public view_manager::ViewManagerDelegate {
  public:
-  ImageViewer() : content_view_(NULL) {}
-  virtual ~ImageViewer() {}
+  PNGViewer() : content_view_(NULL) {}
+  virtual ~PNGViewer() {}
 
   void UpdateView(view_manager::Id node_id, const SkBitmap& bitmap) {
     bitmap_ = bitmap;
@@ -120,7 +119,7 @@ class ImageViewer : public Application,
   view_manager::View* content_view_;
   SkBitmap bitmap_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageViewer);
+  DISALLOW_COPY_AND_ASSIGN(PNGViewer);
 };
 
 void NavigatorImpl::UpdateView(view_manager::Id node_id,
@@ -132,7 +131,7 @@ void NavigatorImpl::UpdateView(view_manager::Id node_id,
 
 // static
 Application* Application::Create() {
-  return new examples::ImageViewer;
+  return new examples::PNGViewer;
 }
 
 }  // namespace mojo

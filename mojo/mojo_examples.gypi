@@ -130,7 +130,7 @@
       ],
     },
     {
-      'target_name': 'mojo_image_viewer',
+      'target_name': 'mojo_png_viewer',
       'type': 'shared_library',
       'dependencies': [
         '../skia/skia.gyp:skia',
@@ -146,7 +146,7 @@
         'mojo_view_manager_lib',
       ],
       'sources': [
-        'examples/image_viewer/image_viewer.cc',
+        'examples/png_viewer/png_viewer.cc',
         'public/cpp/application/lib/mojo_main_chromium.cc',
       ],
     },
@@ -438,6 +438,23 @@
           ],
           'sources': [
             'examples/nesting_app/nesting_app.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
+        {
+          'target_name': 'mojo_media_viewer',
+          'type': 'shared_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_application',
+            'mojo_environment_chromium',
+            'mojo_navigation_bindings',
+            'mojo_system_impl',
+            'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
+          ],
+          'sources': [
+            'examples/media_viewer/media_viewer.cc',
             'public/cpp/application/lib/mojo_main_chromium.cc',
           ],
         },

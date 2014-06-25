@@ -95,7 +95,7 @@ class LauncherApp : public Application {
  public:
   LauncherApp() {
     handler_map_["text/html"] = "mojo:mojo_html_viewer";
-    handler_map_["image/png"] = "mojo:mojo_image_viewer";
+    handler_map_["image/png"] = "mojo:mojo_media_viewer";
   }
   virtual ~LauncherApp() {}
 
