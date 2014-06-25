@@ -4,6 +4,10 @@
 
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 
+#include "build/build_config.h"
+
+#if defined(USE_SECCOMP_BPF)
+
 #include <errno.h>
 #include <signal.h>
 #include <sys/ptrace.h>
@@ -12,37 +16,36 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "build/build_config.h"
 
-#if defined(USE_SECCOMP_BPF)
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
-using sandbox::ErrorCode;
-using sandbox::SandboxBPF;
-using sandbox::SandboxBPFPolicy;
+#endif  // defined(USE_SECCOMP_BPF)
 
 namespace nacl {
 
+#if defined(USE_SECCOMP_BPF)
+
 namespace {
 
-class NaClBPFSandboxPolicy : public SandboxBPFPolicy {
+class NaClBPFSandboxPolicy : public sandbox::SandboxBPFPolicy {
  public:
   NaClBPFSandboxPolicy()
       : baseline_policy_(content::GetBPFSandboxBaselinePolicy()) {}
   virtual ~NaClBPFSandboxPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual sandbox::ErrorCode EvaluateSyscall(
+      sandbox::SandboxBPF* sandbox_compiler,
+      int system_call_number) const OVERRIDE;
 
  private:
-  scoped_ptr<SandboxBPFPolicy> baseline_policy_;
+  scoped_ptr<sandbox::SandboxBPFPolicy> baseline_policy_;
   DISALLOW_COPY_AND_ASSIGN(NaClBPFSandboxPolicy);
 };
 
-ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
+sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     sandbox::SandboxBPF* sb, int sysno) const {
   DCHECK(baseline_policy_);
   switch (sysno) {
@@ -92,16 +95,16 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // See crbug.com/264856 for details.
     case __NR_times:
     case __NR_uname:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return sandbox::ErrorCode(sandbox::ErrorCode::ERR_ALLOWED);
     case __NR_ioctl:
     case __NR_ptrace:
-      return ErrorCode(EPERM);
+      return sandbox::ErrorCode(EPERM);
     default:
       return baseline_policy_->EvaluateSyscall(sb, sysno);
   }
   NOTREACHED();
   // GCC wants this.
-  return ErrorCode(EPERM);
+  return sandbox::ErrorCode(EPERM);
 }
 
 void RunSandboxSanityChecks() {
@@ -119,14 +122,14 @@ void RunSandboxSanityChecks() {
 
 #if !defined(ARCH_CPU_MIPS_FAMILY)
 #error "Seccomp-bpf disabled on supported architecture!"
-#endif
+#endif  // !defined(ARCH_CPU_MIPS_FAMILY)
 
 #endif  // defined(USE_SECCOMP_BPF)
 
 bool InitializeBPFSandbox() {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<SandboxBPFPolicy>(new NaClBPFSandboxPolicy()));
+      scoped_ptr<sandbox::SandboxBPFPolicy>(new NaClBPFSandboxPolicy));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;
