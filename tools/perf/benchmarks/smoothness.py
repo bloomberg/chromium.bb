@@ -17,6 +17,7 @@ class SmoothnessTop25(test.Test):
   page_set = page_sets.Top25PageSet
 
 
+@test.Disabled('mac')  # crbug.com/388877
 class SmoothnessToughCanvasCases(test.Test):
   test = smoothness.Smoothness
   page_set = page_sets.ToughCanvasCasesPageSet
