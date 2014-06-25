@@ -37,7 +37,7 @@ const SkColor kHoverMenuItemBackgroundColor =
 const SkColor kButtonHoverBackgroundColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
 const SkColor kBlueButtonEnabledColor = SK_ColorWHITE;
 const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
-const SkColor kBlueButtonHighlightColor = SK_ColorWHITE;
+const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
 const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
 
 }  // namespace
@@ -96,8 +96,8 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     case NativeTheme::kColorId_BlueButtonDisabledColor:
       *color = kBlueButtonDisabledColor;
       break;
-    case NativeTheme::kColorId_BlueButtonHighlightColor:
-      *color = kBlueButtonHighlightColor;
+    case NativeTheme::kColorId_BlueButtonPressedColor:
+      *color = kBlueButtonPressedColor;
       break;
     case NativeTheme::kColorId_BlueButtonHoverColor:
       *color = kBlueButtonHoverColor;

@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/native_theme_delegate.h"
@@ -34,10 +35,12 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
   ButtonImageSkiaSource(const Gtk2UI* gtk2_ui,
                         const GtkStateType state,
                         const bool focused,
+                        const bool call_to_action,
                         const gfx::Size& size)
       : gtk2_ui_(gtk2_ui),
         state_(state),
         focused_(focused),
+        call_to_action_(call_to_action),
         size_(size) {
   }
 
@@ -48,13 +51,15 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
     int w = size_.width() * scale;
     int h = size_.height() * scale;
     return gfx::ImageSkiaRep(
-        gtk2_ui_->DrawGtkButtonBorder(state_, focused_, w, h), scale);
+        gtk2_ui_->DrawGtkButtonBorder(state_, focused_, call_to_action_, w, h),
+        scale);
   }
 
  private:
   const Gtk2UI* gtk2_ui_;
   const GtkStateType state_;
   const bool focused_;
+  const bool call_to_action_;
   const gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonImageSkiaSource);
@@ -138,9 +143,15 @@ void Gtk2Border::PaintState(const ui::NativeTheme::State state,
     gfx::ImageSkia* image = &button_images_[focused][views_state];
 
     if (image->isNull() || image->size() != rect.size()) {
+      bool call_to_action = owning_button_->GetClassName() ==
+          views::BlueButton::kViewClassName;
       GtkStateType gtk_state = GetGtkState(state);
       *image = gfx::ImageSkia(
-          new ButtonImageSkiaSource(gtk2_ui_, gtk_state, focused, rect.size()),
+          new ButtonImageSkiaSource(gtk2_ui_,
+                                    gtk_state,
+                                    focused,
+                                    call_to_action,
+                                    rect.size()),
           rect.size());
     }
     canvas->DrawImageInt(*image, rect.x(), rect.y());

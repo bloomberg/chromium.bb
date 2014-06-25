@@ -49,13 +49,14 @@ class Gtk2UI : public views::LinuxUI {
 
   // Setters used by GConfListener:
   void SetWindowButtonOrdering(
-    const std::vector<views::FrameButton>& leading_buttons,
-    const std::vector<views::FrameButton>& trailing_buttons);
+      const std::vector<views::FrameButton>& leading_buttons,
+      const std::vector<views::FrameButton>& trailing_buttons);
   void SetNonClientMiddleClickAction(NonClientMiddleClickAction action);
 
   // Draws the GTK button border for state |gtk_state| onto a bitmap.
   SkBitmap DrawGtkButtonBorder(int gtk_state,
                                bool focused,
+                               bool call_to_action,
                                int width,
                                int height) const;
 
@@ -185,6 +186,9 @@ class Gtk2UI : public views::LinuxUI {
   // Returns a tint that's the color of the current highlighted text in an
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
+
+  // Gets a color for the background of the call to action button.
+  SkColor CallToActionBgColor(int gtk_state) const;
 
   // Frees all calculated images and color data.
   void ClearAllThemeData();
