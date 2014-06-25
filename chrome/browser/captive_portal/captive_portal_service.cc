@@ -41,6 +41,14 @@ enum CaptivePortalDetectionResult {
   DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL,
   // Encountered a captive portal with an HTTPS landing URL.
   DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL,
+  // Received a network or HTTP error, or a non-HTTP response with IP address.
+  DETECTION_RESULT_NO_RESPONSE_IP_ADDRESS,
+  // Encountered a captive portal with a non-HTTPS, IP address landing URL.
+  DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_IP_ADDRESS,
+  // Received a network or HTTP error with an HTTPS, IP address landing URL.
+  DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL_IP_ADDRESS,
+  // Encountered a captive portal with an HTTPS, IP address landing URL.
+  DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL_IP_ADDRESS,
   DETECTION_RESULT_COUNT
 };
 
@@ -87,14 +95,25 @@ void RecordRepeatHistograms(CaptivePortalResult result,
 int GetHistogramEntryForDetectionResult(
     const captive_portal::CaptivePortalDetector::Results& results) {
   bool is_https = results.landing_url.SchemeIs("https");
+  bool is_ip = results.landing_url.HostIsIPAddress();
   switch (results.result) {
     case captive_portal::RESULT_INTERNET_CONNECTED:
       return DETECTION_RESULT_INTERNET_CONNECTED;
     case captive_portal::RESULT_NO_RESPONSE:
+      if (is_ip) {
+        return is_https ?
+            DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL_IP_ADDRESS :
+            DETECTION_RESULT_NO_RESPONSE_IP_ADDRESS;
+      }
       return is_https ?
           DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL :
           DETECTION_RESULT_NO_RESPONSE;
     case captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL:
+      if (is_ip) {
+        return is_https ?
+          DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL_IP_ADDRESS :
+          DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_IP_ADDRESS;
+      }
       return is_https ?
           DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL :
           DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL;

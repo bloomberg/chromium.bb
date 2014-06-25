@@ -35332,6 +35332,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="BEHIND_CAPTIVE_PORTAL"/>
   <int value="3" label="NO_RESPONSE_HTTPS_LANDING_URL"/>
   <int value="4" label="BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL"/>
+  <int value="5" label="NO_RESPONSE_IP_ADDRESS"/>
+  <int value="6" label="BEHIND_CAPTIVE_PORTAL_IP_ADDRESS"/>
+  <int value="7" label="NO_RESPONSE_HTTPS_LANDING_URL_IP_ADDRESS"/>
+  <int value="8" label="BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL_IP_ADDRESS"/>
 </enum>
 
 <enum name="CaptivePortalNotificationStatus" type="int">
