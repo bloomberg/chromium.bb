@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Browser;
 class BrowserWindow;
@@ -28,6 +29,16 @@ class PrefRegistrySyncable;
 class DevToolsWindow : public DevToolsUIBindings::Delegate,
                        public content::WebContentsDelegate {
  public:
+  class ObserverWithAccessor : public content::WebContentsObserver {
+   public:
+    explicit ObserverWithAccessor(content::WebContents* web_contents);
+    virtual ~ObserverWithAccessor();
+    content::WebContents* GetWebContents();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ObserverWithAccessor);
+  };
+
   static const char kDevToolsApp[];
 
   virtual ~DevToolsWindow();
@@ -216,8 +227,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
-  static bool FindInspectedBrowserAndTabIndex(
-      content::WebContents* inspected_web_contents, Browser**, int* tab);
   static DevToolsWindow* ToggleDevToolsWindow(
       content::RenderViewHost* inspected_rvh,
       bool force_open,
@@ -292,8 +301,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void UpdateBrowserWindow();
   content::WebContents* GetInspectedWebContents();
 
-  class InspectedWebContentsObserver;
-  scoped_ptr<InspectedWebContentsObserver> inspected_contents_observer_;
+  scoped_ptr<ObserverWithAccessor> inspected_contents_observer_;
 
   Profile* profile_;
   content::WebContents* main_web_contents_;

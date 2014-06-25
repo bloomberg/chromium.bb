@@ -45,7 +45,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
@@ -67,6 +66,111 @@ base::LazyInstance<DevToolsWindows>::Leaky g_instances =
 
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
+
+bool FindInspectedBrowserAndTabIndex(
+    WebContents* inspected_web_contents, Browser** browser, int* tab) {
+  if (!inspected_web_contents)
+    return false;
+
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    int tab_index = it->tab_strip_model()->GetIndexOfWebContents(
+        inspected_web_contents);
+    if (tab_index != TabStripModel::kNoTab) {
+      *browser = *it;
+      *tab = tab_index;
+      return true;
+    }
+  }
+  return false;
+}
+
+// DevToolsToolboxDelegate ----------------------------------------------------
+
+class DevToolsToolboxDelegate
+    : public content::WebContentsObserver,
+      public content::WebContentsDelegate {
+ public:
+  DevToolsToolboxDelegate(
+      WebContents* toolbox_contents,
+      DevToolsWindow::ObserverWithAccessor* web_contents_observer);
+  virtual ~DevToolsToolboxDelegate();
+
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
+
+ private:
+  BrowserWindow* GetInspectedBrowserWindow();
+  DevToolsWindow::ObserverWithAccessor* inspected_contents_observer_;
+  DISALLOW_COPY_AND_ASSIGN(DevToolsToolboxDelegate);
+};
+
+DevToolsToolboxDelegate::DevToolsToolboxDelegate(
+    WebContents* toolbox_contents,
+    DevToolsWindow::ObserverWithAccessor* web_contents_observer)
+    : WebContentsObserver(toolbox_contents),
+      inspected_contents_observer_(web_contents_observer) {
+}
+
+DevToolsToolboxDelegate::~DevToolsToolboxDelegate() {
+}
+
+content::WebContents* DevToolsToolboxDelegate::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  DCHECK(source == web_contents());
+  if (!params.url.SchemeIs(content::kChromeDevToolsScheme))
+    return NULL;
+  content::NavigationController::LoadURLParams load_url_params(params.url);
+  source->GetController().LoadURLWithParams(load_url_params);
+  return source;
+}
+
+bool DevToolsToolboxDelegate::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  BrowserWindow* window = GetInspectedBrowserWindow();
+  if (window)
+    return window->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+  return false;
+}
+
+void DevToolsToolboxDelegate::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.windowsKeyCode == 0x08) {
+    // Do not navigate back in history on Windows (http://crbug.com/74156).
+    return;
+  }
+  BrowserWindow* window = GetInspectedBrowserWindow();
+  if (window)
+    window->HandleKeyboardEvent(event);
+}
+
+void DevToolsToolboxDelegate::WebContentsDestroyed() {
+  delete this;
+}
+
+BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
+  WebContents* inspected_contents =
+      inspected_contents_observer_->GetWebContents();
+  if (!inspected_contents)
+    return NULL;
+  Browser* browser = NULL;
+  int tab = 0;
+  if (FindInspectedBrowserAndTabIndex(inspected_contents, &browser, &tab))
+    return browser->window();
+  return NULL;
+}
 
 }  // namespace
 
@@ -181,58 +285,19 @@ int DevToolsEventForwarder::VirtualKeyCodeWithoutLocation(int key_code)
   }
 }
 
-// DevToolsWindow::InspectedWebContentsObserver -------------------------------
+// DevToolsWindow::ObserverWithAccessor -------------------------------
 
-class DevToolsWindow::InspectedWebContentsObserver
-    : public content::WebContentsObserver {
- public:
-  explicit InspectedWebContentsObserver(WebContents* web_contents);
-  virtual ~InspectedWebContentsObserver();
-
-  WebContents* web_contents() {
-    return WebContentsObserver::web_contents();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InspectedWebContentsObserver);
-};
-
-DevToolsWindow::InspectedWebContentsObserver::InspectedWebContentsObserver(
+DevToolsWindow::ObserverWithAccessor::ObserverWithAccessor(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {
 }
 
-DevToolsWindow::InspectedWebContentsObserver::~InspectedWebContentsObserver() {
+DevToolsWindow::ObserverWithAccessor::~ObserverWithAccessor() {
 }
 
-// DevToolsToolboxDelegate ----------------------------------------------------
-
-class DevToolsToolboxDelegate
-    : public content::WebContentsObserver,
-      public content::WebContentsDelegate {
- public:
-  explicit DevToolsToolboxDelegate(WebContents* web_contents)
-      : WebContentsObserver(web_contents) { }
-  virtual ~DevToolsToolboxDelegate() { }
-
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE {
-    DCHECK(source == web_contents());
-    if (!params.url.SchemeIs(content::kChromeDevToolsScheme))
-      return NULL;
-    content::NavigationController::LoadURLParams load_url_params(params.url);
-    source->GetController().LoadURLWithParams(load_url_params);
-    return source;
-  }
-
-  virtual void WebContentsDestroyed() OVERRIDE {
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevToolsToolboxDelegate);
-};
+WebContents* DevToolsWindow::ObserverWithAccessor::GetWebContents() {
+  return web_contents();
+}
 
 // DevToolsWindow -------------------------------------------------------------
 
@@ -654,7 +719,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
 
   // There is no inspected_rvh in case of shared workers.
   if (inspected_rvh)
-    inspected_contents_observer_.reset(new InspectedWebContentsObserver(
+    inspected_contents_observer_.reset(new ObserverWithAccessor(
         content::WebContents::FromRenderViewHost(inspected_rvh)));
   event_forwarder_.reset(new DevToolsEventForwarder(this));
 }
@@ -783,7 +848,8 @@ void DevToolsWindow::AddNewContents(WebContents* source,
                                     bool* was_blocked) {
   if (new_contents == toolbox_web_contents_) {
     toolbox_web_contents_->SetDelegate(
-        new DevToolsToolboxDelegate(toolbox_web_contents_));
+        new DevToolsToolboxDelegate(toolbox_web_contents_,
+                                    inspected_contents_observer_.get()));
     gfx::Size size = main_web_contents_->GetViewBounds().size();
     if (toolbox_web_contents_->GetRenderWidgetHostView())
       toolbox_web_contents_->GetRenderWidgetHostView()->SetSize(size);
@@ -863,12 +929,10 @@ bool DevToolsWindow::PreHandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
-  if (is_docked_) {
-    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-    if (inspected_window) {
-      return inspected_window->PreHandleKeyboardEvent(event,
-                                                      is_keyboard_shortcut);
-    }
+  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+  if (inspected_window) {
+    return inspected_window->PreHandleKeyboardEvent(event,
+                                                    is_keyboard_shortcut);
   }
   return false;
 }
@@ -876,15 +940,13 @@ bool DevToolsWindow::PreHandleKeyboardEvent(
 void DevToolsWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (is_docked_) {
-    if (event.windowsKeyCode == 0x08) {
-      // Do not navigate back in history on Windows (http://crbug.com/74156).
-      return;
-    }
-    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-    if (inspected_window)
-      inspected_window->HandleKeyboardEvent(event);
+  if (event.windowsKeyCode == 0x08) {
+    // Do not navigate back in history on Windows (http://crbug.com/74156).
+    return;
   }
+  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+  if (inspected_window)
+    inspected_window->HandleKeyboardEvent(event);
 }
 
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager() {
@@ -1133,24 +1195,6 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   main_web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 
-// static
-bool DevToolsWindow::FindInspectedBrowserAndTabIndex(
-    WebContents* inspected_web_contents, Browser** browser, int* tab) {
-  if (!inspected_web_contents)
-    return false;
-
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    int tab_index = it->tab_strip_model()->GetIndexOfWebContents(
-        inspected_web_contents);
-    if (tab_index != TabStripModel::kNoTab) {
-      *browser = *it;
-      *tab = tab_index;
-      return true;
-    }
-  }
-  return false;
-}
-
 BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
   Browser* browser = NULL;
   int tab;
@@ -1208,7 +1252,7 @@ void DevToolsWindow::UpdateBrowserWindow() {
 
 WebContents* DevToolsWindow::GetInspectedWebContents() {
   return inspected_contents_observer_ ?
-      inspected_contents_observer_->web_contents() : NULL;
+      inspected_contents_observer_->GetWebContents() : NULL;
 }
 
 void DevToolsWindow::LoadCompleted() {
