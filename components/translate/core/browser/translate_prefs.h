@@ -35,6 +35,8 @@ class TranslatePrefs {
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateAcceptedCount[];
   static const char kPrefTranslateBlockedLanguages[];
+  static const char kPrefTranslateLastDeniedTime[];
+  static const char kPrefTranslateTooOftenDenied[];
 
   // |preferred_languages_pref| is only used on Chrome OS, other platforms must
   // pass NULL.
@@ -86,6 +88,12 @@ class TranslatePrefs {
   int GetTranslationAcceptedCount(const std::string& language);
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
+
+  // Update the last time on closing the Translate UI without translation.
+  void UpdateLastDeniedTime();
+
+  // Returns true if translation is denied too often.
+  bool IsTooOftenDenied() const;
 
   // Gets the language list of the language settings.
   void GetLanguageList(std::vector<std::string>* languages);

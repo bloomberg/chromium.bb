@@ -180,13 +180,14 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   if (!translate_driver_->IsOffTheRecord()) {
     prefs_->ResetTranslationAcceptedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationDeniedCount(GetOriginalLanguageCode());
+    prefs_->UpdateLastDeniedTime();
   }
 
   // Remember that the user declined the translation so as to prevent showing a
-  // translate infobar for that page again.  (TranslateManager initiates
-  // translations when getting a LANGUAGE_DETERMINED from the page, which
-  // happens when a load stops. That could happen multiple times, including
-  // after the user already declined the translation.)
+  // translate UI for that page again.  (TranslateManager initiates translations
+  // when getting a LANGUAGE_DETERMINED from the page, which happens when a load
+  // stops. That could happen multiple times, including after the user already
+  // declined the translation.)
   if (translate_manager_) {
     translate_manager_->GetLanguageState().set_translation_declined(true);
     UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);

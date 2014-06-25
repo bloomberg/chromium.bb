@@ -189,6 +189,13 @@ void ChromeTranslateClient::ShowTranslateUI(translate::TranslateStep step,
       GetLanguageState().SetTranslateEnabled(true);
       if (!GetLanguageState().HasLanguageChanged())
         return;
+
+      if (!triggered_from_menu) {
+        if (web_contents()->GetBrowserContext()->IsOffTheRecord())
+          return;
+        if (GetTranslatePrefs()->IsTooOftenDenied())
+          return;
+      }
     }
     ShowBubble(step, error_type);
     return;
