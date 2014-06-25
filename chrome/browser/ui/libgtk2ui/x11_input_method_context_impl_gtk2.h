@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK2_H_
 
+#include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/event_types.h"
 #include "base/gtest_prod_util.h"
