@@ -187,6 +187,11 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
     m_askedToTerminate = true;
     if (m_mainScriptLoader)
         m_mainScriptLoader->cancel();
+    if (m_pauseAfterDownloadState == IsPausedAfterDownload) {
+        // This may delete 'this'.
+        m_workerContextClient->workerContextFailedToStart();
+        return;
+    }
     if (m_workerThread)
         m_workerThread->stop();
 }
@@ -224,6 +229,7 @@ void dispatchOnInspectorBackendTask(ExecutionContext* context, const String& mes
 
 void WebEmbeddedWorkerImpl::resumeAfterDownload()
 {
+    ASSERT(!m_askedToTerminate);
     bool wasPaused = (m_pauseAfterDownloadState == IsPausedAfterDownload);
     m_pauseAfterDownloadState = DontPauseAfterDownload;
     if (wasPaused)
@@ -328,8 +334,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 void WebEmbeddedWorkerImpl::startWorkerThread()
 {
     ASSERT(m_pauseAfterDownloadState == DontPauseAfterDownload);
-    if (m_askedToTerminate)
-        return;
+    ASSERT(!m_askedToTerminate);
 
     WorkerThreadStartMode startMode =
         (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger)
