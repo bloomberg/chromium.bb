@@ -144,6 +144,10 @@ void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   InvalidateLayout();
 }
 
+void LabelButton::SetDirectionalityMode(gfx::DirectionalityMode mode) {
+  label_->set_directionality_mode(mode);
+}
+
 void LabelButton::SetIsDefault(bool is_default) {
   if (is_default == is_default_)
     return;
