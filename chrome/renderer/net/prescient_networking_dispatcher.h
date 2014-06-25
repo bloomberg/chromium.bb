@@ -15,9 +15,6 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
   virtual ~PrescientNetworkingDispatcher();
 
   virtual void prefetchDNS(const blink::WebString& hostname) OVERRIDE;
-
-  virtual void preconnect(const blink::WebURL& url,
-                          blink::WebPreconnectMotivation motivation) OVERRIDE;
  private:
   RendererNetPredictor net_predictor_;
 
