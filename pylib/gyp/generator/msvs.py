@@ -921,6 +921,42 @@ def _GenerateProject(project, options, version, generator_flags):
     return _GenerateMSVSProject(project, options, version, generator_flags)
 
 
+# TODO: Avoid code duplication with _ValidateSourcesForOSX in make.py.
+def _ValidateSourcesForMSVSProject(spec, version):
+  """Makes sure if duplicate basenames are not specified in the source list.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+    version: The VisualStudioVersion object.
+  """
+  # This validation should not be applied to MSVC2010 and later.
+  assert not version.UsesVcxproj()
+
+  # TODO: Check if MSVC allows this for loadable_module targets.
+  if spec.get('type', None) not in ('static_library', 'shared_library'):
+    return
+  sources = spec.get('sources', [])
+  basenames = {}
+  for source in sources:
+    name, ext = os.path.splitext(source)
+    is_compiled_file = ext in [
+        '.c', '.cc', '.cpp', '.cxx', '.m', '.mm', '.s', '.S']
+    if not is_compiled_file:
+      continue
+    basename = os.path.basename(name)  # Don't include extension.
+    basenames.setdefault(basename, []).append(source)
+
+  error = ''
+  for basename, files in basenames.iteritems():
+    if len(files) > 1:
+      error += '  %s: %s\n' % (basename, ' '.join(files))
+
+  if error:
+    print('static library %s has several files with the same basename:\n' %
+          spec['target_name'] + error + 'MSVC08 cannot handle that.')
+    raise GypError('Duplicate basenames in sources section, see list above')
+
+
 def _GenerateMSVSProject(project, options, version, generator_flags):
   """Generates a .vcproj file.  It may create .rules and .user files too.
 
@@ -945,6 +981,11 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
   config_type = _GetMSVSConfigurationType(spec, project.build_file)
   for config_name, config in spec['configurations'].iteritems():
     _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config)
+
+  # MSVC08 and prior version cannot handle duplicate basenames in the same
+  # target.
+  # TODO: Take excluded sources into consideration if possible.
+  _ValidateSourcesForMSVSProject(spec, version)
 
   # Prepare list of sources and excluded sources.
   gyp_file = os.path.split(project.build_file)[1]

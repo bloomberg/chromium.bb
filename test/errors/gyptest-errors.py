@@ -8,6 +8,9 @@
 Test that two targets with the same name generates an error.
 """
 
+import os
+import sys
+
 import TestGyp
 import TestCmd
 
@@ -38,6 +41,16 @@ test.run_gyp('duplicate_node.gyp', '--check', status=1, stderr=stderr,
 
 stderr = 'gyp: Duplicate basenames in sources section, see list above\n'
 test.run_gyp('duplicate_basenames.gyp', status=1, stderr=stderr)
+
+# Check if '--no-duplicate-basename-check' works.
+if ((test.format == 'make' and sys.platform == 'darwin') or
+    (test.format == 'msvs' and
+        int(os.environ.get('GYP_MSVS_VERSION', 2010)) < 2010)):
+  stderr = 'gyp: Duplicate basenames in sources section, see list above\n'
+  test.run_gyp('duplicate_basenames.gyp', '--no-duplicate-basename-check',
+               status=1, stderr=stderr)
+else:
+  test.run_gyp('duplicate_basenames.gyp', '--no-duplicate-basename-check')
 
 stderr = ("gyp: Dependency '.*missing_dep.gyp:missing.gyp#target' not found "
           "while trying to load target .*missing_dep.gyp:foo#target\n")

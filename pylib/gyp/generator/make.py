@@ -29,6 +29,7 @@ import gyp
 import gyp.common
 import gyp.xcode_emulation
 from gyp.common import GetEnvironFallback
+from gyp.common import GypError
 
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
@@ -631,6 +632,38 @@ def QuoteSpaces(s, quote=r'\ '):
   return s.replace(' ', quote)
 
 
+# TODO: Avoid code duplication with _ValidateSourcesForMSVSProject in msvs.py.
+def _ValidateSourcesForOSX(spec, all_sources):
+  """Makes sure if duplicate basenames are not specified in the source list.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+  """
+  if spec.get('type', None) != 'static_library':
+    return
+
+  basenames = {}
+  for source in all_sources:
+    name, ext = os.path.splitext(source)
+    is_compiled_file = ext in [
+        '.c', '.cc', '.cpp', '.cxx', '.m', '.mm', '.s', '.S']
+    if not is_compiled_file:
+      continue
+    basename = os.path.basename(name)  # Don't include extension.
+    basenames.setdefault(basename, []).append(source)
+
+  error = ''
+  for basename, files in basenames.iteritems():
+    if len(files) > 1:
+      error += '  %s: %s\n' % (basename, ' '.join(files))
+
+  if error:
+    print('static library %s has several files with the same basename:\n' %
+          spec['target_name'] + error + 'libtool on OS X will generate' +
+          ' warnings for them.')
+    raise GypError('Duplicate basenames in sources section, see list above')
+
+
 # Map from qualified target to path to output.
 target_outputs = {}
 # Map from qualified target to any linkable output.  A subset
@@ -758,6 +791,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
     if all_sources:
+      if self.flavor == 'mac':
+        # libtool on OS X generates warnings for duplicate basenames in the same
+        # target.
+        _ValidateSourcesForOSX(spec, all_sources)
       self.WriteSources(
           configs, deps, all_sources, extra_outputs,
           extra_link_deps, part_of_all,

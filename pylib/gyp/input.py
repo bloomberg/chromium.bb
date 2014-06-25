@@ -2463,7 +2463,10 @@ def ValidateTargetType(target, target_dict):
                                                              target_type))
 
 
-def ValidateSourcesInTarget(target, target_dict, build_file):
+def ValidateSourcesInTarget(target, target_dict, build_file,
+                            duplicate_basename_check):
+  if not duplicate_basename_check:
+    return
   # TODO: Check if MSVC allows this for loadable_module targets.
   if target_dict.get('type', None) not in ('static_library', 'shared_library'):
     return
@@ -2485,8 +2488,9 @@ def ValidateSourcesInTarget(target, target_dict, build_file):
 
   if error:
     print('static library %s has several files with the same basename:\n' %
-          target + error + 'Some build systems, e.g. MSVC08, '
-          'cannot handle that.')
+          target + error + 'Some build systems, e.g. MSVC08 and Make generator '
+          'for Mac, cannot handle that. Use --no-duplicate-basename-check to'
+          'disable this validation.')
     raise GypError('Duplicate basenames in sources section, see list above')
 
 
@@ -2710,7 +2714,7 @@ def SetGeneratorGlobals(generator_input_info):
 
 
 def Load(build_files, variables, includes, depth, generator_input_info, check,
-         circular_check, parallel, root_targets):
+         circular_check, duplicate_basename_check, parallel, root_targets):
   SetGeneratorGlobals(generator_input_info)
   # A generator can have other lists (in addition to sources) be processed
   # for rules.
@@ -2835,6 +2839,11 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     ProcessVariablesAndConditionsInDict(
         target_dict, PHASE_LATELATE, variables, build_file)
 
+  # TODO(thakis): Get vpx_scale/arm/scalesystemdependent.c to be renamed to
+  #               scalesystemdependent_arm_additions.c or similar.
+  if 'arm' in variables.get('target_arch', ''):
+    duplicate_basename_check = False
+
   # Make sure that the rules make sense, and build up rule_sources lists as
   # needed.  Not all generators will need to use the rule_sources lists, but
   # some may, and it seems best to build the list in a common spot.
@@ -2843,10 +2852,8 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     target_dict = targets[target]
     build_file = gyp.common.BuildFile(target)
     ValidateTargetType(target, target_dict)
-    # TODO(thakis): Get vpx_scale/arm/scalesystemdependent.c to be renamed to
-    #               scalesystemdependent_arm_additions.c or similar.
-    if 'arm' not in variables.get('target_arch', ''):
-      ValidateSourcesInTarget(target, target_dict, build_file)
+    ValidateSourcesInTarget(target, target_dict, build_file,
+                            duplicate_basename_check)
     ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
     ValidateRunAsInTarget(target, target_dict, build_file)
     ValidateActionsInTarget(target, target_dict, build_file)
