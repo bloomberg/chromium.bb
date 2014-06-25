@@ -162,7 +162,7 @@ typedef base::Callback<void(int32_t, const PP_NaClFileInfo&)>
 DownloadFileCallback;
 
 void DownloadFile(PP_Instance instance,
-                  const char* url,
+                  const std::string& url,
                   const DownloadFileCallback& callback);
 
 // Thin adapter from PPP_ManifestService to ManifestServiceChannel::Delegate.
@@ -223,7 +223,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     //
     // TODO(teravest): Make a type like PP_NaClFileInfo to use for DownloadFile
     // that would close the file handle on destruction.
-    DownloadFile(pp_instance_, url.c_str(),
+    DownloadFile(pp_instance_, url,
                  base::Bind(&ManifestServiceProxy::DidDownloadFile, callback));
   }
 
@@ -1109,22 +1109,6 @@ bool ManifestResolveKey(PP_Instance instance,
   return manifest->ResolveKey(key, full_url, pnacl_options);
 }
 
-PP_Bool ExternalManifestResolveKey(PP_Instance instance,
-                                   PP_Bool is_helper_process,
-                                   const char* key,
-                                   PP_Var* pp_full_url,
-                                   PP_PNaClOptions* pnacl_options) {
-  std::string full_url;
-  bool ok = ManifestResolveKey(instance,
-                               PP_ToBool(is_helper_process),
-                               std::string(key),
-                               &full_url,
-                               pnacl_options);
-  if (ok)
-    *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
-  return PP_FromBool(ok);
-}
-
 PP_Bool GetPNaClResourceInfo(PP_Instance instance,
                              const char* filename,
                              PP_Var* llc_tool_name,
@@ -1441,11 +1425,10 @@ void DownloadFileCompletion(
 }
 
 void DownloadFile(PP_Instance instance,
-                  const char* url,
+                  const std::string& url,
                   const DownloadFileCallback& callback) {
   DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
              BelongsToCurrentThread());
-  CHECK(url);
 
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -1460,9 +1443,8 @@ void DownloadFile(PP_Instance instance,
 
   // Handle special PNaCl support files which are installed on the user's
   // machine.
-  std::string url_string(url);
-  if (url_string.find(kPNaClTranslatorBaseUrl, 0) == 0) {
-    PP_FileHandle handle = GetReadonlyPnaclFd(url);
+  if (url.find(kPNaClTranslatorBaseUrl, 0) == 0) {
+    PP_FileHandle handle = GetReadonlyPnaclFd(url.c_str());
     if (handle == PP_kInvalidFileHandle) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1499,7 +1481,7 @@ void DownloadFile(PP_Instance instance,
   uint64_t file_token_lo = 0;
   uint64_t file_token_hi = 0;
   PP_FileHandle file_handle = OpenNaClExecutable(instance,
-                                                 url,
+                                                 url.c_str(),
                                                  &file_token_lo,
                                                  &file_token_hi);
   if (file_handle != PP_kInvalidFileHandle) {
@@ -1545,28 +1527,6 @@ void DownloadFile(PP_Instance instance,
   file_downloader->Load(url_request);
 }
 
-void ExternalDownloadFileCompletion(struct PP_NaClFileInfo* out_file_info,
-                                    struct PP_CompletionCallback callback,
-                                    int32_t pp_error,
-                                    const PP_NaClFileInfo& file_info) {
-  if (pp_error == PP_OK)
-    *out_file_info = file_info;
-  callback.func(callback.user_data, pp_error);
-}
-
-void ExternalDownloadFile(PP_Instance instance,
-                          const char* url,
-                          struct PP_NaClFileInfo* file_info,
-                          struct PP_CompletionCallback callback) {
-  DCHECK(callback.func);
-  CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
-            BelongsToCurrentThread());
-  DownloadFile(instance, url,
-               base::Bind(&ExternalDownloadFileCompletion,
-                          file_info,
-                          callback));
-}
-
 void ReportSelLdrStatus(PP_Instance instance,
                         int32_t load_status,
                         int32_t max_status) {
@@ -1590,6 +1550,39 @@ void LogTranslateTime(const char* histogram_name,
       base::Bind(&HistogramTimeTranslation,
                  std::string(histogram_name),
                  time_in_us / 1000));
+}
+
+void DidOpenManifestEntry(PP_NaClFileInfo* out_file_info,
+                          PP_CompletionCallback callback,
+                          int32_t pp_error,
+                          const PP_NaClFileInfo& file_info) {
+  if (pp_error == PP_OK)
+    *out_file_info = file_info;
+  callback.func(callback.user_data, pp_error);
+}
+
+void OpenManifestEntry(PP_Instance instance,
+                       PP_Bool is_helper_process,
+                       const char* key,
+                       PP_NaClFileInfo* out_file_info,
+                       PP_CompletionCallback callback) {
+  std::string url;
+  PP_PNaClOptions pnacl_options;
+  pnacl_options.translate = PP_FALSE;
+  pnacl_options.is_debug = PP_FALSE;
+  pnacl_options.opt_level = 2;
+  if (!ManifestResolveKey(instance,
+                          PP_ToBool(is_helper_process),
+                          key,
+                          &url,
+                          &pnacl_options)) {
+    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
+  }
+
+  // TODO(teravest): Make a type like PP_NaClFileInfo to use for DownloadFile
+  // that would close the file handle on destruction.
+  DownloadFile(instance, url,
+               base::Bind(&DidOpenManifestEntry, out_file_info, callback));
 }
 
 const PPB_NaCl_Private nacl_interface = {
@@ -1625,14 +1618,13 @@ const PPB_NaCl_Private nacl_interface = {
   &ProcessNaClManifest,
   &DevInterfacesEnabled,
   &ManifestGetProgramURL,
-  &ExternalManifestResolveKey,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
   &PostMessageToJavaScript,
   &DownloadNexe,
-  &ExternalDownloadFile,
   &ReportSelLdrStatus,
-  &LogTranslateTime
+  &LogTranslateTime,
+  &OpenManifestEntry
 };
 
 }  // namespace

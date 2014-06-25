@@ -3439,11 +3439,6 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL(PP_Instance inst
   return iface->GetManifestProgramURL(instance, full_url, pnacl_options, uses_nonsfi_mode);
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_ManifestResolveKey(PP_Instance instance, PP_Bool helper_process, const char* key, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->ManifestResolveKey(instance, helper_process, key, full_url, pnacl_options);
-}
-
 static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo(PP_Instance instance, const char* filename, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetPnaclResourceInfo(instance, filename, llc_tool_name, ld_tool_name);
@@ -3464,11 +3459,6 @@ static void Pnacl_M25_PPB_NaCl_Private_DownloadNexe(PP_Instance instance, const 
   iface->DownloadNexe(instance, url, file_info, *callback);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_DownloadFile(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->DownloadFile(instance, url, file_info, *callback);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus(PP_Instance instance, int32_t load_status, int32_t max_status) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->ReportSelLdrStatus(instance, load_status, max_status);
@@ -3477,6 +3467,11 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus(PP_Instance instance, 
 static void Pnacl_M25_PPB_NaCl_Private_LogTranslateTime(const char* histogram_name, int64_t time_us) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->LogTranslateTime(histogram_name, time_us);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_OpenManifestEntry(PP_Instance instance, PP_Bool is_helper_process, const char* key, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->OpenManifestEntry(instance, is_helper_process, key, file_info, *callback);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5255,14 +5250,13 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest,
     .DevInterfacesEnabled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled,
     .GetManifestProgramURL = (PP_Bool (*)(PP_Instance instance, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode))&Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL,
-    .ManifestResolveKey = (PP_Bool (*)(PP_Instance instance, PP_Bool helper_process, const char* key, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options))&Pnacl_M25_PPB_NaCl_Private_ManifestResolveKey,
     .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, const char* filename, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
     .GetCpuFeatureAttrs = (struct PP_Var (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs,
     .PostMessageToJavaScript = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript,
     .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
-    .DownloadFile = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadFile,
     .ReportSelLdrStatus = (void (*)(PP_Instance instance, int32_t load_status, int32_t max_status))&Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus,
-    .LogTranslateTime = (void (*)(const char* histogram_name, int64_t time_us))&Pnacl_M25_PPB_NaCl_Private_LogTranslateTime
+    .LogTranslateTime = (void (*)(const char* histogram_name, int64_t time_us))&Pnacl_M25_PPB_NaCl_Private_LogTranslateTime,
+    .OpenManifestEntry = (void (*)(PP_Instance instance, PP_Bool is_helper_process, const char* key, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_OpenManifestEntry
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
