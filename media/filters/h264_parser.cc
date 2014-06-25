@@ -106,10 +106,6 @@ H264SEIMessage::H264SEIMessage() {
     }                                                                \
   } while (0)
 
-enum AspectRatioIdc {
-  kExtendedSar = 255,
-};
-
 // ISO 14496 part 10
 // VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
 static const int kTableSarWidth[] = {
@@ -608,7 +604,7 @@ H264Parser::Result H264Parser::ParseVUIParameters(H264SPS* sps) {
   if (aspect_ratio_info_present_flag) {
     int aspect_ratio_idc;
     READ_BITS_OR_RETURN(8, &aspect_ratio_idc);
-    if (aspect_ratio_idc == kExtendedSar) {
+    if (aspect_ratio_idc == H264SPS::kExtendedSar) {
       READ_BITS_OR_RETURN(16, &sps->sar_width);
       READ_BITS_OR_RETURN(16, &sps->sar_height);
     } else {

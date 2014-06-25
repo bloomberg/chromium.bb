@@ -41,6 +41,7 @@ struct H264Picture {
   int frame_num_wrap;
   int long_term_frame_idx;
 
+  media::H264SliceHeader::Type type;
   bool idr;  // IDR picture?
   bool ref;  // reference picture?
   bool long_term;  // long term reference picture?
