@@ -646,17 +646,25 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *icon_resource, uint32_t serial)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(resource);
+	struct weston_surface *origin = wl_resource_get_user_data(origin_resource);
 	struct weston_data_source *source = NULL;
 	struct weston_surface *icon = NULL;
+	int is_pointer_grab, is_touch_grab;
 	int32_t ret = 0;
 
-	if ((seat->pointer->button_count == 0 ||
-	    seat->pointer->grab_serial != serial ||
-	    !seat->pointer->focus ||
-	    seat->pointer->focus->surface != wl_resource_get_user_data(origin_resource)) &&
-		(seat->touch->grab_serial != serial ||
-		!seat->touch->focus ||
-		seat->touch->focus->surface != wl_resource_get_user_data(origin_resource)))
+	is_pointer_grab = seat->pointer &&
+			  seat->pointer->button_count == 1 &&
+			  seat->pointer->grab_serial == serial &&
+			  seat->pointer->focus &&
+			  seat->pointer->focus->surface == origin;
+
+	is_touch_grab = seat->touch &&
+			seat->touch->num_tp == 1 &&
+			seat->touch->grab_serial == serial &&
+			seat->touch->focus &&
+			seat->touch->focus->surface == origin;
+
+	if (!is_pointer_grab && !is_touch_grab)
 		return;
 
 	/* FIXME: Check that the data source type array isn't empty. */
@@ -672,14 +680,9 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	if (seat->pointer->button_count == 1 &&
-		seat->pointer->grab_serial == serial &&
-		seat->pointer->focus &&
-		seat->pointer->focus->surface == wl_resource_get_user_data(origin_resource))
+	if (is_pointer_grab)
 		ret = weston_pointer_start_drag(seat->pointer, source, icon, client);
-	else if (seat->touch->grab_serial != serial ||
-		seat->touch->focus ||
-		seat->touch->focus->surface != wl_resource_get_user_data(origin_resource))
+	else if (is_touch_grab)
 		ret = weston_touch_start_drag(seat->touch, source, icon, client);
 
 	if (ret < 0)
