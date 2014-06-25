@@ -29,6 +29,7 @@
 #ifndef V8DOMConfiguration_h
 #define V8DOMConfiguration_h
 
+#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include <v8.h>
 
@@ -82,7 +83,7 @@ public:
             if (attribute.setterForMainWorld)
                 setter = attribute.setterForMainWorld;
         }
-        (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8::String::NewFromUtf8(isolate, attribute.name, v8::String::kInternalizedString),
+        (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8AtomicString(isolate, attribute.name),
             getter,
             setter,
             v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data)),
@@ -100,8 +101,9 @@ public:
 
     static void installConstants(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const ConstantConfiguration*, size_t constantCount, v8::Isolate*);
 
-    // MethodConfiguration translates into calls to Set() on the prototype
-    // ObjectTemplate.
+    // MethodConfiguration translates into calls to Set() for setting up an
+    // object's callbacks. It sets the method on both the FunctionTemplate or
+    // the ObjectTemplate.
     struct MethodConfiguration {
         const char* const name;
         v8::FunctionCallback callback;
@@ -109,7 +111,17 @@ public:
         int length;
     };
 
-    static void installCallbacks(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);
+    static void installMethods(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);
+
+    template<class ObjectOrTemplate>
+    static void installMethodCustomSignature(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const MethodConfiguration& configuration, v8::Isolate* isolate)
+    {
+        v8::FunctionCallback callback = configuration.callback;
+        if (DOMWrapperWorld::current(isolate).isMainWorld() && configuration.callbackForMainWorld)
+            callback = configuration.callbackForMainWorld;
+        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, configuration.length);
+        instanceTemplate->Set(v8AtomicString(isolate, configuration.name), functionTemplate, attribute);
+    }
 
     static void installAccessors(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount, v8::Isolate*);
 

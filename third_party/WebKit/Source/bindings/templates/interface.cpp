@@ -1006,15 +1006,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {{install_do_not_check_security_signature(method)}}
     {% endif %}
     {% else %}{# is_do_not_check_security #}
-    {% if method.is_per_world_bindings %}
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        {{install_custom_signature(method, 'ForMainWorld')}}
-    } else {
-        {{install_custom_signature(method)}}
-    }
-    {% else %}
-    {{install_custom_signature(method)}}
-    {% endif %}
+    {{install_custom_signature(method) | indent}}
     {% endif %}{# is_do_not_check_security #}
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# conditional() #}
@@ -1070,13 +1062,17 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
 
 
 {######################################}
-{% macro install_custom_signature(method, world_suffix) %}
-{# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
-{% set method_callback = '%sV8Internal::%sMethodCallback%s' %
-                         (cpp_class, method.name, world_suffix) %}
-{% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
-                            ' | '.join(method.property_attributes) %}
-{{method.function_template}}->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.length}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+{% macro install_custom_signature(method) %}
+{% set method_callback = '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
+{% set method_callback_for_main_world = '%sForMainWorld' % method_callback
+  if method.is_per_world_bindings else '0' %}
+{% set property_attribute =
+  'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
+  if method.property_attributes else 'v8::None' %}
+static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
+    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}
+};
+V8DOMConfiguration::installMethodCustomSignature({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
 {%- endmacro %}
 
 
