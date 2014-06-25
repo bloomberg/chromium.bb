@@ -22,6 +22,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -307,6 +308,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // presented frame for the view. If |desired_size| is non-empty, true is
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
+
+  // Returns the orientation type based on the current display state.
+  static blink::WebScreenOrientationType GetOrientationTypeFromDisplay(
+      const gfx::Display& display);
 
   virtual void GetScreenInfo(blink::WebScreenInfo* results) = 0;
 

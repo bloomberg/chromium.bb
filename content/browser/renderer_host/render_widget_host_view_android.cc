@@ -1444,6 +1444,8 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
   results->availableRect = display.work_area();
   results->deviceScaleFactor = display.device_scale_factor();
   results->orientationAngle = display.RotationAsDegree();
+  results->orientationType =
+      RenderWidgetHostViewBase::GetOrientationTypeFromDisplay(display);
   gfx::DeviceDisplayInfo info;
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();

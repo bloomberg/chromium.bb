@@ -376,6 +376,8 @@ blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
   results.rect = display.bounds();
   results.availableRect = display.work_area();
   results.orientationAngle = display.RotationAsDegree();
+  results.orientationType =
+      content::RenderWidgetHostViewBase::GetOrientationTypeFromDisplay(display);
 
   return results;
 }

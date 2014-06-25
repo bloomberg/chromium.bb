@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
@@ -606,6 +605,39 @@ gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
 
 void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
   NOTIMPLEMENTED();
+}
+
+// static
+blink::WebScreenOrientationType
+RenderWidgetHostViewBase::GetOrientationTypeFromDisplay(
+    const gfx::Display& display) {
+  int angle = display.RotationAsDegree();
+  const gfx::Rect& bounds = display.bounds();
+
+  // Whether the device's natural orientation is portrait.
+  bool naturalPortrait = false;
+  if (angle == 0 || angle == 180) // The device is in its natural orientation.
+    naturalPortrait = bounds.height() > bounds.width();
+  else
+    naturalPortrait = bounds.height() < bounds.width();
+
+  switch (angle) {
+  case 0:
+    return naturalPortrait ? blink::WebScreenOrientationPortraitPrimary
+                           : blink::WebScreenOrientationLandscapePrimary;
+  case 90:
+    return naturalPortrait ? blink::WebScreenOrientationLandscapePrimary
+                           : blink::WebScreenOrientationPortraitSecondary;
+  case 180:
+    return naturalPortrait ? blink::WebScreenOrientationPortraitSecondary
+                           : blink::WebScreenOrientationLandscapeSecondary;
+  case 270:
+    return naturalPortrait ? blink::WebScreenOrientationLandscapeSecondary
+                           : blink::WebScreenOrientationPortraitPrimary;
+  default:
+    NOTREACHED();
+    return blink::WebScreenOrientationPortraitPrimary;
+  }
 }
 
 }  // namespace content
