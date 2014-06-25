@@ -20,16 +20,34 @@ namespace views {
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate), bridge_(new BridgedNativeWidget(this)) {
+    : delegate_(delegate),
+      bridge_(new BridgedNativeWidget(this)),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
 }
 
 NativeWidgetMac::~NativeWidgetMac() {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete delegate_;
+  else
+    CloseNow();
+}
+
+void NativeWidgetMac::OnWindowWillClose() {
+  delegate_->OnNativeWidgetDestroying();
+  // Note: If closed via CloseNow(), |bridge_| will already be reset. If closed
+  // by the user, or via Close() and a RunLoop, this will reset it.
+  bridge_.reset();
+  delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
+  ownership_ = params.ownership;
+
   // TODO(tapted): Convert position into Cocoa's flipped coordinate space.
   NSRect content_rect =
       NSMakeRect(0, 0, params.bounds.width(), params.bounds.height());
@@ -41,7 +59,10 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
                                   styleMask:style_mask
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
-  bridge_->Init(window);
+  [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  bridge_->Init(window, params);
+
+  delegate_->OnNativeWidgetCreated(true);
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
@@ -75,12 +96,12 @@ gfx::NativeView NativeWidgetMac::GetNativeView() const {
 }
 
 gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
-  return bridge_->ns_window();
+  return bridge_ ? bridge_->ns_window() : nil;
 }
 
 Widget* NativeWidgetMac::GetTopLevelWidget() {
-  NOTIMPLEMENTED();
-  return GetWidget();
+  NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
+  return native_widget ? native_widget->GetWidget() : NULL;
 }
 
 const ui::Compositor* NativeWidgetMac::GetCompositor() const {
@@ -99,7 +120,8 @@ ui::Layer* NativeWidgetMac::GetLayer() {
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
-  bridge_->SetRootView(GetWidget()->GetRootView());
+  if (bridge_)
+    bridge_->SetRootView(GetWidget()->GetRootView());
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
@@ -134,7 +156,7 @@ bool NativeWidgetMac::HasCapture() const {
 }
 
 InputMethod* NativeWidgetMac::CreateInputMethod() {
-  return bridge_->CreateInputMethod();
+  return bridge_ ? bridge_->CreateInputMethod() : NULL;
 }
 
 internal::InputMethodDelegate* NativeWidgetMac::GetInputMethodDelegate() {
@@ -142,7 +164,7 @@ internal::InputMethodDelegate* NativeWidgetMac::GetInputMethodDelegate() {
 }
 
 ui::InputMethod* NativeWidgetMac::GetHostInputMethod() {
-  return bridge_->GetHostInputMethod();
+  return bridge_ ? bridge_->GetHostInputMethod() : NULL;
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
@@ -188,7 +210,7 @@ void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMac::SetSize(const gfx::Size& size) {
-  [bridge_->ns_window() setContentSize:NSMakeSize(size.width(), size.height())];
+  [GetNativeWindow() setContentSize:NSMakeSize(size.width(), size.height())];
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
@@ -208,11 +230,15 @@ void NativeWidgetMac::SetShape(gfx::NativeRegion shape) {
 }
 
 void NativeWidgetMac::Close() {
-  NOTIMPLEMENTED();
+  // Calling performClose: will momentarily highlight the close button.
+  [GetNativeWindow() performSelector:@selector(performClose:)
+                          withObject:nil
+                          afterDelay:0];
 }
 
 void NativeWidgetMac::CloseNow() {
-  NOTIMPLEMENTED();
+  // Reset |bridge_| to NULL before destroying it.
+  scoped_ptr<BridgedNativeWidget> bridge(bridge_.Pass());
 }
 
 void NativeWidgetMac::Show() {
@@ -317,7 +343,7 @@ void NativeWidgetMac::RunShellDrag(View* view,
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
   // TODO(tapted): This should use setNeedsDisplayInRect:, once the coordinate
   // system of |rect| has been converted.
-  [bridge_->ns_view() setNeedsDisplay:YES];
+  [GetNativeView() setNeedsDisplay:YES];
 }
 
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
@@ -407,13 +433,33 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  return GetNativeWidgetForNativeView(native_view);
+  NativeWidgetPrivate* native_widget =
+      GetNativeWidgetForNativeView(native_view);
+  if (!native_widget)
+    return NULL;
+
+  for (NativeWidgetPrivate* parent;
+       (parent = GetNativeWidgetForNativeWindow(
+            [native_widget->GetNativeWindow() parentWindow]));
+       native_widget = parent) {
+  }
+  return native_widget;
 }
 
 // static
 void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
-  NOTIMPLEMENTED();
+  NativeWidgetPrivate* native_widget =
+      GetNativeWidgetForNativeView(native_view);
+  if (!native_widget)
+    return;
+
+  // Code expects widget for |native_view| to be added to |children|.
+  if (native_widget->GetWidget())
+    children->insert(native_widget->GetWidget());
+
+  for (NSWindow* child_window : [native_widget->GetNativeWindow() childWindows])
+    GetAllChildWidgets([child_window contentView], children);
 }
 
 // static

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/widget.h"
 
 @class BridgedContentView;
 @class ViewsNSWindowDelegate;
@@ -30,16 +31,20 @@ class View;
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
  public:
-  // Creates one side of the bridge. |parent| can be NULL in tests.
+  // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidget(NativeWidgetMac* parent);
   virtual ~BridgedNativeWidget();
 
   // Initialize the bridge, "retains" ownership of |window|.
-  void Init(base::scoped_nsobject<NSWindow> window);
+  void Init(base::scoped_nsobject<NSWindow> window,
+            const Widget::InitParams& params);
 
   // Set or clears the views::View bridged by the content view. This does NOT
   // take ownership of |view|.
   void SetRootView(views::View* view);
+
+  // Called internally by the NSWindowDelegate when the window is closing.
+  void OnWindowWillClose();
 
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
@@ -53,6 +58,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate {
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
  private:
+  // Closes all child windows. BridgedNativeWidget children will be destroyed.
+  void RemoveOrDestroyChildren();
+
   views::NativeWidgetMac* native_widget_mac_;  // Weak. Owns this.
   base::scoped_nsobject<NSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;

@@ -1678,8 +1678,9 @@ TEST_F(WidgetTest, CloseDestroys) {
   widget->Show();
   widget->Hide();
   widget->Close();
+  EXPECT_FALSE(destroyed);
   // Run the message loop as Close() asynchronously deletes.
-  RunPendingMessages();
+  base::RunLoop().Run();
   EXPECT_TRUE(destroyed);
   // Close() should destroy the widget. If not we'll cleanup to avoid leaks.
   if (!destroyed) {

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "ui/views/test/test_views_delegate.h"
 
 #if defined(OS_WIN)
@@ -20,7 +21,7 @@ class ViewsTestHelper;
 
 // A base class for views unit test. It creates a message loop necessary
 // to drive UI events and takes care of OLE initialization for windows.
-class ViewsTestBase : public testing::Test {
+class ViewsTestBase : public PlatformTest {
  public:
   ViewsTestBase();
   virtual ~ViewsTestBase();

@@ -21,4 +21,11 @@
   return parent_->native_widget_mac();
 }
 
+// NSWindowDelegate implementation.
+
+- (void)windowWillClose:(NSNotification*)notification {
+  DCHECK([parent_->ns_window() isEqual:[notification object]]);
+  parent_->OnWindowWillClose();
+}
+
 @end

@@ -10,28 +10,43 @@
 #include "ui/base/ui_base_switches_util.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/ime/null_input_method.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 namespace views {
 
 BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
     : native_widget_mac_(parent) {
+  DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
 }
 
 BridgedNativeWidget::~BridgedNativeWidget() {
+  RemoveOrDestroyChildren();
   SetRootView(NULL);
-  [window_ setDelegate:nil];
+  if ([window_ delegate]) {
+    // If the delegate is still set, it means OnWindowWillClose has not been
+    // called and the window is still open. Calling -[NSWindow close] will
+    // synchronously call OnWindowWillClose and notify NativeWidgetMac.
+    [window_ close];
+  }
+  DCHECK(![window_ delegate]);
 }
 
-void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window) {
+void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
+                               const Widget::InitParams& params) {
   DCHECK(!window_);
   window_.swap(window);
   [window_ setDelegate:window_delegate_];
+
+  if (params.parent) {
+    // Use NSWindow to manage child windows. This won't automatically close them
+    // but it will maintain relative positioning of the window layer and origin.
+    [[params.parent window] addChildWindow:window_ ordered:NSWindowAbove];
+  }
 }
 
 void BridgedNativeWidget::SetRootView(views::View* view) {
@@ -51,6 +66,12 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
     CHECK(bridged_view_);
   }
   [window_ setContentView:bridged_view_];
+}
+
+void BridgedNativeWidget::OnWindowWillClose() {
+  [[window_ parentWindow] removeChildWindow:window_];
+  [window_ setDelegate:nil];
+  native_widget_mac_->OnWindowWillClose();
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
@@ -79,6 +100,16 @@ void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   widget->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
   if (!key.handled() && widget->GetFocusManager())
     widget->GetFocusManager()->OnKeyEvent(key);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, private:
+
+void BridgedNativeWidget::RemoveOrDestroyChildren() {
+  // TODO(tapted): Implement unowned child windows if required.
+  base::scoped_nsobject<NSArray> child_windows(
+      [[NSArray alloc] initWithArray:[window_ childWindows]]);
+  [child_windows makeObjectsPerformSelector:@selector(close)];
 }
 
 }  // namespace views
