@@ -98,7 +98,7 @@ class RenderingHelper {
   void LayoutRenderingAreas();
 
   // Timer to trigger the RenderContent() repeatly.
-  base::RepeatingTimer<RenderingHelper> render_timer_;
+  scoped_ptr<base::RepeatingTimer<RenderingHelper> > render_timer_;
   base::MessageLoop* message_loop_;
 
   NativeContextType gl_context_;

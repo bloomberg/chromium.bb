@@ -368,7 +368,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
   if (frame_duration_ != base::TimeDelta()) {
-    render_timer_.Start(
+    render_timer_.reset(new base::RepeatingTimer<RenderingHelper>());
+    render_timer_->Start(
         FROM_HERE, frame_duration_, this, &RenderingHelper::RenderContent);
   }
   done->Signal();
@@ -376,7 +377,10 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
-  render_timer_.Stop();
+
+  // Deletion will also stop the timer.
+  render_timer_.reset();
+
   if (render_as_thumbnails_) {
     glDeleteTextures(1, &thumbnails_texture_id_);
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
@@ -555,6 +559,7 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
 }
 
 void RenderingHelper::RenderContent() {
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
 
   if (render_as_thumbnails_) {
