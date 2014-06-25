@@ -54,6 +54,10 @@ struct WebRect;
         BLINK_EXPORT bool isTextFormControlElement() const;
         // Returns the qualified name, which may contain a prefix and a colon.
         BLINK_EXPORT WebString tagName() const;
+        // Check if this element has the specified qualified name. This function
+        // doesn't makes much sense because we have no ways to check namespace
+        // URI. Do not use this.
+        BLINK_EXPORT bool hasTagName(const WebString&) const;
         // Check if this element has the specified local tag name, and the HTML
         // namespace. Tag name matching is case-insensitive.
         BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
