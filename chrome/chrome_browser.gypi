@@ -685,8 +685,6 @@
       'browser/history/top_sites_impl.h',
       'browser/history/typed_url_syncable_service.cc',
       'browser/history/typed_url_syncable_service.h',
-      'browser/history/url_database.cc',
-      'browser/history/url_database.h',
       'browser/history/url_index_private_data.cc',
       'browser/history/url_index_private_data.h',
       'browser/history/url_utils.cc',

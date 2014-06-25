@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 #include "sql/meta_table.h"
 
 namespace base {

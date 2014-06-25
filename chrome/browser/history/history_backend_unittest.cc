@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

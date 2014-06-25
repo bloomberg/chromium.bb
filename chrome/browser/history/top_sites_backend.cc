@@ -11,6 +11,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "content/public/browser/browser_thread.h"
+#include "sql/connection.h"
 
 using content::BrowserThread;
 

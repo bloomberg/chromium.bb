@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_URL_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_URL_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/history/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
 #include "sql/statement.h"
 
@@ -19,6 +19,8 @@ class Connection;
 
 namespace history {
 
+struct KeywordSearchTermRow;
+struct KeywordSearchTermVisit;
 class VisitDatabase;  // For friend statement.
 
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
@@ -303,6 +305,24 @@ class URLDatabase {
     " urls.id, urls.url, urls.title, urls.visit_count, urls.typed_count, " \
     "urls.last_visit_time, urls.hidden "
 
+// Constants which specify, when considered altogether, 'significant'
+// history items. These are used to filter out insignificant items
+// for consideration as autocomplete candidates.
+extern const int kLowQualityMatchTypedLimit;
+extern const int kLowQualityMatchVisitLimit;
+extern const int kLowQualityMatchAgeLimitInDays;
+
+// Returns the date threshold for considering an history item as significant.
+base::Time AutocompleteAgeThreshold();
+
+// Return true if |row| qualifies as an autocomplete candidate. If |time_cache|
+// is_null() then this function determines a new time threshold each time it is
+// called. Since getting system time can be costly (such as for cases where
+// this function will be called in a loop over many history items), you can
+// provide a non-null |time_cache| by simply initializing |time_cache| with
+// AutocompleteAgeThreshold() (or any other desired time in the past).
+bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
+
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_URL_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_URL_DATABASE_H_

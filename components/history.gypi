@@ -12,13 +12,21 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'keyed_service_core',
+        'query_parser',
       ],
       'sources': [
-        'history/core/browser/history_client.h',
         'history/core/browser/history_client.cc',
+        'history/core/browser/history_client.h',
         'history/core/browser/keyword_id.h',
+        'history/core/browser/keyword_search_term.cc',
+        'history/core/browser/keyword_search_term.h',
+        'history/core/browser/url_database.cc',
+        'history/core/browser/url_database.h',
+        'history/core/browser/url_row.cc',
+        'history/core/browser/url_row.h',
       ],
     },
     {

@@ -1,20 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/url_database.h"
+#include "components/history/core/browser/url_database.h"
 
-#include <algorithm>
 #include <limits>
 #include <string>
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "net/base/net_util.h"
 #include "sql/statement.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -614,6 +613,24 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
 bool URLDatabase::CreateMainURLIndex() {
   return GetDB().Execute(
       "CREATE INDEX IF NOT EXISTS urls_url_index ON urls (url)");
+}
+
+const int kLowQualityMatchTypedLimit = 1;
+const int kLowQualityMatchVisitLimit = 4;
+const int kLowQualityMatchAgeLimitInDays = 3;
+
+base::Time AutocompleteAgeThreshold() {
+  return (base::Time::Now() -
+          base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays));
+}
+
+bool RowQualifiesAsSignificant(const URLRow& row,
+                               const base::Time& threshold) {
+  const base::Time& real_threshold =
+      threshold.is_null() ? AutocompleteAgeThreshold() : threshold;
+  return (row.typed_count() >= kLowQualityMatchTypedLimit) ||
+         (row.visit_count() >= kLowQualityMatchVisitLimit) ||
+         (row.last_visit() >= real_threshold);
 }
 
 }  // namespace history

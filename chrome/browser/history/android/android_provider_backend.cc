@@ -17,6 +17,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/connection.h"
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/url_database.h"
+#include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/url_database.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

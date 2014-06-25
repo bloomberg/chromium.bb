@@ -109,6 +109,7 @@
             'gcm_driver/gcm_client_impl_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
+            'history/core/browser/url_database_unittest.cc',
             'history/core/common/thumbnail_score_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
@@ -274,6 +275,7 @@
             'components.gyp:gcm_driver_test_support',
 
             # Dependencies of history
+            'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
 
             # Dependencies of invalidation

@@ -17,13 +17,16 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/autocomplete/base_search_provider.h"
-#include "chrome/browser/history/history_types.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url.h"
 
 class Profile;
 class SearchProviderTest;
 class TemplateURLService;
+
+namespace history {
+struct KeywordSearchTermVisit;
+}
 
 namespace net {
 class URLFetcher;

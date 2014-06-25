@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/base_search_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/history/history_types.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 
 class TemplateURLService;

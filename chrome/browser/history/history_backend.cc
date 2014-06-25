@@ -39,6 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

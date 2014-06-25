@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autocomplete/url_prefix.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "content/public/browser/user_metrics.h"

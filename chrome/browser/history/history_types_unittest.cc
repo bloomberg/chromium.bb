@@ -115,32 +115,4 @@ TEST(HistoryQueryResult, ResultDeleteURL) {
   EXPECT_FALSE(results.MatchesForURL(url2, NULL));
 }
 
-TEST(HistoryQueryResult, RowSignificance) {
-  const base::Time& threshold(AutocompleteAgeThreshold());
-  const GURL url("http://www.google.com/");
-  URLRow url_row(url);
-  url_row.set_title(base::UTF8ToUTF16("Google"));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_visit_count(kLowQualityMatchVisitLimit);
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_visit_count(1);
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_typed_count(kLowQualityMatchTypedLimit);
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_typed_count(0);
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_last_visit(base::Time::Now() - base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_TRUE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_last_visit(base::Time::Now() -
-      base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays + 1));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
-  EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-}
-
 }  // namespace history

@@ -52,6 +52,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"

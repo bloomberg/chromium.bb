@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/delete_directive_handler.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/typed_url_syncable_service.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -75,6 +74,7 @@ class VisitFilter;
 struct DownloadRow;
 struct HistoryAddPageArgs;
 struct HistoryDetails;
+struct KeywordSearchTermVisit;
 
 }  // namespace history
 

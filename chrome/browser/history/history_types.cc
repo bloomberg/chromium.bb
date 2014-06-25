@@ -12,56 +12,6 @@
 
 namespace history {
 
-// URLRow ----------------------------------------------------------------------
-
-URLRow::URLRow() {
-  Initialize();
-}
-
-URLRow::URLRow(const GURL& url) : url_(url) {
-  // Initialize will not set the URL, so our initialization above will stay.
-  Initialize();
-}
-
-URLRow::URLRow(const GURL& url, URLID id) : url_(url) {
-  // Initialize will not set the URL, so our initialization above will stay.
-  Initialize();
-  // Initialize will zero the id_, so set it here.
-  id_ = id;
-}
-
-URLRow::~URLRow() {
-}
-
-URLRow& URLRow::operator=(const URLRow& other) {
-  id_ = other.id_;
-  url_ = other.url_;
-  title_ = other.title_;
-  visit_count_ = other.visit_count_;
-  typed_count_ = other.typed_count_;
-  last_visit_ = other.last_visit_;
-  hidden_ = other.hidden_;
-  return *this;
-}
-
-void URLRow::Swap(URLRow* other) {
-  std::swap(id_, other->id_);
-  url_.Swap(&other->url_);
-  title_.swap(other->title_);
-  std::swap(visit_count_, other->visit_count_);
-  std::swap(typed_count_, other->typed_count_);
-  std::swap(last_visit_, other->last_visit_);
-  std::swap(hidden_, other->hidden_);
-}
-
-void URLRow::Initialize() {
-  id_ = 0;
-  visit_count_ = 0;
-  typed_count_ = 0;
-  last_visit_ = base::Time();
-  hidden_ = false;
-}
-
 // VisitRow --------------------------------------------------------------------
 
 VisitRow::VisitRow()
@@ -86,44 +36,6 @@ VisitRow::VisitRow(URLID arg_url_id,
 }
 
 VisitRow::~VisitRow() {
-}
-
-// URLResult -------------------------------------------------------------------
-
-URLResult::URLResult()
-    : blocked_visit_(false) {
-}
-
-URLResult::URLResult(const GURL& url, base::Time visit_time)
-    : URLRow(url),
-      visit_time_(visit_time),
-      blocked_visit_(false) {
-}
-
-URLResult::URLResult(const GURL& url,
-                     const query_parser::Snippet::MatchPositions& title_matches)
-    : URLRow(url) {
-  title_match_positions_ = title_matches;
-}
-URLResult::URLResult(const URLRow& url_row)
-    : URLRow(url_row),
-      blocked_visit_(false) {
-}
-
-URLResult::~URLResult() {
-}
-
-void URLResult::SwapResult(URLResult* other) {
-  URLRow::Swap(other);
-  std::swap(visit_time_, other->visit_time_);
-  snippet_.Swap(&other->snippet_);
-  title_match_positions_.swap(other->title_match_positions_);
-  std::swap(blocked_visit_, other->blocked_visit_);
-}
-
-// static
-bool URLResult::CompareVisitTime(const URLResult& lhs, const URLResult& rhs) {
-  return lhs.visit_time() > rhs.visit_time();
 }
 
 // QueryResults ----------------------------------------------------------------
@@ -273,18 +185,6 @@ QueryURLResult::QueryURLResult() : success(false) {
 QueryURLResult::~QueryURLResult() {
 }
 
-// KeywordSearchTermVisit -----------------------------------------------------
-
-KeywordSearchTermVisit::KeywordSearchTermVisit() : visits(0) {}
-
-KeywordSearchTermVisit::~KeywordSearchTermVisit() {}
-
-// KeywordSearchTermRow --------------------------------------------------------
-
-KeywordSearchTermRow::KeywordSearchTermRow() : keyword_id(0), url_id(0) {}
-
-KeywordSearchTermRow::~KeywordSearchTermRow() {}
-
 // MostVisitedURL --------------------------------------------------------------
 
 MostVisitedURL::MostVisitedURL() {}
@@ -376,26 +276,6 @@ ThumbnailMigration::~ThumbnailMigration() {}
 MostVisitedThumbnails::MostVisitedThumbnails() {}
 
 MostVisitedThumbnails::~MostVisitedThumbnails() {}
-
-// Autocomplete thresholds -----------------------------------------------------
-
-const int kLowQualityMatchTypedLimit = 1;
-const int kLowQualityMatchVisitLimit = 4;
-const int kLowQualityMatchAgeLimitInDays = 3;
-
-base::Time AutocompleteAgeThreshold() {
-  return (base::Time::Now() -
-          base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays));
-}
-
-bool RowQualifiesAsSignificant(const URLRow& row,
-                               const base::Time& threshold) {
-  const base::Time& real_threshold =
-      threshold.is_null() ? AutocompleteAgeThreshold() : threshold;
-  return (row.typed_count() >= kLowQualityMatchTypedLimit) ||
-         (row.visit_count() >= kLowQualityMatchVisitLimit) ||
-         (row.last_visit() >= real_threshold);
-}
 
 // IconMapping ----------------------------------------------------------------
 
