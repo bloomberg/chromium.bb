@@ -403,6 +403,9 @@ void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
         return;
     }
 
+    if (m_world->isPrivateScriptIsolatedWorld())
+        token = "private-script://" + token;
+
     CString utf8Token = token.utf8();
     // NOTE: V8 does identity comparison in fast path, must use a symbol
     // as the security token.

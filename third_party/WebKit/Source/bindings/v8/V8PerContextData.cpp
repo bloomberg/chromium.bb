@@ -41,13 +41,14 @@
 namespace WebCore {
 
 V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context)
-    : m_wrapperBoilerplates(context->GetIsolate())
-    , m_constructorMap(context->GetIsolate())
-    , m_isolate(context->GetIsolate())
-    , m_contextHolder(adoptPtr(new gin::ContextHolder(context->GetIsolate())))
+    : m_isolate(context->GetIsolate())
+    , m_wrapperBoilerplates(m_isolate)
+    , m_constructorMap(m_isolate)
+    , m_contextHolder(adoptPtr(new gin::ContextHolder(m_isolate)))
     , m_context(m_isolate, context)
     , m_customElementBindings(adoptPtr(new CustomElementBindingMap()))
     , m_activityLogger(0)
+    , m_compiledPrivateScript(m_isolate)
 {
     m_contextHolder->SetContext(context);
 
@@ -201,6 +202,16 @@ int V8PerContextDebugData::contextDebugId(v8::Handle<v8::Context> context)
     if (!comma)
         return -1;
     return atoi(comma + 1);
+}
+
+v8::Handle<v8::Value> V8PerContextData::compiledPrivateScript(String className)
+{
+    return m_compiledPrivateScript.Get(className);
+}
+
+void V8PerContextData::setCompiledPrivateScript(String className, v8::Handle<v8::Value> compiledObject)
+{
+    m_compiledPrivateScript.Set(className, compiledObject);
 }
 
 } // namespace WebCore

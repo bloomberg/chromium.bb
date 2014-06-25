@@ -94,11 +94,16 @@ public:
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
     void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
 
+    v8::Handle<v8::Value> compiledPrivateScript(String);
+    void setCompiledPrivateScript(String, v8::Handle<v8::Value>);
+
 private:
     V8PerContextData(v8::Handle<v8::Context>);
 
     v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
     v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);
+
+    v8::Isolate* m_isolate;
 
     // For each possible type of wrapper, we keep a boilerplate object.
     // The boilerplate is used to create additional wrappers of the same type.
@@ -110,7 +115,6 @@ private:
 
     V8NPObjectMap m_v8NPObjectMap;
 
-    v8::Isolate* m_isolate;
     OwnPtr<gin::ContextHolder> m_contextHolder;
 
     ScopedPersistent<v8::Context> m_context;
@@ -121,6 +125,8 @@ private:
 
     // This is owned by a static hash map in V8DOMActivityLogger.
     V8DOMActivityLogger* m_activityLogger;
+
+    V8PersistentValueMap<String, v8::Value, false> m_compiledPrivateScript;
 };
 
 class V8PerContextDebugData {

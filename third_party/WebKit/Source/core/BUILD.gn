@@ -939,6 +939,24 @@ make_token_matcher("make_core_generated_make_token_matcher_for_viewport") {
 
 # One-off scripts --------------------------------------------------------------
 
+# "generatePrivateScript" in make_core_generated from GYP.
+action("make_core_generated_private_script") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/make_private_script_source.py"
+
+  source_prereqs = [
+    "../bindings/v8/PrivateScriptRunner.js",
+  ]
+  outputs = [
+    "$blink_core_output_dir/PrivateScriptSources.h",
+  ]
+
+  args = rebase_path(outputs, root_build_dir)
+  args += rebase_path(source_prereqs, root_build_dir)
+
+  deps = make_core_generated_deps
+}
+
 # "generateXMLViewerCSS" in make_core_generated from GYP.
 action("make_core_generated_xml_viewer_css") {
   visibility = ":make_core_generated"

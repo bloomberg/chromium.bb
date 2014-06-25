@@ -476,6 +476,11 @@ void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& n
 
 bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reason)
 {
+    v8::Handle<v8::Context> context = m_isolate->GetCurrentContext();
+    if (!context.IsEmpty() && toDOMWindow(context) && DOMWrapperWorld::current(m_isolate).isPrivateScriptIsolatedWorld()) {
+        return true;
+    }
+
     if (m_frame->document() && m_frame->document()->isSandboxed(SandboxScripts)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
         if (reason == AboutToExecuteScript)

@@ -39,7 +39,7 @@ bool {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
     {% if method.v8_value_to_cpp_value %}
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "{{cpp_class}}", "{{method.name}}", windowWrapper, {{method.arguments | length}}, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "{{cpp_class}}", "{{method.name}}", windowWrapper, {{method.arguments | length}}, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
@@ -48,7 +48,7 @@ bool {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}
         return false;
     *output = cppValue;
     {% else %}{# void return type #}
-    PrivateScriptController::run(scriptState, "{{cpp_class}}", "{{method.name}}", windowWrapper, {{method.arguments | length}}, argv);
+    PrivateScriptRunner::run(scriptState, "{{cpp_class}}", "{{method.name}}", windowWrapper, {{method.arguments | length}}, argv);
     if (block.HasCaught())
         return false;
     {% endif %}

@@ -144,6 +144,28 @@
       ],
       'actions': [
         {
+          'action_name': 'generatePrivateScript',
+           # FIXME: The implementation of Blink-in-JS is not yet mature.
+           # You can use Blink-in-JS in your local experiment, but don't ship it.
+           # crbug.com/341031
+           'private_script_files': [
+              '../bindings/v8/PrivateScriptRunner.js',
+           ],
+           'inputs': [
+              '../build/scripts/make_private_script_source.py',
+              '<@(_private_script_files)',
+            ],
+            'outputs': [
+              '<(blink_core_output_dir)/PrivateScriptSources.h',
+            ],
+            'action': [
+              'python',
+              '../build/scripts/make_private_script_source.py',
+              '<@(_outputs)',
+              '<@(_private_script_files)'
+            ],
+        },
+        {
           'action_name': 'generateXMLViewerCSS',
           'inputs': [
             'xml/XMLViewer.css',

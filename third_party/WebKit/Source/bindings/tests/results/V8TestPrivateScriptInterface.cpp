@@ -10,7 +10,7 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/tests/v8/V8Document.h"
 #include "bindings/tests/v8/V8Node.h"
-#include "bindings/v8/PrivateScriptController.h"
+#include "bindings/v8/PrivateScriptRunner.h"
 #include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/LocalFrame.h"
 
@@ -31,7 +31,7 @@ bool V8TestPrivateScriptInterface::voidMethod(LocalFrame* frame)
     v8::Handle<v8::Value> *argv = 0;
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "voidMethod", windowWrapper, 0, argv);
+    PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "voidMethod", windowWrapper, 0, argv);
     if (block.HasCaught())
         return false;
     return true;
@@ -52,7 +52,7 @@ bool V8TestPrivateScriptInterface::shortMethod(LocalFrame* frame, int* output)
     v8::Handle<v8::Value> *argv = 0;
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "shortMethod", windowWrapper, 0, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "shortMethod", windowWrapper, 0, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethod", "TestPrivateScriptInterface", scriptState->context()->Global(), scriptState->isolate());
@@ -79,7 +79,7 @@ bool V8TestPrivateScriptInterface::shortMethodWithShortArgument(LocalFrame* fram
     v8::Handle<v8::Value> argv[] = { valueHandle };
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "shortMethodWithShortArgument", windowWrapper, 1, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "shortMethodWithShortArgument", windowWrapper, 1, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgument", "TestPrivateScriptInterface", scriptState->context()->Global(), scriptState->isolate());
@@ -106,7 +106,7 @@ bool V8TestPrivateScriptInterface::stringMethodWithStringArgument(LocalFrame* fr
     v8::Handle<v8::Value> argv[] = { valueHandle };
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "stringMethodWithStringArgument", windowWrapper, 1, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "stringMethodWithStringArgument", windowWrapper, 1, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgument", "TestPrivateScriptInterface", scriptState->context()->Global(), scriptState->isolate());
@@ -133,7 +133,7 @@ bool V8TestPrivateScriptInterface::nodeMethodWithNodeArgument(LocalFrame* frame,
     v8::Handle<v8::Value> argv[] = { valueHandle };
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "nodeMethodWithNodeArgument", windowWrapper, 1, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "nodeMethodWithNodeArgument", windowWrapper, 1, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgument", "TestPrivateScriptInterface", scriptState->context()->Global(), scriptState->isolate());
@@ -164,7 +164,7 @@ bool V8TestPrivateScriptInterface::nodeMethodWithVariousArguments(LocalFrame* fr
     v8::Handle<v8::Value> argv[] = { documentHandle, nodeHandle, value1Handle, value2Handle, stringHandle };
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptController::run(scriptState, "TestPrivateScriptInterface", "nodeMethodWithVariousArguments", windowWrapper, 5, argv);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::run(scriptState, "TestPrivateScriptInterface", "nodeMethodWithVariousArguments", windowWrapper, 5, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArguments", "TestPrivateScriptInterface", scriptState->context()->Global(), scriptState->isolate());
