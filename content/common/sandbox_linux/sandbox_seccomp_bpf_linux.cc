@@ -26,6 +26,7 @@
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
+#include "content/common/sandbox_linux/bpf_utility_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
@@ -194,7 +195,7 @@ bool StartBPFSandbox(const CommandLine& command_line,
   } else if (process_type == switches::kPpapiPluginProcess) {
     policy.reset(new PpapiProcessPolicy);
   } else if (process_type == switches::kUtilityProcess) {
-    policy.reset(new BlacklistDebugAndNumaPolicy);
+    policy.reset(new UtilityProcessPolicy);
   } else {
     NOTREACHED();
     policy.reset(new AllowAllPolicy);

@@ -333,6 +333,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   InitializeStatsTable(command_line);
 
   MainFunctionParams main_params(command_line);
+  main_params.zygote_child = true;
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)

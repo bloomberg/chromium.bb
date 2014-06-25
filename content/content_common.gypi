@@ -427,6 +427,8 @@
       'common/sandbox_linux/bpf_ppapi_policy_linux.h',
       'common/sandbox_linux/bpf_renderer_policy_linux.cc',
       'common/sandbox_linux/bpf_renderer_policy_linux.h',
+      'common/sandbox_linux/bpf_utility_policy_linux.cc',
+      'common/sandbox_linux/bpf_utility_policy_linux.h',
       'common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',
       'common/sandbox_linux/sandbox_bpf_base_policy_linux.h',
       'common/sandbox_linux/sandbox_init_linux.cc',

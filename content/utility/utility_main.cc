@@ -30,7 +30,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // Initializes the sandbox before any threads are created.
   // TODO(jorgelo): move this after GTK initialization when we enable a strict
   // Seccomp-BPF policy.
-  LinuxSandbox::InitializeSandbox();
+  if (parameters.zygote_child)
+    LinuxSandbox::InitializeSandbox();
 #endif
 
   ChildProcess utility_process;
