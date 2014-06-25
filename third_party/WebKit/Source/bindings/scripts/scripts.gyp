@@ -16,11 +16,11 @@
   'targets': [
 ################################################################################
   {
-    # A separate pre-caching step is *not required* to use lex/parse table
-    # caching in PLY, as the caches are concurrency-safe.
-    # However, pre-caching ensures that all compiler processes use the cached
-    # files (hence maximizing speed), instead of early processes building the
-    # tables themselves (as they've not yet been written when they start).
+    # This separate pre-caching step is required to use lex/parse table caching
+    # in PLY, since PLY itself does not check if the cache is valid, and may end
+    # up using a stale cache if this step hasn't been run to update it.
+    #
+    # This action's dependencies *is* the cache validation.
     #
     # GN version: //third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables
     'target_name': 'cached_lex_yacc_tables',
