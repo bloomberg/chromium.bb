@@ -270,26 +270,25 @@ class HistoryService : public CancelableRequestProvider,
   // contain [B, A] and C will be in 'to_url'.
   //
   // If there is no such URL in the database or the most recent visit has no
-  // redirect, the vector will be empty. If the history system failed for
-  // some reason, success will additionally be false. If the given page
-  // has redirected to multiple destinations, this will pick a random one.
-  typedef base::Callback<void(Handle,
-                              GURL,  // from_url / to_url
-                              bool,  // success
-                              history::RedirectList*)> QueryRedirectsCallback;
+  // redirect, the vector will be empty. If the given page has redirected to
+  // multiple destinations, this will pick a random one.
+  typedef base::Callback<void(const history::RedirectList*)>
+      QueryRedirectsCallback;
 
   // Schedules a query for the most recent redirect coming out of the given
   // URL. See the RedirectQuerySource above, which is guaranteed to be called
   // if the request is not canceled.
-  Handle QueryRedirectsFrom(const GURL& from_url,
-                            CancelableRequestConsumerBase* consumer,
-                            const QueryRedirectsCallback& callback);
+  base::CancelableTaskTracker::TaskId QueryRedirectsFrom(
+      const GURL& from_url,
+      const QueryRedirectsCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Schedules a query to get the most recent redirects ending at the given
   // URL.
-  Handle QueryRedirectsTo(const GURL& to_url,
-                          CancelableRequestConsumerBase* consumer,
-                          const QueryRedirectsCallback& callback);
+  base::CancelableTaskTracker::TaskId QueryRedirectsTo(
+      const GURL& to_url,
+      const QueryRedirectsCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   typedef base::Callback<
       void(Handle,

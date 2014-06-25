@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/history/history_service.h"
@@ -46,28 +47,25 @@ class RedirectTest : public InProcessBrowserTest {
     // that it's done: OnRedirectQueryComplete.
     std::vector<GURL> rv;
     history_service->QueryRedirectsFrom(
-        url, &consumer_,
+        url,
         base::Bind(&RedirectTest::OnRedirectQueryComplete,
-                   base::Unretained(this), &rv));
+                   base::Unretained(this),
+                   &rv),
+        &tracker_);
     content::RunMessageLoop();
     return rv;
   }
 
  protected:
-  void OnRedirectQueryComplete(
-      std::vector<GURL>* rv,
-      HistoryService::Handle request_handle,
-      GURL from_url,
-      bool success,
-      history::RedirectList* redirects) {
-    for (size_t i = 0; i < redirects->size(); ++i)
-      rv->push_back(redirects->at(i));
+  void OnRedirectQueryComplete(std::vector<GURL>* rv,
+                               const history::RedirectList* redirects) {
+    rv->insert(rv->end(), redirects->begin(), redirects->end());
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());
   }
 
-  // Consumer for asynchronous history queries.
-  CancelableRequestConsumer consumer_;
+  // Tracker for asynchronous history queries.
+  base::CancelableTaskTracker tracker_;
 };
 
 // Tests a single server redirect

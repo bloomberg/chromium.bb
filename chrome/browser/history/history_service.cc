@@ -797,22 +797,35 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
       base::Bind(callback, base::Owned(query_results)));
 }
 
-HistoryService::Handle HistoryService::QueryRedirectsFrom(
+base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsFrom(
     const GURL& from_url,
-    CancelableRequestConsumerBase* consumer,
-    const QueryRedirectsCallback& callback) {
+    const QueryRedirectsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_UI, &HistoryBackend::QueryRedirectsFrom, consumer,
-      new history::QueryRedirectsRequest(callback), from_url);
+  history::RedirectList* result = new history::RedirectList();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::QueryRedirectsFrom,
+                 history_backend_.get(),
+                 from_url,
+                 base::Unretained(result)),
+      base::Bind(callback, base::Owned(result)));
 }
 
-HistoryService::Handle HistoryService::QueryRedirectsTo(
+base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
     const GURL& to_url,
-    CancelableRequestConsumerBase* consumer,
-    const QueryRedirectsCallback& callback) {
+    const QueryRedirectsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryRedirectsTo, consumer,
-      new history::QueryRedirectsRequest(callback), to_url);
+  history::RedirectList* result = new history::RedirectList();
+  return tracker->PostTaskAndReply(thread_->message_loop_proxy().get(),
+                                   FROM_HERE,
+                                   base::Bind(&HistoryBackend::QueryRedirectsTo,
+                                              history_backend_.get(),
+                                              to_url,
+                                              base::Unretained(result)),
+                                   base::Bind(callback, base::Owned(result)));
 }
 
 HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(

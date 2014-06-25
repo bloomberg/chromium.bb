@@ -155,10 +155,19 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryHistory(const base::string16& text_query,
                     const QueryOptions& options,
                     QueryResults* query_results);
-  void QueryRedirectsFrom(scoped_refptr<QueryRedirectsRequest> request,
-                          const GURL& url);
-  void QueryRedirectsTo(scoped_refptr<QueryRedirectsRequest> request,
-                        const GURL& url);
+
+  // Computes the most recent URL(s) that the given canonical URL has
+  // redirected to. There may be more than one redirect in a row, so this
+  // function will fill the given array with the entire chain. If there are
+  // no redirects for the most recent visit of the URL, or the URL is not
+  // in history, the array will be empty.
+  void QueryRedirectsFrom(const GURL& url, RedirectList* redirects);
+
+  // Similar to above function except computes a chain of redirects to the
+  // given URL. Stores the most recent list of redirects ending at |url| in the
+  // given RedirectList. For example, if we have the redirect list A -> B -> C,
+  // then calling this function with url=C would fill redirects with {B, A}.
+  void QueryRedirectsTo(const GURL& url, RedirectList* redirects);
 
   void GetVisibleVisitCountToHost(
       scoped_refptr<GetVisibleVisitCountToHostRequest> request,
@@ -190,23 +199,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryMostVisitedURLsImpl(int result_count,
                                 int days_back,
                                 MostVisitedURLList* result);
-
-  // Computes the most recent URL(s) that the given canonical URL has
-  // redirected to and returns true on success. There may be more than one
-  // redirect in a row, so this function will fill the given array with the
-  // entire chain. If there are no redirects for the most recent visit of the
-  // URL, or the URL is not in history, returns false.
-  //
-  // Backend for QueryRedirectsFrom.
-  bool GetMostRecentRedirectsFrom(const GURL& url,
-                                  history::RedirectList* redirects);
-
-  // Similar to above function except computes a chain of redirects to the
-  // given URL. Stores the most recent list of redirects ending at |url| in the
-  // given RedirectList. For example, if we have the redirect list A -> B -> C,
-  // then calling this function with url=C would fill redirects with {B, A}.
-  bool GetMostRecentRedirectsTo(const GURL& url,
-                                history::RedirectList* redirects);
 
   // Favicon -------------------------------------------------------------------
 

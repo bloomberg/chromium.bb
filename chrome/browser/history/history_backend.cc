@@ -758,7 +758,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     details->visit_time = time;
     // TODO(meelapshah) Disabled due to potential PageCycler regression.
     // Re-enable this.
-    // GetMostRecentRedirectsTo(url, &details->redirects);
+    // QueryRedirectsTo(url, &details->redirects);
     BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                            details.PassAs<HistoryDetails>());
   } else {
@@ -1291,23 +1291,32 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
     result->set_reached_beginning(true);
 }
 
-// Frontend to GetMostRecentRedirectsFrom from the history thread.
-void HistoryBackend::QueryRedirectsFrom(
-    scoped_refptr<QueryRedirectsRequest> request,
-    const GURL& url) {
-  if (request->canceled())
+void HistoryBackend::QueryRedirectsFrom(const GURL& from_url,
+                                        RedirectList* redirects) {
+  redirects->clear();
+  if (!db_)
     return;
-  bool success = GetMostRecentRedirectsFrom(url, &request->value);
-  request->ForwardResult(request->handle(), url, success, &request->value);
+
+  URLID from_url_id = db_->GetRowForURL(from_url, NULL);
+  VisitID cur_visit = db_->GetMostRecentVisitForURL(from_url_id, NULL);
+  if (!cur_visit)
+    return;  // No visits for URL.
+
+  GetRedirectsFromSpecificVisit(cur_visit, redirects);
 }
 
-void HistoryBackend::QueryRedirectsTo(
-    scoped_refptr<QueryRedirectsRequest> request,
-    const GURL& url) {
-  if (request->canceled())
+void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
+                                      RedirectList* redirects) {
+  redirects->clear();
+  if (!db_)
     return;
-  bool success = GetMostRecentRedirectsTo(url, &request->value);
-  request->ForwardResult(request->handle(), url, success, &request->value);
+
+  URLID to_url_id = db_->GetRowForURL(to_url, NULL);
+  VisitID cur_visit = db_->GetMostRecentVisitForURL(to_url_id, NULL);
+  if (!cur_visit)
+    return;  // No visits for URL.
+
+  GetRedirectsToSpecificVisit(cur_visit, redirects);
 }
 
 void HistoryBackend::GetVisibleVisitCountToHost(
@@ -1343,7 +1352,7 @@ void HistoryBackend::QueryTopURLsAndRedirects(
   for (size_t i = 0; i < data.size(); ++i) {
     top_urls->push_back(data[i]->GetURL());
     RefCountedVector<GURL>* list = new RefCountedVector<GURL>;
-    GetMostRecentRedirectsFrom(top_urls->back(), &list->data);
+    QueryRedirectsFrom(top_urls->back(), &list->data);
     (*redirects)[top_urls->back()] = list;
   }
 
@@ -1466,7 +1475,7 @@ void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,
   for (size_t i = 0; i < data.size(); ++i) {
     PageUsageData* current_data = data[i];
     RedirectList redirects;
-    GetMostRecentRedirectsFrom(current_data->GetURL(), &redirects);
+    QueryRedirectsFrom(current_data->GetURL(), &redirects);
     MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
     result->push_back(url);
   }
@@ -1510,38 +1519,6 @@ void HistoryBackend::GetRedirectsToSpecificVisit(
     visit_set.insert(cur_visit);
     redirects->push_back(cur_url);
   }
-}
-
-bool HistoryBackend::GetMostRecentRedirectsFrom(
-    const GURL& from_url,
-    history::RedirectList* redirects) {
-  redirects->clear();
-  if (!db_)
-    return false;
-
-  URLID from_url_id = db_->GetRowForURL(from_url, NULL);
-  VisitID cur_visit = db_->GetMostRecentVisitForURL(from_url_id, NULL);
-  if (!cur_visit)
-    return false;  // No visits for URL.
-
-  GetRedirectsFromSpecificVisit(cur_visit, redirects);
-  return true;
-}
-
-bool HistoryBackend::GetMostRecentRedirectsTo(
-    const GURL& to_url,
-    history::RedirectList* redirects) {
-  redirects->clear();
-  if (!db_)
-    return false;
-
-  URLID to_url_id = db_->GetRowForURL(to_url, NULL);
-  VisitID cur_visit = db_->GetMostRecentVisitForURL(to_url_id, NULL);
-  if (!cur_visit)
-    return false;  // No visits for URL.
-
-  GetRedirectsToSpecificVisit(cur_visit, redirects);
-  return true;
 }
 
 void HistoryBackend::ScheduleAutocomplete(HistoryURLProvider* provider,

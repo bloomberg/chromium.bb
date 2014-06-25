@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
@@ -645,24 +646,20 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     history->QueryRedirectsTo(
         tab_url_,
-        &request_consumer_,
         base::Bind(&CheckClientDownloadRequest::OnGotTabRedirects,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   tab_url_),
+        &request_tracker_);
   }
 
-  void OnGotTabRedirects(HistoryService::Handle handle,
-                         GURL url,
-                         bool success,
-                         history::RedirectList* redirect_list) {
+  void OnGotTabRedirects(const GURL& url,
+                         const history::RedirectList* redirect_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(url, tab_url_);
 
-    if (success && redirect_list->size() > 0) {
-      for (history::RedirectList::reverse_iterator i = redirect_list->rbegin();
-           i != redirect_list->rend();
-           ++i) {
-        tab_redirects_.push_back(*i);
-      }
+    if (!redirect_list->empty()) {
+      tab_redirects_.insert(
+          tab_redirects_.end(), redirect_list->rbegin(), redirect_list->rend());
     }
 
     SendRequest();
@@ -865,7 +862,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
   std::string client_download_request_data_;
-  CancelableRequestConsumer request_consumer_;  // For HistoryService lookup.
+  base::CancelableTaskTracker request_tracker_;  // For HistoryService lookup.
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
   base::TimeTicks timeout_start_time_;

@@ -977,7 +977,6 @@ class HistoryTest : public testing::Test {
  public:
   HistoryTest()
       : got_thumbnail_callback_(false),
-        redirect_query_success_(false),
         query_url_success_(false) {
   }
 
@@ -1071,25 +1070,22 @@ class HistoryTest : public testing::Test {
 
   // Fills in saved_redirects_ with the redirect information for the given URL,
   // returning true on success. False means the URL was not found.
-  bool QueryRedirectsFrom(HistoryService* history, const GURL& url) {
+  void QueryRedirectsFrom(HistoryService* history, const GURL& url) {
     history_service_->QueryRedirectsFrom(
-        url, &consumer_,
+        url,
         base::Bind(&HistoryTest::OnRedirectQueryComplete,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &tracker_);
     base::MessageLoop::current()->Run();  // Will be exited in *QueryComplete.
-    return redirect_query_success_;
   }
 
   // Callback for QueryRedirects.
-  void OnRedirectQueryComplete(HistoryService::Handle handle,
-                               GURL url,
-                               bool success,
-                               history::RedirectList* redirects) {
-    redirect_query_success_ = success;
-    if (redirect_query_success_)
-      saved_redirects_.swap(*redirects);
-    else
-      saved_redirects_.clear();
+  void OnRedirectQueryComplete(const history::RedirectList* redirects) {
+    saved_redirects_.clear();
+    if (!redirects->empty()) {
+      saved_redirects_.insert(
+          saved_redirects_.end(), redirects->begin(), redirects->end());
+    }
     base::MessageLoop::current()->Quit();
   }
 
@@ -1118,7 +1114,6 @@ class HistoryTest : public testing::Test {
   // Set by the redirect callback when we get data. You should be sure to
   // clear this before issuing a redirect request.
   history::RedirectList saved_redirects_;
-  bool redirect_query_success_;
 
   // For history requests.
   base::CancelableTaskTracker tracker_;
