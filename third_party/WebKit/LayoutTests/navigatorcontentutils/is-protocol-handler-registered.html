@@ -37,7 +37,7 @@ invalid_schemes.forEach(function (scheme) {
     try {
         window.navigator.isProtocolHandlerRegistered(scheme, 'invalid scheme uri=%s');
     } catch (e) {
-        succeeded = 'SyntaxError' == e.name;
+        succeeded = 'SecurityError' == e.name;
         errorMessage = e.message;
     }
 
