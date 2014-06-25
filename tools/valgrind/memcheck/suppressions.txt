@@ -5333,7 +5333,7 @@
    fun:_Znw*
    fun:_ZN7GrGpuGL12ProgramCache10getProgramERK15GrGLProgramDescPPK13GrEffectStageS7_
    fun:_ZN7GrGpuGL18flushGraphicsStateEN5GrGpu8DrawTypeEPK20GrDeviceCoordTexture
-   fun:_ZN5GrGpu22setupClipAndFlushStateENS_8DrawTypeEPK20GrDeviceCoordTexturePN11GrDrawState18AutoRestoreEffectsE
+   fun:_ZN5GrGpu22setupClipAndFlushStateENS_8DrawTypeEPK20GrDeviceCoordTexturePN11GrDrawState18AutoRestoreEffects*
    fun:_ZN5GrGpu6onDrawERKN12GrDrawTarget8DrawInfoE
    ...
    fun:_ZN9GrContext22readRenderTargetPixelsEP14GrRenderTargetiiii13GrPixelConfigPvmj
