@@ -416,12 +416,12 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             break;
 
         case Resource::Font:
+        case Resource::TextTrack:
             // These resources are passive, but mixed usage is low enough that we
             // can block them in a mixed context.
             treatment = TreatAsActiveContent;
             break;
 
-        case Resource::TextTrack:
         case Resource::Raw:
         case Resource::Image:
         case Resource::Media:
