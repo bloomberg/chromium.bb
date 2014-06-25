@@ -18,6 +18,17 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
         ProducerHandle, SharedBufferHandle {
 
     /**
+     * Instance singleton.
+     */
+    public static final InvalidHandle INSTANCE = new InvalidHandle();
+
+    /**
+     * Private constructor.
+     */
+    private InvalidHandle() {
+    }
+
+    /**
      * @see Handle#close()
      */
     @Override
