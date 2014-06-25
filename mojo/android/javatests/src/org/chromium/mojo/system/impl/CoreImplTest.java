@@ -493,7 +493,7 @@ public class CoreImplTest extends MojoTestCase {
     @SmallTest
     public void testInvalidHandle() {
         Core core = CoreImpl.getInstance();
-        Handle handle = InvalidHandle.INSTANCE;
+        Handle handle = new InvalidHandle();
 
         // Checking wait.
         boolean exception = false;
@@ -713,7 +713,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(InvalidHandle.INSTANCE, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(new InvalidHandle(), Core.WaitFlags.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());

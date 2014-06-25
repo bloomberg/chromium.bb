@@ -5,7 +5,7 @@
 import "sample_import.mojom"
 import "sample_import2.mojom"
 
-[JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
+[JavaPackage="org.chromium.mojo.bindings.test.sample"]
 module sample {
 
 const uint8 kTwelve = 12;

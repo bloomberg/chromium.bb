@@ -8,8 +8,6 @@ import argparse
 import os
 import re
 
-from jinja2 import contextfilter
-
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
@@ -64,21 +62,19 @@ def ConstantStyle(name):
   return '_'.join([x.upper() for x in components])
 
 def GetNameForElement(element):
-  if isinstance(element, (mojom.Enum,
-                          mojom.Interface,
-                          mojom.Struct)):
+  if (isinstance(element, mojom.Enum) or
+      isinstance(element, mojom.Interface) or
+      isinstance(element, mojom.Struct)):
     return UpperCamelCase(element.name)
-  if isinstance(element, mojom.InterfaceRequest):
-    return GetNameForElement(element.kind)
-  if isinstance(element, (mojom.Method,
-                          mojom.Parameter,
-                          mojom.Field)):
+  if (isinstance(element, mojom.Method) or
+      isinstance(element, mojom.Parameter) or
+      isinstance(element, mojom.Field)):
     return CamelCase(element.name)
   if isinstance(element,  mojom.EnumValue):
     return (UpperCamelCase(element.enum_name) + '.' +
             ConstantStyle(element.name))
-  if isinstance(element, (mojom.NamedValue,
-                          mojom.Constant)):
+  if (isinstance(element, mojom.NamedValue) or
+      isinstance(element, mojom.Constant)):
     return ConstantStyle(element.name)
   raise Exception("Unexpected element: " % element)
 
@@ -92,57 +88,36 @@ def GetPackage(module):
   # Default package.
   return "org.chromium.mojom." + module.namespace
 
-def GetNameForKind(context, kind):
+def GetNameForKind(kind):
   def _GetNameHierachy(kind):
     hierachy = []
     if kind.parent_kind:
       hierachy = _GetNameHierachy(kind.parent_kind)
-    hierachy.append(GetNameForElement(kind))
+    hierachy.append(kind.name)
     return hierachy
 
-  module = context.resolve('module')
-  elements = []
-  if GetPackage(module) != GetPackage(kind.module):
-    elements += [GetPackage(kind.module)]
+  elements = [GetPackage(kind.module)]
   elements += _GetNameHierachy(kind)
   return '.'.join(elements)
 
-@contextfilter
-def GetJavaType(context, kind):
+def GetJavaType(kind):
   if isinstance(kind, (mojom.Struct, mojom.Interface)):
-    return GetNameForKind(context, kind)
-  if isinstance(kind, mojom.InterfaceRequest):
-    return GetNameForKind(context, kind.kind)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
-    return "%s[]" % GetJavaType(context, kind.kind)
+    return GetNameForKind(kind)
+  if isinstance(kind, mojom.Array):
+    return "%s[]" % GetJavaType(kind.kind)
   if isinstance(kind, mojom.Enum):
     return "int"
   return _spec_to_java_type[kind.spec]
 
-def IsHandle(kind):
-  return kind.spec[0] == 'h'
-
-@contextfilter
-def DefaultValue(context, field):
-  assert field.default
-  if isinstance(field.kind, mojom.Struct):
-    assert field.default == "default"
-    return "new %s()" % GetJavaType(context, field.kind)
-  return "(%s) %s" % (GetJavaType(context, field.kind),
-                      ExpressionToText(context, field.default))
-
-@contextfilter
-def ExpressionToText(context, token):
+def ExpressionToText(token):
   def _TranslateNamedValue(named_value):
     entity_name = GetNameForElement(named_value)
     if named_value.parent_kind:
-      return GetJavaType(context, named_value.parent_kind) + '.' + entity_name
+      return GetJavaType(named_value.parent_kind) + '.' + entity_name
     # Handle the case where named_value is a module level constant:
     if not isinstance(named_value, mojom.EnumValue):
       entity_name = (GetConstantsMainEntityName(named_value.module) + '.' +
                       entity_name)
-    if GetPackage(named_value.module) == GetPackage(context.resolve('module')):
-      return entity_name
     return GetPackage(named_value.module) + '.' + entity_name
 
   if isinstance(token, mojom.NamedValue):
@@ -163,9 +138,7 @@ def GetConstantsMainEntityName(module):
 class Generator(generator.Generator):
 
   java_filters = {
-    "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
-    "is_handle": IsHandle,
     "java_type": GetJavaType,
     "name": GetNameForElement,
   }
@@ -176,19 +149,15 @@ class Generator(generator.Generator):
       "package": GetPackage(self.module),
     }
 
-  @UseJinja("java_templates/enum.java.tmpl", filters=java_filters)
+  @UseJinja("java_templates/enum.java.tmpl", filters=java_filters,
+            lstrip_blocks=True, trim_blocks=True)
   def GenerateEnumSource(self, enum):
     exports = self.GetJinjaExports()
     exports.update({"enum": enum})
     return exports
 
-  @UseJinja("java_templates/struct.java.tmpl", filters=java_filters)
-  def GenerateStructSource(self, struct):
-    exports = self.GetJinjaExports()
-    exports.update({"struct": struct})
-    return exports
-
-  @UseJinja("java_templates/constants.java.tmpl", filters=java_filters)
+  @UseJinja("java_templates/constants.java.tmpl", filters=java_filters,
+            lstrip_blocks=True, trim_blocks=True)
   def GenerateConstantsSource(self, module):
     exports = self.GetJinjaExports()
     exports.update({"main_entity": GetConstantsMainEntityName(module),
@@ -213,21 +182,6 @@ class Generator(generator.Generator):
       self.Write(self.GenerateEnumSource(enum),
                  "%s.java" % GetNameForElement(enum))
 
-    for struct in self.module.structs:
-      self.Write(self.GenerateStructSource(struct),
-                 "%s.java" % GetNameForElement(struct))
-
     if self.module.constants:
       self.Write(self.GenerateConstantsSource(self.module),
                  "%s.java" % GetConstantsMainEntityName(self.module))
-
-  def GetJinjaParameters(self):
-    return {
-      'lstrip_blocks': True,
-      'trim_blocks': True,
-    }
-
-  def GetGlobals(self):
-    return {
-      'module': self.module,
-    }

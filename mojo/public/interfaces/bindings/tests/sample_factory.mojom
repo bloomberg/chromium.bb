@@ -4,7 +4,7 @@
 
 import "sample_import.mojom"
 
-[JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
+[JavaPackage="org.chromium.mojo.bindings.test.sample"]
 module sample {
 
 // This sample shows how handles to MessagePipes can be sent as both parameters

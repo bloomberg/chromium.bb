@@ -103,11 +103,4 @@ In particular, ~ at the start of a string means it's a regex.
     <Method name="destroy" />
     <Bug code="ST" />
   </Match>
-  <!--
-  Ignore mojo generated files.
-  -->
-  <Match>
-    <Class name="~.*\.mojom\..*" />
-    <Bug code="UuF,UrF" />
-  </Match>
 </FindBugsFilter>
