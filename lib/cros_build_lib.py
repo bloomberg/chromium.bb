@@ -1479,7 +1479,7 @@ def UserDateTimeFormat(timeval=None):
   if isinstance(timeval, datetime):
     timeval = time.mktime(timeval.timetuple())
   return '%s (%s)' % (email.utils.formatdate(timeval=timeval, localtime=True),
-                                             time.tzname[0])
+                      time.strftime('%Z', time.localtime(timeval)))
 
 
 def ParseUserDateTimeFormat(time_string):
