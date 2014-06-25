@@ -5,7 +5,7 @@
 {
   'rules': [
     {
-      'rule_name': 'Generate C++, JS and Java source files from mojom files',
+      'rule_name': '<(_target_name)_mojom_bindings_generator',
       'extension': 'mojom',
       'variables': {
         'mojom_base_output_dir':
