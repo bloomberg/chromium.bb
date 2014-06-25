@@ -651,7 +651,11 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_EQ(instance2a, instance2b);
 }
 
-TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
+// The embedder can request sites for certain urls not be be assigned to the
+// SiteInstance through ShouldAssignSiteForURL() in content browser client,
+// allowing to reuse the renderer backing certain chrome urls for subsequent
+// navigation. The test verifies that the override is honored.
+TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   WebContentsImplTestBrowserClient browser_client;
   SetBrowserClientForTesting(&browser_client);
 
@@ -738,6 +742,92 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   DeleteContents();
   EXPECT_EQ(orig_rvh_delete_count, 1);
   EXPECT_EQ(pending_rvh_delete_count, 1);
+}
+
+// Regression test for http://crbug.com/386542 - variation of
+// NavigateFromSitelessUrl in which the original navigation is a session
+// restore.
+TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
+  WebContentsImplTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+  SiteInstanceImpl* orig_instance =
+      static_cast<SiteInstanceImpl*>(contents()->GetSiteInstance());
+  TestRenderViewHost* orig_rvh = test_rvh();
+
+  // Restore a navigation entry for URL that should not assign site to the
+  // SiteInstance.
+  browser_client.set_assign_site_for_url(false);
+  const GURL native_url("non-site-url://stuffandthings");
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
+      native_url, Referrer(), PAGE_TRANSITION_LINK, false, std::string(),
+      browser_context());
+  entry->SetPageID(0);
+  entries.push_back(entry);
+  controller().Restore(
+      0,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      &entries);
+  ASSERT_EQ(0u, entries.size());
+  ASSERT_EQ(1, controller().GetEntryCount());
+  controller().GoToIndex(0);
+  contents()->TestDidNavigate(orig_rvh, 0, native_url, PAGE_TRANSITION_RELOAD);
+  EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+  EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
+  EXPECT_FALSE(orig_instance->HasSite());
+
+  // Navigate to a regular site and verify that the SiteInstance was kept.
+  browser_client.set_assign_site_for_url(true);
+  const GURL url("http://www.google.com");
+  controller().LoadURL(
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(orig_rvh, 2, url, PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+
+  // Cleanup.
+  DeleteContents();
+}
+
+// Complement for NavigateFromRestoredSitelessUrl, verifying that when a regular
+// tab is restored, the SiteInstance will change upon navigation.
+TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
+  WebContentsImplTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+  SiteInstanceImpl* orig_instance =
+      static_cast<SiteInstanceImpl*>(contents()->GetSiteInstance());
+  TestRenderViewHost* orig_rvh = test_rvh();
+
+  // Restore a navigation entry for a regular URL ensuring that the embedder
+  // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
+  browser_client.set_assign_site_for_url(true);
+  const GURL regular_url("http://www.yahoo.com");
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
+      regular_url, Referrer(), PAGE_TRANSITION_LINK, false, std::string(),
+      browser_context());
+  entry->SetPageID(0);
+  entries.push_back(entry);
+  controller().Restore(
+      0,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      &entries);
+  ASSERT_EQ(0u, entries.size());
+  ASSERT_EQ(1, controller().GetEntryCount());
+  controller().GoToIndex(0);
+  contents()->TestDidNavigate(orig_rvh, 0, regular_url, PAGE_TRANSITION_RELOAD);
+  EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_instance->HasSite());
+
+  // Navigate to another site and verify that a new SiteInstance was created.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(
+      contents()->GetPendingRenderViewHost(), 2, url, PAGE_TRANSITION_TYPED);
+  EXPECT_NE(orig_instance, contents()->GetSiteInstance());
+
+  // Cleanup.
+  DeleteContents();
 }
 
 // Test that we can find an opener RVH even if it's pending.

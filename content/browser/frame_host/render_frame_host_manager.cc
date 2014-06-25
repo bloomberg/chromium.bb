@@ -808,8 +808,16 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForEntry(
     // In the case of session restore, as it loads all the pages immediately
     // we need to set the site first, otherwise after a restore none of the
     // pages would share renderers in process-per-site.
-    if (entry.restore_type() != NavigationEntryImpl::RESTORE_NONE)
+    //
+    // The embedder can request some urls never to be assigned to SiteInstance
+    // through the ShouldAssignSiteForURL() content client method, so that
+    // renderers created for particular chrome urls (e.g. the chrome-native://
+    // scheme) can be reused for subsequent navigations in the same WebContents.
+    // See http://crbug.com/386542.
+    if (entry.restore_type() != NavigationEntryImpl::RESTORE_NONE &&
+        GetContentClient()->browser()->ShouldAssignSiteForURL(dest_url)) {
       current_site_instance->SetSite(dest_url);
+    }
 
     return current_site_instance;
   }
