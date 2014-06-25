@@ -1,0 +1,19 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+[Client=KeyboardClient]
+interface KeyboardService {
+  // Sets the view keyboard events are to go to.
+  SetTarget(uint32 view_id);
+};
+
+interface KeyboardClient {
+  // Invoked when the user interacts with the keyboard. |code| is a key code
+  // |flags| is a bitmask of ui::EventFlags.
+  OnKeyboardEvent(uint32 view_id, int32 code, int32 flags);
+};
+
+}

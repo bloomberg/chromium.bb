@@ -75,6 +75,7 @@
             'mojo_browser',
             'mojo_demo_launcher',
             'mojo_embedded_app',
+            'mojo_keyboard',
             'mojo_media_viewer',
             'mojo_nesting_app',
             'mojo_window_manager',
