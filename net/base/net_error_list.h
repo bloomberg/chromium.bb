@@ -96,7 +96,7 @@ NET_ERROR(SOCKET_IS_CONNECTED, -23)
 
 // The request was blocked because the forced reenrollment check is still
 // pending. This error can only occur on ChromeOS.
-// The error can be emitted by code in c/b/policy/policy_helpers.cc.
+// The error can be emitted by code in chrome/browser/policy/policy_helpers.cc.
 NET_ERROR(BLOCKED_ENROLLMENT_CHECK_PENDING, -24)
 
 // A connection was closed (corresponding to a TCP FIN).
