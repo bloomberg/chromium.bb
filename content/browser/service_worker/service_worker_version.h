@@ -68,9 +68,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     INSTALLED,   // Install event is finished and is ready to be activated.
     ACTIVATING,  // Activate event is dispatched and being handled.
     ACTIVE,      // Activation is finished and can run as active.
-    DEACTIVATED, // The version is no longer running as active, due to
-                 // unregistration or replace. (TODO(kinuko): we may need
-                 // different states for different termination sequences)
+    REDUNDANT,   // The version is no longer running as active, due to
+                 // unregistration or replace.
   };
 
   class Listener {
@@ -128,7 +127,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       bool pause_after_download,
       const StatusCallback& callback);
 
-  // Starts an embedded worker for this version.
+  // Stops an embedded worker for this version.
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 

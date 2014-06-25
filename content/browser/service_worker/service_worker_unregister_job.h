@@ -45,13 +45,14 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   virtual RegistrationJobType GetType() OVERRIDE;
 
  private:
-  void DeleteExistingRegistration(
+  void OnRegistrationFound(
       ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void DeleteRegistration(
       const scoped_refptr<ServiceWorkerRegistration>& registration);
   void Complete(ServiceWorkerStatusCode status);
   void CompleteInternal(ServiceWorkerStatusCode status);
 
-  // The ServiceWorkerStorage object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   const GURL pattern_;
   std::vector<UnregistrationCallback> callbacks_;

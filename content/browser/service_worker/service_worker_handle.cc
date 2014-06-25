@@ -30,7 +30,7 @@ GetWebServiceWorkerState(ServiceWorkerVersion* version) {
       return blink::WebServiceWorkerStateActivating;
     case ServiceWorkerVersion::ACTIVE:
       return blink::WebServiceWorkerStateActive;
-    case ServiceWorkerVersion::DEACTIVATED:
+    case ServiceWorkerVersion::REDUNDANT:
       return blink::WebServiceWorkerStateDeactivated;
   }
   NOTREACHED() << version->status();

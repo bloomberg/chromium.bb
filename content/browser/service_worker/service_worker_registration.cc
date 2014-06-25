@@ -49,7 +49,7 @@ ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() {
 }
 
 void ServiceWorkerRegistration::ActivateWaitingVersion() {
-  active_version_->SetStatus(ServiceWorkerVersion::DEACTIVATED);
+  active_version_->SetStatus(ServiceWorkerVersion::REDUNDANT);
   active_version_ = waiting_version_;
   // TODO(kinuko): This should be set to ACTIVATING until activation finishes.
   active_version_->SetStatus(ServiceWorkerVersion::ACTIVE);

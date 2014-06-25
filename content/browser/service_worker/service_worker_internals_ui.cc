@@ -192,8 +192,8 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
     case ServiceWorkerVersion::ACTIVE:
       info->SetString("status", "ACTIVE");
       break;
-    case ServiceWorkerVersion::DEACTIVATED:
-      info->SetString("status", "DEACTIVATED");
+    case ServiceWorkerVersion::REDUNDANT:
+      info->SetString("status", "REDUNDANT");
       break;
   }
   info->SetString("version_id", base::Int64ToString(version.version_id));
