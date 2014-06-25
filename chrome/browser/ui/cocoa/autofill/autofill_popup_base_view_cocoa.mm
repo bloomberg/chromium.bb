@@ -93,6 +93,10 @@
   if (!delegate_)
     return;
 
+  // Only accept single-click.
+  if ([theEvent clickCount] > 1)
+    return;
+
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
 
