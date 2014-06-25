@@ -1202,7 +1202,6 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 
 # Still-failing tests for the new WebSocket implementation.
 crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Failure ]
-crbug.com/339373 http/tests/websocket/multiple-connections.html [ Pass Timeout ]
 
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
@@ -1440,8 +1439,6 @@ crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Fail
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
 crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
-
-crbug.com/239722 http/tests/websocket/connection-throttling.html [ Pass Failure ]
 
 crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
 crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
