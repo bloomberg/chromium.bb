@@ -183,14 +183,14 @@ cr.define('options', function() {
      */
     flattenMapAndDispatchEvent_: function(prefix, dict) {
       for (var prefName in dict) {
-        if (typeof dict[prefName] == 'object' &&
+        var value = dict[prefName];
+        if (typeof value == 'object' &&
             !this.registeredPreferences_[prefix + prefName]) {
-          this.flattenMapAndDispatchEvent_(prefix + prefName + '.',
-              dict[prefName]);
-        } else {
+          this.flattenMapAndDispatchEvent_(prefix + prefName + '.', value);
+        } else if (value) {
           var event = new Event(prefix + prefName);
-          this.registeredPreferences_[prefix + prefName].orig = dict[prefName];
-          event.value = dict[prefName];
+          this.registeredPreferences_[prefix + prefName].orig = value;
+          event.value = value;
           this.dispatchEvent(event);
         }
       }
@@ -236,13 +236,12 @@ cr.define('options', function() {
 
       var event = new Event(name);
       // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
-      event.value = {
-        value: pref.orig.recommendedValue,
-        controlledBy: 'recommended',
-        recommendedValue: pref.orig.recommendedValue,
-        disabled: pref.orig.disabled,
-        uncommitted: true,
-      };
+      event.value = {controlledBy: 'recommended', uncommitted: true};
+      if (pref.orig) {
+        event.value.value = pref.orig.recommendedValue;
+        event.value.recommendedValue = pref.orig.recommendedValue;
+        event.value.disabled = pref.orig.disabled;
+      }
       this.dispatchEvent(event);
     },
 
@@ -301,7 +300,7 @@ cr.define('options', function() {
       delete pref.value;
 
       var event = new Event(name);
-      event.value = pref.orig;
+      event.value = pref.orig || {};
       event.value.uncommitted = true;
       this.dispatchEvent(event);
     }
@@ -326,7 +325,8 @@ cr.define('options', function() {
     event.value = notification[1];
     prefs = Preferences.getInstance();
     prefs.registeredPreferences_[notification[0]] = {orig: notification[1]};
-    prefs.dispatchEvent(event);
+    if (event.value)
+      prefs.dispatchEvent(event);
   };
 
   // Export
