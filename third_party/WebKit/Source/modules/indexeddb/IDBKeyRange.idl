@@ -32,7 +32,7 @@
     readonly attribute boolean upperOpen;
 
     [CallWith=ExecutionContext, RaisesException] static IDBKeyRange only(any value);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange lowerBound(any bound, [Default=Undefined] optional boolean open);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, [Default=Undefined] optional boolean open);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, [Default=Undefined] optional boolean lowerOpen, [Default=Undefined] optional boolean upperOpen);
+    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange lowerBound(any bound, optional boolean open = false);
+    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, optional boolean open = false);
+    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, optional boolean lowerOpen = false, optional boolean upperOpen = false);
 };

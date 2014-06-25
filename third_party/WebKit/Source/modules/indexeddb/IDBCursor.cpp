@@ -392,7 +392,7 @@ void IDBCursor::handleBlobAcks()
 
 blink::WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
-    if (directionString.isNull() || directionString == IDBCursor::directionNext())
+    if (directionString == IDBCursor::directionNext())
         return blink::WebIDBCursorDirectionNext;
     if (directionString == IDBCursor::directionNextUnique())
         return blink::WebIDBCursorDirectionNextNoDuplicate;

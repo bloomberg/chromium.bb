@@ -301,8 +301,7 @@ bool IDBTransaction::hasPendingActivity() const
 
 blink::WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
 {
-    if (modeString.isNull()
-        || modeString == IDBTransaction::modeReadOnly())
+    if (modeString == IDBTransaction::modeReadOnly())
         return blink::WebIDBTransactionModeReadOnly;
     if (modeString == IDBTransaction::modeReadWrite())
         return blink::WebIDBTransactionModeReadWrite;
