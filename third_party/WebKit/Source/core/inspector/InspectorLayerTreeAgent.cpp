@@ -33,6 +33,7 @@
 
 #include "core/inspector/InspectorLayerTreeAgent.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
@@ -41,6 +42,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidget.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/geometry/IntRect.h"

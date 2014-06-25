@@ -26,7 +26,6 @@
 #ifndef RenderLayerCompositor_h
 #define RenderLayerCompositor_h
 
-#include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
@@ -34,7 +33,10 @@
 
 namespace WebCore {
 
+class DocumentLifecycle;
 class GraphicsLayer;
+class GraphicsLayerFactory;
+class Page;
 class RenderPart;
 class ScrollingCoordinator;
 

@@ -44,6 +44,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayer.h"
 
+#include "core/accessibility/AXObjectCache.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"

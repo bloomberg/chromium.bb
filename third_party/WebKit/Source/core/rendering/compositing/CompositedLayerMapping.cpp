@@ -29,6 +29,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -37,7 +38,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/page/Chrome.h"
-#include "core/frame/FrameView.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
