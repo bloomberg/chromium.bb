@@ -28,12 +28,16 @@ section.
 If you only need to send a single message to another part of your extension
 (and optionally get a response back), you should use the simplified
 $(ref:runtime.sendMessage)
-or
-$(ref:tabs.sendMessage)
-methods. This lets you send a one-time JSON-serializable message from a
-content script to extension, or vice versa, respectively. An optional
-callback parameter allows you handle the response from the other side, if
-there is one.
+{{^is_apps}}
+or $(ref:tabs.sendMessage)
+{{/is_apps}}.
+This lets you send a one-time JSON-serializable message from a
+content script to extension
+{{^is_apps}}
+, or vice versa, respectively
+{{/is_apps}}.
+An optional callback parameter allows you handle the response from the other
+side, if there is one.
 
 <p>
 Sending a request from a content script looks like this:
@@ -82,11 +86,15 @@ response. All other responses to that event will be ignored.
 <p>
 Sometimes it's useful to have a conversation that lasts longer than a single
 request and response. In this case, you can open a long-lived channel from
-your content script to an extension page, or vice versa, using
-$(ref:runtime.connect)
-or
-$(ref:tabs.connect) respectively. The
-channel can optionally have a name, allowing you to distinguish between
+your content script to an extension page
+{{^is_apps}}
+, or vice versa,
+{{/is_apps}}
+using $(ref:runtime.connect)
+{{^is_apps}}
+or $(ref:tabs.connect), respectively
+{{/is_apps}}.
+The channel can optionally have a name, allowing you to distinguish between
 different types of connections.
 
 <p>
@@ -116,11 +124,12 @@ port.onMessage.addListener(function(msg) {
 });
 </pre>
 
+{{^is_apps}}
 <p>
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to connect to. Simply replace the
-call to connect in the above example with
-$(ref:tabs.connect).
+call to connect in the above example with $(ref:tabs.connect).
+{{/is_apps}}
 
 <p>
 In order to handle incoming connections, you need to set up a

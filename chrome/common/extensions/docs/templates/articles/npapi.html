@@ -16,7 +16,11 @@ Consider using alternatives.</b></p>
 
 <p align="center"><b>NPAPI is a really big hammer that should only be used when no other approach will work.</b>
 
-<p>Code running in an NPAPI plugin has the full permissions of the current user and is not sandboxed or shielded from malicious input by Google Chrome in any way. You should be especially cautious when processing input from untrusted sources, such as when working with <a href="content_scripts#security-considerations">content scripts</a> or XMLHttpRequest.
+<p>Code running in an NPAPI plugin has the full permissions of the current user and is not sandboxed or shielded from malicious input by Google Chrome in any way. You should be especially cautious when processing input from untrusted sources, such as when working with
+{{^is_apps}}
+<a href="content_scripts#security-considerations">content scripts</a> or
+{{/is_apps}}
+XMLHttpRequest.
 
 <p>Because of the additional security risks NPAPI poses to users, extensions that use it will require manual review before being accepted in the
 <a href="https://chrome.google.com/webstore">Chrome Web Store</a>.</p>

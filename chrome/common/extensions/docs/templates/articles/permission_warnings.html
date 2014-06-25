@@ -106,6 +106,7 @@ brings up the following warning:
 
 <h2 id="warnings"> Warnings and their triggers </h2>
 
+{{^is_apps}}
 <p>
 It can be surprising when adding a permission such as "tabs"
 results in the seemingly unrelated warning
@@ -117,14 +118,7 @@ it can also be used to see the URL that's associated
 with every newly opened tab
 (using their $(ref:tabs.Tab) objects).
 </p>
-
-<p class="note">
-<b>Note:</b>
-As of Google Chrome 7,
-you no longer need to specify the "tabs" permission
-just to call <code>chrome.tabs.create()</code>
-or <code>chrome.tabs.update()</code>.
-</p>
+{{/is_apps}}
 
 <p>
 The following table lists the warning messages

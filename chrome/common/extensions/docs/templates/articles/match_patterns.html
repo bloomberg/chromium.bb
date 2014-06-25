@@ -2,8 +2,11 @@
 
 <p>
 <a href="declare_permissions#host-permissions">Host
-permissions</a> and <a href="content_scripts">content
-script</a> matching are based on a set of URLs defined by
+permissions</a>
+{{^is_apps}}
+and <a href="content_scripts">content script</a>
+{{/is_apps}}
+matching {{^is_apps}}are{{:}}is{{/is_apps}} based on a set of URLs defined by
 <dfn>match patterns</dfn>.  A match pattern is essentially a
 URL that begins with a permitted scheme (<code>http</code>,
 <code>https</code>, <code>file</code>, <code>ftp</code>, or

@@ -12,7 +12,7 @@
         "type": "object",
         "js_module": "ChromeSetting",
         "customBindings": "ChromeSetting",
-        "description": "An interface that allows access to a Chrome browser setting. See $(ref:proxy.settings) for an example.",
+        "description": "An interface that allows access to a Chrome browser setting. See $(ref:accessibilityFeatures) for an example.",
         "functions": [
           {
             "name": "get",

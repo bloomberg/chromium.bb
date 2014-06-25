@@ -2,10 +2,10 @@
 
 
 <p>
-Event pages are very similar to
-<a href="background_pages">background pages</a>,
-with one important difference:
-event pages are loaded only when they are needed.
+A common need for apps and extensions is to have
+a single long-running script to manage some task or state.
+Event pages to the rescue.
+Event pages are loaded only when they are needed.
 When the event page is not actively doing something,
 it is unloaded, freeing memory and other system resources.
 </p>
@@ -136,6 +136,7 @@ For an example of event registration in action, you can view the
 Checker</a> extension.
 </p>
 
+{{^is_apps}}
 <h2 id="transition">Convert background page to event page</h2>
 <p>
 Follow this checklist to convert your extension's
@@ -155,13 +156,14 @@ Follow this checklist to convert your extension's
   <a href="notifications">notifications</a>.
 
   <li>If your extension uses,
-  <code>$(ref:extension.getBackgroundPage)</code>,
+  <code>$(ref:extension.getBackgroundPage)</a></code>,
   switch to
   <code>$(ref:runtime.getBackgroundPage)</code>
   instead. The newer method is asynchronous so that it can start the event
   page if necessary before returning it.
 </ol>
 </p>
+{{/is_apps}}
 
 <h2 id="best-practices">Best practices when using event pages</h2>
 <p>
@@ -188,14 +190,16 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
   IndexedDB. Since the event page does not stay loaded for long, you
   can no longer rely on global variables for runtime state.
 
+  {{^is_apps}}
   <li>Use <a href="events#filtered">event filters</a> to restrict
   your event notifications to the cases you care about. For example, if
-  you listen to the <code>$(ref:tabs.onUpdated)</code>
+  you listen to the <code><a href="extensions/tabs#event-onUpdated">tabs.onUpdated</a></code>
   event, try using the
   <code>$(ref:webNavigation.onCompleted)</code>
   event with filters instead (the tabs API does not support filters).
   That way, your event page will only be loaded for events that
   interest you.
+  {{/is_apps}}
 
   <li>Listen to the
   <code>$(ref:runtime.onSuspend)</code>

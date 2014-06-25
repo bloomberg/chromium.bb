@@ -67,7 +67,8 @@
                   {
                     "name": "tab",
                     "$ref": "tabs.Tab",
-                    "description": "The details of the tab where the click took place."
+                    "description": "The details of the tab where the click took place.",
+                    "extension_types": ["extension", "legacy_packaged_app"]
                   }
                 ]
               },
