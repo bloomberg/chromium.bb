@@ -866,6 +866,19 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
   }
   {
     APIPermissionSet api_permissions;
+    URLPatternSet hosts;
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
+    api_permissions.insert(APIPermission::kDeclarativeWebRequest);
+    scoped_refptr<PermissionSet> permissions(new PermissionSet(
+        api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
+    PermissionMessages messages =
+        PermissionMessageProvider::Get()->GetPermissionMessages(
+            permissions, Manifest::TYPE_EXTENSION);
+    EXPECT_EQ(1u, messages.size());
+    EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
+  }
+  {
+    APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kHistory);
     api_permissions.insert(APIPermission::kTab);
     api_permissions.insert(APIPermission::kTopSites);

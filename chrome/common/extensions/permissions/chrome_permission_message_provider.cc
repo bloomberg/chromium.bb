@@ -95,6 +95,11 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   SuppressMessage(messages,
                   PermissionMessage::kHostsAll,
                   PermissionMessage::kTabs);
+  // Warning for full access already covers warning for DeclarativeWebRequest
+  // permission.
+  SuppressMessage(messages,
+                  PermissionMessage::kHostsAll,
+                  PermissionMessage::kDeclarativeWebRequest);
 
   return messages;
 }
