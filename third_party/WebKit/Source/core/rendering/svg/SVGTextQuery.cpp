@@ -518,16 +518,19 @@ bool SVGTextQuery::characterNumberAtPositionCallback(Data* queryData, const SVGT
 {
     CharacterNumberAtPositionData* data = static_cast<CharacterNumberAtPositionData*>(queryData);
 
+    // Offset of the fragment within the text box.
+    unsigned boxOffset = fragment.characterOffset - queryData->textBox->start();
+
     FloatRect extent;
     for (unsigned i = 0; i < fragment.length; ++i) {
-        int startPosition = data->processedCharacters + i;
+        int startPosition = data->processedCharacters + boxOffset + i;
         int endPosition = startPosition + 1;
         if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
             continue;
 
         calculateGlyphBoundaries(queryData, fragment, startPosition, extent);
         if (extent.contains(data->position)) {
-            data->processedCharacters += i;
+            data->processedCharacters += boxOffset + i;
             return true;
         }
     }
