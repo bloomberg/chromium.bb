@@ -33,7 +33,9 @@ InspectorTest.createMockTarget = function(targetManager, id)
         id: function()
         {
             return id;
-        }
+        },
+
+        dispose: function() { }
     };
     InspectorTest.initializeDefaultMappingOnTarget(target);
     return target;

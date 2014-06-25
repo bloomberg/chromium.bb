@@ -1,0 +1,66 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script>
+
+function onload()
+{
+    testRunner.showWebInspector(JSON.stringify({experiments: "{\"workersInMainWindow\":true}"}));
+    runTest();
+}
+
+function startWorker()
+{
+    new Worker("resources/dedicated-worker.js?id=1");
+}
+
+function test()
+{
+    InspectorBackendClass.Options.suppressRequestErrors = true;
+    var targetObservation;
+    var targetObserver = {
+
+        targetAdded: function(target)
+        {
+            if (!target.isWorkerTarget())
+                return;
+
+            InspectorTest.addResult("Worker target added");
+            targetObservation = internals.observeGC(target);
+            setTimeout(runAfterPendingDispatches.bind(null, target), 0);
+        },
+
+        targetRemoved: function(target)
+        {
+
+        },
+    }
+
+    function runAfterPendingDispatches(target)
+    {
+        target._connection.runAfterPendingDispatches(InspectorTest.safeWrap(InspectorTest.reloadPage.bind(InspectorTest, finish)));
+    }
+
+    function finish()
+    {
+        gc();
+        InspectorTest.addResult("Worker target was collected: " + targetObservation.wasCollected);
+        InspectorTest.completeTest();
+    }
+
+    var panels = Object.keys(WebInspector.inspectorView._panelDescriptors);
+    for (var i = 0; i < panels.length; ++i) {
+        WebInspector.inspectorView.showPanel(panels[i]);
+    }
+    InspectorTest.evaluateInPage("startWorker();");
+    WebInspector.targetManager.observeTargets(targetObserver);
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>This test that target doesn't leak when it is removed</p>
+</body>
+</html>
+
