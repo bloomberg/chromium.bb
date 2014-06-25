@@ -18,7 +18,8 @@ class TimeoutError(Exception):
 
 
 @contextlib.contextmanager
-def Timeout(max_run_time):
+def Timeout(max_run_time,
+            error_message="Timeout occurred- waited %(time)s seconds."):
   """ContextManager that alarms if code is ran for too long.
 
   Timeout can run nested and raises a TimeoutException if the timeout
@@ -26,6 +27,7 @@ def Timeout(max_run_time):
 
   Args:
     max_run_time: Number (integer) of seconds to wait before sending SIGALRM.
+    error_message: String to wrap in the TimeoutError exception on timeout.
   """
   max_run_time = int(max_run_time)
   if max_run_time <= 0:
@@ -33,7 +35,7 @@ def Timeout(max_run_time):
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
-    raise TimeoutError("Timeout occurred- waited %s seconds." % max_run_time)
+    raise TimeoutError(error_message % {'time': max_run_time})
 
   original_handler = signal.signal(signal.SIGALRM, kill_us)
   previous_time = int(time.time())
