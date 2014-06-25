@@ -159,6 +159,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/333508
+    'buildtools/clang_format/script': [
+        'UNKNOWN',
+    ],
+
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
