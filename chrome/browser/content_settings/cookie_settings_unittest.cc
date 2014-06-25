@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
