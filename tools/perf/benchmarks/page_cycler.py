@@ -105,9 +105,8 @@ class PageCyclerToughLayoutCases(test.Test):
 
 
 # crbug.com/273986: This test is really flakey on xp.
-# crbug.com/341843: This test is always timing out on Android.
-# crbug.com/388880: Random tab crash on Mac & Linux
-@test.Disabled('android', 'win', 'mac', 'linux')
+# cabug.com/341843: This test is always timing out on Android.
+@test.Disabled('android', 'win')
 class PageCyclerTypical25(test.Test):
   test = page_cycler.PageCycler
   page_set = page_sets.Typical25PageSet
