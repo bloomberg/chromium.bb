@@ -150,12 +150,22 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @implementation PermissionBubbleWindow
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
-  content::NativeWebKeyboardEvent wrappedEvent(event);
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:wrappedEvent]) {
-    return [BrowserWindowUtils handleKeyboardEvent:event
-                                          inWindow:[self parentWindow]];
+  // Only handle events if they should be forwarded to the parent window.
+  if ([self allowShareParentKeyState]) {
+    content::NativeWebKeyboardEvent wrappedEvent(event);
+    if ([BrowserWindowUtils shouldHandleKeyboardEvent:wrappedEvent]) {
+      // Turn off sharing of key window state while the keyboard event is
+      // processed.  This avoids recursion - with the key window state shared,
+      // the parent window would just forward the event back to this class.
+      [self setAllowShareParentKeyState:NO];
+      BOOL eventHandled =
+          [BrowserWindowUtils handleKeyboardEvent:event
+                                         inWindow:[self parentWindow]];
+      [self setAllowShareParentKeyState:YES];
+      return eventHandled;
+    }
   }
-  return [super performKeyEquivalent:event];
+  return NO;
 }
 @end
 

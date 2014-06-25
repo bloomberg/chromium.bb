@@ -1381,6 +1381,7 @@ using web_modal::WebContentsModalDialogManager;
 
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar:(BOOL)selectAll {
+  [[self window] makeKeyWindow];
   [toolbarController_ focusLocationBar:selectAll];
 }
 

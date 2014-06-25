@@ -96,6 +96,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 
 @synthesize allowedAnimations = allowedAnimations_;
 @synthesize canBecomeKeyWindow = canBecomeKeyWindow_;
+@synthesize allowShareParentKeyState = allowShareParentKeyState_;
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -107,6 +108,7 @@ class AppNotificationBridge : public content::NotificationObserver {
                                    defer:flag])) {
     [self setBackgroundColor:[NSColor clearColor]];
     [self setExcludedFromWindowsMenu:YES];
+    [self setAllowShareParentKeyState:YES];
     [self setOpaque:NO];
     [self setHasShadow:YES];
     canBecomeKeyWindow_ = YES;
@@ -146,7 +148,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 // Lets the traffic light buttons on the browser window keep their "active"
 // state while an info bubble is open. Only has an effect on 10.7.
 - (BOOL)_sharesParentKeyState {
-  return YES;
+  return allowShareParentKeyState_;
 }
 
 - (void)close {

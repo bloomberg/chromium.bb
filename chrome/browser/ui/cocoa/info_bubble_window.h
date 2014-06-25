@@ -26,18 +26,27 @@ typedef NSUInteger AllowedAnimations;
  @private
   // Is self in the process of closing.
   BOOL closing_;
+
   // Specifies if window order in and order out animations are allowed. By
   // default both types of animations are allowed.
   info_bubble::AllowedAnimations allowedAnimations_;
+
   // If NO the window will never become key.
   // Default YES.
   BOOL canBecomeKeyWindow_;
+
+  // If NO the window will not share key state with its parent. Defaults to YES.
+  // Can be set both by external callers, but is also changed internally, in
+  // response to resignKeyWindow and becomeKeyWindow events.
+  BOOL allowShareParentKeyState_;
+
   // Bridge to proxy Chrome notifications to the window.
   scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
 @property(nonatomic) info_bubble::AllowedAnimations allowedAnimations;
 @property(nonatomic) BOOL canBecomeKeyWindow;
+@property(nonatomic) BOOL allowShareParentKeyState;
 
 // Returns YES if the window is in the process of closing.
 // Can't use "windowWillClose" notification because that will be sent

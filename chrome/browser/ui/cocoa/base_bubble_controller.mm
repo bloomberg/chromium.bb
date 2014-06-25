@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -246,7 +247,23 @@
     // If the window isn't visible, it is already closed, and this notification
     // has been sent as part of the closing operation, so no need to close.
     [self close];
+  } else if ([window isVisible]) {
+    // The bubble should not receive key events when it is no longer key window,
+    // so disable sharing parent key state. Share parent key state is only used
+    // to enable the close/minimize/maximize buttons of the parent window when
+    // the bubble has key state, so disabling it here is safe.
+    InfoBubbleWindow* bubbleWindow =
+        base::mac::ObjCCastStrict<InfoBubbleWindow>([self window]);
+    [bubbleWindow setAllowShareParentKeyState:NO];
   }
+}
+
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  // Re-enable share parent key state to make sure the close/minimize/maximize
+  // buttons of the parent window are active.
+  InfoBubbleWindow* bubbleWindow =
+      base::mac::ObjCCastStrict<InfoBubbleWindow>([self window]);
+  [bubbleWindow setAllowShareParentKeyState:YES];
 }
 
 // Since the bubble shares first responder with its parent window, set

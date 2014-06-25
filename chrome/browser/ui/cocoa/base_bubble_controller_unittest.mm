@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -86,12 +87,13 @@ const CGFloat kAnchorPointY = 300;
 class BaseBubbleControllerTest : public CocoaTest {
  public:
   virtual void SetUp() OVERRIDE {
-    bubbleWindow_.reset([[NSWindow alloc]
+    bubbleWindow_.reset([[InfoBubbleWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, kBubbleWindowWidth,
                                        kBubbleWindowHeight)
                   styleMask:NSBorderlessWindowMask
                     backing:NSBackingStoreBuffered
                       defer:YES]);
+    [bubbleWindow_ setAllowedAnimations:0];
 
     // The bubble controller will release itself when the window closes.
     controller_ = [[BaseBubbleController alloc]
@@ -109,7 +111,7 @@ class BaseBubbleControllerTest : public CocoaTest {
   }
 
  public:
-  base::scoped_nsobject<NSWindow> bubbleWindow_;
+  base::scoped_nsobject<InfoBubbleWindow> bubbleWindow_;
   BaseBubbleController* controller_;
 };
 
