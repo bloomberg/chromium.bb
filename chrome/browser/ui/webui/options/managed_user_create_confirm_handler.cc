@@ -35,10 +35,10 @@ void ManagedUserCreateConfirmHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "managedUserCreatedTitle", IDS_NEW_MANAGED_USER_CREATED_TITLE },
-    { "managedUserCreatedText", IDS_NEW_MANAGED_USER_CREATED_TEXT },
-    { "managedUserCreatedDone", IDS_NEW_MANAGED_USER_CREATED_DONE_BUTTON },
-    { "managedUserCreatedSwitch", IDS_NEW_MANAGED_USER_CREATED_SWITCH_BUTTON },
+    { "managedUserCreatedTitle", IDS_SUPERVISED_USER_CREATED_TITLE },
+    { "managedUserCreatedText", IDS_SUPERVISED_USER_CREATED_TEXT },
+    { "managedUserCreatedDone", IDS_SUPERVISED_USER_CREATED_DONE_BUTTON },
+    { "managedUserCreatedSwitch", IDS_SUPERVISED_USER_CREATED_SWITCH_BUTTON },
   };
 
   SigninManagerBase* signin =

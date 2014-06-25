@@ -24,18 +24,18 @@ int MapToSupervisedUserResourceIds(int id) {
 #if defined(USE_ASH) && !defined(OS_CHROMEOS)
     case IDR_THEME_FRAME_DESKTOP:
 #endif
-      return IDR_MANAGED_USER_THEME_FRAME;
+      return IDR_SUPERVISED_USER_THEME_FRAME;
     case IDR_THEME_FRAME_INACTIVE:
 #if defined(USE_ASH) && !defined(OS_CHROMEOS)
     case IDR_THEME_FRAME_INACTIVE_DESKTOP:
 #endif
-      return IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
+      return IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE;
     case IDR_THEME_TAB_BACKGROUND:
     case IDR_THEME_TAB_BACKGROUND_V:
 #if defined(USE_ASH) && !defined(OS_CHROMEOS)
     case IDR_THEME_TAB_BACKGROUND_DESKTOP:
 #endif
-      return IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
+      return IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND;
   }
   return id;
 }

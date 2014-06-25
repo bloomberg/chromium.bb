@@ -50,7 +50,7 @@ AvatarLabelBorder::AvatarLabelBorder(bool label_on_right) {
                         kHorizontalInsetLeft,
                         kVerticalInsetBottom + addToBottom,
                         kHorizontalInsetRight);
-  const int kImages[] = IMAGE_GRID(IDR_MANAGED_USER_LABEL);
+  const int kImages[] = IMAGE_GRID(IDR_SUPERVISED_USER_LABEL);
   painter_.reset(views::Painter::CreateImageGridPainter(kImages));
 }
 
@@ -94,7 +94,7 @@ gfx::Size AvatarLabelBorder::GetMinimumSize() const {
 
 AvatarLabel::AvatarLabel(BrowserView* browser_view)
     : LabelButton(NULL,
-                  l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL)),
+                  l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL)),
       browser_view_(browser_view) {
   SetLabelOnRight(false);
   UpdateLabelStyle();

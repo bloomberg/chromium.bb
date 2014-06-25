@@ -37,7 +37,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     [self setBezelStyle:NSSmallSquareBezelStyle];
-    [self setTitle:l10n_util::GetNSString(IDS_MANAGED_USER_AVATAR_LABEL)];
+    [self setTitle:l10n_util::GetNSString(IDS_SUPERVISED_USER_AVATAR_LABEL)];
     [self setFont:[NSFont labelFontOfSize:12.0]];
     // Increase the frame by the size of the label to be displayed.
     NSSize textSize = [[self cell] labelTextSize];
@@ -64,7 +64,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
 }
 
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  ui::NinePartImageIds imageIds = IMAGE_GRID(IDR_MANAGED_USER_LABEL);
+  ui::NinePartImageIds imageIds = IMAGE_GRID(IDR_SUPERVISED_USER_LABEL);
   ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
 }
 

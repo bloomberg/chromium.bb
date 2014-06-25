@@ -420,7 +420,7 @@ void LocallyManagedUserCreationScreen::OnCreationTimeout() {
 void LocallyManagedUserCreationScreen::OnLongCreationWarning() {
   if (actor_) {
     actor_->ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
-        IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN));
+        IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
   }
 }
 

@@ -55,7 +55,7 @@ void ProfileListDesktop::RebuildMenu() {
     item->signed_in = !item->sync_state.empty();
     if (!item->signed_in) {
       item->sync_state = l10n_util::GetStringUTF16(
-          item->supervised ? IDS_MANAGED_USER_AVATAR_LABEL :
+          item->supervised ? IDS_SUPERVISED_USER_AVATAR_LABEL :
                              IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
     item->active = profile_info_->GetPathOfProfileAtIndex(i) ==

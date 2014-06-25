@@ -108,7 +108,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
           sync_service->QuerySyncStatusSummary();
       if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
         ShowProfileCreationWarning(l10n_util::GetStringUTF16(
-            IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN));
+            IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
       }
     }
   }
@@ -369,19 +369,19 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessage(
     case SIGNIN_ERROR:
       message_id =
           profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR :
+              IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR :
               IDS_PROFILES_CREATE_SIGN_IN_ERROR;
       break;
     case REMOTE_ERROR:
       message_id =
           profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_MANAGED_USER_IMPORT_REMOTE_ERROR :
+              IDS_SUPERVISED_USER_IMPORT_REMOTE_ERROR :
               IDS_PROFILES_CREATE_REMOTE_ERROR;
       break;
     case LOCAL_ERROR:
       message_id =
           profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_MANAGED_USER_IMPORT_LOCAL_ERROR :
+              IDS_SUPERVISED_USER_IMPORT_LOCAL_ERROR :
               IDS_PROFILES_CREATE_LOCAL_ERROR;
       break;
   }

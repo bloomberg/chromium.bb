@@ -332,15 +332,15 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   model->RebuildMenu();
   EXPECT_EQ(2U, model->GetNumberOfItems());
 
-  // Now check that the sync_state of a managed user shows the managed user
-  // avatar label instead.
-  base::string16 managed_user_label =
-      l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL);
+  // Now check that the sync_state of a supervised user shows the supervised
+  // user avatar label instead.
+  base::string16 supervised_user_label =
+      l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL);
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
-  EXPECT_NE(item1.sync_state, managed_user_label);
+  EXPECT_NE(item1.sync_state, supervised_user_label);
 
   const AvatarMenu::Item& item2 = model->GetItemAt(1);
-  EXPECT_EQ(item2.sync_state, managed_user_label);
+  EXPECT_EQ(item2.sync_state, supervised_user_label);
 }
 
 }  // namespace

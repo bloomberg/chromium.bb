@@ -127,7 +127,7 @@ void SupervisedUserWarningInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SupervisedUserWarningInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_MANAGED_USER_WARN_INFOBAR_MESSAGE);
+  return l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_WARN_INFOBAR_MESSAGE);
 }
 
 int SupervisedUserWarningInfoBarDelegate::GetButtons() const {
@@ -137,7 +137,7 @@ int SupervisedUserWarningInfoBarDelegate::GetButtons() const {
 base::string16 SupervisedUserWarningInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_MANAGED_USER_WARN_INFOBAR_GO_BACK);
+  return l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_WARN_INFOBAR_GO_BACK);
 }
 
 bool SupervisedUserWarningInfoBarDelegate::Accept() {

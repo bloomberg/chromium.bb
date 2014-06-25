@@ -382,7 +382,7 @@ bool SupervisedUserService::ExtensionManagementPolicyImpl(
     return true;
 
   if (error)
-    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER);
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
   return false;
 }
 

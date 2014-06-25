@@ -155,7 +155,7 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   webui::SetFontAndTextDirection(&strings);
 
   base::StringPiece html(ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML));
+      IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML));
 
   webui::UseVersion2 version;
   return webui::GetI18nTemplateHtml(html, &strings);
