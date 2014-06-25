@@ -12,6 +12,7 @@ import psutil
 from pylib import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
+from pylib.device import device_errors
 
 # TODO(jbudorick) Remove once telemetry gets switched over.
 import pylib.android_commands
@@ -340,9 +341,10 @@ class Forwarder(object):
     # sure that the old version of device_forwarder (not supporting
     # 'kill-server') is not running on the bots anymore.
     timeout_sec = 5
-    processes_killed = device.old_interface.KillAllBlocking(
-        'device_forwarder', timeout_sec)
-    if not processes_killed:
+    try:
+      device.KillAll(
+          'device_forwarder', blocking=True, timeout=timeout_sec)
+    except device_errors.CommandFailedError:
       pids = device.old_interface.ExtractPid('device_forwarder')
       if pids:
-        raise Exception('Timed out while killing device_forwarder')
+        raise

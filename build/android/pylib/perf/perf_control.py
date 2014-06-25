@@ -90,7 +90,7 @@ class PerfControl(object):
     """
     if self._have_mpdecision:
       script = 'stop mpdecision' if force_online else 'start mpdecision'
-      self._device.RunShellCommand(script, root=True)
+      self._device.RunShellCommand(script, as_root=True)
 
     if not self._have_mpdecision and not self._AllCpusAreOnline():
       logging.warning('Unexpected cpu hot plugging detected.')

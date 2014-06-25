@@ -77,7 +77,15 @@ class TestPackageExecutable(TestPackage):
 
   #override
   def ClearApplicationState(self, device):
-    device.old_interface.KillAllBlocking(self.suite_name, 30)
+    try:
+      # We don't expect the executable to be running, so we don't attempt
+      # to retry on failure.
+      device.KillAll(self.suite_name, blocking=True, timeout=30, retries=0)
+    except device_errors.CommandFailedError:
+      # KillAll raises an exception if it can't find a process with the given
+      # name. We only care that there is no process with the given name, so
+      # we can safely eat the exception.
+      pass
 
   #override
   def CreateCommandLineFileOnDevice(self, device, test_filter, test_arguments):

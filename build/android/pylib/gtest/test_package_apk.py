@@ -16,6 +16,7 @@ from pylib import android_commands
 from pylib import constants
 from pylib import pexpect
 from pylib.device import device_errors
+from pylib.device import intent
 from pylib.gtest.test_package import TestPackage
 
 
@@ -71,12 +72,12 @@ class TestPackageApk(TestPackage):
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
   def _StartActivity(self, device):
-    device.old_interface.StartActivity(
-        self._package_info.package,
-        self._package_info.activity,
+    device.StartActivity(
+        intent.Intent(package=self._package_info.package,
+                      activity=self._package_info.activity,
+                      action='android.intent.action.MAIN'),
         # No wait since the runner waits for FIFO creation anyway.
-        wait_for_completion=False,
-        action='android.intent.action.MAIN',
+        blocking=False,
         force_stop=True)
 
   #override

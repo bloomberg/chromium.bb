@@ -8,6 +8,7 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=W0613
 
+import sys
 import time
 
 import pylib.android_commands
@@ -124,7 +125,7 @@ class DeviceUtils(object):
     """
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
-          ['adb', 'root'], 'Could not enable root.')
+          'Could not enable root.', device=str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetExternalStoragePath(self, timeout=None, retries=None):
@@ -140,7 +141,7 @@ class DeviceUtils(object):
       return self.old_interface.GetExternalStorage()
     except AssertionError as e:
       raise device_errors.CommandFailedError(
-          ['adb', 'shell', 'echo', '$EXTERNAL_STORAGE'], str(e))
+          str(e), device=str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def WaitUntilFullyBooted(self, wifi=False, timeout=None, retries=None):
@@ -235,7 +236,7 @@ class DeviceUtils(object):
           for line in out.splitlines():
             if 'Failure' in line:
               raise device_errors.CommandFailedError(
-                  ['adb', 'uninstall', package_name], line.strip())
+                  line.strip(), device=str(self))
       else:
         should_install = False
     else:
@@ -246,14 +247,14 @@ class DeviceUtils(object):
         for line in out.splitlines():
           if 'Failure' in line:
             raise device_errors.CommandFailedError(
-                ['adb', 'install', apk_path], line.strip())
+                line.strip(), device=str(self))
       except AssertionError as e:
         raise device_errors.CommandFailedError(
-            ['adb', 'install', apk_path], str(e))
+            str(e), device=str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def RunShellCommand(self, cmd, check_return=False, root=False, timeout=None,
-                      retries=None):
+  def RunShellCommand(self, cmd, check_return=False, as_root=False,
+                      timeout=None, retries=None):
     """Run an ADB shell command.
 
     TODO(jbudorick) Switch the default value of check_return to True after
@@ -263,6 +264,8 @@ class DeviceUtils(object):
       cmd: A list containing the command to run on the device and any arguments.
       check_return: A boolean indicating whether or not the return code should
                     be checked.
+      as_root: A boolean indicating whether the shell command should be run
+               with root privileges.
       timeout: Same as for |IsOnline|.
       retries: Same as for |IsOnline|.
     Raises:
@@ -270,10 +273,10 @@ class DeviceUtils(object):
     Returns:
       The output of the command.
     """
-    return self._RunShellCommandImpl(cmd, check_return=check_return, root=root,
-                                     timeout=timeout)
+    return self._RunShellCommandImpl(cmd, check_return=check_return,
+                                     as_root=as_root, timeout=timeout)
 
-  def _RunShellCommandImpl(self, cmd, check_return=False, root=False,
+  def _RunShellCommandImpl(self, cmd, check_return=False, as_root=False,
                            timeout=None):
     """Implementation of RunShellCommand.
 
@@ -286,6 +289,7 @@ class DeviceUtils(object):
     Args:
       cmd: Same as for |RunShellCommand|.
       check_return: Same as for |RunShellCommand|.
+      as_root: Same as for |RunShellCommand|.
       timeout: Same as for |IsOnline|.
     Raises:
       Same as for |RunShellCommand|.
@@ -294,17 +298,97 @@ class DeviceUtils(object):
     """
     if isinstance(cmd, list):
       cmd = ' '.join(cmd)
-    if root and not self.HasRoot():
+    if as_root and not self.HasRoot():
       cmd = 'su -c %s' % cmd
     if check_return:
       code, output = self.old_interface.GetShellCommandStatusAndOutput(
           cmd, timeout_time=timeout)
       if int(code) != 0:
-        raise device_errors.CommandFailedError(
-            cmd.split(), 'Nonzero exit code (%d)' % code)
+        raise device_errors.AdbCommandFailedError(
+            cmd.split(), 'Nonzero exit code (%d)' % code, device=str(self))
     else:
       output = self.old_interface.RunShellCommand(cmd, timeout_time=timeout)
     return output
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def KillAll(self, process_name, signum=9, as_root=False, blocking=False,
+              timeout=None, retries=None):
+    """Kill all processes with the given name on the device.
+
+    Args:
+      process_name: A string containing the name of the process to kill.
+      signum: An integer containing the signal number to send to kill. Defaults
+              to 9 (SIGKILL).
+      as_root: A boolean indicating whether the kill should be executed with
+               root priveleges.
+      blocking: A boolean indicating whether we should wait until all processes
+                with the given |process_name| are dead.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Raises:
+      CommandFailedError if no process was killed.
+    """
+    pids = self.old_interface.ExtractPid(process_name)
+    if len(pids) == 0:
+      raise device_errors.CommandFailedError(
+          'No process "%s"' % process_name, device=str(self))
+
+    if blocking:
+      total_killed = self.old_interface.KillAllBlocking(
+          process_name, signum=signum, with_su=as_root, timeout_sec=timeout)
+    else:
+      total_killed = self.old_interface.KillAll(
+          process_name, signum=signum, with_su=as_root)
+    if total_killed == 0:
+      raise device_errors.CommandFailedError(
+          'Failed to kill "%s"' % process_name, device=str(self))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def StartActivity(self, intent, blocking=False, trace_file_name=None,
+                    force_stop=False, timeout=None, retries=None):
+    """Start package's activity on the device.
+
+    Args:
+      intent: An Intent to send.
+      blocking: A boolean indicating whether we should wait for the activity to
+                finish launching.
+      trace_file_name: If present, a string that both indicates that we want to
+                       profile the activity and contains the path to which the
+                       trace should be saved.
+      force_stop: A boolean indicating whether we should stop the activity
+                  before starting it.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Raises:
+      CommandFailedError if the activity could not be started.
+    """
+    single_category = (intent.category[0] if isinstance(intent.category, list)
+                                          else intent.category)
+    output = self.old_interface.StartActivity(
+        intent.package, intent.activity, wait_for_completion=blocking,
+        action=intent.action, category=single_category, data=intent.data,
+        extras=intent.extras, trace_file_name=trace_file_name,
+        force_stop=force_stop, flags=intent.flags)
+    for l in output:
+      if l.startswith('Error:'):
+        raise device_errors.CommandFailedError(l, device=str(self))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def BroadcastIntent(self, intent, timeout=None, retries=None):
+    """Send a broadcast intent.
+
+    Args:
+      intent: An Intent to broadcast.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    package, old_intent = intent.action.rsplit('.', 1)
+    if intent.extras is None:
+      args = []
+    else:
+      args = ['-e %s%s' % (k, ' "%s"' % v if v else '')
+              for k, v in intent.extras.items() if len(k) > 0]
+    self.old_interface.BroadcastIntent(package, old_intent, *args)
 
   def __str__(self):
     """Returns the device serial."""

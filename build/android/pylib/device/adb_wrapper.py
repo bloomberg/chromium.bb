@@ -51,14 +51,14 @@ class AdbWrapper(object):
     cmd = ['adb'] + arg_list
     exit_code, output = cmd_helper.GetCmdStatusAndOutput(cmd)
     if exit_code != 0:
-      raise device_errors.CommandFailedError(
+      raise device_errors.AdbCommandFailedError(
           cmd, 'returned non-zero exit code %s, output: %s' %
           (exit_code, output))
     # This catches some errors, including when the device drops offline;
     # unfortunately adb is very inconsistent with error reporting so many
     # command failures present differently.
     if check_error and output[:len('error:')] == 'error:':
-      raise device_errors.CommandFailedError(arg_list, output)
+      raise device_errors.AdbCommandFailedError(arg_list, output)
     return output
   # pylint: enable=W0613
 
@@ -165,7 +165,7 @@ class AdbWrapper(object):
       The output of the shell command as a string.
 
     Raises:
-      device_errors.CommandFailedError: If the return code doesn't match
+      device_errors.AdbCommandFailedError: If the return code doesn't match
         |expect_rc|.
     """
     if expect_rc is None:
@@ -179,7 +179,7 @@ class AdbWrapper(object):
       rc = output[output_end:].strip()
       output = output[:output_end]
       if int(rc) != expect_rc:
-        raise device_errors.CommandFailedError(
+        raise device_errors.AdbCommandFailedError(
             ['shell', command],
             'shell command exited with code: %s' % rc,
             self._device_serial)
@@ -258,7 +258,7 @@ class AdbWrapper(object):
     cmd.append(apk_path)
     output = self._DeviceAdbCmd(cmd, timeout, retries)
     if 'Success' not in output:
-      raise device_errors.CommandFailedError(cmd, output)
+      raise device_errors.AdbCommandFailedError(cmd, output)
 
   def Uninstall(self, package, keep_data=False, timeout=_DEFAULT_TIMEOUT,
                 retries=_DEFAULT_RETRIES):
@@ -276,7 +276,7 @@ class AdbWrapper(object):
     cmd.append(package)
     output = self._DeviceAdbCmd(cmd, timeout, retries)
     if 'Failure' in output:
-      raise device_errors.CommandFailedError(cmd, output)
+      raise device_errors.AdbCommandFailedError(cmd, output)
 
   def Backup(self, path, packages=None, apk=False, shared=False,
              nosystem=True, include_all=False, timeout=_DEFAULT_TIMEOUT,
@@ -383,5 +383,5 @@ class AdbWrapper(object):
     """
     output = self._DeviceAdbCmd(['root'], timeout, retries)
     if 'cannot' in output:
-      raise device_errors.CommandFailedError(['root'], output)
+      raise device_errors.AdbCommandFailedError(['root'], output)
 

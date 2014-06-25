@@ -98,7 +98,8 @@ def main(argv):
   if ENABLE_TEST_INTENTS_FLAG not in flags.Get():
     flags.AddFlags([ENABLE_TEST_INTENTS_FLAG])
 
-  device.old_interface.StartActivity(package, activity, action=action)
+  device.StartActivity(intent.Intent(package=package, activity=activity,
+                                     action=action))
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

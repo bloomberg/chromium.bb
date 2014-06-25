@@ -74,7 +74,7 @@ def _EraseTombstone(device, tombstone_file):
     tombstone_file: the tombstone to delete.
   """
   return device.RunShellCommand(
-      'rm /data/tombstones/' + tombstone_file, root=True)
+      'rm /data/tombstones/' + tombstone_file, as_root=True)
 
 
 def _ResolveSymbols(tombstone_data, include_stack):

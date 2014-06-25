@@ -21,6 +21,7 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
+from pylib.device import device_errors
 from pylib.device import device_utils
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
@@ -59,7 +60,14 @@ def PushAndLaunchAdbReboot(devices, target):
     print 'Will push and launch adb_reboot on %s' % device_serial
     device = device_utils.DeviceUtils(device_serial)
     # Kill if adb_reboot is already running.
-    device.old_interface.KillAllBlocking('adb_reboot', 2)
+    try:
+      # Don't try to kill adb_reboot more than once. We don't expect it to be
+      # running at all.
+      device.KillAll('adb_reboot', blocking=True, timeout=2, retries=0)
+    except device_errors.CommandFailedError:
+      # We can safely ignore the exception because we don't expect adb_reboot
+      # to be running.
+      pass
     # Push adb_reboot
     print '  Pushing adb_reboot ...'
     adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
@@ -89,7 +97,7 @@ def _ConfigureLocalProperties(device, is_perf):
   # Android will not respect the local props file if it is world writable.
   device.RunShellCommand(
       'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
-      root=True)
+      as_root=True)
 
   # LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
@@ -110,12 +118,12 @@ def WipeDeviceData(device):
       constants.ADB_KEYS_FILE)
   if device_authorized:
     adb_keys = device.RunShellCommand('cat %s' % constants.ADB_KEYS_FILE,
-                                      root=True)
-  device.RunShellCommand('wipe data', root=True)
+                                      as_root=True)
+  device.RunShellCommand('wipe data', as_root=True)
   if device_authorized:
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
-    device.RunShellCommand('mkdir -p %s' % dir_path, root=True)
+    device.RunShellCommand('mkdir -p %s' % dir_path, as_root=True)
     device.RunShellCommand('echo %s > %s' %
                            (adb_keys[0], constants.ADB_KEYS_FILE))
     for adb_key in adb_keys[1:]:
@@ -182,7 +190,7 @@ def ProvisionDevices(options):
                      battery_info.get('level', 0))
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
-    device.RunShellCommand('date -u %f' % time.time(), root=True)
+    device.RunShellCommand('date -u %f' % time.time(), as_root=True)
   try:
     device_utils.DeviceUtils.parallel(devices).Reboot(True)
   except errors.DeviceUnresponsiveError:

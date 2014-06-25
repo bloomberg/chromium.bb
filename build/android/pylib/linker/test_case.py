@@ -42,6 +42,7 @@ import time
 
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.device import intent
 
 
 ResultType = base_test_result.ResultType
@@ -164,8 +165,9 @@ def _StartActivityAndWaitForLinkerTestStatus(device, timeout):
 
   try:
     # 2. Force-start activity.
-    device.old_interface.StartActivity(
-        package=_PACKAGE_NAME, activity=_ACTIVITY_NAME, force_stop=True)
+    device.StartActivity(
+        intent.Intent(package=_PACKAGE_NAME, activity=_ACTIVITY_NAME),
+        force_stop=True)
 
     # 3. Wait up to |timeout| seconds until the test status is in the logcat.
     num_tries = 0

@@ -52,8 +52,7 @@ class DecoratorsTest(unittest.TestCase):
     @decorators.WithTimeoutAndRetries
     def alwaysRaisesCommandFailedError(timeout=None, retries=None):
       DecoratorsTest._decorated_function_called_count += 1
-      raise device_errors.CommandFailedError(['testCommand'],
-                                             'testCommand failed')
+      raise device_errors.CommandFailedError('testCommand failed')
 
     with self.assertRaises(device_errors.CommandFailedError):
       alwaysRaisesCommandFailedError(timeout=30, retries=10)
@@ -140,8 +139,7 @@ class DecoratorsTest(unittest.TestCase):
     @decorators.WithTimeoutAndRetriesDefaults(30, 10)
     def alwaysRaisesCommandFailedError(timeout=None, retries=None):
       DecoratorsTest._decorated_function_called_count += 1
-      raise device_errors.CommandFailedError(['testCommand'],
-                                             'testCommand failed')
+      raise device_errors.CommandFailedError('testCommand failed')
 
     with self.assertRaises(device_errors.CommandFailedError):
       alwaysRaisesCommandFailedError()
@@ -219,8 +217,7 @@ class DecoratorsTest(unittest.TestCase):
     @decorators.WithExplicitTimeoutAndRetries(30, 10)
     def alwaysRaisesCommandFailedError():
       DecoratorsTest._decorated_function_called_count += 1
-      raise device_errors.CommandFailedError(['testCommand'],
-                                             'testCommand failed')
+      raise device_errors.CommandFailedError('testCommand failed')
 
     with self.assertRaises(device_errors.CommandFailedError):
       alwaysRaisesCommandFailedError()
@@ -281,8 +278,7 @@ class DecoratorsTest(unittest.TestCase):
         'default_timeout', 'default_retries')
     def alwaysRaisesCommandFailedError(self, timeout=None, retries=None):
       self.function_call_counters['alwaysRaisesCommandFailedError'] += 1
-      raise device_errors.CommandFailedError(['testCommand'],
-                                             'testCommand failed')
+      raise device_errors.CommandFailedError('testCommand failed')
 
     # pylint: disable=R0201
 

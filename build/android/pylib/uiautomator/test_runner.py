@@ -6,6 +6,7 @@
 
 from pylib import constants
 from pylib import flag_changer
+from pylib.device import intent
 from pylib.instrumentation import test_options as instr_test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 
@@ -65,10 +66,11 @@ class TestRunner(instr_test_runner.TestRunner):
         self.flags.RemoveFlags(['--disable-fre'])
       else:
         self.flags.AddFlags(['--disable-fre'])
-    self.device.old_interface.StartActivity(self._package,
-                           self._activity,
-                           wait_for_completion=True,
-                           action='android.intent.action.MAIN',
-                           force_stop=True)
+    self.device.StartActivity(
+        intent.Intent(action='android.intent.action.MAIN',
+                      activity=self._activity,
+                      package=self._package),
+        blocking=True,
+        force_stop=True)
     return self.device.old_interface.RunUIAutomatorTest(
         test, self.test_pkg.GetPackageName(), timeout)

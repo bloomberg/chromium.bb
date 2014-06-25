@@ -757,7 +757,7 @@ class AndroidCommands(object):
         self.RunShellCommand(cmd)
     return len(pids)
 
-  def KillAllBlocking(self, process, timeout_sec):
+  def KillAllBlocking(self, process, timeout_sec, signum=9, with_su=False):
     """Blocking version of killall, connected via adb.
 
     This waits until no process matching the corresponding name appears in ps'
@@ -766,11 +766,12 @@ class AndroidCommands(object):
     Args:
       process: name of the process to kill off
       timeout_sec: the timeout in seconds
-
+      signum: same as |KillAll|
+      with_su: same as |KillAll|
     Returns:
       the number of processes killed
     """
-    processes_killed = self.KillAll(process)
+    processes_killed = self.KillAll(process, signum=signum, with_su=with_su)
     if processes_killed:
       elapsed = 0
       wait_period = 0.1
@@ -779,7 +780,7 @@ class AndroidCommands(object):
         time.sleep(wait_period)
         elapsed += wait_period
       if elapsed >= timeout_sec:
-        return 0
+        return processes_killed - self.ExtractPid(process)
     return processes_killed
 
   @staticmethod
@@ -842,11 +843,13 @@ class AndroidCommands(object):
       trace_file_name: If used, turns on and saves the trace to this file name.
       force_stop: force stop the target app before starting the activity (-S
         flag).
+    Returns:
+      The output of the underlying command as a list of lines.
     """
     cmd = self._GetActivityCommand(package, activity, wait_for_completion,
                                    action, category, data, extras,
                                    trace_file_name, force_stop, flags)
-    self.RunShellCommand(cmd)
+    return self.RunShellCommand(cmd)
 
   def StartActivityTimed(self, package, activity, wait_for_completion=False,
                          action='android.intent.action.VIEW',
@@ -858,18 +861,20 @@ class AndroidCommands(object):
     Args - as for StartActivity
 
     Returns:
-      a timestamp string for the time at which the activity started
+      A tuple containing:
+        - the output of the underlying command as a list of lines, and
+        - a timestamp string for the time at which the activity started
     """
     cmd = self._GetActivityCommand(package, activity, wait_for_completion,
                                    action, category, data, extras,
                                    trace_file_name, force_stop, flags)
     self.StartMonitoringLogcat()
-    self.RunShellCommand('log starting activity; ' + cmd)
+    out = self.RunShellCommand('log starting activity; ' + cmd)
     activity_started_re = re.compile('.*starting activity.*')
     m = self.WaitForLogMatch(activity_started_re, None)
     assert m
     start_line = m.group(0)
-    return GetLogTimestamp(start_line, self.GetDeviceYear())
+    return (out, GetLogTimestamp(start_line, self.GetDeviceYear()))
 
   def StartCrashUploadService(self, package):
     # TODO(frankf): We really need a python wrapper around Intent

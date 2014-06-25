@@ -41,7 +41,7 @@ class ContentSettings(dict):
     # Example row:
     # 'Row: 0 _id=13, name=logging_id2, value=-1fccbaa546705b05'
     for row in self._device.RunShellCommand(
-        'content query --uri content://%s' % self._table, root=True):
+        'content query --uri content://%s' % self._table, as_root=True):
       fields = row.split(', ')
       key = None
       value = None
@@ -57,7 +57,7 @@ class ContentSettings(dict):
   def __getitem__(self, key):
     return self._device.RunShellCommand(
         'content query --uri content://%s --where "name=\'%s\'" '
-        '--projection value' % (self._table, key), root=True).strip()
+        '--projection value' % (self._table, key), as_root=True).strip()
 
   def __setitem__(self, key, value):
     if key in self:
@@ -66,7 +66,7 @@ class ContentSettings(dict):
           '--bind value:%s:%s --where "name=\'%s\'"' % (
               self._table,
               self._GetTypeBinding(value), value, key),
-          root=True)
+          as_root=True)
     else:
       self._device.RunShellCommand(
           'content insert --uri content://%s '
@@ -74,7 +74,7 @@ class ContentSettings(dict):
               self._table,
               self._GetTypeBinding(key), key,
               self._GetTypeBinding(value), value),
-          root=True)
+          as_root=True)
 
   def __delitem__(self, key):
     self._device.RunShellCommand(
@@ -82,4 +82,4 @@ class ContentSettings(dict):
         '--bind name:%s:%s' % (
             self._table,
             self._GetTypeBinding(key), key),
-        root=True)
+        as_root=True)

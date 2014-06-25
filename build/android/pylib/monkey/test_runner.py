@@ -10,7 +10,7 @@ import random
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-
+from pylib.device import intent
 
 class TestRunner(base_test_runner.BaseTestRunner):
   """A TestRunner instance runs a monkey test on a single device."""
@@ -51,9 +51,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple of (TestRunResults, retry).
     """
-    self.device.old_interface.StartActivity(
-        self._package, self._activity, wait_for_completion=True,
-        action='android.intent.action.MAIN', force_stop=True)
+    self.device.StartActivity(
+        intent.Intent(package=self._package, activity=self._activity,
+                      action='android.intent.action.MAIN'),
+        blocking=True, force_stop=True)
 
     # Chrome crashes are not always caught by Monkey test runner.
     # Verify Chrome has the same PID before and after the test.

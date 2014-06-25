@@ -11,6 +11,7 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 # pylint: disable=W0613
 
 import os
+import signal
 import sys
 import unittest
 
@@ -19,6 +20,7 @@ from pylib import constants
 from pylib.device import adb_wrapper
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.device import intent
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
@@ -403,13 +405,13 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
         ("adb -s 0123456789abcdef shell 'su -c setprop service.adb.root 0'",
          '')]):
-      self.device.RunShellCommand('setprop service.adb.root 0', root=True)
+      self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_withRoot(self):
     with self.assertOldImplCallsSequence([
         ("adb -s 0123456789abcdef shell 'ls /root'", 'hello\r\nworld\r\n'),
         ("adb -s 0123456789abcdef shell 'setprop service.adb.root 0'", '')]):
-      self.device.RunShellCommand('setprop service.adb.root 0', root=True)
+      self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_checkReturn_success(self):
     with self.assertOldImplCalls(
@@ -423,6 +425,263 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         '\r\n%1\r\n'):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.RunShellCommand('echo $ANDROID_DATA', check_return=True)
+
+  def testKillAll_noMatchingProcesses(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.KillAll('test_process')
+
+  def testKillAll_nonblocking(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'kill -9 1234'", '')]):
+      self.device.KillAll('this.is.a.test.process', blocking=False)
+
+  def testKillAll_blocking(self):
+    with mock.patch('time.sleep'):
+      with self.assertOldImplCallsSequence([
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'kill -9 1234'", ''),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n')]):
+        self.device.KillAll('this.is.a.test.process', blocking=True)
+
+  def testKillAll_root(self):
+    with self.assertOldImplCallsSequence([
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'su -c kill -9 1234'", '')]):
+      self.device.KillAll('this.is.a.test.process', as_root=True)
+
+  def testKillAll_sigterm(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'kill -15 1234'", '')]):
+      self.device.KillAll('this.is.a.test.process', signum=signal.SIGTERM)
+
+  def testStartActivity_actionOnly(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_success(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_failure(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main'",
+        'Error: Failed to start test activity'):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.StartActivity(test_intent)
+
+  def testStartActivity_blocking(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-W "
+            "-n this.is.a.test.package/.Main'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent, blocking=True)
+
+  def testStartActivity_withCategory(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                category='android.intent.category.HOME')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-c android.intent.category.HOME "
+            "-n this.is.a.test.package/.Main'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withMultipleCategories(self):
+    # The new implementation will start the activity with all provided
+    # categories. The old one only uses the first category.
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                category=['android.intent.category.HOME',
+                                          'android.intent.category.BROWSABLE'])
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-c android.intent.category.HOME "
+            "-n this.is.a.test.package/.Main'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withData(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                data='http://www.google.com/')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "-d \"http://www.google.com/\"'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withStringExtra(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                extras={'foo': 'test'})
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "--es foo test'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withBoolExtra(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                extras={'foo': True})
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "--ez foo True'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withIntExtra(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                extras={'foo': 123})
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "--ei foo 123'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testStartActivity_withTraceFile(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "--start-profiler test_trace_file.out'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent,
+                                trace_file_name='test_trace_file.out')
+
+  def testStartActivity_withForceStop(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-S "
+            "-n this.is.a.test.package/.Main'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent, force_stop=True)
+
+  def testStartActivity_withFlags(self):
+    test_intent = intent.Intent(action='android.intent.action.VIEW',
+                                package='this.is.a.test.package',
+                                activity='.Main',
+                                flags='0x10000000')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-a android.intent.action.VIEW "
+            "-n this.is.a.test.package/.Main "
+            "-f 0x10000000'",
+        'Starting: Intent { act=android.intent.action.VIEW }'):
+      self.device.StartActivity(test_intent)
+
+  def testBroadcastIntent_noExtras(self):
+    test_intent = intent.Intent(action='test.package.with.an.INTENT')
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am broadcast "
+            "-a test.package.with.an.INTENT '",
+        'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
+      self.device.BroadcastIntent(test_intent)
+
+  def testBroadcastIntent_withExtra(self):
+    test_intent = intent.Intent(action='test.package.with.an.INTENT',
+                                extras={'foo': 'bar'})
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am broadcast "
+            "-a test.package.with.an.INTENT "
+            "-e foo \"bar\"'",
+        'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
+      self.device.BroadcastIntent(test_intent)
+
+  def testBroadcastIntent_withExtra_noValue(self):
+    test_intent = intent.Intent(action='test.package.with.an.INTENT',
+                                extras={'foo': None})
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am broadcast "
+            "-a test.package.with.an.INTENT "
+            "-e foo'",
+        'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
+      self.device.BroadcastIntent(test_intent)
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
