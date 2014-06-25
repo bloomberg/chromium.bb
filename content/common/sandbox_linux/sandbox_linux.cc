@@ -35,7 +35,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-     defined(LEAK_SANITIZER)
+     defined(LEAK_SANITIZER) || defined(UNDEFINED_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
 #endif
 
@@ -120,7 +120,7 @@ LinuxSandbox::LinuxSandbox()
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
   }
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(LEAK_SANITIZER)
+     defined(LEAK_SANITIZER) || defined(UNDEFINED_SANITIZER)
   sanitizer_args_ = make_scoped_ptr(new __sanitizer_sandbox_arguments);
   *sanitizer_args_ = {0};
 #endif
@@ -139,7 +139,7 @@ void LinuxSandbox::PreinitializeSandbox() {
   CHECK(!pre_initialized_);
   seccomp_bpf_supported_ = false;
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-     defined(LEAK_SANITIZER)
+    defined(LEAK_SANITIZER) || defined(UNDEFINED_SANITIZER)
   // Sanitizers need to open some resources before the sandbox is enabled.
   // This should not fork, not launch threads, not open a directory.
   __sanitizer_sandbox_on_notify(sanitizer_args());
