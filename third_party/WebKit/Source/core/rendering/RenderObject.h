@@ -1315,7 +1315,7 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-// If repaintAfterLayout is enabled, setNeedsLayout() won't cause full paint invalidations as
+// setNeedsLayout() won't cause full paint invalidations as
 // setNeedsLayoutAndFullPaintInvalidation() does. Otherwise the two methods are identical.
 inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {

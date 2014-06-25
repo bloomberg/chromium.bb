@@ -122,8 +122,6 @@ public:
 
     BLINK_EXPORT static void enableSharedWorker(bool);
 
-    BLINK_EXPORT static void enableRepaintAfterLayout(bool);
-
     BLINK_EXPORT static void enableExperimentalWebSocket(bool);
 
     BLINK_EXPORT static void enableTargetedStyleRecalc(bool);

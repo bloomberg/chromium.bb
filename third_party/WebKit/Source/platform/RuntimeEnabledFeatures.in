@@ -105,10 +105,6 @@ QuotaPromise status=experimental
 OverlayScrollbars
 RegionBasedColumns status=experimental
 
-// This is implementation flag for the re-write of the layout/paint system to
-// do painting after we have completed layout, instead of piecemeal during layout.
-RepaintAfterLayout status=stable
-
 RequestAutocomplete status=test
 ScreenOrientation status=experimental
 ScriptedSpeech status=stable
