@@ -127,7 +127,6 @@ crbug.com/360889 fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
 crbug.com/360889 virtual/gpu/fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
 crbug.com/360889 media/video-scales-in-media-document.html [ Failure ]
 crbug.com/360889 fast/css/css3-ch-unit.html [ Failure ]
-crbug.com/360889 fast/css/font-face-unicode-range-monospace.html [ Failure ]
 crbug.com/360889 fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 

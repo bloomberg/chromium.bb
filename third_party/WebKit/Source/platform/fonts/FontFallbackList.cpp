@@ -78,16 +78,29 @@ void FontFallbackList::releaseFontData()
 
 void FontFallbackList::determinePitch(const FontDescription& fontDescription) const
 {
-    const FontData* fontData = primaryFontData(fontDescription);
-    if (!fontData->isSegmented())
-        m_pitch = static_cast<const SimpleFontData*>(fontData)->pitch();
-    else {
-        const SegmentedFontData* segmentedFontData = static_cast<const SegmentedFontData*>(fontData);
-        unsigned numRanges = segmentedFontData->numRanges();
-        if (numRanges == 1 && segmentedFontData->rangeAt(0).isEntireRange())
-            m_pitch = segmentedFontData->rangeAt(0).fontData()->pitch();
-        else
+    for (unsigned fontIndex = 0; ; ++fontIndex) {
+        const FontData* fontData = fontDataAt(fontDescription, fontIndex);
+        if (!fontData) {
+            // All fonts are custom fonts and are loading. Fallback should be variable pitch.
             m_pitch = VariablePitch;
+            break;
+        }
+
+        const SimpleFontData* simpleFontData;
+        if (fontData->isSegmented()) {
+            const SegmentedFontData* segmentedFontData = toSegmentedFontData(fontData);
+            if (segmentedFontData->numRanges() != 1 || !segmentedFontData->rangeAt(0).isEntireRange()) {
+                m_pitch = VariablePitch;
+                break;
+            }
+            simpleFontData = segmentedFontData->rangeAt(0).fontData().get();
+        } else {
+            simpleFontData = static_cast<const SimpleFontData*>(fontData);
+        }
+        if (!fontData->isLoadingFallback()) {
+            m_pitch = simpleFontData->pitch();
+            break;
+        }
     }
 }
 
