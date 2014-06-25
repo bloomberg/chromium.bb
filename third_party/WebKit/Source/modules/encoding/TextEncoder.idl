@@ -31,11 +31,11 @@
 [
     RuntimeEnabled=EncodingAPI,
     Exposed=Window&Worker,
-    Constructor(optional DOMString utfLabel = null),
+    Constructor(optional DOMString utfLabel = "utf-8"),
     RaisesException=Constructor,
     GarbageCollected,
     MeasureAs=TextEncoderConstructor
 ] interface TextEncoder {
     readonly attribute DOMString encoding;
-    [MeasureAs=TextEncoderEncode] Uint8Array encode(optional ScalarValueString input = null, optional Dictionary options);
+    [MeasureAs=TextEncoderEncode] Uint8Array encode(optional ScalarValueString input = "", optional Dictionary options);
 };

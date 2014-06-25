@@ -41,13 +41,11 @@ namespace WebCore {
 
 TextDecoder* TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
 {
-    const String& encodingLabel = label.isNull() ? String("utf-8") : label;
-
-    WTF::TextEncoding encoding(encodingLabel);
+    WTF::TextEncoding encoding(label);
     // The replacement encoding is not valid, but the Encoding API also
     // rejects aliases of the replacement encoding.
     if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {
-        exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
+        exceptionState.throwTypeError("The encoding label provided ('" + label + "') is invalid.");
         return 0;
     }
 
