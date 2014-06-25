@@ -75,7 +75,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
  protected:
   virtual ~NativeViewGLSurfaceEGL();
-  void SetHandle(EGLSurface surface);
 
  private:
   EGLNativeWindowType window_;

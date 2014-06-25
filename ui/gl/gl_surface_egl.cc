@@ -490,10 +490,6 @@ NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
 #endif
 }
 
-void NativeViewGLSurfaceEGL::SetHandle(EGLSurface surface) {
-  surface_ = surface;
-}
-
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),
       surface_(NULL) {
