@@ -29,6 +29,7 @@ Br*erT*
 # C*
 Cap*
 Cas*
+Clou*cy
 Clear*
 Click*
 Com*
@@ -37,7 +38,9 @@ ChromeR*
 Con*UITest.*
 Con*.Re*
 Con*.Se*
+Cont*ns
 Context*
+Cook*ct
 # D*
 Dec*
 Dev*
@@ -49,10 +52,13 @@ Drive*
 # E*
 ECK*
 Ed*
+Enc*ic
 Ep*
 Er*
 Exe*
-Ext*.RSS*
+Ext*.P*
+Ext*.N*
+Ext*.RS*
 Ext*Api*
 Ext*Man*
 Ext*Ses*
@@ -62,6 +68,8 @@ Ext*Crx*
 FileSys*
 Find*
 Fl*
+Font*gs
+Ftp*
 # G*
 Gcm*.R*
 GetA*.I*
@@ -74,15 +82,18 @@ IE*
 # K*
 # L*
 Lan*
+Laz*TP
 Loc*
+Log*hs
 # M*
-Media*AppB*
+Media*B*
 Mock*
 MSC_C*
 MSE*
 Man*t.*
 # N*
-NaCl*libEx*
+NaCl*lib*
+NaCl*Pn*
 NetIn*
 Noti*
 NoSe*
@@ -94,15 +105,20 @@ Pag*ion
 Pas*erBro*
 Pe*
 Plat*Bro*
-PolicyT*.H*
+Policy*H*
 Port*
 Prefe*fs
 Print*
 Prox*
+Prof*ta
 Prer*get
-PPAPI*ib*
+Prer*st.Pre*
+PPA*ib*
+PPA*lT*.*
+PPAPIT.F*
 # Q*
 # R*
+Red*nt
 # S*
 Sa*
 Set*
@@ -110,18 +126,21 @@ Scr*
 Soc*
 Spee*
 SRC*.Frame*
+SSL*ed
 Str*
 SyncF*
-SyncInt*.Se*
+SyncInt*
 # T*
 Tab*
 Tas*
 Tran*Bu*
+Tran*ag
 # U*
+Un*.Br*
 # V*
 # W*
 WebViewT*
-webRtcB*
+WebRtcB*
 WebUIA*
 WebC*
 WebN*ss
