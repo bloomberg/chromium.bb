@@ -296,16 +296,16 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
     return false;
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || m_substituteData.isValid())
         return true;
 
     // If we're loading content into a subframe, check against the parent's Content Security Policy
-    // and kill the load if that check fails.
+    // and kill the load if that check fails, unless we should bypass the main world's CSP.
     // FIXME: CSP checks are broken for OOPI. For now, this policy always allows frames with a remote parent...
-    if (m_frame->deprecatedLocalOwner() && !m_frame->deprecatedLocalOwner()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url())) {
+    if ((shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) && (m_frame->deprecatedLocalOwner() && !m_frame->deprecatedLocalOwner()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url()))) {
         // Fire a load event, as timing attacks would otherwise reveal that the
         // frame was blocked. This way, it looks like every other cross-origin
         // page load.
@@ -391,7 +391,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     appendRedirect(newRequest.url());
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-    if (!shouldContinueForNavigationPolicy(newRequest))
+    if (!shouldContinueForNavigationPolicy(newRequest, CheckContentSecurityPolicy))
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 

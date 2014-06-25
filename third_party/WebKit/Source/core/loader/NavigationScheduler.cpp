@@ -34,7 +34,9 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/events/Event.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -101,13 +103,16 @@ protected:
         , m_originDocument(originDocument)
         , m_url(url)
         , m_referrer(referrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
+        if (ContentSecurityPolicy::shouldBypassMainWorld(originDocument))
+            m_shouldCheckMainWorldContentSecurityPolicy = DoNotCheckContentSecurityPolicy;
     }
 
     virtual void fire(LocalFrame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        FrameLoadRequest request(m_originDocument.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self");
+        FrameLoadRequest request(m_originDocument.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self", m_shouldCheckMainWorldContentSecurityPolicy);
         request.setLockBackForwardList(lockBackForwardList());
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
@@ -121,6 +126,7 @@ private:
     RefPtrWillBePersistent<Document> m_originDocument;
     String m_url;
     Referrer m_referrer;
+    ContentSecurityPolicyCheck m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
 class ScheduledRedirect FINAL : public ScheduledURLNavigation {

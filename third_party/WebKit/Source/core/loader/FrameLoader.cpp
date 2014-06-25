@@ -743,7 +743,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
     }
     bool sameURL = url == m_documentLoader->urlForHistory();
-    loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
+    loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.shouldCheckMainWorldContentSecurityPolicy(), request.clientRedirect());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -798,7 +798,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     }
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), NotClientRedirect, overrideEncoding);
+    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, NotClientRedirect, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1282,7 +1282,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const AtomicString& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect, const AtomicString& overrideEncoding)
 {
     ASSERT(client()->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
@@ -1313,7 +1313,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtr<LocalFrame> protect(m_frame);
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request) || !shouldClose()) && m_policyDocumentLoader) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
         return;
@@ -1438,7 +1438,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         restoreScrollPositionAndViewState();
         return;
     }
-    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData());
+    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData(), CheckContentSecurityPolicy);
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

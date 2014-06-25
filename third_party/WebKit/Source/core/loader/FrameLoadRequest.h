@@ -28,6 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/SubstituteData.h"
@@ -44,6 +45,7 @@ public:
         , m_lockBackForwardList(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
     }
 
@@ -53,6 +55,7 @@ public:
         , m_lockBackForwardList(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
     }
 
@@ -63,6 +66,18 @@ public:
         , m_lockBackForwardList(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
+    {
+    }
+
+    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy)
+        : m_originDocument(originDocument)
+        , m_resourceRequest(resourceRequest)
+        , m_frameName(frameName)
+        , m_lockBackForwardList(false)
+        , m_clientRedirect(NotClientRedirect)
+        , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
     {
     }
 
@@ -73,6 +88,7 @@ public:
         , m_lockBackForwardList(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
+        , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
     }
 
@@ -101,6 +117,8 @@ public:
     ShouldSendReferrer shouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
 
+    ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy() const { return m_shouldCheckMainWorldContentSecurityPolicy; }
+
 private:
     RefPtrWillBeMember<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
@@ -111,6 +129,7 @@ private:
     RefPtrWillBeMember<Event> m_triggeringEvent;
     RefPtrWillBeMember<FormState> m_formState;
     ShouldSendReferrer m_shouldSendReferrer;
+    ContentSecurityPolicyCheck m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
 }
