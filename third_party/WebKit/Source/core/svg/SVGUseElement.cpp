@@ -476,7 +476,7 @@ bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
     if (isSVGUseElement(*target)) {
         // We only need to track first degree <use> dependencies. Indirect references are handled
         // as the invalidation bubbles up the dependency chain.
-        if (!foundUse) {
+        if (!foundUse && !isStructurallyExternal()) {
             document().accessSVGExtensions().addElementReferencingTarget(this, target);
             foundUse = true;
         }

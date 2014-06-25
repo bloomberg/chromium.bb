@@ -320,6 +320,7 @@ void SVGDocumentExtensions::addElementReferencingTarget(SVGElement* referencingE
 {
     ASSERT(referencingElement);
     ASSERT(referencedElement);
+    ASSERT(!referencingElement->isStructurallyExternal());
 
     referencedElement->ensureSVGRareData()->referencingElements().add(referencingElement);
     referencingElement->ensureSVGRareData()->referencedElements().add(referencedElement);
