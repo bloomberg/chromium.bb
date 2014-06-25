@@ -28,7 +28,7 @@ enum PosixSignals {
 };
 
 int IThread::ExceptionToSignal(int ex) {
-  switch (ex) {
+  switch (static_cast<DWORD>(ex)) {
     case EXCEPTION_GUARD_PAGE:
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
     case EXCEPTION_DATATYPE_MISALIGNMENT:
