@@ -55,9 +55,9 @@ into an executable file ending in a <strong>.pexe</strong> extension using the P
 toolchain in the Native Client SDK. Chrome can load <strong>pexe</strong> files
 embedded in web pages and execute them as part of a web application.</p>
 <p>As explained in the Technical Overview, PNaCl modules are
-operating-system-independent <strong>and</strong> processor-independent. The same
-<strong>pexe</strong>  will run on Windows, Mac, Linux, and ChromeOS and it will run on
-any processor, e.g., x86-32, x86-64, and ARM.</p>
+operating-system-independent <strong>and</strong> processor-independent. The same <strong>pexe</strong>
+will run on Windows, Mac OS X, Linux, and ChromeOS and it will run on x86-32,
+x86-64, ARM and MIPS processors.</p>
 <p>Native Client also supports architecture-specific <strong>nexe</strong> files.
 These <strong>nexe</strong> files are <strong>also</strong> operating-system-independent,
 but they are <strong>not</strong> processor-independent. To support a wide variety of
@@ -70,7 +70,7 @@ generate manifest files. For examples of how to compile modules
 for multiple target architectures and how to generate manifest files, see the
 Makefiles included with the SDK examples.</p>
 <p>This section will mostly cover PNaCl, but also describes how to build
-nexe applications.</p>
+<strong>nexe</strong> applications.</p>
 </section><section id="c-libraries">
 <h3 id="c-libraries">C libraries</h3>
 <p>The PNaCl SDK has a single choice of C library: <a class="reference external" href="http://sourceware.org/newlib/">newlib</a>.</p>
@@ -85,11 +85,11 @@ help you decide which to use.</p>
 <code>-stdlib=[libc++|libstdc++]</code> command line argument can be used to
 choose which standard library to use.</p>
 <p>The GCC-based Native Client SDK only has support for GCC&#8217;s <a class="reference external" href="http://gcc.gnu.org/libstdc++">libstdc++</a>.</p>
-<p>C++11 library support is only complete in libc++ but other non-library
-language features should work regardless of which standard library is
-used. The <code>-std=[c++98|c++11]</code> command line argument can be used to
-indicate which C++ language standard to use (or <code>-std=gnu++11</code> to
-access non-standard extensions).</p>
+<p>C++11 library support is only complete in libc++ but other non-library language
+features should work regardless of which standard library is used. The
+<code>-std=gnu++11</code> command line argument can be used to indicate which C++
+language standard to use (<code>-std=c++11</code> often doesn&#8217;t work well because newlib
+relies on some GNU extensions).</p>
 </section><section id="sdk-toolchains">
 <h3 id="sdk-toolchains">SDK toolchains</h3>
 <p>The Native Client SDK includes multiple toolchains. It has one PNaCl toolchain
@@ -99,14 +99,18 @@ in a directory named <code>toolchain/&lt;OS_platform&gt;_pnacl</code>, and the G
 toolchains are located in directories named
 <code>toolchain/&lt;OS_platform&gt;_&lt;architecture&gt;_&lt;library&gt;</code>, where:</p>
 <ul class="small-gap">
-<li><em>&lt;platform&gt;</em> is the platform of your development machine (win, mac, or linux)</li>
-<li><em>&lt;architecture&gt;</em> is your target architecture (x86 or arm)</li>
-<li><em>&lt;library&gt;</em> is the C library you are compiling with (newlib or glibc)</li>
+<li><dl class="first docutils">
+<dt><em>&lt;platform&gt;</em> is the platform of your development machine (<em>win</em>, <em>mac</em>, or</dt>
+<dd><em>linux</em>)</dd>
+</dl>
+</li>
+<li><em>&lt;architecture&gt;</em> is your target architecture (<em>x86</em> or <em>arm</em>)</li>
+<li><em>&lt;library&gt;</em> is the C library you are compiling with (<em>newlib</em> or <em>glibc</em>)</li>
 </ul>
 <p>The compilers, linkers, and other tools are located in the <code>bin/</code>
 subdirectory in each toolchain. For example, the tools in the Windows SDK
 for PNaCl has a C++ compiler in <code>toolchain/win_pnacl/bin/pnacl-clang++</code>.
-As another example, the GCC-based C++ compiler that targets the x86 and uses the
+As another example, the GCC-based C++ compiler that targets x86 and uses the
 newlib library, is located at <code>toolchain/win_x86_newlib/bin/x86_64-nacl-g++</code>.</p>
 <aside class="note">
 The SDK toolchains descend from the <code>toolchain/</code> directory. The SDK also
@@ -146,9 +150,9 @@ provided in the SDK.
 LLVM toolchain, as well as linkers and other tools from binutils.
 To determine which version of LLVM or binutils the tools are based upon,
 run the tool with the <code>--version</code> command line flag. These tools
-are used to compile and link applications into .pexe files. The toolchain
-also contains a tool to translate a .pexe file into a
-architecture-specific .nexe (e.g., for debugging purposes).</p>
+are used to compile and link applications into <strong>.pexe</strong> files. The toolchain
+also contains a tool to translate a <strong>pexe</strong> file into a
+architecture-specific <strong>.nexe</strong> (e.g., for debugging purposes).</p>
 <p>Each tool&#8217;s name is preceded by the prefix &#8220;pnacl-&#8221;. Some of the useful
 tools include:</p>
 <dl class="docutils">
@@ -223,23 +227,30 @@ This debug information can be used during development, and then <strong>stripped
 before actually deploying the application to keep the application&#8217;s
 download size small.</dd>
 <dt><code>-On</code></dt>
-<dd><p class="first">sets the optimization level to n. Use 0 when debugging, and -O2 or -O3
-for profiling and deployment.</p>
-<p class="last">The main difference between -O2 and -O3 is whether the compiler performs
-optimizations that involve a space-speed tradeoff. It could be the case that
-<code>-O3</code> optimizations are not desirable due to increased <strong>pexe</strong>
+<dd><p class="first">sets the optimization level to n. Use <code>-O0</code> when debugging, and <code>-O2</code> or
+<code>-O3</code> for deployment.</p>
+<p class="last">The main difference between <code>-O2</code> and <code>-O3</code> is whether the compiler
+performs optimizations that involve a space-speed tradeoff. It could be the
+case that <code>-O3</code> optimizations are not desirable due to increased <strong>pexe</strong>
 download size; you should make your own performance measurements to determine
-which level of optimization is right for you. When looking at code size,
-note that what you generally care about is not the size of the pexe
-produced by pnacl-clang, but the size of the compressed pexe that you upload
-your application to the server or to the Chrome Web Store.
-Optimizations that increase the size of a pexe may not increase the size of
-the compressed pexe that much.</p>
+which level of optimization is right for you. When looking at code size, note
+that what you generally care about is not the size of the <strong>pexe</strong> produced by
+<code>pnacl-clang</code>, but the size of the compressed <strong>pexe</strong> that you upload to
+the server or to the Chrome Web Store. Optimizations that increase the size of
+an uncompressed <strong>pexe</strong> may not increase the size of the compressed <strong>pexe</strong>
+very much. You should also verify how optimization level affects on-device
+translation time, this can be tested locally with <code>pnacl-translate</code>.</p>
 </dd>
 <dt><code>-I&lt;directory&gt;</code></dt>
 <dd>adds a directory to the search path for <strong>include</strong> files. The SDK has
 Pepper (PPAPI) headers located at <code>&lt;NACL_SDK_ROOT&gt;/include</code>, so add
 that directory when compiling to be able to include the headers.</dd>
+<dt><code>-mllvm -inline-threshold=n</code></dt>
+<dd>change how much inlining is performed by LLVM (the default is 225, a smaller
+value will result in less inlining being performed). The right number to
+choose is application-specific, you&#8217;ll therefore want to experiment with the
+value that you pass in: you&#8217;ll be trading off potential performance with
+<strong>pexe</strong> size and on-device translation speed.</dd>
 </dl>
 </section><section id="create-a-static-library">
 <h3 id="create-a-static-library">Create a static library</h3>
@@ -259,7 +270,8 @@ also be used link together compiled bitcode and libraries into a
 full application.</p>
 <pre>
 &lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-clang++ -o hello_world.pexe ^
-  hello_world.o -L&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Debug -lfoo -lppapi_cpp -lppapi
+  hello_world.o -L&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Debug ^
+  -lfoo -lppapi_cpp -lppapi
 </pre>
 <p>This links the hello world bitcode with the <code>foo</code> library in the example
 as well as the <em>Debug</em> version of the Pepper libraries which are located
@@ -267,21 +279,34 @@ in <code>&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Debug</code>. If you wish to link again
 <em>Release</em> version of the Pepper libraries, change the
 <code>-L&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Debug</code> to
 <code>-L&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Release</code>.</p>
+<p>In a release build you&#8217;ll want to pass <code>-O2</code> to the compiler <em>as well as to
+the linker</em> to enable link-time optimizations. This reduces the size and
+increases the performance of the final <strong>pexe</strong>, and leads to faster downloads
+and on-device translation.</p>
+<pre>
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-clang++ -o hello_world.pexe ^
+  hello_world.o -L&lt;NACL_SDK_ROOT&gt;/lib/pnacl/Release ^
+  -lfoo -lppapi_cpp -lppapi -O2
+</pre>
+<p>By default the link step will turn all C++ exceptions into calls to <code>abort()</code>
+to reduce the size of the final <strong>pexe</strong> as well as making it translate and run
+faster. If you want to use C++ exceptions you should use the
+<code>--pnacl-exceptions=sjlj</code> linker flag as explained in the <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#exception-handling"><em>exception
+handling</em></a> section of the C++ language support reference.</p>
 </section><section id="finalizing-the-pexe-for-deployment">
 <h3 id="finalizing-the-pexe-for-deployment">Finalizing the <strong>pexe</strong> for deployment</h3>
-<p>Typically you would run the application to test it and debug it if needed
-before deploying. See the <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>running</em></a> documentation for how
-to run a PNaCl application, and see the <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html"><em>debugging</em></a>
-documentation for debugging techniques and workflow. After testing a PNaCl
-application, you must <strong>&#8220;finalize&#8221;</strong> it. The <code>pnacl-finalize</code>
-tool handles this.</p>
+<p>Typically you would run the application to test it and debug it if needed before
+deploying. See the <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>running</em></a> documentation for how to run a PNaCl
+application, and see the <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html"><em>debugging</em></a> documentation for
+debugging techniques and workflow. After testing a PNaCl application, you must
+<strong>finalize</strong> it. The <code>pnacl-finalize</code> tool handles this.</p>
 <pre>
 &lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-finalize ^
   hello_world.pexe -o hello_world.final.pexe
 </pre>
 <p>Prior to finalization, the application <strong>pexe</strong> is stored in a binary
 format that is subject to change.  After finalization, the application
-pexe is <strong>rewritten</strong> into a different binary format that is <strong>stable</strong>
+<strong>pexe</strong> is <strong>rewritten</strong> into a different binary format that is <strong>stable</strong>
 and will be supported by future versions of PNaCl. The finalization step
 also helps minimize the size of your application for distribution by
 stripping out debug information and other metadata.</p>
@@ -291,29 +316,29 @@ The <code>create_nmf.py</code> tool helps generate an <code>.nmf</code> file, bu
 files can also be written by hand.</p>
 </section><section id="compressing-the-pexe-for-deployment">
 <span id="pnacl-compress"></span><h3 id="compressing-the-pexe-for-deployment"><span id="pnacl-compress"></span>Compressing the <strong>pexe</strong> for deployment</h3>
-<p>Size compression is an optional step for deployment, and reduces the
-size of the pexe file that must be transmitted over the wire. The tool
-<code>pnacl-compress</code> applies compression strategies that are already built
-into the <strong>stable</strong> binary format of a pexe application. As such,
-compressed pexe files do not need any extra time to be decompressed on
-the client&#8217;s side. All costs are upfront when you call <code>pnacl-compress</code>.</p>
-<p>Currently, this tool will compress pexe files by about 25%. However,
+<p>Size compression is an optional step for deployment, and reduces the size of the
+<strong>pexe</strong> file that must be transmitted over the wire, resulting in faster
+download speed. The tool <code>pnacl-compress</code> applies compression strategies that
+are already built into the <strong>stable</strong> binary format of a <strong>pexe</strong>
+application. As such, compressed <strong>pexe</strong> files do not need any extra time to be
+decompressed on the client&#8217;s side. All costs are upfront when you call
+<code>pnacl-compress</code>.</p>
+<p>Currently, this tool will compress <strong>pexe</strong> files by about 25%. However,
 it is somewhat slow (can take from seconds to minutes on large
 appications). Hence, this step is optional.</p>
 <pre>
 &lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-compress ^
   hello_world.final.pexe
 </pre>
-<p>Tool <code>pnacl-compress</code> must be called after a pexe file has been finalized
-for deployment (via <code>pnacl-finalize</code>). Alternatively, you can apply this
-step as part of the finalizing step by adding the <code>--compress</code> flag
-to the pnacl-finalize command line.</p>
-<p>Note that this compression step doesn&#8217;t replace gzip. This compression
-step is in addition to gzipping a file for deployment. One should note
-that while the gzipped version of a compressed pexe file is still
-smaller than the corresponding uncompressed pexe file, the gains is
-somewhat smaller after being gzipped. Expected reduction in size
-(after being gzipped) is more like 7.5% to 10%.</p>
+<p><code>pnacl-compress</code> must be called after a <strong>pexe</strong> file has been finalized for
+deployment (via <code>pnacl-finalize</code>). Alternatively, you can apply this step as
+part of the finalizing step by adding the <code>--compress</code> flag to the
+<code>pnacl-finalize</code> command line.</p>
+<p>This compression step doesn&#8217;t replace the gzip compression performed web servers
+configured for HTTP compression: both compressions are complementary. You&#8217;ll
+want to configure your web server to gzip <strong>pexe</strong> files: the gzipped version of
+a compressed <strong>pexe</strong> file is smaller than the corresponding uncompressed
+<strong>pexe</strong> file by 7.5% to 10%.</p>
 </section></section><section id="the-gnu-based-toolchains">
 <h2 id="the-gnu-based-toolchains">The GNU-based toolchains</h2>
 <p>Besides the PNaCl toolchain, the Native Client SDK also includes modified
@@ -328,14 +353,14 @@ the x86 target architecture, there are actually two versions of each
 tool&#8212;one to build Native Client modules for the x86-32
 target architecture, and one to build modules for the x86-64 target
 architecture. &#8220;i686-nacl-&#8221; is the prefix for tools used to build
-32-bit .nexes, and &#8220;x86_64-nacl-&#8221; is the prefix for tools used to
-build 64-bit .nexes</p>
+32-bit <strong>.nexes</strong>, and &#8220;x86_64-nacl-&#8221; is the prefix for tools used to
+build 64-bit <strong>.nexes</strong>.</p>
 <p>These prefixes conform to gcc naming standards and make it easy to use tools
 like autoconf. As an example, you can use <code>i686-nacl-gcc</code> to compile 32-bit
-.nexes, and <code>x86_64-nacl-gcc</code> to compile 64-bit .nexes. Note that you can
-typically override a tool&#8217;s default target architecture with command line
+<strong>.nexes</strong>, and <code>x86_64-nacl-gcc</code> to compile 64-bit <strong>.nexes</strong>. Note that you
+can typically override a tool&#8217;s default target architecture with command line
 flags, e.g., you can specify <code>x86_64-nacl-gcc -m32</code> to compile a 32-bit
-.nexe.</p>
+<strong>.nexe</strong>.</p>
 <p>The GNU-based SDK toolchains include the following tools:</p>
 <ul class="small-gap">
 <li>&lt;prefix&gt;addr2line</li>
@@ -366,15 +391,15 @@ flags, e.g., you can specify <code>x86_64-nacl-gcc -m32</code> to compile a 32-b
 files with the PNaCl-based toolchain, except that the output is
 architecture specific.</p>
 <p>For example, assuming you&#8217;re developing on a Windows machine, targeting the x86
-architecture, and using the newlib library, you can compile a 32-bit .nexe for
-the hello_world example with the following command:</p>
+architecture, and using the newlib library, you can compile a 32-bit <strong>.nexe</strong>
+for the hello_world example with the following command:</p>
 <pre>
 &lt;NACL_SDK_ROOT&gt;/toolchain/win_x86_newlib/bin/i686-nacl-gcc hello_world.c ^
   -I&lt;NACL_SDK_ROOT&gt;/include -L&lt;NACL_SDK_ROOT&gt;/lib/newlib/Release ^
   -o hello_world_x86_32.nexe -m32 -g -O2 -lppapi
 </pre>
-<p>To compile a 64-bit .nexe, you can run the same command but use -m64 instead of
--m32. Alternatively, you could also use the version of the compiler that
+<p>To compile a 64-bit <strong>.nexe</strong>, you can run the same command but use -m64 instead
+of -m32. Alternatively, you could also use the version of the compiler that
 targets the x86-64 architecture, i.e., <code>x86_64-nacl-gcc</code>.</p>
 <p>You should name executable modules with a <strong>.nexe</strong> filename extension,
 regardless of what platform you&#8217;re using.</p>
@@ -389,9 +414,9 @@ section on how to create <strong>shared</strong> libraries.</p>
 </section><section id="finalizing-a-nexe-for-deployment">
 <h3 id="finalizing-a-nexe-for-deployment">Finalizing a <strong>nexe</strong> for deployment</h3>
 <p>Unlike the PNaCl toolchain, no separate finalization step is required
-for <strong>nexe</strong> files. The nexe files are always in a <strong>stable</strong> format.
-However, the nexe file may contain debug information and symbol information
-which may make the nexe file larger than needed for distribution.
+for <strong>nexe</strong> files. The <strong>nexe</strong> files are always in a <strong>stable</strong> format.
+However, the <strong>nexe</strong> file may contain debug information and symbol information
+which may make the <strong>nexe</strong> file larger than needed for distribution.
 To minimize the size of the distributed file, you can run the
 <code>&lt;prefix&gt;strip</code> tool to strip out debug information.</p>
 </section></section><section id="using-make">
@@ -411,7 +436,7 @@ depending on the setting of the environment variables.</p>
 <ul class="small-gap">
 <li><p class="first">If <code>TOOLCHAIN=pnacl</code> creates a subdirectory called <code>pnacl</code>;</p>
 <ul class="small-gap">
-<li>builds a .pexe (architecture-independent Native Client executable) using
+<li>builds a <strong>.pexe</strong> (architecture-independent Native Client executable) using
 the newlib library</li>
 <li>generates a Native Client manifest (.nmf) file for the pnacl version of the
 example</li>
@@ -419,7 +444,7 @@ example</li>
 </li>
 <li><p class="first">If <code>TOOLCHAIN=newlib</code> creates a subdirectory called <code>newlib</code>;</p>
 <ul class="small-gap">
-<li>builds .nexes for the x86-32, x86-64, and ARM architectures using the
+<li>builds <strong>.nexes</strong> for the x86-32, x86-64, and ARM architectures using the
 newlib library</li>
 <li>generates a Native Client manifest (.nmf) file for the newlib version of
 the example</li>
@@ -427,7 +452,7 @@ the example</li>
 </li>
 <li><p class="first">If <code>TOOLCHAIN=glibc</code> creates a subdirectory called <code>glibc</code>;</p>
 <ul class="small-gap">
-<li>builds .nexes for the x86-32 and x86-64 architectures using the glibc
+<li>builds <strong>.nexes</strong> for the x86-32 and x86-64 architectures using the glibc
 library</li>
 <li>generates a Native Client manifest (.nmf) file for the glibc version of the
 example</li>

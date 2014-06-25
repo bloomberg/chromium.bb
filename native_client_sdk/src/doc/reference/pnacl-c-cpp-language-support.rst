@@ -170,6 +170,8 @@ in `Memory Model and Atomics`_.
 PNaCl and NaCl support ``setjmp`` and ``longjmp`` without any
 restrictions beyond C's.
 
+.. _exception_handling:
+
 C++ Exception Handling
 ======================
 
