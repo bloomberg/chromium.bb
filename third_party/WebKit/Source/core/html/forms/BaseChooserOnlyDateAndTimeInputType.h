@@ -36,11 +36,12 @@ namespace WebCore {
 
 class BaseChooserOnlyDateAndTimeInputType : public BaseDateAndTimeInputType, public DateTimeChooserClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BaseChooserOnlyDateAndTimeInputType);
+public:
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     explicit BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) { }
     virtual ~BaseChooserOnlyDateAndTimeInputType();
-
-    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     void closeDateTimeChooser();
