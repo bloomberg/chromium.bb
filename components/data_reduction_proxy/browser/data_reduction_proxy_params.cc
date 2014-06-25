@@ -7,7 +7,10 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 using base::FieldTrialList;
 
@@ -275,6 +278,23 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     return true;
   }
   return false;
+}
+
+// TODO(kundaji): Check that the request will actually be sent through the
+// proxy.
+bool DataReductionProxyParams::IsDataReductionProxyEligible(
+    const net::URLRequest* request) {
+  DCHECK(request);
+  DCHECK(request->context());
+  DCHECK(request->context()->proxy_service());
+  net::ProxyInfo result;
+  request->context()->proxy_service()->config().proxy_rules().Apply(
+      request->url(), &result);
+  if (!result.proxy_server().is_valid())
+    return false;
+  if (result.proxy_server().is_direct())
+    return false;
+  return IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
 }
 
 std::string DataReductionProxyParams::GetDefaultKey() const {

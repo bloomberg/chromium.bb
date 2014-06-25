@@ -20,6 +20,7 @@ class ChromeExtensionsNetworkDelegate;
 class ClientHints;
 class CookieSettings;
 class PrefService;
+
 template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
@@ -35,6 +36,7 @@ class Predictor;
 
 namespace data_reduction_proxy {
 class DataReductionProxyParams;
+class DataReductionProxyUsageStats;
 }
 
 namespace domain_reliability {
@@ -118,9 +120,17 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
     prerender_tracker_ = prerender_tracker;
   }
 
+  // |data_reduction_proxy_params_| must outlive this ChromeNetworkDelegate.
   void set_data_reduction_proxy_params(
       data_reduction_proxy::DataReductionProxyParams* params) {
     data_reduction_proxy_params_ = params;
+  }
+
+  // |data_reduction_proxy_usage_stats_| must outlive this
+  // ChromeNetworkDelegate.
+  void set_data_reduction_proxy_usage_stats(
+      data_reduction_proxy::DataReductionProxyUsageStats* usage_stats) {
+    data_reduction_proxy_usage_stats_ = usage_stats;
   }
 
   // Adds the Client Hints header to HTTP requests.
@@ -248,7 +258,12 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   prerender::PrerenderTracker* prerender_tracker_;
 
+  // |data_reduction_proxy_params_| must outlive this ChromeNetworkDelegate.
   data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;
+  // |data_reduction_proxy_usage_stats_| must outlive this
+  // ChromeNetworkDelegate.
+  data_reduction_proxy::DataReductionProxyUsageStats*
+      data_reduction_proxy_usage_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

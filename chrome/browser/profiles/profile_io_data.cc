@@ -94,6 +94,11 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h"
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -129,6 +134,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
+using data_reduction_proxy::DataReductionProxyUsageStats;
 
 namespace {
 
@@ -470,11 +476,46 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   initialized_on_UI_thread_ = true;
 
+#if defined(OS_ANDROID)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&ProfileIOData::SetDataReductionProxyUsageStatsOnIOThread,
+          base::Unretained(this), g_browser_process->io_thread(), profile));
+#endif
+#endif
+
   // We need to make sure that content initializes its own data structures that
   // are associated with each ResourceContext because we might post this
   // object to the IO thread after this function.
   BrowserContext::EnsureResourceContextInitialized(profile);
 }
+
+#if defined(OS_ANDROID)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+void ProfileIOData::SetDataReductionProxyUsageStatsOnIOThread(
+    IOThread* io_thread, Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  IOThread::Globals* globals = io_thread->globals();
+  DataReductionProxyUsageStats* usage_stats =
+      globals->data_reduction_proxy_usage_stats.get();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ProfileIOData::SetDataReductionProxyUsageStatsOnUIThread,
+                 base::Unretained(this), profile, usage_stats));
+}
+
+void ProfileIOData::SetDataReductionProxyUsageStatsOnUIThread(
+    Profile* profile,
+    DataReductionProxyUsageStats* usage_stats) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (g_browser_process->profile_manager()->IsValidProfile(profile)) {
+    DataReductionProxySettingsAndroid* proxySettingsAndroid =
+        DataReductionProxySettingsFactoryAndroid::GetForBrowserContext(profile);
+    if (proxySettingsAndroid)
+      proxySettingsAndroid->SetDataReductionProxyUsageStats(usage_stats);
+  }
+}
+#endif
+#endif
 
 ProfileIOData::MediaRequestContext::MediaRequestContext() {
 }
@@ -942,6 +983,8 @@ void ProfileIOData::Init(
           &enable_referrers_);
   network_delegate->set_data_reduction_proxy_params(
       io_thread_globals->data_reduction_proxy_params.get());
+  network_delegate->set_data_reduction_proxy_usage_stats(
+      io_thread_globals->data_reduction_proxy_usage_stats.get());
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
   network_delegate->set_extension_info_map(

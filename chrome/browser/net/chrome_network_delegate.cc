@@ -34,6 +34,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -296,7 +297,8 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       original_content_length_(0),
       first_request_(true),
       prerender_tracker_(NULL),
-      data_reduction_proxy_params_(NULL) {
+      data_reduction_proxy_params_(NULL),
+      data_reduction_proxy_usage_stats_(NULL) {
   DCHECK(enable_referrers);
   extensions_delegate_.reset(
       ChromeExtensionsNetworkDelegate::Create(event_router));
@@ -534,6 +536,9 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
+  if (data_reduction_proxy_usage_stats_)
+    data_reduction_proxy_usage_stats_->OnUrlRequestCompleted(request, started);
+
   TRACE_EVENT_ASYNC_END0("net", "URLRequest", request);
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
     // For better accuracy, we use the actual bytes read instead of the length
