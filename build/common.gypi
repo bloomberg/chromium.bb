@@ -463,6 +463,9 @@
       #               bundled with the executable.
       #   component:  CLD2 data is provided as a Chrome "component" and is
       #               downloaded via the component updater.
+      #
+      # For more information on switching the CLD2 data source, see:
+      #   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
       'cld2_data_source': 'static',
 
       # Enable spell checker.

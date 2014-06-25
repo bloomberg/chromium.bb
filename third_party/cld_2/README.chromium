@@ -42,8 +42,24 @@ Tradeoffs to consider before enabling dynamic mode:
       circumstances). This will prevent language detection from working until
       a data file has been loaded.
 
-To enable dynamic mode, set 'cld_dynamic' to '1' in ../../build/common.gypi.
+To enable dynamic mode in CLD2 itself, you must define "CLD2_DYNAMIC_MODE".
+In Chromium, this is controlled by the 'cld2_data_source' variable in
+../../build/common.gypi.
 
-For more information on the changes required to use dynamic mode, see:
-  https://codereview.chromium.org/187393005
 
+Building a CLD2 Dynamic Mode Data File
+======================================
+Note: The cld_2_dynamic_data_tool target is not currently supported on Android.
+      The binaries that it generates are platform-independent, but to build
+      the target itself you'll need a desktop environment.
+
+1. Configure your desired table size by setting the value of "cld2_table_size"
+   in ../../build/common.gypi.
+2. Build the "cld_2_dynamic_data_tool" target. This will generate the tool:
+   ${BUILD_DIR}/cld_2_dynamic_data_tool
+3. Run the tool with "--dump <file>" to generate a data file, e.g.:
+   ${BUILD_DIR}/cld_2_dynamic_data_tool --dump /tmp/cld2_data.bin
+4. (Optional) Verify that the file was correctly written:
+   ${BUILD_DIR}/cld_2_dynamic_data_tool --verify /tmp/cld2_data.bin
+
+The data file is suitable for use on all platforms.
