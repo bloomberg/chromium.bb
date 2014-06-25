@@ -4,6 +4,9 @@
 
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 
+#include <sstream>
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -15,6 +18,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/blacklist_store.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/variations/variations_associated_data.h"
@@ -22,6 +26,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -57,6 +62,12 @@ std::string GetExperimentParam(const std::string& key) {
                                                    key);
 }
 
+GURL BuildBlacklistRequestURL(const std::string& blacklist_url_prefix,
+                              const GURL& candidate_url) {
+  return GURL(blacklist_url_prefix +
+              net::EscapeQueryParamValue(candidate_url.spec(), true));
+}
+
 // Runs each callback in |requestors| on |suggestions|, then deallocates
 // |requestors|.
 void DispatchRequestsAndClear(
@@ -64,40 +75,67 @@ void DispatchRequestsAndClear(
     std::vector<SuggestionsService::ResponseCallback>* requestors) {
   std::vector<SuggestionsService::ResponseCallback>::iterator it;
   for (it = requestors->begin(); it != requestors->end(); ++it) {
-    it->Run(suggestions);
+    if (!it->is_null()) it->Run(suggestions);
   }
   std::vector<SuggestionsService::ResponseCallback>().swap(*requestors);
 }
 
 const int kDefaultRequestTimeoutMs = 200;
 
+// Default delay used when scheduling a blacklist request.
+const int kBlacklistDefaultDelaySec = 1;
+
+// Multiplier on the delay used when scheduling a blacklist request, in case the
+// last observed request was unsuccessful.
+const int kBlacklistBackoffMultiplier = 2;
+
+// Maximum valid delay for scheduling a request. Candidate delays larger than
+// this are rejected. This means the maximum backoff is at least 300 / 2, i.e.
+// 2.5 minutes.
+const int kBlacklistMaxDelaySec = 300;  // 5 minutes
+
 }  // namespace
 
 const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
 const char kSuggestionsFieldTrialURLParam[] = "url";
-const char kSuggestionsFieldTrialSuggestionsSuffixParam[] =
-    "suggestions_suffix";
-const char kSuggestionsFieldTrialBlacklistSuffixParam[] = "blacklist_suffix";
+const char kSuggestionsFieldTrialCommonParamsParam[] = "common_params";
+const char kSuggestionsFieldTrialBlacklistPathParam[] = "blacklist_path";
+const char kSuggestionsFieldTrialBlacklistUrlParam[] = "blacklist_url_param";
 const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
+namespace {
+
+std::string GetBlacklistUrlPrefix() {
+  std::stringstream blacklist_url_prefix_stream;
+  blacklist_url_prefix_stream
+      << GetExperimentParam(kSuggestionsFieldTrialURLParam)
+      << GetExperimentParam(kSuggestionsFieldTrialBlacklistPathParam) << "?"
+      << GetExperimentParam(kSuggestionsFieldTrialCommonParamsParam) << "&"
+      << GetExperimentParam(kSuggestionsFieldTrialBlacklistUrlParam) << "=";
+  return blacklist_url_prefix_stream.str();
+}
+
+}  // namespace
+
 SuggestionsService::SuggestionsService(
     Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store,
-    scoped_ptr<ThumbnailManager> thumbnail_manager)
+    scoped_ptr<ThumbnailManager> thumbnail_manager,
+    scoped_ptr<BlacklistStore> blacklist_store)
     : suggestions_store_(suggestions_store.Pass()),
+      blacklist_store_(blacklist_store.Pass()),
       thumbnail_manager_(thumbnail_manager.Pass()),
       profile_(profile),
+      blacklist_delay_sec_(kBlacklistDefaultDelaySec),
       weak_ptr_factory_(this),
       request_timeout_ms_(kDefaultRequestTimeoutMs) {
   // Obtain various parameters from Variations.
   suggestions_url_ =
-      GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) +
-           GetExperimentParam(kSuggestionsFieldTrialSuggestionsSuffixParam));
-  blacklist_url_prefix_ =
-      GetExperimentParam(kSuggestionsFieldTrialURLParam) +
-      GetExperimentParam(kSuggestionsFieldTrialBlacklistSuffixParam);
+      GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) + "?" +
+           GetExperimentParam(kSuggestionsFieldTrialCommonParamsParam));
+  blacklist_url_prefix_ = GetBlacklistUrlPrefix();
   std::string timeout = GetExperimentParam(kSuggestionsFieldTrialTimeoutMs);
   int temp_timeout;
   if (!timeout.empty() && base::StringToInt(timeout, &temp_timeout)) {
@@ -146,10 +184,7 @@ void SuggestionsService::FetchSuggestionsDataNoTimeout(
   // Form new request.
   DCHECK(waiting_requestors_.empty());
   waiting_requestors_.push_back(callback);
-
-  pending_request_.reset(CreateSuggestionsRequest(suggestions_url_));
-  pending_request_->Start();
-  last_request_started_time_ = base::TimeTicks::Now();
+  IssueRequest(suggestions_url_);
 }
 
 void SuggestionsService::GetPageThumbnail(
@@ -159,38 +194,67 @@ void SuggestionsService::GetPageThumbnail(
 }
 
 void SuggestionsService::BlacklistURL(
-    const GURL& candidate_url, SuggestionsService::ResponseCallback callback) {
+    const GURL& candidate_url,
+    const SuggestionsService::ResponseCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   waiting_requestors_.push_back(callback);
 
-  if (pending_request_.get()) {
-    if (IsBlacklistRequest(pending_request_.get())) {
-      // Pending request is a blacklist request. Silently drop the new blacklist
-      // request. TODO - handle this case.
-      return;
-    } else {
-      // Pending request is not a blacklist request - cancel it and go on to
-      // issuing a blacklist request. Also ensure the timeout closure does not
-      // run; instead we'll wait for the updated suggestions before servicing
-      // requestors.
-      pending_request_.reset(NULL);
-      pending_timeout_closure_.reset(NULL);
-    }
+  // Blacklist locally, for immediate effect.
+  if (!blacklist_store_->BlacklistUrl(candidate_url)) {
+    DVLOG(1) << "Failed blacklisting attempt.";
+    return;
   }
 
-  // Send blacklisting request.
-  // TODO(manzagop): make this a PUT request instead of a GET request.
-  GURL url(blacklist_url_prefix_ +
-           net::EscapeQueryParamValue(candidate_url.spec(), true));
-  pending_request_.reset(CreateSuggestionsRequest(url));
-  pending_request_->Start();
-  last_request_started_time_ = base::TimeTicks::Now();
+  // If there's an ongoing request, let it complete.
+  if (pending_request_.get()) return;
+
+  IssueRequest(BuildBlacklistRequestURL(blacklist_url_prefix_, candidate_url));
+}
+
+// static
+bool SuggestionsService::GetBlacklistedUrl(const net::URLFetcher& request,
+                                           GURL* url) {
+  bool is_blacklist_request = StartsWithASCII(request.GetOriginalURL().spec(),
+                                              GetBlacklistUrlPrefix(), true);
+  if (!is_blacklist_request) return false;
+
+  // Extract the blacklisted URL from the blacklist request.
+  std::string blacklisted;
+  if (!net::GetValueForKeyInQuery(
+          request.GetOriginalURL(),
+          GetExperimentParam(kSuggestionsFieldTrialBlacklistUrlParam),
+          &blacklisted))
+    return false;
+
+  GURL blacklisted_url(blacklisted);
+  blacklisted_url.Swap(url);
+  return true;
 }
 
 // static
 void SuggestionsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   SuggestionsStore::RegisterProfilePrefs(registry);
+  BlacklistStore::RegisterProfilePrefs(registry);
+}
+
+void SuggestionsService::IssueRequest(const GURL& url) {
+  pending_request_.reset(CreateSuggestionsRequest(url));
+  pending_request_->Start();
+  last_request_started_time_ = base::TimeTicks::Now();
+}
+
+net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
+  net::URLFetcher* request =
+      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
+  request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  request->SetRequestContext(profile_->GetRequestContext());
+  // Add Chrome experiment state to the request headers.
+  net::HttpRequestHeaders headers;
+  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+      request->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
+  request->SetExtraRequestHeaders(headers.ToString());
+  return request;
 }
 
 void SuggestionsService::OnRequestTimeout() {
@@ -202,8 +266,8 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(pending_request_.get(), source);
 
-  // We no longer need the timeout closure. Delete it whether or not it has run
-  // (if it hasn't, this cancels it).
+  // We no longer need the timeout closure. Delete it whether or not it has run.
+  // If it hasn't, this cancels it.
   pending_timeout_closure_.reset();
 
   // The fetcher will be deleted when the request is handled.
@@ -217,6 +281,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
              << net::ErrorToString(request_status.error());
     // Dispatch the cached profile on error.
     ServeFromCache();
+    ScheduleBlacklistUpload(false);
     return;
   }
 
@@ -227,12 +292,19 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     // Aggressively clear the store.
     suggestions_store_->ClearSuggestions();
     DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+    ScheduleBlacklistUpload(false);
     return;
   }
 
   const base::TimeDelta latency =
       base::TimeTicks::Now() - last_request_started_time_;
   UMA_HISTOGRAM_MEDIUM_TIMES("Suggestions.FetchSuccessLatency", latency);
+
+  // Handle a successful blacklisting.
+  GURL blacklisted_url;
+  if (GetBlacklistedUrl(*source, &blacklisted_url)) {
+    blacklist_store_->RemoveUrl(blacklisted_url);
+  }
 
   std::string suggestions_data;
   bool success = request->GetResponseAsString(&suggestions_data);
@@ -253,7 +325,8 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     suggestions_store_->LoadSuggestions(&suggestions);
   }
 
-  DispatchRequestsAndClear(suggestions, &waiting_requestors_);
+  FilterAndServe(&suggestions);
+  ScheduleBlacklistUpload(true);
 }
 
 void SuggestionsService::Shutdown() {
@@ -264,29 +337,58 @@ void SuggestionsService::Shutdown() {
   ServeFromCache();
 }
 
-bool SuggestionsService::IsBlacklistRequest(net::URLFetcher* request) const {
-  DCHECK(request);
-  return StartsWithASCII(request->GetOriginalURL().spec(),
-                         blacklist_url_prefix_, true);
-}
-
-net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
-  net::URLFetcher* request =
-      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
-  request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request->SetRequestContext(profile_->GetRequestContext());
-  // Add Chrome experiment state to the request headers.
-  net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      request->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
-  request->SetExtraRequestHeaders(headers.ToString());
-  return request;
-}
-
 void SuggestionsService::ServeFromCache() {
   SuggestionsProfile suggestions;
   suggestions_store_->LoadSuggestions(&suggestions);
-  DispatchRequestsAndClear(suggestions, &waiting_requestors_);
+  FilterAndServe(&suggestions);
+}
+
+void SuggestionsService::FilterAndServe(SuggestionsProfile* suggestions) {
+  blacklist_store_->FilterSuggestions(suggestions);
+  DispatchRequestsAndClear(*suggestions, &waiting_requestors_);
+}
+
+void SuggestionsService::ScheduleBlacklistUpload(bool last_request_successful) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  UpdateBlacklistDelay(last_request_successful);
+
+  // Schedule a blacklist upload task.
+  GURL blacklist_url;
+  if (blacklist_store_->GetFirstUrlFromBlacklist(&blacklist_url)) {
+    base::Closure blacklist_cb =
+        base::Bind(&SuggestionsService::UploadOneFromBlacklist,
+                   weak_ptr_factory_.GetWeakPtr());
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE, blacklist_cb,
+        base::TimeDelta::FromSeconds(blacklist_delay_sec_));
+  }
+}
+
+void SuggestionsService::UploadOneFromBlacklist() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // If there's an ongoing request, let it complete.
+  if (pending_request_.get()) return;
+
+  GURL blacklist_url;
+  if (!blacklist_store_->GetFirstUrlFromBlacklist(&blacklist_url))
+    return;  // Local blacklist is empty.
+
+  // Send blacklisting request.
+  IssueRequest(BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
+}
+
+void SuggestionsService::UpdateBlacklistDelay(bool last_request_successful) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (last_request_successful) {
+    blacklist_delay_sec_ = kBlacklistDefaultDelaySec;
+  } else {
+    int candidate_delay = blacklist_delay_sec_ * kBlacklistBackoffMultiplier;
+    if (candidate_delay < kBlacklistMaxDelaySec)
+      blacklist_delay_sec_ = candidate_delay;
+  }
 }
 
 }  // namespace suggestions

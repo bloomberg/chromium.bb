@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/blacklist_store.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "chrome/common/pref_names.h"
@@ -49,8 +50,11 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       new SuggestionsStore(the_profile->GetPrefs()));
   scoped_ptr<ThumbnailManager> thumbnail_manager(
       new ThumbnailManager(the_profile->GetRequestContext()));
+  scoped_ptr<BlacklistStore> blacklist_store(
+      new BlacklistStore(the_profile->GetPrefs()));
   return new SuggestionsService(the_profile, suggestions_store.Pass(),
-                                thumbnail_manager.Pass());
+                                thumbnail_manager.Pass(),
+                                blacklist_store.Pass());
 }
 
 void SuggestionsServiceFactory::RegisterProfilePrefs(

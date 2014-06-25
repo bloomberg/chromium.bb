@@ -1278,6 +1278,7 @@
         'browser/search/most_visited_iframe_source_unittest.cc',
         'browser/search/search_unittest.cc',
         'browser/search/search_android_unittest.cc',
+        'browser/search/suggestions/blacklist_store_unittest.cc',
         'browser/search/suggestions/suggestions_service_unittest.cc',
         'browser/search/suggestions/suggestions_store_unittest.cc',
         'browser/search/suggestions/thumbnail_manager_unittest.cc',

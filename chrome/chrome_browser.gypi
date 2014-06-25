@@ -1612,6 +1612,8 @@
       'browser/search/search.h',
       'browser/search/search_terms_tracker.cc',
       'browser/search/search_terms_tracker.h',
+      'browser/search/suggestions/blacklist_store.cc',
+      'browser/search/suggestions/blacklist_store.h',
       'browser/search/suggestions/suggestions_service.cc',
       'browser/search/suggestions/suggestions_service.h',
       'browser/search/suggestions/suggestions_service_factory.cc',

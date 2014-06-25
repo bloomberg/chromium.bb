@@ -30,12 +30,14 @@ class PrefRegistrySyncable;
 
 namespace suggestions {
 
+class BlacklistStore;
 class SuggestionsStore;
 
 extern const char kSuggestionsFieldTrialName[];
 extern const char kSuggestionsFieldTrialURLParam[];
-extern const char kSuggestionsFieldTrialSuggestionsSuffixParam[];
-extern const char kSuggestionsFieldTrialBlacklistSuffixParam[];
+extern const char kSuggestionsFieldTrialCommonParamsParam[];
+extern const char kSuggestionsFieldTrialBlacklistPathParam[];
+extern const char kSuggestionsFieldTrialBlacklistUrlParam[];
 extern const char kSuggestionsFieldTrialStateParam[];
 extern const char kSuggestionsFieldTrialControlParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
@@ -47,7 +49,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   SuggestionsService(Profile* profile,
                      scoped_ptr<SuggestionsStore> suggestions_store,
-                     scoped_ptr<ThumbnailManager> thumbnail_manager);
+                     scoped_ptr<ThumbnailManager> thumbnail_manager,
+                     scoped_ptr<BlacklistStore> blacklist_store);
   virtual ~SuggestionsService();
 
   // Whether this service is enabled.
@@ -75,13 +78,26 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Issue a blacklist request. If there is already a blacklist request
   // in flight, the new blacklist request is ignored.
-  void BlacklistURL(const GURL& candidate_url, ResponseCallback callback);
+  void BlacklistURL(const GURL& candidate_url,
+                    const ResponseCallback& callback);
+
+  // Determines which URL a blacklist request was for, irrespective of the
+  // request's status. Returns false if |request| is not a blacklist request.
+  static bool GetBlacklistedUrl(const net::URLFetcher& request, GURL* url);
 
   // Register SuggestionsService related prefs in the Profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLFails);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
+
+  // Issue a request.
+  void IssueRequest(const GURL& url);
+
+  // Creates a request to the suggestions service, properly setting headers.
+  net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
 
   // Called to service the requestors if the issued suggestions request has
   // not completed in a given amount of time.
@@ -95,17 +111,33 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // Determines whether |request| is a blacklisting request.
-  bool IsBlacklistRequest(net::URLFetcher* request) const;
-
-  // Creates a request to the suggestions service, properly setting headers.
-  net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
-
   // Load the cached suggestions and service the requestors with them.
   void ServeFromCache();
 
+  // Apply the local blacklist to |suggestions|, then serve the requestors.
+  void FilterAndServe(SuggestionsProfile* suggestions);
+
+  // Schedule a blacklisting request if the local blacklist isn't empty.
+  // |last_request_successful| is used for exponentially backing off when
+  // requests fail.
+  void ScheduleBlacklistUpload(bool last_request_successful);
+
+  // If the local blacklist isn't empty, pick a URL from it and issue a
+  // blacklist request for it.
+  void UploadOneFromBlacklist();
+
+  // Updates |blacklist_delay_sec_| based on the success of the last request.
+  void UpdateBlacklistDelay(bool last_request_successful);
+
+  // Test seams.
+  int blacklist_delay() const { return blacklist_delay_sec_; }
+  void set_blacklist_delay(int delay) { blacklist_delay_sec_ = delay; }
+
   // The cache for the suggestions.
   scoped_ptr<SuggestionsStore> suggestions_store_;
+
+  // The local cache for temporary blacklist, until uploaded to the server.
+  scoped_ptr<BlacklistStore> blacklist_store_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete|.
@@ -132,6 +164,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   scoped_ptr<ThumbnailManager> thumbnail_manager_;
 
   Profile* profile_;
+
+  // Delay used when scheduling a blacklisting task.
+  int blacklist_delay_sec_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;

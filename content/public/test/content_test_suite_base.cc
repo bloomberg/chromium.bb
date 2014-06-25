@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/test/test_suite.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/browser_thread_impl.h"
@@ -55,6 +56,11 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
+
+  // Initialize the histograms subsystem, so that any histograms hit in tests
+  // are correctly registered with the statistics recorder and can be queried
+  // by tests.
+  base::StatisticsRecorder::Initialize();
 
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.

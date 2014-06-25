@@ -1249,6 +1249,10 @@ const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 // protobuf.
 const char kSuggestionsData[] = "suggestions.data";
 
+// A cache of a suggestions blacklist, represented as a serialized
+// SuggestionsBlacklist protobuf.
+const char kSuggestionsBlacklist[] = "suggestions.blacklist";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
