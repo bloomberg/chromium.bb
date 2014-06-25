@@ -198,23 +198,14 @@ private:
 
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
-    // FIXME: Oilpan: clean this const madness up once oilpan ships.
     const DocumentStyleSheetCollection* documentStyleSheetCollection() const
     {
-#if ENABLE(OILPAN)
-        return m_documentStyleSheetCollection;
-#else
-        return &m_documentStyleSheetCollection;
-#endif
+        return m_documentStyleSheetCollection.get();
     }
 
     DocumentStyleSheetCollection* documentStyleSheetCollection()
     {
-#if ENABLE(OILPAN)
-        return m_documentStyleSheetCollection;
-#else
-        return &m_documentStyleSheetCollection;
-#endif
+        return m_documentStyleSheetCollection.get();
     }
 
     RawPtrWillBeMember<Document> m_document;
@@ -231,11 +222,8 @@ private:
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
-#if ENABLE(OILPAN)
-    Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
-#else
-    DocumentStyleSheetCollection m_documentStyleSheetCollection;
-#endif
+    OwnPtrWillBeMember<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
+
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<TreeScope>, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > StyleSheetCollectionMap;
     StyleSheetCollectionMap m_styleSheetCollectionMap;
 

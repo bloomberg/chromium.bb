@@ -40,7 +40,10 @@ class DocumentStyleSheetCollection FINAL : public TreeScopeStyleSheetCollection 
     WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    explicit DocumentStyleSheetCollection(TreeScope&);
+    static PassOwnPtrWillBeRawPtr<DocumentStyleSheetCollection> create(TreeScope& treeScope)
+    {
+        return adoptPtrWillBeNoop(new DocumentStyleSheetCollection(treeScope));
+    }
 
     void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
     void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
@@ -51,6 +54,8 @@ public:
     }
 
 private:
+    explicit DocumentStyleSheetCollection(TreeScope&);
+
     void collectStyleSheetsFromCandidates(StyleEngine*, DocumentStyleSheetCollector&);
 };
 

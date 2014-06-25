@@ -56,11 +56,7 @@ StyleEngine::StyleEngine(Document& document)
     , m_isMaster(!document.importsController() || document.importsController()->master() == &document)
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
-#if ENABLE(OILPAN)
-    , m_documentStyleSheetCollection(new DocumentStyleSheetCollection(document))
-#else
-    , m_documentStyleSheetCollection(document)
-#endif
+    , m_documentStyleSheetCollection(DocumentStyleSheetCollection::create(document))
     , m_documentScopeDirty(true)
     , m_usesSiblingRules(false)
     , m_usesSiblingRulesOverride(false)
