@@ -125,6 +125,18 @@ void HitTestResult::trace(Visitor* visitor)
 #endif
 }
 
+PositionWithAffinity HitTestResult::position() const
+{
+    if (!m_innerPossiblyPseudoNode)
+        return PositionWithAffinity();
+    RenderObject* renderer = this->renderer();
+    if (!renderer)
+        return PositionWithAffinity();
+    if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
+        return Position(m_innerNode, Position::PositionIsBeforeChildren).downstream();
+    return renderer->positionForPoint(localPoint());
+}
+
 RenderObject* HitTestResult::renderer() const
 {
     if (!m_innerNode)

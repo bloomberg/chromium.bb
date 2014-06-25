@@ -1289,7 +1289,7 @@ PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
         return Range::create(*this, container, offset, container, offset);
     }
 
-    PositionWithAffinity positionWithAffinity = renderer->positionForPoint(result.localPoint());
+    PositionWithAffinity positionWithAffinity = result.position();
     if (positionWithAffinity.position().isNull())
         return nullptr;
 

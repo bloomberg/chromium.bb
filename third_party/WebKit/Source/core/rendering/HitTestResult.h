@@ -43,6 +43,7 @@ class Image;
 class KURL;
 class Node;
 class RenderObject;
+class PositionWithAffinity;
 class Scrollbar;
 
 class HitTestResult {
@@ -84,6 +85,7 @@ public:
     const LayoutPoint& localPoint() const { return m_localPoint; }
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
+    PositionWithAffinity position() const;
     RenderObject* renderer() const;
 
     void setToNodesInDocumentTreeScope();
