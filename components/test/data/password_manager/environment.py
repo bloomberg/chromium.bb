@@ -7,12 +7,15 @@
 import logging
 import shutil
 import time
+import traceback
+from xml.etree import ElementTree
+from xml.sax.saxutils import escape
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
-from xml.etree import ElementTree
+
 
 # Message strings to look for in chrome://password-manager-internals
 MESSAGE_ASK = "Message: Decision: ASK the user"
@@ -37,7 +40,7 @@ class Environment:
       numeric_level: The log verbosity.
       log_to_console: If True, the debug logs will be shown on the console.
       log_file: The file where to store the log. If it's empty, the log will
-            not be stored.
+          not be stored.
 
     Raises:
       Exception: An exception is raised if |profile_path| folder could not be
@@ -68,27 +71,35 @@ class Environment:
       logging.error("Error: Could not wipe the chrome profile directory (%s). \
           This affects the stability of the tests. Continuing to run tests."
           % e)
-    options = Options()
-    if enable_automatic_password_saving:
-      options.add_argument("enable-automatic-password-saving")
-    # Chrome path.
-    options.binary_location = chrome_path
-    # Chrome testing profile path.
-    options.add_argument("user-data-dir=%s" % profile_path)
+    # If |chrome_path| is not defined, this means that we are in the dashboard
+    # website, and we just need to get the list of all websites. In this case,
+    # we don't need to initilize the webdriver.
+    if chrome_path:
+      options = Options()
+      if enable_automatic_password_saving:
+        options.add_argument("enable-automatic-password-saving")
+      # Chrome path.
+      options.binary_location = chrome_path
+      # Chrome testing profile path.
+      options.add_argument("user-data-dir=%s" % profile_path)
 
-    # The webdriver. It's possible to choose the port the service is going to
-    # run on. If it's left to 0, a free port will be found.
-    self.driver = webdriver.Chrome(chromedriver_path, 0, options)
-    # The password internals window.
-    self.internals_window = self.driver.current_window_handle
+      # The webdriver. It's possible to choose the port the service is going to
+      # run on. If it's left to 0, a free port will be found.
+      self.driver = webdriver.Chrome(chromedriver_path, 0, options)
+      # The password internals window.
+      self.internals_window = self.driver.current_window_handle
+      if passwords_path:
+        # An xml tree filled with logins and passwords.
+        self.passwords_tree = ElementTree.parse(passwords_path).getroot()
+      else:
+        raise Exception("Error: |passwords_path| needs to be provided if"
+            "|chrome_path| is provided, otherwise the tests could not be run")
     # Password internals page.
     self.internals_page = "chrome://password-manager-internals/"
     # The Website window.
     self.website_window = None
     # The WebsiteTests list.
     self.websitetests = []
-    # An xml tree filled with logins and passwords.
-    self.passwords_tree = ElementTree.parse(passwords_path).getroot()
     # The enabled WebsiteTests list.
     self.working_tests = []
     # Map messages to the number of their appearance in the log.
@@ -108,8 +119,9 @@ class Environment:
       disabled: Whether test is disabled.
     """
     websitetest.environment = self
-    websitetest.driver = self.driver
-    if self.passwords_tree is not None:
+    if hasattr(self, "driver"):
+      websitetest.driver = self.driver
+    if hasattr(self, "passwords_tree") and self.passwords_tree is not None:
       if not websitetest.username:
         username_tag = (
             self.passwords_tree.find(
