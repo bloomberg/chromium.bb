@@ -1229,6 +1229,94 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
               (fpath.LocalPath(), line_num, deprecated_value, value)))
   return results
 
+
+def _StripCommentsAndStrings(input_api, s):
+  """Remove comments, replace string literals by a single token.  Requires that
+  input data is formatted with unix-style line ends."""
+
+  s = input_api.re.sub(r'\\\n', r'', s)    # Continue lines ending in backslash.
+
+  out = ''
+  i = 0
+  while i < len(s):
+    c = s[i]
+
+    if c == '/':
+      mo = input_api.re.match(r'//.*', s[i:])
+      if mo:
+        i += len(mo.group(0))
+        continue
+      mo = input_api.re.match(r'/\*.*?\*/', s[i:], input_api.re.DOTALL)
+      if mo:
+        i += len(mo.group(0))
+        continue
+
+    if c == "'":
+      mo = input_api.re.match(r"'((\\\\)|(\\')|[^']+?)'", s[i:])
+      if not mo:
+        raise Exception('bad char: ' + s[i:])
+      i += len(mo.group(0))
+      out += ' CHAR_LITERAL '
+      continue
+
+    if c == '"':
+      mo = input_api.re.match(r'".*?(?<!\\)(\\\\)*"', s[i:])
+      if not mo:
+        raise Exception('bad string: ' + s[i:])
+      i += len(mo.group(0))
+      out += ' STRING_LITERAL '
+      continue
+
+    out += c
+    i += 1
+
+  return out
+
+
+def _CheckContradictoryNotreachedUse(input_api, output_api):
+  file_inclusion_pattern = (
+      r".+\.c$", r".+\.cc$", r".+\.cpp$", r".+\.h$", r".+\.hpp$", r".+\.inl$",
+      r".+\.m$", r".+\.mm$" )
+  black_list = (_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
+  file_filter = lambda f: input_api.FilterSourceFile(
+      f, white_list=file_inclusion_pattern, black_list=black_list)
+  results = []
+  for fpath in input_api.AffectedFiles(file_filter=file_filter):
+    results.extend(_CheckContradictoryNotreachedUseInFile(input_api, fpath))
+  return [output_api.PresubmitPromptWarning(r) for r in results]
+
+
+def _CheckContradictoryNotreachedUseInFile(input_api, f):
+  style_url = (
+      'http://chromium.org/developers/coding-style'
+      '#TOC-CHECK-DCHECK-and-NOTREACHED-')
+  contents = f.NewContents()
+  text = ''.join(line + '\n' for line in f.NewContents())
+  text = _StripCommentsAndStrings(input_api, text)
+
+  results = []
+  while True:
+    # Capture text between NOTREACHED(); and the next closing brace or "break".
+    mo = input_api.re.search(
+        r'[ \t]*NOTREACHED\(\s*\).*?;(?P<between>.*?)((\bbreak\b)|})',
+        text, input_api.re.DOTALL)
+    # TODO(tnagel): Catch loops inside which NOTREACHED() is followed by break.
+    if not mo:
+      break
+    text = text[mo.end():]
+    if input_api.re.match(r'[\s;]*$', mo.group('between'), input_api.re.DOTALL):
+      continue
+    excerpt = mo.group(0).rstrip()
+    if len(excerpt) > 100:
+      excerpt = excerpt[:100] + ' \u2026'  # ellipsis
+    results.append(
+        '%s:  NOTREACHED() may only be used at end-of-block '
+        'but is followed by code.\n%s\n'
+        'Offending section (comments/strings possibly stripped):\n%s'
+        % (f, style_url, excerpt))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -1266,6 +1354,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
+  results.extend(_CheckContradictoryNotreachedUse(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
