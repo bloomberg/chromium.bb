@@ -11,11 +11,12 @@
       'target_name': 'athena_lib',
       'type': '<(component)',
       'dependencies': [
-        '../ui/aura/aura.gyp:aura',
-        '../ui/app_list/app_list.gyp:app_list',
-        '../ui/views/views.gyp:views',
-        '../ui/accessibility/accessibility.gyp:ax_gen',
         '../skia/skia.gyp:skia',
+        '../ui/accessibility/accessibility.gyp:ax_gen',
+        '../ui/app_list/app_list.gyp:app_list',
+        '../ui/aura/aura.gyp:aura',
+        '../ui/strings/ui_strings.gyp:ui_strings',
+        '../ui/views/views.gyp:views',
       ],
       'defines': [
         'ATHENA_IMPLEMENTATION',
