@@ -94,7 +94,7 @@ void ShellAddedObserver::ShellCreated(Shell* shell) {
 
 class RenderViewCreatedObserver : public WebContentsObserver {
  public:
-  RenderViewCreatedObserver(WebContents* web_contents)
+  explicit RenderViewCreatedObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
         render_view_created_called_(false) {
   }
