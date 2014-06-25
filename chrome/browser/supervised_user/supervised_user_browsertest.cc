@@ -136,22 +136,21 @@ class SupervisedUserBlockModeTest : public InProcessBrowserTest {
                     const std::string& text_query,
                     const history::QueryOptions& options,
                     history::QueryResults* results) {
-    CancelableRequestConsumer history_request_consumer;
     base::RunLoop run_loop;
+    base::CancelableTaskTracker history_task_tracker;
     history_service->QueryHistory(
         base::UTF8ToUTF16(text_query),
         options,
-        &history_request_consumer,
         base::Bind(&SupervisedUserBlockModeTest::QueryHistoryComplete,
                    base::Unretained(this),
                    results,
-                   &run_loop));
+                   &run_loop),
+        &history_task_tracker);
     run_loop.Run();  // Will go until ...Complete calls Quit.
   }
 
   void QueryHistoryComplete(history::QueryResults* new_results,
                             base::RunLoop* run_loop,
-                            HistoryService::Handle /* handle */,
                             history::QueryResults* results) {
     results->Swap(new_results);
     run_loop->Quit();  // Will return out to QueryHistory.

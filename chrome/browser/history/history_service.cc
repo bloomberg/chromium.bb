@@ -779,15 +779,22 @@ void HistoryService::RemoveDownloads(const std::set<uint32>& ids) {
                     &HistoryBackend::RemoveDownloads, ids);
 }
 
-HistoryService::Handle HistoryService::QueryHistory(
+base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
     const base::string16& text_query,
     const history::QueryOptions& options,
-    CancelableRequestConsumerBase* consumer,
-    const QueryHistoryCallback& callback) {
+    const QueryHistoryCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_UI, &HistoryBackend::QueryHistory, consumer,
-                  new history::QueryHistoryRequest(callback),
-                  text_query, options);
+  history::QueryResults* query_results = new history::QueryResults();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::QueryHistory,
+                 history_backend_.get(),
+                 text_query,
+                 options,
+                 base::Unretained(query_results)),
+      base::Bind(callback, base::Owned(query_results)));
 }
 
 HistoryService::Handle HistoryService::QueryRedirectsFrom(

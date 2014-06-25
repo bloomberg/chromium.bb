@@ -1195,26 +1195,20 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32>& ids) {
                         ids.size() - num_downloads_deleted);
 }
 
-void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                                  const base::string16& text_query,
-                                  const QueryOptions& options) {
-  if (request->canceled())
-    return;
-
-  TimeTicks beginning_time = TimeTicks::Now();
-
+void HistoryBackend::QueryHistory(const base::string16& text_query,
+                                  const QueryOptions& options,
+                                  QueryResults* query_results) {
+  DCHECK(query_results);
+  base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (db_) {
     if (text_query.empty()) {
       // Basic history query for the main database.
-      QueryHistoryBasic(options, &request->value);
+      QueryHistoryBasic(options, query_results);
     } else {
       // Text history query.
-      QueryHistoryText(text_query, options, &request->value);
+      QueryHistoryText(text_query, options, query_results);
     }
   }
-
-  request->ForwardResult(request->handle(), &request->value);
-
   UMA_HISTOGRAM_TIMES("History.QueryHistory",
                       TimeTicks::Now() - beginning_time);
 }

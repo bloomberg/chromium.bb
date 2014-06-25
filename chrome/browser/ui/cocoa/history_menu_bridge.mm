@@ -402,13 +402,12 @@ void HistoryMenuBridge::CreateMenu() {
   history_service_->QueryHistory(
       base::string16(),
       options,
-      &cancelable_request_consumer_,
       base::Bind(&HistoryMenuBridge::OnVisitedHistoryResults,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 void HistoryMenuBridge::OnVisitedHistoryResults(
-    CancelableRequestProvider::Handle handle,
     history::QueryResults* results) {
   NSMenu* menu = HistoryMenu();
   ClearMenuSection(menu, kVisited);

@@ -151,8 +151,7 @@ class HistorySearchFunction : public HistoryFunctionWithCallback {
   virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history function to provide results.
-  void SearchComplete(HistoryService::Handle request_handle,
-                      history::QueryResults* results);
+  void SearchComplete(history::QueryResults* results);
 };
 
 class HistoryAddUrlFunction : public HistoryFunction {

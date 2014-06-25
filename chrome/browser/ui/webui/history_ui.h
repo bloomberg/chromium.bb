@@ -144,7 +144,6 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Callback from the history system when a history query has completed.
   void QueryComplete(const base::string16& search_text,
                      const history::QueryOptions& options,
-                     HistoryService::Handle request_handle,
                      history::QueryResults* results);
 
   // Callback from the WebHistoryService when a query has completed.
@@ -174,8 +173,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // Consumer for search requests to the history service.
-  CancelableRequestConsumerT<int, 0> history_request_consumer_;
+  // Tracker for search requests to the history service.
+  base::CancelableTaskTracker query_task_tracker_;
 
   // The currently-executing request for synced history results.
   // Deleting the request will cancel it.

@@ -571,12 +571,12 @@ HistoryEnumerator::HistoryEnumerator(Profile* profile) {
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
-  hs->QueryHistory(
-      base::string16(),
-      history::QueryOptions(),
-      &consumer_,
-      base::Bind(&HistoryEnumerator::HistoryQueryComplete,
-                 base::Unretained(this), message_loop_runner->QuitClosure()));
+  hs->QueryHistory(base::string16(),
+                   history::QueryOptions(),
+                   base::Bind(&HistoryEnumerator::HistoryQueryComplete,
+                              base::Unretained(this),
+                              message_loop_runner->QuitClosure()),
+                   &tracker_);
   message_loop_runner->Run();
 }
 
@@ -584,7 +584,6 @@ HistoryEnumerator::~HistoryEnumerator() {}
 
 void HistoryEnumerator::HistoryQueryComplete(
     const base::Closure& quit_task,
-    HistoryService::Handle request_handle,
     history::QueryResults* results) {
   for (size_t i = 0; i < results->size(); ++i)
     urls_.push_back((*results)[i].url());

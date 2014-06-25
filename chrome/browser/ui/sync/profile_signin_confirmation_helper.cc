@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -84,7 +85,6 @@ class ProfileSigninConfirmationHelper
   ~ProfileSigninConfirmationHelper();
 
   void OnHistoryQueryResults(size_t max_entries,
-                             CancelableRequestProvider::Handle handle,
                              history::QueryResults* results);
   void ReturnResult(bool result);
 
@@ -93,6 +93,7 @@ class ProfileSigninConfirmationHelper
 
   // Used for async tasks.
   CancelableRequestConsumer request_consumer_;
+  base::CancelableTaskTracker task_tracker_;
 
   // Keep track of how many async requests are pending.
   int pending_requests_;
@@ -120,7 +121,6 @@ ProfileSigninConfirmationHelper::~ProfileSigninConfirmationHelper() {
 
 void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
     size_t max_entries,
-    CancelableRequestProvider::Handle handle,
     history::QueryResults* results) {
   history::QueryResults owned_results;
   results->Swap(&owned_results);
@@ -142,10 +142,12 @@ void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
   history::QueryOptions opts;
   opts.max_count = max_entries;
   service->QueryHistory(
-      base::string16(), opts, &request_consumer_,
+      base::string16(),
+      opts,
       base::Bind(&ProfileSigninConfirmationHelper::OnHistoryQueryResults,
                  this,
-                 max_entries));
+                 max_entries),
+      &task_tracker_);
 }
 
 void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {

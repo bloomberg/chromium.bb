@@ -152,9 +152,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryURL(const GURL& url,
                 bool want_visits,
                 QueryURLResult* query_url_result);
-  void QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                    const base::string16& text_query,
-                    const QueryOptions& options);
+  void QueryHistory(const base::string16& text_query,
+                    const QueryOptions& options,
+                    QueryResults* query_results);
   void QueryRedirectsFrom(scoped_refptr<QueryRedirectsRequest> request,
                           const GURL& url);
   void QueryRedirectsTo(scoped_refptr<QueryRedirectsRequest> request,

@@ -250,16 +250,16 @@ class HistoryService : public CancelableRequestProvider,
   // Provides the result of a query. See QueryResults in history_types.h.
   // The common use will be to use QueryResults.Swap to suck the contents of
   // the results out of the passed in parameter and take ownership of them.
-  typedef base::Callback<void(Handle, history::QueryResults*)>
-      QueryHistoryCallback;
+  typedef base::Callback<void(history::QueryResults*)> QueryHistoryCallback;
 
   // Queries all history with the given options (see QueryOptions in
   // history_types.h).  If empty, all results matching the given options
   // will be returned.
-  Handle QueryHistory(const base::string16& text_query,
-                      const history::QueryOptions& options,
-                      CancelableRequestConsumerBase* consumer,
-                      const QueryHistoryCallback& callback);
+  base::CancelableTaskTracker::TaskId QueryHistory(
+      const base::string16& text_query,
+      const history::QueryOptions& options,
+      const QueryHistoryCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Called when the results of QueryRedirectsFrom are available.
   // The given vector will contain a list of all redirects, not counting

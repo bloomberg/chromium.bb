@@ -391,7 +391,7 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
 }
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
-  history_request_consumer_.CancelAllRequests();
+  query_task_tracker_.TryCancelAll();
   web_history_request_.reset();
 }
 
@@ -434,7 +434,7 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(
 
 void BrowsingHistoryHandler::WebHistoryTimeout() {
   // TODO(dubroy): Communicate the failure to the front end.
-  if (!history_request_consumer_.HasPendingRequests())
+  if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToFrontEnd();
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -447,7 +447,7 @@ void BrowsingHistoryHandler::QueryHistory(
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Anything in-flight is invalid.
-  history_request_consumer_.CancelAllRequests();
+  query_task_tracker_.TryCancelAll();
   web_history_request_.reset();
 
   query_results_.clear();
@@ -456,10 +456,12 @@ void BrowsingHistoryHandler::QueryHistory(
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
-      options,
-      &history_request_consumer_,
-      base::Bind(&BrowsingHistoryHandler::QueryComplete,
-                 base::Unretained(this), search_text, options));
+                   options,
+                   base::Bind(&BrowsingHistoryHandler::QueryComplete,
+                              base::Unretained(this),
+                              search_text,
+                              options),
+                   &query_task_tracker_);
 
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
@@ -756,7 +758,6 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
 void BrowsingHistoryHandler::QueryComplete(
     const base::string16& search_text,
     const history::QueryOptions& options,
-    HistoryService::Handle request_handle,
     history::QueryResults* results) {
   DCHECK_EQ(0U, query_results_.size());
   query_results_.reserve(results->size());
@@ -881,7 +882,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     NOTREACHED() << "Failed to parse JSON response.";
   }
   results_info_value_.SetBoolean("hasSyncedResults", results_value != NULL);
-  if (!history_request_consumer_.HasPendingRequests())
+  if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToFrontEnd();
 }
 

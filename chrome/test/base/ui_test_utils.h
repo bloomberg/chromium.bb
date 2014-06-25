@@ -301,12 +301,11 @@ class HistoryEnumerator {
  private:
   void HistoryQueryComplete(
       const base::Closure& quit_task,
-      HistoryService::Handle request_handle,
       history::QueryResults* results);
 
   std::vector<GURL> urls_;
 
-  CancelableRequestConsumer consumer_;
+  base::CancelableTaskTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
 };

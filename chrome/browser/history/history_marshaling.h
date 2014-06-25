@@ -21,10 +21,6 @@ namespace history {
 
 // Querying -------------------------------------------------------------------
 
-typedef CancelableRequest1<HistoryService::QueryHistoryCallback,
-                           QueryResults>
-    QueryHistoryRequest;
-
 typedef CancelableRequest1<HistoryService::QueryRedirectsCallback,
                            history::RedirectList>
     QueryRedirectsRequest;

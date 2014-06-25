@@ -344,16 +344,16 @@ bool HistorySearchFunction::RunAsyncImpl() {
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), Profile::EXPLICIT_ACCESS);
-  hs->QueryHistory(search_text, options, &cancelable_consumer_,
+  hs->QueryHistory(search_text,
+                   options,
                    base::Bind(&HistorySearchFunction::SearchComplete,
-                              base::Unretained(this)));
+                              base::Unretained(this)),
+                   &task_tracker_);
 
   return true;
 }
 
-void HistorySearchFunction::SearchComplete(
-    HistoryService::Handle request_handle,
-    history::QueryResults* results) {
+void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
   HistoryItemList history_item_vec;
   if (results && !results->empty()) {
     for (history::QueryResults::URLResultVector::const_iterator iterator =
