@@ -47,7 +47,6 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
     'DoNotCheckSecurity',
     'DoNotCheckSignature',
     'NotEnumerable',
-    'ReadOnly',
     'Unforgeable',
 ])
 
@@ -144,7 +143,7 @@ def method_context(interface, method):
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
-        'is_read_only': 'ReadOnly' in extended_attributes,
+        'is_read_only': 'Unforgeable' in extended_attributes,
         'is_static': is_static,
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
@@ -317,7 +316,7 @@ def property_attributes(method):
     property_attributes_list = []
     if 'NotEnumerable' in extended_attributes:
         property_attributes_list.append('v8::DontEnum')
-    if 'ReadOnly' in extended_attributes:
+    if 'Unforgeable' in extended_attributes:
         property_attributes_list.append('v8::ReadOnly')
     if property_attributes_list:
         property_attributes_list.insert(0, 'v8::DontDelete')

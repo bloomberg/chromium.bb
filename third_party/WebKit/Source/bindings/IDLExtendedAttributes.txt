@@ -79,7 +79,6 @@ PrimaryGlobal=|*
 PrivateScriptInterface
 PutForwards=*
 RaisesException=|Getter|Setter|Constructor
-ReadOnly
 Reflect=|*
 ReflectEmpty=*
 ReflectInvalid=*

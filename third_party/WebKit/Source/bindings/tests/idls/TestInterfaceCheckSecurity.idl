@@ -40,6 +40,5 @@
     [DoNotCheckSecurity] void doNotCheckSecurityVoidMethod();
     [DoNotCheckSecurity, DoNotCheckSignature] void doNotCheckSecurityDoNotCheckSignatureVoidMethod();
     [DoNotCheckSecurity, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
-    [DoNotCheckSecurity, ReadOnly] void doNotCheckSecurityReadOnlyVoidMethod();
     [DoNotCheckSecurity, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
 };

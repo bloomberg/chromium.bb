@@ -37,9 +37,9 @@
     // problem, since that allows tracking navigation.
     [SetterCallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity=Setter, Unforgeable] attribute DOMString href;
 
-    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, LogActivity] void assign(DOMString url);
-    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, LogActivity] void replace(DOMString url);
-    [CallWith=ActiveWindow, Unforgeable, ReadOnly] void reload();
+    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, LogActivity] void assign(DOMString url);
+    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, LogActivity] void replace(DOMString url);
+    [CallWith=ActiveWindow, Unforgeable] void reload();
 
     // URI decomposition attributes
     [SetterCallWith=ActiveWindow&FirstWindow, RaisesException=Setter] attribute DOMString protocol;
@@ -54,7 +54,7 @@
 
     readonly attribute DOMStringList ancestorOrigins;
 
-    [NotEnumerable, Unforgeable, ReadOnly, ImplementedAs=href] DOMString toString();
-    [NotEnumerable, Custom, Unforgeable, ReadOnly] any valueOf();
+    [NotEnumerable, Unforgeable, ImplementedAs=href] DOMString toString();
+    [NotEnumerable, Custom, Unforgeable] any valueOf();
 };
 
