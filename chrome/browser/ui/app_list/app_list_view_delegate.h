@@ -32,6 +32,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -85,6 +89,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path) OVERRIDE;
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+  virtual views::View* CreateCustomPageWebView(const gfx::Size& size) OVERRIDE;
 #endif
   virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
@@ -148,6 +153,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Used to track the SigninManagers that this instance is observing so that
   // this instance can be removed as an observer on its destruction.
   ScopedObserver<SigninManagerBase, AppListViewDelegate> scoped_observer_;
+
+  // Contents of the additional custom launcher page. May be NULL.
+  scoped_ptr<content::WebContents> custom_page_web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

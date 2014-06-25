@@ -96,6 +96,10 @@ views::View* AppListTestViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   return NULL;
 }
+views::View* AppListTestViewDelegate::CreateCustomPageWebView(
+    const gfx::Size& size) {
+  return NULL;
+}
 #endif
 
 bool AppListTestViewDelegate::IsSpeechRecognitionEnabled() {

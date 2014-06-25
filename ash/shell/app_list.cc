@@ -354,6 +354,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return NULL;
   }
 
+  virtual views::View* CreateCustomPageWebView(const gfx::Size& size) OVERRIDE {
+    return NULL;
+  }
+
   virtual bool IsSpeechRecognitionEnabled() OVERRIDE {
     return false;
   }

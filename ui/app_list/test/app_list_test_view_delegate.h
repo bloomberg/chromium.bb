@@ -77,6 +77,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
       const base::FilePath& profile_path) OVERRIDE {}
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+  virtual views::View* CreateCustomPageWebView(const gfx::Size& size) OVERRIDE;
 #endif
   virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;

@@ -55,6 +55,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+  virtual views::View* CreateCustomPageWebView(const gfx::Size& size) OVERRIDE;
   virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
   virtual bool ShouldCenterWindow() const OVERRIDE;

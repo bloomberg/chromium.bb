@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -27,19 +28,23 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/webview/webview.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/webview/webview.h"
@@ -144,6 +149,28 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
   OnProfileChanged();  // sets model_
   if (service)
     service->AddObserver(this);
+
+  // Set up the custom launcher page. There is currently only a single custom
+  // page allowed, which is specified as a command-line flag. In the future,
+  // arbitrary extensions may be able to specify their own custom pages.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (app_list::switches::IsExperimentalAppListEnabled() &&
+      command_line->HasSwitch(switches::kCustomLauncherPage)) {
+    GURL custom_launcher_page_url(
+        command_line->GetSwitchValueASCII(switches::kCustomLauncherPage));
+    if (!custom_launcher_page_url.SchemeIs(extensions::kExtensionScheme)) {
+      LOG(ERROR) << "Invalid custom launcher page URL: "
+                 << custom_launcher_page_url.possibly_invalid_spec();
+    } else {
+      content::WebContents::CreateParams params(profile_);
+      custom_page_web_contents_.reset(content::WebContents::Create(params));
+      custom_page_web_contents_->GetController().LoadURL(
+          custom_launcher_page_url,
+          content::Referrer(),
+          content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+          std::string());
+    }
+  }
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
@@ -449,6 +476,18 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
       web_contents->GetBrowserContext());
   web_view->SetPreferredSize(size);
   web_view->SetWebContents(web_contents);
+  return web_view;
+}
+
+views::View* AppListViewDelegate::CreateCustomPageWebView(
+    const gfx::Size& size) {
+  if (!custom_page_web_contents_)
+    return NULL;
+
+  views::WebView* web_view = new views::WebView(
+      custom_page_web_contents_->GetBrowserContext());
+  web_view->SetPreferredSize(size);
+  web_view->SetWebContents(custom_page_web_contents_.get());
   return web_view;
 }
 #endif

@@ -63,6 +63,7 @@ extern const char kCloudPrintSetupProxy[];
 extern const char kComponentUpdater[];
 extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
+extern const char kCustomLauncherPage[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
 extern const char kDiagnostics[];
