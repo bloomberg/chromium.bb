@@ -5,12 +5,10 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "ui/compositor/compositor_switches.h"
 
 namespace content {
 
