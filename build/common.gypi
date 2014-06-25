@@ -374,7 +374,7 @@
       # -fsanitize=thread only works with clang, but tsan=1 implies clang=1
       # See http://clang.llvm.org/docs/ThreadSanitizer.html
       'tsan%': 0,
-      'tsan_blacklist%': '<(PRODUCT_DIR)/../../tools/valgrind/tsan_v2/ignores.txt',
+      'tsan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/tsan_v2/ignores.txt',
 
       # Enable building with MSan (Clang's -fsanitize=memory option).
       # MemorySanitizer only works with clang, but msan=1 implies clang=1
