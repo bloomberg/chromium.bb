@@ -4501,6 +4501,22 @@ LayoutRect RenderBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
     return caretRect;
 }
 
+
+static inline IntRect pixelAlignedFocusRect(const LayoutPoint& point,
+    const LayoutSize& size)
+{
+    // Pixel snap top/bottom but enclose left/right as we use subpixel X-
+    // advances to ensure that the text is fully enclosed within the focus rect.
+    return IntRect(point.x().floor(), point.y().round(),
+        size.width().ceil(), snapSizeToPixel(size.height(), point.y()));
+}
+
+static inline IntRect pixelAlignedFocusRect(const LayoutRect& rect)
+{
+    return pixelAlignedFocusRect(rect.location(), rect.size());
+}
+
+
 void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
 {
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
@@ -4517,9 +4533,10 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         LayoutRect rect(additionalOffset.x(), additionalOffset.y() - topMargin, width(), height() + topMargin + bottomMargin);
         if (!rect.isEmpty())
-            rects.append(pixelSnappedIntRect(rect));
-    } else if (width() && height())
-        rects.append(pixelSnappedIntRect(additionalOffset, size()));
+            rects.append(pixelAlignedFocusRect(rect));
+    } else if (width() && height()) {
+        rects.append(pixelAlignedFocusRect(additionalOffset, size()));
+    }
 
     if (!hasOverflowClip() && !hasControlClip()) {
         for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
@@ -4527,7 +4544,7 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
             LayoutUnit bottom = std::min<LayoutUnit>(curr->lineBottom(), curr->top() + curr->height());
             LayoutRect rect(additionalOffset.x() + curr->x(), additionalOffset.y() + top, curr->width(), bottom - top);
             if (!rect.isEmpty())
-                rects.append(pixelSnappedIntRect(rect));
+                rects.append(pixelAlignedFocusRect(rect));
         }
 
         addChildFocusRingRects(rects, additionalOffset, paintContainer);
