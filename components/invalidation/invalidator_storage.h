@@ -1,26 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Wraps PrefService in an InvalidationStateTracker to allow SyncNotifiers
-// to use PrefService as persistence for invalidation state. It is not thread
-// safe, and lives on the UI thread.
 
 #ifndef COMPONENTS_INVALIDATION_INVALIDATOR_STORAGE_H_
 #define COMPONENTS_INVALIDATION_INVALIDATOR_STORAGE_H_
 
-#include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/unacked_invalidation_set.h"
 
+class PrefRegistrySimple;
 class PrefService;
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -28,13 +19,22 @@ class PrefRegistrySyncable;
 
 namespace invalidation {
 
+// Wraps PrefService in an InvalidationStateTracker to allow SyncNotifiers
+// to use PrefService as persistence for invalidation state. It is not thread
+// safe, and lives on the UI thread.
 class InvalidatorStorage : public syncer::InvalidationStateTracker {
  public:
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // |pref_service| may not be NULL. Does not own |pref_service|.
+  // |pref_service| may not be NULL and must outlive |this|.
   explicit InvalidatorStorage(PrefService* pref_service);
   virtual ~InvalidatorStorage();
+
+  // Register prefs to be used by per-Profile instances of this class which
+  // store invalidation state in Profile prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Register prefs to be used by a device-global instance of this class which
+  // stores invalidation state in local state. This is used on Chrome OS only.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // InvalidationStateTracker implementation.
   virtual void ClearAndSetNewClientId(const std::string& client_id) OVERRIDE;
@@ -48,25 +48,6 @@ class InvalidatorStorage : public syncer::InvalidationStateTracker {
   virtual void Clear() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, SerializeEmptyMap);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeFromListOutOfRange);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeFromListInvalidFormat);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeFromListWithDuplicates);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeFromEmptyList);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeFromListBasic);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeFromListMissingOptionalValues);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapOutOfRange);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapInvalidFormat);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
-                           DeserializeMapEmptyDictionary);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapBasic);
-  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, MigrateLegacyPreferences);
-
   base::ThreadChecker thread_checker_;
 
   PrefService* const pref_service_;

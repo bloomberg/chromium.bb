@@ -4,24 +4,25 @@
 
 #include "components/invalidation/invalidator_storage.h"
 
+#include <string>
+#include <utility>
+
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/location.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/task_runner.h"
 #include "base/values.h"
 #include "components/invalidation/invalidation_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "google/cacheinvalidation/types.pb.h"
+#include "sync/notifier/unacked_invalidation_set.h"
 
 namespace {
 
 const char kInvalidatorMaxInvalidationVersions[] =
     "invalidator.max_invalidation_versions";
-
 
 bool ValueToUnackedInvalidationStorageMap(
     const base::ListValue& value,
@@ -73,10 +74,19 @@ void InvalidatorStorage::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
+// static
+void InvalidatorStorage::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kInvalidatorSavedInvalidations);
+  registry->RegisterStringPref(prefs::kInvalidatorInvalidationState,
+                               std::string());
+  registry->RegisterStringPref(prefs::kInvalidatorClientId, std::string());
+}
+
 InvalidatorStorage::InvalidatorStorage(PrefService* pref_service)
     : pref_service_(pref_service) {
-  DCHECK(pref_service);
-  pref_service_->ClearPref(kInvalidatorMaxInvalidationVersions);
+  DCHECK(pref_service_);
+  if (pref_service_->FindPreference(kInvalidatorMaxInvalidationVersions))
+    pref_service_->ClearPref(kInvalidatorMaxInvalidationVersions);
 }
 
 InvalidatorStorage::~InvalidatorStorage() {

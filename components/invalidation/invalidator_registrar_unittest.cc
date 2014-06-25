@@ -111,25 +111,13 @@ INSTANTIATE_TYPED_TEST_CASE_P(
 
 class InvalidatorRegistrarTest : public testing::Test {};
 
-// Technically the tests below can be part of InvalidatorTest, but we
+// Technically the test below can be part of InvalidatorTest, but we
 // want to keep the number of death tests down.
 
 // When we expect a death via CHECK(), we can't match against the
 // CHECK() message since they are removed in official builds.
 
 #if GTEST_HAS_DEATH_TEST
-// Having registered handlers on destruction should cause a CHECK.
-TEST_F(InvalidatorRegistrarTest, RegisteredHandlerOnDestruction) {
-  scoped_ptr<InvalidatorRegistrar> registrar(new InvalidatorRegistrar());
-  FakeInvalidationHandler handler;
-
-  registrar->RegisterHandler(&handler);
-
-  EXPECT_DEATH({ registrar.reset(); }, "");
-
-  ASSERT_TRUE(registrar.get());
-  registrar->UnregisterHandler(&handler);
-}
 
 // Multiple registrations by different handlers on the same object ID should
 // cause a CHECK.

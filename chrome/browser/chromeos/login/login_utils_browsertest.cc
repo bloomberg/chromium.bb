@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
@@ -216,6 +217,7 @@ class LoginUtilsTest : public testing::Test,
 
     SystemSaltGetter::Initialize();
     LoginState::Initialize();
+    DeviceOAuth2TokenServiceFactory::Initialize();
 
     EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, _))
         .WillRepeatedly(Return(false));
@@ -284,7 +286,12 @@ class LoginUtilsTest : public testing::Test,
 
     system::StatisticsProvider::SetTestProvider(NULL);
 
+    // The invalidator has to shut down before DeviceOAuth2TokenServiceFactory
+    // and the ProfileManager.
+    connector_->ShutdownInvalidator();
+
     input_method::Shutdown();
+    DeviceOAuth2TokenServiceFactory::Shutdown();
     LoginState::Shutdown();
     SystemSaltGetter::Shutdown();
 
