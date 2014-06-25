@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/search_engines/default_search_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

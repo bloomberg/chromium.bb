@@ -2,7 +2,11 @@ include_rules = [
   "+components/google/core",
   "+components/history/core",
   "+components/metrics/proto",
+  "+components/policy/core",
+  "+components/pref_registry",
   "+google_apis",
+  "+grit/components_strings.h",
   "+net",
+  "+policy",
   "+ui/gfx/geometry",
 ]

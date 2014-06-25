@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/default_search_manager.h"
+#include "components/search_engines/default_search_manager.h"
 
 #include <algorithm>
 #include <utility>
@@ -20,10 +20,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_data.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 
 namespace {
 

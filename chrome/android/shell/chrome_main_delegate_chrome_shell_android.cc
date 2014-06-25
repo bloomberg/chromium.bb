@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 
 static const char kDefaultCountryCode[] = "US";
 

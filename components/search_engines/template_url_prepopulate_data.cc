@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <locale.h>
@@ -20,11 +20,7 @@
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
-#include "content/public/browser/browser_thread.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -1266,11 +1262,6 @@ scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs) {
 
 SearchEngineType GetEngineType(const TemplateURL& url,
                                const SearchTermsData& search_terms_data) {
-  // Restricted to UI thread because ReplaceSearchTerms() is so restricted.
-  using content::BrowserThread;
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // By calling ReplaceSearchTerms, we ensure that even TemplateURLs whose URLs
   // can't be directly inspected (e.g. due to containing {google:baseURL}) can
   // be converted to GURLs we can look at.
