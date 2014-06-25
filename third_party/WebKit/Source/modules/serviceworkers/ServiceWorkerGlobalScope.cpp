@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8ThrowException.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/CachePolyfill.h"
@@ -116,6 +117,12 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)
 {
     WorkerGlobalScope::trace(visitor);
+}
+
+void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+{
+    WorkerGlobalScope::logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
+    addMessageToWorkerConsole(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
 }
 
 } // namespace WebCore
