@@ -40,10 +40,6 @@ def main(args):
   parser.add_option('-E',
       help='Add environment variables when launching the executable.',
       dest='environ', action='append', default=[])
-  parser.add_option('--test-mode',
-      help='Listen for posts to /ok or /fail and shut down the server with '
-          ' errorcodes 0 and 1 respectively.',
-      dest='test_mode', action='store_true')
   parser.add_option('-p', '--port',
       help='Port to run server on. Default is 5103, ephemeral is 0.',
       type='int', default=5103)
@@ -52,8 +48,7 @@ def main(args):
     parser.error('No executable given.')
 
   # 0 means use an ephemeral port.
-  server = httpd.LocalHTTPServer(options.serve_dir, options.port,
-                                 options.test_mode)
+  server = httpd.LocalHTTPServer(options.serve_dir, options.port)
   print 'Serving %s on %s...' % (options.serve_dir, server.GetURL(''))
 
   env = copy.copy(os.environ)

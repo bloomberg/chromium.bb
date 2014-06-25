@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import BaseHTTPServer
-import imp
 import logging
 import multiprocessing
 import optparse
@@ -42,12 +41,9 @@ def SanityCheckDirectory(dirname):
   sys.exit(1)
 
 
-class PluggableHTTPServer(BaseHTTPServer.HTTPServer):
+class HTTPServer(BaseHTTPServer.HTTPServer):
   def __init__(self, *args, **kwargs):
     BaseHTTPServer.HTTPServer.__init__(self, *args)
-    self.serve_dir = kwargs.get('serve_dir', '.')
-    self.test_mode = kwargs.get('test_mode', False)
-    self.delegate_map = {}
     self.running = True
     self.result = 0
 
@@ -56,64 +52,7 @@ class PluggableHTTPServer(BaseHTTPServer.HTTPServer):
     self.result = result
 
 
-class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-  def _FindDelegateAtPath(self, dirname):
-    # First check the cache...
-    logging.debug('Looking for cached delegate in %s...' % dirname)
-    handler_script = os.path.join(dirname, 'handler.py')
-
-    if dirname in self.server.delegate_map:
-      result = self.server.delegate_map[dirname]
-      if result is None:
-        logging.debug('Found None.')
-      else:
-        logging.debug('Found delegate.')
-      return result
-
-    # Don't have one yet, look for one.
-    delegate = None
-    logging.debug('Testing file %s for existence...' % handler_script)
-    if os.path.exists(handler_script):
-      logging.debug(
-          'File %s exists, looking for HTTPRequestHandlerDelegate.' %
-          handler_script)
-
-      module = imp.load_source('handler', handler_script)
-      delegate_class = getattr(module, 'HTTPRequestHandlerDelegate', None)
-      delegate = delegate_class()
-      if not delegate:
-        logging.warn(
-            'Unable to find symbol HTTPRequestHandlerDelegate in module %s.' %
-            handler_script)
-
-    return delegate
-
-  def _FindDelegateForURLRecurse(self, cur_dir, abs_root):
-    delegate = self._FindDelegateAtPath(cur_dir)
-    if not delegate:
-      # Didn't find it, try the parent directory, but stop if this is the server
-      # root.
-      if cur_dir != abs_root:
-        parent_dir = os.path.dirname(cur_dir)
-        delegate = self._FindDelegateForURLRecurse(parent_dir, abs_root)
-
-    logging.debug('Adding delegate to cache for %s.' % cur_dir)
-    self.server.delegate_map[cur_dir] = delegate
-    return delegate
-
-  def _FindDelegateForURL(self, url_path):
-    path = self.translate_path(url_path)
-    if os.path.isdir(path):
-      dirname = path
-    else:
-      dirname = os.path.dirname(path)
-
-    abs_serve_dir = os.path.abspath(self.server.serve_dir)
-    delegate = self._FindDelegateForURLRecurse(dirname, abs_serve_dir)
-    if not delegate:
-      logging.info('No handler found for path %s. Using default.' % url_path)
-    return delegate
-
+class HTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def _SendNothingAndDie(self, result=0):
     self.send_response(200, 'OK')
     self.send_header('Content-type', 'text/html')
@@ -121,18 +60,8 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.end_headers()
     self.server.Shutdown(result)
 
-  def send_head(self):
-    delegate = self._FindDelegateForURL(self.path)
-    if delegate:
-      return delegate.send_head(self)
-    return self.base_send_head()
-
-  def base_send_head(self):
-    return SimpleHTTPServer.SimpleHTTPRequestHandler.send_head(self)
-
   def do_GET(self):
-    # TODO(binji): pyauto tests use the ?quit=1 method to kill the server.
-    # Remove this when we kill the pyauto tests.
+    # Browsing to ?quit=1 will kill the server cleanly.
     _, _, _, query, _ = urlparse.urlsplit(self.path)
     if query:
       params = urlparse.parse_qs(query)
@@ -140,39 +69,17 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self._SendNothingAndDie()
         return
 
-    delegate = self._FindDelegateForURL(self.path)
-    if delegate:
-      return delegate.do_GET(self)
-    return self.base_do_GET()
-
-  def base_do_GET(self):
     return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
-
-  def do_POST(self):
-    delegate = self._FindDelegateForURL(self.path)
-    if delegate:
-      return delegate.do_POST(self)
-    return self.base_do_POST()
-
-  def base_do_POST(self):
-    if self.server.test_mode:
-      if self.path == '/ok':
-        self._SendNothingAndDie(0)
-      elif self.path == '/fail':
-        self._SendNothingAndDie(1)
 
 
 class LocalHTTPServer(object):
   """Class to start a local HTTP server as a child process."""
 
-  def __init__(self, dirname, port, test_mode):
+  def __init__(self, dirname, port):
     parent_conn, child_conn = multiprocessing.Pipe()
     self.process = multiprocessing.Process(
         target=_HTTPServerProcess,
-        args=(child_conn, dirname, port, {
-          'serve_dir': dirname,
-          'test_mode': test_mode,
-        }))
+        args=(child_conn, dirname, port, {}))
     self.process.start()
     if parent_conn.poll(10):  # wait 10 seconds
       self.port = parent_conn.recv()
@@ -255,8 +162,7 @@ def _HTTPServerProcess(conn, dirname, port, server_kwargs):
   """
   try:
     os.chdir(dirname)
-    httpd = PluggableHTTPServer(('', port), PluggableHTTPRequestHandler,
-                                **server_kwargs)
+    httpd = HTTPServer(('', port), HTTPRequestHandler, **server_kwargs)
   except socket.error as e:
     sys.stderr.write('Error creating HTTPServer: %s\n' % e)
     sys.exit(1)
@@ -288,10 +194,6 @@ def main(args):
   parser.add_option('--no-dir-check', '--no_dir_check',
       help='No check to ensure serving from safe directory.',
       dest='do_safe_check', action='store_false', default=True)
-  parser.add_option('--test-mode',
-      help='Listen for posts to /ok or /fail and shut down the server with '
-          ' errorcodes 0 and 1 respectively.',
-      action='store_true')
 
   # To enable bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -306,8 +208,7 @@ def main(args):
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)
 
-  server = LocalHTTPServer(options.serve_dir, int(options.port),
-                           options.test_mode)
+  server = LocalHTTPServer(options.serve_dir, int(options.port))
 
   # Serve until the client tells us to stop. When it does, it will give us an
   # errorcode.

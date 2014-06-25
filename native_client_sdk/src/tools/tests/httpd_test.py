@@ -21,7 +21,7 @@ import httpd
 
 class HTTPDTest(unittest.TestCase):
   def setUp(self):
-    self.server = httpd.LocalHTTPServer('.', 0, False)
+    self.server = httpd.LocalHTTPServer('.', 0)
 
   def tearDown(self):
     self.server.Shutdown()
@@ -66,7 +66,7 @@ class RunTest(unittest.TestCase):
 
   def _GetChromeMockArgs(self, page, http_request_type, sleep,
                          expect_to_be_killed=True):
-    args = ['--test-mode']
+    args = []
     if page:
       args.extend(['-P', page])
     args.append('--')
@@ -91,20 +91,6 @@ class RunTest(unittest.TestCase):
     returncode, stdout, _ = self._Run(args, timeout=10)
     self.assertNotEqual(-1, returncode)
     self.assertTrue('Starting' in stdout)
-
-  def testPostOk(self):
-    args = self._GetChromeMockArgs('ok', 'post', sleep=10)
-    returncode, stdout, _ = self._Run(args, timeout=20)
-    self.assertEqual(0, returncode)
-    self.assertTrue('Starting' in stdout)
-    self.assertTrue('Expected to be killed' not in stdout)
-
-  def testPostFail(self):
-    args = self._GetChromeMockArgs('fail', 'post', sleep=10)
-    returncode, stdout, _ = self._Run(args, timeout=20)
-    self.assertEqual(1, returncode)
-    self.assertTrue('Starting' in stdout)
-    self.assertTrue('Expected to be killed' not in stdout)
 
 
 if __name__ == '__main__':
