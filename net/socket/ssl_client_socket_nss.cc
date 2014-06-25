@@ -969,6 +969,7 @@ SSLClientSocketNSS::Core::~Core() {
     PR_Close(nss_fd_);
     nss_fd_ = NULL;
   }
+  nss_bufs_ = NULL;
 }
 
 bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
@@ -2641,7 +2642,7 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(const std::string& host) {
   DCHECK(OnNetworkTaskRunner());
 
   if (detached_)
-    return ERR_FAILED;
+    return ERR_ABORTED;
 
   weak_net_log_->BeginEvent(NetLog::TYPE_SSL_GET_DOMAIN_BOUND_CERT);
 
