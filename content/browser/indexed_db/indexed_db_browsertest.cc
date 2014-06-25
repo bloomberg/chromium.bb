@@ -662,7 +662,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
   NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part2",
                           "pass - part2 - crash me");
-  NavigateToURL(shell(), GURL(kChromeUIBrowserCrashHost));
+  // If we actually crash here then googletest will not run the next step
+  // (VersionChangeCrashResilience) as an optimization. googletest's
+  // ASSERT_DEATH/EXIT fails to work properly (on Windows) due to how we
+  // implement the PRE_* test mechanism.
+  exit(0);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, VersionChangeCrashResilience) {
