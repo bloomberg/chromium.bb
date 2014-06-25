@@ -29,6 +29,8 @@ namespace blacklist{
 // For more information about how this list is generated, and how to get off
 // of it, see:
 // https://sites.google.com/a/chromium.org/dev/Home/third-party-developers
+// NOTE: Please remember to update the DllHash enum in histograms.xml when
+//       adding a new value to the blacklist.
 const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"activedetect32.dll",                // Lenovo One Key Theater.
                                         // See crbug.com/379218.
