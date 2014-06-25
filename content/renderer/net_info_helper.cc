@@ -11,7 +11,7 @@ NetConnectionTypeToWebConnectionType(
     net::NetworkChangeNotifier::ConnectionType net_type) {
   switch (net_type) {
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      return blink::ConnectionTypeOther;
+      return blink::ConnectionTypeUnknown;
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
       return blink::ConnectionTypeEthernet;
     case net::NetworkChangeNotifier::CONNECTION_WIFI:
