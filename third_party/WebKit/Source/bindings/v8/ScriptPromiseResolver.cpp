@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 
 #include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
 
-ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* scriptState)
+ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
     , m_mode(Default)
-    , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
+    , m_timer(this, &ScriptPromiseResolver::onTimerFired)
     , m_resolver(scriptState)
 #if ASSERTION_ENABLED
     , m_isPromiseCalled(false)
@@ -24,24 +24,24 @@ ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* 
         m_state = ResolvedOrRejected;
 }
 
-void ScriptPromiseResolverWithContext::suspend()
+void ScriptPromiseResolver::suspend()
 {
     m_timer.stop();
 }
 
-void ScriptPromiseResolverWithContext::resume()
+void ScriptPromiseResolver::resume()
 {
     if (m_state == Resolving || m_state == Rejecting)
         m_timer.startOneShot(0, FROM_HERE);
 }
 
-void ScriptPromiseResolverWithContext::stop()
+void ScriptPromiseResolver::stop()
 {
     m_timer.stop();
     clear();
 }
 
-void ScriptPromiseResolverWithContext::keepAliveWhilePending()
+void ScriptPromiseResolver::keepAliveWhilePending()
 {
     if (m_state == ResolvedOrRejected || m_mode == KeepAliveWhilePending)
         return;
@@ -52,14 +52,14 @@ void ScriptPromiseResolverWithContext::keepAliveWhilePending()
     ref();
 }
 
-void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
+void ScriptPromiseResolver::onTimerFired(Timer<ScriptPromiseResolver>*)
 {
     ASSERT(m_state == Resolving || m_state == Rejecting);
     ScriptState::Scope scope(m_scriptState.get());
     resolveOrRejectImmediately();
 }
 
-void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
+void ScriptPromiseResolver::resolveOrRejectImmediately()
 {
     ASSERT(!executionContext()->activeDOMObjectsAreStopped());
     ASSERT(!executionContext()->activeDOMObjectsAreSuspended());
@@ -78,7 +78,7 @@ void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
     clear();
 }
 
-void ScriptPromiseResolverWithContext::clear()
+void ScriptPromiseResolver::clear()
 {
     if (m_state == ResolvedOrRejected)
         return;

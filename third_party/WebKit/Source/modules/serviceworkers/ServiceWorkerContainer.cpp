@@ -32,7 +32,7 @@
 
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMException.h"
@@ -78,7 +78,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 {
     RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -109,7 +109,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 class UndefinedValue {
 public:
     typedef WebServiceWorker WebType;
-    static V8UndefinedType from(ScriptPromiseResolverWithContext* resolver, WebServiceWorker* worker)
+    static V8UndefinedType from(ScriptPromiseResolver* resolver, WebServiceWorker* worker)
     {
         ASSERT(!worker); // Anything passed here will be leaked.
         return V8UndefinedType();
@@ -122,7 +122,7 @@ private:
 ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scriptState, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -145,7 +145,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
 ScriptPromise ServiceWorkerContainer::ready(ScriptState* scriptState)
 {
     if (m_controller.get()) {
-        RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->resolve(m_controller.get());
         return promise;

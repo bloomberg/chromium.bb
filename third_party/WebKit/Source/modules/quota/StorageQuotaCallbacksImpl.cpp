@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolverWithContext> resolver)
+StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver)
     : m_resolver(resolver)
 {
 }

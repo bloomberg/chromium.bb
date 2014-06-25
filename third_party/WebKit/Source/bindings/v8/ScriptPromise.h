@@ -106,7 +106,7 @@ public:
     static ScriptPromise rejectWithDOMException(ScriptState*, PassRefPtrWillBeRawPtr<DOMException>);
 
     // This is a utility class intended to be used internally.
-    // ScriptPromiseResolverWithContext is for general purpose.
+    // ScriptPromiseResolver is for general purpose.
     class InternalResolver FINAL {
     public:
         explicit InternalResolver(ScriptState*);

@@ -38,13 +38,13 @@
 
 namespace WebCore {
 
-class ScriptPromiseResolverWithContext;
+class ScriptPromiseResolver;
 
 class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorkerError WebType;
-    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
+    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolver*, WebType* webErrorRaw);
 
 private:
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/crypto/CryptoResultImpl.h"
 
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMError.h"
@@ -46,9 +46,9 @@
 
 namespace WebCore {
 
-class CryptoResultImpl::WeakResolver : public ScriptPromiseResolverWithContext {
+class CryptoResultImpl::WeakResolver : public ScriptPromiseResolver {
 public:
-    static WeakPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState, CryptoResultImpl* result)
+    static WeakPtr<ScriptPromiseResolver> create(ScriptState* scriptState, CryptoResultImpl* result)
     {
         RefPtr<WeakResolver> p = adoptRef(new WeakResolver(scriptState, result));
         p->suspendIfNeeded();
@@ -63,10 +63,10 @@ public:
 
 private:
     WeakResolver(ScriptState* scriptState, CryptoResultImpl* result)
-        : ScriptPromiseResolverWithContext(scriptState)
+        : ScriptPromiseResolver(scriptState)
         , m_weakPtrFactory(this)
         , m_result(result) { }
-    WeakPtrFactory<ScriptPromiseResolverWithContext> m_weakPtrFactory;
+    WeakPtrFactory<ScriptPromiseResolver> m_weakPtrFactory;
     RefPtr<CryptoResultImpl> m_result;
 };
 
@@ -122,7 +122,7 @@ void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
 void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
 {
     if (m_resolver) {
-        ScriptPromiseResolverWithContext* resolver = m_resolver.get();
+        ScriptPromiseResolver* resolver = m_resolver.get();
         ScriptState* scriptState = resolver->scriptState();
         ScriptState::Scope scope(scriptState);
 

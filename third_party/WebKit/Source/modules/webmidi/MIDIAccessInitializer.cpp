@@ -6,7 +6,7 @@
 #include "modules/webmidi/MIDIAccessInitializer.h"
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/frame/Navigator.h"
@@ -18,7 +18,7 @@
 namespace WebCore {
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
-    : ScriptPromiseResolverWithContext(scriptState)
+    : ScriptPromiseResolver(scriptState)
     , m_options(options)
     , m_sysexEnabled(false)
 {

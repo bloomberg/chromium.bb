@@ -10,7 +10,7 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
+PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {

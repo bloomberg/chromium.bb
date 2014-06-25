@@ -33,7 +33,7 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
@@ -87,11 +87,11 @@ public:
 
 private:
     FontFaceReadyPromiseResolver(ScriptState* scriptState)
-        : m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
+        : m_resolver(ScriptPromiseResolver::create(scriptState))
     {
     }
 
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)

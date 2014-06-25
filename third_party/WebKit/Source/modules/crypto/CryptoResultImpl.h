@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class ScriptPromiseResolverWithContext;
+class ScriptPromiseResolver;
 ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType);
 
 // Wrapper around a Promise to notify completion of the crypto operation.
@@ -77,7 +77,7 @@ private:
 
     void cancel();
 
-    WeakPtr<ScriptPromiseResolverWithContext> m_resolver;
+    WeakPtr<ScriptPromiseResolver> m_resolver;
     volatile int m_cancelled;
 };
 

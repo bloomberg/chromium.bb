@@ -27,7 +27,7 @@
 #include "core/css/FontFaceSet.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
@@ -68,7 +68,7 @@ private:
     LoadFontPromiseResolver(FontFaceArray faces, ScriptState* scriptState)
         : m_numLoading(faces.size())
         , m_errorOccured(false)
-        , m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
+        , m_resolver(ScriptPromiseResolver::create(scriptState))
     {
         m_fontFaces.swap(faces);
     }
@@ -76,7 +76,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<FontFace> > m_fontFaces;
     int m_numLoading;
     bool m_errorOccured;
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 void LoadFontPromiseResolver::loadFonts(ExecutionContext* context)
@@ -130,11 +130,11 @@ public:
 
 private:
     explicit FontsReadyPromiseResolver(ScriptState* scriptState)
-        : m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
+        : m_resolver(ScriptPromiseResolver::create(scriptState))
     {
     }
 
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 FontFaceSet::FontFaceSet(Document& document)
@@ -449,7 +449,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(SyntaxError, "Could not resolve '" + fontString + "' as a font."));
         return promise;

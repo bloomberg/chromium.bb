@@ -32,7 +32,7 @@
 #include "modules/webmidi/NavigatorWebMIDI.h"
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -74,7 +74,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navi
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const Dictionary& options)
 {
     if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
-        RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         // FIXME: Currently this rejection does not work because the context is stopped.
         resolver->reject(DOMError::create("AbortError"));

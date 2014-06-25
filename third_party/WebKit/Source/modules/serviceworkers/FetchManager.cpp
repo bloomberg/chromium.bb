@@ -5,7 +5,7 @@
 #include "config.h"
 #include "FetchManager.h"
 
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
@@ -21,7 +21,7 @@ namespace WebCore {
 
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
-    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolverWithContext>, PassOwnPtr<ResourceRequest>);
+    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, PassOwnPtr<ResourceRequest>);
     ~Loader();
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
     virtual void didFinishLoading(unsigned long, double);
@@ -39,7 +39,7 @@ private:
 
     ExecutionContext* m_executionContext;
     FetchManager* m_fetchManager;
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
     OwnPtr<ResourceRequest> m_request;
     RefPtr<ThreadableLoader> m_loader;
     ResourceResponse m_response;
@@ -47,7 +47,7 @@ private:
     bool m_failed;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolverWithContext> resolver, PassOwnPtr<ResourceRequest> request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, PassOwnPtr<ResourceRequest> request)
     : m_executionContext(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -161,7 +161,7 @@ FetchManager::~FetchManager()
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, PassOwnPtr<ResourceRequest> request)
 {
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     OwnPtr<Loader> loader(adoptPtr(new Loader(m_executionContext, this, resolver.release(), request)));

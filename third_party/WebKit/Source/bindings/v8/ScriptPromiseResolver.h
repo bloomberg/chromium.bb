@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptPromiseResolverWithContext_h
-#define ScriptPromiseResolverWithContext_h
+#ifndef ScriptPromiseResolver_h
+#define ScriptPromiseResolver_h
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptPromise.h"
@@ -18,26 +18,26 @@
 
 namespace WebCore {
 
-// This class wraps ScriptPromiseResolver and provides the following
-// functionalities in addition to ScriptPromiseResolver's.
-//  - A ScriptPromiseResolverWithContext retains a ScriptState. A caller
+// This class wraps v8::Promise::Resolver and provides the following
+// functionalities.
+//  - A ScriptPromiseResolver retains a ScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
 //  - This class is an ActiveDOMObject and keeps track of the associated
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
-class ScriptPromiseResolverWithContext : public ActiveDOMObject, public RefCounted<ScriptPromiseResolverWithContext> {
-    WTF_MAKE_NONCOPYABLE(ScriptPromiseResolverWithContext);
+class ScriptPromiseResolver : public ActiveDOMObject, public RefCounted<ScriptPromiseResolver> {
+    WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 
 public:
-    static PassRefPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState)
+    static PassRefPtr<ScriptPromiseResolver> create(ScriptState* scriptState)
     {
-        RefPtr<ScriptPromiseResolverWithContext> resolver = adoptRef(new ScriptPromiseResolverWithContext(scriptState));
+        RefPtr<ScriptPromiseResolver> resolver = adoptRef(new ScriptPromiseResolver(scriptState));
         resolver->suspendIfNeeded();
         return resolver.release();
     }
 
-    virtual ~ScriptPromiseResolverWithContext()
+    virtual ~ScriptPromiseResolver()
     {
         // This assertion fails if:
         //  - promise() is called at least once and
@@ -86,7 +86,7 @@ public:
 protected:
     // You need to call suspendIfNeeded after the construction because
     // this is an ActiveDOMObject.
-    explicit ScriptPromiseResolverWithContext(ScriptState*);
+    explicit ScriptPromiseResolver(ScriptState*);
 
 private:
     typedef ScriptPromise::InternalResolver Resolver;
@@ -104,7 +104,7 @@ private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolverWithContext, v8::Handle<v8::Object> >::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
+        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
     }
 
     template <typename T>
@@ -125,13 +125,13 @@ private:
     }
 
     void resolveOrRejectImmediately();
-    void onTimerFired(Timer<ScriptPromiseResolverWithContext>*);
+    void onTimerFired(Timer<ScriptPromiseResolver>*);
     void clear();
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;
     LifetimeMode m_mode;
-    Timer<ScriptPromiseResolverWithContext> m_timer;
+    Timer<ScriptPromiseResolver> m_timer;
     Resolver m_resolver;
     ScopedPersistent<v8::Value> m_value;
 #if ASSERT_ENABLED
@@ -142,4 +142,4 @@ private:
 
 } // namespace WebCore
 
-#endif // #ifndef ScriptPromiseResolverWithContext_h
+#endif // #ifndef ScriptPromiseResolver_h

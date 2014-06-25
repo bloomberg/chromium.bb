@@ -6,7 +6,7 @@
 #define BatteryManager_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/DeviceEventControllerBase.h"
 #include "modules/EventTargetModules.h"
@@ -63,7 +63,7 @@ private:
 
     explicit BatteryManager(ExecutionContext*);
 
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
     RefPtrWillBeMember<BatteryStatus> m_batteryStatus;
     State m_state;
 };

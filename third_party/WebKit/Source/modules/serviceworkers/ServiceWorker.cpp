@@ -32,7 +32,7 @@
 #include "ServiceWorker.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
@@ -154,7 +154,7 @@ PassRefPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext
     return create(executionContext, adoptPtr(worker));
 }
 
-PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolverWithContext* resolver, WebType* worker)
+PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver* resolver, WebType* worker)
 {
     RefPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());

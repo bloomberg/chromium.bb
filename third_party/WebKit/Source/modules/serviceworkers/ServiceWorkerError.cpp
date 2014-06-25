@@ -37,7 +37,7 @@ using blink::WebServiceWorkerError;
 namespace WebCore {
 
 // static
-PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
+PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {

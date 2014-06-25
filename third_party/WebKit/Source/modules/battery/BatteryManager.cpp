@@ -38,7 +38,7 @@ ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)
     if (m_state == Pending)
         return m_resolver->promise();
 
-    m_resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
 
     if (m_state == Resolved) {

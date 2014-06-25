@@ -45,7 +45,7 @@
 namespace WebCore {
 
 class ScriptState;
-class ScriptPromiseResolverWithContext;
+class ScriptPromiseResolver;
 
 class ServiceWorker
     : public AbstractWorker
@@ -56,7 +56,7 @@ public:
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtr<ServiceWorker> from(ScriptPromiseResolverWithContext*, WebType* worker);
+    static PassRefPtr<ServiceWorker> from(ScriptPromiseResolver*, WebType* worker);
 
     static PassRefPtr<ServiceWorker> from(ExecutionContext*, WebType*);
 

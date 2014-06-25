@@ -32,7 +32,7 @@
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
@@ -67,7 +67,7 @@ static IntSize sizeFor(HTMLVideoElement* video)
 
 static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (imageBitmap) {
         resolver->resolve(imageBitmap);
@@ -273,7 +273,7 @@ void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader)
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, const IntRect& cropRect, ScriptState* scriptState)
     : m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
     , m_factory(&factory)
-    , m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
+    , m_resolver(ScriptPromiseResolver::create(scriptState))
     , m_cropRect(cropRect)
 {
 }

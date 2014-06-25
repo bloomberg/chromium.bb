@@ -13,7 +13,7 @@
 
 namespace WebCore {
 
-class ScriptPromiseResolverWithContext;
+class ScriptPromiseResolver;
 
 // LockOrientationCallback is an implementation of WebLockOrientationCallback
 // that will resolve the underlying promise depending on the result passed to
@@ -21,14 +21,14 @@ class ScriptPromiseResolverWithContext;
 class LockOrientationCallback FINAL : public blink::WebLockOrientationCallback {
     WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 public:
-    explicit LockOrientationCallback(PassRefPtr<ScriptPromiseResolverWithContext>);
+    explicit LockOrientationCallback(PassRefPtr<ScriptPromiseResolver>);
     virtual ~LockOrientationCallback();
 
     virtual void onSuccess(unsigned angle, blink::WebScreenOrientationType) OVERRIDE;
     virtual void onError(blink::WebLockOrientationError) OVERRIDE;
 
 private:
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace WebCore

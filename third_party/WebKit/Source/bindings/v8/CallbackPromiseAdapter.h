@@ -31,7 +31,7 @@
 #ifndef CallbackPromiseAdapter_h
 #define CallbackPromiseAdapter_h
 
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "public/platform/WebCallbacks.h"
 
 namespace WebCore {
@@ -46,7 +46,7 @@ namespace WebCore {
 //
 // class MyClass ... {
 //    typedef blink::WebMyClass WebType;
-//    static PassRefPtr<MyClass> from(ScriptPromiseResolverWithContext* resolver,
+//    static PassRefPtr<MyClass> from(ScriptPromiseResolver* resolver,
 //                                    blink::WebMyClass* webInstance) {
 //        // convert/create as appropriate, but often it's just:
 //        return MyClass::create(adoptPtr(webInstance));
@@ -71,7 +71,7 @@ namespace WebCore {
 template<typename S, typename T>
 class CallbackPromiseAdapter FINAL : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
-    CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolverWithContext> resolver)
+    CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
     }
@@ -86,7 +86,7 @@ public:
         m_resolver->reject(T::from(m_resolver.get(), error));
     }
 private:
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 

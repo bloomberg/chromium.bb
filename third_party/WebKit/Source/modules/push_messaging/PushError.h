@@ -11,14 +11,14 @@
 
 namespace WebCore {
 
-class ScriptPromiseResolverWithContext;
+class ScriptPromiseResolver;
 
 class PushError {
     WTF_MAKE_NONCOPYABLE(PushError);
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushError WebType;
-    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
+    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolver*, WebType* webErrorRaw);
 
 private:
     PushError() WTF_DELETED_FUNCTION;

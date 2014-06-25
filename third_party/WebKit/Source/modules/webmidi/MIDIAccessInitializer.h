@@ -6,7 +6,7 @@
 #define MIDIAccessInitializer_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIOptions.h"
@@ -21,7 +21,7 @@ class MIDIAccess;
 class Navigator;
 class ScriptState;
 
-class MIDIAccessInitializer : public ScriptPromiseResolverWithContext, public MIDIAccessorClient {
+class MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
 public:
     struct PortDescriptor {
         String id;
