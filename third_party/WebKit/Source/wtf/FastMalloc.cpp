@@ -50,9 +50,6 @@ char* fastStrDup(const char* src)
     return dup;
 }
 
-// TODO: remove these two.
-void releaseFastMallocFreeMemory() { }
-
 FastMallocStatistics fastMallocStatistics()
 {
     FastMallocStatistics statistics = { 0, 0, 0 };

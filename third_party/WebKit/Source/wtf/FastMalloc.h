@@ -37,8 +37,6 @@ WTF_EXPORT char* fastStrDup(const char*);
 
 WTF_EXPORT void fastFree(void*);
 
-WTF_EXPORT void releaseFastMallocFreeMemory();
-
 struct FastMallocStatistics {
     size_t reservedVMBytes;
     size_t committedVMBytes;
