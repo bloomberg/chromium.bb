@@ -86,7 +86,6 @@ CONTENT_EXPORT extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSmoothScrolling[];
 CONTENT_EXPORT extern const char kDisableSoftwareRasterizer[];
-CONTENT_EXPORT extern const char kDisableSSLFalseStart[];
 CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kDisableWebSecurity[];
 extern const char kDisableXSLT[];

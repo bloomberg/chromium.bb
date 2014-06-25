@@ -267,9 +267,6 @@ const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 
-// Disable False Start in SSL and TLS connections.
-const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
-
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
