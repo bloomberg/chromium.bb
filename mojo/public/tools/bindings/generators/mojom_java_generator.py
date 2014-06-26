@@ -37,6 +37,16 @@ _spec_to_java_type = {
   'u8':    'byte',
 }
 
+_java_primitive_to_boxed_type = {
+  'boolean': 'Boolean',
+  'byte':    'Byte',
+  'double':  'Double',
+  'float':   'Float',
+  'int':     'Integer',
+  'long':    'Long',
+  'short':   'Short',
+}
+
 
 def NameToComponent(name):
   # insert '_' between anything and a Title name (e.g, HTTPEntry2FooBar ->
@@ -82,6 +92,9 @@ def GetNameForElement(element):
     return ConstantStyle(element.name)
   raise Exception("Unexpected element: " % element)
 
+def GetInterfaceResponseName(method):
+  return UpperCamelCase(method.name + 'Response')
+
 def ParseStringAttribute(attribute):
   assert isinstance(attribute, basestring)
   return attribute
@@ -107,12 +120,21 @@ def GetNameForKind(context, kind):
   elements += _GetNameHierachy(kind)
   return '.'.join(elements)
 
+def GetBoxedJavaType(context, kind):
+  unboxed_type = GetJavaType(context, kind, False)
+  if unboxed_type in _java_primitive_to_boxed_type:
+    return _java_primitive_to_boxed_type[unboxed_type]
+  return unboxed_type
+
 @contextfilter
-def GetJavaType(context, kind):
+def GetJavaType(context, kind, boxed=False):
+  if boxed:
+    return GetBoxedJavaType(context, kind)
   if isinstance(kind, (mojom.Struct, mojom.Interface)):
     return GetNameForKind(context, kind)
   if isinstance(kind, mojom.InterfaceRequest):
-    return GetNameForKind(context, kind.kind)
+    return ("org.chromium.mojo.bindings.InterfaceRequest<%s>" %
+            GetNameForKind(context, kind.kind))
   if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "%s[]" % GetJavaType(context, kind.kind)
   if isinstance(kind, mojom.Enum):
@@ -163,6 +185,7 @@ def GetConstantsMainEntityName(module):
 class Generator(generator.Generator):
 
   java_filters = {
+    "interface_response_name": GetInterfaceResponseName,
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
     "is_handle": IsHandle,
@@ -186,6 +209,16 @@ class Generator(generator.Generator):
   def GenerateStructSource(self, struct):
     exports = self.GetJinjaExports()
     exports.update({"struct": struct})
+    return exports
+
+  @UseJinja("java_templates/interface.java.tmpl", filters=java_filters)
+  def GenerateInterfaceSource(self, interface):
+    exports = self.GetJinjaExports()
+    exports.update({"interface": interface})
+    if interface.client:
+      for client in self.module.interfaces:
+        if client.name == interface.client:
+          exports.update({"client": client})
     return exports
 
   @UseJinja("java_templates/constants.java.tmpl", filters=java_filters)
@@ -216,6 +249,10 @@ class Generator(generator.Generator):
     for struct in self.module.structs:
       self.Write(self.GenerateStructSource(struct),
                  "%s.java" % GetNameForElement(struct))
+
+    for interface in self.module.interfaces:
+      self.Write(self.GenerateInterfaceSource(interface),
+                 "%s.java" % GetNameForElement(interface))
 
     if self.module.constants:
       self.Write(self.GenerateConstantsSource(self.module),

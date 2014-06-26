@@ -43,6 +43,8 @@
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/header.java.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface.java.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/struct_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/struct.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/enum_definition.tmpl',

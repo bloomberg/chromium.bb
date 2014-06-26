@@ -1,0 +1,55 @@
+{% from "constant_definition.tmpl" import constant_def %}
+{% from "enum_definition.tmpl" import enum_def %}
+
+{%- macro declare_params(parameters) %}
+{%-   for param in parameters -%}
+{{param.kind|java_type(False)}} {{param|name}}
+{%- if not loop.last %}, {% endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+{% macro declare_request_params(method) %}
+{{declare_params(method.parameters)}}
+{%-   if method.response_parameters != None -%}
+{%- if method.parameters %}, {% endif %}
+{{method|interface_response_name}} callback
+{%-   endif -%}
+{% endmacro %}
+
+{%- macro declare_callback(method) -%}
+interface {{method|interface_response_name}} extends org.chromium.mojo.bindings.Callbacks.Callback{{method.response_parameters|length}}<
+{%-   for param in method.response_parameters -%}
+{{param.kind|java_type(True)}}
+{%- if not loop.last %}, {% endif %}
+{%-   endfor -%}
+> { }
+{%- endmacro -%}
+
+{%- macro super_class(client) -%}
+{%-   if client -%}
+org.chromium.mojo.bindings.InterfaceWithClient<{{client|java_type}}>
+{%-   else -%}
+org.chromium.mojo.bindings.Interface
+{%-   endif -%}
+{%- endmacro -%}
+
+{% macro interface_def(interface, client) %}
+public interface {{interface|name}} extends {{super_class(client)}} {
+{%  for constant in interface.constants %}
+
+    {{constant_def(constant)|indent(4)}}
+{%  endfor %}
+{%  for enum in interface.enums %}
+
+    {{enum_def(enum, false)|indent(4)}}
+{% endfor %}
+{% for method in interface.methods %}
+
+    void {{method|name}}({{declare_request_params(method)}});
+{%   if method.response_parameters %}
+    {{declare_callback(method)|indent(4)}}
+{%   endif %}
+{% endfor %}
+
+}
+{% endmacro %}
