@@ -377,6 +377,11 @@ weston_view_create(struct weston_surface *surface)
 	return view;
 }
 
+struct weston_frame_callback {
+	struct wl_resource *resource;
+	struct wl_list link;
+};
+
 WL_EXPORT struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor)
 {
@@ -1356,11 +1361,6 @@ weston_surface_reset_pending_buffer(struct weston_surface *surface)
 	surface->pending.newly_attached = 0;
 	surface->pending.buffer_viewport.changed = 0;
 }
-
-struct weston_frame_callback {
-	struct wl_resource *resource;
-	struct wl_list link;
-};
 
 WL_EXPORT void
 weston_view_destroy(struct weston_view *view)
