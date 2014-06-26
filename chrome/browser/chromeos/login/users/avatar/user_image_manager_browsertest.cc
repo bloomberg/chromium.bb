@@ -230,15 +230,14 @@ class UserImageManagerTest : public LoginManagerTest,
 
     static_cast<OAuth2TokenService::Consumer*>(profile_downloader)->
         OnGetTokenSuccess(NULL,
-                          "token",
+                          std::string(),
                           base::Time::Now() + base::TimeDelta::FromDays(1));
 
     net::TestURLFetcher* fetcher =
-        url_fetcher_factory->GetFetcherByID(
-            gaia::GaiaOAuthClient::kUrlFetcherId);
+        url_fetcher_factory->GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(
-        "{ \"image\": {\"url\": \"http://localhost/avatar.jpg\"} }");
+        "{ \"picture\": \"http://localhost/avatar.jpg\" }");
     fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                               net::OK));
     fetcher->set_response_code(200);
