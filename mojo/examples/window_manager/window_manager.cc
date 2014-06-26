@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/examples/keyboard/keyboard.mojom.h"
+#include "mojo/examples/window_manager/debug_panel.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -21,6 +22,7 @@
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
+#include "mojo/views/views_init.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -50,6 +52,7 @@ const SkColor kColors[] = { SK_ColorYELLOW,
                             SK_ColorMAGENTA };
 
 const int kBorderInset = 25;
+const int kControlPanelWidth = 200;
 const int kTextfieldHeight = 25;
 
 }  // namespace
@@ -162,7 +165,13 @@ class WindowManager : public ApplicationDelegate,
                       public ViewManagerDelegate,
                       public ViewEventDispatcher {
  public:
-  WindowManager() : launcher_ui_(NULL), view_manager_(NULL), app_(NULL) {}
+  WindowManager()
+      : launcher_ui_(NULL),
+        view_manager_(NULL),
+        app_(NULL),
+        next_color_(0) {
+  }
+
   virtual ~WindowManager() {}
 
   void CloseWindow(Id node_id) {
@@ -216,6 +225,7 @@ class WindowManager : public ApplicationDelegate,
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     app_ = app;
     app->ConnectToService("mojo:mojo_launcher", &launcher_);
+    views_init_.reset(new ViewsInit);
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
@@ -228,6 +238,7 @@ class WindowManager : public ApplicationDelegate,
 
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
+    // TODO(aa): Replace this with buttons in the control panel.
     if (event->action == ui::ET_MOUSE_RELEASED) {
       std::string app_url;
       if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
@@ -237,14 +248,15 @@ class WindowManager : public ApplicationDelegate,
       if (app_url.empty())
         return;
 
-      Node* node = view_manager_->GetNodeById(content_node_id_);
       navigation::NavigationDetailsPtr nav_details(
           navigation::NavigationDetails::New());
-      size_t index = node->children().size() - 1;
       nav_details->url = base::StringPrintf(
-          "%s/%x", app_url.c_str(), kColors[index % arraysize(kColors)]);
-      navigation::ResponseDetailsPtr response;
-      CreateWindow(app_url, nav_details.Pass(), response.Pass());
+          "%s/%x", app_url.c_str(),
+          kColors[next_color_ % arraysize(kColors)]);
+      next_color_++;
+
+      RequestNavigate(content_node_id_, navigation::DEFAULT,
+                      nav_details.Pass());
     }
   }
 
@@ -265,6 +277,7 @@ class WindowManager : public ApplicationDelegate,
     view->AddObserver(this);
 
     CreateLauncherUI();
+    CreateControlPanel(node);
   }
 
   // Overridden from ViewEventDispatcher:
@@ -279,20 +292,40 @@ class WindowManager : public ApplicationDelegate,
 
   void OnLaunch(
       uint32 source_node_id,
-      navigation::Target target,
+      navigation::Target requested_target,
       const mojo::String& handler_url,
       const mojo::String& view_url,
       navigation::ResponseDetailsPtr response) {
     navigation::NavigationDetailsPtr nav_details(
         navigation::NavigationDetails::New());
     nav_details->url = view_url;
-    if (target == navigation::SOURCE_NODE) {
-      Node* node = view_manager_->GetNodeById(source_node_id);
-      DCHECK(node);
-      Embed(node, handler_url, nav_details.Pass(), response.Pass());
-    } else {
-      CreateWindow(handler_url, nav_details.Pass(), response.Pass());
+
+    navigation::Target target = debug_panel_->navigation_target();
+    if (target == navigation::DEFAULT) {
+      if (requested_target != navigation::DEFAULT) {
+        target = requested_target;
+      } else {
+        // TODO(aa): Should be NEW_NODE if source origin and dest origin are
+        // different?
+        target = navigation::SOURCE_NODE;
+      }
     }
+
+    Node* dest_node = NULL;
+    if (target == navigation::SOURCE_NODE) {
+      Node* source_node = view_manager_->GetNodeById(source_node_id);
+      bool app_initiated = std::find(windows_.begin(), windows_.end(),
+                                     source_node) != windows_.end();
+      if (app_initiated)
+        dest_node = source_node;
+      else if (!windows_.empty())
+        dest_node = windows_.back();
+    }
+
+    if (dest_node)
+      Embed(dest_node, handler_url, nav_details.Pass(), response.Pass());
+    else
+      CreateWindow(handler_url, nav_details.Pass(), response.Pass());
   }
 
   // TODO(beng): proper layout manager!!
@@ -311,8 +344,10 @@ class WindowManager : public ApplicationDelegate,
                     navigation::NavigationDetailsPtr nav_details,
                     navigation::ResponseDetailsPtr response) {
     Node* node = view_manager_->GetNodeById(content_node_id_);
-    gfx::Rect bounds(kBorderInset, 2 * kBorderInset + kTextfieldHeight,
-                     node->bounds().width() - 2 * kBorderInset,
+    gfx::Rect bounds(kBorderInset,
+                     2 * kBorderInset + kTextfieldHeight,
+                     node->bounds().width() - 3 * kBorderInset -
+                         kControlPanelWidth,
                      node->bounds().height() -
                          (3 * kBorderInset + kTextfieldHeight));
     if (!windows_.empty()) {
@@ -354,6 +389,25 @@ class WindowManager : public ApplicationDelegate,
         !keyboard_manager_->node()->Contains(target->node());
   }
 
+  void CreateControlPanel(view_manager::Node* root) {
+    Node* node = Node::Create(view_manager_);
+    View* view = view_manager::View::Create(view_manager_);
+    root->AddChild(node);
+    node->SetActiveView(view);
+
+    gfx::Rect bounds(root->bounds().width() - kControlPanelWidth -
+                         kBorderInset,
+                     kBorderInset * 2 + kTextfieldHeight,
+                     kControlPanelWidth,
+                     root->bounds().height() - kBorderInset * 3 -
+                         kTextfieldHeight);
+    node->SetBounds(bounds);
+
+    debug_panel_ = new DebugPanel(node);
+  }
+
+  scoped_ptr<ViewsInit> views_init_;
+  DebugPanel* debug_panel_;
   launcher::LauncherPtr launcher_;
   Node* launcher_ui_;
   std::vector<Node*> windows_;
@@ -364,6 +418,7 @@ class WindowManager : public ApplicationDelegate,
 
   scoped_ptr<KeyboardManager> keyboard_manager_;
   ApplicationImpl* app_;
+  size_t next_color_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

@@ -145,7 +145,6 @@ void LauncherConnection::Launch(const String& url_string,
                  navigation::ResponseDetailsPtr());
     return;
   }
-
   new LaunchInstance(app_, callback, url_string);
 }
 
