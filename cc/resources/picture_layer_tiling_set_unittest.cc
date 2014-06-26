@@ -182,7 +182,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     SyncTilings(new_bounds, invalidation, minimum_scale);
   }
 
-  void VerifyTargetEqualsSource(const gfx::Size& new_bounds) const {
+  void VerifyTargetEqualsSource(const gfx::Size& new_bounds) {
     ASSERT_FALSE(new_bounds.IsEmpty());
     EXPECT_EQ(target_->num_tilings(), source_->num_tilings());
     EXPECT_EQ(target_->layer_bounds().ToString(), new_bounds.ToString());
@@ -202,7 +202,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     ValidateTargetTilingSet();
   }
 
-  void ValidateTargetTilingSet() const {
+  void ValidateTargetTilingSet() {
     // Tilings should be sorted largest to smallest.
     if (target_->num_tilings() > 0) {
       float last_scale = target_->tiling_at(0)->contents_scale();
@@ -214,11 +214,11 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     }
 
     for (size_t i = 0; i < target_->num_tilings(); ++i)
-      ValidateTiling(target_->tiling_at(i), target_client_.pile());
+      ValidateTiling(target_->tiling_at(i), target_client_.GetPile());
   }
 
   void ValidateTiling(const PictureLayerTiling* tiling,
-                      const PicturePileImpl* pile) const {
+                      const PicturePileImpl* pile) {
     if (tiling->TilingRect().IsEmpty())
       EXPECT_TRUE(tiling->live_tiles_rect().IsEmpty());
     else if (!tiling->live_tiles_rect().IsEmpty())

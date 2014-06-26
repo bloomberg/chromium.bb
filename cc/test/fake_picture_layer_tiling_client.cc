@@ -44,6 +44,10 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
       pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, 0);
 }
 
+PicturePileImpl* FakePictureLayerTilingClient::GetPile() {
+  return pile_.get();
+}
+
 void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {
   tile_size_ = tile_size;
 }

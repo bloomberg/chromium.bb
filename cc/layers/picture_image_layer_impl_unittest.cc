@@ -67,7 +67,7 @@ class PictureImageLayerImplTest : public testing::Test {
     layer->SetContentBounds(gfx::Size(100, 200));
     layer->tilings_.reset(new PictureLayerTilingSet(&tiling_client_,
                                                     layer->bounds()));
-    layer->pile_ = tiling_client_.pile();
+    layer->pile_ = tiling_client_.GetPile();
     return make_scoped_ptr(layer);
   }
 

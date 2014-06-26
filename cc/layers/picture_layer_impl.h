@@ -103,7 +103,7 @@ class CC_EXPORT PictureLayerImpl
   virtual scoped_refptr<Tile> CreateTile(
     PictureLayerTiling* tiling,
     const gfx::Rect& content_rect) OVERRIDE;
-  virtual void UpdatePile(Tile* tile) OVERRIDE;
+  virtual PicturePileImpl* GetPile() OVERRIDE;
   virtual gfx::Size CalculateTileSize(
       const gfx::Size& content_bounds) const OVERRIDE;
   virtual const Region* GetInvalidation() OVERRIDE;

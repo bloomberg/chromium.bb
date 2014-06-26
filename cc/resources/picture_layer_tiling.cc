@@ -607,6 +607,7 @@ void PictureLayerTiling::DidBecomeRecycled() {
 }
 
 void PictureLayerTiling::DidBecomeActive() {
+  PicturePileImpl* active_pile = client_->GetPile();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     it->second->SetPriority(ACTIVE_TREE, it->second->priority(PENDING_TREE));
     it->second->SetPriority(PENDING_TREE, TilePriority());
@@ -617,13 +618,14 @@ void PictureLayerTiling::DidBecomeActive() {
     // will cause PicturePileImpls and their clones to get deleted once the
     // corresponding PictureLayerImpl and any in flight raster jobs go out of
     // scope.
-    client_->UpdatePile(it->second.get());
+    it->second->set_picture_pile(active_pile);
   }
 }
 
 void PictureLayerTiling::UpdateTilesToCurrentPile() {
+  PicturePileImpl* pile = client_->GetPile();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    client_->UpdatePile(it->second.get());
+    it->second->set_picture_pile(pile);
   }
 }
 
