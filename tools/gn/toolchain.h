@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/item.h"
+#include "tools/gn/label_ptr.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/value.h"
 
@@ -84,6 +85,10 @@ class Toolchain : public Item {
   const Tool& GetTool(ToolType type) const;
   void SetTool(ToolType type, const Tool& t);
 
+  // Targets that must be resolved before compiling any targets.
+  const LabelTargetVector& deps() const { return deps_; }
+  LabelTargetVector& deps() { return deps_; }
+
   // Specifies build argument overrides that will be set on the base scope. It
   // will be as if these arguments were passed in on the command line. This
   // allows a toolchain to override the OS type of the default toolchain or
@@ -94,6 +99,7 @@ class Toolchain : public Item {
  private:
   Tool tools_[TYPE_NUMTYPES];
 
+  LabelTargetVector deps_;
   Scope::KeyValueMap args_;
 };
 

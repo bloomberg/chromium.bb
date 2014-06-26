@@ -97,3 +97,31 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
               stream.str());
   }
 }
+
+// Tests WriteInputDepsStampAndGetDep when toolchain deps are present.
+TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDepWithToolchainDeps) {
+  TestWithScope setup;
+
+  // Toolchain dependency. Here we make a target in the same toolchain for
+  // simplicity, but in real life (using the Builder) this would be rejected
+  // because it would be a circular dependency (the target depends on its
+  // toolchain, and the toolchain depends on this target).
+  Target toolchain_dep_target(setup.settings(),
+                              Label(SourceDir("//foo/"), "setup"));
+  toolchain_dep_target.set_output_type(Target::ACTION);
+  setup.toolchain()->deps().push_back(LabelTargetPair(&toolchain_dep_target));
+
+  // Make a binary target
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "target"));
+  target.set_output_type(Target::EXECUTABLE);
+
+  std::ostringstream stream;
+  TestingNinjaTargetWriter writer(&target, setup.toolchain(), stream);
+  std::string dep =
+      writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+
+  EXPECT_EQ(" | obj/foo/target.inputdeps.stamp", dep);
+  EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
+                "obj/foo/setup.stamp\n",
+            stream.str());
+}

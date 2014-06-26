@@ -9,6 +9,7 @@
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/toolchain.h"
+#include "tools/gn/value_extractors.h"
 #include "tools/gn/variables.h"
 
 namespace functions {
@@ -50,6 +51,11 @@ const char kToolchain_Help[] =
     "  types via the \"tool\" call (see \"gn help tool\") and specifies\n"
     "  arguments to be passed to the toolchain build via the\n"
     "  \"toolchain_args\" call (see \"gn help toolchain_args\").\n"
+    "\n"
+    "  In addition, a toolchain can specify dependencies via the \"deps\"\n"
+    "  variable like a target. These dependencies will be resolved before any\n"
+    "  target in the toolchain is compiled. To avoid circular dependencies\n"
+    "  these must be targets defined in another toolchain.\n"
     "\n"
     "Invoking targets in toolchains:\n"
     "\n"
@@ -116,10 +122,21 @@ Value RunToolchain(Scope* scope,
   if (err->has_error())
     return Value();
 
+  // Read deps (if any).
+  const Value* deps_value = block_scope.GetValue(variables::kDeps, true);
+  if (deps_value) {
+    ExtractListOfLabels(
+        *deps_value, block_scope.GetSourceDir(),
+        ToolchainLabelForScope(&block_scope), &toolchain->deps(), err);
+    if (err->has_error())
+      return Value();
+  }
+
+
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 
-  // Save this target for the file.
+  // Save this toolchain.
   Scope::ItemVector* collector = scope->GetItemCollector();
   if (!collector) {
     *err = Err(function, "Can't define a toolchain in this context.");

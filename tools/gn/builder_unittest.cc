@@ -89,12 +89,6 @@ TEST_F(BuilderTest, BasicDeps) {
   SourceDir toolchain_dir = settings_.toolchain_label().dir();
   std::string toolchain_name = settings_.toolchain_label().name();
 
-  DefineToolchain();
-  BuilderRecord* toolchain_record =
-      builder_->GetRecord(settings_.toolchain_label());
-  ASSERT_TRUE(toolchain_record);
-  EXPECT_EQ(BuilderRecord::ITEM_TOOLCHAIN, toolchain_record->type());
-
   // Construct a dependency chain: A -> B -> C. Define A first with a
   // forward-reference to B, then C, then B to test the different orders that
   // the dependencies are hooked up.
@@ -111,6 +105,13 @@ TEST_F(BuilderTest, BasicDeps) {
   // Should have requested that B and the toolchain is loaded.
   EXPECT_TRUE(loader_->HasLoadedTwo(SourceFile("//tc/BUILD.gn"),
                                     SourceFile("//b/BUILD.gn")));
+
+  // Define the toolchain.
+  DefineToolchain();
+  BuilderRecord* toolchain_record =
+      builder_->GetRecord(settings_.toolchain_label());
+  ASSERT_TRUE(toolchain_record);
+  EXPECT_EQ(BuilderRecord::ITEM_TOOLCHAIN, toolchain_record->type());
 
   // A should be unresolved with an item
   BuilderRecord* a_record = builder_->GetRecord(a_label);

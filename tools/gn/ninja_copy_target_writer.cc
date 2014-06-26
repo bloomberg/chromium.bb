@@ -25,6 +25,9 @@ void NinjaCopyTargetWriter::Run() {
 
   std::string rule_prefix = helper_.GetRulePrefix(target_->settings());
 
+  std::string implicit_deps =
+      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];
 
@@ -40,7 +43,7 @@ void NinjaCopyTargetWriter::Run() {
     path_output_.WriteFile(out_, output_file);
     out_ << ": " << rule_prefix << "copy ";
     path_output_.WriteFile(out_, input_file);
-    out_ << std::endl;
+    out_ << implicit_deps << std::endl;
   }
 
   // Write out the rule for the target to copy all of them.

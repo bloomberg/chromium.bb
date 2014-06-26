@@ -21,6 +21,8 @@
 #      The contents of these strings, if specified, will be placed around
 #      the libs section of the linker line. It allows one to inject libraries
 #      at the beginning and end for all targets in a toolchain.
+#  - deps
+#      Just fowarded to the toolchain definition.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -106,6 +108,10 @@ template("gcc_toolchain") {
     toolchain_args() {
       cpu_arch = invoker.toolchain_cpu_arch
       os = invoker.toolchain_os
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }
