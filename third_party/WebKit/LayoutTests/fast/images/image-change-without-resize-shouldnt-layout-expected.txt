@@ -1,0 +1,10 @@
+This test ensures that when an image changes, but doesn't change size (like in an Animated GIF), we don't force a Layout.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS window.internals.needsLayoutCount() is 0
+

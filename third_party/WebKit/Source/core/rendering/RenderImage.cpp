@@ -210,14 +210,13 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
 
     // If the actual area occupied by the image has changed and it is not constrained by style then a layout is required.
     bool imageSizeIsConstrained = style()->logicalWidth().isSpecified() && style()->logicalHeight().isSpecified();
-    bool needsLayout = !imageSizeIsConstrained && imageSourceHasChangedSize;
 
     // FIXME: We only need to recompute the containing block's preferred size if the containing block's size
     // depends on the image's size (i.e., the container uses shrink-to-fit sizing).
     // There's no easy way to detect that shrink-to-fit is needed, always force a layout.
-    bool containingBlockNeedsToRecomputePreferredSize =  style()->logicalWidth().isPercent() || style()->logicalMaxWidth().isPercent()  || style()->logicalMinWidth().isPercent();
+    bool containingBlockNeedsToRecomputePreferredSize = style()->logicalWidth().isPercent() || style()->logicalMaxWidth().isPercent()  || style()->logicalMinWidth().isPercent();
 
-    if (needsLayout || containingBlockNeedsToRecomputePreferredSize) {
+    if (imageSourceHasChangedSize && (!imageSizeIsConstrained || containingBlockNeedsToRecomputePreferredSize)) {
         setNeedsLayoutAndFullPaintInvalidation();
         return;
     }

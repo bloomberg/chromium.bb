@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("This test ensures that when an image changes, but doesn't change size (like in an Animated GIF), we don't force a Layout.")
+
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+function runTest() {
+    document.documentElement.offsetTop;
+    var imageElement = document.getElementById("image");
+    imageElement.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAGUExURf8AAAAAAEGjEgMAAAAMSURBVHjaYmAACDAAAAIAAU9tWeEAAAAASUVORK5CYII="
+    if (window.internals)
+        shouldBe("window.internals.needsLayoutCount()", "0");
+    if (window.testRunner)
+        testRunner.notifyDone();
+};
+</script>
+<body onload="runTest();">
+<div style="float: left;">
+    <img id="image" style="max-width: 100%" src="../replaced/resources/1x1-blue.png">
+</div>
