@@ -1,0 +1,8 @@
+{
+  "name": "chrome.automation.unit",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Unittests for chrome.automation.",
+  "permissions": ["tabs", "http://a.com/"],
+  "automation": true
+}

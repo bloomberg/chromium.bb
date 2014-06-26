@@ -22,6 +22,10 @@ V8ContextNativeHandler::V8ContextNativeHandler(ScriptContext* context,
   RouteFunction("GetModuleSystem",
                 base::Bind(&V8ContextNativeHandler::GetModuleSystem,
                            base::Unretained(this)));
+  RouteFunction(
+      "RunWithNativesEnabledModuleSystem",
+      base::Bind(&V8ContextNativeHandler::RunWithNativesEnabledModuleSystem,
+                 base::Unretained(this)));
 }
 
 void V8ContextNativeHandler::GetAvailability(
@@ -50,6 +54,18 @@ void V8ContextNativeHandler::GetModuleSystem(
   ScriptContext* context =
       dispatcher_->script_context_set().GetByV8Context(v8_context);
   args.GetReturnValue().Set(context->module_system()->NewInstance());
+}
+
+void V8ContextNativeHandler::RunWithNativesEnabledModuleSystem(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(args.Length(), 1);
+  CHECK(args[0]->IsFunction());
+  v8::Handle<v8::Value> call_with_args[] = {
+    context()->module_system()->NewInstance()
+  };
+  ModuleSystem::NativesEnabledScope natives_enabled(context()->module_system());
+  context()->CallFunction(
+      v8::Handle<v8::Function>::Cast(args[0]), 1, call_with_args);
 }
 
 }  // namespace extensions

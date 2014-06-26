@@ -15,6 +15,9 @@ var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
 var uncaughtExceptionHandler = require('uncaught_exception_handler');
 var userGestures = requireNative('user_gestures');
 
+var RunWithNativesEnabledModuleSystem =
+    requireNative('v8_context').RunWithNativesEnabledModuleSystem;
+
 binding.registerCustomHook(function(api) {
   var chromeTest = api.compiledApi;
   var apiFunctions = api.apiFunctions;
@@ -120,6 +123,10 @@ binding.registerCustomHook(function(api) {
     console.log("[SUCCESS] " + testName(currentTest));
     chromeTest.log("(  SUCCESS )");
     testDone();
+  });
+
+  apiFunctions.setHandleRequest('runWithModuleSystem', function(callback) {
+    RunWithNativesEnabledModuleSystem(callback);
   });
 
   apiFunctions.setHandleRequest('assertTrue', function(test, message) {

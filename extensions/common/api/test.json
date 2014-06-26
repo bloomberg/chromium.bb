@@ -153,6 +153,18 @@
         ]
       },
       {
+        "name": "runWithModuleSystem",
+        "type": "function",
+        "nocompile": true,
+        "description": "Gets a module system suitable for use in the context of a test.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback"
+          }
+        ]
+      },
+      {
         "name": "assertTrue",
         "type": "function",
         "nocompile": true,
