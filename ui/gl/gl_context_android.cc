@@ -4,7 +4,6 @@
 
 #include "ui/gl/gl_context.h"
 
-#include "base/android/sys_utils.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sys_info.h"
@@ -128,7 +127,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   if (limit_bytes == 0) {
     // NOTE: Non-low-end devices use only 50% of these limits,
     // except during 'emergencies' where 100% can be used.
-    if (!base::android::SysUtils::IsLowEndDevice()) {
+    if (!base::SysInfo::IsLowEndDevice()) {
       if (physical_memory_mb >= 1536)
         limit_bytes = physical_memory_mb / 8; // >192MB
       else if (physical_memory_mb >= 1152)

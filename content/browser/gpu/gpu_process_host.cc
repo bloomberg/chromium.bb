@@ -987,6 +987,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kGpuSandboxStartAfterInitialization,
     switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
     switches::kLoggingLevel,
+    switches::kLowEndDeviceMode,
     switches::kNoSandbox,
     switches::kTestGLLib,
     switches::kTraceStartup,

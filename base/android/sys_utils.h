@@ -15,16 +15,7 @@ class BASE_EXPORT SysUtils {
   static bool Register(JNIEnv* env);
 
   // Returns true iff this is a low-end device.
-  static bool IsLowEndDevice();
-
-  // Return the device's RAM size in kilo-bytes.
-  static size_t AmountOfPhysicalMemoryKB();
-
- private:
-  SysUtils();
-
   static bool IsLowEndDeviceFromJni();
-  static size_t AmountOfPhysicalMemoryKBFromJni();
 };
 
 }  // namespace android

@@ -129,6 +129,11 @@ class BASE_EXPORT SysInfo {
   static int DalvikHeapSizeMB();
   static int DalvikHeapGrowthLimitMB();
 #endif  // defined(OS_ANDROID)
+
+  // Returns true if this is a low-end device.
+  // Low-end device refers to devices having less than 512M memory in the
+  // current implementation.
+  static bool IsLowEndDevice();
 };
 
 }  // namespace base

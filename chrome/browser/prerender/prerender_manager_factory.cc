@@ -4,11 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/sys_utils.h"
-#endif
-
 #include "base/debug/trace_event.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
@@ -65,10 +62,8 @@ KeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   CHECK(g_browser_process->prerender_tracker());
-#if defined(OS_ANDROID)
-  if (base::android::SysUtils::IsLowEndDevice())
+  if (base::SysInfo::IsLowEndDevice())
     return NULL;
-#endif
 
   PrerenderManager* prerender_manager = new PrerenderManager(
       profile, g_browser_process->prerender_tracker());

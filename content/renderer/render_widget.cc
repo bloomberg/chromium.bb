@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -73,7 +74,6 @@
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
-#include "base/android/sys_utils.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
 
@@ -859,10 +859,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     DCHECK(is_threaded_compositing_enabled_ ||
            RenderThreadImpl::current()->layout_test_mode());
     cc::ResourceFormat format = cc::RGBA_8888;
-#if defined(OS_ANDROID)
-    if (base::android::SysUtils::IsLowEndDevice())
+    if (base::SysInfo::IsLowEndDevice())
       format = cc::RGB_565;
-#endif
     return scoped_ptr<cc::OutputSurface>(
         new MailboxOutputSurface(
             routing_id(),
@@ -2014,7 +2012,7 @@ RenderWidget::CreateGraphicsContext3D() {
   // uploads, after which we are just wasting memory. Since we don't
   // know our upload throughput yet, this just caps our memory usage.
   size_t divider = 1;
-  if (base::android::SysUtils::IsLowEndDevice())
+  if (base::SysInfo::IsLowEndDevice())
     divider = 6;
   // For reference Nexus10 can upload 1MB in about 2.5ms.
   const double max_mb_uploaded_per_ms = 2.0 / (5 * divider);

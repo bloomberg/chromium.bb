@@ -15,15 +15,12 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/sys_info.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/sys_utils.h"
-#endif
 
 namespace content {
 
@@ -46,13 +43,11 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif
 
-#if defined(OS_ANDROID)
-  if (base::android::SysUtils::IsLowEndDevice()) {
+  if (base::SysInfo::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
     v8::V8::SetFlagsFromString(optimize_flag.c_str(),
                                static_cast<int>(optimize_flag.size()));
   }
-#endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {

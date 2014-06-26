@@ -6,7 +6,6 @@
 
 #include <android/bitmap.h>
 
-#include "base/android/sys_utils.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -15,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
 #include "cc/base/latency_info_swap_promise.h"
 #include "cc/layers/delegated_frame_provider.h"
@@ -1436,7 +1436,7 @@ SkBitmap::Config RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
   // Define the criteria here. If say the 16 texture readback is
   // supported we should go with that (this degrades quality)
   // or stick back to the default format.
-  if (base::android::SysUtils::IsLowEndDevice()) {
+  if (base::SysInfo::IsLowEndDevice()) {
     if (IsReadbackConfigSupported(SkBitmap::kRGB_565_Config))
       return SkBitmap::kRGB_565_Config;
   }
