@@ -251,6 +251,7 @@ char kTSanDefaultSuppressions[] =
 
 // http://crbug.com/348984
 "race:sctp_express_handle_sack\n"
+"race:system_base_info\n"
 
 // http://crbug.com/350982
 "race:libvpx/vp9/decoder/vp9_thread.c\n"
@@ -293,6 +294,12 @@ char kTSanDefaultSuppressions[] =
 
 // http://crbug.com/388730
 "race:g_next_user_script_id\n"
+
+// http://crbug.com/389098
+"race:webrtc::RtpToNtpMs\n"
+"race:webrtc::UpdateRtcpList\n"
+"race:webrtc::RemoteNtpTimeEstimator::Estimate\n"
+"race:webrtc::voe::TransmitMixer::EnableStereoChannelSwapping\n"
 
 // End of suppressions.
 ;  // Please keep this semicolon.
