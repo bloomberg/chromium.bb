@@ -255,7 +255,7 @@ private:
     bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(RenderLayer*);
-    void updateClipParent(RenderLayer*);
+    void updateClipParent();
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent();
     void updateChildrenTransform();
@@ -306,6 +306,10 @@ private:
     // If there is no such containing layer, returns the infinite rect.
     // FIXME: unify this code with the code that sets up m_ancestorClippingLayer. They are doing very similar things.
     static IntRect localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo&,  const Vector<GraphicsLayerPaintInfo>& layers);
+
+    // Return true if |m_owningLayer|'s compositing ancestor is not a descendant (inclusive) of the
+    // clipping container for |m_owningLayer|.
+    bool owningLayerClippedByLayerNotAboveCompositedAncestor();
 
     RenderLayer& m_owningLayer;
 

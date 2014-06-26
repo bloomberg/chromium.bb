@@ -345,6 +345,25 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
+bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor()
+{
+    if (!m_owningLayer.parent())
+        return false;
+
+    const RenderLayer* compositingAncestor = m_owningLayer.ancestorCompositingLayer();
+    if (!compositingAncestor)
+        return false;
+
+    const RenderObject* clippingContainer = m_owningLayer.compositingInputs().clippingContainer;
+    if (!clippingContainer)
+        return false;
+
+    if (compositingAncestor->renderer()->isDescendantOf(clippingContainer))
+        return false;
+
+    return true;
+}
+
 bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 {
     ASSERT(m_owningLayer.compositor()->lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
@@ -369,7 +388,14 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         needsDescendantsClippingLayer = false;
 
     RenderLayer* scrollParent = compositor->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0;
-    bool needsAncestorClip = compositor->clippedByNonAncestorInStackingTree(&m_owningLayer);
+
+    // This is required because compositing layers are parented
+    // according to the z-order hierarchy, yet clipping goes down the renderer hierarchy.
+    // Thus, a RenderLayer can be clipped by a RenderLayer that is an ancestor in the renderer hierarchy,
+    // but a sibling in the z-order hierarchy. Further, that sibling need not be composited at all.
+    // In such scenarios, an ancestor clipping layer is necessary to apply the composited clip for this layer.
+    bool needsAncestorClip = owningLayerClippedByLayerNotAboveCompositedAncestor();
+
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.
@@ -397,7 +423,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         layerConfigChanged = true;
 
     updateScrollParent(scrollParent);
-    updateClipParent(m_owningLayer.clipParent());
+    updateClipParent();
 
     if (updateSquashingLayers(!m_squashedLayers.isEmpty()))
         layerConfigChanged = true;
@@ -1481,8 +1507,14 @@ void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
     }
 }
 
-void CompositedLayerMapping::updateClipParent(RenderLayer* clipParent)
+void CompositedLayerMapping::updateClipParent()
 {
+    RenderLayer* clipParent = 0;
+    if (m_owningLayer.compositingReasons() & CompositingReasonOutOfFlowClipping && !owningLayerClippedByLayerNotAboveCompositedAncestor()) {
+        if (RenderObject* containingBlock = m_owningLayer.renderer()->containingBlock())
+            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer();
+    }
+
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))
         scrollingCoordinator->updateClipParentForGraphicsLayer(m_graphicsLayer.get(), clipParent);
 }

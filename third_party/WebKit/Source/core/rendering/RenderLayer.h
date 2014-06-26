@@ -336,8 +336,6 @@ public:
         return const_cast<RenderLayer*>(compositingInputs().scrollParent);
     }
 
-    RenderLayer* clipParent() const;
-
     // Computes the position of the given render object in the space of |paintInvalidationContainer|.
     // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.

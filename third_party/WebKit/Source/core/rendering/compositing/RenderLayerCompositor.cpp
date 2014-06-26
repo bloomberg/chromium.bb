@@ -782,30 +782,6 @@ bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
     return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->subtreeIsInvisible() && layer->renderer()->flowThreadState() == RenderObject::NotInsideFlowThread;
 }
 
-// Return true if the given layer has some ancestor in the RenderLayer hierarchy that clips,
-// up to the enclosing compositing ancestor. This is required because compositing layers are parented
-// according to the z-order hierarchy, yet clipping goes down the renderer hierarchy.
-// Thus, a RenderLayer can be clipped by a RenderLayer that is an ancestor in the renderer hierarchy,
-// but a sibling in the z-order hierarchy.
-bool RenderLayerCompositor::clippedByNonAncestorInStackingTree(const RenderLayer* layer) const
-{
-    if (!layer->hasCompositedLayerMapping() || !layer->parent())
-        return false;
-
-    const RenderLayer* compositingAncestor = layer->ancestorCompositingLayer();
-    if (!compositingAncestor)
-        return false;
-
-    const RenderObject* clippingContainer = layer->compositingInputs().clippingContainer;
-    if (!clippingContainer)
-        return false;
-
-    if (compositingAncestor->renderer()->isDescendantOf(clippingContainer))
-        return false;
-
-    return true;
-}
-
 // Return true if the given layer is a stacking context and has compositing child
 // layers that it needs to clip. In this case we insert a clipping GraphicsLayer
 // into the hierarchy between this layer and its children in the z-order hierarchy.

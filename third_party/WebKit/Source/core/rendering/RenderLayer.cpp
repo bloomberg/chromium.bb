@@ -1548,15 +1548,6 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
     rect.move(-delta.x(), -delta.y());
 }
 
-RenderLayer* RenderLayer::clipParent() const
-{
-    if (compositingReasons() & CompositingReasonOutOfFlowClipping && !compositor()->clippedByNonAncestorInStackingTree(this)) {
-        if (RenderObject* containingBlock = renderer()->containingBlock())
-            return containingBlock->enclosingLayer()->enclosingCompositingLayer();
-    }
-    return 0;
-}
-
 void RenderLayer::didUpdateNeedsCompositedScrolling()
 {
     updateSelfPaintingLayer();

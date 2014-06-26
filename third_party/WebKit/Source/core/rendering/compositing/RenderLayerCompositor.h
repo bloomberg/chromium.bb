@@ -103,8 +103,6 @@ public:
     // Update the compositing dirty bits, based on the compositing-impacting properties of the layer.
     void updateLayerCompositingState(RenderLayer*, UpdateLayerCompositingStateOptions = Normal);
 
-    // Returns whether this layer is clipped by another layer that is not an ancestor of the given layer in the stacking context hierarchy.
-    bool clippedByNonAncestorInStackingTree(const RenderLayer*) const;
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given RenderLayer.
     bool clipsCompositingDescendants(const RenderLayer*) const;
 
