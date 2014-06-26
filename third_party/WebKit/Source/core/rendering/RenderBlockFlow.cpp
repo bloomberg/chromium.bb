@@ -603,17 +603,14 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     if (childRenderBlockFlow)
         addOverhangingFloats(childRenderBlockFlow, !childNeededLayout);
 
-    if (childOffset.width() || childOffset.height()) {
-        // If the child moved, we have to repaint it as well as any floating/positioned
-        // descendants. An exception is if we need a layout. In this case, we know we're going to
-        // repaint ourselves (and the child) anyway.
-        if (childHadLayout && !selfNeedsLayout())
-            child->repaintOverhangingFloats(true);
-    }
+    // If the child moved, we have to invalidate it's paint  as well as any floating/positioned
+    // descendants. An exception is if we need a layout. In this case, we know we're going to
+    // invalidate our paint (and the child) anyway.
+    bool didNotDoFullLayoutAndMoved = childHadLayout && !selfNeedsLayout() && (childOffset.width() || childOffset.height());
+    bool didNotLayoutAndNeedsPaintInvalidation = !childHadLayout && child->checkForPaintInvalidation();
 
-    if (!childHadLayout && child->checkForPaintInvalidation()) {
-        child->repaintOverhangingFloats(true);
-    }
+    if (didNotDoFullLayoutAndMoved || didNotLayoutAndNeedsPaintInvalidation)
+        child->invalidatePaintForOverhangingFloats(true);
 
     if (paginated) {
         // Check for an after page/column break.
@@ -1897,7 +1894,7 @@ void RenderBlockFlow::moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, boo
 
 }
 
-void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
+void RenderBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
 {
     // Repaint any overhanging floats (if we know we're the one to paint them).
     // Otherwise, bail out.
@@ -1920,7 +1917,7 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
 
             RenderBox* floatingRenderer = floatingObject->renderer();
             floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
-            floatingRenderer->repaintOverhangingFloats(false);
+            floatingRenderer->invalidatePaintForOverhangingFloats(false);
         }
     }
 }

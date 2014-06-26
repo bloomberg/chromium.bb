@@ -2082,22 +2082,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
 }
 
-void RenderBox::repaintDuringLayoutIfMoved(const LayoutRect& oldRect)
-{
-    if (oldRect.location() != m_frameRect.location()) {
-        LayoutRect newRect = m_frameRect;
-        // The child moved.  Invalidate the object's old and new positions.  We have to do this
-        // since the object may not have gotten a layout.
-        m_frameRect = oldRect;
-        paintInvalidationForWholeRenderer();
-        repaintOverhangingFloats(true);
-        m_frameRect = newRect;
-        paintInvalidationForWholeRenderer();
-        repaintOverhangingFloats(true);
-    }
-}
-
-void RenderBox::repaintOverhangingFloats(bool)
+void RenderBox::invalidatePaintForOverhangingFloats(bool)
 {
 }
 
