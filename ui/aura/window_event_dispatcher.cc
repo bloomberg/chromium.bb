@@ -150,13 +150,11 @@ void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void WindowEventDispatcher::DispatchMouseExitAtPoint(const gfx::Point& point) {
+DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
+    const gfx::Point& point) {
   ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EF_NONE,
                        ui::EF_NONE);
-  DispatchDetails details =
-      DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
-  if (details.dispatcher_destroyed)
-    return;
+  return DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
 }
 
 void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
@@ -242,8 +240,11 @@ void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
   // |window| is the capture window.
   gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
   if (window->Contains(mouse_moved_handler_) &&
-      window->ContainsPointInRoot(last_mouse_location))
-    DispatchMouseExitAtPoint(last_mouse_location);
+      window->ContainsPointInRoot(last_mouse_location)) {
+    DispatchDetails details = DispatchMouseExitAtPoint(last_mouse_location);
+    if (details.dispatcher_destroyed)
+      return;
+  }
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
@@ -387,6 +388,16 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
 }
 
 void WindowEventDispatcher::OnOtherRootGotCapture() {
+  if (mouse_moved_handler_) {
+    // Dispatch a mouse exit to reset any state associated with hover. This is
+    // important when going from no window having capture to a window having
+    // capture because we do not dispatch ET_MOUSE_CAPTURE_CHANGED in this case.
+    DispatchDetails details = DispatchMouseExitAtPoint(
+        GetLastMouseLocationInRoot());
+    if (details.dispatcher_destroyed)
+      return;
+  }
+
   mouse_moved_handler_ = NULL;
   mouse_pressed_handler_ = NULL;
 }

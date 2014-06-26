@@ -150,8 +150,10 @@ void WindowTreeHost::OnCursorVisibilityChanged(bool show) {
   // visible because that can only happen in response to a mouse event, which
   // will trigger its own mouse enter.
   if (!show) {
-    dispatcher()->DispatchMouseExitAtPoint(
+    ui::EventDispatchDetails details = dispatcher()->DispatchMouseExitAtPoint(
         dispatcher()->GetLastMouseLocationInRoot());
+    if (details.dispatcher_destroyed)
+      return;
   }
 
   OnCursorVisibilityChangedNative(show);
