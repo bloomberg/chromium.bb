@@ -644,3 +644,14 @@ name=https://code.google.com/p/drmemory/issues/detail?id=1582
 *!v8::internal::Invoke
 *!v8::internal::Execution::Call
 *!v8::Function::Call
+
+HANDLE LEAK
+name=http://crbug.com/387394
+system call NtCreateTimer
+KERNELBASE.dll!CreateWaitableTimerExW
+KERNEL32.dll!CreateWaitableTimerW
+*!talk_base::Timing::Timing
+*!content::P2PSocketDispatcherHost::P2PSocketDispatcherHost
+*!content::RenderProcessHostImpl::CreateMessageFilters
+*!content::RenderProcessHostImpl::Init
+*!content::RenderViewHostImpl::CreateRenderView
