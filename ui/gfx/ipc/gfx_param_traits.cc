@@ -13,8 +13,11 @@
 namespace {
 
 struct SkBitmap_Data {
-  // The configuration for the bitmap (bits per pixel, etc).
-  SkBitmap::Config fConfig;
+  // The color type for the bitmap (bits per pixel, etc).
+  SkColorType fColorType;
+
+  // The alpha type for the bitmap (opaque, premul, unpremul).
+  SkAlphaType fAlphaType;
 
   // The width of the bitmap in pixels.
   uint32 fWidth;
@@ -23,22 +26,23 @@ struct SkBitmap_Data {
   uint32 fHeight;
 
   void InitSkBitmapDataForTransfer(const SkBitmap& bitmap) {
-    fConfig = bitmap.config();
-    fWidth = bitmap.width();
-    fHeight = bitmap.height();
+    const SkImageInfo& info = bitmap.info();
+    fColorType = info.fColorType;
+    fAlphaType = info.fAlphaType;
+    fWidth = info.fWidth;
+    fHeight = info.fHeight;
   }
 
   // Returns whether |bitmap| successfully initialized.
-  bool InitSkBitmapFromData(SkBitmap* bitmap, const char* pixels,
-                            size_t total_pixels) const {
-    if (total_pixels) {
-      bitmap->setConfig(fConfig, fWidth, fHeight, 0);
-      if (!bitmap->allocPixels())
-        return false;
-      if (total_pixels != bitmap->getSize())
-        return false;
-      memcpy(bitmap->getPixels(), pixels, total_pixels);
-    }
+  bool InitSkBitmapFromData(SkBitmap* bitmap,
+                            const char* pixels,
+                            size_t pixels_size) const {
+    if (!bitmap->allocPixels(
+            SkImageInfo::Make(fWidth, fHeight, fColorType, fAlphaType)))
+      return false;
+    if (pixels_size != bitmap->getSize())
+      return false;
+    memcpy(bitmap->getPixels(), pixels, pixels_size);
     return true;
   }
 };
