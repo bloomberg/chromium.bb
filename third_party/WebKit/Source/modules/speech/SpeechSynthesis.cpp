@@ -230,7 +230,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::currentSpeechUtterance() const
 
 const AtomicString& SpeechSynthesis::interfaceName() const
 {
-    return EventTargetNames::SpeechSynthesisUtterance;
+    return EventTargetNames::SpeechSynthesis;
 }
 
 void SpeechSynthesis::trace(Visitor* visitor)

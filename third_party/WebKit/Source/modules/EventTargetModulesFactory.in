@@ -21,6 +21,7 @@ modules/notifications/Notification
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerGlobalScope
 modules/speech/SpeechRecognition
+modules/speech/SpeechSynthesis
 modules/speech/SpeechSynthesisUtterance
 modules/webaudio/AudioContext Conditional=WEB_AUDIO
 modules/webaudio/AudioNode Conditional=WEB_AUDIO
