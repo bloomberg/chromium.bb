@@ -923,10 +923,6 @@ const char kDisableWebAudio[]               = "disable-webaudio";
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).
 const char kDisablePanelFitting[]           = "disable-panel-fitting";
-
-// Enables VA-API accelerated video encode.
-const char kEnableVaapiAcceleratedVideoEncode[] =
-    "enable-vaapi-accelerated-video-encode";
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

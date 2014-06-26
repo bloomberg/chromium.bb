@@ -659,13 +659,6 @@
             'formats/webm/chromeos/webm_encoder.h',
           ],
         }],
-        # For VaapiVideoEncodeAccelerator.
-        ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
-          'sources': [
-            'filters/h264_bitstream_buffer.cc',
-            'filters/h264_bitstream_buffer.h',
-          ],
-        }],
         ['OS!="ios"', {
           'dependencies': [
             '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -1228,11 +1221,6 @@
                 'USE_CRAS',
               ],
             }],
-          ],
-        }],
-        ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
-          'sources': [
-            'filters/h264_bitstream_buffer_unittest.cc',
           ],
         }],
         ['use_alsa==0', {

@@ -7,12 +7,10 @@
 #include <dlfcn.h>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 // Auto-generated for dlopen libva libraries
 #include "content/common/gpu/media/va_stubs.h"
-#include "third_party/libyuv/include/libyuv.h"
 
 using content_common_gpu_media::kModuleVa;
 using content_common_gpu_media::InitializeStubs;
@@ -44,18 +42,6 @@ static const base::FilePath::CharType kVaLib[] =
   } while (0)
 
 namespace content {
-
-// Config attributes common for both encode and decode.
-static const VAConfigAttrib kCommonVAConfigAttribs[] = {
-    {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420},
-};
-
-// Attributes required for encode.
-static const VAConfigAttrib kEncodeVAConfigAttribs[] = {
-    {VAConfigAttribRateControl, VA_RC_CBR},
-    {VAConfigAttribEncPackedHeaders,
-     VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE},
-};
 
 // Maps Profile enum values to VaProfile values.
 static VAProfile ProfileToVAProfile(
@@ -120,20 +106,17 @@ VaapiWrapper::VaapiWrapper()
 
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
-  DestroyCodedBuffers();
   DestroySurfaces();
   Deinitialize();
 }
 
 scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
-    CodecMode mode,
     media::VideoCodecProfile profile,
     Display* x_display,
     const base::Closure& report_error_to_uma_cb) {
   scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
 
-  if (!vaapi_wrapper->Initialize(
-          mode, profile, x_display, report_error_to_uma_cb))
+  if (!vaapi_wrapper->Initialize(profile, x_display, report_error_to_uma_cb))
     vaapi_wrapper.reset();
 
   return vaapi_wrapper.Pass();
@@ -151,8 +134,7 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
 }
 
-bool VaapiWrapper::Initialize(CodecMode mode,
-                              media::VideoCodecProfile profile,
+bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
                               Display* x_display,
                               const base::Closure& report_error_to_uma_cb) {
   static bool vaapi_functions_initialized = PostSandboxInitialization();
@@ -202,73 +184,21 @@ bool VaapiWrapper::Initialize(CodecMode mode,
     return false;
   }
 
-  // Query the driver for supported entrypoints.
-  int max_entrypoints = vaMaxNumEntrypoints(va_display_);
-  std::vector<VAEntrypoint> supported_entrypoints(
-      base::checked_cast<size_t>(max_entrypoints));
-
-  int num_supported_entrypoints;
-  va_res = vaQueryConfigEntrypoints(va_display_,
-                                    va_profile,
-                                    &supported_entrypoints[0],
-                                    &num_supported_entrypoints);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigEntrypoints failed", false);
-  if (num_supported_entrypoints < 0 ||
-      num_supported_entrypoints > max_entrypoints) {
-    DVLOG(1) << "vaQueryConfigEntrypoints returned: "
-             << num_supported_entrypoints;
-    return false;
-  }
-
-  VAEntrypoint entrypoint =
-      (mode == kEncode ? VAEntrypointEncSlice : VAEntrypointVLD);
-
-  if (std::find(supported_entrypoints.begin(),
-                supported_entrypoints.end(),
-                entrypoint) == supported_entrypoints.end()) {
-    DVLOG(1) << "Unsupported entrypoint";
-    return false;
-  }
-
-  // Query the driver for required attributes.
-  std::vector<VAConfigAttrib> required_attribs;
-  required_attribs.insert(
-      required_attribs.end(),
-      kCommonVAConfigAttribs,
-      kCommonVAConfigAttribs + arraysize(kCommonVAConfigAttribs));
-  if (mode == kEncode) {
-    required_attribs.insert(
-        required_attribs.end(),
-        kEncodeVAConfigAttribs,
-        kEncodeVAConfigAttribs + arraysize(kEncodeVAConfigAttribs));
-  }
-
-  std::vector<VAConfigAttrib> attribs = required_attribs;
-  for (size_t i = 0; i < required_attribs.size(); ++i)
-    attribs[i].value = 0;
-
-  va_res = vaGetConfigAttributes(
-      va_display_, va_profile, entrypoint, &attribs[0], attribs.size());
+  VAConfigAttrib attrib = {VAConfigAttribRTFormat, 0};
+  const VAEntrypoint kEntrypoint = VAEntrypointVLD;
+  va_res = vaGetConfigAttributes(va_display_, va_profile, kEntrypoint,
+                                 &attrib, 1);
   VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
 
-  for (size_t i = 0; i < required_attribs.size(); ++i) {
-    if (attribs[i].type != required_attribs[i].type ||
-        (attribs[i].value & required_attribs[i].value) !=
-            required_attribs[i].value) {
-      DVLOG(1) << "Unsupported value " << required_attribs[i].value
-               << " for attribute type " << required_attribs[i].type;
-      return false;
-    }
+  if (!(attrib.value & VA_RT_FORMAT_YUV420)) {
+    DVLOG(1) << "YUV420 not supported by this VAAPI implementation";
+    return false;
   }
 
   TryToSetVADisplayAttributeToLocalGPU();
 
-  va_res = vaCreateConfig(va_display_,
-                          va_profile,
-                          entrypoint,
-                          &required_attribs[0],
-                          required_attribs.size(),
-                          &va_config_id_);
+  va_res = vaCreateConfig(va_display_, va_profile, kEntrypoint,
+                          &attrib, 1, &va_config_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
 
   return true;
@@ -369,7 +299,6 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
   switch (va_buffer_type) {
     case VASliceParameterBufferType:
     case VASliceDataBufferType:
-    case VAEncSliceParameterBufferType:
       pending_slice_bufs_.push_back(buffer_id);
       break;
 
@@ -378,43 +307,6 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
       break;
   }
 
-  return true;
-}
-
-bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
-    VAEncMiscParameterType misc_param_type,
-    size_t size,
-    void* buffer) {
-  base::AutoLock auto_lock(va_lock_);
-
-  VABufferID buffer_id;
-  VAStatus va_res = vaCreateBuffer(va_display_,
-                                   va_context_id_,
-                                   VAEncMiscParameterBufferType,
-                                   sizeof(VAEncMiscParameterBuffer) + size,
-                                   1,
-                                   NULL,
-                                   &buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed to create a VA buffer", false);
-
-  void* data_ptr = NULL;
-  va_res = vaMapBuffer(va_display_, buffer_id, &data_ptr);
-  VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
-  if (va_res != VA_STATUS_SUCCESS) {
-    vaDestroyBuffer(va_display_, buffer_id);
-    return false;
-  }
-
-  DCHECK(data_ptr);
-
-  VAEncMiscParameterBuffer* misc_param =
-      reinterpret_cast<VAEncMiscParameterBuffer*>(data_ptr);
-  misc_param->type = misc_param_type;
-  memcpy(misc_param->data, buffer, size);
-  va_res = vaUnmapBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
-  pending_va_bufs_.push_back(buffer_id);
   return true;
 }
 
@@ -435,73 +327,38 @@ void VaapiWrapper::DestroyPendingBuffers() {
   pending_slice_bufs_.clear();
 }
 
-bool VaapiWrapper::CreateCodedBuffer(size_t size, VABufferID* buffer_id) {
-  base::AutoLock auto_lock(va_lock_);
-  VAStatus va_res = vaCreateBuffer(va_display_,
-                                   va_context_id_,
-                                   VAEncCodedBufferType,
-                                   size,
-                                   1,
-                                   NULL,
-                                   buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed to create a coded buffer", false);
-
-  DCHECK(coded_buffers_.insert(*buffer_id).second);
-  return true;
-}
-
-void VaapiWrapper::DestroyCodedBuffers() {
-  base::AutoLock auto_lock(va_lock_);
-
-  for (std::set<VABufferID>::const_iterator iter = coded_buffers_.begin();
-       iter != coded_buffers_.end();
-       ++iter) {
-    VAStatus va_res = vaDestroyBuffer(va_display_, *iter);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
-  }
-
-  coded_buffers_.clear();
-}
-
-bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
+bool VaapiWrapper::SubmitDecode(VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(va_lock_);
 
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
   DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
-  DVLOG(4) << "Target VA surface " << va_surface_id;
+  DVLOG(4) << "Decoding into VA surface " << va_surface_id;
 
-  // Get ready to execute for given surface.
+  // Get ready to decode into surface.
   VAStatus va_res = vaBeginPicture(va_display_, va_context_id_,
                                    va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "vaBeginPicture failed", false);
 
-  if (pending_va_bufs_.size() > 0) {
-    // Commit parameter and slice buffers.
-    va_res = vaRenderPicture(va_display_,
-                             va_context_id_,
-                             &pending_va_bufs_[0],
-                             pending_va_bufs_.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for va_bufs failed", false);
-  }
+  // Commit parameter and slice buffers.
+  va_res = vaRenderPicture(va_display_, va_context_id_,
+                           &pending_va_bufs_[0], pending_va_bufs_.size());
+  VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for va_bufs failed", false);
 
-  if (pending_slice_bufs_.size() > 0) {
-    va_res = vaRenderPicture(va_display_,
-                             va_context_id_,
-                             &pending_slice_bufs_[0],
-                             pending_slice_bufs_.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for slices failed", false);
-  }
+  va_res = vaRenderPicture(va_display_, va_context_id_,
+                           &pending_slice_bufs_[0],
+                           pending_slice_bufs_.size());
+  VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for slices failed", false);
 
-  // Instruct HW codec to start processing committed buffers.
-  // Does not block and the job is not finished after this returns.
+  // Instruct HW decoder to start processing committed buffers (decode this
+  // picture). This does not block until the end of decode.
   va_res = vaEndPicture(va_display_, va_context_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaEndPicture failed", false);
 
   return true;
 }
 
-bool VaapiWrapper::ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
-  bool result = Execute(va_surface_id);
+bool VaapiWrapper::DecodeAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
+  bool result = SubmitDecode(va_surface_id);
   DestroyPendingBuffers();
   return result;
 }
@@ -521,7 +378,8 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                         0, 0, dest_size.width(), dest_size.height(),
                         0, 0, dest_size.width(), dest_size.height(),
                         NULL, 0, 0);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed putting surface to pixmap", false);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed putting decode surface to pixmap",
+                       false);
   return true;
 }
 
@@ -545,124 +403,15 @@ bool VaapiWrapper::GetVaImageForTesting(VASurfaceID va_surface_id,
   if (va_res == VA_STATUS_SUCCESS)
     return true;
 
-  va_res = vaDestroyImage(va_display_, image->image_id);
-  VA_LOG_ON_ERROR(va_res, "vaDestroyImage failed");
-
+  vaDestroyImage(va_display_, image->image_id);
   return false;
 }
 
 void VaapiWrapper::ReturnVaImageForTesting(VAImage* image) {
   base::AutoLock auto_lock(va_lock_);
 
-  VAStatus va_res = vaUnmapBuffer(va_display_, image->buf);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
-  va_res = vaDestroyImage(va_display_, image->image_id);
-  VA_LOG_ON_ERROR(va_res, "vaDestroyImage failed");
-}
-
-static void DestroyVAImage(VADisplay va_display, VAImage image) {
-  if (image.image_id != VA_INVALID_ID)
-    vaDestroyImage(va_display, image.image_id);
-}
-
-bool VaapiWrapper::UploadVideoFrameToSurface(
-    const scoped_refptr<media::VideoFrame>& frame,
-    VASurfaceID va_surface_id) {
-  base::AutoLock auto_lock(va_lock_);
-
-  VAImage image;
-  VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
-  VA_SUCCESS_OR_RETURN(va_res, "vaDeriveImage failed", false);
-  base::ScopedClosureRunner vaimage_deleter(
-      base::Bind(&DestroyVAImage, va_display_, image));
-
-  if (image.format.fourcc != VA_FOURCC_NV12) {
-    DVLOG(1) << "Unsupported image format: " << image.format.fourcc;
-    return false;
-  }
-
-  if (gfx::Rect(image.width, image.height) < gfx::Rect(frame->coded_size())) {
-    DVLOG(1) << "Buffer too small to fit the frame.";
-    return false;
-  }
-
-  void* image_ptr = NULL;
-  va_res = vaMapBuffer(va_display_, image.buf, &image_ptr);
-  VA_SUCCESS_OR_RETURN(va_res, "vaMapBuffer failed", false);
-  DCHECK(image_ptr);
-
-  int ret = 0;
-  {
-    base::AutoUnlock auto_unlock(va_lock_);
-    ret = libyuv::I420ToNV12(frame->data(media::VideoFrame::kYPlane),
-                             frame->stride(media::VideoFrame::kYPlane),
-                             frame->data(media::VideoFrame::kUPlane),
-                             frame->stride(media::VideoFrame::kUPlane),
-                             frame->data(media::VideoFrame::kVPlane),
-                             frame->stride(media::VideoFrame::kVPlane),
-                             static_cast<uint8*>(image_ptr) + image.offsets[0],
-                             image.pitches[0],
-                             static_cast<uint8*>(image_ptr) + image.offsets[1],
-                             image.pitches[1],
-                             image.width,
-                             image.height);
-  }
-
-  va_res = vaUnmapBuffer(va_display_, image.buf);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
-  return ret == 0;
-}
-
-bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
-                                                 VASurfaceID sync_surface_id,
-                                                 uint8* target_ptr,
-                                                 size_t target_size,
-                                                 size_t* coded_data_size) {
-  base::AutoLock auto_lock(va_lock_);
-
-  VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
-
-  VACodedBufferSegment* buffer_segment = NULL;
-  va_res = vaMapBuffer(
-      va_display_, buffer_id, reinterpret_cast<void**>(&buffer_segment));
-  VA_SUCCESS_OR_RETURN(va_res, "vaMapBuffer failed", false);
-  DCHECK(target_ptr);
-
-  {
-    base::AutoUnlock auto_unlock(va_lock_);
-    *coded_data_size = 0;
-
-    while (buffer_segment) {
-      DCHECK(buffer_segment->buf);
-
-      if (buffer_segment->size > target_size) {
-        DVLOG(1) << "Insufficient output buffer size";
-        break;
-      }
-
-      memcpy(target_ptr, buffer_segment->buf, buffer_segment->size);
-
-      target_ptr += buffer_segment->size;
-      *coded_data_size += buffer_segment->size;
-      target_size -= buffer_segment->size;
-
-      buffer_segment =
-          reinterpret_cast<VACodedBufferSegment*>(buffer_segment->next);
-    }
-  }
-
-  va_res = vaUnmapBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
-  va_res = vaDestroyBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
-
-  DCHECK(coded_buffers_.erase(buffer_id));
-
-  return buffer_segment == NULL;
+  vaUnmapBuffer(va_display_, image->buf);
+  vaDestroyImage(va_display_, image->image_id);
 }
 
 // static
