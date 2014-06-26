@@ -914,8 +914,10 @@ cr.define('options', function() {
       else
         $('start-stop-sync-indicator').removeAttribute('controlled-by');
 
-      // Hide the "sign in" button on Chrome OS, and show it on desktop Chrome.
-      signInButton.hidden = cr.isChromeOS;
+      // Hide the "sign in" button on Chrome OS, and show it on desktop Chrome
+      // (except for supervised users, which can't change their signed-in
+      // status).
+      signInButton.hidden = cr.isChromeOS || syncData.supervisedUser;
 
       signInButton.textContent =
           this.signedIn_ ?
