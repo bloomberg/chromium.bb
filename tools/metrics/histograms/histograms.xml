@@ -46678,6 +46678,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
   <int value="15" label="prefs::kPreferenceResetTime"/>
   <int value="16" label="prefs::kSafeBrowsingIncidentReportSent"/>
+  <int value="17" label="sync_driver::prefs::kSyncRemainingRollbackTries"/>
 </enum>
 
 <enum name="TranslateError" type="int">
