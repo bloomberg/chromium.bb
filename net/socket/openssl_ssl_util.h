@@ -9,7 +9,15 @@ namespace crypto {
 class OpenSSLErrStackTracer;
 }
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace net {
+
+// Puts a net error, |err|, on the error stack in OpenSSL. The file and line are
+// extracted from |posted_from|. The function code of the error is left as 0.
+void OpenSSLPutNetError(const tracked_objects::Location& posted_from, int err);
 
 // Utility to construct the appropriate set & clear masks for use the OpenSSL
 // options and mode configuration functions. (SSL_set_options etc)

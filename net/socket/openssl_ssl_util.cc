@@ -7,6 +7,8 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+#include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
@@ -26,14 +28,32 @@ void SslSetClearMask::ConfigureFlag(long flag, bool state) {
 
 namespace {
 
-int MapOpenSSLErrorSSL() {
-  // Walk down the error stack to find the SSLerr generated reason.
-  unsigned long error_code;
-  do {
-    error_code = ERR_get_error();
-    if (error_code == 0)
-      return ERR_SSL_PROTOCOL_ERROR;
-  } while (ERR_GET_LIB(error_code) != ERR_LIB_SSL);
+class OpenSSLNetErrorLibSingleton {
+ public:
+  OpenSSLNetErrorLibSingleton() {
+    crypto::EnsureOpenSSLInit();
+
+    // Allocate a new error library value for inserting net errors into
+    // OpenSSL. This does not register any ERR_STRING_DATA for the errors, so
+    // stringifying error codes through OpenSSL will return NULL.
+    net_error_lib_ = ERR_get_next_error_library();
+  }
+
+  int net_error_lib() const { return net_error_lib_; }
+
+ private:
+  int net_error_lib_;
+};
+
+base::LazyInstance<OpenSSLNetErrorLibSingleton>::Leaky g_openssl_net_error_lib =
+    LAZY_INSTANCE_INITIALIZER;
+
+int OpenSSLNetErrorLib() {
+  return g_openssl_net_error_lib.Get().net_error_lib();
+}
+
+int MapOpenSSLErrorSSL(unsigned long error_code) {
+  DCHECK_EQ(ERR_LIB_SSL, ERR_GET_LIB(error_code));
 
   DVLOG(1) << "OpenSSL SSL error, reason: " << ERR_GET_REASON(error_code)
            << ", name: " << ERR_error_string(error_code, NULL);
@@ -134,6 +154,18 @@ int MapOpenSSLErrorSSL() {
 
 }  // namespace
 
+void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
+  // Net error codes are negative. Encode them as positive numbers.
+  err = -err;
+  if (err < 0 || err > 0xfff) {
+    // OpenSSL reserves 12 bits for the reason code.
+    NOTREACHED();
+    err = ERR_INVALID_ARGUMENT;
+  }
+  ERR_PUT_error(OpenSSLNetErrorLib(), 0, err,
+                location.file_name(), location.line_number());
+}
+
 int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
   switch (err) {
     case SSL_ERROR_WANT_READ:
@@ -145,7 +177,19 @@ int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
                  << errno;
       return ERR_SSL_PROTOCOL_ERROR;
     case SSL_ERROR_SSL:
-      return MapOpenSSLErrorSSL();
+      // Walk down the error stack to find an SSL or net error.
+      unsigned long error_code;
+      do {
+        error_code = ERR_get_error();
+        if (ERR_GET_LIB(error_code) == ERR_LIB_SSL) {
+          return MapOpenSSLErrorSSL(error_code);
+        } else if (ERR_GET_LIB(error_code) == OpenSSLNetErrorLib()) {
+          // Net error codes are negative but encoded in OpenSSL as positive
+          // numbers.
+          return -ERR_GET_REASON(error_code);
+        }
+      } while (error_code != 0);
+      return ERR_SSL_PROTOCOL_ERROR;
     default:
       // TODO(joth): Implement full mapping.
       LOG(WARNING) << "Unknown OpenSSL error " << err;

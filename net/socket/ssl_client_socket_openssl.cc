@@ -1362,7 +1362,12 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
       *pkey = privkey.release();
       return 1;
     }
+
+    // Could not find the private key. Fail the handshake and surface an
+    // appropriate error to the caller.
     LOG(WARNING) << "Client cert found without private key";
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY);
+    return -1;
 #else  // !defined(USE_OPENSSL_CERTS)
     // OS handling of client certificates is not yet implemented.
     NOTIMPLEMENTED();
