@@ -14,14 +14,17 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 
+import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 /**
  * This is a helper class to create shortcuts on the Android home screen.
  */
 public class ShortcutHelper {
+    public static final String EXTRA_ICON = "org.chromium.chrome.browser.webapp_icon";
     public static final String EXTRA_ID = "org.chromium.chrome.browser.webapp_id";
     public static final String EXTRA_MAC = "org.chromium.chrome.browser.webapp_mac";
+    public static final String EXTRA_TITLE = "org.chromium.chrome.browser.webapp_title";
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
 
     private static String sFullScreenAction;
@@ -62,13 +65,21 @@ public class ShortcutHelper {
             int red, int green, int blue, boolean isWebappCapable) {
         assert sFullScreenAction != null;
 
-        Intent shortcutIntent = null;
+        Intent shortcutIntent;
         if (isWebappCapable) {
+            // Encode the favicon as a base64 string (Launcher drops Bitmaps in the Intent).
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            favicon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String encodedIcon = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
             // Add the shortcut as a launcher icon for a full-screen Activity.
             shortcutIntent = new Intent();
             shortcutIntent.setAction(sFullScreenAction);
-            shortcutIntent.putExtra(EXTRA_URL, url);
+            shortcutIntent.putExtra(EXTRA_ICON, encodedIcon);
             shortcutIntent.putExtra(EXTRA_ID, UUID.randomUUID().toString());
+            shortcutIntent.putExtra(EXTRA_TITLE, title);
+            shortcutIntent.putExtra(EXTRA_URL, url);
 
             // The only reason we convert to a String here is because Android inexplicably eats a
             // byte[] when adding the shortcut -- the Bundle received by the launched Activity even
