@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -12,6 +14,10 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 
 class EventRouter;
+
+namespace base {
+class Time;
+}  // namespace base
 
 namespace net {
 class IOBuffer;
@@ -22,6 +28,19 @@ namespace file_system_provider {
 
 class ProvidedFileSystemInfo;
 class RequestManager;
+
+// Represents metadata for either a file or a directory. Returned by GetMetadata
+// method in ProvidedFileSystemInterface.
+struct EntryMetadata {
+  EntryMetadata();
+  ~EntryMetadata();
+
+  bool is_directory;
+  std::string name;
+  int64 size;
+  base::Time modification_time;
+  std::string mime_type;
+};
 
 // Interface for a provided file system. Acts as a proxy between providers
 // and clients.
@@ -35,6 +54,9 @@ class ProvidedFileSystemInterface {
       void(int chunk_length, bool has_more, base::File::Error result)>
       ReadChunkReceivedCallback;
 
+  typedef base::Callback<void(const EntryMetadata& entry_metadata,
+                              base::File::Error result)> GetMetadataCallback;
+
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
@@ -47,9 +69,8 @@ class ProvidedFileSystemInterface {
 
   // Requests metadata of the passed |entry_path|. It can be either a file
   // or a directory.
-  virtual void GetMetadata(
-      const base::FilePath& entry_path,
-      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) = 0;
+  virtual void GetMetadata(const base::FilePath& entry_path,
+                           const GetMetadataCallback& callback) = 0;
 
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until |has_more| is set to false.

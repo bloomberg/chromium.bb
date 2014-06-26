@@ -119,12 +119,12 @@ void OnReadChunkReceivedOnUIThread(
 void GetMetadataOnUIThread(
     base::WeakPtr<ProvidedFileSystemInterface> file_system,
     const base::FilePath& file_path,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+    const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the file system got unmounted, then abort the get length operation.
   if (!file_system.get()) {
-    callback.Run(base::File::FILE_ERROR_ABORT, base::File::Info());
+    callback.Run(EntryMetadata(), base::File::FILE_ERROR_ABORT);
     return;
   }
 
@@ -133,12 +133,12 @@ void GetMetadataOnUIThread(
 
 // Forward the completion callback to IO thread.
 void OnGetMetadataReceivedOnUIThread(
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback,
-    base::File::Error result,
-    const base::File::Info& file_info) {
+    const ProvidedFileSystemInterface::GetMetadataCallback& callback,
+    const EntryMetadata& metadata,
+    base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, result, file_info));
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, metadata, result));
 }
 
 }  // namespace
@@ -338,8 +338,8 @@ void FileStreamReader::OnReadChunkReceived(
 
 void FileStreamReader::OnGetMetadataForGetLengthReceived(
     const net::Int64CompletionCallback& callback,
-    base::File::Error result,
-    const base::File::Info& file_info) {
+    const EntryMetadata& metadata,
+    base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // In case of an error, abort.
@@ -349,7 +349,7 @@ void FileStreamReader::OnGetMetadataForGetLengthReceived(
   }
 
   DCHECK_EQ(result, base::File::FILE_OK);
-  callback.Run(file_info.size);
+  callback.Run(metadata.size);
 }
 
 }  // namespace file_system_provider

@@ -40,7 +40,8 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const base::FilePath& entry_path,
-      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) OVERRIDE;
+      const ProvidedFileSystemInterface::GetMetadataCallback& callback)
+      OVERRIDE;
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;

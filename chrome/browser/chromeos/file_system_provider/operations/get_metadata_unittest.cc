@@ -24,6 +24,7 @@ namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
+const char kMimeType[] = "text/plain";
 const int kRequestId = 2;
 const base::FilePath::CharType kDirectoryPath[] = "/directory";
 
@@ -54,16 +55,16 @@ class CallbackLogger {
  public:
   class Event {
    public:
-    Event(base::File::Error result, const base::File::Info& file_info)
-        : result_(result), file_info_(file_info) {}
+    Event(const EntryMetadata& metadata, base::File::Error result)
+        : metadata_(metadata), result_(result) {}
     virtual ~Event() {}
 
+    const EntryMetadata& metadata() { return metadata_; }
     base::File::Error result() { return result_; }
-    const base::File::Info& file_info() { return file_info_; }
 
    private:
+    EntryMetadata metadata_;
     base::File::Error result_;
-    base::File::Info file_info_;
 
     DISALLOW_COPY_AND_ASSIGN(Event);
   };
@@ -71,9 +72,8 @@ class CallbackLogger {
   CallbackLogger() : weak_ptr_factory_(this) {}
   virtual ~CallbackLogger() {}
 
-  void OnGetMetadata(base::File::Error result,
-                     const base::File::Info& file_info) {
-    events_.push_back(new Event(result, file_info));
+  void OnGetMetadata(const EntryMetadata& metadata, base::File::Error result) {
+    events_.push_back(new Event(metadata, result));
   }
 
   ScopedVector<Event>& events() { return events_; }
@@ -194,7 +194,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
       "    \"size\": 4096,\n"
       "    \"modificationTime\": {\n"
       "      \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
-      "    }\n"
+      "    },\n"
+      "    \"mimeType\": \"text/plain\"\n"  // kMimeType
       "  }\n"
       "]\n";
 
@@ -219,13 +220,14 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   CallbackLogger::Event* event = callback_logger.events()[0];
   EXPECT_EQ(base::File::FILE_OK, event->result());
 
-  const base::File::Info& file_info = event->file_info();
-  EXPECT_FALSE(file_info.is_directory);
-  EXPECT_EQ(4096, file_info.size);
+  const EntryMetadata& metadata = event->metadata();
+  EXPECT_FALSE(metadata.is_directory);
+  EXPECT_EQ(4096, metadata.size);
   base::Time expected_time;
   EXPECT_TRUE(
       base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014", &expected_time));
-  EXPECT_EQ(expected_time, file_info.last_modified);
+  EXPECT_EQ(expected_time, metadata.modification_time);
+  EXPECT_EQ(kMimeType, metadata.mime_type);
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {

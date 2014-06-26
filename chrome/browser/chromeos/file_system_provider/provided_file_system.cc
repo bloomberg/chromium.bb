@@ -49,15 +49,14 @@ void ProvidedFileSystem::RequestUnmount(
   }
 }
 
-void ProvidedFileSystem::GetMetadata(
-    const base::FilePath& entry_path,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+void ProvidedFileSystem::GetMetadata(const base::FilePath& entry_path,
+                                     const GetMetadataCallback& callback) {
   if (!request_manager_.CreateRequest(
           GET_METADATA,
           scoped_ptr<RequestManager::HandlerInterface>(
               new operations::GetMetadata(
                   event_router_, file_system_info_, entry_path, callback)))) {
-    callback.Run(base::File::FILE_ERROR_SECURITY, base::File::Info());
+    callback.Run(EntryMetadata(), base::File::FILE_ERROR_SECURITY);
   }
 }
 

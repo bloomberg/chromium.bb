@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +29,7 @@ namespace {
 
 // Helper function used to implement GetNonNativeLocalPathMimeType. It extracts
 // the mime type from the passed Drive resource entry.
-void GetMimeTypeAfterGetResourceEntry(
+void GetMimeTypeAfterGetResourceEntryForDrive(
     const base::Callback<void(bool, const std::string&)>& callback,
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {
@@ -37,6 +40,21 @@ void GetMimeTypeAfterGetResourceEntry(
     return;
   }
   callback.Run(true, entry->file_specific_info().content_mime_type());
+}
+
+// Helper function used to implement GetNonNativeLocalPathMimeType. It extracts
+// the mime type from the passed metadata from a providing extension.
+void GetMimeTypeAfterGetMetadataForProvidedFileSystem(
+    const base::Callback<void(bool, const std::string&)>& callback,
+    const chromeos::file_system_provider::EntryMetadata& metadata,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (result != base::File::FILE_OK) {
+    callback.Run(false, std::string());
+    return;
+  }
+  callback.Run(true, metadata.mime_type);
 }
 
 // Helper function to converts a callback that takes boolean value to that takes
@@ -122,29 +140,46 @@ void GetNonNativeLocalPathMimeType(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(IsUnderNonNativeLocalPath(profile, path));
 
-  if (!drive::util::IsUnderDriveMountPoint(path)) {
-    // Non-drive mount point does not have mime types as metadata. Just return
-    // success with empty mime type value.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback, true /* success */, std::string()));
+  if (drive::util::IsUnderDriveMountPoint(path)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile);
+    if (!file_system) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(callback, false, std::string()));
+      return;
+    }
+
+    file_system->GetResourceEntry(
+        drive::util::ExtractDrivePath(path),
+        base::Bind(&GetMimeTypeAfterGetResourceEntryForDrive, callback));
     return;
   }
 
-  drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile);
-  if (!file_system) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback, false, std::string()));
+  if (chromeos::file_system_provider::util::IsFileSystemProviderLocalPath(
+          path)) {
+    chromeos::file_system_provider::util::LocalPathParser parser(profile, path);
+    if (!parser.Parse()) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(callback, false, std::string()));
+      return;
+    }
+
+    parser.file_system()->GetMetadata(
+        parser.file_path(),
+        base::Bind(&GetMimeTypeAfterGetMetadataForProvidedFileSystem,
+                   callback));
     return;
   }
 
-  file_system->GetResourceEntry(
-      drive::util::ExtractDrivePath(path),
-      base::Bind(&GetMimeTypeAfterGetResourceEntry, callback));
+  // As a fallback just return success with an empty mime type value.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(callback, true /* success */, std::string()));
 }
 
 void IsNonNativeLocalPathDirectory(

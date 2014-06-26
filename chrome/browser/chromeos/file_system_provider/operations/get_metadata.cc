@@ -16,7 +16,7 @@ namespace {
 
 // Convert |value| into |output|. If parsing fails, then returns false.
 bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
-                                   base::File::Info* output) {
+                                   EntryMetadata* output) {
   using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
       GetMetadataRequestedSuccess::Params;
@@ -25,9 +25,12 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
   if (!params)
     return false;
 
+  output->name = params->metadata.name;
   output->is_directory = params->metadata.is_directory;
   output->size = static_cast<int64>(params->metadata.size);
-  output->is_symbolic_link = false;  // Not supported.
+
+  if (params->metadata.mime_type.get())
+    output->mime_type = *params->metadata.mime_type.get();
 
   std::string input_modification_time;
   if (!params->metadata.modification_time.additional_properties.GetString(
@@ -38,7 +41,7 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
   // Allow to pass invalid modification time, since there is no way to verify
   // it easily on any earlier stage.
   base::Time::FromString(input_modification_time.c_str(),
-                         &output->last_modified);
+                         &output->modification_time);
 
   return true;
 }
@@ -49,7 +52,7 @@ GetMetadata::GetMetadata(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& entry_path,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback)
+    const ProvidedFileSystemInterface::GetMetadataCallback& callback)
     : Operation(event_router, file_system_info),
       entry_path_(entry_path),
       callback_(callback) {
@@ -70,17 +73,17 @@ bool GetMetadata::Execute(int request_id) {
 void GetMetadata::OnSuccess(int /* request_id */,
                             scoped_ptr<RequestValue> result,
                             bool has_more) {
-  base::File::Info file_info;
+  EntryMetadata metadata;
   const bool convert_result =
-      ConvertRequestValueToFileInfo(result.Pass(), &file_info);
+      ConvertRequestValueToFileInfo(result.Pass(), &metadata);
   DCHECK(convert_result);
-  callback_.Run(base::File::FILE_OK, file_info);
+  callback_.Run(metadata, base::File::FILE_OK);
 }
 
 void GetMetadata::OnError(int /* request_id */,
                           scoped_ptr<RequestValue> /* result */,
                           base::File::Error error) {
-  callback_.Run(error, base::File::Info());
+  callback_.Run(EntryMetadata(), error);
 }
 
 }  // namespace operations

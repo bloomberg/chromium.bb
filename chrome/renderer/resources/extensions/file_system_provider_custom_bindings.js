@@ -36,6 +36,8 @@ function annotateMetadata(metadata) {
     size: metadata.size,
     modificationTime: annotateDate(metadata.modificationTime)
   };
+  if ('mimeType' in metadata)
+    result.mimeType = metadata.mimeType;
   return result;
 }
 

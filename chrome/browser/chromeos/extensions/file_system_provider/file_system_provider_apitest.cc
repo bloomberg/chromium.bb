@@ -59,4 +59,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Evil) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MimeType) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/mime_type",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

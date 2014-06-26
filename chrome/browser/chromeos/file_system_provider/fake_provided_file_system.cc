@@ -53,43 +53,41 @@ void FakeProvidedFileSystem::RequestUnmount(
 
 void FakeProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+    const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   if (entry_path.AsUTF8Unsafe() == "/") {
-    base::File::Info file_info;
-    file_info.size = 0;
-    file_info.is_directory = true;
-    file_info.is_symbolic_link = false;
-    base::Time last_modified_time;
+    EntryMetadata metadata;
+    metadata.size = 0;
+    metadata.is_directory = true;
+    base::Time modification_time;
     const bool result = base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014",
-                                               &last_modified_time);
+                                               &modification_time);
     DCHECK(result);
-    file_info.last_modified = last_modified_time;
+    metadata.modification_time = modification_time;
 
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, base::File::FILE_OK, file_info));
+        FROM_HERE, base::Bind(callback, metadata, base::File::FILE_OK));
     return;
   }
 
   if (entry_path.AsUTF8Unsafe() == kFakeFilePath) {
-    base::File::Info file_info;
-    file_info.size = kFakeFileSize;
-    file_info.is_directory = false;
-    file_info.is_symbolic_link = false;
-    base::Time last_modified_time;
+    EntryMetadata metadata;
+    metadata.size = kFakeFileSize;
+    metadata.is_directory = false;
+    base::Time modification_time;
     const bool result = base::Time::FromString("Fri Apr 25 01:47:53 UTC 2014",
-                                               &last_modified_time);
+                                               &modification_time);
     DCHECK(result);
-    file_info.last_modified = last_modified_time;
+    metadata.modification_time = modification_time;
+    metadata.mime_type = "text/plain";
 
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, base::File::FILE_OK, file_info));
+        FROM_HERE, base::Bind(callback, metadata, base::File::FILE_OK));
     return;
   }
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(
-          callback, base::File::FILE_ERROR_NOT_FOUND, base::File::Info()));
+      base::Bind(callback, EntryMetadata(), base::File::FILE_ERROR_NOT_FOUND));
 }
 
 void FakeProvidedFileSystem::ReadDirectory(

@@ -48,6 +48,9 @@ namespace fileSystemProvider {
 
     // The last modified time of this entry.
     [instanceOf=Date] object modificationTime;
+
+    // Mime type for the entry.
+    DOMString? mimeType; 
   };
 
   // Options for the <code>mount()</code> method.

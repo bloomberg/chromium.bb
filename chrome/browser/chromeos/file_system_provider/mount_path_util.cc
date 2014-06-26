@@ -61,6 +61,22 @@ base::FilePath GetMountPath(Profile* profile,
       extension_id + ":" + safe_file_system_id + ":" + username_suffix);
 }
 
+bool IsFileSystemProviderLocalPath(const base::FilePath& local_path) {
+  std::vector<base::FilePath::StringType> components;
+  local_path.GetComponents(&components);
+
+  if (components.size() < 3)
+    return false;
+
+  if (components[0] != FILE_PATH_LITERAL("/"))
+    return false;
+
+  if (components[1] != kProvidedMountPointRoot + 1 /* no leading slash */)
+    return false;
+
+  return true;
+}
+
 FileSystemURLParser::FileSystemURLParser(const fileapi::FileSystemURL& url)
     : url_(url), file_system_(NULL) {
 }
@@ -86,11 +102,11 @@ bool FileSystemURLParser::Parse() {
       continue;
     }
 
-    Service* service = Service::Get(original_profile);
+    Service* const service = Service::Get(original_profile);
     if (!service)
       continue;
 
-    ProvidedFileSystemInterface* file_system =
+    ProvidedFileSystemInterface* const file_system =
         service->GetProvidedFileSystem(url_.filesystem_id());
     if (!file_system)
       continue;
@@ -112,6 +128,48 @@ bool FileSystemURLParser::Parse() {
 
   // Nothing has been found.
   return false;
+}
+
+LocalPathParser::LocalPathParser(Profile* profile,
+                                 const base::FilePath& local_path)
+    : profile_(profile), local_path_(local_path), file_system_(NULL) {
+}
+
+LocalPathParser::~LocalPathParser() {
+}
+
+bool LocalPathParser::Parse() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!IsFileSystemProviderLocalPath(local_path_))
+    return false;
+
+  std::vector<base::FilePath::StringType> components;
+  local_path_.GetComponents(&components);
+
+  if (components.size() < 3)
+    return false;
+
+  const std::string mount_point_name = components[2];
+
+  Service* const service = Service::Get(profile_);
+  if (!service)
+    return false;
+
+  ProvidedFileSystemInterface* const file_system =
+      service->GetProvidedFileSystem(mount_point_name);
+  if (!file_system)
+    return false;
+
+  // Strip the mount point path from the virtual path, to extract the file
+  // path within the provided file system.
+  file_system_ = file_system;
+  file_path_ = base::FilePath::FromUTF8Unsafe("/");
+  for (size_t i = 3; i < components.size(); ++i) {
+    file_path_ = file_path_.Append(components[i]);
+  }
+
+  return true;
 }
 
 }  // namespace util

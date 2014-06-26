@@ -95,11 +95,32 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderMountPathUtilTest, GetMountPath) {
-  base::FilePath result = GetMountPath(profile_, kExtensionId, kFileSystemId);
+  const base::FilePath result =
+      GetMountPath(profile_, kExtensionId, kFileSystemId);
   const std::string expected =
       "/provided/mbflcebpggnecokmikipoihdbecnjfoj:"
       "File%2FSystem%2FId:testing-profile-hash";
   EXPECT_EQ(expected, result.AsUTF8Unsafe());
+}
+
+TEST_F(FileSystemProviderMountPathUtilTest, IsFileSystemProviderLocalPath) {
+  const base::FilePath mount_path =
+      GetMountPath(profile_, kExtensionId, kFileSystemId);
+  const base::FilePath file_path =
+      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+  const base::FilePath local_file_path =
+      mount_path.Append(base::FilePath(file_path.value().substr(1)));
+
+  EXPECT_TRUE(IsFileSystemProviderLocalPath(mount_path));
+  EXPECT_TRUE(IsFileSystemProviderLocalPath(local_file_path));
+
+  EXPECT_FALSE(IsFileSystemProviderLocalPath(
+      base::FilePath::FromUTF8Unsafe("provided/hello-world/test.txt")));
+  EXPECT_FALSE(IsFileSystemProviderLocalPath(
+      base::FilePath::FromUTF8Unsafe("/provided")));
+  EXPECT_FALSE(
+      IsFileSystemProviderLocalPath(base::FilePath::FromUTF8Unsafe("/")));
+  EXPECT_FALSE(IsFileSystemProviderLocalPath(base::FilePath()));
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
@@ -165,6 +186,73 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
 
   FileSystemURLParser parser(url);
   EXPECT_FALSE(parser.Parse());
+}
+
+TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser) {
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  ASSERT_TRUE(result);
+  const ProvidedFileSystemInfo file_system_info =
+      file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
+                                                           kFileSystemId)
+          ->GetFileSystemInfo();
+
+  const base::FilePath kFilePath =
+      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+  const base::FilePath kLocalFilePath = file_system_info.mount_path().Append(
+      base::FilePath(kFilePath.value().substr(1)));
+
+  LOG(ERROR) << kLocalFilePath.value();
+  LocalPathParser parser(profile_, kLocalFilePath);
+  EXPECT_TRUE(parser.Parse());
+
+  ProvidedFileSystemInterface* file_system = parser.file_system();
+  ASSERT_TRUE(file_system);
+  EXPECT_EQ(kFileSystemId, file_system->GetFileSystemInfo().file_system_id());
+  EXPECT_EQ(kFilePath.AsUTF8Unsafe(), parser.file_path().AsUTF8Unsafe());
+}
+
+TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_RootPath) {
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  ASSERT_TRUE(result);
+  const ProvidedFileSystemInfo file_system_info =
+      file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
+                                                           kFileSystemId)
+          ->GetFileSystemInfo();
+
+  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
+  const base::FilePath kLocalFilePath = file_system_info.mount_path();
+
+  LocalPathParser parser(profile_, kLocalFilePath);
+  EXPECT_TRUE(parser.Parse());
+
+  ProvidedFileSystemInterface* file_system = parser.file_system();
+  ASSERT_TRUE(file_system);
+  EXPECT_EQ(kFileSystemId, file_system->GetFileSystemInfo().file_system_id());
+  EXPECT_EQ(kFilePath.AsUTF8Unsafe(), parser.file_path().AsUTF8Unsafe());
+}
+
+TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_WrongPath) {
+  {
+    const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
+    LocalPathParser parser(profile_, kFilePath);
+    EXPECT_FALSE(parser.Parse());
+  }
+
+  {
+    const base::FilePath kFilePath =
+        base::FilePath::FromUTF8Unsafe("/provided");
+    LocalPathParser parser(profile_, kFilePath);
+    EXPECT_FALSE(parser.Parse());
+  }
+
+  {
+    const base::FilePath kFilePath =
+        base::FilePath::FromUTF8Unsafe("provided/hello/world");
+    LocalPathParser parser(profile_, kFilePath);
+    EXPECT_FALSE(parser.Parse());
+  }
 }
 
 }  // namespace util

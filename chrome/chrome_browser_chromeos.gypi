@@ -409,6 +409,7 @@
         'browser/chromeos/file_system_provider/provided_file_system.h',
         'browser/chromeos/file_system_provider/provided_file_system_info.cc',
         'browser/chromeos/file_system_provider/provided_file_system_info.h',
+        'browser/chromeos/file_system_provider/provided_file_system_interface.cc',
         'browser/chromeos/file_system_provider/provided_file_system_interface.h',
         'browser/chromeos/file_system_provider/request_manager.cc',
         'browser/chromeos/file_system_provider/request_manager.h',

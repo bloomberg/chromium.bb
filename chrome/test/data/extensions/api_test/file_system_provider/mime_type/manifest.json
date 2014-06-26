@@ -1,0 +1,23 @@
+{
+  "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDOuXEIuoK1kAkBe0SKiJn/N9oNn3oUxGa4dwj40MnJqPn+w0aR2vuyocm0R4Drp67aYwtLjOVPF4CICRq6ICP6eU07gGwQxGdZ7HJASXV8hm0tab5I70oJmRLfFJyVAMCeWlFaOGq05v2i6EbifZM0qO5xALKNGQt+yjXi5INM5wIBIw==",
+  "name": "chrome.fileSystemProvider.onGetMetadataRequested (mime types)",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description":
+      "Test for chrome.fileSystemProvider.onGetMetadataRequested(). Mime types.",
+  "permissions": [
+    "fileSystemProvider",
+    "fileBrowserPrivate",
+    "fileBrowserHandler"
+  ],
+  "file_handlers": {
+    "magic_handler": {
+      "types": ["text/secret-testing-mime-type"]
+    }
+  },
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
