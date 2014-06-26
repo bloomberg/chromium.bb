@@ -1177,7 +1177,7 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
   }
 
   if (!s->ok())
-    INTERNAL_READ_ERROR_UNTESTED(GET_DATABASE_NAMES);
+    INTERNAL_READ_ERROR(GET_DATABASE_NAMES);
 
   return found_names;
 }

@@ -201,8 +201,15 @@ void IndexedDBFactory::GetDatabaseNames(
 
   std::vector<base::string16> names = backing_store->GetDatabaseNames(&s);
   if (!s.ok()) {
-    // TODO(cmumford): Handle this error
     DLOG(ERROR) << "Internal error getting database names";
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error opening backing store for "
+                                 "indexedDB.webkitGetDatabaseNames.");
+    callbacks->OnError(error);
+    backing_store = NULL;
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin_url, error);
+    return;
   }
   callbacks->OnSuccess(names);
   backing_store = NULL;
