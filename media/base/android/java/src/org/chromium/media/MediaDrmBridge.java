@@ -238,6 +238,15 @@ public class MediaDrmBridge {
             Log.e(TAG, "Cannot open a new session", e);
             release();
             return null;
+        } catch (android.media.NotProvisionedException e) {
+            // Throw NotProvisionedException so that we can startProvisioning().
+            throw e;
+        } catch (android.media.MediaDrmException e) {
+            // Other MediaDrmExceptions (e.g. ResourceBusyException) are not
+            // recoverable.
+            Log.e(TAG, "Cannot open a new session", e);
+            release();
+            return null;
         }
     }
 
