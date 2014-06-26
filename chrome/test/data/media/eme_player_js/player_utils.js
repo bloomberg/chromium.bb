@@ -38,12 +38,8 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
 
 PlayerUtils.registerEMEEventListeners = function(player) {
   player.video.addEventListener('needkey', function(message) {
-    Utils.timeLog('Creating new media key session for contentType: ' +
-                  message.contentType + ', initData: ' +
-                  Utils.getHexString(message.initData));
-    try {
-      var mediaKeySession = message.target.mediaKeys.createSession(
-          message.contentType, message.initData);
+
+    function addMediaKeySessionListeners(mediaKeySession) {
       mediaKeySession.addEventListener('message', function(message) {
         player.video.receivedKeyMessage = true;
         if (Utils.isHeartBeatMessage(message.message)) {
@@ -55,6 +51,22 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       mediaKeySession.addEventListener('error', function(error) {
         Utils.failTest(error, KEY_ERROR);
       });
+    }
+
+    Utils.timeLog('Creating new media key session for contentType: ' +
+                  message.contentType + ', initData: ' +
+                  Utils.getHexString(message.initData));
+    try {
+      var session = message.target.mediaKeys.createSession(
+          message.contentType, message.initData);
+      if (PROMISES_SUPPORTED) {
+        session.then(addMediaKeySessionListeners)
+            .catch (function(error) {
+              Utils.failTest(error, KEY_ERROR);
+            });
+      } else {
+        addMediaKeySessionListeners(session);
+      }
     } catch (e) {
       Utils.failTest(e);
     }
@@ -62,7 +74,15 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   this.registerDefaultEventListeners(player);
   try {
     Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-    player.video.setMediaKeys(new MediaKeys(player.testConfig.keySystem));
+    if (PROMISES_SUPPORTED) {
+      MediaKeys.create(player.testConfig.keySystem).then(function(mediaKeys) {
+        player.video.setMediaKeys(mediaKeys);
+      }).catch(function(error) {
+        Utils.failTest(error, NOTSUPPORTEDERROR);
+      });
+    } else {
+      player.video.setMediaKeys(new MediaKeys(player.testConfig.keySystem));
+    }
   } catch (e) {
     Utils.failTest(e);
   }
@@ -145,7 +165,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
           return PrefixedWidevinePlayer;
         return WidevinePlayer;
       case PREFIXED_CLEARKEY:
-         return PrefixedClearKeyPlayer;
+        return PrefixedClearKeyPlayer;
       case EXTERNAL_CLEARKEY:
       case CLEARKEY:
         if (usePrefixedEME)

@@ -23,7 +23,14 @@ WidevinePlayer.prototype.onMessage = function(message) {
   function onSuccess(response) {
     var key = new Uint8Array(response);
     Utils.timeLog('Update media key session with license response.', key);
-    mediaKeySession.update(key);
+    if (PROMISES_SUPPORTED) {
+      mediaKeySession.update(key).catch(function(error) {
+        Utils.failTest(error, KEY_ERROR);
+      });
+    } else {
+      mediaKeySession.update(key);
+    }
+
   }
   Utils.sendRequest('POST', 'arraybuffer', message.message,
                     this.testConfig.licenseServerURL, onSuccess,
