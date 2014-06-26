@@ -12,6 +12,8 @@
 #include "crazy_linker_rdebug.h"
 #include "crazy_linker_shared_library.h"
 #include "crazy_linker_system.h"
+#include "crazy_linker_util.h"
+#include "crazy_linker_zip.h"
 
 namespace crazy {
 
@@ -369,6 +371,63 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   lib.Release();
 
   return wrap;
+}
+
+// We identify the abi tag for which the linker is running. This allows
+// us to select the library which matches the abi of the linker.
+
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+#define CURRENT_ABI "armeabi-v7a"
+#elif defined(__arm__)
+#define CURRENT_ABI "armeabi"
+#elif defined(__i386__)
+#define CURRENT_ABI "x86"
+#elif defined(__mips__)
+#define CURRENT_ABI "mips"
+#elif defined(__x86_64__)
+#define CURRENT_ABI "x86_64"
+#elif defined(__aarch64__)
+#define CURRENT_ABI "arm64-v8a"
+#else
+#error "Unsupported target abi"
+#endif
+
+const size_t kMaxFilenameInZip = 256;
+const size_t kPageSize = 4096;
+
+LibraryView* LibraryList::LoadLibraryInZipFile(const char* zip_file_path,
+                                               const char* lib_name,
+                                               int dlopen_flags,
+                                               uintptr_t load_address,
+                                               SearchPathList* search_path_list,
+                                               Error* error) {
+  String fullname;
+  fullname.Reserve(kMaxFilenameInZip);
+  fullname = "lib/";
+  fullname += CURRENT_ABI;
+  fullname += "/crazy.";
+  fullname += lib_name;
+
+  if (fullname.size() + 1 > kMaxFilenameInZip) {
+    error->Format("Filename too long for a file in a zip file %s\n",
+                  fullname.c_str());
+    return NULL;
+  }
+
+  int offset = FindStartOffsetOfFileInZipFile(zip_file_path, fullname.c_str());
+  if (offset == -1) {
+    return NULL;
+  }
+
+  if ((offset & (kPageSize - 1)) != 0) {
+    error->Format("Library %s is not page aligned in zipfile %s\n",
+                  lib_name, zip_file_path);
+    return NULL;
+  }
+
+  return LoadLibrary(
+      zip_file_path, dlopen_flags, load_address, offset,
+      search_path_list, error);
 }
 
 void LibraryList::AddLibrary(LibraryView* wrap) {

@@ -223,6 +223,38 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
   return CRAZY_STATUS_SUCCESS;
 }
 
+crazy_status_t crazy_library_open_in_zip_file(crazy_library_t** library,
+                                              const char* zipfile_name,
+                                              const char* lib_name,
+                                              crazy_context_t* context) {
+  ScopedDelayedCallbackPoster poster(context);
+  ScopedGlobalLock lock;
+
+  LibraryView* wrap =
+      crazy::Globals::GetLibraries()->LoadLibraryInZipFile(
+          zipfile_name,
+          lib_name,
+          RTLD_NOW,
+          context->load_address,
+          &context->search_paths,
+          &context->error);
+
+  if (!wrap)
+    return CRAZY_STATUS_FAILURE;
+
+  if (context->java_vm != NULL && wrap->IsCrazy()) {
+    crazy::SharedLibrary* lib = wrap->GetCrazy();
+    if (!lib->SetJavaVM(
+             context->java_vm, context->minimum_jni_version, &context->error)) {
+      crazy::Globals::GetLibraries()->UnloadLibrary(wrap);
+      return CRAZY_STATUS_FAILURE;
+    }
+  }
+
+  *library = reinterpret_cast<crazy_library_t*>(wrap);
+  return CRAZY_STATUS_SUCCESS;
+}
+
 crazy_status_t crazy_library_get_info(crazy_library_t* library,
                                       crazy_context_t* context,
                                       crazy_library_info_t* info) {

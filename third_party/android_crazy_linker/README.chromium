@@ -35,3 +35,5 @@ index 5fa16df..bc03739 100644
 
 - Add support for unpacking packed R_ARM_RELATIVE relocation data.
   https://code.google.com/p/chromium/issues/detail?id=385553
+
+- Add support for opening library within a zipfile.

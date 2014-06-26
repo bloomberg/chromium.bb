@@ -36,6 +36,7 @@
         'src/src/crazy_linker_thread.cpp',
         'src/src/crazy_linker_util.cpp',
         'src/src/crazy_linker_wrappers.cpp',
+        'src/src/crazy_linker_zip.cpp',
         'src/src/linker_phdr.cpp',
       ],
       'link_settings': {

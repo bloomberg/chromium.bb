@@ -71,6 +71,15 @@ class LibraryList {
                            SearchPathList* search_path_list,
                            Error* error);
 
+  // Try to load a library from its location in the zip file.
+  // On failure, returns NULL and sets the |error| message.
+  LibraryView* LoadLibraryInZipFile(const char* zip_file_path,
+                                    const char* lib_name,
+                                    int dlopen_flags,
+                                    uintptr_t load_address,
+                                    SearchPathList* search_path_list,
+                                    Error* error);
+
   // Unload a given shared library. This really decrements the library's
   // internal reference count. When it reaches zero, the library's
   // destructors are run, its dependencies are unloaded, then the
