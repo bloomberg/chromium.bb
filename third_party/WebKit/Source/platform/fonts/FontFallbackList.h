@@ -94,13 +94,13 @@ private:
     {
         ASSERT(isMainThread());
         if (!m_cachedPrimarySimpleFontData)
-            m_cachedPrimarySimpleFontData = primaryFontData(fontDescription)->fontDataForCharacter(' ');
+            m_cachedPrimarySimpleFontData = determinePrimarySimpleFontData(fontDescription);
         return m_cachedPrimarySimpleFontData;
     }
 
     PassRefPtr<FontData> getFontData(const FontDescription&, int& familyIndex) const;
 
-    const FontData* primaryFontData(const FontDescription&) const;
+    const SimpleFontData* determinePrimarySimpleFontData(const FontDescription&) const;
     const FontData* fontDataAt(const FontDescription&, unsigned index) const;
 
     void releaseFontData();

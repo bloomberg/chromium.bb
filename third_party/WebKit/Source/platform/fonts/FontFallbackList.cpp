@@ -130,7 +130,7 @@ bool FontFallbackList::shouldSkipDrawing() const
     return false;
 }
 
-const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDescription) const
+const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const FontDescription& fontDescription) const
 {
     bool shouldLoadCustomFont = true;
 
@@ -144,24 +144,35 @@ const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDes
             // TODO(scottmg|eae): Trying to identify crashes in http://crbug.com/383542
             if (!fontData)
                 CRASH();
-            return fontData;
+            return fontData->fontDataForCharacter(' ');
         }
 
         if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(' '))
             continue;
 
-        const SimpleFontData* simpleFontData = fontData->fontDataForCharacter(' ');
-        ASSERT(simpleFontData);
+        const SimpleFontData* fontDataForSpace = fontData->fontDataForCharacter(' ');
+        ASSERT(fontDataForSpace);
 
         // When a custom font is loading, we should use the correct fallback font to layout the text.
         // Here skip the temporary font for the loading custom font which may not act as the correct fallback font.
-        if (!simpleFontData->isLoadingFallback())
-            return fontData;
+        if (!fontDataForSpace->isLoadingFallback())
+            return fontDataForSpace;
+
+        if (fontData->isSegmented()) {
+            const SegmentedFontData* segmented = toSegmentedFontData(fontData);
+            for (unsigned i = 0; i < segmented->numRanges(); i++) {
+                const SimpleFontData* rangeFontData = segmented->rangeAt(i).fontData().get();
+                if (!rangeFontData->isLoadingFallback())
+                    return rangeFontData;
+            }
+            if (fontData->isLoading())
+                shouldLoadCustomFont = false;
+        }
 
         // Begin to load the first custom font if needed.
         if (shouldLoadCustomFont) {
             shouldLoadCustomFont = false;
-            simpleFontData->customFontData()->beginLoadIfNeeded();
+            fontDataForSpace->customFontData()->beginLoadIfNeeded();
         }
     }
 }

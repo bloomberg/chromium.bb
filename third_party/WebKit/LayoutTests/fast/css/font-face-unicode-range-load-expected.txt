@@ -3,7 +3,7 @@ Tests that unicode-range descriptor is used to selectively download fonts that a
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS latin1Loaded is true
+PASS latin1Loaded is false
 PASS cyrillicLoaded is true
 PASS arabicLoaded is false
 PASS iconLoaded is false

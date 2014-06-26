@@ -28,7 +28,7 @@ function onloadingdone(e) {
             iconLoaded = true;
     }
 
-    shouldBeTrue('latin1Loaded'); // Latin-1 font is loaded for basic font metrics.
+    shouldBeFalse('latin1Loaded');
     shouldBeTrue('cyrillicLoaded');
     shouldBeFalse('arabicLoaded');
     shouldBeFalse('iconLoaded');
