@@ -150,9 +150,9 @@ WebsiteSettings::WebsiteSettings(
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         site_url_,
-        &visit_count_request_consumer_,
         base::Bind(&WebsiteSettings::OnGotVisitCountToHost,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &visit_count_task_tracker_);
   }
 
   PresentSitePermissions();
@@ -269,8 +269,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
 #endif
 }
 
-void WebsiteSettings::OnGotVisitCountToHost(HistoryService::Handle handle,
-                                            bool found_visits,
+void WebsiteSettings::OnGotVisitCountToHost(bool found_visits,
                                             int visit_count,
                                             base::Time first_visit) {
   if (!found_visits) {

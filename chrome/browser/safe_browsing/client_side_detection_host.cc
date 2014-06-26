@@ -643,7 +643,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
 
 void ClientSideDetectionHost::FeatureExtractionDone(
     bool success,
-    ClientPhishingRequest* request) {
+    scoped_ptr<ClientPhishingRequest> request) {
   DCHECK(request);
   DVLOG(2) << "Feature extraction done (success:" << success << ") for URL: "
            << request->url() << ". Start sending client phishing request.";
@@ -656,7 +656,7 @@ void ClientSideDetectionHost::FeatureExtractionDone(
   }
   // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
-      request,  // The service takes ownership of the request object.
+      request.release(),  // The service takes ownership of the request object.
       callback);
 }
 

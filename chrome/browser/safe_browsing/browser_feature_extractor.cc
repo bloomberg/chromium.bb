@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -174,24 +173,6 @@ BrowserFeatureExtractor::BrowserFeatureExtractor(
 
 BrowserFeatureExtractor::~BrowserFeatureExtractor() {
   weak_factory_.InvalidateWeakPtrs();
-  // Delete all the pending extractions (delete callback and request objects).
-  STLDeleteContainerPairFirstPointers(pending_extractions_.begin(),
-                                      pending_extractions_.end());
-
-  // Also cancel all the pending history service queries.
-  HistoryService* history;
-  bool success = GetHistoryService(&history);
-  DCHECK(success || pending_queries_.size() == 0);
-  // Cancel all the pending history lookups and cleanup the memory.
-  for (PendingQueriesMap::iterator it = pending_queries_.begin();
-       it != pending_queries_.end(); ++it) {
-    if (history) {
-      history->CancelRequest(it->first);
-    }
-    ExtractionData& extraction = it->second;
-    delete extraction.first;  // delete request
-  }
-  pending_queries_.clear();
 }
 
 void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
@@ -249,12 +230,17 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
                           request);
   }
 
+  // The API doesn't take a scoped_ptr because the API gets mocked and we
+  // cannot mock an API that takes scoped_ptr as arguments.
+  scoped_ptr<ClientPhishingRequest> req(request);
+
   ExtractBrowseInfoFeatures(*info, request);
-  pending_extractions_[request] = callback;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserFeatureExtractor::StartExtractFeatures,
-                 weak_factory_.GetWeakPtr(), request, callback));
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&req),
+                 callback));
 }
 
 void BrowserFeatureExtractor::ExtractMalwareFeatures(
@@ -313,51 +299,43 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
 }
 
 void BrowserFeatureExtractor::StartExtractFeatures(
-    ClientPhishingRequest* request,
+    scoped_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  size_t removed = pending_extractions_.erase(request);
-  DCHECK_EQ(1U, removed);
   HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
-  // HistoryService::QueryURL migrated from CancelableRequestComsumer to
-  // CancelableRequestTracker and there is no Handle to associate to the
-  // request. Instead manage the request object lifetime by using a scoped_ptr
-  // and using base::Passed(). So if the asynchronous call is canceled, the
-  // request is deleted, otherwise the callback becomes the owner.
-  scoped_ptr<ClientPhishingRequest> owned_request(request);
-  history->QueryURL(GURL(request->url()),
+  GURL request_url = GURL(request->url());
+  history->QueryURL(request_url,
                     true /* wants_visits */,
                     base::Bind(&BrowserFeatureExtractor::QueryUrlHistoryDone,
                                base::Unretained(this),
-                               base::Passed(&owned_request),
+                               base::Passed(&request),
                                callback),
                     &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryUrlHistoryDone(
-    scoped_ptr<ClientPhishingRequest> owned_request,
+    scoped_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
     bool success,
     const history::URLRow& row,
     const history::VisitVector& visits) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(owned_request);
+  DCHECK(request);
   DCHECK(!callback.is_null());
-  ClientPhishingRequest* request = owned_request.release();
   if (!success) {
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
     // that URL.
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
   AddFeature(features::kUrlHistoryVisitCount,
              static_cast<double>(row.visit_count()),
-             request);
+             request.get());
 
   base::Time threshold = base::Time::Now() - base::TimeDelta::FromDays(1);
   int num_visits_24h_ago = 0;
@@ -382,85 +360,76 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   }
   AddFeature(features::kUrlHistoryVisitCountMoreThan24hAgo,
              static_cast<double>(num_visits_24h_ago),
-             request);
+             request.get());
   AddFeature(features::kUrlHistoryTypedCount,
              static_cast<double>(num_visits_typed),
-             request);
+             request.get());
   AddFeature(features::kUrlHistoryLinkCount,
              static_cast<double>(num_visits_link),
-             request);
+             request.get());
 
   // Issue next history lookup for host visits.
   HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
-  CancelableRequestProvider::Handle next_handle =
-      history->GetVisibleVisitCountToHost(
-          GURL(request->url()),
-          &request_consumer_,
-          base::Bind(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
-                     base::Unretained(this)));
-  StorePendingQuery(next_handle, request, callback);
+  GURL request_url = GURL(request->url());
+  history->GetVisibleVisitCountToHost(
+      request_url,
+      base::Bind(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
+                 base::Unretained(this),
+                 base::Passed(&request),
+                 callback),
+      &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
-    CancelableRequestProvider::Handle handle,
+    scoped_ptr<ClientPhishingRequest> request,
+    const DoneCallback& callback,
     bool success,
     int num_visits,
     base::Time first_visit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClientPhishingRequest* request;
-  DoneCallback callback;
-  if (!GetPendingQuery(handle, &request, &callback)) {
-    DLOG(FATAL) << "No pending history query found";
-    return;
-  }
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
-  SetHostVisitsFeatures(num_visits, first_visit, true, request);
+  SetHostVisitsFeatures(num_visits, first_visit, true, request.get());
 
   // Same lookup but for the HTTPS URL.
   HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
   std::string https_url = request->url();
-  CancelableRequestProvider::Handle next_handle =
-      history->GetVisibleVisitCountToHost(
-          GURL(https_url.replace(0, 5, "https:")),
-          &request_consumer_,
-          base::Bind(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
-                     base::Unretained(this)));
-  StorePendingQuery(next_handle, request, callback);
+  history->GetVisibleVisitCountToHost(
+      GURL(https_url.replace(0, 5, "https:")),
+      base::Bind(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
+                 base::Unretained(this),
+                 base::Passed(&request),
+                 callback),
+      &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
-    CancelableRequestProvider::Handle handle,
+    scoped_ptr<ClientPhishingRequest> request,
+    const DoneCallback& callback,
     bool success,
     int num_visits,
     base::Time first_visit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClientPhishingRequest* request;
-  DoneCallback callback;
-  if (!GetPendingQuery(handle, &request, &callback)) {
-    DLOG(FATAL) << "No pending history query found";
-    return;
-  }
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
-    callback.Run(false, request);
+    callback.Run(false, request.Pass());
     return;
   }
-  SetHostVisitsFeatures(num_visits, first_visit, false, request);
-  callback.Run(true, request);  // We're done with all the history lookups.
+  SetHostVisitsFeatures(num_visits, first_visit, false, request.get());
+  callback.Run(true, request.Pass());
 }
 
 void BrowserFeatureExtractor::SetHostVisitsFeatures(
@@ -482,29 +451,6 @@ void BrowserFeatureExtractor::SetHostVisitsFeatures(
         1.0 : 0.0,
         request);
   }
-}
-
-void BrowserFeatureExtractor::StorePendingQuery(
-    CancelableRequestProvider::Handle handle,
-    ClientPhishingRequest* request,
-    const DoneCallback& callback) {
-  DCHECK_EQ(0U, pending_queries_.count(handle));
-  pending_queries_[handle] = std::make_pair(request, callback);
-}
-
-bool BrowserFeatureExtractor::GetPendingQuery(
-    CancelableRequestProvider::Handle handle,
-    ClientPhishingRequest** request,
-    DoneCallback* callback) {
-  PendingQueriesMap::iterator it = pending_queries_.find(handle);
-  DCHECK(it != pending_queries_.end());
-  if (it != pending_queries_.end()) {
-    *request = it->second.first;
-    *callback = it->second.second;
-    pending_queries_.erase(it);
-    return true;
-  }
-  return false;
 }
 
 bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {

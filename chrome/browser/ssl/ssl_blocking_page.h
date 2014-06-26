@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -84,10 +85,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   std::string GetHTMLContentsV2();
 
   // Used to query the HistoryService to see if the URL is in history. For UMA.
-  void OnGotHistoryCount(HistoryService::Handle handle,
-                         bool success,
-                         int num_visits,
-                         base::Time first_visit);
+  void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
 
   // content::NotificationObserver:
   virtual void Observe(
@@ -111,7 +109,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   // How many times is this same URL in history?
   int num_visits_;
   // Used for getting num_visits_.
-  CancelableRequestConsumer request_consumer_;
+  base::CancelableTaskTracker request_tracker_;
   // Is captive portal detection enabled?
   bool captive_portal_detection_enabled_;
   // Did the probe complete before the interstitial was closed?

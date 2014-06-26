@@ -210,9 +210,13 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<StrictMock<MockSafeBrowsingDatabaseManager> > db_manager_;
 
  private:
-  void ExtractFeaturesDone(bool success, ClientPhishingRequest* request) {
-    ASSERT_EQ(0U, success_.count(request));
-    success_[request] = success;
+  void ExtractFeaturesDone(bool success,
+                           scoped_ptr<ClientPhishingRequest> request) {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ASSERT_EQ(0U, success_.count(request.get()));
+    // The pointer doesn't really belong to us.  It belongs to
+    // the test case which passed it to ExtractFeatures above.
+    success_[request.release()] = success;
     if (--num_pending_ == 0) {
       base::MessageLoop::current()->Quit();
     }

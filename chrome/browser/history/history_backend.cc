@@ -1321,15 +1321,12 @@ void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
 }
 
 void HistoryBackend::GetVisibleVisitCountToHost(
-    scoped_refptr<GetVisibleVisitCountToHostRequest> request,
-    const GURL& url) {
-  if (request->canceled())
-    return;
-  int count = 0;
-  Time first_visit;
-  const bool success = db_.get() &&
-      db_->GetVisibleVisitCountToHost(url, &count, &first_visit);
-  request->ForwardResult(request->handle(), success, count, first_visit);
+    const GURL& url,
+    VisibleVisitCountToHostResult* result) {
+  result->count = 0;
+  result->success = db_.get() &&
+                    db_->GetVisibleVisitCountToHost(
+                        url, &result->count, &result->first_visit);
 }
 
 void HistoryBackend::QueryTopURLsAndRedirects(

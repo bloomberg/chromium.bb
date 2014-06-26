@@ -286,7 +286,7 @@ struct QueryOptions {
 
 // QueryURLResult -------------------------------------------------------------
 
-// QueryURLResult encapsulate the result of a call to HistoryBackend::QueryURL.
+// QueryURLResult encapsulates the result of a call to HistoryBackend::QueryURL.
 struct QueryURLResult {
   QueryURLResult();
   ~QueryURLResult();
@@ -296,6 +296,19 @@ struct QueryURLResult {
   bool success;
   URLRow row;
   VisitVector visits;
+};
+
+// VisibleVisitCountToHostResult ----------------------------------------------
+
+// VisibleVisitCountToHostResult encapsulates the result of a call to
+// HistoryBackend::GetVisibleVisitCountToHost.
+struct VisibleVisitCountToHostResult {
+  // Indicates whether the call to HistoryBackend::GetVisibleVisitCountToHost
+  // was successfull or not. If false, then both |count| and |first_visit| are
+  // undefined.
+  bool success;
+  int count;
+  base::Time first_visit;
 };
 
 // MostVisitedURL --------------------------------------------------------------

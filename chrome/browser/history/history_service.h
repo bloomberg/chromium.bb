@@ -291,20 +291,19 @@ class HistoryService : public CancelableRequestProvider,
       base::CancelableTaskTracker* tracker);
 
   typedef base::Callback<
-      void(Handle,
-           bool,        // Were we able to determine the # of visits?
-           int,         // Number of visits.
-           base::Time)> // Time of first visit. Only set if bool
-                        // is true and int is > 0.
+      void(bool,         // Were we able to determine the # of visits?
+           int,          // Number of visits.
+           base::Time)>  // Time of first visit. Only set if bool
+                         // is true and int is > 0.
       GetVisibleVisitCountToHostCallback;
 
   // Requests the number of user-visible visits (i.e. no redirects or subframes)
   // to all urls on the same scheme/host/port as |url|.  This is only valid for
   // HTTP and HTTPS URLs.
-  Handle GetVisibleVisitCountToHost(
+  base::CancelableTaskTracker::TaskId GetVisibleVisitCountToHost(
       const GURL& url,
-      CancelableRequestConsumerBase* consumer,
-      const GetVisibleVisitCountToHostCallback& callback);
+      const GetVisibleVisitCountToHostCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Called when QueryTopURLsAndRedirects completes. The vector contains a list
   // of the top |result_count| URLs.  For each of these URLs, there is an entry

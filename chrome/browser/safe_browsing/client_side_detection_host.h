@@ -101,7 +101,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Callback that is called when the browser feature extractor is done.
   // This method is responsible for deleting the request object.  Called on
   // the UI thread.
-  void FeatureExtractionDone(bool success, ClientPhishingRequest* request);
+  void FeatureExtractionDone(bool success,
+                             scoped_ptr<ClientPhishingRequest> request);
 
   // Start malware classification once the onload handler was called and
   // malware pre-classification checks are done and passed.

@@ -47,7 +47,6 @@ const base::FilePath::CharType kCrdownloadSuffix[] =
 // midnight.
 void VisitCountsToVisitedBefore(
     const base::Callback<void(bool)>& callback,
-    HistoryService::Handle unused_handle,
     bool found_visits,
     int count,
     base::Time first_visit) {
@@ -543,10 +542,13 @@ DownloadTargetDeterminer::Result
 
       if (history_service && download_->GetReferrerUrl().is_valid()) {
         history_service->GetVisibleVisitCountToHost(
-            download_->GetReferrerUrl(), &history_consumer_,
-            base::Bind(&VisitCountsToVisitedBefore, base::Bind(
-                &DownloadTargetDeterminer::CheckVisitedReferrerBeforeDone,
-                weak_ptr_factory_.GetWeakPtr())));
+            download_->GetReferrerUrl(),
+            base::Bind(
+                &VisitCountsToVisitedBefore,
+                base::Bind(
+                    &DownloadTargetDeterminer::CheckVisitedReferrerBeforeDone,
+                    weak_ptr_factory_.GetWeakPtr())),
+            &history_tracker_);
         return QUIT_DOLOOP;
       }
     }
