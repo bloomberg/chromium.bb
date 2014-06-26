@@ -147,7 +147,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
       base::ScopedFILE fp(
           base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
       ASSERT_TRUE(fp);
-      fwrite(std::string(j, '0' + i).data(), 1, j, fp.get());
+      ASSERT_EQ(j, fwrite(std::string(j, '0' + i).data(), 1, j, fp.get()));
       platform_handles.push_back(
           test::PlatformHandleFromFILE(fp.Pass()).release());
       ASSERT_TRUE(platform_handles.back().is_valid());
@@ -203,7 +203,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
     base::ScopedFILE fp(base::CreateAndOpenTemporaryFileInDir(temp_dir.path(),
                                                               &unused));
     ASSERT_TRUE(fp);
-    fwrite(file_contents.data(), 1, file_contents.size(), fp.get());
+    ASSERT_EQ(file_contents.size(),
+              fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));
     PlatformHandleVector platform_handles;
     platform_handles.push_back(
         test::PlatformHandleFromFILE(fp.Pass()).release());
