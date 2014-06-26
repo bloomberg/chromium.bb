@@ -124,7 +124,7 @@ void ContentVerifier::OnFetchComplete(
 bool ContentVerifier::ShouldVerifyAnyPaths(
     const Extension* extension,
     const std::set<base::FilePath>& relative_paths) {
-  if (!extension || !extension->version())
+  if (!delegate_ || !extension || !extension->version())
     return false;
 
   ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
