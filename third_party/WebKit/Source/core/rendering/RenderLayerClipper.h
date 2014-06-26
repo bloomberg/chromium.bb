@@ -46,37 +46,59 @@
 #define RenderLayerClipper_h
 
 #include "core/rendering/ClipRectsCache.h"
-#include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 
 class RenderLayer;
 
-struct ClipRectsContext {
-    ClipRectsContext(const RenderLayer* inRootLayer, ClipRectsType inClipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize, ShouldRespectOverflowClip inRespectOverflowClip = RespectOverflowClip, const LayoutSize& inSubPixelAccumulation = LayoutSize())
-        : rootLayer(inRootLayer)
-        , clipRectsType(inClipRectsType)
-        , overlayScrollbarSizeRelevancy(inOverlayScrollbarSizeRelevancy)
-        , respectOverflowClip(inRespectOverflowClip)
-        , subPixelAccumulation(inSubPixelAccumulation)
-    { }
+enum ShouldRespectOverflowClip {
+    IgnoreOverflowClip,
+    RespectOverflowClip
+};
+
+class ClipRectsContext {
+public:
+    ClipRectsContext(const RenderLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
+        : rootLayer(root)
+        , cacheSlot(slot)
+        , scrollbarRelevancy(relevancy)
+        , subPixelAccumulation(accumulation)
+        , respectOverflowClip(RespectOverflowClip)
+    {
+    }
+
+    void setIgnoreOverflowClip()
+    {
+        ASSERT(!usesCache() || cacheSlot == PaintingClipRects);
+        ASSERT(respectOverflowClip == RespectOverflowClip);
+        cacheSlot = PaintingClipRectsIgnoringOverflowClip;
+        respectOverflowClip = IgnoreOverflowClip;
+    }
+
+    bool usesCache() const
+    {
+        return cacheSlot != UncachedClipRects;
+    }
+
+private:
+    friend class RenderLayerClipper;
+
     const RenderLayer* rootLayer;
-    ClipRectsType clipRectsType;
-    OverlayScrollbarSizeRelevancy overlayScrollbarSizeRelevancy;
-    ShouldRespectOverflowClip respectOverflowClip;
+    ClipRectsCacheSlot cacheSlot;
+    OverlayScrollbarSizeRelevancy scrollbarRelevancy;
     LayoutSize subPixelAccumulation;
+    ShouldRespectOverflowClip respectOverflowClip;
 };
 
 class RenderLayerClipper {
     WTF_MAKE_NONCOPYABLE(RenderLayerClipper);
 public:
-    explicit RenderLayerClipper(RenderLayerModelObject& renderer)
-        : m_renderer(renderer)
-    {
-    }
+    explicit RenderLayerClipper(RenderLayerModelObject&);
 
-    void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
-    void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
+    void clearClipRectsIncludingDescendants();
+    void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
+    void clearClipRects();
 
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
     LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
@@ -93,21 +115,25 @@ public:
 private:
     ClipRects* cachedClipRects(const ClipRectsContext& context) const
     {
-        ASSERT(context.clipRectsType < NumCachedClipRectsTypes);
-        return m_clipRectsCache ? m_clipRectsCache->getClipRects(context.clipRectsType, context.respectOverflowClip) : 0;
+        return m_cache ? m_cache->get(context.cacheSlot).clipRects.get() : 0;
     }
 
     ClipRects* updateClipRects(const ClipRectsContext&);
-
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
     void parentClipRects(const ClipRectsContext&, ClipRects&) const;
 
     RenderLayer* clippingRootForPainting() const;
-    bool isClippingRootForContext(const ClipRectsContext&) const;
+
+    ClipRectsCache& cache()
+    {
+        if (!m_cache)
+            m_cache = adoptPtr(new ClipRectsCache);
+        return *m_cache;
+    }
 
     // FIXME: Could this be a RenderBox?
     RenderLayerModelObject& m_renderer;
-    OwnPtr<ClipRectsCache> m_clipRectsCache;
+    OwnPtr<ClipRectsCache> m_cache;
 };
 
 } // namespace WebCore

@@ -55,7 +55,7 @@ class RenderLayer;
 enum PaintLayerFlag {
     PaintLayerHaveTransparency = 1,
     PaintLayerAppliedTransform = 1 << 1,
-    PaintLayerTemporaryClipRects = 1 << 2,
+    PaintLayerUncachedClipRects = 1 << 2,
     PaintLayerPaintingReflection = 1 << 3,
     PaintLayerPaintingOverlayScrollbars = 1 << 4,
     PaintLayerPaintingCompositingBackgroundPhase = 1 << 5,

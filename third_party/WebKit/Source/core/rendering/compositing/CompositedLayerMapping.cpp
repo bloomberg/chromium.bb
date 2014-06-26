@@ -725,7 +725,8 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const RenderLay
 
     // FIXME: this should use cached clip rects, but this sometimes give
     // inaccurate results (and trips the ASSERTS in RenderLayerClipper).
-    ClipRectsContext clipRectsContext(compositingContainer, TemporaryClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
+    ClipRectsContext clipRectsContext(compositingContainer, UncachedClipRects, IgnoreOverlayScrollbarSize);
+    clipRectsContext.setIgnoreOverflowClip();
     IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
     ASSERT(parentClipRect != PaintInfo::infiniteRect());
     m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
@@ -1935,7 +1936,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
     ASSERT(ancestorPaintInfo);
 
     // FIXME: this is a potential performance issue. We shoudl consider caching these clip rects or otherwise optimizing.
-    ClipRectsContext clipRectsContext(ancestorPaintInfo->renderLayer, TemporaryClipRects);
+    ClipRectsContext clipRectsContext(ancestorPaintInfo->renderLayer, UncachedClipRects);
     IntRect parentClipRect = pixelSnappedIntRect(paintInfo.renderLayer->clipper().backgroundClipRect(clipRectsContext).rect());
     ASSERT(parentClipRect != PaintInfo::infiniteRect());
 
