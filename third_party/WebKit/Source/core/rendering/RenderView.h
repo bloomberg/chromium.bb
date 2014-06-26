@@ -47,6 +47,9 @@ public:
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
 
+    // Returns the total count of calls to HitTest, for testing.
+    unsigned hitTestCount() const { return m_hitTestCount; }
+
     virtual const char* renderName() const OVERRIDE { return "RenderView"; }
 
     virtual bool isRenderView() const OVERRIDE { return true; }
@@ -203,6 +206,8 @@ private:
 
     RenderQuote* m_renderQuoteHead;
     unsigned m_renderCounterCount;
+
+    unsigned m_hitTestCount;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());

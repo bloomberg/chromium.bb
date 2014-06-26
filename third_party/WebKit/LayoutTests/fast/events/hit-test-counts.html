@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<style>
+#testArea {
+  position: absolute;
+  right: 50px;
+  top: 50px;
+}
+#target {
+  width: 10px;
+  height: 10px;
+}
+#frame {
+  width: 100px;
+  height: 100px;
+  margin-top: 30px;
+}
+</style>
+<div id=testArea>
+  <div id=target></div>
+  <iframe id=frame srcdoc='<iframe width=75 height=75></iframe>'></iframe>
+</div>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Count how many hit tests are required for various event scenarios.  Hit tests can be expensive and it's often tempting to add more.  These values should only ever be changed to go down, not up.");
+
+function hitTestCountDelta(doc)
+{
+    var lastCount = 0;
+    if ('lastHitTestCount' in doc)
+      lastCount = doc.lastHitTestCount;
+    var newCount = internals.hitTestCount(doc);
+    doc.lastHitTestCount = newCount;
+    return newCount - lastCount;
+}
+
+function logCounts(name, documents)
+{
+    var msg = name + ':';
+    for(var i = 0; i < documents.length; i++)
+        msg += ' ' + hitTestCountDelta(documents[i]);
+    debug(msg);
+}
+
+function clearCounts(documents)
+{
+    for(var i = 0; i < documents.length; i++)
+        documents[i].lastHitTestCount = internals.hitTestCount(documents[i]);
+}
+
+function sendEvents(targetX, targetY, documents)
+{
+    logCounts('Initial', documents);
+
+    eventSender.mouseMoveTo(targetX, targetY);
+    logCounts('MouseMove', documents);
+
+    eventSender.mouseDown();
+    logCounts('MouseDown', documents);
+
+    eventSender.mouseUp();
+    logCounts('MouseUp', documents);
+
+    eventSender.mouseScrollBy(0, 5);
+    logCounts('Wheel', documents);
+
+    eventSender.addTouchPoint(targetX, targetY);
+    eventSender.touchStart();
+    logCounts('TouchStart', documents);
+
+    eventSender.updateTouchPoint(0, targetX + 1, targetY);
+    eventSender.touchMove();
+    logCounts('TouchMove', documents);
+
+    eventSender.releaseTouchPoint(0);
+    eventSender.touchEnd();
+    logCounts('TouchEnd', documents);
+
+    eventSender.gestureTapDown(targetX, targetY, 30, 30);
+    logCounts('GestureTapDown', documents);
+
+    eventSender.gestureShowPress(targetX, targetY, 30, 30);
+    logCounts('GestureShowPress', documents);
+
+    eventSender.gestureTap(targetX, targetY);
+    logCounts('GestureTap', documents);
+
+    eventSender.gestureTapDown(targetX, targetY, 30, 30);
+    clearCounts(documents);
+    eventSender.gestureScrollBegin(targetX, targetY);
+    logCounts('GestureScrollBegin', documents);
+
+    eventSender.gestureTapCancel(targetX, targetY);
+    logCounts('GestureTapCancel', documents);
+
+    eventSender.gestureScrollUpdate(0, 5);
+    logCounts('GestureScrollUpdate', documents);
+
+    eventSender.gestureScrollEnd();
+    logCounts('GestureScrollEnd', documents);
+}
+
+function centerOf(element) {
+    var targetRect = element.getBoundingClientRect();
+    return {
+      x: targetRect.left + targetRect.width / 2,
+      y: targetRect.top + targetRect.height / 2
+    };
+}
+
+onload = function() {
+    debug('Event on a simple div');
+    debug('---------------------');
+    var point = centerOf(document.getElementById('target'));
+    sendEvents(point.x, point.y, [document]);
+    debug('');
+
+    debug('Event entirely over one iframe nested in another');
+    debug('---------------------');
+    var frame = document.getElementById('frame');
+    var doc2 = frame.contentDocument;
+    var doc3 = doc2.querySelector('iframe').contentDocument;
+    var point = centerOf(frame);
+    sendEvents(point.x, point.y, [document, doc2, doc3]);
+    debug('');
+
+    debug('Event near boundary of two iframes');
+    debug('---------------------');
+    var rect = frame.getBoundingClientRect();
+    sendEvents(rect.left + 3, rect.top + 3, [document, doc2, doc3]);
+    debug('');
+}
+</script>

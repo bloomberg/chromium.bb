@@ -296,6 +296,17 @@ unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const
     return needsLayoutObjects;
 }
 
+unsigned Internals::hitTestCount(Document* doc, ExceptionState& exceptionState) const
+{
+    if (!doc) {
+        exceptionState.throwDOMException(InvalidAccessError, "Must supply document to check");
+        return 0;
+    }
+
+    return doc->renderView()->hitTestCount();
+}
+
+
 bool Internals::isPreloaded(const String& url)
 {
     Document* document = contextDocument();

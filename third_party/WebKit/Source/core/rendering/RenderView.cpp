@@ -60,6 +60,7 @@ RenderView::RenderView(Document* document)
     , m_layoutState(0)
     , m_renderQuoteHead(0)
     , m_renderCounterCount(0)
+    , m_hitTestCount(0)
 {
     // init RenderObject attributes
     setInline(false);
@@ -84,6 +85,7 @@ bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)
 bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
 {
     TRACE_EVENT0("blink", "RenderView::hitTest");
+    m_hitTestCount++;
 
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
     // into a child document, it could trigger a layout on the parent document, which can destroy RenderLayers
