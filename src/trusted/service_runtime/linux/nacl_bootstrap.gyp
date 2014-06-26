@@ -92,6 +92,8 @@
       'cflags!': [
         '-fsanitize=address',
         '-fsanitize=memory',
+        '-fsanitize=null',
+        '-fsanitize=vptr',
         '-w',
         # We filter these out because release_extra_cflags or another
         # such thing might be adding them in, and those options wind up
