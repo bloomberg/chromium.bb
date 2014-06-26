@@ -73,6 +73,7 @@ group("root") {
     "//third_party/smhasher:cityhash",
     "//third_party/smhasher:murmurhash3",
     "//third_party/smhasher:pmurhash",
+    "//third_party/snappy",
     "//third_party/speex",
     "//third_party/widevine/cdm:version_h",
     "//third_party/zlib",
