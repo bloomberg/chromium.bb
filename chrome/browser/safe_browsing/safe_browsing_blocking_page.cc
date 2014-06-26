@@ -286,9 +286,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         url_,
+        &request_consumer_,
         base::Bind(&SafeBrowsingBlockingPage::OnGotHistoryCount,
-                   base::Unretained(this)),
-        &request_tracker_);
+                  base::Unretained(this)));
   }
 
   if (!is_main_frame_load_blocked_) {
@@ -594,7 +594,8 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 }
 
-void SafeBrowsingBlockingPage::OnGotHistoryCount(bool success,
+void SafeBrowsingBlockingPage::OnGotHistoryCount(HistoryService::Handle handle,
+                                                 bool success,
                                                  int num_visits,
                                                  base::Time first_visit) {
   if (success)

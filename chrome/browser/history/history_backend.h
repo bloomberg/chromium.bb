@@ -169,8 +169,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // then calling this function with url=C would fill redirects with {B, A}.
   void QueryRedirectsTo(const GURL& url, RedirectList* redirects);
 
-  void GetVisibleVisitCountToHost(const GURL& url,
-                                  VisibleVisitCountToHostResult* result);
+  void GetVisibleVisitCountToHost(
+      scoped_refptr<GetVisibleVisitCountToHostRequest> request,
+      const GURL& url);
 
   // TODO(Nik): remove. Use QueryMostVisitedURLs instead.
   void QueryTopURLsAndRedirects(

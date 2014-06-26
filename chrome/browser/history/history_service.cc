@@ -88,12 +88,6 @@ void RunWithQueryURLResult(const HistoryService::QueryURLCallback& callback,
   callback.Run(result->success, result->row, result->visits);
 }
 
-void RunWithVisibleVisitCountToHostResult(
-    const HistoryService::GetVisibleVisitCountToHostCallback& callback,
-    const history::VisibleVisitCountToHostResult* result) {
-  callback.Run(result->success, result->count, result->first_visit);
-}
-
 // Extract history::URLRows into GURLs for VisitedLinkMaster.
 class URLIteratorFromURLRows
     : public visitedlink::VisitedLinkMaster::URLIterator {
@@ -835,23 +829,13 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
                                    base::Bind(callback, base::Owned(result)));
 }
 
-base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
+HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
     const GURL& url,
-    const GetVisibleVisitCountToHostCallback& callback,
-    base::CancelableTaskTracker* tracker) {
+    CancelableRequestConsumerBase* consumer,
+    const GetVisibleVisitCountToHostCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  history::VisibleVisitCountToHostResult* result =
-      new history::VisibleVisitCountToHostResult();
-  return tracker->PostTaskAndReply(
-      thread_->message_loop_proxy().get(),
-      FROM_HERE,
-      base::Bind(&HistoryBackend::GetVisibleVisitCountToHost,
-                 history_backend_.get(),
-                 url,
-                 base::Unretained(result)),
-      base::Bind(&RunWithVisibleVisitCountToHostResult,
-                 callback,
-                 base::Owned(result)));
+  return Schedule(PRIORITY_UI, &HistoryBackend::GetVisibleVisitCountToHost,
+      consumer, new history::GetVisibleVisitCountToHostRequest(callback), url);
 }
 
 HistoryService::Handle HistoryService::QueryTopURLsAndRedirects(

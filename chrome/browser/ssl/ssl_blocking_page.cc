@@ -295,9 +295,9 @@ SSLBlockingPage::SSLBlockingPage(
     if (history_service) {
       history_service->GetVisibleVisitCountToHost(
           request_url_,
+          &request_consumer_,
           base::Bind(&SSLBlockingPage::OnGotHistoryCount,
-                     base::Unretained(this)),
-          &request_tracker_);
+                    base::Unretained(this)));
     }
   }
 
@@ -722,7 +722,8 @@ void SSLBlockingPage::SetExtraInfo(
   }
 }
 
-void SSLBlockingPage::OnGotHistoryCount(bool success,
+void SSLBlockingPage::OnGotHistoryCount(HistoryService::Handle handle,
+                                        bool success,
                                         int num_visits,
                                         base::Time first_visit) {
   num_visits_ = num_visits;
