@@ -109,14 +109,8 @@ bool GetPyProtoPath(base::FilePath* dir) {
 bool GetPythonCommand(base::CommandLine* python_cmd) {
   DCHECK(python_cmd);
 
-#if defined(OS_WIN)
-  // This permits finding the proper python in path even if it is a .bat file.
-  python_cmd->SetProgram(base::FilePath(FILE_PATH_LITERAL("cmd.exe")));
-  python_cmd->AppendArg("/c");
-  python_cmd->AppendArg("python");
-#else
   python_cmd->SetProgram(base::FilePath(FILE_PATH_LITERAL("python")));
-#endif  // defined(OS_WIN)
+
   // Launch python in unbuffered mode, so that python output doesn't mix with
   // gtest output in buildbot log files. See http://crbug.com/147368.
   python_cmd->AppendArg("-u");

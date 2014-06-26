@@ -178,21 +178,8 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   python_command.AppendArg("--startup-pipe=" +
       base::IntToString(reinterpret_cast<uintptr_t>(child_write)));
 
-  job_handle_.Set(CreateJobObject(NULL, NULL));
-  if (!job_handle_.IsValid()) {
-    LOG(ERROR) << "Could not create JobObject.";
-    return false;
-  }
-
-  if (!base::SetJobObjectLimitFlags(job_handle_.Get(),
-                                    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)) {
-    LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
-    return false;
-  }
-
   base::LaunchOptions launch_options;
   launch_options.inherit_handles = true;
-  launch_options.job_handle = job_handle_.Get();
   if (!base::LaunchProcess(python_command, launch_options, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
     return false;

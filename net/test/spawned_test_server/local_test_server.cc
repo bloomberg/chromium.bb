@@ -124,11 +124,6 @@ bool LocalTestServer::Stop() {
   if (!process_handle_)
     return true;
 
-#if defined(OS_WIN)
-  // This kills all the processes in the job object.
-  job_handle_.Close();
-#endif
-
   // First check if the process has already terminated.
   bool ret = base::WaitForSingleProcess(process_handle_, base::TimeDelta());
   if (!ret) {

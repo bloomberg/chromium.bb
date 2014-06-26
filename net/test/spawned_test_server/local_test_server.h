@@ -96,9 +96,6 @@ class LocalTestServer : public BaseTestServer {
   base::ProcessHandle process_handle_;
 
 #if defined(OS_WIN)
-  // JobObject used to clean up orphaned child processes.
-  base::win::ScopedHandle job_handle_;
-
   // The pipe file handle we read from.
   base::win::ScopedHandle child_read_fd_;
 
