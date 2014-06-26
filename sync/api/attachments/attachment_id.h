@@ -46,7 +46,7 @@ class SYNC_EXPORT AttachmentId {
  private:
   // Necessary since we forward-declare sync_pb::AttachmentIdProto; see comments
   // in immutable.h.
-  struct ImmutableAttachmentIdProtoTraits {
+  struct SYNC_EXPORT ImmutableAttachmentIdProtoTraits {
     typedef sync_pb::AttachmentIdProto* Wrapper;
     static void InitializeWrapper(Wrapper* wrapper);
     static void DestroyWrapper(Wrapper* wrapper);

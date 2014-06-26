@@ -110,7 +110,7 @@ class SYNC_EXPORT SyncData {
 
   // Necessary since we forward-declare sync_pb::SyncEntity; see
   // comments in immutable.h.
-  struct ImmutableSyncEntityTraits {
+  struct SYNC_EXPORT ImmutableSyncEntityTraits {
     typedef sync_pb::SyncEntity* Wrapper;
 
     static void InitializeWrapper(Wrapper* wrapper);
