@@ -97,7 +97,7 @@ public class AwSettings {
     private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
 
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
-    private boolean mAcceptThirdPartyCookies;
+    private boolean mAcceptThirdPartyCookies = false;
 
     private final boolean mSupportLegacyQuirks;
 
