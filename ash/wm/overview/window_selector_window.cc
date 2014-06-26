@@ -21,12 +21,9 @@ namespace ash {
 
 WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
     : transform_window_(window) {
-  window->AddObserver(this);
 }
 
 WindowSelectorWindow::~WindowSelectorWindow() {
-  if (transform_window_.window())
-    transform_window_.window()->RemoveObserver(this);
 }
 
 aura::Window* WindowSelectorWindow::GetRootWindow() {
@@ -51,7 +48,6 @@ aura::Window* WindowSelectorWindow::SelectionWindow() {
 
 void WindowSelectorWindow::RemoveWindow(const aura::Window* window) {
   DCHECK_EQ(transform_window_.window(), window);
-  transform_window_.window()->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
   WindowSelectorItem::RemoveWindow(window);
 }

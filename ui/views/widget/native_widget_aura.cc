@@ -356,7 +356,7 @@ bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
     return false;
   if (window_->title() == title)
     return false;
-  window_->SetTitle(title);
+  window_->set_title(title);
   return true;
 }
 

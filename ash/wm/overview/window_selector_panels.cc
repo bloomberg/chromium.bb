@@ -92,15 +92,10 @@ WindowSelectorPanels::~WindowSelectorPanels() {
   static_cast<PanelLayoutManager*>(
       Shell::GetContainer(panels_root_window_, kShellWindowId_PanelContainer)->
           layout_manager())->SetShowCalloutWidgets(true);
-  for (WindowList::iterator iter = transform_windows_.begin();
-      iter != transform_windows_.end(); iter++) {
-    (*iter)->window()->RemoveObserver(this);
-  }
 }
 
 void WindowSelectorPanels::AddWindow(aura::Window* window) {
   DCHECK(window->GetRootWindow() == panels_root_window_);
-  window->AddObserver(this);
   transform_windows_.push_back(new ScopedTransformPanelWindow(window));
 }
 
@@ -144,7 +139,6 @@ void WindowSelectorPanels::RemoveWindow(const aura::Window* window) {
   for (WindowList::iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
     if ((*iter)->window() == window) {
-      (*iter)->window()->RemoveObserver(this);
       (*iter)->OnWindowDestroyed();
       transform_windows_.erase(iter);
       break;
@@ -161,7 +155,7 @@ void WindowSelectorPanels::PrepareForOverview() {
   // |panel_windows| will hold all the windows in the panel container, sorted
   // according to their stacking order.
   const aura::Window::Windows panels =
-      transform_windows_.front()->window()->parent()->children();
+      transform_windows_[0]->window()->parent()->children();
 
   // Call PrepareForOverview() in the reverse stacking order so that the
   // transparent windows that handle the events are in the correct stacking

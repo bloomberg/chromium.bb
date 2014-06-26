@@ -206,8 +206,8 @@ class WindowSelectorTest : public test::AshTestBase {
     return window->close_button_.get();
   }
 
-  views::Label* GetLabelView(ash::WindowSelectorItem* window) {
-    return window->window_label_view_;
+  views::Widget* GetLabelWidget(ash::WindowSelectorItem* window) {
+    return window->window_label_.get();
   }
 
   test::ShelfViewTestAPI* shelf_view_test() {
@@ -734,31 +734,24 @@ TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
 TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 100, 100)));
   base::string16 window_title = base::UTF8ToUTF16("My window");
-  window->SetTitle(window_title);
+  window->set_title(window_title);
   ToggleOverview();
   WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
-  views::Label* label = GetLabelView(window_item);
-  // Has the label view been created?
-  ASSERT_TRUE(label);
-
+  views::Widget* widget = GetLabelWidget(window_item);
+  // Has the label widget been created?
+  ASSERT_TRUE(widget);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
   // Verify the label matches the window title.
   EXPECT_EQ(label->text(), window_title);
-
-  // Update the window title and check that the label is updated, too.
-  base::string16 updated_title = base::UTF8ToUTF16("Updated title");
-  window->SetTitle(updated_title);
-  EXPECT_EQ(label->text(), updated_title);
-
   // Labels are located based on target_bounds, not the actual window item
   // bounds.
   gfx::Rect target_bounds(window_item->target_bounds());
   gfx::Rect expected_label_bounds(target_bounds.x(),
-                                  target_bounds.bottom() - label->
-                                      GetPreferredSize().height(),
+                                  target_bounds.bottom(),
                                   target_bounds.width(),
                                   label->GetPreferredSize().height());
-  gfx::Rect real_label_bounds = label->GetWidget()->GetNativeWindow()->bounds();
-  EXPECT_EQ(real_label_bounds, expected_label_bounds);
+  gfx::Rect real_label_bounds = widget->GetNativeWindow()->bounds();
+  EXPECT_EQ(widget->GetNativeWindow()->bounds(), real_label_bounds);
 }
 
 // Tests that a label is created for the active panel in a group of panels in
@@ -768,28 +761,17 @@ TEST_F(WindowSelectorTest, CreateLabelUnderPanel) {
   scoped_ptr<aura::Window> panel2(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
   base::string16 panel1_title = base::UTF8ToUTF16("My panel");
   base::string16 panel2_title = base::UTF8ToUTF16("Another panel");
-  base::string16 updated_panel1_title = base::UTF8ToUTF16("WebDriver Torso");
-  base::string16 updated_panel2_title = base::UTF8ToUTF16("Da panel");
-  panel1->SetTitle(panel1_title);
-  panel2->SetTitle(panel2_title);
+  panel1->set_title(panel1_title);
+  panel2->set_title(panel2_title);
   wm::ActivateWindow(panel1.get());
   ToggleOverview();
   WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
-  views::Label* label = GetLabelView(window_item);
-  // Has the label view been created?
-  ASSERT_TRUE(label);
-
+  views::Widget* widget = GetLabelWidget(window_item);
+  // Has the label widget been created?
+  ASSERT_TRUE(widget);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
   // Verify the label matches the active window title.
   EXPECT_EQ(label->text(), panel1_title);
-  // Verify that updating the title also updates the label.
-  panel1->SetTitle(updated_panel1_title);
-  EXPECT_EQ(label->text(), updated_panel1_title);
-  // After destroying the first panel, the title should match the second panel.
-  panel1.reset();
-  EXPECT_EQ(label->text(), panel2_title);
-  // Also test updating the title on the second panel.
-  panel2->SetTitle(updated_panel2_title);
-  EXPECT_EQ(label->text(), updated_panel2_title);
 }
 
 // Tests that overview updates the window positions if the display orientation
@@ -966,8 +948,8 @@ TEST_F(WindowSelectorTest, CloseButtonOnPanels) {
   aura::Window* window2 = widget2->GetNativeWindow();
   base::string16 panel1_title = base::UTF8ToUTF16("Panel 1");
   base::string16 panel2_title = base::UTF8ToUTF16("Panel 2");
-  window1->SetTitle(panel1_title);
-  window2->SetTitle(panel2_title);
+  window1->set_title(panel1_title);
+  window2->set_title(panel2_title);
   wm::ActivateWindow(window1);
   ToggleOverview();
 
@@ -985,8 +967,8 @@ TEST_F(WindowSelectorTest, CloseButtonOnPanels) {
   EXPECT_TRUE(window_item->Contains(window2));
   EXPECT_TRUE(GetCloseButton(window_item)->IsVisible());
 
-
-  views::Label* label = GetLabelView(window_item);
+  views::Widget* widget = GetLabelWidget(window_item);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
   EXPECT_EQ(label->text(), panel2_title);
 
   gfx::RectF bounds2 = GetTransformedBoundsInRootWindow(window2);
