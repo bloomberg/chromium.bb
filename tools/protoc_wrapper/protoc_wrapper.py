@@ -10,6 +10,7 @@ A simple wrapper for protoc.
 - Handles building with system protobuf as an option.
 """
 
+import fnmatch
 import optparse
 import os.path
 import shutil
@@ -40,6 +41,26 @@ def ModifyHeader(header_file, extra_header):
   with open(header_file, 'wb') as f:
     f.write(''.join(header_contents))
   return 0
+
+def ScanForBadFiles(scan_root):
+  """Scan for bad file names, see http://crbug.com/386125 for details.
+  Returns True if any filenames are bad. Outputs errors to stderr.
+
+  |scan_root| is the path to the directory to be recursively scanned.
+  """
+  badname = False
+  real_scan_root = os.path.realpath(scan_root)
+  for dirpath, dirnames, filenames in os.walk(real_scan_root):
+    matches = fnmatch.filter(filenames, '*-*.proto')
+    if len(matches) > 0:
+      if not badname:
+        badname = True
+        sys.stderr.write('proto files must not have hyphens in their names ('
+                         'see http://crbug.com/386125 for more information):\n')
+      for filename in matches:
+        sys.stderr.write('  ' + os.path.join(real_scan_root,
+                                             dirpath, filename) + '\n')
+  return badname
 
 
 def RewriteProtoFilesForSystemProtobuf(path):
@@ -82,6 +103,9 @@ def main(argv):
                          'instead of bundled one.')
   (options, args) = parser.parse_args(sys.argv)
   if len(args) < 2:
+    return 1
+
+  if ScanForBadFiles(options.proto_in_dir):
     return 1
 
   proto_path = options.proto_in_dir
