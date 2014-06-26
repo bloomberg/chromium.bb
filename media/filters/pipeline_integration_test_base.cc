@@ -130,7 +130,6 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
   clockless_playback_ = test_type == kClockless;
   if (clockless_playback_) {
     pipeline_->SetClockForTesting(new Clock(&dummy_clock_));
-    pipeline_->set_underflow_disabled_for_testing(true);
   }
   return Start(file_path, expected_status);
 }

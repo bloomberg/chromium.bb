@@ -176,9 +176,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Gets the current pipeline statistics.
   PipelineStatistics GetStatistics() const;
 
-  void set_underflow_disabled_for_testing(bool disabled) {
-    underflow_disabled_for_testing_ = disabled;
-  }
   void SetClockForTesting(Clock* clock);
   void SetErrorForTesting(PipelineStatus status);
 
@@ -311,6 +308,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void DoStop(const PipelineStatusCB& done_cb);
   void OnStopCompleted(PipelineStatus status);
 
+  void OnAudioUnderflow();
+
   // Collection of callback methods and helpers for tracking changes in
   // buffering state and transition from paused/underflow states and playing
   // states.
@@ -319,11 +318,11 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //   - A waiting to non-waiting transition indicates preroll has completed
   //     and StartPlayback() should be called
   //   - A non-waiting to waiting transition indicates underflow has occurred
-  //     and PausePlayback() should be called
+  //     and StartWaitingForEnoughData() should be called
   void BufferingStateChanged(BufferingState* buffering_state,
                              BufferingState new_buffering_state);
   bool WaitingForEnoughData() const;
-  void PausePlayback();
+  void StartWaitingForEnoughData();
   void StartPlayback();
 
   void PauseClockAndStopRendering_Locked();
@@ -391,9 +390,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Member that tracks the current state.
   State state_;
 
-  // The timestamp to start playback from after starting/seeking has completed.
-  base::TimeDelta start_timestamp_;
-
   // Whether we've received the audio/video/text ended events.
   bool audio_ended_;
   bool video_ended_;
@@ -430,8 +426,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   PipelineStatistics statistics_;
 
   scoped_ptr<SerialRunner> pending_callbacks_;
-
-  bool underflow_disabled_for_testing_;
 
   base::ThreadChecker thread_checker_;
 
