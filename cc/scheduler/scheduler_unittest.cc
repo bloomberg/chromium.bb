@@ -1426,7 +1426,8 @@ void BeginFramesNotFromClient(bool begin_frame_scheduling_enabled,
   client.Reset();
 }
 
-TEST(SchedulerTest, SyntheticBeginFrames) {
+// See: http://crbug.com/388901
+TEST(SchedulerTest, DISABLED_SyntheticBeginFrames) {
   bool begin_frame_scheduling_enabled = false;
   bool throttle_frame_production = true;
   BeginFramesNotFromClient(begin_frame_scheduling_enabled,
