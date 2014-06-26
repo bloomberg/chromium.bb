@@ -62,11 +62,11 @@
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/api/attachments/attachment_downloader.h"
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
-#include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -648,8 +648,16 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
                                          scope_set_,
                                          token_service_provider.Pass()));
 
+  token_service_provider.reset(new TokenServiceProvider(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI),
+      token_service_));
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader(
-      new syncer::FakeAttachmentDownloader());
+      syncer::AttachmentDownloader::Create(url_prefix,
+                                           url_request_context_getter_,
+                                           account_id_,
+                                           scope_set_,
+                                           token_service_provider.Pass()));
 
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(
