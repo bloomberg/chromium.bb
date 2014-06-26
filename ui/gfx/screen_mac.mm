@@ -46,9 +46,11 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
 
 gfx::Display GetDisplayForScreen(NSScreen* screen) {
   NSRect frame = [screen frame];
-  // TODO(oshima): Implement ID and Observer.
-  gfx::Display display(0, gfx::Rect(NSRectToCGRect(frame)));
 
+  CGDirectDisplayID display_id = [[[screen deviceDescription]
+    objectForKey:@"NSScreenNumber"] unsignedIntValue];
+
+  gfx::Display display(display_id, gfx::Rect(NSRectToCGRect(frame)));
   NSRect visible_frame = [screen visibleFrame];
   NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
 
@@ -68,6 +70,9 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
   else
     scale = [screen userSpaceScaleFactor];
   display.set_device_scale_factor(scale);
+  // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
+  // handle the unexpected situations were the angle is not a multiple of 90.
+  display.SetRotationAsDegree(static_cast<int>(CGDisplayRotation(display_id)));
   return display;
 }
 
