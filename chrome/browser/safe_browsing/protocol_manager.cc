@@ -122,6 +122,9 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       url_prefix_(config.url_prefix),
       backup_update_reason_(BACKUP_UPDATE_REASON_MAX),
       disable_auto_update_(config.disable_auto_update),
+#if defined(OS_ANDROID)
+      disable_connection_check_(config.disable_connection_check),
+#endif
       url_fetcher_id_(0),
       app_in_foreground_(true) {
   DCHECK(!url_prefix_.empty());
@@ -198,11 +201,13 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
     return;
 
 #if defined(OS_ANDROID)
-  net::NetworkChangeNotifier::ConnectionType type =
-    net::NetworkChangeNotifier::GetConnectionType();
-  if (type != net::NetworkChangeNotifier::CONNECTION_WIFI) {
-    ScheduleNextUpdate(false /* no back off */);
-    return;
+  if (!disable_connection_check_) {
+    net::NetworkChangeNotifier::ConnectionType type =
+      net::NetworkChangeNotifier::GetConnectionType();
+    if (type != net::NetworkChangeNotifier::CONNECTION_WIFI) {
+      ScheduleNextUpdate(false /* no back off */);
+      return;
+    }
   }
 #endif
 

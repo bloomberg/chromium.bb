@@ -82,7 +82,9 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     config.backup_http_error_url_prefix = kBackupHttpUrlPrefix;
     config.backup_network_error_url_prefix = kBackupNetworkUrlPrefix;
     config.version = kAppVer;
-
+#if defined(OS_ANDROID)
+    config.disable_connection_check = true;
+#endif
     return scoped_ptr<SafeBrowsingProtocolManager>(
         SafeBrowsingProtocolManager::Create(delegate, NULL, config));
   }

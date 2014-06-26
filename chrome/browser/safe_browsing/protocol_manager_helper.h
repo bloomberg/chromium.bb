@@ -25,6 +25,9 @@ struct SafeBrowsingProtocolConfig {
   std::string backup_network_error_url_prefix;
   std::string version;
   bool disable_auto_update;
+#if defined(OS_ANDROID)
+  bool disable_connection_check;
+#endif
 };
 
 class SafeBrowsingProtocolManagerHelper {

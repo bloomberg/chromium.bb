@@ -386,6 +386,12 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // ForceScheduleNextUpdate() is called. This is set for testing purpose.
   bool disable_auto_update_;
 
+#if defined(OS_ANDROID)
+  // When true, protocol_manager will not check network connection
+  // type when scheduling next update. This is set for testing purpose.
+  bool disable_connection_check_;
+#endif
+
   // ID for URLFetchers for testing.
   int url_fetcher_id_;
 
