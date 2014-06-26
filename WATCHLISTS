@@ -278,6 +278,14 @@
     'drive_resource_metadata': {
       'filepath': 'chrome/browser/chromeos/drive/resource_metadata'
     },
+    'eme': {
+      'filepath': 'components/cdm/|' \
+                  'content/browser/media/cdm/|' \
+                  'content/renderer/media/crypto/|' \
+                  'media/base/android/*drm*|' \
+                  'media/cdm/|' \
+                  'third_party/widevine/cdm/'
+    },
     'events': {
       'filepath': 'ui/events/',
     },
@@ -793,6 +801,7 @@
     'downloads_ui': ['asanka@chromium.org', 'benjhayden+dwatch@chromium.org'],
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
+    'eme': ['eme-reviews@chromium.org'],
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
