@@ -1603,22 +1603,23 @@ static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRe
     return object.release();
 }
 
-bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason invalidationReason,
-    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect* newBoundsPtr, const LayoutPoint* newLocationPtr)
+bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation)
 {
     RenderView* v = view();
     if (v->document().printing())
         return false; // Don't invalidate paints if we're printing.
 
-    // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
-    // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForPaintInvalidation(paintInvalidationContainer));
-    LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : computePaintInvalidationRect();
-    LayoutPoint newLocation = newLocationPtr ? (*newLocationPtr) : RenderLayer::positionFromPaintInvalidationContainer(this, paintInvalidationContainer);
+    const LayoutRect& newBounds = previousPaintInvalidationRect();
+    const LayoutPoint& newLocation = previousPositionFromPaintInvalidationContainer();
+
+    ASSERT(newBounds == boundsRectForPaintInvalidation(paintInvalidationContainer));
 
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
-    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintAfterLayoutIfNeeded()",
+    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForOldAndNewRects(oldBounds, newBounds)));
+
+    InvalidationReason invalidationReason = shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental;
 
     // Presumably a background or a border exists if border-fit:lines was specified.
     if (invalidationReason == InvalidationIncremental && style()->borderFit() == BorderFitLines)

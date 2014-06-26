@@ -1589,14 +1589,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
         setShouldDoFullPaintInvalidationAfterLayout(true);
     }
 
-    const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
-    const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    bool didFullPaintInvalidation = invalidatePaintAfterLayoutIfNeeded(&newPaintInvalidationContainer,
-        shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental,
-        oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
-        &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
-
-    if (!didFullPaintInvalidation)
+    if (!invalidatePaintIfNeeded(&newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
         invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.

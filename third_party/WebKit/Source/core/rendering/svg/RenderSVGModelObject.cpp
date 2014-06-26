@@ -138,7 +138,7 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *containerForPaintInvalidation();
-    setPreviousPaintInvalidationRect(clippedOverflowRectForPaintInvalidation(&newPaintInvalidationContainer));
+    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer));
     setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer));
 
     // If an ancestor container had its transform changed, then we just
@@ -156,12 +156,7 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
         return;
     }
 
-    const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
-    const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    invalidatePaintAfterLayoutIfNeeded(containerForPaintInvalidation(),
-        shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental,
-        oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
-        &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
+    invalidatePaintIfNeeded(containerForPaintInvalidation(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer);
 
     RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
 }

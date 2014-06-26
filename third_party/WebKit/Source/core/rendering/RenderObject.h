@@ -828,10 +828,8 @@ public:
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
-    // Invalidate the paint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
-    bool invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason,
-        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
-        const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromPaintInvalidationContainer = 0);
+    bool invalidatePaintIfNeeded(const RenderLayerModelObject* paintInvalidationContainer,
+        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&);
