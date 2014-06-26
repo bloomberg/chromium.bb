@@ -653,12 +653,28 @@ static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
   pCursor->iChild = 0;
 
   /* A child for each cell, plus one in the header. */
-  /* TODO(shess): Sanity-check the count?  Page header plus per-cell
-   * cost of 16-bit offset, 32-bit page number, and one varint
-   * (minimum 1 byte).
-   */
   pCursor->nChildren = decodeUnsigned16(PageHeader(pPage) +
                                         kiPageCellCountOffset) + 1;
+
+  /* Each child requires a 16-bit offset from an array after the header,
+   * and each child contains a 32-bit page number and at least a varint
+   * (min size of one byte).  The final child page is in the header.  So
+   * the maximum value for nChildren is:
+   *   (nPageSize - kiPageInteriorHeaderBytes) /
+   *      (sizeof(uint16) + sizeof(uint32) + 1) + 1
+   */
+  /* TODO(shess): This count is very unlikely to be corrupted in
+   * isolation, so seeing this could signal to skip the page.  OTOH, I
+   * can't offhand think of how to get here unless this or the page-type
+   * byte is corrupted.  Could be an overflow page, but it would require
+   * a very large database.
+   */
+  const unsigned knMinCellLength = 2 + 4 + 1;
+  unsigned nMaxChildren =
+      (pCursor->nPageSize - kiPageInteriorHeaderBytes) / knMinCellLength + 1;
+  if (pCursor->nChildren > nMaxChildren) {
+    pCursor->nChildren = nMaxChildren;
+  }
 }
 
 static int interiorCursorCreate(RecoverInteriorCursor *pParent,
