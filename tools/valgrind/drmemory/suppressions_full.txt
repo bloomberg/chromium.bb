@@ -2174,3 +2174,10 @@ name=bug_387373
 *!blink::WebEmbeddedWorkerImpl::startWorkerContext
 *!content::EmbeddedWorkerDispatcher::OnStartWorker
 *!EmbeddedWorkerMsg_StartWorker::Dispatch<>
+
+UNINITIALIZED READ
+name=bug_389263
+*!BrowserView::ShowAvatarBubbleFromAvatarButton
+*!OpaqueBrowserFrameView::ButtonPressed
+*!views::Button::NotifyClick
+*!ProfileChooserViewBrowserTest::OpenProfileChooserView
