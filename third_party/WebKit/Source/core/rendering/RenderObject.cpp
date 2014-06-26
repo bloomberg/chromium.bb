@@ -1835,13 +1835,6 @@ void RenderObject::showRenderObject() const
 
 void RenderObject::showRenderObject(int printedCharacters) const
 {
-    // As this function is intended to be used when debugging, the
-    // this pointer may be 0.
-    if (!this) {
-        fputs("(null)\n", stderr);
-        return;
-    }
-
     printedCharacters += fprintf(stderr, "%s %p", renderName(), this);
 
     if (node()) {
@@ -1865,8 +1858,6 @@ void RenderObject::showRenderTreeAndMark(const RenderObject* markedObject1, cons
         fputc(' ', stderr);
 
     showRenderObject(printedCharacters);
-    if (!this)
-        return;
 
     for (const RenderObject* child = slowFirstChild(); child; child = child->nextSibling())
         child->showRenderTreeAndMark(markedObject1, markedLabel1, markedObject2, markedLabel2, depth + 1);
