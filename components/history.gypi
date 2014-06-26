@@ -13,6 +13,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../sql/sql.gyp:sql',
         '../url/url.gyp:url_lib',
         'keyed_service_core',
         'query_parser',
@@ -20,6 +21,8 @@
       'sources': [
         'history/core/browser/history_client.cc',
         'history/core/browser/history_client.h',
+        'history/core/browser/in_memory_database.cc',
+        'history/core/browser/in_memory_database.h',
         'history/core/browser/keyword_id.h',
         'history/core/browser/keyword_search_term.cc',
         'history/core/browser/keyword_search_term.h',

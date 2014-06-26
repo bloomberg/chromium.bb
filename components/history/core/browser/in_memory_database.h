@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_DATABASE_H_
 
 #include "base/basictypes.h"
 #include "components/history/core/browser/url_database.h"
@@ -48,4 +48,4 @@ class InMemoryDatabase : public URLDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_DATABASE_H_

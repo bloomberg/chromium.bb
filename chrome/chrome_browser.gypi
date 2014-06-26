@@ -655,8 +655,6 @@
       'browser/history/history_tab_helper.h',
       'browser/history/history_types.cc',
       'browser/history/history_types.h',
-      'browser/history/in_memory_database.cc',
-      'browser/history/in_memory_database.h',
       'browser/history/in_memory_history_backend.cc',
       'browser/history/in_memory_history_backend.h',
       'browser/history/in_memory_url_index.cc',
