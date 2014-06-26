@@ -137,6 +137,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
             bool, True if the C++ type is used as an element of an array or sequence.
     """
     def string_mode():
+        if idl_type.is_nullable:
+            return 'WithNullCheck'
         # FIXME: the Web IDL spec requires 'EmptyString', not 'NullString',
         # but we use NullString for performance.
         if extended_attributes.get('TreatNullAs') != 'NullString':

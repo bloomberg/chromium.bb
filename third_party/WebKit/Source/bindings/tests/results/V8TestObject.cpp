@@ -1541,7 +1541,7 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
     impl->setStringOrNullAttribute(cppValue);
 }
 
@@ -7097,7 +7097,7 @@ static void voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCal
 static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<> defaultStringArg;
+    V8StringResource<WithNullCheck> defaultStringArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
@@ -7120,7 +7120,7 @@ static void voidMethodDefaultNullableByteStringArgMethodCallback(const v8::Funct
 static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<> defaultStringArg;
+    V8StringResource<WithNullCheck> defaultStringArg;
     {
         if (info.Length() > 0) {
             TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
