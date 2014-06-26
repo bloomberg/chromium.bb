@@ -128,13 +128,13 @@ namespace fileSystemProvider {
   // more entries will be returned, then <code>hasMore</code> must be true, and
   // it has to be called again with additional entries. If no more entries are
   // available, then <code>hasMore</code> must be set to false.
-  callback EntriesCallback = void(ResourceEntry[] entries, bool hasMore);
+  callback EntriesCallback = void(EntryMetadata[] entries, boolean hasMore);
 
   // Success callback for the <code>onReadFileRequested</code> event. If more
   // data will be returned, then <code>hasMore</code> must be true, and it
   // has to be called again with additional entries. If no more data is
   // available, then <code>hasMore</code> must be set to false.
-  callback FileDataCallback = void(ArrayBuffer data, bool hasMore);
+  callback FileDataCallback = void(ArrayBuffer data, boolean hasMore);
 
   interface Functions {
     // Mounts a file system with the given <code>fileSystemId</code> and <code>

@@ -1,0 +1,54 @@
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "fileSystemProvider" permission
+in the <a href="manifest">extension manifest</a>
+to use the File System Provider API.
+For example:</p>
+<pre data-filename="manifest.json">
+{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "fileSystemProvider"
+  ]</b>,
+  ...
+}
+</pre>
+
+<h2 id="overview">Overview</h2>
+<p>
+File System Provider API allows extensions to support virtual file systems,
+which are available in the file manager on Chrome OS.
+Use cases include decompressing archives and accessing files in a cloud
+service other than Drive.
+</p>
+
+<h2 id="archives">File handlers</h2>
+<p>
+Provided file systems can either provide file system contents from an external
+source (such as a remote server), or using a local file (such as an archive) as
+its input.
+</p>
+<p>
+In the second case, the providing extension should have a
+<a href="manifest/file_handlers">file_handlers</a> manifest entry in order
+to be launched when the file is selected in the file manager.
+When the extension is executed with a file to be handled, it has to mount a
+file system and start serving contents from the provided file.
+</p>
+
+<h2 id="archives">Life cycle</h2>
+<p>
+Provided file systems once mounted are remembered by Chrome and remounted
+automatically after reboot or restart. Hence, once a file system is
+<a href="method-mount">mounted</a> by a providing extension, it will stay until
+either the extension is unloaded, or the extension calls the
+<a href="#method-unmount"> unmount</a> method.
+</p>
+<p>
+In case of acting as a file handler, the handled file may need to be stored
+to access it after either a reboot, or suspending and resuming an event page
+of the providing extension. In such case
+<a href="fileSystem#method-retainEntry">chrome.fileSystem.retainEntry</a> and
+<a href="fileSystem#method-restoreEntry">chrome.fileSystem.restoreEntry</a>
+should be used.
+</p>
