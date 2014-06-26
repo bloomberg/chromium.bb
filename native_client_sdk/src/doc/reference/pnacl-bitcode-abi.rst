@@ -222,7 +222,10 @@ Pointer types
 
 Only the following pointer types are allowed:
 
-* Pointers to valid PNaCl bitcode scalar types, as specified above.
+* Pointers to valid PNaCl bitcode scalar types, as specified above, except for
+  ``i1``.
+* Pointers to valid PNaCl bitcode vector types, as specified above, except for
+  ``<? x i1>``.
 * Pointers to functions.
 
 In addition, the address space for all pointers must be 0.
@@ -343,11 +346,16 @@ Only the LLVM instructions listed here are supported by PNaCl bitcode.
 
   The pointer argument of these instructions must be a *normalized* pointer (see
   :ref:`pointer types <bitcode_pointertypes>`). The ``volatile`` and ``atomic``
-  attributes are not supported. Loads and stores of the type ``i1`` are not
-  supported.
+  attributes are not supported. Loads and stores of the type ``i1`` and ``<? x
+  i1>`` are not supported.
 
-  These instructions must use ``align 1`` on integer memory accesses, ``align 4``
-  for ``float`` accesses and ``align 8`` for ``double`` accesses.
+  These instructions must follow the following alignment restrictions:
+
+  * On integer memory accesses: ``align 1``.
+  * On ``float`` memory accesses: ``align 1`` or ``align 4``.
+  * On ``double`` memory accesses: ``align 1`` or ``align 8``.
+  * On vector memory accesses: alignment at the vector's element width, for
+    example ``<4 x i32>`` must be ``align 4``.
 
 * ``trunc``
 * ``zext``

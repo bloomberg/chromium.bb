@@ -201,7 +201,10 @@ element counts listed previously (their width is therefore not
 <span id="bitcode-pointertypes"></span><h3 id="pointer-types"><span id="bitcode-pointertypes"></span>Pointer types</h3>
 <p>Only the following pointer types are allowed:</p>
 <ul class="small-gap">
-<li>Pointers to valid PNaCl bitcode scalar types, as specified above.</li>
+<li>Pointers to valid PNaCl bitcode scalar types, as specified above, except for
+<code>i1</code>.</li>
+<li>Pointers to valid PNaCl bitcode vector types, as specified above, except for
+<code>&lt;? x i1&gt;</code>.</li>
 <li>Pointers to functions.</li>
 </ul>
 <p>In addition, the address space for all pointers must be 0.</p>
@@ -287,10 +290,16 @@ section).</p>
 <li><p class="first"><code>load</code>, <code>store</code></p>
 <p>The pointer argument of these instructions must be a <em>normalized</em> pointer (see
 <a class="reference internal" href="#bitcode-pointertypes"><em>pointer types</em></a>). The <code>volatile</code> and <code>atomic</code>
-attributes are not supported. Loads and stores of the type <code>i1</code> are not
-supported.</p>
-<p>These instructions must use <code>align 1</code> on integer memory accesses, <code>align 4</code>
-for <code>float</code> accesses and <code>align 8</code> for <code>double</code> accesses.</p>
+attributes are not supported. Loads and stores of the type <code>i1</code> and <code>&lt;? x
+i1&gt;</code> are not supported.</p>
+<p>These instructions must follow the following alignment restrictions:</p>
+<ul class="small-gap">
+<li>On integer memory accesses: <code>align 1</code>.</li>
+<li>On <code>float</code> memory accesses: <code>align 1</code> or <code>align 4</code>.</li>
+<li>On <code>double</code> memory accesses: <code>align 1</code> or <code>align 8</code>.</li>
+<li>On vector memory accesses: alignment at the vector&#8217;s element width, for
+example <code>&lt;4 x i32&gt;</code> must be <code>align 4</code>.</li>
+</ul>
 </li>
 <li><code>trunc</code></li>
 <li><code>zext</code></li>
