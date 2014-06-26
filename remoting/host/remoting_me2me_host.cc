@@ -1165,14 +1165,13 @@ void HostProcess::StartHost() {
     signaling_connector_->EnableOAuth(oauth_token_getter_.get());
   }
 
-  uint32 network_flags = allow_nat_traversal_ ?
-      NetworkSettings::NAT_TRAVERSAL_STUN : 0;
-
-  if (allow_relay_)
-    network_flags |= NetworkSettings::NAT_TRAVERSAL_RELAY;
-
-  if (allow_relay_ || allow_nat_traversal_)
-    network_flags |= NetworkSettings::NAT_TRAVERSAL_OUTGOING;
+  uint32 network_flags = 0;
+  if (allow_nat_traversal_) {
+    network_flags = NetworkSettings::NAT_TRAVERSAL_STUN |
+                    NetworkSettings::NAT_TRAVERSAL_OUTGOING;
+    if (allow_relay_)
+      network_flags |= NetworkSettings::NAT_TRAVERSAL_RELAY;
+  }
 
   NetworkSettings network_settings(network_flags);
 
