@@ -38,7 +38,8 @@ class VideoTrackAdapter
                 VideoCaptureDeliverFrameCB frame_callback,
                 int max_width, int max_height,
                 double min_aspect_ratio,
-                double max_aspect_ratio);
+                double max_aspect_ratio,
+                double max_frame_rate);
   void RemoveTrack(const MediaStreamVideoTrack* track);
 
   // Delivers |frame| to all tracks that have registered a callback.
@@ -60,9 +61,10 @@ class VideoTrackAdapter
   void AddTrackOnIO(
       const MediaStreamVideoTrack* track,
       VideoCaptureDeliverFrameCB frame_callback,
-      int max_width, int max_height,
+      const gfx::Size& max_frame_size,
       double min_aspect_ratio,
-      double max_aspect_ratio);
+      double max_aspect_ratio,
+      double max_frame_rate);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
 
   // |thread_checker_| is bound to the main render thread.

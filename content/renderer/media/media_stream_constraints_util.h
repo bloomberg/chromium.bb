@@ -32,6 +32,14 @@ bool CONTENT_EXPORT GetConstraintValueAsInteger(
     const std::string& name,
     int* value);
 
+// Method to get double precision value of constraint with |name| from
+// constraints. Returns true if the constraint is specified in either mandatory
+// or Optional constraints.
+bool CONTENT_EXPORT GetConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const std::string& name,
+    double* value);
+
 // Method to get std::string value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.

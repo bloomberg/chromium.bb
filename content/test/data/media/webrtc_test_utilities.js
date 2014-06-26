@@ -34,8 +34,7 @@ function sendValueToTest(value) {
   window.domAutomationController.send(value);
 }
 
-// Immediately fails the test on the C++ side and throw an exception to
-// stop execution on the javascript side.
+// Immediately fails the test on the C++ side.
 function failTest(reason) {
   var error = new Error(reason);
   window.domAutomationController.send(error.stack);
@@ -96,6 +95,44 @@ function waitForVideo(videoElement) {
 function waitForVideoToStop(videoElement) {
   addExpectedEvent();
   detectVideoStopped(videoElement, function () { eventOccured(); });
+}
+
+// Calculates the current frame rate and compares to |expected_frame_rate|
+// |callback| is triggered with value |true| if the calculated frame rate
+// is +-1 the expected or |false| if five calculations fail to match
+// |expected_frame_rate|.
+function validateFrameRate(videoElementName, expected_frame_rate, callback) {
+  var videoElement = $(videoElementName);
+  var startTime = new Date().getTime();
+  var decodedFrames = videoElement.webkitDecodedFrameCount;
+  var attempts = 0;
+
+  if (videoElement.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
+          videoElement.paused || videoElement.ended) {
+    failTest("getFrameRate - " + videoElementName + " is not plaing.");
+    return;
+  }
+
+  var waitVideo = setInterval(function() {
+    attempts++;
+    currentTime = new Date().getTime();
+    deltaTime = (currentTime - startTime) / 1000;
+    startTime = currentTime;
+
+    // Calculate decoded frames per sec.
+    var fps =
+        (videoElement.webkitDecodedFrameCount - decodedFrames) / deltaTime;
+    decodedFrames = videoElement.webkitDecodedFrameCount;
+
+    console.log('FrameRate in ' + videoElementName + ' is ' + fps);
+    if (fps < expected_frame_rate + 1  && fps > expected_frame_rate - 1) {
+      clearInterval(waitVideo);
+      callback(true);
+    } else if (attempts == 5) {
+      clearInterval(waitVideo);
+      callback(false);
+    }
+  }, 1000);
 }
 
 function waitForConnectionToStabilize(peerConnection, callback) {

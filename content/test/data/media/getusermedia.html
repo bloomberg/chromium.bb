@@ -189,8 +189,8 @@
     };
   }
 
-  function twoGetUserMedia(constraints1, constraints2) {
-    console.log('Calling Two GetUserMedia');
+  function twoGetUserMedia(constraints1,
+                           constraints2) {
     var result="";
     navigator.webkitGetUserMedia(
         constraints1,
@@ -200,7 +200,7 @@
               function(aspectRatio) {
                 result = aspectRatio;
                 requestSecondGetUserMedia();
-              },
+               },
               'local-view');
         },
         failedCallback);
@@ -215,6 +215,47 @@
                   sendValueToTest(result);
                 },
                 'local-view-2');
+          },
+          failedCallback);
+    }
+  }
+
+  // Calls GetUserMedia twice and verify that the frame rate is as expected for 
+  // both streams.
+  function twoGetUserMediaAndVerifyFrameRate(constraints1,
+                                             constraints2,
+                                             expected_frame_rate1,
+                                             expected_frame_rate2) {
+    addExpectedEvent();
+    addExpectedEvent();
+    var validateFrameRateCallback = function (success) {
+      if (!success)
+        failTest("Failed to validate frameRate.");
+      eventOccured();
+    };
+
+    navigator.webkitGetUserMedia(
+        constraints1,
+        function(stream) {
+          requestSecondGetUserMedia();
+          plugStreamIntoVideoElement(stream, 'local-view');
+          detectVideoPlaying('local-view', 
+              function() {
+                validateFrameRate('local-view', expected_frame_rate1,
+                    validateFrameRateCallback);
+              });
+        },
+        failedCallback);
+    var requestSecondGetUserMedia = function() {
+      navigator.webkitGetUserMedia(
+          constraints2,
+          function(stream) {
+            plugStreamIntoVideoElement(stream, 'local-view-2');
+            detectVideoPlaying('local-view-2', 
+                function() {
+                  validateFrameRate('local-view-2', expected_frame_rate2,
+                      validateFrameRateCallback);
+                });
           },
           failedCallback);
     }
@@ -390,7 +431,8 @@
         if (maxLightGreenPixelsY > maxLightGreenPixelsX + 1 ||
             maxLightGreenPixelsY < maxLightGreenPixelsX -1 ||
             maxLightGreenPixelsY == 0 ||
-            maxLightGreenPixelsX == width || maxLightGreenPixelsY == height) {
+            maxLightGreenPixelsX == width / 2 ||
+            maxLightGreenPixelsY == height / 2) {
           failTest("Aspect ratio corrupted. X " + maxLightGreenPixelsX  +
             " Y " + maxLightGreenPixelsY);
         }

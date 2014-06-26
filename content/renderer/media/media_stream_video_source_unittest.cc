@@ -357,6 +357,16 @@ TEST_F(MediaStreamVideoSourceTest, MinHeightLargerThanMaxHeight) {
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
 }
 
+TEST_F(MediaStreamVideoSourceTest, MinFrameRateLargerThanMaxFrameRate) {
+  MockMediaConstraintFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMinFrameRate, 25);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxFrameRate, 15);
+  blink::WebMediaStreamTrack track = CreateTrack(
+      "123", factory.CreateWebMediaConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
 // Test that its safe to release the last reference of a blink track and the
 // source during the callback if adding a track succeeds.
 TEST_F(MediaStreamVideoSourceTest, ReleaseTrackAndSourceOnSuccessCallBack) {
@@ -597,6 +607,25 @@ TEST_F(MediaStreamVideoSourceTest, TwoTracksWithVgaAndMinAspectRatio) {
                                         640, 480,
                                         640, 480,
                                         640, 360);
+}
+
+TEST_F(MediaStreamVideoSourceTest,
+       TwoTracksWithSecondTrackFrameRateHigherThanFirst) {
+  MockMediaConstraintFactory factory1;
+  factory1.AddMandatory(MediaStreamVideoSource::kMinFrameRate, 15);
+  factory1.AddMandatory(MediaStreamVideoSource::kMaxFrameRate, 15);
+
+  blink::WebMediaStreamTrack track1 =
+      CreateTrackAndStartSource(factory1.CreateWebMediaConstraints(),
+                                MediaStreamVideoSource::kDefaultWidth,
+                                MediaStreamVideoSource::kDefaultHeight,
+                                15);
+
+  MockMediaConstraintFactory factory2;
+  factory2.AddMandatory(MediaStreamVideoSource::kMinFrameRate, 30);
+  blink::WebMediaStreamTrack track2 = CreateTrack(
+      "123", factory2.CreateWebMediaConstraints());
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
 }
 
 // Test that a source can change the frame resolution on the fly and that

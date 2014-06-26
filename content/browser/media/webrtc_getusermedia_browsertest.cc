@@ -177,6 +177,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest,
         graph_name, "", "interarrival_time", interarrival_us, "us", true);
   }
 
+  // Runs the JavaScript twoGetUserMedia with |constraints1| and |constraint2|.
   void RunTwoGetTwoGetUserMediaWithDifferentContraints(
       const std::string& constraints1,
       const std::string& constraints2,
@@ -479,6 +480,25 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   std::string expected_result = "w=1280:h=720-w=640:h=480";
   RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
                                                   expected_result);
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaAndVerifyFrameRate) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  std::string constraints1 =
+      "{video: {mandatory: {minWidth:640 , minHeight: 480, "
+      "minFrameRate : 15, maxFrameRate : 15}}}";
+  std::string constraints2 =
+      "{video: {mandatory: {maxWidth:320 , maxHeight: 240,"
+      "minFrameRate : 7, maxFrameRate : 7}}}";
+
+  std::string command = "twoGetUserMediaAndVerifyFrameRate(" +
+      constraints1 + ',' + constraints2 + ", 15, 7)";
+  ExecuteJavascriptAndWaitForOk(command);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,

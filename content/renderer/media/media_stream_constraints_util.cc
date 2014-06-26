@@ -38,6 +38,13 @@ bool GetConstraintValueAsInteger(const blink::WebMediaConstraints& constraints,
          GetOptionalConstraintValueAsInteger(constraints, name, value);
 }
 
+bool GetConstraintValueAsDouble(const blink::WebMediaConstraints& constraints,
+                                 const std::string& name,
+                                 double* value) {
+  return GetMandatoryConstraintValueAsDouble(constraints, name, value) ||
+         GetMandatoryConstraintValueAsDouble(constraints, name, value);
+}
+
 bool GetConstraintValueAsString(const blink::WebMediaConstraints& constraints,
                                 const std::string& name,
                                 std::string* value) {
