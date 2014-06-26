@@ -1658,8 +1658,12 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
     bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren || clearLinesForPagination;
     LineLayoutState layoutState(isFullLayout, repaintLogicalTop, repaintLogicalBottom, flowThread);
 
-    if (isFullLayout)
+    if (isFullLayout) {
+        // Ensure the old line boxes will be erased.
+        if (firstLineBox())
+            setShouldDoFullPaintInvalidationAfterLayout(true);
         lineBoxes()->deleteLineBoxes();
+    }
 
     // Text truncation kicks in in two cases:
     //     1) If your overflow isn't visible and your text-overflow-mode isn't clip.
@@ -1742,6 +1746,10 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
     // truncate text.
     if (hasTextOverflow)
         checkLinesForTextOverflow();
+
+    // Ensure the new line boxes will be painted.
+    if (isFullLayout && firstLineBox())
+        setShouldDoFullPaintInvalidationAfterLayout(true);
 }
 
 void RenderBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWithRect>& floats, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat)
