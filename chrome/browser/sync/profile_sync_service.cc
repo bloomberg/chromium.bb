@@ -2240,7 +2240,8 @@ void ProfileSyncService::RemoveProtocolEventObserver(
 void ProfileSyncService::AddTypeDebugInfoObserver(
     syncer::TypeDebugInfoObserver* type_debug_info_observer) {
   type_debug_info_observers_.AddObserver(type_debug_info_observer);
-  if (type_debug_info_observers_.might_have_observers() && backend_) {
+  if (type_debug_info_observers_.might_have_observers() &&
+      backend_initialized_) {
     backend_->EnableDirectoryTypeDebugInfoForwarding();
   }
 }
@@ -2248,7 +2249,8 @@ void ProfileSyncService::AddTypeDebugInfoObserver(
 void ProfileSyncService::RemoveTypeDebugInfoObserver(
     syncer::TypeDebugInfoObserver* type_debug_info_observer) {
   type_debug_info_observers_.RemoveObserver(type_debug_info_observer);
-  if (!type_debug_info_observers_.might_have_observers() && backend_) {
+  if (!type_debug_info_observers_.might_have_observers() &&
+      backend_initialized_) {
     backend_->DisableDirectoryTypeDebugInfoForwarding();
   }
 }
