@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       GetAudioAndVideoStreamAndStop) {
+                       MAYBE_GetAudioAndVideoStreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
