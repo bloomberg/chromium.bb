@@ -825,6 +825,65 @@ TEST_F(WidgetObserverTest, WidgetBoundsChanged) {
   EXPECT_EQ(child2, widget_bounds_changed());
 }
 
+// Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
+// widget is visible and not maximized or fullscreen.
+TEST_F(WidgetTest, GetWindowBoundsInScreen) {
+  // Choose test coordinates away from edges and dimensions that are "small"
+  // (but not too small) to ensure the OS doesn't try to adjust them.
+  const gfx::Rect kTestBounds(150, 150, 400, 300);
+  const gfx::Size kTestSize(200, 180);
+
+  // First test a toplevel widget.
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->Show();
+
+  EXPECT_NE(kTestSize.ToString(),
+            widget->GetWindowBoundsInScreen().size().ToString());
+  widget->SetSize(kTestSize);
+  EXPECT_EQ(kTestSize.ToString(),
+            widget->GetWindowBoundsInScreen().size().ToString());
+
+  EXPECT_NE(kTestBounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+  widget->SetBounds(kTestBounds);
+  EXPECT_EQ(kTestBounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+
+  // Changing just the size should not change the origin.
+  widget->SetSize(kTestSize);
+  EXPECT_EQ(kTestBounds.origin().ToString(),
+            widget->GetWindowBoundsInScreen().origin().ToString());
+
+  widget->CloseNow();
+
+  // Same tests with a frameless window.
+  widget = CreateTopLevelFramelessPlatformWidget();
+  widget->Show();
+
+  EXPECT_NE(kTestSize.ToString(),
+            widget->GetWindowBoundsInScreen().size().ToString());
+  widget->SetSize(kTestSize);
+  EXPECT_EQ(kTestSize.ToString(),
+            widget->GetWindowBoundsInScreen().size().ToString());
+
+  EXPECT_NE(kTestBounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+  widget->SetBounds(kTestBounds);
+  EXPECT_EQ(kTestBounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+
+  // For a frameless widget, the client bounds should also match.
+  EXPECT_EQ(kTestBounds.ToString(),
+            widget->GetClientAreaBoundsInScreen().ToString());
+
+  // Verify origin is stable for a frameless window as well.
+  widget->SetSize(kTestSize);
+  EXPECT_EQ(kTestBounds.origin().ToString(),
+            widget->GetWindowBoundsInScreen().origin().ToString());
+
+  widget->CloseNow();
+}
+
 #if defined(false)
 // Aura needs shell to maximize/fullscreen window.
 // NativeWidgetGtk doesn't implement GetRestoredBounds.
