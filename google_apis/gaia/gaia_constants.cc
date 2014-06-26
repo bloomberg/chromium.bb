@@ -45,11 +45,6 @@ const char kChromeSyncSupervisedOAuth2Scope[] =
 const char kGoogleTalkOAuth2Scope[] =
     "https://www.googleapis.com/auth/googletalk";
 
-const char kGoogleUserInfoEmail[] =
-    "https://www.googleapis.com/auth/userinfo.email";
-const char kGoogleUserInfoProfile[] =
-    "https://www.googleapis.com/auth/userinfo.profile";
-
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";

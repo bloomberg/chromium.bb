@@ -134,22 +134,25 @@ const std::string kTestUserId = "8675309";
 const int kTestExpiresIn = 3920;
 
 const std::string kDummyGetTokensResult =
-    "{\"access_token\":\"" + kTestAccessToken + "\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + ","
-    "\"refresh_token\":\"" + kTestRefreshToken + "\"}";
+  "{\"access_token\":\"" + kTestAccessToken + "\","
+  "\"expires_in\":" + base::IntToString(kTestExpiresIn) + ","
+  "\"refresh_token\":\"" + kTestRefreshToken + "\"}";
 
 const std::string kDummyRefreshTokenResult =
-    "{\"access_token\":\"" + kTestAccessToken + "\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+  "{\"access_token\":\"" + kTestAccessToken + "\","
+  "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+
+const std::string kDummyUserInfoResult =
+  "{\"email\":\"" + kTestUserEmail + "\"}";
 
 const std::string kDummyUserIdResult =
-    "{\"id\":\"" + kTestUserId + "\"}";
+  "{\"id\":\"" + kTestUserId + "\"}";
 
 const std::string kDummyTokenInfoResult =
-    "{\"issued_to\": \"1234567890.apps.googleusercontent.com\","
-    "\"audience\": \"1234567890.apps.googleusercontent.com\","
-    "\"scope\": \"https://googleapis.com/oauth2/v2/tokeninfo\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+  "{\"issued_to\": \"1234567890.apps.googleusercontent.com\","
+  "\"audience\": \"1234567890.apps.googleusercontent.com\","
+  "\"scope\": \"https://googleapis.com/oauth2/v2/tokeninfo\","
+  "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
 }
 
 namespace gaia {
@@ -301,44 +304,10 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenDownscopingSuccess) {
   factory.get_url_fetcher()->Finish();
 }
 
+
 TEST_F(GaiaOAuthClientTest, GetUserEmail) {
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnGetUserEmailResponse(kTestUserEmail)).Times(1);
-
-  const std::string kDummyUserInfoResult =
-      "{\"emails\": [{\"value\":\"" + kTestUserEmail +
-      "\", \"type\":\"account\"}]}";
-
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyUserInfoResult);
-
-  GaiaOAuthClient auth(GetRequestContext());
-  auth.GetUserEmail("access_token", 1, &delegate);
-}
-
-TEST_F(GaiaOAuthClientTest, GetUserEmailSecondItemValid) {
-  MockGaiaOAuthClientDelegate delegate;
-  EXPECT_CALL(delegate, OnGetUserEmailResponse(kTestUserEmail)).Times(1);
-
-  const std::string kDummyUserInfoResult =
-      "{\"emails\": [{\"value\":\"foo\"},"
-      "{\"value\":\"" + kTestUserEmail +
-      "\", \"type\":\"account\"}]}";
-
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyUserInfoResult);
-
-  GaiaOAuthClient auth(GetRequestContext());
-  auth.GetUserEmail("access_token", 1, &delegate);
-}
-
-TEST_F(GaiaOAuthClientTest, GetUserEmailNoValidItems) {
-  MockGaiaOAuthClientDelegate delegate;
-  EXPECT_CALL(delegate, OnNetworkError(_)).Times(1);
-
-  const std::string kDummyUserInfoResult =
-      "{\"emails\": [{\"value\":\"" + kTestUserEmail +
-      "\", \"type\":\"foo\"}]}";
 
   MockOAuthFetcherFactory factory;
   factory.set_results(kDummyUserInfoResult);

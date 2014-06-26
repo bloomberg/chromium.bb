@@ -47,9 +47,6 @@ class GaiaOAuthClient {
     virtual void OnGetUserEmailResponse(const std::string& user_email) {}
     // Invoked on a successful response to the GetUserId request.
     virtual void OnGetUserIdResponse(const std::string& user_id) {}
-    // Invoked on a successful response to the GetUserInfo request.
-    virtual void OnGetUserInfoResponse(
-        scoped_ptr<base::DictionaryValue> user_info) {}
     // Invoked on a successful response to the GetTokenInfo request.
     virtual void OnGetTokenInfoResponse(
         scoped_ptr<base::DictionaryValue> token_info) {}
@@ -91,7 +88,7 @@ class GaiaOAuthClient {
                     int max_retries,
                     Delegate* delegate);
 
-  // Call the people.get API, returning the user email address associated
+  // Call the userinfo API, returning the user email address associated
   // with the given access token. The provided access token must have
   // https://www.googleapis.com/auth/userinfo.email as one of its scopes.
   // See |max_retries| docs above.
@@ -99,22 +96,13 @@ class GaiaOAuthClient {
                     int max_retries,
                     Delegate* delegate);
 
-  // Call the people.get API, returning the user gaia ID associated
+  // Call the userinfo API, returning the user gaia ID associated
   // with the given access token. The provided access token must have
-  // https://www.googleapis.com/auth/userinfo.profile as one of its scopes.
+  // https://www.googleapis.com/auth/userinfo as one of its scopes.
   // See |max_retries| docs above.
   void GetUserId(const std::string& oauth_access_token,
                  int max_retries,
                  Delegate* delegate);
-
-  // Call the people.get API, returning the user info associated
-  // with the given access token. The provided access token must have
-  // https://www.googleapis.com/auth/userinfo.email and
-  // https://www.googleapis.com/auth/userinfo.profile as its scopes.
-  // See |max_retries| docs above.
-  void GetUserInfo(const std::string& oauth_access_token,
-                   int max_retries,
-                   Delegate* delegate);
 
   // Call the tokeninfo API, returning a dictionary of response values. The
   // provided access token may have any scope, and basic results will be
