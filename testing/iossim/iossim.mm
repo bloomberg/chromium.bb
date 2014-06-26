@@ -102,9 +102,13 @@ const NSTimeInterval kDefaultSessionStartTimeoutSeconds = 30;
 const NSTimeInterval kOutputPollIntervalSeconds = 0.1;
 
 // The path within the developer dir of the private Simulator frameworks.
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
 #if defined(IOSSIM_USE_XCODE_6)
 NSString* const kSimulatorFrameworkRelativePath =
     @"../SharedFrameworks/DVTiPhoneSimulatorRemoteClient.framework";
+NSString* const kCoreSimulatorRelativePath =
+    @"Library/PrivateFrameworks/CoreSimulator.framework";
 #else
 NSString* const kSimulatorFrameworkRelativePath =
     @"Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/"
@@ -158,6 +162,51 @@ void LogWarning(NSString* format, ...) {
   va_end(list);
 }
 
+// Helper to find a class by name and die if it isn't found.
+Class FindClassByName(NSString* nameOfClass) {
+  Class theClass = NSClassFromString(nameOfClass);
+  if (!theClass) {
+    LogError(@"Failed to find class %@ at runtime.", nameOfClass);
+    exit(kExitInitializationFailure);
+  }
+  return theClass;
+}
+
+// Prints supported devices and SDKs.
+void PrintSupportedDevices() {
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  printf("Retrieving supported devices:\n");
+  Class simServiceConnectionManagerClass =
+      FindClassByName(@"SimServiceConnectionManager");
+  [[simServiceConnectionManagerClass sharedConnectionManager] connect];
+
+  Class simDeviceSetClass = FindClassByName(@"SimDeviceSet");
+  id deviceSet =
+      [simDeviceSetClass setForSetPath:[simDeviceSetClass defaultSetPath]];
+  for (id simDevice in [deviceSet availableDevices]) {
+    NSString* deviceInfo =
+        [NSString stringWithFormat:@"  -d '%@' -s '%@'\n",
+            [simDevice name], [[simDevice runtime] versionString]];
+    printf("%s", [deviceInfo UTF8String]);
+  }
+#else
+  printf("Supported SDK versions:\n");
+  Class rootClass = FindClassByName(@"DTiPhoneSimulatorSystemRoot");
+  for (id root in [rootClass knownRoots]) {
+    printf("  '%s'\n", [[root sdkVersion] UTF8String]);
+  }
+  printf("Supported devices:\n");
+  printf("  'iPhone'\n");
+  printf("  'iPhone Retina (3.5-inch)'\n");
+  printf("  'iPhone Retina (4-inch)'\n");
+  printf("  'iPhone Retina (4-inch 64-bit)'\n");
+  printf("  'iPad'\n");
+  printf("  'iPad Retina'\n");
+  printf("  'iPad Retina (64-bit)'\n");
+#endif  // defined(IOSSIM_USE_XCODE_6)
+}
 }  // namespace
 
 // A delegate that is called when the simulated app is started or ended in the
@@ -211,12 +260,23 @@ void LogWarning(NSString* format, ...) {
 // this path isn't always available (e.g. when the stdout is Xcode's build
 // window). As a workaround, iossim creates a temp file to hold output, which
 // this method reads and copies to stdout.
-- (void)tailOutput {
+- (void)tailOutputForSession:(DTiPhoneSimulatorSession*)session {
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-  // Copy data to stdout/stderr while the app is running.
   NSFileHandle* simio = [NSFileHandle fileHandleForReadingAtPath:stdioPath_];
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  // With iOS 8 simulators on Xcode 6, the app output is relative to the
+  // simulator's data directory.
+  if ([session.sessionConfig.simulatedSystemRoot.sdkVersion isEqual:@"8.0"]) {
+    NSString* dataPath = session.sessionConfig.device.dataPath;
+    NSString* appOutput = [dataPath stringByAppendingPathComponent:stdioPath_];
+    simio = [NSFileHandle fileHandleForReadingAtPath:appOutput];
+  }
+#endif
   NSFileHandle* standardOutput = [NSFileHandle fileHandleWithStandardOutput];
+  // Copy data to stdout/stderr while the app is running.
   while (appRunning_) {
     NSAutoreleasePool* innerPool = [[NSAutoreleasePool alloc] init];
     [standardOutput writeData:[simio readDataToEndOfFile]];
@@ -263,7 +323,7 @@ void LogWarning(NSString* format, ...) {
     NSFileManager* fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:stdioPath_]) {
       appRunning_ = NO;
-      [self tailOutput];
+      [self tailOutputForSession:session];
       // Note that exiting in this state leaves a process running
       // (e.g. /.../iPhoneSimulator4.3.sdk/usr/libexec/installd -t 30) that will
       // prevent future simulator sessions from being started for 30 seconds
@@ -278,14 +338,16 @@ void LogWarning(NSString* format, ...) {
     LogError(@"Simulator failed to start: \"%@\" (%@:%ld)",
              [error localizedDescription],
              [error domain], static_cast<long int>([error code]));
+    PrintSupportedDevices();
     exit(kExitAppFailedToStart);
   }
 
   // Start a thread to write contents of outputPath to stdout.
   appRunning_ = YES;
-  outputThread_ = [[NSThread alloc] initWithTarget:self
-                                          selector:@selector(tailOutput)
-                                            object:nil];
+  outputThread_ =
+      [[NSThread alloc] initWithTarget:self
+                              selector:@selector(tailOutputForSession:)
+                                object:session];
   [outputThread_ start];
 }
 
@@ -361,11 +423,19 @@ void LogWarning(NSString* format, ...) {
   } else {
     // Otherwise, the iOS Simulator's system logging is sandboxed, so parse the
     // sandboxed system.log file for known errors.
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  NSString* dataPath = session.sessionConfig.device.dataPath;
+  NSString* path =
+      [dataPath stringByAppendingPathComponent:@"Library/Logs/system.log"];
+#else
     NSString* relativePathToSystemLog =
         [NSString stringWithFormat:
             @"Library/Logs/iOS Simulator/%@/system.log", versionString];
     NSString* path =
         [simulatorHome_ stringByAppendingPathComponent:relativePathToSystemLog];
+#endif  // defined(IOSSIM_USE_XCODE_6)
     NSFileManager* fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:path]) {
       NSString* content =
@@ -386,7 +456,7 @@ void LogWarning(NSString* format, ...) {
       // looking at stale logs.
       remove([path fileSystemRepresentation]);
     } else {
-        LogWarning(@"Unable to find sandboxed system log.");
+        LogWarning(@"Unable to find system log at '%@'.", path);
     }
   }
 
@@ -434,16 +504,6 @@ NSString* FindDeveloperDir() {
   return output;
 }
 
-// Helper to find a class by name and die if it isn't found.
-Class FindClassByName(NSString* nameOfClass) {
-  Class theClass = NSClassFromString(nameOfClass);
-  if (!theClass) {
-    LogError(@"Failed to find class %@ at runtime.", nameOfClass);
-    exit(kExitInitializationFailure);
-  }
-  return theClass;
-}
-
 // Loads the Simulator framework from the given developer dir.
 NSBundle* LoadSimulatorFramework(NSString* developerDir) {
   // The Simulator framework depends on some of the other Xcode private
@@ -471,6 +531,17 @@ NSBundle* LoadSimulatorFramework(NSString* developerDir) {
     return nil;
   }
 
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  NSString* coreSimulatorPath = [developerDir
+      stringByAppendingPathComponent:kCoreSimulatorRelativePath];
+  NSBundle* coreSimulatorBundle =
+      [NSBundle bundleWithPath:coreSimulatorPath];
+  if (![coreSimulatorBundle load])
+    return nil;
+#endif  // defined(IOSSIM_USE_XCODE_6)
+
   NSString* simBundlePath = [developerDir
       stringByAppendingPathComponent:kSimulatorFrameworkRelativePath];
   NSBundle* simBundle = [NSBundle bundleWithPath:simBundlePath];
@@ -489,6 +560,11 @@ DTiPhoneSimulatorApplicationSpecifier* BuildAppSpec(NSString* appPath) {
     appPath = [cwd stringByAppendingPathComponent:appPath];
   }
   appPath = [appPath stringByStandardizingPath];
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+  if (![fileManager fileExistsAtPath:appPath]) {
+    LogError(@"File not found: %@", appPath);
+    exit(kExitInvalidArguments);
+  }
   return [applicationSpecifierClass specifierWithApplicationPath:appPath];
 }
 
@@ -526,6 +602,30 @@ DTiPhoneSimulatorSessionConfig* BuildSessionConfig(
   sessionConfig.simulatedApplicationLaunchEnvironment = appEnv;
   sessionConfig.simulatedDeviceInfoName = deviceName;
   sessionConfig.simulatedDeviceFamily = deviceFamily;
+
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  Class simDeviceTypeClass = FindClassByName(@"SimDeviceType");
+  id simDeviceType =
+      [simDeviceTypeClass supportedDeviceTypesByName][deviceName];
+  Class simRuntimeClass = FindClassByName(@"SimRuntime");
+  NSString* identifier = systemRoot.runtime.identifier;
+  id simRuntime = [simRuntimeClass supportedRuntimesByIdentifier][identifier];
+
+  Class simDeviceSetClass = FindClassByName(@"SimDeviceSet");
+  NSError* error = nil;
+  id simDevice =
+      [[simDeviceSetClass defaultSet] createDeviceWithType:simDeviceType
+                                                   runtime:simRuntime
+                                                      name:@"iossim"
+                                                     error:&error];
+  if (error) {
+    LogError(@"Failed to create device: %@", error);
+    exit(kExitInitializationFailure);
+  }
+  sessionConfig.device = simDevice;
+#endif
   return sessionConfig;
 }
 
@@ -633,10 +733,10 @@ void PrintUsage() {
       "  -e  Specifies an environment key=value pair that will be"
       " set in the simulated application's environment.\n"
       "  -t  Specifies the session startup timeout (in seconds)."
-      " Defaults to %d.\n",
+      " Defaults to %d.\n"
+      "  -l  List supported devices and iOS versions.\n",
       static_cast<int>(kDefaultSessionStartTimeoutSeconds));
 }
-
 }  // namespace
 
 int main(int argc, char* const argv[]) {
@@ -663,9 +763,21 @@ int main(int argc, char* const argv[]) {
   NSMutableDictionary* appEnv = [NSMutableDictionary dictionary];
   NSTimeInterval sessionStartTimeout = kDefaultSessionStartTimeoutSeconds;
 
+  NSString* developerDir = FindDeveloperDir();
+  if (!developerDir) {
+    LogError(@"Unable to find developer directory.");
+    exit(kExitInitializationFailure);
+  }
+
+  NSBundle* simulatorFramework = LoadSimulatorFramework(developerDir);
+  if (!simulatorFramework) {
+    LogError(@"Failed to load the Simulator Framework.");
+    exit(kExitInitializationFailure);
+  }
+
   // Parse the optional arguments
   int c;
-  while ((c = getopt(argc, argv, "hs:d:u:e:t:")) != -1) {
+  while ((c = getopt(argc, argv, "hs:d:u:e:t:l")) != -1) {
     switch (c) {
       case 's':
         sdkVersion = [NSString stringWithUTF8String:optarg];
@@ -701,6 +813,10 @@ int main(int argc, char* const argv[]) {
         }
       }
         break;
+      case 'l':
+        PrintSupportedDevices();
+        exit(kExitSuccess);
+        break;
       case 'h':
         PrintUsage();
         exit(kExitSuccess);
@@ -726,18 +842,6 @@ int main(int argc, char* const argv[]) {
     exit(kExitInvalidArguments);
   }
 
-  NSString* developerDir = FindDeveloperDir();
-  if (!developerDir) {
-    LogError(@"Unable to find developer directory.");
-    exit(kExitInitializationFailure);
-  }
-
-  NSBundle* simulatorFramework = LoadSimulatorFramework(developerDir);
-  if (!simulatorFramework) {
-    LogError(@"Failed to load the Simulator Framework.");
-    exit(kExitInitializationFailure);
-  }
-
   // Make sure the app path provided is legit.
   DTiPhoneSimulatorApplicationSpecifier* appSpec = BuildAppSpec(appPath);
   if (!appSpec) {
@@ -749,6 +853,7 @@ int main(int argc, char* const argv[]) {
   DTiPhoneSimulatorSystemRoot* systemRoot = BuildSystemRoot(sdkVersion);
   if (!systemRoot) {
     LogError(@"Invalid SDK version: %@", sdkVersion);
+    PrintSupportedDevices();
     exit(kExitInitializationFailure);
   }
 
@@ -763,11 +868,16 @@ int main(int argc, char* const argv[]) {
     deviceFamily = [NSNumber numberWithInt:kIPhoneFamily];
   } else if (CaseInsensitivePrefixSearch(deviceName, @"iPad")) {
     deviceFamily = [NSNumber numberWithInt:kIPadFamily];
-  } else {
+  }
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if !defined(IOSSIM_USE_XCODE_6)
+  else {
     LogError(@"Invalid device name: %@. Must begin with 'iPhone' or 'iPad'",
              deviceName);
     exit(kExitInvalidArguments);
   }
+#endif  // !defined(IOSSIM_USE_XCODE_6)
 
   // Set up the user home directory for the simulator
   if (!simHomePath) {
