@@ -227,7 +227,7 @@ void SyncRollbackManagerBase::NotifyInitializationFailure() {
       OnInitializationComplete(
           MakeWeakHandle(base::WeakPtr<JsBackend>()),
           MakeWeakHandle(base::WeakPtr<DataTypeDebugInfoListener>()),
-          false, InitialSyncEndedTypes()));
+          false, ModelTypeSet()));
 }
 
 std::string SyncRollbackManagerBase::GetOwnerName() const {
