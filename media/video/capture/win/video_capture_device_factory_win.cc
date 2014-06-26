@@ -206,95 +206,72 @@ static void GetDeviceSupportedFormatsDirectShow(
   if (hr != S_OK)
     return;
 
-  // Walk the capture devices. No need to check for "google camera adapter",
-  // since this is already skipped in the enumeration of GetDeviceNames().
-  ScopedComPtr<IMoniker> moniker;
-  int index = 0;
-  ScopedVariant device_id;
-  while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
-    ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
-      continue;
-    }
-
-    device_id.Reset();
-    hr = prop_bag->Read(L"DevicePath", device_id.Receive(), 0);
-    if (FAILED(hr)) {
-      DVLOG(1) << "Couldn't read a device's DevicePath.";
-      return;
-    }
-    if (device.id() == base::SysWideToUTF8(V_BSTR(&device_id)))
-      break;
-    moniker.Release();
+  // Walk the capture devices. No need to check for device presence again, that
+  // is caught in GetDeviceFilter(). "google camera adapter" and old VFW devices
+  // are already skipped in the previous GetDeviceNames() enumeration.
+  base::win::ScopedComPtr<IBaseFilter> capture_filter;
+  hr = VideoCaptureDeviceWin::GetDeviceFilter(device,
+                                              capture_filter.Receive());
+  if (!capture_filter) {
+    DVLOG(2) << "Failed to create capture filter.";
+    return;
   }
 
-  if (moniker.get()) {
-    base::win::ScopedComPtr<IBaseFilter> capture_filter;
-    hr = VideoCaptureDeviceWin::GetDeviceFilter(device,
-                                                capture_filter.Receive());
-    if (!capture_filter) {
-      DVLOG(2) << "Failed to create capture filter.";
+  base::win::ScopedComPtr<IPin> output_capture_pin(
+      VideoCaptureDeviceWin::GetPin(capture_filter,
+                                    PINDIR_OUTPUT,
+                                    PIN_CATEGORY_CAPTURE));
+  if (!output_capture_pin) {
+    DVLOG(2) << "Failed to get capture output pin";
+    return;
+  }
+
+  ScopedComPtr<IAMStreamConfig> stream_config;
+  hr = output_capture_pin.QueryInterface(stream_config.Receive());
+  if (FAILED(hr)) {
+    DVLOG(2) << "Failed to get IAMStreamConfig interface from "
+                "capture device";
+    return;
+  }
+
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    DVLOG(2) << "Failed to GetNumberOfCapabilities";
+    return;
+  }
+
+  scoped_ptr<BYTE[]> caps(new BYTE[size]);
+  for (int i = 0; i < count; ++i) {
+    VideoCaptureDeviceWin::ScopedMediaType media_type;
+    hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
+    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
+    // macros here since they'll trigger incorrectly.
+    if (hr != S_OK) {
+      DVLOG(2) << "Failed to GetStreamCaps";
       return;
     }
 
-    base::win::ScopedComPtr<IPin> output_capture_pin(
-        VideoCaptureDeviceWin::GetPin(capture_filter,
-                                      PINDIR_OUTPUT,
-                                      PIN_CATEGORY_CAPTURE));
-    if (!output_capture_pin) {
-      DVLOG(2) << "Failed to get capture output pin";
-      return;
-    }
-
-    ScopedComPtr<IAMStreamConfig> stream_config;
-    hr = output_capture_pin.QueryInterface(stream_config.Receive());
-    if (FAILED(hr)) {
-      DVLOG(2) << "Failed to get IAMStreamConfig interface from "
-                  "capture device";
-      return;
-    }
-
-    int count = 0, size = 0;
-    hr = stream_config->GetNumberOfCapabilities(&count, &size);
-    if (FAILED(hr)) {
-      DVLOG(2) << "Failed to GetNumberOfCapabilities";
-      return;
-    }
-
-    scoped_ptr<BYTE[]> caps(new BYTE[size]);
-    for (int i = 0; i < count; ++i) {
-      VideoCaptureDeviceWin::ScopedMediaType media_type;
-      hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
-      // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
-      // macros here since they'll trigger incorrectly.
-      if (hr != S_OK) {
-        DVLOG(2) << "Failed to GetStreamCaps";
-        return;
-      }
-
-      if (media_type->majortype == MEDIATYPE_Video &&
-          media_type->formattype == FORMAT_VideoInfo) {
-        VideoCaptureFormat format;
-        format.pixel_format =
-            VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
-                media_type->subtype);
-        if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-          continue;
-        VIDEOINFOHEADER* h =
-            reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-        format.frame_size.SetSize(h->bmiHeader.biWidth,
-                                  h->bmiHeader.biHeight);
-        // Trust the frame rate from the VIDEOINFOHEADER.
-        format.frame_rate = (h->AvgTimePerFrame > 0) ?
-            static_cast<int>(kSecondsToReferenceTime / h->AvgTimePerFrame) :
-            0;
-        formats->push_back(format);
-        DVLOG(1) << device.name() << " resolution: "
-             << format.frame_size.ToString() << ", fps: " << format.frame_rate
-             << ", pixel format: " << format.pixel_format;
-      }
+    if (media_type->majortype == MEDIATYPE_Video &&
+        media_type->formattype == FORMAT_VideoInfo) {
+      VideoCaptureFormat format;
+      format.pixel_format =
+          VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
+              media_type->subtype);
+      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+        continue;
+      VIDEOINFOHEADER* h =
+          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+      format.frame_size.SetSize(h->bmiHeader.biWidth,
+                                h->bmiHeader.biHeight);
+      // Trust the frame rate from the VIDEOINFOHEADER.
+      format.frame_rate = (h->AvgTimePerFrame > 0) ?
+          static_cast<int>(kSecondsToReferenceTime / h->AvgTimePerFrame) :
+          0;
+      formats->push_back(format);
+      DVLOG(1) << device.name() << " resolution: "
+          << format.frame_size.ToString() << ", fps: " << format.frame_rate
+          << ", pixel format: " << format.pixel_format;
     }
   }
 }
