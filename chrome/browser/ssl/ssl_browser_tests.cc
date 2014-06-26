@@ -1152,15 +1152,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRunsCachedInsecureContent) {
       AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
 }
 
-#if defined(OS_WIN)
-// Flaky on Win7 debug (http://crbug.com/368280).
-#define MAYBE_TestCNInvalidStickiness DISABLED_TestCNInvalidStickiness
-#else
-#define MAYBE_TestCNInvalidStickiness TestCNInvalidStickiness
-#endif
 // This test ensures the CN invalid status does not 'stick' to a certificate
 // (see bug #1044942) and that it depends on the host-name.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestCNInvalidStickiness) {
+// Test if disabled due to flakiness http://crbug.com/368280 .
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_mismatched_.Start());
 
