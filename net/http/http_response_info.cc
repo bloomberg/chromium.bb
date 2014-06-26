@@ -396,9 +396,9 @@ std::string HttpResponseInfo::ConnectionInfoToString(
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";
     case CONNECTION_INFO_SPDY4:
-      // This is the HTTP/2 draft 12 identifier. For internal
+      // This is the HTTP/2 draft 13 identifier. For internal
       // consistency, HTTP/2 is named SPDY4 within Chromium.
-      return "h2-12";
+      return "h2-13";
     case CONNECTION_INFO_QUIC1_SPDY3:
       return "quic/1+spdy/3";
     case NUM_OF_CONNECTION_INFOS:
