@@ -60,9 +60,10 @@ public:
         return *m_path;
     }
 
+    virtual bool isShapeEmpty() const { return path().isEmpty(); }
+
 protected:
     virtual void updateShapeFromElement();
-    virtual bool isShapeEmpty() const { return path().isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
     float strokeWidth() const;

@@ -137,6 +137,10 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
         if (current->isSVGHiddenContainer())
             continue;
 
+        // Don't include elements in the union that do not render.
+        if (current->isSVGShape() && toRenderSVGShape(current)->isShapeEmpty())
+            continue;
+
         const AffineTransform& transform = current->localToParentTransform();
         updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current,
             transform.mapRect(current->objectBoundingBox()));
