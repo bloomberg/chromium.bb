@@ -287,16 +287,27 @@ void RunInParallel(PlatformThread::Delegate *d1, PlatformThread::Delegate *d2) {
   PlatformThread::Join(b);
 }
 
-}  // namespace
-
-// A data race detector should report an error in this test.
-TEST(ToolsSanityTest, DataRace) {
+#if defined(THREAD_SANITIZER)
+void DataRace() {
   bool *shared = new bool(false);
   TOOLS_SANITY_TEST_CONCURRENT_THREAD thread1(shared), thread2(shared);
   RunInParallel(&thread1, &thread2);
   EXPECT_TRUE(*shared);
   delete shared;
+  // We're in a death test - crash.
+  CHECK(0);
 }
+#endif
+
+}  // namespace
+
+#if defined(THREAD_SANITIZER)
+// A data race detector should report an error in this test.
+TEST(ToolsSanityTest, DataRace) {
+  // The suppression regexp must match that in base/debug/tsan_suppressions.cc.
+  EXPECT_DEATH(DataRace(), "1 race:base/tools_sanity_unittest.cc");
+}
+#endif
 
 TEST(ToolsSanityTest, AnnotateBenignRace) {
   bool shared = false;
