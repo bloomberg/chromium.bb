@@ -61,6 +61,12 @@ class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
   // entries.
   void NormalizeEntries();
 
+  // Manipulate preference nodes so that they'll be overwritten by local
+  // preference values during model association, i.e. local wins instead of
+  // server wins. This is for preventing backup from changing preferences in
+  // case backup DB has hijacked preferences.
+  void HideSyncPreference(ModelType pref_type);
+
   // Handles of unsynced entries caused by local model changes.
   std::set<int64> unsynced_;
 

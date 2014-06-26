@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/sync_backup_manager.h"
 
+#include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
@@ -52,6 +53,9 @@ void SyncBackupManager::Init(
   GetUserShare()->directory->CollectMetaHandleCounts(
       &status_.num_entries_by_type,
       &status_.num_to_delete_entries_by_type);
+
+  HideSyncPreference(PRIORITY_PREFERENCES);
+  HideSyncPreference(PREFERENCES);
 }
 
 void SyncBackupManager::SaveChanges() {
@@ -111,6 +115,34 @@ void SyncBackupManager::NormalizeEntries() {
     entry.PutIsUnsynced(false);
   }
   unsynced_.clear();
+}
+
+void SyncBackupManager::HideSyncPreference(ModelType type) {
+  WriteTransaction trans(FROM_HERE, GetUserShare());
+  ReadNode pref_root(&trans);
+  if (BaseNode::INIT_OK != pref_root.InitTypeRoot(type))
+    return;
+
+  std::vector<int64> pref_ids;
+  pref_root.GetChildIds(&pref_ids);
+  for (uint32 i = 0; i < pref_ids.size(); ++i) {
+    syncable::MutableEntry entry(trans.GetWrappedWriteTrans(),
+                                 syncable::GET_BY_HANDLE, pref_ids[i]);
+    if (entry.good()) {
+      // HACKY: Set IS_DEL to true to remove entry from parent-children
+      // index so that it's not returned when syncable service asks
+      // for sync data. Syncable service then creates entry for local
+      // model. Then the existing entry is undeleted and set to local value
+      // because it has the same unique client tag.
+      entry.PutIsDel(true);
+      entry.PutIsUnsynced(false);
+
+      // Don't persist on disk so that if backup is aborted before receiving
+      // local preference values, values in sync DB are saved.
+      GetUserShare()->directory->UnmarkDirtyEntry(
+          trans.GetWrappedWriteTrans(), &entry);
+    }
+  }
 }
 
 void SyncBackupManager::RegisterDirectoryTypeDebugInfoObserver(

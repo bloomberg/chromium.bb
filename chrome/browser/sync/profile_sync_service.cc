@@ -2575,3 +2575,10 @@ GURL ProfileSyncService::GetSyncServiceURL(
   }
   return result;
 }
+
+void ProfileSyncService::StartStopBackupForTesting() {
+  if (backend_mode_ == BACKUP)
+    ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+  else
+    backup_rollback_controller_.Start(base::TimeDelta());
+}

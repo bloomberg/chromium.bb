@@ -780,6 +780,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Return the base URL of the Sync Server.
   static GURL GetSyncServiceURL(const base::CommandLine& command_line);
 
+  void StartStopBackupForTesting();
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
