@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,8 +26,7 @@ class URLFetcher;
 
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
-class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
-                          public net::URLFetcherDelegate,
+class ProfileDownloader : public net::URLFetcherDelegate,
                           public ImageDecoder::Delegate,
                           public OAuth2TokenService::Observer,
                           public OAuth2TokenService::Consumer {
@@ -82,12 +80,6 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, ParseData);
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
 
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
-
   // Overriden from net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -109,7 +101,7 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   // Parses the entry response and gets the name, profile image URL and locale.
   // |data| should be the JSON formatted data return by the response.
   // Returns false to indicate a parsing error.
-  static bool ParseProfileJSON(base::DictionaryValue* root_dictionary,
+  static bool ParseProfileJSON(const std::string& data,
                                base::string16* full_name,
                                base::string16* given_name,
                                std::string* url,
@@ -131,7 +123,7 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   ProfileDownloaderDelegate* delegate_;
   std::string account_id_;
   std::string auth_token_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;
+  scoped_ptr<net::URLFetcher> user_entry_fetcher_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
   base::string16 profile_full_name_;

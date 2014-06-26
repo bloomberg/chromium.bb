@@ -36,7 +36,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -75,7 +74,7 @@ const char kValidTokenResponse[] =
 
 const char kHostedDomainResponse[] =
     "{"
-    "  \"domain\": \"test.com\""
+    "  \"hd\": \"test.com\""
     "}";
 
 class SigninManagerFake : public FakeSigninManager {
@@ -232,15 +231,10 @@ class UserPolicySigninServiceTest : public testing::Test {
     return static_cast<FakeProfileOAuth2TokenService*>(service);
   }
 
-  // Returns true if a request for policy information is active.  A request
-  // is considered active if there is an active fetcher for an access token
-  // hosted domain information (i.e. the gaia oauth client) or some other
-  // fecther used in the code (id 0).
   bool IsRequestActive() {
     if (!GetTokenService()->GetPendingRequests().empty())
       return true;
-    return url_factory_.GetFetcherByID(0) ||
-        url_factory_.GetFetcherByID(gaia::GaiaOAuthClient::kUrlFetcherId);
+    return url_factory_.GetFetcherByID(0);
   }
 
   void MakeOAuthTokenFetchSucceed() {
@@ -258,8 +252,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void ReportHostedDomainStatus(bool is_hosted_domain) {
     ASSERT_TRUE(IsRequestActive());
-    net::TestURLFetcher* fetcher =
-        url_factory_.GetFetcherByID(gaia::GaiaOAuthClient::kUrlFetcherId);
+    net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
     fetcher->set_response_code(net::HTTP_OK);
     fetcher->SetResponseString(is_hosted_domain ? kHostedDomainResponse : "{}");
     fetcher->delegate()->OnURLFetchComplete(fetcher);

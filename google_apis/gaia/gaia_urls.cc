@@ -42,7 +42,7 @@ const char kOAuth2TokenUrlSuffix[] = "o/oauth2/token";
 // API calls from www.googleapis.com
 const char kOAuth2IssueTokenUrlSuffix[] = "oauth2/v2/IssueToken";
 const char kOAuth2TokenInfoUrlSuffix[] = "oauth2/v2/tokeninfo";
-const char kPeopleGetUrlSuffix[] = "plus/v1/people/me";
+const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
 
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
@@ -118,8 +118,8 @@ GaiaUrls::GaiaUrls() {
       google_apis_origin_url_.Resolve(kOAuth2IssueTokenUrlSuffix);
   oauth2_token_info_url_ =
       google_apis_origin_url_.Resolve(kOAuth2TokenInfoUrlSuffix);
-  people_get_url_ =
-      google_apis_origin_url_.Resolve(kPeopleGetUrlSuffix);
+  oauth_user_info_url_ =
+      google_apis_origin_url_.Resolve(kOAuthUserInfoUrlSuffix);
 
   gaia_login_form_realm_ = gaia_url_;
 }
@@ -179,8 +179,8 @@ const GURL& GaiaUrls::oauth_wrap_bridge_url() const {
   return oauth_wrap_bridge_url_;
 }
 
-const GURL& GaiaUrls::people_get_url() const {
-  return people_get_url_;
+const GURL& GaiaUrls::oauth_user_info_url() const {
+  return oauth_user_info_url_;
 }
 
 const GURL& GaiaUrls::oauth_revoke_token_url() const {

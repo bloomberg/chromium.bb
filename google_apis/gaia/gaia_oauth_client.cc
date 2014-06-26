@@ -56,9 +56,6 @@ class GaiaOAuthClient::Core
   void GetUserId(const std::string& oauth_access_token,
                  int max_retries,
                  Delegate* delegate);
-  void GetUserInfo(const std::string& oauth_access_token,
-                   int max_retries,
-                   Delegate* delegate);
   void GetTokenInfo(const std::string& oauth_access_token,
                     int max_retries,
                     Delegate* delegate);
@@ -76,14 +73,13 @@ class GaiaOAuthClient::Core
     TOKEN_INFO,
     USER_EMAIL,
     USER_ID,
-    USER_INFO,
   };
 
   virtual ~Core() {}
 
-  void PeopleGet(const std::string& oauth_access_token,
-                 int max_retries,
-                 Delegate* delegate);
+  void GetUserInfo(const std::string& oauth_access_token,
+                   int max_retries,
+                   Delegate* delegate);
   void MakeGaiaRequest(const GURL& url,
                        const std::string& post_body,
                        int max_retries,
@@ -149,7 +145,7 @@ void GaiaOAuthClient::Core::GetUserEmail(const std::string& oauth_access_token,
   DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
   DCHECK(!request_.get());
   request_type_ = USER_EMAIL;
-  PeopleGet(oauth_access_token, max_retries, delegate);
+  GetUserInfo(oauth_access_token, max_retries, delegate);
 }
 
 void GaiaOAuthClient::Core::GetUserId(const std::string& oauth_access_token,
@@ -158,25 +154,16 @@ void GaiaOAuthClient::Core::GetUserId(const std::string& oauth_access_token,
   DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
   DCHECK(!request_.get());
   request_type_ = USER_ID;
-  PeopleGet(oauth_access_token, max_retries, delegate);
+  GetUserInfo(oauth_access_token, max_retries, delegate);
 }
 
 void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
                                         int max_retries,
                                         Delegate* delegate) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
-  DCHECK(!request_.get());
-  request_type_ = USER_INFO;
-  PeopleGet(oauth_access_token, max_retries, delegate);
-}
-
-void GaiaOAuthClient::Core::PeopleGet(const std::string& oauth_access_token,
-                                      int max_retries,
-                                      Delegate* delegate) {
   delegate_ = delegate;
   num_retries_ = 0;
   request_.reset(net::URLFetcher::Create(
-      kUrlFetcherId, GURL(GaiaUrls::GetInstance()->people_get_url()),
+      kUrlFetcherId, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
       net::URLFetcher::GET, this));
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
@@ -295,27 +282,9 @@ void GaiaOAuthClient::Core::HandleResponse(
 
   switch (type) {
     case USER_EMAIL: {
-      // Use first email of type "account" as the user's email.
-      const base::ListValue* emails_list;
-      bool email_found = false;
-      if (response_dict->GetList("emails", &emails_list)) {
-        for (size_t i = 0; i < emails_list->GetSize(); ++i) {
-          const base::DictionaryValue* email_dict;
-          if (emails_list->GetDictionary(i, &email_dict)) {
-            std::string email;
-            std::string type;
-            if (email_dict->GetString("type", &type) &&
-                type == "account" &&
-                email_dict->GetString("value", &email)) {
-              delegate_->OnGetUserEmailResponse(email);
-              email_found = true;
-              break;
-            }
-          }
-        }
-      }
-      if (!email_found)
-        delegate_->OnNetworkError(net::URLFetcher::RESPONSE_CODE_INVALID);
+      std::string email;
+      response_dict->GetString("email", &email);
+      delegate_->OnGetUserEmailResponse(email);
       break;
     }
 
@@ -323,11 +292,6 @@ void GaiaOAuthClient::Core::HandleResponse(
       std::string id;
       response_dict->GetString("id", &id);
       delegate_->OnGetUserIdResponse(id);
-      break;
-    }
-
-    case USER_INFO: {
-      delegate_->OnGetUserInfoResponse(response_dict.Pass());
       break;
     }
 
@@ -406,12 +370,6 @@ void GaiaOAuthClient::GetUserId(const std::string& access_token,
                                 int max_retries,
                                 Delegate* delegate) {
   return core_->GetUserId(access_token, max_retries, delegate);
-}
-
-void GaiaOAuthClient::GetUserInfo(const std::string& access_token,
-                                  int max_retries,
-                                  Delegate* delegate) {
-  return core_->GetUserInfo(access_token, max_retries, delegate);
 }
 
 void GaiaOAuthClient::GetTokenInfo(const std::string& access_token,
