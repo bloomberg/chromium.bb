@@ -222,7 +222,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   favicon_service->GetRawFaviconForPageURL(
       FaviconService::FaviconForPageURLParams(
           favicon_url, favicon_base::FAVICON, gfx::kFaviconSize),
-      ui::SCALE_FACTOR_100P,
+      1.0f,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
                  base::Unretained(this),
                  request_id),

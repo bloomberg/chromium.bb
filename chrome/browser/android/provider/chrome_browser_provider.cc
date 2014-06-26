@@ -681,6 +681,8 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                            cancelable_tracker) {}
 
   favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
+    float max_scale = ui::GetScaleForScaleFactor(
+        ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&FaviconService::GetRawFaviconForPageURL,
                    base::Unretained(service()),
@@ -688,7 +690,7 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                        url,
                        favicon_base::FAVICON | favicon_base::TOUCH_ICON,
                        gfx::kFaviconSize),
-                   ResourceBundle::GetSharedInstance().GetMaxScaleFactor(),
+                   max_scale,
                    base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
                               base::Unretained(this)),
                    cancelable_tracker()));

@@ -114,7 +114,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
   favicon_service->GetRawFaviconForPageURL(
       FaviconService::FaviconForPageURLParams(
           url, favicon_base::FAVICON, gfx::kFaviconSize),
-      ui::SCALE_FACTOR_100P,
+      1.0f,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
                  base::Unretained(this),
                  id_++),
