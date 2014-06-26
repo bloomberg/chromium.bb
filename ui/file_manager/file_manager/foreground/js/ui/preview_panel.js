@@ -218,6 +218,7 @@ PreviewPanel.prototype.updateVisibility_ = function() {
       newVisible =
           this.selection_.entries.length !== 0 ||
           (this.currentEntry_ &&
+           this.volumeManager_.getLocationInfo(this.currentEntry_) &&
            !this.volumeManager_.getLocationInfo(
                this.currentEntry_).isRootEntry);
       break;
