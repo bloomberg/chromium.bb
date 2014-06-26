@@ -39,8 +39,8 @@ bool IsRequestIdempotent(const net::URLRequest* request);
 
 // Sets the override headers to contain a status line that indicates a
 // redirect (a 302), a "Location:" header that points to the request url,
-// and sets load flags to bypass proxies. Visible as part of the public API for
-// testing.
+// and sets load flags to bypass proxies.
+// Visible as part of the public API for testing.
 void OverrideResponseAsRedirect(
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,

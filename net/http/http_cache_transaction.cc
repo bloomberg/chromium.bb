@@ -566,6 +566,12 @@ void HttpCache::Transaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
+void HttpCache::Transaction::SetBeforeProxyHeadersSentCallback(
+    const BeforeProxyHeadersSentCallback& callback) {
+  DCHECK(!network_trans_);
+  before_proxy_headers_sent_callback_ = callback;
+}
+
 int HttpCache::Transaction::ResumeNetworkStart() {
   if (network_trans_)
     return network_trans_->ResumeNetworkStart();
@@ -894,6 +900,8 @@ int HttpCache::Transaction::DoSendRequest() {
   if (rv != OK)
     return rv;
   network_trans_->SetBeforeNetworkStartCallback(before_network_start_callback_);
+  network_trans_->SetBeforeProxyHeadersSentCallback(
+      before_proxy_headers_sent_callback_);
 
   // Old load timing information, if any, is now obsolete.
   old_network_trans_load_timing_.reset();

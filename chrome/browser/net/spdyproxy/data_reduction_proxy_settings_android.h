@@ -67,14 +67,6 @@ class DataReductionProxySettingsAndroid
   base::android::ScopedJavaLocalRef<jobject> GetContentLengths(JNIEnv* env,
                                                                jobject obj);
 
-  // Wrapper methods for handling auth challenges. In both of the following,
-  // a net::AuthChallengeInfo object is created from |host| and |realm| and
-  // passed in to the superclass method.
-  jboolean IsAcceptableAuthChallenge(JNIEnv* env,
-                                     jobject obj,
-                                     jstring host,
-                                     jstring realm);
-
   // Determines whether the data reduction proxy is unreachable. This is
   // done by keeping a count of requests which go through proxy vs those
   // which should have gone through the proxy based on the config.

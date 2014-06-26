@@ -8,6 +8,7 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -55,12 +56,16 @@ template <class C>
 class MockDataReductionProxySettings : public C {
  public:
   MockDataReductionProxySettings<C>() : DataReductionProxySettings(
-      new DataReductionProxyParams(
+      new TestDataReductionProxyParams(
           DataReductionProxyParams::kAllowed |
           DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed)) {}
+          DataReductionProxyParams::kPromoAllowed,
+          TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN)) {}
   MockDataReductionProxySettings<C>(int flags)
-      : C(new DataReductionProxyParams(flags)) {}
+      : C(new TestDataReductionProxyParams(flags,
+          TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN)) {}
   MOCK_METHOD0(GetURLFetcherForAvailabilityCheck, net::URLFetcher*());
   MOCK_METHOD0(GetURLFetcherForWarmup, net::URLFetcher*());
   MOCK_METHOD0(GetOriginalProfilePrefs, PrefService*());
@@ -142,6 +147,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
 
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<DataReductionProxySettings> settings_;
+  scoped_ptr<TestDataReductionProxyParams> expected_params_;
   base::Time last_update_time_;
 };
 

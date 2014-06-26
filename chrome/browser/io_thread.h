@@ -16,6 +16,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/browser_thread.h"
@@ -192,6 +193,8 @@ class IOThread : public content::BrowserThreadDelegate {
         data_reduction_proxy_params;
     scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
         data_reduction_proxy_usage_stats;
+    scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+        data_reduction_proxy_auth_request_handler;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

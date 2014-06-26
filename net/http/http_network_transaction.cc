@@ -465,6 +465,11 @@ void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
+void HttpNetworkTransaction::SetBeforeProxyHeadersSentCallback(
+    const BeforeProxyHeadersSentCallback& callback) {
+  before_proxy_headers_sent_callback_ = callback;
+}
+
 int HttpNetworkTransaction::ResumeNetworkStart() {
   DCHECK_EQ(next_state_, STATE_CREATE_STREAM);
   return DoLoop(OK);
@@ -878,6 +883,9 @@ void HttpNetworkTransaction::BuildRequestHeaders(bool using_proxy) {
   if (ShouldApplyServerAuth() && HaveAuth(HttpAuth::AUTH_SERVER))
     auth_controllers_[HttpAuth::AUTH_SERVER]->AddAuthorizationHeader(
         &request_headers_);
+
+  if (using_proxy && !before_proxy_headers_sent_callback_.is_null())
+    before_proxy_headers_sent_callback_.Run(proxy_info_);
 
   request_headers_.MergeFrom(request_->extra_headers);
   response_.did_use_http_auth =

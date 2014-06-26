@@ -45,18 +45,12 @@ bool DataReductionProxyParams::IsIncludedInPreconnectHintingFieldTrial() {
           "DataCompressionProxyPreconnectHints") == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::IsKeySetOnCommandLine() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxy);
-}
-
 DataReductionProxyParams::DataReductionProxyParams(int flags)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
-      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed) {
+      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
+      configured_on_command_line_(false) {
   bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
   DCHECK(result);
 }
@@ -85,7 +79,8 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
-      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed) {
+      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
+      configured_on_command_line_(false) {
   if (should_call_init) {
     bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
     DCHECK(result);
@@ -172,26 +167,20 @@ void DataReductionProxyParams::InitWithoutChecks() {
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyAlt);
   std::string alt_fallback_origin = command_line.GetSwitchValueASCII(
       switches::kDataReductionProxyAltFallback);
-  key_ = command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
 
-  bool configured_on_command_line =
+  configured_on_command_line_ =
       !(origin.empty() && fallback_origin.empty() && ssl_origin.empty() &&
           alt_origin.empty() && alt_fallback_origin.empty());
 
 
   // Configuring the proxy on the command line overrides the values of
   // |allowed_| and |alt_allowed_|.
-  if (configured_on_command_line)
+  if (configured_on_command_line_)
     allowed_ = true;
   if (!(ssl_origin.empty() &&
         alt_origin.empty() &&
         alt_fallback_origin.empty()))
     alt_allowed_ = true;
-
-  // Only use default key if non of the proxies are configured on the command
-  // line.
-  if (key_.empty() && !configured_on_command_line)
-    key_ = GetDefaultKey();
 
   std::string probe_url = command_line.GetSwitchValueASCII(
       switches::kDataReductionProxyProbeURL);
@@ -295,13 +284,6 @@ bool DataReductionProxyParams::IsDataReductionProxyEligible(
   if (result.proxy_server().is_direct())
     return false;
   return IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
-}
-
-std::string DataReductionProxyParams::GetDefaultKey() const {
-#if defined(SPDY_PROXY_AUTH_VALUE)
-  return SPDY_PROXY_AUTH_VALUE;
-#endif
-  return std::string();
 }
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {

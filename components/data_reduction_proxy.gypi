@@ -36,8 +36,6 @@
         'data_reduction_proxy/browser/data_reduction_proxy_settings.h',
         'data_reduction_proxy/browser/data_reduction_proxy_usage_stats.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h',
-        'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.cc',
-        'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h',
       ],
     },
     {
@@ -74,6 +72,8 @@
         '..',
       ],
       'sources': [
+        'data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h',
         'data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.h',
       ],

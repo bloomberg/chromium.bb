@@ -18,10 +18,6 @@ using testing::Return;
 
 namespace {
 
-const char kDataReductionProxy[] = "https://foo.com:443/";
-const char kDataReductionProxyFallback[] = "http://bar.com:80/";
-const char kDataReductionProxyKey[] = "12345";
-
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
 const char kWarmupURLWithNoContentResponse[] = "http://warm.org/";
 
@@ -78,27 +74,11 @@ void TestDataReductionProxyConfig::Disable() {
   ssl_origin_ = "";
 }
 
-// static
-void DataReductionProxySettingsTestBase::AddTestProxyToCommandLine() {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxy, kDataReductionProxy);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyFallback, kDataReductionProxyFallback);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyKey, kDataReductionProxyKey);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyProbeURL, kProbeURLWithOKResponse);
-}
-
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
     : testing::Test() {
 }
 
 DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
-
-void DataReductionProxySettingsTestBase::AddProxyToCommandLine() {
-  AddTestProxyToCommandLine();
-}
 
 // testing::Test implementation:
 void DataReductionProxySettingsTestBase::SetUp() {
@@ -112,7 +92,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyAltEnabled, false);
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
-  AddProxyToCommandLine();
+  //AddProxyToCommandLine();
   ResetSettings(true, true, false, true);
 
   ListPrefUpdate original_update(&pref_service_,
@@ -128,6 +108,12 @@ void DataReductionProxySettingsTestBase::SetUp() {
   pref_service_.SetInt64(
       prefs::kDailyHttpContentLengthLastUpdateDate,
       last_update_time_.ToInternalValue());
+  expected_params_.reset(new TestDataReductionProxyParams(
+      DataReductionProxyParams::kAllowed |
+      DataReductionProxyParams::kFallbackAllowed |
+      DataReductionProxyParams::kPromoAllowed,
+      TestDataReductionProxyParams::HAS_EVERYTHING &
+      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
 }
 
 template <class C>

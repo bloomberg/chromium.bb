@@ -218,6 +218,9 @@ class MockNetworkTransaction
   virtual void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) OVERRIDE;
 
+  virtual void SetBeforeProxyHeadersSentCallback(
+      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
+
   virtual int ResumeNetworkStart() OVERRIDE;
 
   CreateHelper* websocket_handshake_stream_create_helper() {

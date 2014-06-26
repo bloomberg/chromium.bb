@@ -6,14 +6,20 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/android/build_info.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #include "net/base/net_errors.h"
 #include "net/base/completion_callback.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 
 namespace android_webview {
 
-AwNetworkDelegate::AwNetworkDelegate() : data_reduction_proxy_params_(NULL) {
+AwNetworkDelegate::AwNetworkDelegate()
+    : data_reduction_proxy_params_(NULL),
+      data_reduction_proxy_auth_request_handler_(NULL) {
 }
 
 AwNetworkDelegate::~AwNetworkDelegate() {
@@ -36,6 +42,16 @@ int AwNetworkDelegate::OnBeforeSendHeaders(
       "X-Requested-With",
       base::android::BuildInfo::GetInstance()->package_name());
   return net::OK;
+}
+
+void AwNetworkDelegate::OnBeforeSendProxyHeaders(
+    net::URLRequest* request,
+    const net::ProxyInfo& proxy_info,
+    net::HttpRequestHeaders* headers) {
+  if (data_reduction_proxy_auth_request_handler_) {
+    data_reduction_proxy_auth_request_handler_->MaybeAddRequestHeader(
+        request, proxy_info.proxy_server(), headers);
+  }
 }
 
 void AwNetworkDelegate::OnSendHeaders(net::URLRequest* request,

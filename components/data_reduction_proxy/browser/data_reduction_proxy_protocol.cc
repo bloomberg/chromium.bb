@@ -108,8 +108,8 @@ void OverrideResponseAsRedirect(
   DCHECK(override_response_headers->get() == NULL);
 
   request->SetLoadFlags(request->load_flags() |
-                         net::LOAD_DISABLE_CACHE |
-                         net::LOAD_BYPASS_PROXY);
+                        net::LOAD_DISABLE_CACHE |
+                        net::LOAD_BYPASS_PROXY);
   *override_response_headers = new net::HttpResponseHeaders(
       original_response_headers->raw_headers());
   (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");

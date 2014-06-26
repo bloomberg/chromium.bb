@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_config_service.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
@@ -28,6 +29,7 @@
 
 using base::FilePath;
 using content::BrowserThread;
+using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
@@ -100,6 +102,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       new DataReductionProxySettings(
           new data_reduction_proxy::DataReductionProxyParams(
               data_reduction_proxy::DataReductionProxyParams::kAllowed)));
+  data_reduction_proxy_auth_request_handler_.reset(
+      new DataReductionProxyAuthRequestHandler(
+          data_reduction_proxy_settings_->params()));
 #endif
 
   url_request_context_getter_ =
@@ -162,6 +167,11 @@ AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
 
 DataReductionProxySettings* AwBrowserContext::GetDataReductionProxySettings() {
   return data_reduction_proxy_settings_.get();
+}
+
+DataReductionProxyAuthRequestHandler*
+AwBrowserContext::GetDataReductionProxyAuthRequestHandler() {
+  return data_reduction_proxy_auth_request_handler_.get();
 }
 
 // Create user pref service for autofill functionality.

@@ -22,7 +22,6 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
-const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
 const char kDataReductionProxyDev[] = "http://foo-dev.com:80";
 
 template <class C>
@@ -101,7 +100,6 @@ class DataReductionProxySettingsAndroidTest
   virtual void SetUp() OVERRIDE {
     env_ = base::android::AttachCurrentThread();
     DataReductionProxySettingsAndroid::Register(env_);
-    DataReductionProxySettingsTestBase::AddProxyToCommandLine();
     DataReductionProxySettingsTestBase::SetUp();
   }
 
@@ -118,7 +116,7 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
       Settings()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(GURL(kDataReductionProxyOrigin),
+  EXPECT_EQ(GURL(expected_params_->DefaultOrigin()),
             GURL(ConvertJavaStringToUTF8(str_ref)));
 }
 

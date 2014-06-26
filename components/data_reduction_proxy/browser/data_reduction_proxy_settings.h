@@ -22,9 +22,7 @@
 class PrefService;
 
 namespace net {
-class AuthChallengeInfo;
 class HostPortPair;
-class HttpAuthCache;
 class HttpNetworkSession;
 class HttpResponseHeaders;
 class URLFetcher;
@@ -126,21 +124,6 @@ class DataReductionProxySettings
   // causes traffic to be proxied.
   void SetProxyConfigurator(
       scoped_ptr<DataReductionProxyConfigurator> configurator);
-
-  // If proxy authentication is compiled in, pre-cache authentication
-  // keys for all configured proxies in |session|.
-  static void InitDataReductionProxySession(
-      net::HttpNetworkSession* session,
-      const DataReductionProxyParams* params);
-
-  // Returns true if |auth_info| represents an authentication challenge from
-  // a compatible, configured proxy.
-  bool IsAcceptableAuthChallenge(net::AuthChallengeInfo* auth_info);
-
-  // Returns a UTF16 string suitable for use as an authentication token in
-  // response to the challenge represented by |auth_info|. If the token can't
-  // be correctly generated for |auth_info|, returns an empty UTF16 string.
-  base::string16 GetTokenForAuthChallenge(net::AuthChallengeInfo* auth_info);
 
   // Returns true if the proxy is enabled.
   bool IsDataReductionProxyEnabled();
@@ -274,12 +257,6 @@ class DataReductionProxySettings
 
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
-
-  // Underlying implementation of InitDataReductionProxySession(), factored
-  // out to be testable without creating a full HttpNetworkSession.
-  static void InitDataReductionAuthentication(
-      net::HttpAuthCache* auth_cache,
-      const DataReductionProxyParams* params);
 
   void OnProxyEnabledPrefChange();
   void OnProxyAlternativeEnabledPrefChange();

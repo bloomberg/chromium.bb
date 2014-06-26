@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -49,12 +48,6 @@
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-#if defined(SPDY_PROXY_AUTH_VALUE)
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#endif
-#endif
 
 namespace {
 
@@ -471,15 +464,6 @@ void ProfileImplIOData::InitializeInternal(
   scoped_ptr<net::HttpCache> main_cache = CreateMainHttpFactory(
       profile_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-#if defined(SPDY_PROXY_AUTH_VALUE)
-  data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySession(
-          main_cache->GetSession(),
-          io_thread_globals->data_reduction_proxy_params.get());
-#endif
-#endif
 
   if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
     main_cache->set_mode(

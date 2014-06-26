@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
@@ -18,7 +18,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
-using data_reduction_proxy::DataReductionProxySettings;
+using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 
 namespace android_webview {
 
@@ -53,10 +53,13 @@ void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
 void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
-  DataReductionProxySettings* drp_settings =
-      browser_context->GetDataReductionProxySettings();
-  if (drp_settings)
-    drp_settings->params()->set_key(ConvertJavaStringToUTF8(env, key));
+  DataReductionProxyAuthRequestHandler* drp_auth_request_handler =
+      browser_context->GetDataReductionProxyAuthRequestHandler();
+  if (drp_auth_request_handler)
+    drp_auth_request_handler->SetKey(
+        ConvertJavaStringToUTF8(env, key),
+        data_reduction_proxy::kClientAndroidWebview,
+        data_reduction_proxy::kProtocolVersion);
 }
 
 // static

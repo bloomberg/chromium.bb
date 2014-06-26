@@ -6,74 +6,90 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-
+#include "url/gurl.h"
 
 namespace net {
-class AuthChallengeInfo;
+class HttpRequestHeaders;
+class HttpResponseHeaders;
+class ProxyServer;
+class URLRequest;
 }
 
 namespace data_reduction_proxy {
 
-class DataReductionProxySettings;
+extern const char kProtocolVersion[];
+
+extern const char kClientAndroidWebview[];
+extern const char kClientChromeAndroid[];
+extern const char kClientChromeIOS[];
+
+class DataReductionProxyParams;
 
 class DataReductionProxyAuthRequestHandler {
  public:
-  enum TryHandleResult {
-    TRY_HANDLE_RESULT_IGNORE,
-    TRY_HANDLE_RESULT_PROCEED,
-    TRY_HANDLE_RESULT_CANCEL
-  };
+  static bool IsKeySetOnCommandLine();
 
-  // Constructs an authentication request handler and takes a pointer to a
-  // |settings| object, which must outlive the handler.
+  // Constructs an authentication request handler.
   explicit DataReductionProxyAuthRequestHandler(
-      DataReductionProxySettings* settings);
+      DataReductionProxyParams* params);
+
   virtual ~DataReductionProxyAuthRequestHandler();
 
-  // Returns |PROCEED| if the authentication challenge provided is one that the
-  // data reduction proxy should handle and |IGNORE| if not. Returns |CANCEL| if
-  // there are a string of |MAX_BACK_TO_BACK_FAILURES| successive retries.
-  TryHandleResult TryHandleAuthentication(net::AuthChallengeInfo* auth_info,
-                                          base::string16* user,
-                                          base::string16* password);
+  // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
+  // proxy authentication credentials. Only adds this header if the provided
+  // |proxy_server| is a data reduction proxy.
+  void MaybeAddRequestHeader(net::URLRequest* request,
+                             const net::ProxyServer& proxy_server,
+                             net::HttpRequestHeaders* request_headers);
+
+  // Sets a new authentication key. This must be called for platforms that do
+  // not have a default key defined. See the constructor implementation for
+  // those platforms. Client is the canonical name for the client. Client names
+  // should be defined in this file as one of |kClient...|. Version is the
+  // authentication protocol version that the client uses, which should be
+  // |kProtocolVersion| unless the client expects to be handled differently from
+  // the standard behavior.
+  void SetKey(const std::string& key,
+              const std::string& client,
+              const std::string& version);
 
  protected:
+  void Init();
+  void InitAuthentication(const std::string& key);
+
+  void AddAuthorizationHeader(net::HttpRequestHeaders* headers);
+
+  // Returns a UTF16 string that's the hash of the configured authentication
+  // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
+  // the data reduction proxy feature isn't available.
+  static base::string16 AuthHashForSalt(int64 salt,
+                                        const std::string& key);
   // Visible for testing.
-  virtual bool IsAcceptableAuthChallenge(net::AuthChallengeInfo* auth_info);
+  virtual base::Time Now() const;
+  virtual void RandBytes(void* output, size_t length);
 
   // Visible for testing.
-  virtual base::string16 GetTokenForAuthChallenge(
-      net::AuthChallengeInfo* auth_info);
-
-  // Visible for testing.
-  virtual base::TimeTicks Now();
+  virtual std::string GetDefaultKey() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
-                           CancelAfterSuccessiveAuthAttempts);
+                           Authorization);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+                           AuthHashForSalt);
 
+  // Authentication state.
+  std::string key_;
+  std::string session_;
+  std::string credentials_;
 
+  // Name of the client and version of the data reduction proxy protocol to use.
+  std::string client_;
+  std::string version_;
 
-  // System timestamp of the last data reduction proxy authentication request.
-  // This is used to cancel data reduction proxy auth requests that are denied
-  // rather than loop forever trying a rejected token.
-  static int64 auth_request_timestamp_;
-
-  // The number of back to back data reduction proxy authentication failures
-  // that occurred with no more than |MIN_AUTH_REQUEST_INTERVAL_MS| between each
-  // adjacent pair of them.
-  static int back_to_back_failure_count_;
-
-  // System timestamp of the last data reduction proxy auth token invalidation.
-  // This is used to expire old tokens on back-to-back failures, and distinguish
-  // invalidation from repeat failures due to the client not being authorized.
-  static int64 auth_token_invalidation_timestamp_;
-
-  // Settings object for the data reduction proxy. Must outlive the handler.
-  DataReductionProxySettings* settings_;
+  DataReductionProxyParams* data_reduction_proxy_params_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyAuthRequestHandler);
 };

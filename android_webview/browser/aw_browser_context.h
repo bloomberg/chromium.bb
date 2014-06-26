@@ -27,6 +27,7 @@ class WebContents;
 }
 
 namespace data_reduction_proxy {
+class DataReductionProxyAuthRequestHandler;
 class DataReductionProxySettings;
 }
 
@@ -38,6 +39,7 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
+using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
@@ -86,6 +88,9 @@ class AwBrowserContext : public content::BrowserContext,
 
   DataReductionProxySettings* GetDataReductionProxySettings();
 
+  DataReductionProxyAuthRequestHandler*
+  GetDataReductionProxyAuthRequestHandler();
+
   void CreateUserPrefServiceIfNecessary();
 
   // content::BrowserContext implementation.
@@ -131,6 +136,8 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_ptr<PrefService> user_pref_service_;
 
   scoped_ptr<DataReductionProxySettings> data_reduction_proxy_settings_;
+  scoped_ptr<DataReductionProxyAuthRequestHandler>
+      data_reduction_proxy_auth_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

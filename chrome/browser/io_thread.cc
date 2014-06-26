@@ -41,7 +41,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
-#include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -93,6 +92,7 @@
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #endif
@@ -106,6 +106,7 @@
 using content::BrowserThread;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
+using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxyUsageStats;
 using data_reduction_proxy::DataReductionProxySettings;
@@ -625,13 +626,17 @@ void IOThread::InitAsync() {
   DataReductionProxyParams* proxy_params =
       new DataReductionProxyParams(drp_flags);
   globals_->data_reduction_proxy_params.reset(proxy_params);
-  network_delegate->set_data_reduction_proxy_params(proxy_params);
+  globals_->data_reduction_proxy_auth_request_handler.reset(
+      new DataReductionProxyAuthRequestHandler(proxy_params));
   DataReductionProxyUsageStats* proxy_usage_stats =
       new DataReductionProxyUsageStats(proxy_params,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  network_delegate->set_data_reduction_proxy_params(proxy_params);
   globals_->data_reduction_proxy_usage_stats.reset(proxy_usage_stats);
   network_delegate->set_data_reduction_proxy_usage_stats(proxy_usage_stats);
+  network_delegate->set_data_reduction_proxy_auth_request_handler(
+      globals_->data_reduction_proxy_auth_request_handler.get());
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
@@ -927,18 +932,6 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
           supported_schemes, globals_->url_security_manager.get(),
           resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
           negotiate_enable_port_));
-
-  if (globals_->data_reduction_proxy_params.get()) {
-    std::vector<GURL> data_reduction_proxies =
-        globals_->data_reduction_proxy_params->GetAllowedProxies();
-    if (!data_reduction_proxies.empty()) {
-      registry_factory->RegisterSchemeFactory(
-          "spdyproxy",
-          new data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Factory(
-              data_reduction_proxies));
-    }
-  }
-
   return registry_factory.release();
 }
 

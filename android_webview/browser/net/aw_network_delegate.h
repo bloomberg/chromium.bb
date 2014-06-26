@@ -6,8 +6,17 @@
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "net/base/network_delegate.h"
+
+namespace data_reduction_proxy {
+class DataReductionProxyAuthRequestHandler;
+class DataReductionProxyParams;
+}
+
+namespace net {
+class ProxyInfo;
+class URLRequest;
+}
 
 namespace android_webview {
 
@@ -25,6 +34,11 @@ class AwNetworkDelegate : public net::NetworkDelegate {
     data_reduction_proxy_params_ = params;
   }
 
+  void set_data_reduction_proxy_auth_request_handler(
+      data_reduction_proxy::DataReductionProxyAuthRequestHandler* handler) {
+    data_reduction_proxy_auth_request_handler_ = handler;
+  }
+
  private:
   // NetworkDelegate implementation.
   virtual int OnBeforeURLRequest(net::URLRequest* request,
@@ -33,6 +47,10 @@ class AwNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;
+  virtual void OnBeforeSendProxyHeaders(
+      net::URLRequest* request,
+      const net::ProxyInfo& proxy_info,
+      net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void OnSendHeaders(net::URLRequest* request,
                              const net::HttpRequestHeaders& headers) OVERRIDE;
   virtual int OnHeadersReceived(
@@ -70,6 +88,8 @@ class AwNetworkDelegate : public net::NetworkDelegate {
 
   // Data reduction proxy parameters object. Must outlive this.
   data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;
+  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
+  data_reduction_proxy_auth_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwNetworkDelegate);
 };

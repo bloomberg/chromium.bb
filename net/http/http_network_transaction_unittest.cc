@@ -433,6 +433,31 @@ class BeforeNetworkStartHandler {
   DISALLOW_COPY_AND_ASSIGN(BeforeNetworkStartHandler);
 };
 
+class BeforeProxyHeadersSentHandler {
+ public:
+  BeforeProxyHeadersSentHandler()
+      : observed_before_proxy_headers_sent_(false) {}
+
+  void OnBeforeProxyHeadersSent(const ProxyInfo& proxy_info) {
+    observed_before_proxy_headers_sent_ = true;
+    observed_proxy_server_uri_ = proxy_info.proxy_server().ToURI();
+  }
+
+  bool observed_before_proxy_headers_sent() const {
+    return observed_before_proxy_headers_sent_;
+  }
+
+  std::string observed_proxy_server_uri() const {
+    return observed_proxy_server_uri_;
+  }
+
+ private:
+  bool observed_before_proxy_headers_sent_;
+  std::string observed_proxy_server_uri_;
+
+  DISALLOW_COPY_AND_ASSIGN(BeforeProxyHeadersSentHandler);
+};
+
 // Fill |str| with a long header list that consumes >= |size| bytes.
 void FillLargeHeadersString(std::string* str, int size) {
   const char* row =
@@ -974,6 +999,10 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  BeforeProxyHeadersSentHandler proxy_headers_handler;
+  trans->SetBeforeProxyHeadersSentCallback(
+      base::Bind(&BeforeProxyHeadersSentHandler::OnBeforeProxyHeadersSent,
+                 base::Unretained(&proxy_headers_handler)));
 
   MockWrite data_writes1[] = {
     MockWrite("HEAD / HTTP/1.1\r\n"
@@ -1010,6 +1039,7 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   EXPECT_EQ(1234, response->headers->GetContentLength());
   EXPECT_EQ("HTTP/1.1 404 Not Found", response->headers->GetStatusLine());
   EXPECT_TRUE(response->proxy_server.IsEmpty());
+  EXPECT_FALSE(proxy_headers_handler.observed_before_proxy_headers_sent());
 
   std::string server_header;
   void* iter = NULL;
@@ -10340,6 +10370,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  BeforeProxyHeadersSentHandler proxy_headers_handler;
+  trans->SetBeforeProxyHeadersSentCallback(
+      base::Bind(&BeforeProxyHeadersSentHandler::OnBeforeProxyHeadersSent,
+                 base::Unretained(&proxy_headers_handler)));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10356,6 +10390,8 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
   EXPECT_TRUE(response->was_fetched_via_proxy);
   EXPECT_TRUE(
       response->proxy_server.Equals(HostPortPair::FromString("myproxy:70")));
+  EXPECT_TRUE(proxy_headers_handler.observed_before_proxy_headers_sent());
+  EXPECT_EQ("myproxy:70", proxy_headers_handler.observed_proxy_server_uri());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   LoadTimingInfo load_timing_info;

@@ -254,6 +254,11 @@ void DevToolsNetworkTransaction::SetBeforeNetworkStartCallback(
   network_transaction_->SetBeforeNetworkStartCallback(callback);
 }
 
+void DevToolsNetworkTransaction::SetBeforeProxyHeadersSentCallback(
+    const BeforeProxyHeadersSentCallback& callback) {
+  network_transaction_->SetBeforeProxyHeadersSentCallback(callback);
+}
+
 int DevToolsNetworkTransaction::ResumeNetworkStart() {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;

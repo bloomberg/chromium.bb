@@ -9,15 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
 namespace net {
 class AuthChallengeInfo;
 class URLRequest;
 }
-
-using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 
 namespace android_webview {
 
@@ -47,7 +44,6 @@ class AwLoginDelegate :
   net::URLRequest* request_;
   int render_process_id_;
   int render_frame_id_;
-  scoped_ptr<DataReductionProxyAuthRequestHandler> drp_auth_handler_;
 };
 
 }  // namespace android_webview

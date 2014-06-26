@@ -2954,6 +2954,12 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
     EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
+    EXPECT_EQ(
+        1, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    EXPECT_TRUE(
+        network_delegate.last_observed_proxy().Equals(
+            test_server_.host_port_pair()));
+
     EXPECT_EQ(0, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());
@@ -2987,6 +2993,11 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
     EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
+    EXPECT_EQ(
+        1, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    EXPECT_TRUE(
+        network_delegate.last_observed_proxy().Equals(
+            test_server_.host_port_pair()));
     EXPECT_EQ(0, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());
@@ -3063,6 +3074,11 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
     EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
+    EXPECT_EQ(
+        2, network_delegate.observed_before_proxy_headers_sent_callbacks());
+    EXPECT_TRUE(
+        network_delegate.last_observed_proxy().Equals(
+            test_server_.host_port_pair()));
     EXPECT_EQ(net::OK, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());

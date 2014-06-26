@@ -324,6 +324,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
+      observed_before_proxy_headers_sent_callbacks_(0),
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
@@ -394,6 +395,14 @@ int TestNetworkDelegate::OnBeforeSendHeaders(
       kStageCompletedError;  // request canceled by delegate
 
   return OK;
+}
+
+void TestNetworkDelegate::OnBeforeSendProxyHeaders(
+    net::URLRequest* request,
+    const net::ProxyInfo& proxy_info,
+    net::HttpRequestHeaders* headers) {
+  ++observed_before_proxy_headers_sent_callbacks_;
+  last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
 }
 
 void TestNetworkDelegate::OnSendHeaders(

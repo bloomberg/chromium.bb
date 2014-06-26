@@ -107,6 +107,8 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
   virtual void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) OVERRIDE;
+  virtual void SetBeforeProxyHeadersSentCallback(
+      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
   virtual int ResumeNetworkStart() OVERRIDE;
 
  protected:

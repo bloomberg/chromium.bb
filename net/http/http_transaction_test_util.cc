@@ -424,6 +424,10 @@ void MockNetworkTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback) {
 }
 
+void MockNetworkTransaction::SetBeforeProxyHeadersSentCallback(
+    const BeforeProxyHeadersSentCallback& callback) {
+}
+
 int MockNetworkTransaction::ResumeNetworkStart() {
   // Should not get here.
   return net::ERR_FAILED;

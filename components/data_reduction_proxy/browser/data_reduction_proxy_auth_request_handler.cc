@@ -4,118 +4,147 @@
 
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 
+#include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#include "net/base/auth.h"
-
-namespace {
-// The minimum interval allowed, in milliseconds, between data reduction proxy
-// auth requests.
-const int64 kMinAuthRequestIntervalMs = 500;
-
-// The minimum interval allowed, in milliseconds, between data reduction proxy
-// auth token invalidation.
-const int64 kMinTokenInvalidationIntervalMs = 60 * 60 * 1000;
-
-// The maximum number of data reduction proxy authentication failures to
-// accept before giving up.
-const int kMaxBackToBackFailures = 5;
-}
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "crypto/random.h"
+#include "net/proxy/proxy_server.h"
+#include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace data_reduction_proxy {
 
-int64 DataReductionProxyAuthRequestHandler::auth_request_timestamp_ = 0;
+// The version of the authentication protocol.
+const char kProtocolVersion[] = "0";
 
-int DataReductionProxyAuthRequestHandler::back_to_back_failure_count_ = 0;
+// The clients supported by the data reduction proxy.
+const char kClientAndroidWebview[] = "webview";
+const char kClientChromeAndroid[] = "android";
+const char kClientChromeIOS[] = "ios";
 
-int64
-DataReductionProxyAuthRequestHandler::auth_token_invalidation_timestamp_ = 0;
-
+// static
+bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(
+      data_reduction_proxy::switches::kDataReductionProxyKey);
+}
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
-    DataReductionProxySettings* settings) : settings_(settings) {
-  DCHECK(settings);
+    DataReductionProxyParams* params)
+    : data_reduction_proxy_params_(params) {
+  version_ = kProtocolVersion;
+#if defined(OS_ANDROID)
+  client_ = kClientChromeAndroid;
+#elif defined(OS_IOS)
+  client_ = kClientChromeIOS;
+#endif
+  Init();
 }
+
+void DataReductionProxyAuthRequestHandler::Init() {
+  InitAuthentication(GetDefaultKey());
+}
+
 
 DataReductionProxyAuthRequestHandler::~DataReductionProxyAuthRequestHandler() {
 }
 
-DataReductionProxyAuthRequestHandler::TryHandleResult
-DataReductionProxyAuthRequestHandler::TryHandleAuthentication(
-    net::AuthChallengeInfo* auth_info,
-    base::string16* user,
-    base::string16* password) {
-  if (!auth_info) {
-    return TRY_HANDLE_RESULT_IGNORE;
-  }
-  DCHECK(user);
-  DCHECK(password);
-
-  if (!IsAcceptableAuthChallenge(auth_info)) {
-    *user = base::string16();
-    *password = base::string16();
-    return TRY_HANDLE_RESULT_IGNORE;
-  }
-
-  base::TimeTicks auth_request =
-      base::TimeTicks::FromInternalValue(auth_request_timestamp_);
-  base::TimeTicks auth_token_invalidation =
-      base::TimeTicks::FromInternalValue(auth_token_invalidation_timestamp_);
-
-
-  base::TimeTicks now = Now();
-  if ((now - auth_request).InMilliseconds() < kMinAuthRequestIntervalMs) {
-    // We've received back-to-back failures. There are two possibilities:
-    // 1) Our auth token has expired and we should invalidate it, or
-    // 2) We're receiving spurious failures from the service.
-    //
-    // If we haven't recently invalidated our token, we do that here
-    // and make several attempts to authenticate. Otherwise, we fail.
-    back_to_back_failure_count_++;
-    if ((now - auth_token_invalidation).InMilliseconds() <
-        kMinTokenInvalidationIntervalMs) {
-      auth_token_invalidation_timestamp_ = now.ToInternalValue();
-      back_to_back_failure_count_ = 0;
-    } else {
-      if (back_to_back_failure_count_ > kMaxBackToBackFailures) {
-        DLOG(WARNING) << "Interpreting frequent data reduction proxy auth "
-            << "requests as an authorization failure.";
-        back_to_back_failure_count_ = 0;
-        *user = base::string16();
-        *password = base::string16();
-        return TRY_HANDLE_RESULT_CANCEL;
-      }
-    }
-  } else {
-    back_to_back_failure_count_ = 0;
-  }
-  auth_request_timestamp_ = now.ToInternalValue();
-
-  *password = GetTokenForAuthChallenge(auth_info);
-
-  if (*password == base::string16()) {
-    *user = base::string16();
-    DLOG(WARNING) << "Data reduction proxy auth produced null token.";
-    return TRY_HANDLE_RESULT_CANCEL;
-  }
-  *user = base::UTF8ToUTF16("fw-cookie");
-  return TRY_HANDLE_RESULT_PROCEED;
+// static
+base::string16 DataReductionProxyAuthRequestHandler::AuthHashForSalt(
+    int64 salt,
+    const std::string& key) {
+  std::string salted_key =
+      base::StringPrintf("%lld%s%lld",
+                         static_cast<long long>(salt),
+                         key.c_str(),
+                         static_cast<long long>(salt));
+  return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
 
-bool DataReductionProxyAuthRequestHandler::IsAcceptableAuthChallenge(
-    net::AuthChallengeInfo* auth_info) {
-  return settings_->IsAcceptableAuthChallenge(auth_info);
+
+
+base::Time DataReductionProxyAuthRequestHandler::Now() const {
+  return base::Time::Now();
 }
 
-base::string16 DataReductionProxyAuthRequestHandler::GetTokenForAuthChallenge(
-    net::AuthChallengeInfo* auth_info) {
-  DCHECK(settings_);
-  return settings_->GetTokenForAuthChallenge(auth_info);
+void DataReductionProxyAuthRequestHandler::RandBytes(
+    void* output, size_t length) {
+  crypto::RandBytes(output, length);
 }
 
-base::TimeTicks DataReductionProxyAuthRequestHandler::Now() {
-  return base::TimeTicks::Now();
+void DataReductionProxyAuthRequestHandler::MaybeAddRequestHeader(
+    net::URLRequest* request,
+    const net::ProxyServer& proxy_server,
+    net::HttpRequestHeaders* request_headers) {
+  if (!proxy_server.is_valid())
+    return;
+  if (data_reduction_proxy_params_ &&
+      data_reduction_proxy_params_->IsDataReductionProxy(
+          proxy_server.host_port_pair(), NULL)) {
+    AddAuthorizationHeader(request_headers);
+  }
+}
+
+void DataReductionProxyAuthRequestHandler::AddAuthorizationHeader(
+    net::HttpRequestHeaders* headers) {
+  const char kChromeProxyHeader[] = "Chrome-Proxy";
+  std::string header_value;
+  if (headers->HasHeader(kChromeProxyHeader)) {
+    headers->GetHeader(kChromeProxyHeader, &header_value);
+    headers->RemoveHeader(kChromeProxyHeader);
+    header_value += ", ";
+  }
+  header_value +=
+      "ps=" + session_ + ", sid=" + credentials_ +  ", v=" + version_;
+  if (!client_.empty())
+    header_value += ", c=" + client_;
+  headers->SetHeader(kChromeProxyHeader, header_value);
+}
+
+void DataReductionProxyAuthRequestHandler::InitAuthentication(
+    const std::string& key) {
+  key_ = key;
+  int64 timestamp =
+      (Now() - base::Time::UnixEpoch()).InMilliseconds() / 1000;
+
+  int32 rand[3];
+  RandBytes(rand, 3 * sizeof(rand[0]));
+  session_ = base::StringPrintf("%lld-%u-%u-%u",
+                                 static_cast<long long>(timestamp),
+                                 rand[0],
+                                 rand[1],
+                                 rand[2]);
+  credentials_ = base::UTF16ToUTF8(AuthHashForSalt(timestamp, key_));
+
+  DVLOG(1) << "session: [" << session_ << "] "
+           << "password: [" << credentials_  << "]";
+}
+
+void DataReductionProxyAuthRequestHandler::SetKey(const std::string& key,
+                                                  const std::string& client,
+                                                  const std::string& version) {
+  client_ = client;
+  version_ = version;
+  if (!key.empty())
+    InitAuthentication(key);
+}
+
+
+std::string DataReductionProxyAuthRequestHandler::GetDefaultKey() const {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string key =
+    command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
+#if defined(SPDY_PROXY_AUTH_VALUE)
+  if (key.empty())
+    key = SPDY_PROXY_AUTH_VALUE;
+#endif
+  return key;
 }
 
 }  // namespace data_reduction_proxy

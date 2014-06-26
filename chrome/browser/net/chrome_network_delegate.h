@@ -35,6 +35,7 @@ class Predictor;
 }
 
 namespace data_reduction_proxy {
+class DataReductionProxyAuthRequestHandler;
 class DataReductionProxyParams;
 class DataReductionProxyUsageStats;
 }
@@ -49,6 +50,7 @@ class InfoMap;
 }
 
 namespace net {
+class ProxyInfo;
 class URLRequest;
 }
 
@@ -133,6 +135,13 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
     data_reduction_proxy_usage_stats_ = usage_stats;
   }
 
+  // |data_reduction_proxy_auth_request_handler_| must outlive this
+  // ChromeNetworkDelegate.
+  void set_data_reduction_proxy_auth_request_handler(
+      data_reduction_proxy::DataReductionProxyAuthRequestHandler* handler) {
+    data_reduction_proxy_auth_request_handler_ = handler;
+  }
+
   // Adds the Client Hints header to HTTP requests.
   void SetEnableClientHints();
 
@@ -172,6 +181,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;
+  virtual void OnBeforeSendProxyHeaders(
+      net::URLRequest* request,
+      const net::ProxyInfo& proxy_info,
+      net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void OnSendHeaders(net::URLRequest* request,
                              const net::HttpRequestHeaders& headers) OVERRIDE;
   virtual int OnHeadersReceived(
@@ -264,6 +277,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // ChromeNetworkDelegate.
   data_reduction_proxy::DataReductionProxyUsageStats*
       data_reduction_proxy_usage_stats_;
+  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
+  data_reduction_proxy_auth_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

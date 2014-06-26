@@ -139,6 +139,8 @@ class HttpCache::Transaction : public HttpTransaction {
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
   virtual void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) OVERRIDE;
+  virtual void SetBeforeProxyHeadersSentCallback(
+      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
   virtual int ResumeNetworkStart() OVERRIDE;
 
  private:
@@ -452,6 +454,7 @@ class HttpCache::Transaction : public HttpTransaction {
       websocket_handshake_stream_base_create_helper_;
 
   BeforeNetworkStartCallback before_network_start_callback_;
+  BeforeProxyHeadersSentCallback before_proxy_headers_sent_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Transaction);
 };

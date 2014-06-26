@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_delegate.h"
@@ -44,46 +44,10 @@ void HeadersToRaw(std::string* headers) {
     *headers += '\0';
 }
 
-std::string GetDataReductionProxy() {
-  return "https://proxy1.com:443/";
-}
-
-std::string GetDataReductionProxyFallback() {
-  return "http://proxy2.com:80/";
-}
 } // namespace
 
 
 namespace data_reduction_proxy {
-namespace {
-class TestDataReductionProxyParams : public DataReductionProxyParams {
- public:
-  TestDataReductionProxyParams() : DataReductionProxyParams(0, false) {}
-
-  virtual bool WasDataReductionProxyUsed(
-      const net::URLRequest* request,
-      std::pair<GURL, GURL>* proxy_servers) const OVERRIDE;
-};
-
-bool TestDataReductionProxyParams::WasDataReductionProxyUsed(
-    const net::URLRequest* request,
-    std::pair<GURL, GURL>* proxy_servers) const {
-  if (net::HostPortPair::FromURL(GURL(GetDataReductionProxy())).Equals(
-          request->proxy_server())) {
-    proxy_servers->first = GURL(GetDataReductionProxy());
-    proxy_servers->second = GURL(GetDataReductionProxyFallback());
-    return true;
-  }
-  if (net::HostPortPair::FromURL(
-          GURL(GetDataReductionProxyFallback())).Equals(
-          request->proxy_server())) {
-    proxy_servers->first = GURL(GetDataReductionProxyFallback());
-    proxy_servers->second = GURL();
-    return true;
-  }
-  return false;
-}
-}  // namespace
 
 // A test network delegate that exercises the bypass logic of the data
 // reduction proxy.
@@ -115,7 +79,15 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
 // simulate requests and responses.
 class DataReductionProxyProtocolTest : public testing::Test {
  public:
-  DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {}
+  DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {
+    proxy_params_.reset(
+        new TestDataReductionProxyParams(
+            DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+            TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+  }
 
   // Sets up the |TestURLRequestContext| with the provided |ProxyService|.
   void ConfigureTestDependencies(ProxyService* proxy_service) {
@@ -123,7 +95,6 @@ class DataReductionProxyProtocolTest : public testing::Test {
     context_.reset(new TestURLRequestContext(true));
 
     proxy_service_.reset(proxy_service);
-    proxy_params_.reset(new TestDataReductionProxyParams());
     network_delegate_.reset(new TestDataReductionProxyNetworkDelegate(
         proxy_params_.get()));
 
@@ -378,8 +349,6 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
 // was indicated. In both the single and double bypass cases, if the request
 // was idempotent, it will be retried over a direct connection.
 TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
-  std::string primary = GetDataReductionProxy();
-  std::string fallback = GetDataReductionProxyFallback();
   const struct {
     const char* method;
     const char* first_response;
@@ -580,11 +549,13 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1
     }
   };
+  std::string primary = proxy_params_->DefaultOrigin();
+  std::string fallback = proxy_params_->DefaultFallbackOrigin();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    ConfigureTestDependencies(
-        ProxyService::CreateFixedFromPacResult("PROXY " +
-            HostPortPair::FromURL(GURL(primary)).ToString() + "; PROXY " +
-            HostPortPair::FromURL(GURL(fallback)).ToString() + "; DIRECT"));
+    ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
+        "PROXY " +
+        HostPortPair::FromURL(GURL(primary)).ToString() + "; PROXY " +
+        HostPortPair::FromURL(GURL(fallback)).ToString() + "; DIRECT"));
     TestProxyFallback(tests[i].method,
                       tests[i].first_response,
                       tests[i].expected_retry,

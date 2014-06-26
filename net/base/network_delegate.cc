@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
@@ -27,6 +28,15 @@ int NetworkDelegate::NotifyBeforeSendHeaders(
   DCHECK(headers);
   DCHECK(!callback.is_null());
   return OnBeforeSendHeaders(request, callback, headers);
+}
+
+void NetworkDelegate::NotifyBeforeSendProxyHeaders(
+    URLRequest* request,
+    const ProxyInfo& proxy_info,
+    HttpRequestHeaders* headers) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(headers);
+  OnBeforeSendProxyHeaders(request, proxy_info, headers);
 }
 
 void NetworkDelegate::NotifySendHeaders(URLRequest* request,
@@ -149,6 +159,12 @@ int NetworkDelegate::OnBeforeSendHeaders(URLRequest* request,
                                          const CompletionCallback& callback,
                                          HttpRequestHeaders* headers) {
   return OK;
+}
+
+void NetworkDelegate::OnBeforeSendProxyHeaders(
+    URLRequest* request,
+    const ProxyInfo& proxy_info,
+    HttpRequestHeaders* headers) {
 }
 
 void NetworkDelegate::OnSendHeaders(URLRequest* request,

@@ -8,8 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "base/supports_user_data.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -25,8 +23,6 @@ using content::RenderFrameHost;
 using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
-using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
-using data_reduction_proxy::DataReductionProxySettings;
 
 namespace {
 const char* kAuthAttemptsKey = "android_webview_auth_attempts";
@@ -96,36 +92,6 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
       render_process_id_, render_frame_id_);
   WebContents* web_contents = WebContents::FromRenderFrameHost(
       render_frame_host);
-  AwBrowserContext* browser_context =
-      AwBrowserContext::FromWebContents(web_contents);
-  DataReductionProxySettings* drp_settings =
-      browser_context->GetDataReductionProxySettings();
-  if (drp_settings && drp_settings->IsDataReductionProxyEnabled()) {
-    // The data reduction proxy auth handler should only be reset on the first
-    // auth attempt, because it maintains internal state to cancel if there have
-    // been too many attempts.
-    if (!drp_auth_handler_.get()) {
-      drp_auth_handler_.reset(new DataReductionProxyAuthRequestHandler(
-          drp_settings));
-    }
-    DCHECK(drp_auth_handler_.get());
-    base::string16 user, password;
-    DataReductionProxyAuthRequestHandler::TryHandleResult drp_result =
-        drp_auth_handler_->TryHandleAuthentication(
-            auth_info_.get(), &user, &password);
-    if (drp_result ==
-            DataReductionProxyAuthRequestHandler::TRY_HANDLE_RESULT_PROCEED) {
-      Proceed(user, password);
-      return;
-    }
-    if (drp_result ==
-            DataReductionProxyAuthRequestHandler::TRY_HANDLE_RESULT_CANCEL) {
-      Cancel();
-      return;
-    }
-    // Fall through if |drp_result| is IGNORE
-  }
-
   if (!aw_http_auth_handler_->HandleOnUIThread(web_contents)) {
     Cancel();
     return;

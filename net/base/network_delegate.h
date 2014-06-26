@@ -35,6 +35,7 @@ namespace net {
 class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class ProxyInfo;
 class SocketStream;
 class URLRequest;
 
@@ -63,6 +64,9 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeSendHeaders(URLRequest* request,
                               const CompletionCallback& callback,
                               HttpRequestHeaders* headers);
+  void NotifyBeforeSendProxyHeaders(URLRequest* request,
+                                    const ProxyInfo& proxy_info,
+                                    HttpRequestHeaders* headers);
   void NotifySendHeaders(URLRequest* request,
                          const HttpRequestHeaders& headers);
   int NotifyHeadersReceived(
@@ -125,6 +129,13 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   virtual int OnBeforeSendHeaders(URLRequest* request,
                                   const CompletionCallback& callback,
                                   HttpRequestHeaders* headers);
+
+  // Called after a proxy connection. Allows the delegate to read/write
+  // |headers| before they get sent out. |headers| is valid only until
+  // OnCompleted or OnURLRequestDestroyed is called for this request.
+  virtual void OnBeforeSendProxyHeaders(URLRequest* request,
+                                        const ProxyInfo& proxy_info,
+                                        HttpRequestHeaders* headers);
 
   // Called right before the HTTP request(s) are being sent to the network.
   // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is

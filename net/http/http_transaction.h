@@ -21,6 +21,7 @@ struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;
 struct LoadTimingInfo;
+class ProxyInfo;
 class QuicServerInfo;
 class X509Certificate;
 
@@ -32,6 +33,12 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // If |*defer| is set to true, the transaction will wait until
   // ResumeNetworkStart is called before establishing a connection.
   typedef base::Callback<void(bool* defer)> BeforeNetworkStartCallback;
+
+  // Provides an opportunity to add proxy-specific request headers. Called after
+  // it is determined that a proxy is being used and before the request headers
+  // are sent. |proxy_info| contains information about the proxy being used.
+  typedef base::Callback<void(
+      const ProxyInfo& proxy_info)> BeforeProxyHeadersSentCallback;
 
   // Stops any pending IO and destroys the transaction object.
   virtual ~HttpTransaction() {}
@@ -157,6 +164,11 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Set the callback to receive notification just before network use.
   virtual void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) = 0;
+
+  // Set the callback to receive notification just before a proxy request
+  // is to be sent.
+  virtual void SetBeforeProxyHeadersSentCallback(
+      const BeforeProxyHeadersSentCallback& callback) = 0;
 
   // Resumes the transaction after being deferred.
   virtual int ResumeNetworkStart() = 0;
