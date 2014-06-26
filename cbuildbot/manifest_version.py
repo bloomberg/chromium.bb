@@ -751,9 +751,9 @@ class BuildSpecsManager(object):
       self._UploadStatus(version, BuilderStatus.STATUS_INFLIGHT,
                          fail_if_exists=True,
                          dashboard_url=dashboard_url)
-    except cros_build_lib.RunCommandError as e:
-      if 'code=PreconditionFailed' in e.result.error:
-        raise GenerateBuildSpecException('Builder already inflight')
+    except gs.GSContextPreconditionFailed:
+      raise GenerateBuildSpecException('Builder already inflight')
+    except gs.GSContextException as e:
       raise GenerateBuildSpecException(e)
 
   def _SetPassSymlinks(self):
