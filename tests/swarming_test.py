@@ -739,7 +739,14 @@ class TriggerTaskShardsTest(TestCase):
         verbose=False,
         profile=False,
         priority=101)
-    self.assertEqual({'unit_tests': '123'}, tasks)
+    expected = {
+      'unit_tests': {
+        'shard_index': 0,
+        'task_id': '123',
+        'view_url': 'http://localhost:8082/user/task/123',
+      }
+    }
+    self.assertEqual(expected, tasks)
 
   def test_trigger_task_shards_priority_override(self):
     self.mock(
@@ -762,7 +769,18 @@ class TriggerTaskShardsTest(TestCase):
         verbose=False,
         profile=False,
         priority=101)
-    expected = {u'unit_tests:2:0': u'123', u'unit_tests:2:1': u'123'}
+    expected = {
+      u'unit_tests:2:0': {
+        u'shard_index': 0,
+        u'task_id': u'123',
+        u'view_url': u'http://localhost:8082/user/task/123',
+      },
+      u'unit_tests:2:1': {
+        u'shard_index': 1,
+        u'task_id': u'123',
+        u'view_url': u'http://localhost:8082/user/task/123',
+      }
+    }
     self.assertEqual(expected, tasks)
     self._check_output('', 'Priority was reset to 200\n')
 
@@ -788,7 +806,15 @@ class TriggerTaskShardsTest(TestCase):
         verbose=False,
         profile=False,
         priority=101)
-    self.assertEqual({'unit_tests': '123'}, tasks)
+
+    expected = {
+      'unit_tests': {
+        'shard_index': 0,
+        'task_id': '123',
+        'view_url': 'http://localhost:8082/user/task/123',
+      }
+    }
+    self.assertEqual(expected, tasks)
 
   def test_isolated_to_hash(self):
     calls = []
@@ -1285,7 +1311,16 @@ class MainTest(TestCase):
     expected = [
       (
         'foo.json',
-        {'base_task_name': u'unit_tests', 'tasks': {u'unit_tests': u'123'}},
+        {
+          u'base_task_name': u'unit_tests',
+          u'tasks': {
+            u'unit_tests': {
+              u'shard_index': 0,
+              u'task_id': u'123',
+              u'view_url': u'https://host1/user/task/123',
+            }
+          },
+        },
         True,
       ),
     ]

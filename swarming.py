@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.9'
+__version__ = '0.4.10'
 
 import datetime
 import getpass
@@ -624,7 +624,8 @@ def trigger_task_shards(
   """Triggers multiple subtasks of a sharded task.
 
   Returns:
-    dict(task_name: task_id). None in case of failure.
+    Dict with task details, returned to caller as part of --dump-json output.
+    None in case of failure.
   """
   # Collects all files that are necessary to bootstrap a task execution
   # on the bot. Usually it includes self contained run_isolated.zip and
@@ -663,21 +664,25 @@ def trigger_task_shards(
   # Trigger all the subtasks.
   tasks = {}
   priority_warning = False
-  for manifest in manifests:
+  for index, manifest in enumerate(manifests):
     task_id, priority = trigger_by_manifest(swarming, manifest)
     if not task_id:
       break
     if not priority_warning and priority != manifest.priority:
       priority_warning = True
       print >> sys.stderr, 'Priority was reset to %s' % priority
-    tasks[manifest.task_name] = task_id
+    tasks[manifest.task_name] = {
+      'shard_index': index,
+      'task_id': task_id,
+      'view_url': '%s/user/task/%s' % (swarming, task_id),
+    }
 
   # Some shards weren't triggered. Abort everything.
   if len(tasks) != len(manifests):
     if tasks:
       print >> sys.stderr, 'Not all shards were triggered'
-      for task_id in tasks.itervalues():
-        abort_task(swarming, task_id)
+      for task_dict in tasks.itervalues():
+        abort_task(swarming, task_dict['task_id'])
     return None
 
   return tasks
