@@ -1924,8 +1924,8 @@ const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(co
 
 IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo& paintInfo, const Vector<GraphicsLayerPaintInfo>& layers)
 {
-    const RenderObject* clippingContainer = paintInfo.renderLayer->renderer()->clippingContainer();
-    if (clippingContainer == referenceLayer.renderer()->clippingContainer())
+    const RenderObject* clippingContainer = paintInfo.renderLayer->compositingInputs().clippingContainer;
+    if (clippingContainer == referenceLayer.compositingInputs().clippingContainer)
         return PaintInfo::infiniteRect();
 
     ASSERT(clippingContainer);

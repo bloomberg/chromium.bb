@@ -796,7 +796,7 @@ bool RenderLayerCompositor::clippedByNonAncestorInStackingTree(const RenderLayer
     if (!compositingAncestor)
         return false;
 
-    RenderObject* clippingContainer = layer->renderer()->clippingContainer();
+    const RenderObject* clippingContainer = layer->compositingInputs().clippingContainer;
     if (!clippingContainer)
         return false;
 

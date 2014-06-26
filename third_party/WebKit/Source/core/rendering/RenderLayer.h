@@ -450,6 +450,7 @@ public:
             : opacityAncestor(0)
             , transformAncestor(0)
             , filterAncestor(0)
+            , clippingContainer(0)
             , ancestorScrollingLayer(0)
             , scrollParent(0)
             , isUnclippedDescendant(false)
@@ -459,6 +460,7 @@ public:
         const RenderLayer* opacityAncestor;
         const RenderLayer* transformAncestor;
         const RenderLayer* filterAncestor;
+        const RenderObject* clippingContainer;
         const RenderLayer* ancestorScrollingLayer;
         const RenderLayer* scrollParent;
         unsigned isUnclippedDescendant : 1;

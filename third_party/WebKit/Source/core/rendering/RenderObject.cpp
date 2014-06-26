@@ -805,29 +805,6 @@ RenderBlock* RenderObject::containingBlock() const
     return toRenderBlock(o);
 }
 
-RenderObject* RenderObject::clippingContainer() const
-{
-    RenderObject* container = const_cast<RenderObject*>(this);
-    while (container) {
-        if (container->style()->position() == FixedPosition) {
-            for (container = container->parent(); container && !container->canContainFixedPositionObjects(); container = container->parent()) {
-                // CSS clip applies to fixed position elements even for ancestors that are not what the
-                // fixed element is positioned with respect to.
-                if (container->hasClip())
-                    return container;
-            }
-        } else {
-            container = container->containingBlock();
-        }
-
-        if (!container)
-            return 0;
-        if (container->hasClipOrOverflowClip())
-            return container;
-    }
-    return 0;
-}
-
 bool RenderObject::canRenderBorderImage() const
 {
     ASSERT(style()->hasBorder());

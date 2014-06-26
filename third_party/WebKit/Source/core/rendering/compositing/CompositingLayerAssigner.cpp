@@ -143,8 +143,8 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     ASSERT(squashingState.hasMostRecentMapping);
     const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
 
-    if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer()) {
-        if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->renderer()->clippingContainer()))
+    if (layer->compositingInputs().clippingContainer != squashingLayer.compositingInputs().clippingContainer) {
+        if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->compositingInputs().clippingContainer))
             return CompositingReasonSquashingClippingContainerMismatch;
     }
 

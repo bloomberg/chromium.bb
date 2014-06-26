@@ -32,6 +32,7 @@ private:
         AncestorInfo()
             : enclosingCompositedLayer(0)
             , lastScrollingAncestor(0)
+            , hasAncestorWithClipOrOverflowClip(false)
         {
         }
 
@@ -43,6 +44,7 @@ private:
         // actually controls the scrolling of this layer, which we find on the
         // containing block chain.
         RenderLayer* lastScrollingAncestor;
+        bool hasAncestorWithClipOrOverflowClip;
     };
 
     void updateRecursive(RenderLayer*, UpdateType, AncestorInfo);
