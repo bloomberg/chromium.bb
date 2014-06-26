@@ -113,6 +113,8 @@
         'third_party/WebKit'
       ],
       'sources': [
+        'examples/html_viewer/blink_input_events_type_converters.cc',
+        'examples/html_viewer/blink_input_events_type_converters.h',
         'examples/html_viewer/blink_platform_impl.cc',
         'examples/html_viewer/blink_platform_impl.h',
         'examples/html_viewer/html_viewer.cc',
