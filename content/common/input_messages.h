@@ -202,7 +202,7 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
                     float /* y */)
 #endif
 
-IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted);
+IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

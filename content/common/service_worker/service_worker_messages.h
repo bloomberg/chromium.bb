@@ -104,7 +104,7 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_InstallEventFinished,
                     blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_ActivateEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult);
+                    blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
                     int /* request_id */,
                     content::ServiceWorkerFetchEventResult,

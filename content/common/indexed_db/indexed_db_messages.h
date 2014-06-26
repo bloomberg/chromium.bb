@@ -16,6 +16,15 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
+// Singly-included section for typedefs in multiply-included file.
+#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_
+#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_
+
+// An index id, and corresponding set of keys to insert.
+typedef std::pair<int64, std::vector<content::IndexedDBKey> > IndexKeys;
+
+#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START IndexedDBMsgStart
@@ -30,9 +39,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBTransactionMode,
                           blink::WebIDBTransactionModeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)
-
-// An index id, and corresponding set of keys to insert.
-typedef std::pair<int64, std::vector<content::IndexedDBKey> > IndexKeys;
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)

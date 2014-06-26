@@ -155,7 +155,7 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
 IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
                     int /* instance_id */,
                     int /* request_id */,
-                    SkBitmap);
+                    SkBitmap)
 
 // Notify the guest renderer that some resources given to the embededer
 // are not used any more.
@@ -214,7 +214,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
 
 // This message is sent in response to a completed attachment of a guest
 // to a BrowserPlugin.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_Attach_ACK, int /* instance_id */);
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_Attach_ACK, int /* instance_id */)
 
 // Once the swapped out guest RenderView has been created in the embedder render
 // process, the browser process informs the embedder of its routing ID.

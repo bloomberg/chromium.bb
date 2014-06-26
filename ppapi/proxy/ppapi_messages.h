@@ -685,7 +685,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiMsg_PPPMessageHandler_HandleBlockingMessage,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* message */,
                            ppapi::proxy::SerializedVar /* result */,
-                           bool /* was_handled */);
+                           bool /* was_handled */)
 
 // PPP_MouseLock.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
@@ -822,7 +822,7 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
 // Notify the renderer that the PPAPI channel gets ready in the plugin.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete);
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete)
 
 // Calls renderer to open a resource file for nacl_irt_open_resource().
 IPC_SYNC_MESSAGE_CONTROL1_1(PpapiHostMsg_OpenResource,
@@ -1330,8 +1330,8 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_UMA_HistogramEnumeration,
                      std::string /* name */,
                      int32_t /* sample */,
                      int32_t /* boundary_value */)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_UMA_IsCrashReportingEnabled);
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UMA_IsCrashReportingEnabledReply);
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UMA_IsCrashReportingEnabled)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UMA_IsCrashReportingEnabledReply)
 
 // Compositor
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Compositor_Create)
@@ -1529,11 +1529,11 @@ IPC_MESSAGE_CONTROL3(PpapiPluginMsg_MediaStreamTrack_InitBuffers,
                      int32_t /* buffer_size */,
                      bool /* readonly */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer,
-                     int32_t /* index */);
+                     int32_t /* index */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_MediaStreamTrack_EnqueueBuffer,
-                     int32_t /* index */);
+                     int32_t /* index */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamTrack_EnqueueBuffers,
-                     std::vector<int32_t> /* indices */);
+                     std::vector<int32_t> /* indices */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_MediaStreamTrack_Close)
 
 // NetworkMonitor.

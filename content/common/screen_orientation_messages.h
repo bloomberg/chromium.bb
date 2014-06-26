@@ -48,7 +48,7 @@ IPC_MESSAGE_ROUTED3(ScreenOrientationMsg_LockSuccess,
 // process can associate the response to the right request.
 IPC_MESSAGE_ROUTED2(ScreenOrientationMsg_LockError,
                     int, /* request_id */
-                    blink::WebLockOrientationError /* error */);
+                    blink::WebLockOrientationError /* error */)
 
 // The renderer process requests the browser process to lock the screen
 // orientation to the specified |orientations|. The request contains a

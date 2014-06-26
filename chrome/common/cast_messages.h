@@ -94,16 +94,16 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
                      int32 /* channel_id */,
-                     media::cast::Packet /* packet */);
+                     media::cast::Packet /* packet */)
 
 IPC_MESSAGE_CONTROL2(
     CastMsg_NotifyStatusChange,
     int32 /* channel_id */,
-    media::cast::transport::CastTransportStatus /* status */);
+    media::cast::transport::CastTransportStatus /* status */)
 
 IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
                      int32 /* channel_id */,
-                     std::vector<media::cast::PacketEvent> /* packet_events */);
+                     std::vector<media::cast::PacketEvent> /* packet_events */)
 
 // Cast messages sent from the renderer to the browser.
 
@@ -144,8 +144,8 @@ IPC_MESSAGE_CONTROL5(
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_New,
     int32 /* channel_id */,
-    net::IPEndPoint /*remote_end_point*/);
+    net::IPEndPoint /*remote_end_point*/)
 
 IPC_MESSAGE_CONTROL1(
     CastHostMsg_Delete,
-    int32 /* channel_id */);
+    int32 /* channel_id */)

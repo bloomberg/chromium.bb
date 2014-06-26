@@ -885,7 +885,7 @@ IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
                     std::vector<unsigned char> /* png */)
 
 #if defined(OS_MACOSX)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay);
+IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
 
 // Notification of a change in scrollbar appearance and/or behavior.
 IPC_MESSAGE_CONTROL5(ViewMsg_UpdateScrollbarTheme,
@@ -1106,7 +1106,7 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
 // Indicates that the render view has been closed in respose to a
 // Close message.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
-                     int /* old_route_id */);
+                     int /* old_route_id */)
 
 // Indicates that the current page has been closed, after a ClosePage
 // message.

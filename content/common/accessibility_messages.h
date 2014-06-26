@@ -108,7 +108,7 @@ IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
 // Determine the accessibility object under a given point and reply with
 // a AccessibilityHostMsg_HitTestResult with the same id.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,
-                    gfx::Point /* location to test */);
+                    gfx::Point /* location to test */)
 
 // Tells the render view that a AccessibilityHostMsg_Events
 // message was processed and it can send addition events.
