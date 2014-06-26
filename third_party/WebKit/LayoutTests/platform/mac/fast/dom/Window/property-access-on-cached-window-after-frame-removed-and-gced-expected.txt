@@ -42,7 +42,7 @@ PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
 FAIL childWindow.navigator.connection.ontypechange should be null. Threw exception TypeError: Cannot read property 'ontypechange' of null
-FAIL childWindow.navigator.connection.type should be other. Threw exception TypeError: Cannot read property 'type' of null
+FAIL childWindow.navigator.connection.type should be unknown. Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.hardwareConcurrency is window.navigator.hardwareConcurrency
