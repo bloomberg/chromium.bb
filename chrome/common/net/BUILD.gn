@@ -59,7 +59,8 @@ static_library("net") {
     sources -= [
       "x509_certificate_model_nss.cc",
     ]
-  } else {
+  } else if (is_linux) {
+    # Already removed for non-Linux cases above.
     sources -= [
       "x509_certificate_model_openssl.cc",
     ]
