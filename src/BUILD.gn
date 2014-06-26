@@ -5,7 +5,8 @@
 group("trusted_targets") {
   deps = [
     "//native_client/src/trusted/cpu_features:all_cpu_features",
-    "//native_client/src/trusted/desc:all_desc",
+    "//native_client/src/trusted/debug_stub:debug_stub",
+    "//native_client/src/trusted/desc:nrd_xfer",
   ]
 }
 

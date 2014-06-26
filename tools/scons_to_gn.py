@@ -40,6 +40,8 @@ def main(argv):
       action='store_true', default=False)
   parser.add_option('-t', '--test', dest='test',
       action='store_true', default=False)
+  parser.add_option('-w', '--write', dest='write',
+      action='store_true', default=False)
 
   options, args = parser.parse_args(argv)
   if options.test:
@@ -59,7 +61,12 @@ def main(argv):
       tracker = scons_to_gn.ObjectTracker(name, trusted)
     else:
       parser.error('Expecting build.scons and nacl.scons sources.')
-    tracker.Dump(sys.stdout)
+    if options.write:
+      outname = os.path.join(os.path.dirname(name), 'BUILD.gn')
+      with open(outname, 'wt') as outfile:
+        tracker.Dump(outfile)
+    else:
+      tracker.Dump(sys.stdout)
   return 0
 
 

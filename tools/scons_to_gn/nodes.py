@@ -87,6 +87,11 @@ class Node(object):
     self.name = name
     self.parent = None
 
+  def DumpInfo(self, depth=0):
+    print '%s%s(%s)' % ('  ' * depth, str(type(self)), self.name)
+    for child in self.children:
+      child.DumpInfo(depth+1)
+
   def Write(self, fileobj, depth, text):
     for line in text.split('\n'):
       string = '  ' * depth + line + '\n'

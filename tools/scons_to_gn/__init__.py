@@ -35,6 +35,7 @@ class ObjectTracker(object):
     self.object_tree = RawTree()
     self.top = TopNode(name)
     self.cond_obj = cond_obj
+    self.installs = []
     self.BuildObjectMap(name)
     self.BuildTree()
 
@@ -43,16 +44,27 @@ class ObjectTracker(object):
 
   def Dump(self, fileobj):
     fileobj.write(NOTICE)
+    self.cond_obj.WriteImports(fileobj)
     self.top.Dump(fileobj, 0)
+    for ins in self.installs:
+      print "Install " + ins
 
   def ExecCondition(self, name):
+    env = Environment(self, self.cond_obj)
     global_map = {
       'Import': Import
     }
     local_map = {
-      'env' : Environment(self, self.cond_obj)
+      'env' : env
     }
     execfile(name, global_map, local_map)
+    env.Flush()
+
+  def AddHeader(self, node):
+    self.installs.append("Header: " + node)
+
+  def AddLibrary(self, node):
+    self.installs.append("Library: " + node)
 
   def AddObject(self, name, obj_type, add_props={}, del_props={}):
     obj = self.object_tree[name]

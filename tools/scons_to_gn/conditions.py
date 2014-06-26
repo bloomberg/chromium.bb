@@ -29,34 +29,8 @@ class Conditions(object):
   def All(self):
     return self._all
 
-  def SetA(self):
-    return self._set_a
-
-  def SetB(self):
-    return self._set_b
-
-  def ActiveCondition(self):
-    return self._active_condition
-
-  def SetActiveCondition(self, cond):
-    if cond not in self._all:
-      raise RuntimeError('Unknown condition: ' + cond)
-    self._active_condition = cond
-
-
-class TrustedConditions(Conditions):
-  def __init__(self):
-    OSES = ['AND', 'CHR', 'IOS',  'LIN', 'MAC', 'WIN']
-    ARCH = ['arm', 'x86', 'x64']
-    Conditions.__init__(self, OSES, ARCH)
-
   def Bit(self, name):
-    os, arch = self._active_condition.split('_')
-    osname = name[:3].upper()
-
-    if osname in self.SetA():
-      return osname == os
-
+    _, arch = self._active_condition.split('_')
     if name == 'target_arm':
       return arch == 'arm'
 
@@ -72,12 +46,53 @@ class TrustedConditions(Conditions):
     print 'Unknown bit: ' + name
     return False
 
+  def SetA(self):
+    return self._set_a
+
+  def SetB(self):
+    return self._set_b
+
+  def ActiveCondition(self):
+    return self._active_condition
+
+  def SetActiveCondition(self, cond):
+    if cond not in self._all:
+      raise RuntimeError('Unknown condition: ' + cond)
+    self._active_condition = cond
+
+  def WriteImports(self, fileobj):
+    if self.imports:
+      fileobj.write("\n")
+      for imp in self.imports:
+        fileobj.write('import("%s")\n' % imp)
+      fileobj.write("\n")
+
+
+class TrustedConditions(Conditions):
+  def __init__(self):
+    OSES = ['AND', 'CHR', 'IOS',  'LIN', 'MAC', 'WIN']
+    ARCH = ['arm', 'x86', 'x64']
+    Conditions.__init__(self, OSES, ARCH)
+    self.imports = []
+
+  def Bit(self, name):
+    os, arch = self._active_condition.split('_')
+    osname = name[:3].upper()
+
+    if osname in self.SetA():
+      return osname == os
+
+    return Conditions.Bit(self, name)
+
 
 class UntrustedConditions(Conditions):
   def __init__(self):
     LIBS = ['newlib', 'glibc', 'bionic']
     ARCH = ['arm', 'x86', 'x64', 'pnacl']
     Conditions.__init__(self, LIBS, ARCH)
+    self.imports = [
+      "//native_client/build/toolchain/nacl/nacl_sdk.gni"
+    ]
 
   def get(self, key, condition, default=False):
     os, arch = self._active_condition.split('_')
@@ -88,10 +103,12 @@ class UntrustedConditions(Conditions):
     libc, arch = self._active_condition.split('_')
 
     if name == 'bitcode':
-      return arch == 'arm'
+      return arch == 'pnacl'
 
-    print 'Unknown bit: ' + name
-    return False
+    if name[:5] == 'nacl_':
+      return name[5:] == libc
+
+    return Conditions.Bit(self, name)
 
 
 BOGUS = """
