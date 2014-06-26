@@ -32,14 +32,14 @@ layer at (0,0) size 800x600
             RenderTableCell {TD} at (2,186) size 41x22 [border: (1px inset #808080)] [r=3 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 37x18
                 text run at (2,2) width 37: "row 3"
-      RenderBlock (anonymous) at (0,240) size 784x22
-        RenderButton {INPUT} at (2,2) size 55.63x18 [bgcolor=#C0C0C0]
+      RenderBlock (anonymous) at (0,240) size 784x19
+        RenderButton {INPUT} at (0,1) size 55.63x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 39.63x13
             RenderText {#text} at (0,0) size 40x13
               text run at (0,0) width 40: "expand"
-        RenderText {#text} at (59,1) size 5x18
-          text run at (59,1) width 5: " "
-        RenderButton {INPUT} at (65.63,2) size 42.84x18 [bgcolor=#C0C0C0]
+        RenderText {#text} at (55,0) size 5x18
+          text run at (55,0) width 5: " "
+        RenderButton {INPUT} at (59.63,1) size 42.84x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 26.84x13
             RenderText {#text} at (0,0) size 27x13
               text run at (0,0) width 27: "sizes"

@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (9.59,9.59) size 780.81x580.81
       RenderBlock (anonymous) at (0,0) size 780.81x162
-        RenderListBox {SELECT} at (2,0) size 128x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
+        RenderListBox {SELECT} at (0,0) size 128x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,162) size 780.81x66
         RenderText {#text} at (0,0) size 61x22

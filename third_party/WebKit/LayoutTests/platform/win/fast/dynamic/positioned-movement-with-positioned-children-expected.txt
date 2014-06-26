@@ -8,11 +8,11 @@ layer at (0,0) size 800x600
           text run at (0,0) width 99: "You should not"
           text run at (0,18) width 99: "see this. Resize"
           text run at (0,36) width 80: "the window."
-hidden layer at (8,8) size 100x125
-  RenderBlock (positioned) {DIV} at (0,0) size 100x125
+hidden layer at (8,8) size 100x121
+  RenderBlock (positioned) {DIV} at (0,0) size 100x121
     RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
-    RenderBlock (anonymous) at (0,100) size 100x25
-      RenderButton {BUTTON} at (2,2) size 54.55x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+    RenderBlock (anonymous) at (0,100) size 100x21
+      RenderButton {BUTTON} at (0,0) size 54.55x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         RenderBlock (anonymous) at (8,3) size 38.55x15
           RenderText {#text} at (0,0) size 39x15
             text run at (0,0) width 39: "Button"

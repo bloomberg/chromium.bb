@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTable {TABLE} at (0,0) size 471x148 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 469x146
-          RenderTableRow {TR} at (0,0) size 469x146
-            RenderTableCell {TD} at (0,0) size 469x146 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderTable {TABLE} at (1,1) size 467x144 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 465x142
+      RenderTable {TABLE} at (0,0) size 471x144 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 469x142
+          RenderTableRow {TR} at (0,0) size 469x142
+            RenderTableCell {TD} at (0,0) size 469x142 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderTable {TABLE} at (1,1) size 467x140 [border: (1px outset #808080)]
+                RenderTableSection {TBODY} at (1,1) size 465x138
                   RenderTableRow {TR} at (0,1) size 465x28
                     RenderTableCell {TD} at (1,1) size 140x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (5,5) size 130x17
@@ -28,33 +28,33 @@ layer at (0,0) size 800x600
                     RenderTableCell {TD} at (413,1) size 51x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
                       RenderText {#text} at (5,5) size 41x17
                         text run at (5,5) width 41: "Views"
-                  RenderTableRow {TR} at (0,30) size 465x111
-                    RenderTableCell {TD} at (1,30) size 463x111 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=5]
+                  RenderTableRow {TR} at (0,30) size 465x107
+                    RenderTableCell {TD} at (1,30) size 463x107 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=5]
                       RenderBlock (anonymous) at (5,5) size 453x18
                         RenderBR {BR} at (226,0) size 1x17
-                      RenderTable {TABLE} at (84.50,23) size 294x83
-                        RenderTableSection {TBODY} at (0,0) size 294x83
-                          RenderTableRow {TR} at (0,2) size 294x79
-                            RenderTableCell {TD} at (2,2) size 290x79 [r=0 c=0 rs=1 cs=1]
-                              RenderBlock {FORM} at (1,1) size 288x61
-                                RenderTable {TABLE} at (0,0) size 288x61 [border: (1px outset #808080)]
-                                  RenderTableSection {TBODY} at (1,1) size 286x59
-                                    RenderTableRow {TR} at (0,0) size 286x59
-                                      RenderTableCell {TD} at (0,0) size 286x59 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                                        RenderBlock (anonymous) at (1,1) size 284x18
-                                          RenderText {#text} at (87,0) size 110x17
-                                            text run at (87,0) width 110: "User Preferences"
-                                        RenderTable {TABLE} at (1,19) size 284x39 [border: (1px outset #808080)]
-                                          RenderTableSection {TBODY} at (1,1) size 282x37
-                                            RenderTableRow {TR} at (0,1) size 282x35
-                                              RenderTableCell {TH} at (1,4) size 121x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      RenderTable {TABLE} at (86.50,23) size 290x79
+                        RenderTableSection {TBODY} at (0,0) size 290x79
+                          RenderTableRow {TR} at (0,2) size 290x75
+                            RenderTableCell {TD} at (2,2) size 286x75 [r=0 c=0 rs=1 cs=1]
+                              RenderBlock {FORM} at (1,1) size 284x57
+                                RenderTable {TABLE} at (0,0) size 284x57 [border: (1px outset #808080)]
+                                  RenderTableSection {TBODY} at (1,1) size 282x55
+                                    RenderTableRow {TR} at (0,0) size 282x55
+                                      RenderTableCell {TD} at (0,0) size 282x55 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                                        RenderBlock (anonymous) at (1,1) size 280x18
+                                          RenderText {#text} at (85,0) size 110x17
+                                            text run at (85,0) width 110: "User Preferences"
+                                        RenderTable {TABLE} at (1,19) size 280x35 [border: (1px outset #808080)]
+                                          RenderTableSection {TBODY} at (1,1) size 278x33
+                                            RenderTableRow {TR} at (0,1) size 278x31
+                                              RenderTableCell {TH} at (1,2) size 121x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                                                 RenderInline {NOBR} at (0,0) size 111x17
                                                   RenderText {#text} at (5,5) size 111x17
                                                     text run at (5,5) width 111: "Email Address :"
-                                              RenderTableCell {TD} at (123,1) size 158x35 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                                                RenderTextControl {INPUT} at (7,7) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                                              RenderTableCell {TD} at (123,1) size 154x31 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                                                RenderTextControl {INPUT} at (5,5) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                                                 RenderText {#text} at (0,0) size 0x0
-layer at (235,99) size 140x15 scrollWidth 215
+layer at (235,97) size 140x15 scrollWidth 215
   RenderBlock {DIV} at (2,3) size 140x15
     RenderText {#text} at (0,0) size 214x15
       text run at (0,0) width 214: "simon.king@pipinghotnetworks.com"

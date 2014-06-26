@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x191
-  RenderBlock {HTML} at (0,0) size 800x191
-    RenderBody {BODY} at (8,16) size 784x167
+layer at (0,0) size 800x187
+  RenderBlock {HTML} at (0,0) size 800x187
+    RenderBody {BODY} at (8,16) size 784x163
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 608x17
           text run at (0,0) width 608: "The select list box should not display items (options and optgroups) with style \"display: none\"."
-      RenderBlock (anonymous) at (0,34) size 784x133
-        RenderListBox {SELECT} at (2,18) size 59x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderText {#text} at (63,112) size 4x17
-          text run at (63,112) width 4: " "
-        RenderListBox {SELECT} at (69,18) size 67x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderText {#text} at (138,112) size 4x17
-          text run at (138,112) width 4: " "
-        RenderListBox {SELECT} at (144,18) size 67x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderText {#text} at (213,112) size 4x17
-          text run at (213,112) width 4: " "
-        RenderListBox {SELECT} at (219,2) size 59x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderText {#text} at (280,112) size 4x17
-          text run at (280,112) width 4: " "
-        RenderListBox {SELECT} at (286,2) size 59x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderText {#text} at (347,112) size 4x17
-          text run at (347,112) width 4: " "
-        RenderListBox {SELECT} at (353,2) size 64x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderBlock (anonymous) at (0,34) size 784x129
+        RenderListBox {SELECT} at (0,16) size 59x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderText {#text} at (59,108) size 4x17
+          text run at (59,108) width 4: " "
+        RenderListBox {SELECT} at (63,16) size 67x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderText {#text} at (130,108) size 4x17
+          text run at (130,108) width 4: " "
+        RenderListBox {SELECT} at (134,16) size 67x113 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderText {#text} at (201,108) size 4x17
+          text run at (201,108) width 4: " "
+        RenderListBox {SELECT} at (205,0) size 59x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderText {#text} at (264,108) size 4x17
+          text run at (264,108) width 4: " "
+        RenderListBox {SELECT} at (268,0) size 59x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderText {#text} at (327,108) size 4x17
+          text run at (327,108) width 4: " "
+        RenderListBox {SELECT} at (331,0) size 64x129 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

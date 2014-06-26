@@ -7,42 +7,42 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 763x35
           text run at (0,0) width 763: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal"
           text run at (0,18) width 34: "state."
-      RenderBlock {DIV} at (0,52) size 784x33
-        RenderInline {LABEL} at (0,0) size 295x17
-          RenderTextControl {INPUT} at (2,2) size 204x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {DIV} at (0,52) size 784x29
+        RenderInline {LABEL} at (0,0) size 291x17
+          RenderTextControl {INPUT} at (0,0) size 204x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 200x23
               RenderBlock {DIV} at (0,0) size 185x23
               RenderBlock {DIV} at (185,0) size 15x23
-          RenderText {#text} at (208,9) size 87x17
-            text run at (208,9) width 87: " Normal state"
-      RenderBlock {DIV} at (0,85) size 784x33
-        RenderInline {LABEL} at (0,0) size 303x17
-          RenderTextControl {INPUT} at (2,2) size 204x29 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
+          RenderText {#text} at (204,7) size 87x17
+            text run at (204,7) width 87: " Normal state"
+      RenderBlock {DIV} at (0,81) size 784x29
+        RenderInline {LABEL} at (0,0) size 299x17
+          RenderTextControl {INPUT} at (0,0) size 204x29 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 200x23
               RenderBlock {DIV} at (0,0) size 185x23
-          RenderText {#text} at (208,9) size 95x17
-            text run at (208,9) width 95: " Disabled state"
-      RenderBlock {DIV} at (0,118) size 784x33
-        RenderInline {LABEL} at (0,0) size 312x17
-          RenderTextControl {INPUT} at (2,2) size 204x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderText {#text} at (204,7) size 95x17
+            text run at (204,7) width 95: " Disabled state"
+      RenderBlock {DIV} at (0,110) size 784x29
+        RenderInline {LABEL} at (0,0) size 308x17
+          RenderTextControl {INPUT} at (0,0) size 204x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 200x23
               RenderBlock {DIV} at (0,0) size 185x23
-          RenderText {#text} at (208,9) size 104x17
-            text run at (208,9) width 104: " Read-only state"
-layer at (12,65) size 185x23
+          RenderText {#text} at (204,7) size 104x17
+            text run at (204,7) width 104: " Read-only state"
+layer at (10,63) size 185x23
   RenderBlock {DIV} at (0,0) size 185x23
     RenderText {#text} at (0,0) size 12x22
       text run at (0,0) width 12: "0"
-layer at (12,98) size 185x23
+layer at (10,92) size 185x23
   RenderBlock {DIV} at (0,0) size 185x23
     RenderText {#text} at (0,0) size 12x22
       text run at (0,0) width 12: "0"
-layer at (12,131) size 185x23
+layer at (10,121) size 185x23
   RenderBlock {DIV} at (0,0) size 185x23
     RenderText {#text} at (0,0) size 12x22
       text run at (0,0) width 12: "0"
-layer at (197,98) size 15x23 transparent
+layer at (195,92) size 15x23 transparent
   RenderBlock {DIV} at (185,0) size 15x23
-layer at (197,131) size 15x23 transparent
+layer at (195,121) size 15x23 transparent
   RenderBlock {DIV} at (185,0) size 15x23
 caret: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body

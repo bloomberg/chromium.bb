@@ -1,34 +1,34 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x144
-  RenderBlock {HTML} at (0,0) size 800x144
-    RenderBody {BODY} at (8,16) size 784x120
+layer at (0,0) size 800x136
+  RenderBlock {HTML} at (0,0) size 800x136
+    RenderBody {BODY} at (8,16) size 784x112
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 568x17
           text run at (0,0) width 568: "To PASS this test case the text of the button label should not be selected in the selection."
-      RenderBlock {DIV} at (0,34) size 784x86
-        RenderBlock (anonymous) at (0,0) size 784x43
+      RenderBlock {DIV} at (0,34) size 784x78
+        RenderBlock (anonymous) at (0,0) size 784x39
           RenderText {#text} at (0,0) size 50x17
             text run at (0,0) width 50: "Buttons"
           RenderBR {BR} at (49,0) size 1x17
-          RenderText {#text} at (0,21) size 61x17
-            text run at (0,21) width 61: "with text "
-          RenderButton {INPUT} at (62.44,20) size 61.95x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderText {#text} at (0,19) size 61x17
+            text run at (0,19) width 61: "with text "
+          RenderButton {INPUT} at (60.44,18) size 61.95x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 45.95x15
               RenderText {#text} at (0,0) size 46x15
                 text run at (0,0) width 46: "too little"
-          RenderText {#text} at (126,21) size 59x17
-            text run at (126,21) width 59: " too little"
-        RenderBlock {DIV} at (0,43) size 784x25
-          RenderText {#text} at (0,3) size 56x17
-            text run at (0,3) width 56: "and text "
-          RenderButton {INPUT} at (57.09,2) size 70.84x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderText {#text} at (122,19) size 59x17
+            text run at (122,19) width 59: " too little"
+        RenderBlock {DIV} at (0,39) size 784x21
+          RenderText {#text} at (0,1) size 56x17
+            text run at (0,1) width 56: "and text "
+          RenderButton {INPUT} at (55.09,0) size 70.84x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 54.84x15
               RenderText {#text} at (0,0) size 55x15
                 text run at (0,0) width 55: "too much"
-          RenderText {#text} at (129,3) size 65x17
-            text run at (129,3) width 65: " too much"
-        RenderBlock (anonymous) at (0,68) size 784x18
+          RenderText {#text} at (125,1) size 65x17
+            text run at (125,1) width 65: " too much"
+        RenderBlock (anonymous) at (0,60) size 784x18
           RenderText {#text} at (0,0) size 250x17
             text run at (0,0) width 250: "Should not be selected in the selection."
 selection start: position 0 of child 0 {#text} of child 1 {P} of body

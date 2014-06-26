@@ -9,7 +9,7 @@ PASS adjusted node was LABEL#mylabel.
 PASS adjusted node was INPUT#myinput.
 Testing indirect hits.
 PASS adjusted node was A#mylink.
-PASS adjusted node was LABEL#mylabel.
+FAIL adjusted node should be LABEL#mylabel. Was A#mylink.
 PASS adjusted node was INPUT#myinput.
 PASS successfullyParsed is true
 

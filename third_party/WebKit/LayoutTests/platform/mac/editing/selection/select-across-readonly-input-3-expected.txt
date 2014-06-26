@@ -11,15 +11,15 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 776x36
           text run at (0,0) width 776: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"world\". Selection should not extend into the"
           text run at (0,18) width 89: "input element."
-      RenderBlock {DIV} at (0,104) size 784x28
+      RenderBlock {DIV} at (0,104) size 784x24
         RenderInline {SPAN} at (0,0) size 31x18
-          RenderText {#text} at (0,6) size 31x18
-            text run at (0,6) width 31: "hello"
-        RenderText {#text} at (31,6) size 4x18
-          text run at (31,6) width 4: " "
-        RenderTextControl {INPUT} at (35,2) size 59.39x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderText {#text} at (0,4) size 31x18
+            text run at (0,4) width 31: "hello"
+        RenderText {#text} at (31,4) size 4x18
+          text run at (31,4) width 4: " "
+        RenderTextControl {INPUT} at (35,0) size 59.39x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-layer at (46,117) size 53x18
+layer at (46,115) size 53x18
   RenderBlock {DIV} at (3,3) size 53.39x18
     RenderText {#text} at (0,0) size 44x18
       text run at (0,0) width 44: "world"

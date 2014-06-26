@@ -8,20 +8,20 @@ layer at (0,0) size 800x600
         text run at (0,18) width 761: "left for it. Neither the Hindi on the button below nor the same text on two lines below that should be truncated at either"
         text run at (0,36) width 28: "end."
       RenderBR {BR} at (27,50) size 1x0
-      RenderButton {INPUT} at (2,56) size 103.30x18 [bgcolor=#C0C0C0]
+      RenderButton {INPUT} at (0,54) size 103.30x18 [bgcolor=#C0C0C0]
         RenderBlock (anonymous) at (8,0) size 87.30x19
           RenderText {#text} at (0,0) size 88x13
             text run at (0,0) width 88: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderBR {BR} at (107,67) size 1x0
+      RenderBR {BR} at (103,65) size 1x0
       RenderInline {SPAN} at (0,0) size 123x18
-        RenderText {#text} at (0,77) size 123x18
-          text run at (0,77) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderText {#text} at (122,77) size 26x18
-        text run at (122,77) width 26: "Foo"
-      RenderBR {BR} at (147,91) size 1x0
+        RenderText {#text} at (0,73) size 123x18
+          text run at (0,73) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
+      RenderText {#text} at (122,73) size 26x18
+        text run at (122,73) width 26: "Foo"
+      RenderBR {BR} at (147,87) size 1x0
       RenderInline {SPAN} at (0,0) size 123x17
-        RenderText {#text} at (0,103) size 123x17
-          text run at (0,103) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderText {#text} at (122,103) size 26x18
-        text run at (122,103) width 26: "Foo"
-      RenderBR {BR} at (147,117) size 1x0
+        RenderText {#text} at (0,99) size 123x17
+          text run at (0,99) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
+      RenderText {#text} at (122,99) size 26x18
+        text run at (122,99) width 26: "Foo"
+      RenderBR {BR} at (147,113) size 1x0

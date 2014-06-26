@@ -1,8 +1,8 @@
-layer at (0,0) size 785x3169
+layer at (0,0) size 785x3165
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x3169
-  RenderBlock {HTML} at (0,0) size 785x3169
-    RenderBody {BODY} at (8,8) size 769x3145
+layer at (0,0) size 785x3165
+  RenderBlock {HTML} at (0,0) size 785x3165
+    RenderBody {BODY} at (8,8) size 769x3141
       RenderBlock {P} at (0,0) size 769x18
         RenderText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
@@ -16,16 +16,16 @@ layer at (0,0) size 785x3169
           text run at (0,0) width 756: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
           text run at (0,18) width 119: "back up to the top."
       RenderBlock {DIV} at (0,86) size 769x3000
-      RenderBlock (anonymous) at (0,3086) size 769x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock (anonymous) at (0,3086) size 769x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,3127) size 769x18
+      RenderBlock {P} at (0,3123) size 769x18
         RenderText {#text} at (0,0) size 412x17
           text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
-layer at (12,3099) size 140x15
+layer at (10,3097) size 140x15
   RenderBlock {DIV} at (2,3) size 140x15
     RenderText {#text} at (0,0) size 136x15
       text run at (0,0) width 136: "select some of this text"
 selection start: position 1 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 15 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
-scrolled to 0,2569
+scrolled to 0,2565

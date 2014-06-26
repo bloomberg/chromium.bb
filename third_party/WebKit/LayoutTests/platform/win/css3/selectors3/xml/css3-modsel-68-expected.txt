@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x82
-  RenderBlock {test} at (0,0) size 800x82
-    RenderBlock {p} at (0,16) size 800x50
-      RenderButton {button} at (2,2) size 266.47x21 [color=#808080] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
+layer at (0,0) size 800x74
+  RenderBlock {test} at (0,0) size 800x74
+    RenderBlock {p} at (0,16) size 800x42
+      RenderButton {button} at (0,0) size 266.47x21 [color=#808080] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
         RenderBlock (anonymous) at (8,3) size 250.47x15
           RenderText {#text} at (0,0) size 251x15
             text run at (0,0) width 251: "A button (disabled) with green background"
-      RenderText {#text} at (270,3) size 5x17
-        text run at (270,3) width 5: " "
+      RenderText {#text} at (266,1) size 5x17
+        text run at (266,1) width 5: " "
       RenderBR {br} at (0,0) size 0x0
-      RenderTextControl {input} at (2,27) size 256x21 [color=#545454] [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
+      RenderTextControl {input} at (0,21) size 256x21 [color=#545454] [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (0,0) size 0x0
-layer at (4,46) size 252x15 scrollWidth 264
+layer at (2,40) size 252x15 scrollWidth 264
   RenderBlock {div} at (2,3) size 252x15
     RenderText {#text} at (0,0) size 264x15
       text run at (0,0) width 264: "a text area (disabled) with green background"

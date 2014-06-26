@@ -15,14 +15,14 @@ layer at (0,0) size 800x600
             text run at (358,0) width 347: "REGRESSION: Disabled pop-up text is not grayed out"
         RenderText {#text} at (705,0) size 4x18
           text run at (705,0) width 4: "."
-      RenderBlock {P} at (0,34) size 784x22
-        RenderMenuList {SELECT} at (2,2) size 161x18 [color=#808080] [bgcolor=#F8F8F8]
+      RenderBlock {P} at (0,34) size 784x18
+        RenderMenuList {SELECT} at (0,0) size 161x18 [color=#808080] [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 161x18
             RenderText at (8,2) size 130x13
               text run at (8,2) width 130: "This text should be gray"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,72) size 784x22
-        RenderMenuList {SELECT} at (2,2) size 167x18 [bgcolor=#F8F8F8]
+      RenderBlock {P} at (0,68) size 784x18
+        RenderMenuList {SELECT} at (0,0) size 167x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 167x18
             RenderText at (8,2) size 136x13
               text run at (8,2) width 136: "This text should be black"

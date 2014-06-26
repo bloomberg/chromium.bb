@@ -1,96 +1,96 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x344
-  RenderBlock {HTML} at (0,0) size 800x344
-    RenderBody {BODY} at (8,16) size 784x312
-      RenderBlock {P} at (0,0) size 784x25
-        RenderTextControl {INPUT} at (638,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (0,0) size 800x312
+  RenderBlock {HTML} at (0,0) size 800x312
+    RenderBody {BODY} at (8,16) size 784x280
+      RenderBlock {P} at (0,0) size 784x21
+        RenderTextControl {INPUT} at (640,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,41) size 784x25
-        RenderTextControl {INPUT} at (638,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,37) size 784x21
+        RenderTextControl {INPUT} at (640,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,82) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,74) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,123) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,111) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
             RenderBlock {DIV} at (0,0) size 15x15
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,164) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,148) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (0,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,205) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,185) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (0,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,246) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,222) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,287) size 784x25
-        RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,259) size 784x21
+        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 140x15
             RenderBlock {DIV} at (15,0) size 125x15
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (663,21) size 125x15
+layer at (665,19) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (117,0) size 8x15
       text run at (117,0) width 8: "1"
-layer at (663,62) size 125x15
+layer at (665,56) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (117,0) size 8x15
       text run at (117,0) width 8: "2"
-layer at (27,103) size 125x15
+layer at (25,93) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (117,0) size 8x15
       text run at (117,0) width 8: "3"
-layer at (27,144) size 125x15
+layer at (25,130) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (95,0) size 30x15
       text run at (95,0) width 30: "1234"
-layer at (12,185) size 125x15
+layer at (10,167) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (0,0) size 8x15
       text run at (0,0) width 8: "5"
-layer at (12,226) size 125x15
+layer at (10,204) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (0,0) size 8x15
       text run at (0,0) width 8: "6"
-layer at (27,267) size 125x15
+layer at (25,241) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (117,0) size 8x15
       text run at (117,0) width 8: "7"
-layer at (27,308) size 125x15
+layer at (25,278) size 125x15
   RenderBlock {DIV} at (0,0) size 125x15
     RenderText {#text} at (117,0) size 8x15
       text run at (117,0) width 8: "8"
-layer at (648,21) size 15x15 transparent
+layer at (650,19) size 15x15 transparent
   RenderBlock {DIV} at (0,0) size 15x15
-layer at (648,62) size 15x15 transparent
+layer at (650,56) size 15x15 transparent
   RenderBlock {DIV} at (0,0) size 15x15
-layer at (12,103) size 15x15 transparent
+layer at (10,93) size 15x15 transparent
   RenderBlock {DIV} at (0,0) size 15x15
-layer at (137,185) size 15x15 transparent
+layer at (135,167) size 15x15 transparent
   RenderBlock {DIV} at (125,0) size 15x15
-layer at (137,226) size 15x15 transparent
+layer at (135,204) size 15x15 transparent
   RenderBlock {DIV} at (125,0) size 15x15
-layer at (12,267) size 15x15 transparent
+layer at (10,241) size 15x15 transparent
   RenderBlock {DIV} at (0,0) size 15x15
-layer at (12,308) size 15x15 transparent
+layer at (10,278) size 15x15 transparent
   RenderBlock {DIV} at (0,0) size 15x15
 caret: position 4 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 6 {P} of body

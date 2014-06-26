@@ -11,22 +11,22 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 776x35
           text run at (0,0) width 776: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"WebKit\". Selection should extend only in"
           text run at (0,18) width 250: "the input element that contains \"hello\"."
-      RenderBlock {DIV} at (0,104) size 784x28
-        RenderTextControl {INPUT} at (0,2) size 58.08x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (58,5) size 5x17
-          text run at (58,5) width 5: " "
+      RenderBlock {DIV} at (0,104) size 784x24
+        RenderTextControl {INPUT} at (0,0) size 58.08x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (58,3) size 5x17
+          text run at (58,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 38x17
-          RenderText {#text} at (62,5) size 38x17
-            text run at (62,5) width 38: "world"
-        RenderText {#text} at (99,5) size 5x17
-          text run at (99,5) width 5: " "
-        RenderTextControl {INPUT} at (103.41,2) size 58.08x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderText {#text} at (62,3) size 38x17
+            text run at (62,3) width 38: "world"
+        RenderText {#text} at (99,3) size 5x17
+          text run at (99,3) width 5: " "
+        RenderTextControl {INPUT} at (103.41,0) size 58.08x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-layer at (10,117) size 54x18
+layer at (10,115) size 54x18
   RenderBlock {DIV} at (2,3) size 54.08x18
     RenderText {#text} at (0,0) size 34x17
       text run at (0,0) width 34: "hello"
-layer at (113,117) size 54x18
+layer at (113,115) size 54x18
   RenderBlock {DIV} at (2,3) size 54.08x18
     RenderText {#text} at (0,0) size 52x17
       text run at (0,0) width 52: "WebKit"
