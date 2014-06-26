@@ -91,7 +91,7 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
   int allocation_count() const { return allocation_count_; }
 
   // Set the default ClientSocketType.
-  void set_client_socket_type(ClientSocketType type) {
+  void set_default_client_socket_type(ClientSocketType type) {
     client_socket_type_ = type;
   }
 

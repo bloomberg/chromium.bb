@@ -210,7 +210,7 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
 }
 
 TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
@@ -354,7 +354,7 @@ TEST_F(TransportClientSocketPoolTest, TwoRequestsCancelOne) {
 }
 
 TEST_F(TransportClientSocketPoolTest, ConnectCancelConnect) {
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
@@ -514,7 +514,7 @@ TEST_F(TransportClientSocketPoolTest, RequestTwice) {
 // Make sure that pending requests get serviced after active requests get
 // cancelled.
 TEST_F(TransportClientSocketPoolTest, CancelActiveRequestWithPendingRequests) {
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
 
   // Queue up all the requests
@@ -544,7 +544,7 @@ TEST_F(TransportClientSocketPoolTest, CancelActiveRequestWithPendingRequests) {
 
 // Make sure that pending requests get serviced after active requests fail.
 TEST_F(TransportClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_PENDING_FAILING_CLIENT_SOCKET);
 
   const int kNumRequests = 2 * kMaxSocketsPerGroup + 1;
@@ -677,7 +677,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
 // Test the case where a socket took long enough to start the creation
 // of the backup socket, but then we cancelled the request after that.
 TEST_F(TransportClientSocketPoolTest, BackupSocketCancel) {
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET);
 
   enum { CANCEL_BEFORE_WAIT, CANCEL_AFTER_WAIT };
@@ -907,7 +907,7 @@ TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
                                  &client_socket_factory_,
                                  NULL);
 
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
 
   // Resolve an AddressList with only IPv6 addresses.
@@ -941,7 +941,7 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
                                  &client_socket_factory_,
                                  NULL);
 
-  client_socket_factory_.set_client_socket_type(
+  client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
 
   // Resolve an AddressList with only IPv4 addresses.
