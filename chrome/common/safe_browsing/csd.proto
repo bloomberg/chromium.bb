@@ -110,7 +110,7 @@ message ClientMalwareRequest {
     required string url = 2;
     optional string method = 3;
     optional string referrer = 4;
-    // Resource type, the int value is a direct cast from the Type enum 
+    // Resource type, the int value is a direct cast from the Type enum
     // of ResourceType class defined in //src/webkit/commom/resource_type.h
     optional int32 resource_type = 5;
   }
@@ -380,7 +380,7 @@ message ClientIncidentReport {
     optional Machine machine = 2;
     message Process {
       optional string version = 1;
-      repeated string dlls = 2;
+      repeated string OBSOLETE_dlls = 2;
       message Patch {
         optional string function = 1;
         optional string target_dll = 2;
@@ -399,6 +399,17 @@ message ClientIncidentReport {
       optional int64 uptime_msec = 6;
       optional bool metrics_consent = 7;
       optional bool extended_consent = 8;
+      message Dll {
+        enum Feature {
+          UNKNOWN = 0;
+          LSP = 1;
+        }
+        optional string path = 1;
+        optional uint64 base_address = 2;
+        optional uint32 length = 3;
+        repeated Feature feature = 4;
+      }
+      repeated Dll dll = 9;
     }
     optional Process process = 3;
   }
