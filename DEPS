@@ -350,7 +350,8 @@ deps_os = {
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
-      (Var("googlecode_url") % "pefile") + "/trunk@141",
+      Var("chromium_git") + '/external/pefile.git@' +
+      '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
