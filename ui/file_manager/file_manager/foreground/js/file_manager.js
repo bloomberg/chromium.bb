@@ -139,6 +139,15 @@ DialogType.isOpenDialog = function(type) {
 
 /**
  * @param {string} type Dialog type.
+ * @return {boolean} Whether the type is open dialog for file(s).
+ */
+DialogType.isOpenFileDialog = function(type) {
+  return type == DialogType.SELECT_OPEN_FILE ||
+         type == DialogType.SELECT_OPEN_MULTI_FILE;
+};
+
+/**
+ * @param {string} type Dialog type.
  * @return {boolean} Whether the type is folder selection dialog.
  */
 DialogType.isFolderDialog = function(type) {
@@ -1472,7 +1481,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var selectionEntry;
 
     // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
-    // in case of being a display root.
+    // in case of being a display root or a default directory to open files.
     queue.run(function(callback) {
       if (!this.initSelectionURL_) {
         callback();
@@ -1493,8 +1502,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             // opening it.
             if (locationInfo.isRootEntry)
               nextCurrentDirEntry = inEntry;
-            else
+
+            // If this dialog attempts to open file(s) and the selection is a
+            // directory, the selection should be the current directory.
+            if (DialogType.isOpenFileDialog(this.dialogType) &&
+                inEntry.isDirectory)
+              nextCurrentDirEntry = inEntry;
+
+            // By default, the selection should be selected entry and the
+            // parent directory of it should be the current directory.
+            if (!nextCurrentDirEntry)
               selectionEntry = inEntry;
+
             callback();
           }.bind(this), callback);
     }.bind(this));
