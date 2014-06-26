@@ -466,7 +466,7 @@
       #
       # For more information on switching the CLD2 data source, see:
       #   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
-      'cld2_data_source': 'static',
+      'cld2_data_source%': 'static',
 
       # Enable spell checker.
       'enable_spellcheck%': 1,
