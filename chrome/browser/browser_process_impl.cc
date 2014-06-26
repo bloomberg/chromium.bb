@@ -830,7 +830,9 @@ void BrowserProcessImpl::CreateWatchdogThread() {
   created_watchdog_thread_ = true;
 
   scoped_ptr<WatchDogThread> thread(new WatchDogThread());
-  if (!thread->Start())
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  if (!thread->StartWithOptions(options))
     return;
   watchdog_thread_.swap(thread);
 }
