@@ -11,6 +11,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   letsign was being applied beyond the element it applied to.
 - Fix memory leaks in the default table resolver introduced in the
   previous release.
+- Fixes to the build system by Simon Aittamaa
 
 ** Braille table improvements
 - Fix for Norwegian where letsign is affecting some extra characters
