@@ -198,7 +198,9 @@ interface TestObject {
     [PutForwards=href] readonly attribute TestNode location;
     [PutForwards=hrefThrows] readonly attribute TestNode locationWithException;
     [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
+    [PutForwards=hrefByteString] readonly attribute TestNode locationByteString;
     [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
+    [TypeChecking=Interface, PutForwards=href] readonly attribute TestNode locationTypeCheckingInterface;
     [PutForwards=attr1] readonly attribute TestInterfaceGarbageCollected locationGarbageCollected;
     [PutForwards=attr1] readonly attribute TestInterfaceWillBeGarbageCollected locationWillBeGarbageCollected;
     [RaisesException] attribute long raisesExceptionLongAttribute;

@@ -2891,12 +2891,14 @@ static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, 
 static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "locationWithException", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toNative(holder);
     RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithException());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    impl->setHrefThrows(cppValue);
+    impl->setHrefThrows(cppValue, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 static void locationWithExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -2928,13 +2930,47 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    impl->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->setHrefCallWith(executionContext, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void locationWithCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestObjectV8Internal::locationWithCallWithAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void locationByteStringAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->locationByteString()), impl);
+}
+
+static void locationByteStringAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::locationByteStringAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "locationByteString", "TestObject", holder, info.GetIsolate());
+    TestObject* proxyImpl = V8TestObject::toNative(holder);
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationByteString());
+    if (!impl)
+        return;
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
+    impl->setHrefByteString(cppValue);
+}
+
+static void locationByteStringAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::locationByteStringAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -2999,6 +3035,38 @@ static void locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(v8::
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterForMainWorld(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void locationTypeCheckingInterfaceAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->locationTypeCheckingInterface()), impl);
+}
+
+static void locationTypeCheckingInterfaceAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::locationTypeCheckingInterfaceAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void locationTypeCheckingInterfaceAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* proxyImpl = V8TestObject::toNative(holder);
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationTypeCheckingInterface());
+    if (!impl)
+        return;
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    impl->setHref(cppValue);
+}
+
+static void locationTypeCheckingInterfaceAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::locationTypeCheckingInterfaceAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -9746,7 +9814,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"location", TestObjectV8Internal::locationAttributeGetterCallback, TestObjectV8Internal::locationAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWithException", TestObjectV8Internal::locationWithExceptionAttributeGetterCallback, TestObjectV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWithCallWith", TestObjectV8Internal::locationWithCallWithAttributeGetterCallback, TestObjectV8Internal::locationWithCallWithAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"locationByteString", TestObjectV8Internal::locationByteStringAttributeGetterCallback, TestObjectV8Internal::locationByteStringAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWithPerWorldBindings", TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"locationTypeCheckingInterface", TestObjectV8Internal::locationTypeCheckingInterfaceAttributeGetterCallback, TestObjectV8Internal::locationTypeCheckingInterfaceAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationGarbageCollected", TestObjectV8Internal::locationGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationGarbageCollectedAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWillBeGarbageCollected", TestObjectV8Internal::locationWillBeGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationWillBeGarbageCollectedAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"raisesExceptionLongAttribute", TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

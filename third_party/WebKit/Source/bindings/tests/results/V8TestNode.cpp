@@ -122,13 +122,44 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     v8::Handle<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    impl->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->setHrefCallWith(executionContext, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestNodeV8Internal::hrefCallWithAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void hrefByteStringAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestNode* impl = V8TestNode::toNative(holder);
+    v8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
+}
+
+static void hrefByteStringAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestNodeV8Internal::hrefByteStringAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
+    TestNode* impl = V8TestNode::toNative(holder);
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
+    impl->setHrefByteString(cppValue);
+}
+
+static void hrefByteStringAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestNodeV8Internal::hrefByteStringAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -148,6 +179,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestNodeAttributes[] =
     {"href", TestNodeV8Internal::hrefAttributeGetterCallback, TestNodeV8Internal::hrefAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"hrefThrows", TestNodeV8Internal::hrefThrowsAttributeGetterCallback, TestNodeV8Internal::hrefThrowsAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"hrefCallWith", TestNodeV8Internal::hrefCallWithAttributeGetterCallback, TestNodeV8Internal::hrefCallWithAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"hrefByteString", TestNodeV8Internal::hrefByteStringAttributeGetterCallback, TestNodeV8Internal::hrefByteStringAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

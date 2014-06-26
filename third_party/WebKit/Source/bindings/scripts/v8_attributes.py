@@ -66,15 +66,7 @@ def attribute_context(interface, attribute):
     # [PerWorldBindings]
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
-    # [RaisesException], [RaisesException=Setter]
-    is_setter_raises_exception = (
-        'RaisesException' in extended_attributes and
-        extended_attributes['RaisesException'] in [None, 'Setter'])
     # [TypeChecking]
-    has_type_checking_interface = (
-        (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
-         has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
-        idl_type.is_wrapper_type)
     has_type_checking_nullable = (
         (has_extended_attribute_value(interface, 'TypeChecking', 'Nullable') or
          has_extended_attribute_value(attribute, 'TypeChecking', 'Nullable')) and
@@ -106,11 +98,6 @@ def attribute_context(interface, attribute):
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_setter_exception_state':
-            is_setter_raises_exception or has_type_checking_interface or
-            has_type_checking_nullable or has_type_checking_unrestricted or
-            idl_type.may_raise_exception_on_conversion,
-        'has_type_checking_interface': has_type_checking_interface,
         'has_type_checking_nullable': has_type_checking_nullable,
         'has_type_checking_unrestricted': has_type_checking_unrestricted,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
@@ -132,8 +119,6 @@ def attribute_context(interface, attribute):
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
-        'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'SetterCallWith', 'ExecutionContext'),
-        'is_setter_raises_exception': is_setter_raises_exception,
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
@@ -282,29 +267,50 @@ def is_keep_alive_for_gc(interface, attribute):
 ################################################################################
 
 def setter_context(interface, attribute, context):
-    def target_attribute():
+    if 'PutForwards' in attribute.extended_attributes:
+        # Use target interface and attribute in place of original interface and
+        # attribute from this point onwards.
         target_interface_name = attribute.idl_type.base_type
-        target_attribute_name = extended_attributes['PutForwards']
-        target_interface = interfaces[target_interface_name]
+        target_attribute_name = attribute.extended_attributes['PutForwards']
+        interface = interfaces[target_interface_name]
         try:
-            return next(attribute
-                        for attribute in target_interface.attributes
-                        if attribute.name == target_attribute_name)
+            attribute = next(candidate
+                             for candidate in interface.attributes
+                             if candidate.name == target_attribute_name)
         except StopIteration:
             raise Exception('[PutForward] target not found:\n'
                             'Attribute "%s" is not present in interface "%s"' %
                             (target_attribute_name, target_interface_name))
 
     extended_attributes = attribute.extended_attributes
+    idl_type = attribute.idl_type
 
-    if 'PutForwards' in extended_attributes:
-        # Use target attribute in place of original attribute
-        attribute = target_attribute()
+    # [RaisesException], [RaisesException=Setter]
+    is_setter_raises_exception = (
+        'RaisesException' in extended_attributes and
+        extended_attributes['RaisesException'] in [None, 'Setter'])
+    # [TypeChecking=Interface]
+    has_type_checking_interface = (
+        (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
+         has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
+        idl_type.is_wrapper_type)
 
     context.update({
-        'cpp_setter': setter_expression(interface, attribute, context),
-        'v8_value_to_local_cpp_value': attribute.idl_type.v8_value_to_local_cpp_value(extended_attributes, 'v8Value', 'cppValue'),
+        'has_setter_exception_state':
+            is_setter_raises_exception or has_type_checking_interface or
+            context['has_type_checking_nullable'] or
+            context['has_type_checking_unrestricted'] or
+            idl_type.may_raise_exception_on_conversion,
+        'has_type_checking_interface': has_type_checking_interface,
+        'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(
+            attribute, 'SetterCallWith', 'ExecutionContext'),
+        'is_setter_raises_exception': is_setter_raises_exception,
+        'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
+            extended_attributes, 'v8Value', 'cppValue'),
     })
+
+    # setter_expression() depends on context values we set above.
+    context['cpp_setter'] = setter_expression(interface, attribute, context)
 
 
 def setter_expression(interface, attribute, context):
