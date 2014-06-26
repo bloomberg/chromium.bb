@@ -74,6 +74,7 @@
         '../../build/linux/system.gyp:dridrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
+        'ozone_platform_dri',
       ],
       'export_dependent_settings': [
         '../../build/linux/system.gyp:dridrm',

@@ -9,11 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
-
-typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace ui {
 
@@ -26,8 +23,8 @@ class SurfaceOzoneCanvas;
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class OZONE_EXPORT DriSurfaceFactory : public ui::SurfaceFactoryOzone,
-                                       public HardwareCursorDelegate {
+class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
+                          public HardwareCursorDelegate {
  public:
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/ozone/ozone_export.h"
 
 class SkCanvas;
 
@@ -19,7 +18,7 @@ class DriWrapper;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class OZONE_EXPORT DriBuffer {
+class DriBuffer {
  public:
   DriBuffer(DriWrapper* dri);
   virtual ~DriBuffer();

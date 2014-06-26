@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/ozone/ozone_export.h"
 
 class SkCanvas;
 
@@ -20,7 +19,7 @@ class DriWrapper;
 // default by the system and is used when no application is controlling the
 // CRTC. Keeps track of the native properties of the buffer and wraps the pixel
 // memory into a SkSurface which can be used to draw into using Skia.
-class OZONE_EXPORT DriConsoleBuffer {
+class DriConsoleBuffer {
  public:
   DriConsoleBuffer(DriWrapper* dri, uint32_t framebuffer);
   ~DriConsoleBuffer();

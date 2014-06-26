@@ -15,7 +15,7 @@ class Point;
 
 namespace ui {
 
-class OZONE_EXPORT HardwareCursorDelegate {
+class HardwareCursorDelegate {
  public:
   // Update the HW cursor bitmap & move to specified location. If
   // the bitmap is empty, the cursor is hidden.

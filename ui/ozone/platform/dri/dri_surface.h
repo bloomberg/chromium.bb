@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 
 class SkCanvas;
@@ -21,7 +20,7 @@ class DriWrapper;
 
 // An implementation of ScanoutSurface which uses dumb buffers (used for
 // software rendering).
-class OZONE_EXPORT DriSurface : public ScanoutSurface {
+class DriSurface : public ScanoutSurface {
  public:
   DriSurface(DriWrapper* dri, const gfx::Size& size);
   virtual ~DriSurface();

@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
 
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 
 class SkBitmap;
@@ -19,7 +18,7 @@ namespace ui {
 
 class DriSurfaceFactory;
 
-class OZONE_EXPORT GpuPlatformSupportGbm : public GpuPlatformSupport {
+class GpuPlatformSupportGbm : public GpuPlatformSupport {
  public:
   GpuPlatformSupportGbm(DriSurfaceFactory* dri);
 

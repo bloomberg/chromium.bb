@@ -26,7 +26,7 @@ class DriWrapper;
 class ScanoutSurfaceGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
-class OZONE_EXPORT ScreenManager {
+class ScreenManager {
  public:
   ScreenManager(DriWrapper* dri, ScanoutSurfaceGenerator* surface_generator);
   virtual ~ScreenManager();

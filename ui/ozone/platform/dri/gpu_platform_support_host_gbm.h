@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_HOST_GBM_H_
 
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
@@ -18,8 +17,8 @@ class Point;
 
 namespace ui {
 
-class OZONE_EXPORT GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
-                                               public HardwareCursorDelegate {
+class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
+                                  public HardwareCursorDelegate {
  public:
   GpuPlatformSupportHostGbm();
 

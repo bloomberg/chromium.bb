@@ -163,7 +163,6 @@
         'run_all_unittests.cc',
       ],
       'dependencies': [
-        'ozone',
         'ozone_base',
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',

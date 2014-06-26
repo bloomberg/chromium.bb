@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "ui/ozone/ozone_export.h"
 
 typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeConnector drmModeConnector;
@@ -23,7 +22,7 @@ namespace ui {
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class OZONE_EXPORT DriWrapper {
+class DriWrapper {
  public:
   DriWrapper(const char* device_path);
   virtual ~DriWrapper();

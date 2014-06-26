@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace gfx {
@@ -78,10 +77,7 @@ class ScanoutSurface;
 // only a subset of connectors can be active independently, showing different
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
-//
-// TODO(dnicoara) Need to have a way to detect events (such as monitor
-// connected or disconnected).
-class OZONE_EXPORT HardwareDisplayController
+class HardwareDisplayController
     : public base::SupportsWeakPtr<HardwareDisplayController> {
  public:
   HardwareDisplayController(DriWrapper* drm,
@@ -163,7 +159,6 @@ class OZONE_EXPORT HardwareDisplayController
 
   uint32_t crtc_id_;
 
-  // TODO(dnicoara) Need to store all the modes.
   drmModeModeInfo mode_;
 
   scoped_ptr<ScanoutSurface> surface_;
