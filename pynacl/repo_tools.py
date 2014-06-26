@@ -5,6 +5,7 @@
 
 import logging
 import os
+import posixpath
 import subprocess
 import sys
 import urlparse
@@ -12,6 +13,9 @@ import urlparse
 import file_tools
 import log_tools
 import platform
+
+GIT_ALTERNATES_PATH = os.path.join('.git', 'objects', 'info', 'alternates')
+
 
 class InvalidRepoException(Exception):
   def __init__(self, expected_repo, msg, *args):
@@ -111,43 +115,56 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     file_tools.RemoveDirectoryIfPresent(destination)
 
   if git_cache:
-    fetch_url = GetGitCacheURL(git_cache, url)
+    git_cache_url = GetGitCacheURL(git_cache, url)
   else:
-    fetch_url = url
+    git_cache_url = None
 
   # If the destination is a git repository, validate the tracked origin.
   git_dir = os.path.join(destination, '.git')
   if os.path.exists(git_dir):
-    if not IsURLInRemoteRepoList(fetch_url, destination, include_fetch=True,
+    if not IsURLInRemoteRepoList(url, destination, include_fetch=True,
                                  include_push=False):
-      # If the original URL is being tracked instead of the fetch URL, we
+      # If the git cache URL is being tracked instead of the fetch URL, we
       # can safely redirect it to the fetch URL instead.
-      if (fetch_url != url and IsURLInRemoteRepoList(url, destination,
-                                                     include_fetch=True,
-                                                     include_push=False)):
-        GitSetRemoteRepo(fetch_url, destination, push_url=push_url)
+      if git_cache_url and IsURLInRemoteRepoList(git_cache_url, destination,
+                                                 include_fetch=True,
+                                                 include_push=False):
+        GitSetRemoteRepo(url, destination, push_url=push_url)
       else:
         logging.error('Git Repo (%s) does not track URL: %s',
-                      destination, fetch_url)
-        raise InvalidRepoException(fetch_url, 'Could not sync git repo: %s',
+                      destination, url)
+        raise InvalidRepoException(url, 'Could not sync git repo: %s',
                                    destination)
+
+      # Make sure the push URL is set correctly as well.
+      if not IsURLInRemoteRepoList(push_url, destination, include_fetch=False,
+                                   include_push=True):
+        GitSetRemoteRepo(url, destination, push_url=push_url)
 
   git = GitCmd()
   if not os.path.exists(git_dir):
     logging.info('Cloning %s...' % url)
-    clone_args = ['clone', '-n']
-    if git_cache:
-      clone_args.append('-s')
 
     file_tools.MakeDirectoryIfAbsent(destination)
-    log_tools.CheckCall(git + clone_args + [fetch_url, '.'], cwd=destination)
+    clone_args = ['clone', '-n']
+    if git_cache_url:
+      clone_args.extend(['--reference', git_cache_url])
 
-    if fetch_url != url:
-      GitSetRemoteRepo(fetch_url, destination, push_url=push_url)
+    log_tools.CheckCall(git + clone_args + [url, '.'], cwd=destination)
 
+    if url != push_url:
+      GitSetRemoteRepo(url, destination, push_url=push_url)
   elif clean:
     log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
     log_tools.CheckCall(git + ['reset', '--hard', 'HEAD'], cwd=destination)
+
+  # If a git cache URL is supplied, make sure it is setup as a git alternate.
+  if git_cache_url:
+    git_alternates = [git_cache_url]
+  else:
+    git_alternates = []
+
+  GitSetRepoAlternates(destination, git_alternates, append=False)
 
   if revision is not None:
     logging.info('Checking out pinned revision...')
@@ -213,8 +230,8 @@ def GetGitCacheURL(cache_dir, url):
                                               '-c', cache_dir,
                                               url]).strip()
 
-  # For cygwin paths, convert forward slashes to backslashes to mimic URLs.
-  if cygwin_path:
+  # For windows, make sure the git cache URL is a posix path.
+  if platform.IsWindows():
     git_url = git_url.replace('\\', '/')
   return git_url
 
@@ -335,3 +352,55 @@ def IsURLInRemoteRepoList(url, directory, include_fetch=True, include_push=True,
   return len([repo_name for
               repo_name, repo_url in remote_repo_list
               if repo_url in valid_urls]) > 0
+
+
+def GitGetRepoAlternates(directory):
+  """Gets the list of git alternates for a local git repo.
+
+  Args:
+      directory: Local git repository to get the git alternate for.
+
+  Returns:
+      List of git alternates set for the local git repository.
+  """
+  git_alternates_file = os.path.join(directory, GIT_ALTERNATES_PATH)
+  if os.path.isfile(git_alternates_file):
+    with open(git_alternates_file, 'rt') as f:
+      alternates_list = []
+      for line in f.readlines():
+        line = line.strip()
+        if line:
+          if posixpath.basename(line) == 'objects':
+            line = posixpath.dirname(line)
+          alternates_list.append(line)
+
+      return alternates_list
+
+  return []
+
+
+def GitSetRepoAlternates(directory, alternates_list, append=True):
+  """Sets the list of git alternates for a local git repo.
+
+  Args:
+      directory: Local git repository.
+      alternates_list: List of local git repositories for the git alternates.
+      append: If True, will append the list to currently set list of alternates.
+  """
+  git_alternates_file = os.path.join(directory, GIT_ALTERNATES_PATH)
+  git_alternates_dir = os.path.dirname(git_alternates_file)
+  if not os.path.isdir(git_alternates_dir):
+    raise InvalidRepoException(directory,
+                               'Invalid local git repo: %s', directory)
+
+  original_alternates_list = GitGetRepoAlternates(directory)
+  if append:
+    alternates_list.extend(original_alternates_list)
+    alternates_list = sorted(set(alternates_list))
+
+  if set(original_alternates_list) != set(alternates_list):
+    lines = [posixpath.join(line, 'objects') + '\n' for line in alternates_list]
+    logging.info('Setting git alternates:\n\t%s', '\t'.join(lines))
+
+    with open(git_alternates_file, 'wb') as f:
+      f.writelines(lines)

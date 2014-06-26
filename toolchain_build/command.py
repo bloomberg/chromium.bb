@@ -374,21 +374,14 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
           pynacl.repo_tools.GitSetRemoteRepo(updated_fetch_url, abs_dir,
                                              push_url=updated_push_url)
 
-
   def populate_cache(subst, git_cache, url):
     if git_cache:
       abs_git_cache = subst.SubstituteAbsPaths(git_cache)
       if abs_git_cache:
         pynacl.repo_tools.PopulateGitCache(abs_git_cache, [url])
 
-  def validate(subst, url, directory, git_cache):
-    expected_url = url
-    if git_cache:
-      abs_git_cache = subst.SubstituteAbsPaths(git_cache)
-      if abs_git_cache:
-        expected_url = pynacl.repo_tools.GetGitCacheURL(abs_git_cache, url)
-
-    pynacl.repo_tools.ValidateGitRepo(expected_url,
+  def validate(subst, url, directory):
+    pynacl.repo_tools.ValidateGitRepo(url,
                                       subst.SubstituteAbsPaths(directory),
                                       clobber_mismatch=True)
 
@@ -433,7 +426,7 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
   commands.extend([Runnable(run_cond, update_valid_mirrors, url, push_url,
                             destination, known_mirrors, push_mirrors),
                    Runnable(ClobberInvalidRepoCondition, validate, url,
-                            destination, git_cache),
+                            destination),
                    Runnable(run_cond, sync, url, destination, revision, reclone,
                             clean, pathspec, git_cache, push_url)])
   return commands

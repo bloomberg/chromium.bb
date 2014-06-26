@@ -73,8 +73,15 @@ class Substituter(object):
     self._variables = self._nonpaths.copy()
     self._variables['cwd'] = FixPath(os.path.abspath(self._cwd))
     for key, value in self._paths.iteritems():
-      self._variables['abs_' + key] = FixPath(os.path.abspath(value))
-      self._variables[key] = FixPath(os.path.relpath(value, self._cwd))
+      if value:
+        abs_path = FixPath(os.path.abspath(value))
+        key_path = FixPath(os.path.relpath(value, self._cwd))
+      else:
+        abs_path = value
+        key_path = value
+
+      self._variables['abs_' + key] = abs_path
+      self._variables[key] = key_path
 
   def Substitute(self, template):
     """ Substitute the %-variables in 'template' """
@@ -86,7 +93,10 @@ class Substituter(object):
     All variables in the template must be paths, and if the values are relative
     paths, they are resolved relative to cwd and returned as absolute paths.
     """
-    return AbsPath(self.Substitute(template), self._cwd)
+    path = self.Substitute(template)
+    if path:
+      path = AbsPath(path, self._cwd)
+    return path
 
   def _SetUpCommonNonPaths(self):
     try:
