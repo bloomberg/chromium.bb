@@ -203,6 +203,8 @@
         'interpolated_transform.h',
         'linux_font_delegate.cc',
         'linux_font_delegate.h',
+        'mac/coordinate_conversion.h',
+        'mac/coordinate_conversion.mm',
         'mac/scoped_ns_disable_screen_updates.h',
         'native_widget_types.h',
         'nine_image_painter.cc',
