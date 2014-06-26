@@ -686,6 +686,11 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
 
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
 {
+    String content;
+    if (getEditedResourceContent(url, &content)) {
+        callback->sendSuccess(content, false);
+        return;
+    }
     if (!m_inspectorResourceContentLoader) {
         callback->sendFailure("Agent is not enabled.");
         return;

@@ -603,8 +603,18 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
     bool previewOnly = preview && *preview;
     if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &result))
         return;
+
     newCallFrames = currentCallFrames();
     asyncStackTrace = currentAsyncStackTrace();
+
+    ScriptsMap::iterator it = m_scripts.find(scriptId);
+    if (it == m_scripts.end())
+        return;
+    String url = it->value.url;
+    if (url.isEmpty())
+        return;
+    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
+        pageAgent->addEditedResourceContent(url, newContent);
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
@@ -628,10 +638,20 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String
 void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& scriptId, String* scriptSource)
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
-    if (it != m_scripts.end())
-        *scriptSource = it->value.source;
-    else
+    if (it == m_scripts.end()) {
         *error = "No script for id: " + scriptId;
+        return;
+    }
+
+    String url = it->value.url;
+    if (!url.isEmpty()) {
+        if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent()) {
+            bool success = pageAgent->getEditedResourceContent(url, scriptSource);
+            if (success)
+                return;
+        }
+    }
+    *scriptSource = it->value.source;
 }
 
 void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const String& functionId, RefPtr<FunctionDetails>& details)
