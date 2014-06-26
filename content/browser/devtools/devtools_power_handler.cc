@@ -21,9 +21,7 @@ DevToolsPowerHandler::DevToolsPowerHandler() {
   RegisterCommandHandler(devtools::Power::canProfilePower::kName,
                          base::Bind(&DevToolsPowerHandler::OnCanProfilePower,
                                     base::Unretained(this)));
-  // TODO(vivekg): Replace hardcoded "Power.getAccuracyLevel" with
-  // devtools::Power::getAccuracyLevel::kName once crrev.com/336713005 lands
-  RegisterCommandHandler("Power.getAccuracyLevel" ,
+  RegisterCommandHandler(devtools::Power::getAccuracyLevel::kName,
                          base::Bind(&DevToolsPowerHandler::OnGetAccuracyLevel,
                                     base::Unretained(this)));
 }
