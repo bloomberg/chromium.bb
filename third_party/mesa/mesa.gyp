@@ -74,6 +74,14 @@
           '-fPIC',
         ],
       }],
+      ['ubsan_vptr == 1', {
+        'cflags!': [
+          # UBsan's vptr is not compatible with -fno-rtti,
+          # which is used by gallium/auxiliary/Makefile.
+          '-fsanitize=null',
+          '-fsanitize=vptr',
+        ],
+      }],
     ],
   },
   'targets': [

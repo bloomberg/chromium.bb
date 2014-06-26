@@ -391,6 +391,11 @@
       # See http://clang.llvm.org/docs/UsersManual.html
       'ubsan%': 0,
 
+      # Enable building with UBsan's vptr (Clang's -fsanitize=vptr -fsanitize=null options).
+      # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
+      'ubsan_vptr%': 0,
+      'ubsan_vptr_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan_vptr/blacklist.txt',
+
       # Use the dynamic libraries instrumented by one of the sanitizers
       # instead of the standard system libraries.
       'use_instrumented_libraries%': 0,
@@ -1069,6 +1074,8 @@
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
     'ubsan%': '<(ubsan)',
+    'ubsan_vptr%': '<(ubsan_vptr)',
+    'ubsan_vptr_blacklist%': '<(ubsan_vptr_blacklist)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
     'clang_type_profiler%': '<(clang_type_profiler)',
@@ -1459,7 +1466,7 @@
           # compiler_version works with clang.
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
-          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0', {
+          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_vptr==0', {
             'binutils_version%': '<!pymod_do_main(compiler_version target assembler)',
           }],
           # On Android we know the binutils version in the toolchain.
@@ -1485,7 +1492,7 @@
       # platforms except Windows, Mac and iOS.
       # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
       # it takes effect here.
-      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
+      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan_vptr==0', {
         'conditions': [
           ['OS=="android"', {
             # We directly set the gcc versions since we know what we use.
@@ -2049,12 +2056,14 @@
           '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
         ],
       }],
-
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
         'use_allocator%': 'none',
       }],
       ['ubsan==1', {
+        'clang%': 1,
+      }],
+      ['ubsan_vptr==1', {
         'clang%': 1,
       }],
       ['asan==1 and OS=="mac"', {
@@ -2520,7 +2529,7 @@
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
         },
         'conditions': [
-          ['clang==1 and asan==0 and msan==0 and tsan==0', {
+          ['clang==1 and asan==0 and msan==0 and tsan==0 and ubsan_vptr==0', {
             # Clang creates chubby debug information, which makes linking very
             # slow. For now, don't create debug information with clang.  See
             # http://crbug.com/70000
@@ -3855,7 +3864,7 @@
           }],
           # Common options for AddressSanitizer, LeakSanitizer,
           # ThreadSanitizer and MemorySanitizer.
-          ['asan==1 or lsan==1 or tsan==1 or msan==1 or ubsan==1', {
+          ['asan==1 or lsan==1 or tsan==1 or msan==1 or ubsan==1 or ubsan_vptr==1', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -3924,6 +3933,30 @@
                   '-fsanitize=undefined',
                   # -fsanitize=vptr is incompatible with -fno-rtti.
                   '-fno-sanitize=vptr',
+                ],
+              }],
+            ],
+          }],
+          ['ubsan_vptr==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize=vptr',
+                  '-fsanitize=null',  # Avoid dereferences on null pointer objects.
+                  '-fsanitize-blacklist=<(ubsan_vptr_blacklist)',
+                  '-w',  # http://crbug.com/162783
+                ],
+                'cflags_cc!': [
+                  '-fno-rtti',
+                ],
+                'cflags!': [
+                  '-fno-rtti',
+                ],
+                'ldflags': [
+                  '-fsanitize=vptr',  # -fsanitize=null is not necessary.
+                ],
+                'defines': [
+                  'UNDEFINED_SANITIZER',
                 ],
               }],
             ],
