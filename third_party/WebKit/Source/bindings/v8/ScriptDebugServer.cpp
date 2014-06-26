@@ -523,6 +523,12 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
     m_debuggerScript.set(m_isolate, v8::Handle<v8::Object>::Cast(value));
 }
 
+void ScriptDebugServer::discardDebuggerScript()
+{
+    ASSERT(!m_debuggerScript.isEmpty());
+    m_debuggerScript.clear();
+}
+
 v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> function)
 {
     ensureDebuggerScriptCompiled();

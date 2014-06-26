@@ -114,15 +114,17 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
         return;
 
     v8::HandleScope scope(m_isolate);
+
+    if (!m_listenersMap.size()) {
+        v8::Debug::SetDebugEventListener(&PageScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
+        ensureDebuggerScriptCompiled();
+    }
+
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
-    if (!m_listenersMap.size()) {
-        ensureDebuggerScriptCompiled();
-        ASSERT(!debuggerScript->IsUndefined());
-        v8::Debug::SetDebugEventListener(&PageScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
-    }
+    ASSERT(!debuggerScript->IsUndefined());
     m_listenersMap.set(page, listener);
 
     V8WindowShell* shell = scriptController.existingWindowShell(DOMWrapperWorld::mainWorld());
@@ -150,9 +152,11 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* 
 
     m_listenersMap.remove(page);
 
-    if (m_listenersMap.isEmpty())
+    if (m_listenersMap.isEmpty()) {
+        discardDebuggerScript();
         v8::Debug::SetDebugEventListener(0);
-    // FIXME: Remove all breakpoints set by the agent.
+        // FIXME: Remove all breakpoints set by the agent.
+    }
 }
 
 void PageScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)

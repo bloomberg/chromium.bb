@@ -128,6 +128,7 @@ protected:
     void dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> sourceObject);
 
     void ensureDebuggerScriptCompiled();
+    void discardDebuggerScript();
 
     PauseOnExceptionsState m_pauseOnExceptionsState;
     ScopedPersistent<v8::Object> m_debuggerScript;

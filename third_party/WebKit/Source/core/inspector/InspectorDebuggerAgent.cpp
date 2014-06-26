@@ -129,9 +129,9 @@ void InspectorDebuggerAgent::enable()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(this);
 
+    startListeningScriptDebugServer();
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     scriptDebugServer().setBreakpointsActivated(true);
-    startListeningScriptDebugServer();
 
     if (m_listener)
         m_listener->debuggerWasEnabled();
@@ -145,9 +145,9 @@ void InspectorDebuggerAgent::disable()
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
-    stopListeningScriptDebugServer();
     scriptDebugServer().clearBreakpoints();
     scriptDebugServer().clearCompiledScripts();
+    stopListeningScriptDebugServer();
     clear();
 
     if (m_listener)
