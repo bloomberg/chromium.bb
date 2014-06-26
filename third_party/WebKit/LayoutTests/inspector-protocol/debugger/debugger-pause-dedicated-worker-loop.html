@@ -7,7 +7,11 @@ var worker;
 function startWorkerAndRunTest()
 {
     worker = new Worker("resources/dedicated-worker-loop.js");
-    worker.onmessage = function(event) { };
+    worker.onmessage = function(event)
+    {
+        if (event.data === "WorkerMessageReceived")
+            evaluateInFrontend("InspectorTest.workerMessageReceived()");
+    };
     log("Started worker");
     runTest();
 }
@@ -53,6 +57,11 @@ function test()
         }
     }
 
+    InspectorTest.workerMessageReceived = function()
+    {
+        evaluateRequestId = sendCommandToWorker("Runtime.evaluate", { "expression": "message_id > 1"});
+    }
+
     InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
     {
         var message = messageObject["params"]["message"];
@@ -63,7 +72,6 @@ function test()
             function didPostMessageToWorker()
             {
                 InspectorTest.log("Did post message to worker");
-                evaluateRequestId = sendCommandToWorker("Runtime.evaluate", { "expression": "message_id > 1"});
             }
         }
         if (message["id"] === evaluateRequestId) {

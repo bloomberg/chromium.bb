@@ -1,5 +1,7 @@
 var message_id = 1;
 onmessage = function(event) {
+  message_id++;
+  postMessage("WorkerMessageReceived");
   doWork();
 };
 
@@ -8,9 +10,13 @@ function doWork() {
 
   var ts = Date.now();
   while (true) {
-    if (Date.now() - ts > 1000) {
-        ts = Date.now();
-        postMessage("Message #" + message_id++);
+    try {
+      if (Date.now() - ts > 1000) {
+          ts = Date.now();
+          postMessage("Message #" + message_id++);
+      }
+    } catch (e) {
+       postMessage("Exception " + e);
     }
   }
 }
