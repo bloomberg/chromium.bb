@@ -5,7 +5,6 @@
  */
 
 #include <errno.h>
-#include <string.h>
 #include <sys/file.h>
 
 #include "native_client/src/shared/platform/posix/nacl_file_lock_intern.h"
@@ -81,23 +80,15 @@ static void NaClFileLockManagerSetFileIdentityData(
 
 static void NaClFileLockManagerTakeLock(int desc) {
   if (0 != flock(desc, LOCK_EX)) {
-    char buf[256];
-    int err = errno;
-    (void) strerror_r(err, buf, sizeof buf);
     NaClLog(LOG_FATAL,
-            "NaClFileLockManagerTakeLock: flock failed: %s (%d)\n",
-            buf, err);
+            "NaClFileLockManagerTakeLock: flock failed: errno %d\n", errno);
   }
 }
 
 static void NaClFileLockManagerDropLock(int desc) {
   if (0 != flock(desc, LOCK_UN)) {
-    char buf[256];
-    int err = errno;
-    (void) strerror_r(err, buf, sizeof buf);
     NaClLog(LOG_FATAL,
-            "NaClFileLockManagerDropLock: flock failed: %s (%d)\n",
-            buf, err);
+            "NaClFileLockManagerDropLock: flock failed: errno %d\n", errno);
   }
 }
 

@@ -1,7 +1,7 @@
 /*
  * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_error.h"
 
 static const NaClSocketAddress test_address = {
   "google-imc-test"

@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "native_client/src/shared/platform/nacl_error.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 #define MEMORY_SIZE (1 << 20)

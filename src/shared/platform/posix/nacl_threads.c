@@ -8,7 +8,6 @@
  * NaCl Server Runtime threads implementation layer.
  */
 
-#include <string.h>
 #include <stdlib.h>
 /*
  * We need sys/mman.h for PAGE_SIZE on Android.  PAGE_SIZE is what
@@ -42,7 +41,6 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
   pthread_attr_t  attr;
   int             code;
   int             rv;
-  char            err_string[1024];
 
   rv = 0;
 
@@ -57,22 +55,16 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
   }
   if (0 != (code = pthread_attr_setstacksize(&attr, stack_size))) {
     NaClLog(LOG_ERROR,
-            "NaClThreadCtor: pthread_attr_setstacksize returned %d (%s)",
-            code,
-            (strerror_r(code, err_string, sizeof err_string) == 0
-             ? err_string
-             : "UNKNOWN"));
+            "NaClThreadCtor: pthread_attr_setstacksize returned %d",
+            code);
     goto done_attr_dtor;
   }
   if (is_detached) {
     if (0 != (code = pthread_attr_setdetachstate(&attr,
                                                  PTHREAD_CREATE_DETACHED))) {
       NaClLog(LOG_ERROR,
-              "nacl_thread: pthread_attr_setdetachstate returned %d (%s)",
-              code,
-              (strerror_r(code, err_string, sizeof err_string) == 0
-               ? err_string
-               : "UNKNOWN"));
+              "nacl_thread: pthread_attr_setdetachstate returned %d",
+              code);
       goto done_attr_dtor;
     }
   }
@@ -81,11 +73,8 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
                                   (void *(*)(void *)) start_fn,
                                   state))) {
     NaClLog(LOG_ERROR,
-            "nacl_thread: pthread_create returned %d (%s)",
-            code,
-            (strerror_r(code, err_string, sizeof err_string) == 0
-             ? err_string
-             : "UNKNOWN"));
+            "nacl_thread: pthread_create returned %d",
+            code);
     goto done_attr_dtor;
   }
   rv = 1;

@@ -166,19 +166,6 @@ int NaClWouldBlock() {
   return GetLastError() == ERROR_PIPE_LISTENING;
 }
 
-int NaClGetLastErrorString(char* buffer, size_t length) {
-  DWORD error = GetLastError();
-  return FormatMessageA(
-      FORMAT_MESSAGE_FROM_SYSTEM |
-      FORMAT_MESSAGE_IGNORE_INSERTS,
-      NULL,
-      error,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      buffer,
-      (DWORD) ((64 * 1024 < length) ? 64 * 1024 : length),
-      NULL) ? 0 : -1;
-}
-
 NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   char name[kPipePathMax];
   if (!GetSocketName(address, name)) {

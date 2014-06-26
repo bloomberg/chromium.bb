@@ -6,6 +6,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/platform/nacl_error.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
 #if !defined(__native_client__)

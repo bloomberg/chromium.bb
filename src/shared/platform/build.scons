@@ -31,6 +31,7 @@ if env.Bit('windows'):
     'win/condition_variable.cc',
     'win/lock.cc',
     'win/nacl_clock.c',
+    'win/nacl_error.c',
     'win/nacl_exit.c',
     'win/nacl_fast_mutex.c',
     'win/nacl_find_addrsp.c',
@@ -78,6 +79,7 @@ if env.Bit('posix'):
     'posix/aligned_malloc.c',
     'posix/condition_variable.c',
     'posix/lock.c',
+    'posix/nacl_error.c',
     'posix/nacl_exit.c',
     'posix/nacl_fast_mutex.c',
     'posix/nacl_file_lock.c',  # only used on Linux, but built/tested on Posix

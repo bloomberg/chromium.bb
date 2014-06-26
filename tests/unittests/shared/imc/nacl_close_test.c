@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
-
+#include "native_client/src/shared/platform/nacl_error.h"
 
 /* Writes the last error message to the standard error. */
 static void failWithErrno(const char* message) {

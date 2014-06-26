@@ -30,23 +30,6 @@ int NaClWouldBlock() {
   return (errno == EAGAIN) ? 1 : 0;
 }
 
-int NaClGetLastErrorString(char* buffer, size_t length) {
-  char* message;
-  /* Note newlib provides only GNU version of strerror_r(). */
-  if (buffer == NULL || length == 0) {
-    errno = ERANGE;
-    return -1;
-  }
-  message = strerror_r(errno, buffer, length);
-  if (message != buffer) {
-    size_t message_bytes = strlen(message) + 1;
-    length = std::min(message_bytes, length);
-    memmove(buffer, message, length);
-    buffer[length - 1] = '\0';
-  }
-  return 0;
-}
-
 NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   /*
    * TODO(shiki): Switch to the following once the make_bound_sock() prototype

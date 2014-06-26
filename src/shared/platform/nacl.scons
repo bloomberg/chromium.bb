@@ -11,6 +11,7 @@ platform_inputs = [
     'nacl_log.c',
     'posix/condition_variable.c',
     'posix/lock.c',
+    'posix/nacl_error.c',
     'posix/nacl_exit.c',
     'posix/nacl_thread_id.c',
     'posix/nacl_threads.c',

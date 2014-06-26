@@ -28,10 +28,6 @@ struct NaClDescEffector;
 extern "C" {
 #endif  /* __cplusplus */
 
-/* Get the last error message string. */
-int NaClGetLastErrorString(char* buffer, size_t length);
-
-
 /*
  * NaCl resource descriptor type NaCl resource descriptors can be
  * directly used with epoll on Linux, or with WaitForMultipleObject on
