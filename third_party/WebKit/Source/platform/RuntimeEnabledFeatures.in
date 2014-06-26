@@ -116,7 +116,7 @@ ScrollTopLeftInterop status=experimental
 ServiceWorker status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
-PictureSizes status=experimental
+PictureSizes status=stable
 Picture status=experimental
 
 // window.showModalDialog is deprecated and slated for removal. crbug.com/345831
