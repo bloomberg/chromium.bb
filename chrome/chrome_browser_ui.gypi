@@ -70,7 +70,6 @@
       'browser/ui/android/window_android_helper.cc',
       'browser/ui/android/window_android_helper.h',
       'browser/ui/app_list/app_list_service.h',
-      'browser/ui/app_list/app_list_service_disabled.cc',
       'browser/ui/app_list/app_list_util.cc',
       'browser/ui/app_list/app_list_util.h',
       'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
@@ -207,8 +206,6 @@
       'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h',
       'browser/ui/autofill/account_chooser_model.cc',
       'browser/ui/autofill/account_chooser_model.h',
-      'browser/ui/autofill/autofill_dialog_common.cc',
-      'browser/ui/autofill/autofill_dialog_common.h',
       'browser/ui/autofill/autofill_dialog_controller.cc',
       'browser/ui/autofill/autofill_dialog_controller.h',
       'browser/ui/autofill/autofill_dialog_models.cc',
@@ -1012,8 +1009,6 @@
       'browser/ui/navigation_correction_tab_observer.h',
       'browser/ui/metro_pin_tab_helper_win.cc',
       'browser/ui/metro_pin_tab_helper_win.h',
-      'browser/ui/network_profile_bubble.cc',
-      'browser/ui/network_profile_bubble.h',
       'browser/ui/ntp_background_util.cc',
       'browser/ui/ntp_background_util.h',
       'browser/ui/omnibox/alternate_nav_infobar_delegate.cc',
@@ -1147,7 +1142,6 @@
       'browser/ui/settings_window_manager.h',
       'browser/ui/settings_window_manager_observer.h',
       'browser/ui/profile_reset_bubble.h',
-      'browser/ui/profile_reset_bubble_stub.cc',
       'browser/ui/simple_message_box.h',
       'browser/ui/singleton_tabs.cc',
       'browser/ui/singleton_tabs.h',
@@ -1348,8 +1342,6 @@
       'browser/ui/views/collected_cookies_views.h',
       'browser/ui/views/color_chooser_aura.cc',
       'browser/ui/views/color_chooser_aura.h',
-      'browser/ui/views/color_chooser_dialog.cc',
-      'browser/ui/views/color_chooser_dialog.h',
       'browser/ui/views/color_chooser_win.cc',
       'browser/ui/views/confirm_bubble_views.cc',
       'browser/ui/views/confirm_bubble_views.h',
@@ -1429,8 +1421,6 @@
       'browser/ui/views/find_bar_view.h',
       'browser/ui/views/first_run_bubble.cc',
       'browser/ui/views/first_run_bubble.h',
-      'browser/ui/views/first_run_dialog.cc',
-      'browser/ui/views/first_run_dialog.h',
       'browser/ui/views/frame/browser_command_handler_x11.cc',
       'browser/ui/views/frame/browser_command_handler_x11.h',
       'browser/ui/views/frame/browser_frame.cc',
@@ -1465,13 +1455,6 @@
       'browser/ui/views/frame/contents_web_view.h',
       'browser/ui/views/frame/desktop_browser_frame_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
-      'browser/ui/views/frame/browser_desktop_window_tree_host.h',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_win.cc',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_win.h',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.h',
-      'browser/ui/views/frame/glass_browser_frame_view.cc',
-      'browser/ui/views/frame/glass_browser_frame_view.h',
       'browser/ui/views/frame/global_menu_bar_x11.cc',
       'browser/ui/views/frame/global_menu_bar_x11.h',
       'browser/ui/views/frame/global_menu_bar_registrar_x11.cc',
@@ -1650,15 +1633,12 @@
       'browser/ui/views/signed_certificate_timestamps_views.h',
       'browser/ui/views/signed_certificate_timestamp_info_view.cc',
       'browser/ui/views/signed_certificate_timestamp_info_view.h',
-      'browser/ui/views/simple_message_box_views.cc',
       'browser/ui/views/ssl_client_certificate_selector.cc',
       'browser/ui/views/ssl_client_certificate_selector.h',
       'browser/ui/views/session_crashed_bubble_view.cc',
       'browser/ui/views/session_crashed_bubble_view.h',
       'browser/ui/views/status_bubble_views.cc',
       'browser/ui/views/status_bubble_views.h',
-      'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
-      'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
       'browser/ui/views/status_icons/status_icon_win.cc',
       'browser/ui/views/status_icons/status_icon_win.h',
       'browser/ui/views/status_icons/status_tray_linux.cc',
@@ -1761,10 +1741,6 @@
       'browser/ui/webui/app_list/start_page_ui.h',
       'browser/ui/webui/bookmarks_ui.cc',
       'browser/ui/webui/bookmarks_ui.h',
-      'browser/ui/webui/certificate_viewer_ui.cc',
-      'browser/ui/webui/certificate_viewer_ui.h',
-      'browser/ui/webui/certificate_viewer_webui.cc',
-      'browser/ui/webui/certificate_viewer_webui.h',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui.h',
       'browser/ui/webui/chromeos/certificate_manager_dialog_ui.cc',
@@ -1934,8 +1910,6 @@
       'browser/ui/webui/flash_ui.h',
       'browser/ui/webui/gcm_internals_ui.cc',
       'browser/ui/webui/gcm_internals_ui.h',
-      'browser/ui/webui/gesture_config_ui.cc',
-      'browser/ui/webui/gesture_config_ui.h',
       'browser/ui/webui/help/help_handler.cc',
       'browser/ui/webui/help/help_handler.h',
       'browser/ui/webui/help/help_ui.cc',
@@ -1975,8 +1949,6 @@
       'browser/ui/webui/mojo_web_ui_controller.cc',
       'browser/ui/webui/mojo_web_ui_controller.h',
       'browser/ui/webui/mojo_web_ui_handler.h',
-      'browser/ui/webui/nacl_ui.cc',
-      'browser/ui/webui/nacl_ui.h',
       'browser/ui/webui/net_export_ui.cc',
       'browser/ui/webui/net_export_ui.h',
       'browser/ui/webui/net_internals/net_internals_ui.cc',
@@ -2083,8 +2055,6 @@
       'browser/ui/webui/options/font_settings_utils_linux.cc',
       'browser/ui/webui/options/font_settings_utils_mac.mm',
       'browser/ui/webui/options/font_settings_utils_win.cc',
-      'browser/ui/webui/options/geolocation_options_handler.cc',
-      'browser/ui/webui/options/geolocation_options_handler.h',
       'browser/ui/webui/options/handler_options_handler.cc',
       'browser/ui/webui/options/handler_options_handler.h',
       'browser/ui/webui/options/home_page_overlay_handler.cc',
@@ -2135,8 +2105,6 @@
       'browser/ui/webui/performance_monitor/performance_monitor_ui_util.h',
       'browser/ui/webui/plugins_ui.cc',
       'browser/ui/webui/plugins_ui.h',
-      'browser/ui/webui/policy_ui.cc',
-      'browser/ui/webui/policy_ui.h',
       'browser/ui/webui/predictors/predictors_handler.cc',
       'browser/ui/webui/predictors/predictors_handler.h',
       'browser/ui/webui/predictors/predictors_ui.cc',
@@ -2151,8 +2119,6 @@
       'browser/ui/webui/quota_internals/quota_internals_types.h',
       'browser/ui/webui/quota_internals/quota_internals_ui.cc',
       'browser/ui/webui/quota_internals/quota_internals_ui.h',
-      'browser/ui/webui/set_as_default_browser_ui.cc',
-      'browser/ui/webui/set_as_default_browser_ui.h',
       'browser/ui/webui/signin/inline_login_handler.cc',
       'browser/ui/webui/signin/inline_login_handler.h',
       'browser/ui/webui/signin/inline_login_handler_impl.cc',
@@ -2349,7 +2315,17 @@
       'browser/ui/app_list/start_page_service_factory.cc',
       'browser/ui/app_list/start_page_service_factory.h',
     ],
+    # Used when the app list is disabled.
+    'chrome_browser_ui_non_app_list_sources': [
+      'browser/ui/app_list/app_list_service_disabled.cc',
+    ],
+    # Autofill sources used everywhere autofill dialog is enabled.
     'chrome_browser_ui_autofill_dialog_sources': [
+      'browser/ui/autofill/autofill_dialog_common.cc',
+      'browser/ui/autofill/autofill_dialog_common.h',
+    ],
+    # Autofill sources used on desktop and ChromeOS.
+    'chrome_browser_ui_autofill_dialog_desktop_sources': [
       'browser/ui/autofill/autofill_dialog_controller_impl.cc',
       'browser/ui/autofill/autofill_dialog_controller_impl.h',
       'browser/ui/autofill/autofill_dialog_i18n_input.cc',
@@ -2360,12 +2336,37 @@
       'browser/ui/autofill/data_model_wrapper.cc',
       'browser/ui/autofill/data_model_wrapper.h',
     ],
+    'chrome_browser_ui_google_now_sources': [
+      'browser/ui/webui/options/geolocation_options_handler.cc',
+      'browser/ui/webui/options/geolocation_options_handler.h',
+    ],
+    'chrome_browser_ui_webrtc_sources': [
+      'browser/ui/webui/media/webrtc_logs_ui.cc',
+      'browser/ui/webui/media/webrtc_logs_ui.h',
+    ],
     # For when enable_service_discovery is set.
     'chrome_browser_ui_service_discovery_sources': [
       'browser/ui/webui/local_discovery/local_discovery_ui.cc',
       'browser/ui/webui/local_discovery/local_discovery_ui.h',
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.cc',
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
+    ],
+    'chrome_browser_ui_win_sources': [
+      'browser/ui/network_profile_bubble.cc',
+      'browser/ui/network_profile_bubble.h',
+      'browser/ui/views/color_chooser_dialog.cc',
+      'browser/ui/views/color_chooser_dialog.h',
+      'browser/ui/views/frame/browser_desktop_window_tree_host.h',
+      'browser/ui/views/frame/browser_desktop_window_tree_host_win.cc',
+      'browser/ui/views/frame/browser_desktop_window_tree_host_win.h',
+      'browser/ui/views/frame/glass_browser_frame_view.cc',
+      'browser/ui/views/frame/glass_browser_frame_view.h',
+      'browser/ui/views/network_profile_bubble_view.cc',
+      'browser/ui/views/network_profile_bubble_view.h',
+      'browser/ui/webui/conflicts_ui.cc',
+      'browser/ui/webui/conflicts_ui.h',
+      'browser/ui/webui/set_as_default_browser_ui.cc',
+      'browser/ui/webui/set_as_default_browser_ui.h',
     ],
     # ChromeOS-only sources that don't end in _chromeos or live in a chromeos
     # directory.
@@ -2394,8 +2395,6 @@
       'browser/ui/views/chrome_views_delegate_aura.cc',
       'browser/ui/views/external_protocol_dialog.cc',
       'browser/ui/views/external_protocol_dialog.h',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc',
-      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.h',
       'browser/ui/views/frame/desktop_browser_frame_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
       'browser/ui/views/frame/global_menu_bar_registrar_x11.cc',
@@ -2483,8 +2482,6 @@
       'browser/ui/webui/app_launcher_page_ui.h',
       'browser/ui/webui/bookmarks_ui.cc',
       'browser/ui/webui/bookmarks_ui.h',
-      'browser/ui/webui/certificate_viewer_ui.cc',
-      'browser/ui/webui/certificate_viewer_webui.cc',
       'browser/ui/webui/chrome_web_contents_handler.cc',
       'browser/ui/webui/extensions/command_handler.cc',
       'browser/ui/webui/extensions/extension_error_handler.cc',
@@ -2568,6 +2565,51 @@
       'browser/ui/views/message_center/web_notification_tray.cc',
       'browser/ui/views/message_center/web_notification_tray_win.cc',
     ],
+    'chrome_browser_ui_nacl_sources': [
+      'browser/ui/webui/nacl_ui.cc',
+      'browser/ui/webui/nacl_ui.h',
+    ],
+    'chrome_browser_ui_plugin_sources': [
+      'browser/ui/hung_plugin_tab_helper.cc',
+      'browser/ui/hung_plugin_tab_helper.h',
+    ],
+    'chrome_browser_ui_policy_sources': [
+      'browser/ui/webui/policy_ui.cc',
+      'browser/ui/webui/policy_ui.h',
+    ],
+    'chrome_browser_ui_views_sources': [
+      'browser/ui/views/simple_message_box_views.cc',
+    ],
+    # Cross-platform aura sources.
+    'chrome_browser_ui_aura_sources': [
+      'browser/ui/webui/gesture_config_ui.cc',
+      'browser/ui/webui/gesture_config_ui.h',
+    ],
+    'chrome_browser_ui_non_aura_sources': [
+      'browser/ui/profile_reset_bubble_stub.cc',
+    ],
+    'chrome_browser_ui_ash_sources': [
+      'browser/ui/views/touch_uma/touch_uma_ash.cc',
+    ],
+    'chrome_browser_ui_non_ash_sources': [
+      'browser/ui/views/touch_uma/touch_uma.cc',
+    ],
+    # Counts desktop Linux and ChromeOS.
+    'chrome_browser_ui_linux_sources': [
+      'browser/ui/webui/certificate_viewer_ui.cc',
+      'browser/ui/webui/certificate_viewer_ui.h',
+      'browser/ui/webui/certificate_viewer_webui.cc',
+      'browser/ui/webui/certificate_viewer_webui.h',
+    ],
+    'chrome_browser_desktop_linux_sources': [
+      'browser/ui/views/frame/browser_desktop_window_tree_host.h',
+      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc',
+      'browser/ui/views/frame/browser_desktop_window_tree_host_x11.h',
+      'browser/ui/views/first_run_dialog.cc',
+      'browser/ui/views/first_run_dialog.h',
+      'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
+      'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
+    ],
   },
   'targets': [
     {
@@ -2592,9 +2634,6 @@
         'common',
         'common_net',
         'in_memory_url_index_cache_proto',
-        'safe_browsing_chunk_proto',
-        'safe_browsing_proto',
-        'safe_browsing_report_proto',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:dom_distiller_core',
         '../components/components.gyp:dom_distiller_webui',
@@ -2705,20 +2744,13 @@
           ],
         }],
         ['enable_one_click_signin==1', {
-          'sources': [
-            '<@(chrome_browser_ui_one_click_signin_sources)',
-          ]
+          'sources': [ '<@(chrome_browser_ui_one_click_signin_sources)' ]
         }],
         ['enable_task_manager==1', {
-          'sources': [
-            '<@(chrome_browser_ui_task_manager_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_task_manager_sources)' ],
         }],
         ['disable_nacl==0', {
-          'sources': [
-            'browser/ui/webui/nacl_ui.cc',
-            'browser/ui/webui/nacl_ui.h',
-          ],
+          'sources': [ '<@(chrome_browser_ui_nacl_sources)' ],
           'dependencies': [
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
           ],
@@ -2729,40 +2761,29 @@
           ],
         }],
         ['configuration_policy==1', {
+          'sources': [ '<@(chrome_browser_ui_policy_sources)' ],
           'dependencies': [
             '../components/components.gyp:policy',
           ],
-        }, {  # configuration_policy==0
-          'sources!': [
-            'browser/ui/webui/policy_ui.cc',
-            'browser/ui/webui/policy_ui.h',
-          ],
         }],
         ['enable_plugins==1', {
+          'sources': [ '<@(chrome_browser_ui_plugin_sources)' ],
           'dependencies': [
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
-          ],
-        }, {  # enable_plugins == 0
-          'sources!': [
-            'browser/ui/hung_plugin_tab_helper.cc',
-            'browser/ui/hung_plugin_tab_helper.h',
           ],
         }],
         ['safe_browsing==1', {
           'defines': [
             'FULL_SAFE_BROWSING',
           ],
-        }, {  # safe_browsing==0 || safe_browsing==2
-          'dependencies!': [
+          'dependencies': [
             'safe_browsing_chunk_proto',
             'safe_browsing_proto',
             'safe_browsing_report_proto',
           ],
         }],
         ['chromeos==1', {
-          'sources': [
-            '<@(chrome_browser_ui_chromeos_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_chromeos_sources)' ],
           'dependencies': [
             'browser_chromeos',
           ],
@@ -2776,23 +2797,20 @@
           ],
         }],
         ['use_ash==1', {
-          'sources': [
-            'browser/ui/views/touch_uma/touch_uma_ash.cc',
-          ],
+          'sources': [ '<@(chrome_browser_ui_ash_sources)' ],
           'dependencies': [
             '../ash/ash.gyp:ash',
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
           ],
         }, { # use_ash==0
-          'sources': [
-            'browser/ui/views/touch_uma/touch_uma.cc',
-          ],
+          'sources': [ '<@(chrome_browser_ui_non_ash_sources)' ],
+        }],
+        ['toolkit_views==1', {
+          'sources': [ '<@(chrome_browser_ui_views_sources)' ],
         }],
         ['toolkit_views==1 and chromeos==0', {
-          'sources': [
-            '<@(chrome_browser_ui_message_center_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_message_center_sources)' ],
         }],
         ['use_aura==1 and chromeos==0 and use_ozone==0 and OS=="linux"', {
           'dependencies': [
@@ -2802,22 +2820,10 @@
             '../build/linux/system.gyp:gio',
           ],
         }],
-        ['use_aura==0 or chromeos==1 or OS!="linux"', {
-          'sources!': [
-            'browser/ui/views/first_run_dialog.cc',
-            'browser/ui/views/first_run_dialog.h',
-            'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
-            'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
-          ],
-        }],
         ['use_aura==1', {
+          'sources': [ '<@(chrome_browser_ui_aura_sources)'] ,
           'sources!': [
-            'browser/ui/profile_reset_bubble_stub.cc',
-          ],
-          'sources/': [
-            ['exclude', '^browser/ui/screen_capture_notification_ui_stub.cc'],
-            # TODO: (stevenjb/beng): Find a home for this.
-            ['include', '^browser/ui/views/simple_message_box_views.cc'],
+            'browser/ui/screen_capture_notification_ui_stub.cc',
           ],
           'dependencies': [
             # aura uses some of ash resources.
@@ -2827,29 +2833,8 @@
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
             '../ui/wm/wm.gyp:wm',
           ],
-          'conditions': [
-            ['OS!="win"', {
-              'sources!': [
-                'browser/ui/views/color_chooser_dialog.cc',
-                'browser/ui/views/color_chooser_dialog.h',
-                'browser/ui/views/frame/glass_browser_frame_view.cc',
-                'browser/ui/views/frame/glass_browser_frame_view.h',
-                'browser/ui/views/hwnd_util.h',
-              ],
-            }],
-          ],
         }, { # else: use_aura==0
-          'sources!': [
-            'browser/ui/views/frame/browser_desktop_window_tree_host.h',
-            'browser/ui/views/frame/browser_desktop_window_tree_host_win.cc',
-            'browser/ui/views/frame/browser_desktop_window_tree_host_win.h',
-            'browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc',
-            'browser/ui/views/frame/browser_desktop_window_tree_host_x11.h',
-            'browser/ui/webui/gesture_config_ui.cc',
-            'browser/ui/webui/gesture_config_ui.h',
-            'browser/ui/webui/salsa_ui.cc',
-            'browser/ui/webui/salsa_ui.h',
-          ],
+          'sources': [ '<@(chrome_browser_ui_non_aura_sources)' ],
         }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [
@@ -2866,23 +2851,13 @@
             'browser/ui/crypto_module_password_dialog_nss.h',
           ],
         }],
-        ['use_nss==0 and use_openssl==0', {
-          'sources!': [
-            'browser/ui/webui/certificate_viewer_webui.cc',
-            'browser/ui/webui/certificate_viewer_webui.h',
-            'browser/ui/webui/certificate_viewer_ui.cc',
-            'browser/ui/webui/certificate_viewer_ui.h',
-          ],
-       }],
         ['enable_themes==0', {
           'sources!': [
             'browser/ui/webui/theme_source.cc',
           ],
         }],
         ['enable_printing==1', {
-          'sources': [
-            '<@(chrome_browser_ui_print_preview_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_print_preview_sources)' ],
         }],
         ['OS=="android"', {
           'dependencies': [
@@ -2992,24 +2967,13 @@
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
-          'sources': [
-            'browser/ui/views/network_profile_bubble_view.cc',
-            'browser/ui/views/network_profile_bubble_view.h',
-            'browser/ui/webui/conflicts_ui.cc',
-            'browser/ui/webui/conflicts_ui.h',
-          ],
+          'sources': [ '<@(chrome_browser_ui_win_sources)' ],
           'sources!': [
             'browser/ui/certificate_dialogs.cc',
             'browser/ui/certificate_dialogs.h',
             'browser/ui/startup/autolaunch_prompt.cc',
             'browser/ui/views/apps/chrome_app_window_delegate_views.cc',
             'browser/ui/views/frame/taskbar_decorator.cc',
-            'browser/ui/views/simple_message_box_views.cc',
-            # Windows has its own native cert viewer.
-            'browser/ui/webui/certificate_viewer_ui.cc',
-            'browser/ui/webui/certificate_viewer_ui.h',
-            'browser/ui/webui/certificate_viewer_webui.cc',
-            'browser/ui/webui/certificate_viewer_webui.h',
             'browser/ui/webui/help/version_updater_basic.cc',
             'browser/ui/webui/help/version_updater_basic.h',
           ],
@@ -3021,15 +2985,6 @@
             }],
           ],
         }, {  # 'OS!="win"
-          'sources!': [
-            # Exclude files that should be excluded for all non-Windows platforms.
-            'browser/ui/network_profile_bubble.cc',
-            'browser/ui/network_profile_bubble.h',
-            'browser/ui/views/frame/system_menu_model.cc',
-            'browser/ui/views/frame/system_menu_model.h',
-            'browser/ui/webui/set_as_default_browser_ui.cc',
-            'browser/ui/webui/set_as_default_browser_ui.h',
-          ],
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
@@ -3055,7 +3010,11 @@
             }],
           ],
         }],
-        ['OS=="linux"', {
+        ['desktop_linux==1', {
+          'sources': [ '<@(chrome_browser_desktop_linux_sources)' ],
+        }],
+        ['OS=="linux"', {  # Both desktop Linux and ChromeOS.
+          'sources': [ '<@(chrome_browser_ui_linux_sources)' ],
           'dependencies': [
             '../build/linux/system.gyp:udev',
           ],
@@ -3076,47 +3035,35 @@
           ],
         }],
         ['enable_app_list==1', {
-          'sources': [
-            '<@(chrome_browser_ui_app_list_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_app_list_sources)' ],
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list',
           ],
-          'sources!': [
-            'browser/ui/app_list/app_list_service_disabled.cc',
+        }, {
+          'sources': [ '<@(chrome_browser_ui_non_app_list_sources)' ],
+        }],
+        ['enable_autofill_dialog==1', {
+          'sources': [ '<@(chrome_browser_ui_autofill_dialog_sources)' ],
+          'conditions': [
+            ['OS!="android" and OS!="ios"', {
+              'sources': [
+                '<@(chrome_browser_ui_autofill_dialog_desktop_sources)',
+              ],
+              'dependencies': [
+                '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+                '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
+              ],
+            }],
           ],
         }],
-        ['enable_autofill_dialog!=1', {
-          'sources!': [
-            'browser/ui/autofill/autofill_dialog_common.cc',
-            'browser/ui/autofill/autofill_dialog_common.h',
-          ],
+        ['enable_google_now==1', {
+          'sources': [ '<@(chrome_browser_ui_google_now_sources)' ],
         }],
-        ['enable_autofill_dialog==1 and OS!="android" and OS!="ios"', {
-          'sources': [
-            '<@(chrome_browser_ui_autofill_dialog_sources)',
-          ],
-          'dependencies': [
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
-          ],
-        }],
-        ['enable_google_now==0', {
-          'sources!': [
-            'browser/ui/webui/options/geolocation_options_handler.cc',
-            'browser/ui/webui/options/geolocation_options_handler.h',
-          ],
-        }],
-        ['enable_webrtc==0', {
-          'sources!': [
-            'browser/ui/webui/media/webrtc_logs_ui.cc',
-            'browser/ui/webui/media/webrtc_logs_ui.h',
-          ],
+        ['enable_webrtc==1', {
+          'sources': [ '<@(chrome_browser_ui_webrtc_sources)' ],
         }],
         ['enable_service_discovery==1', {
-          'sources': [
-            '<@(chrome_browser_ui_service_discovery_sources)',
-          ],
+          'sources': [ '<@(chrome_browser_ui_service_discovery_sources)' ],
         }],
         ['OS!="linux" and OS!="win"', {
           'sources': [
