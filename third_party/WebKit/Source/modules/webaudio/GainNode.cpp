@@ -42,8 +42,8 @@ GainNode::GainNode(AudioContext* context, float sampleRate)
     ScriptWrappable::init(this);
     m_gain = AudioParam::create(context, "gain", 1.0, 0.0, 1.0);
 
-    addInput(adoptPtr(new AudioNodeInput(this)));
-    addOutput(adoptPtr(new AudioNodeOutput(this, 1)));
+    addInput();
+    addOutput(AudioNodeOutput::create(this, 1));
 
     setNodeType(NodeTypeGain);
 

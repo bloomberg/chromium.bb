@@ -46,11 +46,11 @@ ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate
     : AudioNode(context, sampleRate)
 {
     ScriptWrappable::init(this);
-    addInput(adoptPtr(new AudioNodeInput(this)));
+    addInput();
 
     // Create a fixed number of outputs (able to handle the maximum number of channels fed to an input).
     for (unsigned i = 0; i < numberOfOutputs; ++i)
-        addOutput(adoptPtr(new AudioNodeOutput(this, 1)));
+        addOutput(AudioNodeOutput::create(this, 1));
 
     setNodeType(NodeTypeChannelSplitter);
     initialize();

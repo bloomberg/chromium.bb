@@ -41,7 +41,7 @@ AudioDestinationNode::AudioDestinationNode(AudioContext* context, float sampleRa
     , m_currentSampleFrame(0)
 {
     ScriptWrappable::init(this);
-    addInput(adoptPtr(new AudioNodeInput(this)));
+    addInput();
 
     setNodeType(NodeTypeDestination);
 }

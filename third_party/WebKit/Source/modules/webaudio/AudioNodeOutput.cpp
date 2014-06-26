@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChannels)
+inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChannels)
     : m_node(node)
     , m_numberOfChannels(numberOfChannels)
     , m_desiredNumberOfChannels(numberOfChannels)
@@ -46,6 +46,11 @@ AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChannels)
     ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
 
     m_internalBus = AudioBus::create(numberOfChannels, AudioNode::ProcessingSizeInFrames);
+}
+
+PassOwnPtr<AudioNodeOutput> AudioNodeOutput::create(AudioNode* node, unsigned numberOfChannels)
+{
+    return adoptPtr(new AudioNodeOutput(node, numberOfChannels));
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)

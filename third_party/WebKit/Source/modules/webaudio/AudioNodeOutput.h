@@ -42,8 +42,9 @@ class AudioNodeInput;
 
 class AudioNodeOutput {
 public:
-    // It's OK to pass 0 for numberOfChannels in which case setNumberOfChannels() must be called later on.
-    AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
+    // It's OK to pass 0 for numberOfChannels in which case
+    // setNumberOfChannels() must be called later on.
+    static PassOwnPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
 
     // Can be called from any thread.
     AudioNode* node() const { return m_node; }
@@ -82,6 +83,8 @@ public:
     void updateRenderingState();
 
 private:
+    AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
+
     AudioNode* m_node;
 
     friend class AudioNodeInput;

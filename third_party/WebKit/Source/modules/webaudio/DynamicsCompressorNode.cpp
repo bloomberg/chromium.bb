@@ -42,8 +42,8 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float samp
     : AudioNode(context, sampleRate)
 {
     ScriptWrappable::init(this);
-    addInput(adoptPtr(new AudioNodeInput(this)));
-    addOutput(adoptPtr(new AudioNodeOutput(this, defaultNumberOfOutputChannels)));
+    addInput();
+    addOutput(AudioNodeOutput::create(this, defaultNumberOfOutputChannels));
 
     setNodeType(NodeTypeDynamicsCompressor);
 

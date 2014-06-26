@@ -36,12 +36,17 @@ using namespace std;
 
 namespace WebCore {
 
-AudioNodeInput::AudioNodeInput(AudioNode* node)
+inline AudioNodeInput::AudioNodeInput(AudioNode* node)
     : AudioSummingJunction(node->context())
     , m_node(node)
 {
     // Set to mono by default.
     m_internalSummingBus = AudioBus::create(1, AudioNode::ProcessingSizeInFrames);
+}
+
+PassOwnPtr<AudioNodeInput> AudioNodeInput::create(AudioNode* node)
+{
+    return adoptPtr(new AudioNodeInput(node));
 }
 
 void AudioNodeInput::connect(AudioNodeOutput* output)

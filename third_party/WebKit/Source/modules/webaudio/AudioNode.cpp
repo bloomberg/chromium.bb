@@ -142,9 +142,9 @@ void AudioNode::setNodeType(NodeType type)
 #endif
 }
 
-void AudioNode::addInput(PassOwnPtr<AudioNodeInput> input)
+void AudioNode::addInput()
 {
-    m_inputs.append(input);
+    m_inputs.append(AudioNodeInput::create(this));
 }
 
 void AudioNode::addOutput(PassOwnPtr<AudioNodeOutput> output)

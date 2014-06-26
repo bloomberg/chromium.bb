@@ -38,8 +38,8 @@ AudioBasicInspectorNode::AudioBasicInspectorNode(AudioContext* context, float sa
     : AudioNode(context, sampleRate)
     , m_needAutomaticPull(false)
 {
-    addInput(adoptPtr(new AudioNodeInput(this)));
-    addOutput(adoptPtr(new AudioNodeOutput(this, outputChannelCount)));
+    addInput();
+    addOutput(AudioNodeOutput::create(this, outputChannelCount));
 }
 
 // We override pullInputs() as an optimization allowing this node to take advantage of in-place processing,

@@ -53,8 +53,9 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, 
     , m_sourceSampleRate(0)
 {
     ScriptWrappable::init(this);
-    // Default to stereo. This could change depending on what the media element .src is set to.
-    addOutput(adoptPtr(new AudioNodeOutput(this, 2)));
+    // Default to stereo. This could change depending on what the media element
+    // .src is set to.
+    addOutput(AudioNodeOutput::create(this, 2));
 
     setNodeType(NodeTypeMediaElementAudioSource);
 

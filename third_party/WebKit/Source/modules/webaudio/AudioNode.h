@@ -189,7 +189,7 @@ public:
 
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
-    void addInput(PassOwnPtr<AudioNodeInput>);
+    void addInput();
     void addOutput(PassOwnPtr<AudioNodeOutput>);
 
     // Called by processIfNecessary() to cause all parts of the rendering graph connected to us to process.

@@ -42,7 +42,7 @@ class AudioNodeOutput;
 
 class AudioNodeInput FINAL : public AudioSummingJunction {
 public:
-    explicit AudioNodeInput(AudioNode*);
+    static PassOwnPtr<AudioNodeInput> create(AudioNode*);
 
     // AudioSummingJunction
     virtual bool canUpdateState() OVERRIDE { return !node()->isMarkedForDeletion(); }
@@ -80,6 +80,8 @@ public:
     unsigned numberOfChannels() const;
 
 private:
+    explicit AudioNodeInput(AudioNode*);
+
     AudioNode* m_node;
 
     // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will not be processed) by the audio graph rendering.

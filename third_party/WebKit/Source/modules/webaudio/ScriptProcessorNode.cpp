@@ -103,8 +103,8 @@ ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate
 
     ASSERT(numberOfInputChannels <= AudioContext::maxNumberOfChannels());
 
-    addInput(adoptPtr(new AudioNodeInput(this)));
-    addOutput(adoptPtr(new AudioNodeOutput(this, numberOfOutputChannels)));
+    addInput();
+    addOutput(AudioNodeOutput::create(this, numberOfOutputChannels));
 
     setNodeType(NodeTypeJavaScript);
 
