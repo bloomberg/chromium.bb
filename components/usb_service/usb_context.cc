@@ -59,7 +59,7 @@ void UsbContext::UsbEventHandler::ThreadMain() {
   while (running_) {
     const int rv = libusb_handle_events(context_);
     if (rv != LIBUSB_SUCCESS) {
-      LOG(WARNING) << "Failed to handle events: " << ConvertErrorToString(rv);
+      VLOG(1) << "Failed to handle events: " << ConvertErrorToString(rv);
     }
   }
   VLOG(1) << "UsbEventHandler shutting down.";

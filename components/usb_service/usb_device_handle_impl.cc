@@ -161,7 +161,7 @@ UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
 bool UsbDeviceHandleImpl::InterfaceClaimer::Claim() const {
   const int rv = libusb_claim_interface(handle_->handle(), interface_number_);
   if (rv != LIBUSB_SUCCESS) {
-    LOG(ERROR) << "Failed to claim interface: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to claim interface: " << ConvertErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -354,8 +354,8 @@ bool UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
         alternate_setting);
     RefreshEndpointMap();
   } else {
-    LOG(ERROR) << "Failed to set interface (" << interface_number
-        << ", " << alternate_setting << "): " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to set interface (" << interface_number << ", "
+            << alternate_setting << "): " << ConvertErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -367,7 +367,7 @@ bool UsbDeviceHandleImpl::ResetDevice() {
 
   const int rv = libusb_reset_device(handle_);
   if (rv != LIBUSB_SUCCESS) {
-    LOG(ERROR) << "Failed to reset device: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to reset device: " << ConvertErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -379,8 +379,7 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
 
   const int rv = libusb_get_device_descriptor(device, &desc);
   if (rv != LIBUSB_SUCCESS) {
-    LOG(ERROR) << "Failed to read device descriptor: "
-        << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
     return false;
   }
 
@@ -397,8 +396,7 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
                                    reinterpret_cast<unsigned char*>(&langid[0]),
                                    sizeof(langid));
   if (size < 0) {
-    LOG(ERROR) << "Failed to get language IDs: "
-        << ConvertErrorToString(size);
+    VLOG(1) << "Failed to get language IDs: " << ConvertErrorToString(size);
     return false;
   }
 
@@ -414,8 +412,8 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
                                      reinterpret_cast<unsigned char*>(&text[0]),
                                      sizeof(text));
     if (size < 0) {
-      LOG(ERROR) << "Failed to get serial number (langid " << langid[i] << "): "
-          << ConvertErrorToString(size);
+      VLOG(1) << "Failed to get serial number (langid " << langid[i] << "): "
+              << ConvertErrorToString(size);
       continue;
     }
     if (size <= 2)
@@ -653,7 +651,7 @@ void UsbDeviceHandleImpl::SubmitTransfer(
   if (rv == LIBUSB_SUCCESS) {
     transfers_[handle] = transfer;
   } else {
-    LOG(ERROR) << "Failed to submit transfer: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to submit transfer: " << ConvertErrorToString(rv);
     message_loop_proxy->PostTask(
         FROM_HERE,
         base::Bind(

@@ -104,7 +104,7 @@ scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
     handles_.push_back(device_handle);
     return device_handle;
   } else {
-    LOG(ERROR) << "Failed to open device: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to open device: " << ConvertErrorToString(rv);
     return NULL;
   }
 }
@@ -132,8 +132,7 @@ scoped_refptr<UsbConfigDescriptor> UsbDeviceImpl::ListInterfaces() {
   if (rv == LIBUSB_SUCCESS) {
     return new UsbConfigDescriptorImpl(platform_config);
   } else {
-    LOG(ERROR) << "Failed to get config descriptor: "
-        << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to get config descriptor: " << ConvertErrorToString(rv);
     return NULL;
   }
 }
