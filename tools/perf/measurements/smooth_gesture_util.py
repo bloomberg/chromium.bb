@@ -22,7 +22,8 @@ def GetAdjustedInteractionIfContainGesture(timeline, interaction_record):
     return copy.copy(interaction_record)
   gesture_events = [
     ev for ev
-    in timeline.GetAllEventsOfName('SyntheticGestureController::running', True)
+    in timeline.GetAllToplevelSlicesOfName(
+        'SyntheticGestureController::running')
     if ev.start <= interaction_record.end and
     ev.end >= interaction_record.start]
   if len(gesture_events) == 0:

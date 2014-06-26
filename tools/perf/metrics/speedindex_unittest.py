@@ -32,7 +32,8 @@ class FakeTimelineModel(object):
   def SetAllEvents(self, events):
     self._events = events
 
-  def GetAllEvents(self):
+  def GetAllEvents(self, recursive=True):
+    assert recursive == True
     return self._events
 
 
