@@ -274,6 +274,68 @@ TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
   bm_cc->CleanUp();
 }
 
+// Test that bookmarks support hierarchy.
+TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
+
+  // Create a normal-looking bookmark item.
+  int64 bm1;
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
+    bm1 = CreateSyncedItem(&trans, BOOKMARKS, "bm1");
+    syncable::MutableEntry e(&trans, syncable::GET_BY_HANDLE, bm1);
+
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+    bm_specifics->set_url("http://www.chrome.com");
+    bm_specifics->set_title("Chrome");
+    e.PutSpecifics(specifics);
+
+    e.PutIsDel(false);
+    e.PutIsUnsynced(true);
+
+    EXPECT_TRUE(e.ShouldMaintainHierarchy());
+  }
+
+  DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
+  scoped_ptr<DirectoryCommitContribution> bm_cc(
+      DirectoryCommitContribution::Build(dir(), BOOKMARKS, 25, &emitter));
+
+  sync_pb::ClientToServerMessage message;
+  bm_cc->AddToCommitMessage(&message);
+  const sync_pb::CommitMessage& commit_message = message.commit();
+  bm_cc->CleanUp();
+
+  ASSERT_EQ(1, commit_message.entries_size());
+  EXPECT_TRUE(commit_message.entries(0).has_parent_id_string());
+  EXPECT_FALSE(commit_message.entries(0).parent_id_string().empty());
+}
+
+// Test that preferences do not support hierarchy.
+TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
+  // Create a normal-looking prefs item.
+  int64 pref1;
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
+    pref1 = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
+    syncable::MutableEntry e(&trans, syncable::GET_BY_HANDLE, pref1);
+
+    EXPECT_FALSE(e.ShouldMaintainHierarchy());
+  }
+
+  DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
+  scoped_ptr<DirectoryCommitContribution> pref_cc(
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter));
+
+  sync_pb::ClientToServerMessage message;
+  pref_cc->AddToCommitMessage(&message);
+  const sync_pb::CommitMessage& commit_message = message.commit();
+  pref_cc->CleanUp();
+
+  ASSERT_EQ(1, commit_message.entries_size());
+  EXPECT_FALSE(commit_message.entries(0).has_parent_id_string());
+  EXPECT_TRUE(commit_message.entries(0).parent_id_string().empty());
+}
+
 // Creates some unsynced items, pretends to commit them, and hands back a
 // specially crafted response to the syncer in order to test commit response
 // processing.  The response simulates a succesful commit scenario.

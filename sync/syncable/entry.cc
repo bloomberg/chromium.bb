@@ -121,6 +121,10 @@ bool Entry::ShouldMaintainPosition() const {
   return kernel_->ShouldMaintainPosition();
 }
 
+bool Entry::ShouldMaintainHierarchy() const {
+  return kernel_->ShouldMaintainHierarchy();
+}
+
 std::ostream& operator<<(std::ostream& s, const Blob& blob) {
   for (Blob::const_iterator i = blob.begin(); i != blob.end(); ++i)
     s << std::hex << std::setw(2)

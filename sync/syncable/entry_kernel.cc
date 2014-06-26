@@ -56,6 +56,14 @@ bool EntryKernel::ShouldMaintainPosition() const {
       && !(!ref(UNIQUE_SERVER_TAG).empty() && ref(IS_DIR));
 }
 
+bool EntryKernel::ShouldMaintainHierarchy() const {
+  // We maintain hierarchy for bookmarks, device info, and top-level folders,
+  // but no other types.  Note that the Nigori node consists of a single
+  // top-level folder, so it's included in this set.
+  return (GetModelTypeFromSpecifics(ref(SPECIFICS)) == syncer::BOOKMARKS)
+      || (!ref(UNIQUE_SERVER_TAG).empty());
+}
+
 namespace {
 
 // Utility function to loop through a set of enum values and add the

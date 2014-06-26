@@ -39,14 +39,12 @@ class UniqueClientEntity : public FakeServerEntity {
                      const syncer::ModelType& model_type,
                      int64 version,
                      const std::string& name,
-                     const std::string& parent_id,
                      const std::string& client_defined_unique_tag,
                      const sync_pb::EntitySpecifics& specifics,
                      int64 creation_time,
                      int64 last_modified_time);
 
-  // All member values have equivalent fields in SyncEntity.
-  std::string parent_id_;
+  // These member values have equivalent fields in SyncEntity.
   std::string client_defined_unique_tag_;
   sync_pb::EntitySpecifics specifics_;
   int64 creation_time_;

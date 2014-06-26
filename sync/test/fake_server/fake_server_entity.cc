@@ -64,6 +64,13 @@ string FakeServerEntity::CreateId(const ModelType& model_type,
 }
 
 // static
+std::string FakeServerEntity::GetTopLevelId(const ModelType& model_type) {
+  return FakeServerEntity::CreateId(
+      model_type,
+      syncer::ModelTypeToRootTag(model_type));
+}
+
+// static
 ModelType FakeServerEntity::GetModelTypeFromId(const string& id) {
   vector<string> tokens;
   size_t token_count = Tokenize(id, kIdSeparator, &tokens);
@@ -80,8 +87,8 @@ FakeServerEntity::FakeServerEntity(const string& id,
                                    const ModelType& model_type,
                                    int64 version,
                                    const string& name)
-      : id_(id),
-        model_type_(model_type),
+      : model_type_(model_type),
+        id_(id),
         version_(version),
         name_(name) {}
 

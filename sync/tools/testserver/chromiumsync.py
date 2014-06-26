@@ -624,6 +624,12 @@ class SyncDataModel(object):
     spec = [x for x in self._PERMANENT_ITEM_SPECS if x.tag == tag][0]
     return self._MakeCurrentId(spec.sync_type, '<server tag>%s' % tag)
 
+  def _TypeToTypeRootId(self, model_type):
+    """Returns the server ID for the type root node of the given type."""
+    tag = [x.tag for x in self._PERMANENT_ITEM_SPECS
+           if x.sync_type == model_type][0]
+    return self._ServerTagToId(tag)
+
   def _ClientTagToId(self, datatype, tag):
     """Determine the server ID from a client-unique tag.
 
@@ -840,6 +846,9 @@ class SyncDataModel(object):
     if entry.parent_id_string == ROOT_ID:
       # This is generally allowed.
       return True
+    if (not entry.HasField('parent_id_string') and
+        entry.HasField('client_defined_unique_tag')):
+      return True  # Unique client tag items do not need to specify a parent.
     if entry.parent_id_string not in self._entries:
       print 'Warning: Client sent unknown ID.  Should never happen.'
       return False
@@ -939,6 +948,11 @@ class SyncDataModel(object):
     # ID generation state is stored in 'commit_session'.
     self._RewriteIdsAsServerIds(entry, cache_guid, commit_session)
 
+    # Sets the parent ID field for a client-tagged item.  The client is allowed
+    # to not specify parents for these types of items.  The server can figure
+    # out on its own what the parent ID for this entry should be.
+    self._RewriteParentIdForUniqueClientEntry(entry)
+
     # Perform the optimistic concurrency check on the entry's version number.
     # Clients are not allowed to commit unless they indicate that they've seen
     # the most recent version of an object.
@@ -1034,6 +1048,27 @@ class SyncDataModel(object):
       return id_string
     datatype, old_migration_version, inner_id = parsed_id
     return self._MakeCurrentId(datatype, inner_id)
+
+  def _RewriteParentIdForUniqueClientEntry(self, entry):
+    """Sets the entry's parent ID field to the appropriate value.
+
+    The client must always set enough of the specifics of the entries it sends
+    up such that the server can identify its type.  (See crbug.com/373859)
+
+    The client is under no obligation to set the parent ID field.  The server
+    can always infer what the appropriate parent for this model type should be.
+    Having the client not send the parent ID is a step towards the removal of
+    type root nodes.  (See crbug.com/373869)
+
+    This server implements these features by "faking" the existing of a parent
+    ID early on in the commit processing.
+
+    This function has no effect on non-client-tagged items.
+    """
+    if not entry.HasField('client_defined_unique_tag'):
+      return  # Skip this processing for non-client-tagged types.
+    data_type = GetEntryType(entry)
+    entry.parent_id_string = self._TypeToTypeRootId(data_type)
 
   def TriggerMigration(self, datatypes):
     """Cause a migration to occur for a set of datatypes on this account.

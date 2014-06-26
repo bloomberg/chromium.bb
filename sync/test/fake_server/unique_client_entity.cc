@@ -11,6 +11,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"
+#include "sync/test/fake_server/permanent_entity.h"
 
 using std::string;
 
@@ -34,7 +35,6 @@ FakeServerEntity* UniqueClientEntity::CreateNew(
                                 model_type,
                                 client_entity.version(),
                                 client_entity.name(),
-                                client_entity.parent_id_string(),
                                 client_entity.client_defined_unique_tag(),
                                 client_entity.specifics(),
                                 client_entity.ctime(),
@@ -49,7 +49,6 @@ FakeServerEntity* UniqueClientEntity::CreateUpdatedVersion(
                                 current_server_entity->GetModelType(),
                                 client_entity.version(),
                                 client_entity.name(),
-                                client_entity.parent_id_string(),
                                 client_entity.client_defined_unique_tag(),
                                 client_entity.specifics(),
                                 client_entity.ctime(),
@@ -61,13 +60,11 @@ UniqueClientEntity::UniqueClientEntity(
     const ModelType& model_type,
     int64 version,
     const string& name,
-    const string& parent_id,
     const string& client_defined_unique_tag,
     const sync_pb::EntitySpecifics& specifics,
     int64 creation_time,
     int64 last_modified_time)
     : FakeServerEntity(id, model_type, version, name),
-      parent_id_(parent_id),
       client_defined_unique_tag_(client_defined_unique_tag),
       specifics_(specifics),
       creation_time_(creation_time),
@@ -76,7 +73,7 @@ UniqueClientEntity::UniqueClientEntity(
 string UniqueClientEntity::GetParentId() const {
   // The parent ID for this type of entity should always be its ModelType's
   // root node.
-  return parent_id_;
+  return FakeServerEntity::GetTopLevelId(model_type_);
 }
 
 sync_pb::SyncEntity* UniqueClientEntity::SerializeAsProto() {
@@ -86,7 +83,7 @@ sync_pb::SyncEntity* UniqueClientEntity::SerializeAsProto() {
   sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
   specifics->CopyFrom(specifics_);
 
-  sync_entity->set_parent_id_string(parent_id_);
+  sync_entity->set_parent_id_string(GetParentId());
   sync_entity->set_client_defined_unique_tag(client_defined_unique_tag_);
   sync_entity->set_ctime(creation_time_);
   sync_entity->set_mtime(last_modified_time_);

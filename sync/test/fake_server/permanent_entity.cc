@@ -56,7 +56,7 @@ FakeServerEntity* PermanentEntity::CreateTopLevel(const ModelType& model_type) {
                                            << "invalid.";
   string server_tag = syncer::ModelTypeToRootTag(model_type);
   string name = syncer::ModelTypeToString(model_type);
-  string id = FakeServerEntity::CreateId(model_type, server_tag);
+  string id = FakeServerEntity::GetTopLevelId(model_type);
   sync_pb::EntitySpecifics entity_specifics;
   AddDefaultFieldValue(model_type, &entity_specifics);
   return new PermanentEntity(id,

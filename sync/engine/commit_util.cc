@@ -128,7 +128,10 @@ void BuildCommitItem(
   } else {
     new_parent_id = meta_entry.GetParentId();
   }
-  sync_entry->set_parent_id_string(SyncableIdToProto(new_parent_id));
+
+  if (meta_entry.ShouldMaintainHierarchy()) {
+    sync_entry->set_parent_id_string(SyncableIdToProto(new_parent_id));
+  }
 
   // If our parent has changed, send up the old one so the server
   // can correctly deal with multiple parents.

@@ -245,6 +245,10 @@ class SYNC_EXPORT Entry {
   // sort ordering relative to its siblings under the same parent.
   bool ShouldMaintainPosition() const;
 
+  // Returns true if this is an entry that is expected to maintain hierarchy.
+  // ie. Whether or not the PARENT_ID field contains useful information.
+  bool ShouldMaintainHierarchy() const;
+
   Directory* dir() const;
 
   const EntryKernel GetKernelCopy() const {
