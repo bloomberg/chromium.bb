@@ -4,9 +4,30 @@
 
 #include "sync/api/attachments/attachment_downloader.h"
 
+#include "sync/internal_api/public/attachments/attachment_downloader_impl.h"
+
 namespace syncer {
 
 AttachmentDownloader::~AttachmentDownloader() {
+}
+
+// Factory function for creating AttachmentDownloaderImpl.
+// It is introduced to avoid SYNC_EXPORT-ing AttachmentDownloaderImpl since it
+// inherits from OAuth2TokenService::Consumer which is not exported.
+scoped_ptr<AttachmentDownloader> AttachmentDownloader::Create(
+    const std::string& url_prefix,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter,
+    const std::string& account_id,
+    const OAuth2TokenService::ScopeSet scopes,
+    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+        token_service_provider) {
+  return scoped_ptr<AttachmentDownloader>(
+      new AttachmentDownloaderImpl(url_prefix,
+                                   url_request_context_getter,
+                                   account_id,
+                                   scopes,
+                                   token_service_provider.Pass()));
 }
 
 }  // namespace syncer
