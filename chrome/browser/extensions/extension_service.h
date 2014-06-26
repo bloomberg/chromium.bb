@@ -53,6 +53,7 @@ class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
 class OneShotEvent;
+class ExternalInstallManager;
 class SharedModuleService;
 class UpdateObserver;
 }  // namespace extensions
@@ -386,6 +387,10 @@ class ExtensionService
     return shared_module_service_.get();
   }
 
+  extensions::ExternalInstallManager* external_install_manager() {
+    return external_install_manager_.get();
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // For Testing
 
@@ -669,6 +674,10 @@ class ExtensionService
   // The controller for the UI that alerts the user about any blacklisted
   // extensions.
   scoped_ptr<extensions::ExtensionErrorController> error_controller_;
+
+  // The manager for extensions that were externally installed that is
+  // responsible for prompting the user about suspicious extensions.
+  scoped_ptr<extensions::ExternalInstallManager> external_install_manager_;
 
   // Sequenced task runner for extension related file operations.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

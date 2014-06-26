@@ -44,7 +44,8 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/external_install_ui.h"
+#include "chrome/browser/extensions/external_install_error.h"
+#include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -6609,7 +6610,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   service()->UpdateExternalExtensionAlert();
   // Should return false, meaning there aren't any extensions that the user
   // needs to know about.
-  EXPECT_FALSE(extensions::HasExternalInstallError(service()));
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallError());
 
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
@@ -6619,7 +6621,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
 
   service()->CheckForExternalUpdates();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(extensions::HasExternalInstallError(service()));
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallError());
 
   // A hosted app, installed externally.
   // This should NOT trigger an alert.
@@ -6631,7 +6634,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       content::NotificationService::AllSources());
   service()->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_FALSE(extensions::HasExternalInstallError(service()));
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallError());
 
   // Another normal extension, but installed externally.
   // This SHOULD trigger an alert.
@@ -6643,7 +6647,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       content::NotificationService::AllSources());
   service()->CheckForExternalUpdates();
   observer2.Wait();
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
 }
 
 // Test that external extensions are initially disabled, and that enabling
@@ -6665,7 +6669,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
       content::NotificationService::AllSources());
   service()->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
   EXPECT_FALSE(service()->IsExtensionEnabled(page_action));
 
   const Extension* extension =
@@ -6674,7 +6678,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
   EXPECT_EQ(page_action, extension->id());
 
   service()->EnableExtension(page_action);
-  EXPECT_FALSE(extensions::HasExternalInstallError(service()));
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallError());
   EXPECT_TRUE(service()->IsExtensionEnabled(page_action));
 }
 
@@ -6707,20 +6712,26 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalInstallMultiple) {
       base::Bind(&WaitForCountNotificationsCallback, &count));
   service()->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
   EXPECT_FALSE(service()->IsExtensionEnabled(page_action));
   EXPECT_FALSE(service()->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service()->IsExtensionEnabled(theme_crx));
 
   service()->EnableExtension(page_action);
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
-  EXPECT_FALSE(extensions::HasExternalInstallBubble(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallBubble());
+
   service()->EnableExtension(theme_crx);
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
-  EXPECT_FALSE(extensions::HasExternalInstallBubble(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallBubble());
+
   service()->EnableExtension(good_crx);
-  EXPECT_FALSE(extensions::HasExternalInstallError(service()));
-  EXPECT_FALSE(extensions::HasExternalInstallBubble(service()));
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallBubble());
 }
 
 // Test that there is a bubble for external extensions that update
@@ -6750,8 +6761,9 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
       content::NotificationService::AllSources());
   service()->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
-  EXPECT_TRUE(extensions::HasExternalInstallBubble(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
+  EXPECT_TRUE(
+      service()->external_install_manager()->HasExternalInstallBubble());
   EXPECT_FALSE(service()->IsExtensionEnabled(updates_from_webstore));
 }
 
@@ -6777,9 +6789,96 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
       content::NotificationService::AllSources());
   service()->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(extensions::HasExternalInstallError(service()));
-  EXPECT_FALSE(extensions::HasExternalInstallBubble(service()));
+  EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(
+      service()->external_install_manager()->HasExternalInstallBubble());
   EXPECT_FALSE(service()->IsExtensionEnabled(updates_from_webstore));
+}
+
+// Test that clicking to remove the extension on an external install warning
+// uninstalls the extension.
+TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.is_first_run = false;
+  InitializeExtensionService(params);
+
+  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  PackCRX(data_dir().AppendASCII("update_from_webstore"),
+          data_dir().AppendASCII("update_from_webstore.pem"),
+          crx_path);
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+  service_->CheckForExternalUpdates();
+  observer.Wait();
+  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
+
+  // We check both enabled and disabled, since these are "eventually exclusive"
+  // sets.
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(updates_from_webstore));
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(updates_from_webstore));
+
+  // Click the negative response.
+  service_->external_install_manager()->error_for_testing()->InstallUIAbort(
+      true);
+  // The Extension should be uninstalled.
+  EXPECT_FALSE(registry()->GetExtensionById(updates_from_webstore,
+                                            ExtensionRegistry::EVERYTHING));
+  // The error should be removed.
+  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
+}
+
+// Test that clicking to keep the extension on an external install warning
+// re-enables the extension.
+TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.is_first_run = false;
+  InitializeExtensionService(params);
+
+  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  PackCRX(data_dir().AppendASCII("update_from_webstore"),
+          data_dir().AppendASCII("update_from_webstore.pem"),
+          crx_path);
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+  service_->CheckForExternalUpdates();
+  observer.Wait();
+  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
+
+  // We check both enabled and disabled, since these are "eventually exclusive"
+  // sets.
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(updates_from_webstore));
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(updates_from_webstore));
+
+  // Accept the extension.
+  service_->external_install_manager()->error_for_testing()->InstallUIProceed();
+
+  // It should be enabled again.
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(updates_from_webstore));
+  EXPECT_FALSE(
+      registry()->disabled_extensions().GetByID(updates_from_webstore));
+
+  // The error should be removed.
+  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
 }
 
 TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
