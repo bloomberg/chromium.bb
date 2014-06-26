@@ -10,70 +10,20 @@ Explore our new in-browser development environment and debugger.</p>
 all in your desktop web browser or on a Chromebook.
 Work either on-line or off-line!</p>
 <iframe class="video" width="500" height="281"
-src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><section id="limitations">
-<h3 id="limitations">Limitations</h3>
-<b><font color="#880000">
-NOTE: The NaCl Development Environment is not yet stable.
-Ideally user data is preserved, but current it can be lost during updates or
-sporadically. We're working to resolve this.
-</font></b><p>These development tools are a work in progress.
+src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><section id="work-in-progress">
+<h3 id="work-in-progress">Work in Progress</h3>
+<p>These development tools are a work in progress, see <a class="reference internal" href="#feature-status">Feature Status</a>.
 At this point, they are a learning tool and demonstration of NaCl&#8217;s
 flexibility, but are not the recommended tools for a production application.
 To develop a substantial application for Native Client /
 Portable Native Client,
 we currently recommend you use the
 <a class="reference external" href="/native-client/sdk/download">Native Client SDK</a>.</p>
-<p>Here is a summary of feature status. We hope to overcome these limitations
-in the near future:</p>
-<blockquote>
-<div><ul class="small-gap">
-<li><p class="first">NaCl Development Environment</p>
-<ul class="small-gap">
-<li><p class="first">General</p>
-<ul class="small-gap">
-<li><p class="first">Supported:</p>
-<ul class="small-gap">
-<li>Python (built-in)</li>
-<li>GCC w/ GLibC (x86-32 and x86-64 only)</li>
-<li>Lua (install with: <cite>package -i lua &amp;&amp; . setup-environment</cite>)</li>
-<li>Ruby (install with: <cite>package -i ruby &amp;&amp; . setup-environment</cite>)</li>
-<li>Nethack! (install with: <cite>package -i nethack &amp;&amp; . setup-environment</cite>)</li>
-</ul>
-</li>
-<li><p class="first">Unsupported:</p>
-<ul class="small-gap">
-<li>Targeting Newlib</li>
-<li>Targeting PNaCl</li>
-<li>Forking in bash</li>
-<li>Pipes / Redirection</li>
-<li>Symbolic and hard links</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p class="first">Missing / broken on ARM:</p>
-<ul class="small-gap">
-<li>Git (broken)</li>
-<li>GCC (unsupported)</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p class="first">Debugger</p>
-<ul class="small-gap">
-<li>Runs reliably only on a recent Beta or Dev Channel (M36+) build.</li>
-<li><p class="first">Currently unreliable on some platforms:</p>
-<ul class="small-gap">
-<li>ChromeOS</li>
-<li>Mac OSX</li>
-<li>Windows</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div></blockquote>
-</section><section id="installation">
+<b><font color="#880000">
+NOTE: The NaCl Development Environment is not yet stable.
+Ideally user data is preserved, but currently it can be lost during updates
+or sporadically. We're working to resolve this.
+</font></b></section><section id="installation">
 <h3 id="installation">Installation</h3>
 <p>The setup process currently requires several steps.
 We&#8217;re working to reduce the number of steps in future releases.
@@ -273,6 +223,58 @@ $ make serve
 Things are rapidly changing and in the coming months you can expect to see
 further improvements and filling out of our platform and library support.</p>
 <p>Check back at this page for the latest status.</p>
+</section><section id="feature-status">
+<h3 id="feature-status">Feature Status</h3>
+<p>Here is a summary of feature status. We hope to overcome these limitations
+in the near future:</p>
+<blockquote>
+<div><ul class="small-gap">
+<li><p class="first">NaCl Development Environment</p>
+<ul class="small-gap">
+<li><p class="first">General</p>
+<ul class="small-gap">
+<li><p class="first">Supported:</p>
+<ul class="small-gap">
+<li>Python (built-in)</li>
+<li>GCC w/ GLibC (x86-32 and x86-64 only)</li>
+<li>Lua (install with: <cite>package -i lua &amp;&amp; . setup-environment</cite>)</li>
+<li>Ruby (install with: <cite>package -i ruby &amp;&amp; . setup-environment</cite>)</li>
+<li>Nethack! (install with: <cite>package -i nethack &amp;&amp; . setup-environment</cite>)</li>
+</ul>
+</li>
+<li><p class="first">Unsupported:</p>
+<ul class="small-gap">
+<li>Targeting Newlib</li>
+<li>Targeting PNaCl</li>
+<li>Forking in bash</li>
+<li>Pipes / Redirection</li>
+<li>Symbolic and hard links</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p class="first">Missing / broken on ARM:</p>
+<ul class="small-gap">
+<li>Git (broken)</li>
+<li>GCC (unsupported)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p class="first">Debugger</p>
+<ul class="small-gap">
+<li>Runs reliably only on a recent Beta or Dev Channel (M36+) build.</li>
+<li><p class="first">Currently unreliable on some platforms:</p>
+<ul class="small-gap">
+<li>ChromeOS</li>
+<li>Mac OSX</li>
+<li>Windows</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
 </section></section></section>
 
 {{/partials.standard_nacl_article}}

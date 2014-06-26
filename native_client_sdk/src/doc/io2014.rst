@@ -19,18 +19,10 @@ Work either on-line or off-line!
   <iframe class="video" width="500" height="281"
   src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe>
 
-Limitations
-===========
+Work in Progress
+================
 
-.. raw:: html
-
-  <b><font color="#880000">
-  NOTE: The NaCl Development Environment is not yet stable.
-  Ideally user data is preserved, but current it can be lost during updates or
-  sporadically. We're working to resolve this.
-  </font></b>
-
-These development tools are a work in progress.
+These development tools are a work in progress, see `Feature Status`_.
 At this point, they are a learning tool and demonstration of NaCl's
 flexibility, but are not the recommended tools for a production application.
 To develop a substantial application for Native Client /
@@ -38,42 +30,13 @@ Portable Native Client,
 we currently recommend you use the
 `Native Client SDK </native-client/sdk/download>`_.
 
-Here is a summary of feature status. We hope to overcome these limitations
-in the near future:
+.. raw:: html
 
-  * NaCl Development Environment
-
-    * General
-
-      * Supported:
-
-        * Python (built-in)
-        * GCC w/ GLibC (x86-32 and x86-64 only)
-        * Lua (install with: `package -i lua && . setup-environment`)
-        * Ruby (install with: `package -i ruby && . setup-environment`)
-        * Nethack! (install with: `package -i nethack && . setup-environment`)
-
-      * Unsupported:
-
-        * Targeting Newlib
-        * Targeting PNaCl
-        * Forking in bash
-        * Pipes / Redirection
-        * Symbolic and hard links
-
-    * Missing / broken on ARM:
-
-      * Git (broken)
-      * GCC (unsupported)
-
-  * Debugger
- 
-    * Runs reliably only on a recent Beta or Dev Channel (M36+) build.
-    * Currently unreliable on some platforms:
-      
-      * ChromeOS
-      * Mac OSX
-      * Windows
+  <b><font color="#880000">
+  NOTE: The NaCl Development Environment is not yet stable.
+  Ideally user data is preserved, but currently it can be lost during updates
+  or sporadically. We're working to resolve this.
+  </font></b>
 
 Installation
 ============
@@ -295,3 +258,43 @@ Things are rapidly changing and in the coming months you can expect to see
 further improvements and filling out of our platform and library support.
 
 Check back at this page for the latest status.
+
+Feature Status
+==============
+
+Here is a summary of feature status. We hope to overcome these limitations
+in the near future:
+
+  * NaCl Development Environment
+
+    * General
+
+      * Supported:
+
+        * Python (built-in)
+        * GCC w/ GLibC (x86-32 and x86-64 only)
+        * Lua (install with: `package -i lua && . setup-environment`)
+        * Ruby (install with: `package -i ruby && . setup-environment`)
+        * Nethack! (install with: `package -i nethack && . setup-environment`)
+
+      * Unsupported:
+
+        * Targeting Newlib
+        * Targeting PNaCl
+        * Forking in bash
+        * Pipes / Redirection
+        * Symbolic and hard links
+
+    * Missing / broken on ARM:
+
+      * Git (broken)
+      * GCC (unsupported)
+
+  * Debugger
+ 
+    * Runs reliably only on a recent Beta or Dev Channel (M36+) build.
+    * Currently unreliable on some platforms:
+      
+      * ChromeOS
+      * Mac OSX
+      * Windows
