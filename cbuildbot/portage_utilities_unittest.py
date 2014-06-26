@@ -528,6 +528,44 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
+class UtilFuncsTest(cros_test_lib.TempDirTestCase):
+  """Basic tests for utility functions"""
+
+  def _CreateProfilesRepoName(self, name):
+    """Write |name| to profiles/repo_name"""
+    profiles = os.path.join(self.tempdir, 'profiles')
+    osutils.SafeMakedirs(profiles)
+    repo_name = os.path.join(profiles, 'repo_name')
+    osutils.WriteFile(repo_name, name)
+
+  def testGetOverlayNameNone(self):
+    """If the overlay has no name, it should be fine"""
+    self.assertEqual(portage_utilities.GetOverlayName(self.tempdir), None)
+
+  def testGetOverlayNameProfilesRepoName(self):
+    """Verify profiles/repo_name can be read"""
+    self._CreateProfilesRepoName('hi!')
+    self.assertEqual(portage_utilities.GetOverlayName(self.tempdir), 'hi!')
+
+  def testGetOverlayNameProfilesLayoutConf(self):
+    """Verify metadata/layout.conf is read before profiles/repo_name"""
+    self._CreateProfilesRepoName('hi!')
+    metadata = os.path.join(self.tempdir, 'metadata')
+    osutils.SafeMakedirs(metadata)
+    layout_conf = os.path.join(metadata, 'layout.conf')
+    osutils.WriteFile(layout_conf, 'repo-name = bye')
+    self.assertEqual(portage_utilities.GetOverlayName(self.tempdir), 'bye')
+
+  def testGetOverlayNameProfilesLayoutConfNoRepoName(self):
+    """Verify metadata/layout.conf w/out repo-name is ignored"""
+    self._CreateProfilesRepoName('hi!')
+    metadata = os.path.join(self.tempdir, 'metadata')
+    osutils.SafeMakedirs(metadata)
+    layout_conf = os.path.join(metadata, 'layout.conf')
+    osutils.WriteFile(layout_conf, 'here = we go')
+    self.assertEqual(portage_utilities.GetOverlayName(self.tempdir), 'hi!')
+
+
 class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
   """Tests of the EBuild Dictionary."""
 

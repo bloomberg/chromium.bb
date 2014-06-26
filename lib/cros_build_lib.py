@@ -1363,7 +1363,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
 
         chunks = line.split('=', 1)
         if len(chunks) != 2:
-          raise ValueError('Malformed version file %r; line %r'
+          raise ValueError('Malformed key=value file %r; line %r'
                            % (input, raw_line))
         key = chunks[0].strip()
         val = chunks[1].strip()

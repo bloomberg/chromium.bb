@@ -153,11 +153,18 @@ def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
 
 
 def GetOverlayName(overlay):
+  """Get the self-declared repo name for the |overlay| path."""
   try:
-    return open('%s/profiles/repo_name' % overlay).readline().rstrip()
-  except IOError:
-    # Not all overlays have a repo_name, so don't make a fuss.
-    return None
+    return cros_build_lib.LoadKeyValueFile(
+        '%s/metadata/layout.conf' % overlay)['repo-name']
+  except (KeyError, IOError):
+    # Not all layout.conf files have a repo-name, so don't make a fuss.
+    try:
+      with open(os.path.join(overlay, 'profiles', 'repo_name')) as f:
+        return f.readline().rstrip()
+    except IOError:
+      # Not all overlays have a repo_name, so don't make a fuss.
+      return None
 
 
 class EBuildVersionFormatException(Exception):
