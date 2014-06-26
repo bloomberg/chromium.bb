@@ -615,25 +615,9 @@ name=http://crbug.com/313788
 *!ChromeBrowserMainParts::PreMainMessageLoopRun
 
 UNADDRESSABLE ACCESS
-name=crbug.com/389191(a)
-*!content::LegacyRenderWidgetHostHWND::UpdateParent
-*!content::RenderWidgetHostViewAura::WasHidden
-*!content::WebContentsViewAura::OnWindowParentChanged
-*!aura::Window::OnParentChanged
-*!aura::Window::AddChild
-*!views::internal::NativeWidgetPrivate::ReparentNativeView
-*!views::NativeViewHostAura::RemoveClippingWindow
-*!views::NativeViewHost::Detach
-
-UNADDRESSABLE ACCESS
-name=crbug.com/389191(b)
-*!content::LegacyRenderWidgetHostHWND::Destroy
-*!content::RenderWidgetHostViewAura::OnWindowDestroying
-*!aura::Window::~Window
-*!aura::Window::`scalar deleting destructor'
-*!content::RenderWidgetHostViewAura::Destroy
-*!content::RenderWidgetHostImpl::Shutdown
-*!content::RenderViewHostImpl::Shutdown
+name=crbug.com/389191
+*!content::LegacyRenderWidgetHostHWND::*
+*!content::RenderWidgetHostViewAura::*
 
 # This suppression is deliberately general, as bugs reported in
 # v8 generated code are difficult to track down. Xref Dr. Memory issue
