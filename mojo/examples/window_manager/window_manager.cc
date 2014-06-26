@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/window_manager/debug_panel.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
@@ -45,11 +44,6 @@ namespace examples {
 class WindowManager;
 
 namespace {
-
-const SkColor kColors[] = { SK_ColorYELLOW,
-                            SK_ColorRED,
-                            SK_ColorGREEN,
-                            SK_ColorMAGENTA };
 
 const int kBorderInset = 25;
 const int kControlPanelWidth = 200;
@@ -163,6 +157,7 @@ class KeyboardManager : public KeyboardClient {
 };
 
 class WindowManager : public ApplicationDelegate,
+                      public DebugPanel::Delegate,
                       public ViewObserver,
                       public ViewManagerDelegate,
                       public ViewEventDispatcher {
@@ -170,8 +165,7 @@ class WindowManager : public ApplicationDelegate,
   WindowManager()
       : launcher_ui_(NULL),
         view_manager_(NULL),
-        app_(NULL),
-        next_color_(0) {
+        app_(NULL) {
   }
 
   virtual ~WindowManager() {}
@@ -216,10 +210,11 @@ class WindowManager : public ApplicationDelegate,
                << " url: " << url.To<std::string>();
   }
 
-  void RequestNavigate(
+  // Overridden from DebugPanel::Delegate:
+  virtual void RequestNavigate(
     uint32 source_node_id,
     navigation::Target target,
-    navigation::NavigationDetailsPtr nav_details) {
+    navigation::NavigationDetailsPtr nav_details) OVERRIDE {
     launcher_->Launch(nav_details->url,
                       base::Bind(&WindowManager::OnLaunch,
                                  base::Unretained(this),
@@ -241,30 +236,6 @@ class WindowManager : public ApplicationDelegate,
     connection->AddService<NavigatorHost>(this);
     ViewManager::ConfigureIncomingConnection(connection, this);
     return true;
-  }
-
-  // Overridden from ViewObserver:
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
-    // TODO(aa): Replace this with buttons in the control panel.
-    if (event->action == ui::ET_MOUSE_RELEASED) {
-      std::string app_url;
-      if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
-        app_url = "mojo://mojo_embedded_app";
-      else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
-        app_url = "mojo://mojo_nesting_app";
-      if (app_url.empty())
-        return;
-
-      navigation::NavigationDetailsPtr nav_details(
-          navigation::NavigationDetails::New());
-      nav_details->url = base::StringPrintf(
-          "%s/%x", app_url.c_str(),
-          kColors[next_color_ % arraysize(kColors)]);
-      next_color_++;
-
-      RequestNavigate(content_node_id_, navigation::DEFAULT,
-                      nav_details.Pass());
-    }
   }
 
   // Overridden from ViewManagerDelegate:
@@ -410,7 +381,7 @@ class WindowManager : public ApplicationDelegate,
                          kTextfieldHeight);
     node->SetBounds(bounds);
 
-    debug_panel_ = new DebugPanel(node);
+    debug_panel_ = new DebugPanel(this, node);
   }
 
   scoped_ptr<ViewsInit> views_init_;
@@ -425,7 +396,6 @@ class WindowManager : public ApplicationDelegate,
 
   scoped_ptr<KeyboardManager> keyboard_manager_;
   ApplicationImpl* app_;
-  size_t next_color_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
