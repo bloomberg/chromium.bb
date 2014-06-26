@@ -14,10 +14,13 @@
         'cast_receiver',
         'cast_transport',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
+        'test/fake_media_source.cc',
+        'test/fake_media_source.h',
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
         'test/skewed_single_thread_task_runner.cc',
