@@ -76,7 +76,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // HFontRef is reference counted. Upon deletion, it deletes the HFONT.
   // By making HFontRef maintain the reference to the HFONT, multiple
   // HFontRefs can share the same HFONT, and Font can provide value semantics.
-  class HFontRef : public base::RefCounted<HFontRef> {
+  class GFX_EXPORT HFontRef : public base::RefCounted<HFontRef> {
    public:
     // This constructor takes control of the HFONT, and will delete it when
     // the HFontRef is deleted.
