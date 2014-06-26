@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -444,11 +443,8 @@ class ExtensionServiceObserverBridge
 }
 
 - (void)activateBrowserAction:(const std::string&)extension_id {
-  ExtensionService* service = browser_->profile()->GetExtensionService();
-  if (!service)
-    return;
-
-  const Extension* extension = service->GetExtensionById(extension_id, false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      browser_->profile())->enabled_extensions().GetByID(extension_id);
   if (!extension)
     return;
 

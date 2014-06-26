@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -80,14 +80,8 @@ std::string OfflineLoadPage::GetHTMLContents() {
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   DCHECK(profile);
-  const extensions::Extension* extension = NULL;
-  ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-
-  // Extension service does not exist in test.
-  if (extensions_service)
-    extension = extensions_service->extensions()->GetHostedAppByURL(url_);
-
+  const extensions::Extension* extension = extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetHostedAppByURL(url_);
   if (extension && !extension->from_bookmark()) {
     LocalizedError::GetAppErrorStrings(url_, extension, &error_strings);
     resource_id = IDR_OFFLINE_APP_LOAD_HTML;
@@ -110,8 +104,8 @@ std::string OfflineLoadPage::GetHTMLContents() {
   return webui::GetTemplatesHtml(template_html, &error_strings, "t");
 }
 
- void OfflineLoadPage::OverrideRendererPrefs(
-      content::RendererPreferences* prefs) {
+void OfflineLoadPage::OverrideRendererPrefs(
+    content::RendererPreferences* prefs) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
@@ -143,8 +137,10 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   } else if (command == "open_connectivity_diagnostics") {
     Profile* profile = Profile::FromBrowserContext(
         web_contents_->GetBrowserContext());
-    const extensions::Extension* extension = profile->GetExtensionService()->
-        GetInstalledExtension("kodldpbjkkmmnilagfdheibampofhaom");
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            "kodldpbjkkmmnilagfdheibampofhaom",
+            extensions::ExtensionRegistry::EVERYTHING);
     apps::LaunchPlatformAppWithUrl(profile, extension, "",
                                    GURL::EmptyGURL(), GURL::EmptyGURL());
 

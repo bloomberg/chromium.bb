@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_app_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
@@ -140,7 +140,7 @@ FullTaskDescriptor::FullTaskDescriptor(
     : task_descriptor_(task_descriptor),
       task_title_(task_title),
       icon_url_(icon_url),
-      is_default_(is_default){
+      is_default_(is_default) {
 }
 
 void UpdateDefaultTask(PrefService* pref_service,
@@ -273,10 +273,8 @@ bool ExecuteFileTask(Profile* profile,
   }
 
   // Get the extension.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const Extension* extension = service ?
-      service->GetExtensionById(task.app_id, false) : NULL;
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetByID(task.app_id);
   if (!extension)
     return false;
 
@@ -374,13 +372,11 @@ void FindFileHandlerTasks(
   DCHECK(!path_mime_set.empty());
   DCHECK(result_list);
 
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return;
-
+  const extensions::ExtensionSet& enabled_extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   for (extensions::ExtensionSet::const_iterator iter =
-           service->extensions()->begin();
-       iter != service->extensions()->end();
+           enabled_extensions.begin();
+       iter != enabled_extensions.end();
        ++iter) {
     const Extension* extension = iter->get();
 
@@ -432,15 +428,15 @@ void FindFileBrowserHandlerTasks(
   if (common_tasks.empty())
     return;
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const extensions::ExtensionSet& enabled_extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   for (file_browser_handlers::FileBrowserHandlerList::const_iterator iter =
            common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
     const FileBrowserHandler* handler = *iter;
     const std::string extension_id = handler->extension_id();
-    const Extension* extension = service->GetExtensionById(extension_id, false);
+    const Extension* extension = enabled_extensions.GetByID(extension_id);
     DCHECK(extension);
 
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in

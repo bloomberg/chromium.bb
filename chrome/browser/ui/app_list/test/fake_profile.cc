@@ -103,10 +103,6 @@ history::TopSites* FakeProfile::GetTopSitesWithoutCreating() {
   return NULL;
 }
 
-ExtensionService* FakeProfile::GetExtensionService() {
-  return NULL;
-}
-
 ExtensionSpecialStoragePolicy* FakeProfile::GetExtensionSpecialStoragePolicy() {
   return NULL;
 }

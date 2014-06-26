@@ -18,7 +18,6 @@
 
 class ChromeAppCacheService;
 class DevToolsNetworkController;
-class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HostContentSettingsMap;
@@ -211,12 +210,6 @@ class Profile : public content::BrowserContext {
 
   // Variant of GetTopSites that doesn't force creation.
   virtual history::TopSites* GetTopSitesWithoutCreating() = 0;
-
-  // DEPRECATED. Instead, use ExtensionSystem::extension_service().
-  // Retrieves a pointer to the ExtensionService associated with this
-  // profile. The ExtensionService is created at startup.
-  // TODO(yoz): remove this accessor (bug 104095).
-  virtual ExtensionService* GetExtensionService() = 0;
 
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*

@@ -4,8 +4,6 @@
 
 #include "chrome/test/base/testing_profile.h"
 
-#include "build/build_config.h"
-
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -21,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -69,7 +66,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -89,6 +85,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/extension_system.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -657,10 +654,6 @@ bool TestingProfile::IsSupervised() {
   return !supervised_user_id_.empty();
 }
 
-ExtensionService* TestingProfile::GetExtensionService() {
-  return extensions::ExtensionSystem::Get(this)->extension_service();
-}
-
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
   extension_special_storage_policy_ = extension_special_storage_policy;
@@ -800,7 +793,8 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
   if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
 #if defined(ENABLE_EXTENSIONS)
-    ExtensionService* extension_service = GetExtensionService();
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(this)->extension_service();
     if (extension_service)
       host_content_settings_map_->RegisterExtensionService(extension_service);
 #endif

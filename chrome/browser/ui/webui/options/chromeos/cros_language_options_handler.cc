@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,7 +35,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -49,10 +48,10 @@ namespace {
 // see: crbug.com/240586
 
 bool IsBlacklisted(const std::string& language_code) {
-  return language_code == "si"; // Sinhala
+  return language_code == "si";  // Sinhala
 }
 
-} // namespace
+}  // namespace
 
 namespace chromeos {
 namespace options {
@@ -555,8 +554,9 @@ void CrosLanguageOptionsHandler::InitializePage() {
 
 void CrosLanguageOptionsHandler::AddImeProvider(base::ListValue* list) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  for (size_t i = 0; i < list->GetSize(); i++) {
+  const extensions::ExtensionSet& enabled_extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (size_t i = 0; i < list->GetSize(); ++i) {
     base::DictionaryValue* entry;
     list->GetDictionary(i, &entry);
 
@@ -566,7 +566,7 @@ void CrosLanguageOptionsHandler::AddImeProvider(base::ListValue* list) {
     std::string extension_id =
         extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
     const extensions::Extension* extension =
-        extension_service->GetExtensionById(extension_id, false);
+        enabled_extensions.GetByID(extension_id);
     if (extension)
       entry->SetString("extensionName", extension->name());
   }

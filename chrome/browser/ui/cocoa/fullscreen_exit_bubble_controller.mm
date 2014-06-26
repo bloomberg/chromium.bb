@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -257,8 +258,10 @@ const float kHideDuration = 0.7;
 - (NSString*)getLabelText {
   if (bubbleType_ == FEB_TYPE_NONE)
     return @"";
+  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+      browser_->profile())->extension_service();
   return SysUTF16ToNSString(fullscreen_bubble::GetLabelTextForType(
-          bubbleType_, url_, browser_->profile()->GetExtensionService()));
+          bubbleType_, url_, extension_service));
 }
 
 // This looks at the Main Menu and determines what the user has set as the

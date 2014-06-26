@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -53,8 +53,9 @@ PageActionDecoration::PageActionDecoration(
       page_action_(page_action),
       current_tab_id_(-1),
       preview_enabled_(false) {
-  const Extension* extension = browser->profile()->GetExtensionService()->
-      GetExtensionById(page_action->extension_id(), false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      browser->profile())->enabled_extensions().GetByID(
+          page_action->extension_id());
   DCHECK(extension);
 
   icon_factory_.reset(new ExtensionActionIconFactory(
@@ -196,13 +197,11 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSMenu* PageActionDecoration::GetMenu() {
-  ExtensionService* service = browser_->profile()->GetExtensionService();
-  if (!service)
-    return nil;
-  const Extension* extension = service->GetExtensionById(
-      page_action_->extension_id(), false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      browser_->profile())->enabled_extensions().GetByID(
+          page_action_->extension_id());
   DCHECK(extension);
-  if (!extension || !extension->ShowConfigureContextMenus())
+  if (!extension->ShowConfigureContextMenus())
     return nil;
 
   contextMenuController_.reset([[ExtensionActionContextMenuController alloc]

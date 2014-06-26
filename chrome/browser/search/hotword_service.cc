@@ -140,13 +140,11 @@ void RecordErrorMetrics(int error_message) {
 }
 
 ExtensionService* GetExtensionService(Profile* profile) {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
-  if (extension_system)
-    return extension_system->extension_service();
-  return NULL;
+  return extension_system ?  extension_system->extension_service() : NULL;
 }
 
 std::string GetCurrentLocale(Profile* profile) {

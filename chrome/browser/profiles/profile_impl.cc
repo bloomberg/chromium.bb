@@ -111,9 +111,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -799,10 +796,6 @@ Profile* ProfileImpl::GetOriginalProfile() {
 
 bool ProfileImpl::IsSupervised() {
   return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
-}
-
-ExtensionService* ProfileImpl::GetExtensionService() {
-  return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
 ExtensionSpecialStoragePolicy*

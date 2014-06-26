@@ -30,12 +30,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 
 #if defined(OS_LINUX)
-#include "chrome/browser/ui/browser_window.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -565,10 +565,11 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
       full_path,  location, *input_value, Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
-  browser()->profile()->GetExtensionService()->OnExtensionInstalled(
-      extension.get(),
-      syncer::StringOrdinal(),
-      extensions::kInstallFlagInstallImmediately);
+  extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service()->OnExtensionInstalled(
+          extension.get(),
+          syncer::StringOrdinal(),
+          extensions::kInstallFlagInstallImmediately);
   return extension;
 }
 

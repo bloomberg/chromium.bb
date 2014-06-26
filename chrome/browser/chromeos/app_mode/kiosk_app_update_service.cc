@@ -63,7 +63,8 @@ void KioskAppUpdateService::ForceAppUpdateRestart() {
 }
 
 void KioskAppUpdateService::Shutdown() {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (service)
     service->RemoveUpdateObserver(this);
 }

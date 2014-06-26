@@ -46,7 +46,7 @@ class TtsExtensionLoaderChromeOsFactory
   virtual ~TtsExtensionLoaderChromeOsFactory() {}
 
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE{
+      content::BrowserContext* context) const OVERRIDE {
     // If given an incognito profile (including the Chrome OS login
     // profile), share the service with the original profile.
     return chrome::GetBrowserContextRedirectedInIncognito(context);
@@ -85,7 +85,8 @@ bool TtsExtensionLoaderChromeOs::LoadTtsExtension() {
   // Load the component extension into this profile.
   VLOG(1) << "Loading TTS component extension.";
   tts_state_ = TTS_LOADING;
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extension_service);
   extension_service->component_loader()->AddChromeOsSpeechSynthesisExtension();
   return true;

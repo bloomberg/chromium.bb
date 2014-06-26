@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -55,7 +56,8 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
     // Loads extension.
     base::FilePath path = ui_test_utils::GetTestFilePath(
         base::FilePath(kInputViewTestDir), base::FilePath(kExtensionName));
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     scoped_refptr<extensions::CrxInstaller> installer =
         extensions::CrxInstaller::CreateSilent(service);
 
