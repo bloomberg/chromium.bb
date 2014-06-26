@@ -25,7 +25,8 @@ class CONTENT_EXPORT PowerProfilerService {
   void AddObserver(PowerProfilerObserver* observer);
   void RemoveObserver(PowerProfilerObserver* observer);
 
-  bool IsAvailable();
+  bool IsAvailable() const;
+  std::string GetAccuracyLevel() const;
 
   virtual ~PowerProfilerService();
 

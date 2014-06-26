@@ -21,6 +21,11 @@ DevToolsPowerHandler::DevToolsPowerHandler() {
   RegisterCommandHandler(devtools::Power::canProfilePower::kName,
                          base::Bind(&DevToolsPowerHandler::OnCanProfilePower,
                                     base::Unretained(this)));
+  // TODO(vivekg): Replace hardcoded "Power.getAccuracyLevel" with
+  // devtools::Power::getAccuracyLevel::kName once crrev.com/336713005 lands
+  RegisterCommandHandler("Power.getAccuracyLevel" ,
+                         base::Bind(&DevToolsPowerHandler::OnGetAccuracyLevel,
+                                    base::Unretained(this)));
 }
 
 DevToolsPowerHandler::~DevToolsPowerHandler() {
@@ -78,6 +83,19 @@ DevToolsPowerHandler::OnCanProfilePower(
                      PowerProfilerService::GetInstance()->IsAvailable());
 
   return command->SuccessResponse(result);
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsPowerHandler::OnGetAccuracyLevel(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  if (PowerProfilerService::GetInstance()->IsAvailable()) {
+    base::DictionaryValue* result = new base::DictionaryValue();
+    result->SetString(
+        devtools::kResult,
+        PowerProfilerService::GetInstance()->GetAccuracyLevel());
+    return command->SuccessResponse(result);
+  }
+  return command->InternalErrorResponse("Power profiler service unavailable");
 }
 
 void DevToolsPowerHandler::OnClientDetached() {

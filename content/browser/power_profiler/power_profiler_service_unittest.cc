@@ -40,6 +40,8 @@ class TestPowerDataProvider : public PowerDataProvider {
     return base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs);
   }
 
+  virtual AccuracyLevel GetAccuracyLevel() OVERRIDE { return High; }
+
  private:
   int num_events_to_send_;
   DISALLOW_COPY_AND_ASSIGN(TestPowerDataProvider);

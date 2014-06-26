@@ -21,6 +21,12 @@ typedef std::vector<PowerEvent> PowerEventVector;
 // A class used to get power usage.
 class PowerDataProvider {
  public:
+  enum AccuracyLevel {
+    High,
+    Moderate,
+    Low
+  };
+
   static scoped_ptr<PowerDataProvider> Create();
 
   PowerDataProvider() {}
@@ -31,6 +37,9 @@ class PowerDataProvider {
 
   // Returns sampling rate at which the provider can operate.
   virtual base::TimeDelta GetSamplingRate() = 0;
+
+  // Returns accuracy level of the provider.
+  virtual AccuracyLevel GetAccuracyLevel() = 0;
 };
 
 }  // namespace content

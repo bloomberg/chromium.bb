@@ -31,6 +31,8 @@ class DevToolsPowerHandler
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> OnCanProfilePower(
       scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> OnGetAccuracyLevel(
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsPowerHandler);
 };

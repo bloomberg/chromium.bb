@@ -42,8 +42,21 @@ PowerProfilerService::PowerProfilerService(
 PowerProfilerService::~PowerProfilerService() {
 }
 
-bool PowerProfilerService::IsAvailable() {
+bool PowerProfilerService::IsAvailable() const {
   return status_ !=  UNINITIALIZED;
+}
+
+std::string PowerProfilerService::GetAccuracyLevel() const {
+  DCHECK(IsAvailable());
+  switch (data_provider_->GetAccuracyLevel()) {
+    case PowerDataProvider::High:
+      return "High";
+    case PowerDataProvider::Moderate:
+      return "Moderate";
+    case PowerDataProvider::Low:
+      return "Low";
+  }
+  return "";
 }
 
 PowerProfilerService* PowerProfilerService::GetInstance() {
