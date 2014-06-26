@@ -135,10 +135,12 @@ void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
 
 void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
 {
-    if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
+    if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled)) {
         m_frontend->inspector()->evaluateForTestInFrontend(static_cast<int>(callId), script);
-    else
+        m_frontend->inspector()->flush();
+    } else {
         m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
+    }
 }
 
 void InspectorInspectorAgent::setInjectedScriptForOrigin(const String& origin, const String& source)
