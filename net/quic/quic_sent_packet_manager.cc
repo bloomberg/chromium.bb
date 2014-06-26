@@ -85,16 +85,22 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
                                       config.ReceivedInitialRoundTripTimeUs()));
   }
   // TODO(ianswett): BBR is currently a server only feature.
-  if (config.HasReceivedCongestionOptions() &&
-      ContainsQuicTag(config.ReceivedCongestionOptions(), kTBBR)) {
+  if (config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kTCPBBR, stats_));
   }
-  if (config.congestion_feedback() == kPACE) {
+  if (config.congestion_feedback() == kPACE ||
+      (config.HasReceivedConnectionOptions() &&
+       ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE))) {
     MaybeEnablePacing();
   }
-  if (config.HasReceivedLossDetection() &&
-      config.ReceivedLossDetection() == kTIME) {
+  // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
+  // the ConnectionOptions code is live everywhere.
+  if ((config.HasReceivedLossDetection() &&
+       config.ReceivedLossDetection() == kTIME) ||
+      (config.HasReceivedConnectionOptions() &&
+       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME))) {
     loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
   }
   send_algorithm_->SetFromConfig(config, is_server_);

@@ -135,8 +135,6 @@ class QuicClient : public EpollCallbackInterface,
 
   const IPEndPoint& client_address() const { return client_address_; }
 
-  EpollServer* epoll_server() { return epoll_server_; }
-
   int fd() { return fd_; }
 
   const QuicServerId& server_id() const { return server_id_; }
@@ -183,6 +181,8 @@ class QuicClient : public EpollCallbackInterface,
                          int buffer_len,
                          IPEndPoint* server_address,
                          IPAddressNumber* client_ip);
+
+  EpollServer* epoll_server() { return epoll_server_; }
 
  private:
   friend class net::tools::test::QuicClientPeer;

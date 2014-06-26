@@ -164,7 +164,6 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       delete_sessions_alarm_(
           helper_->CreateAlarm(new DeleteSessionsAlarm(this))),
       supported_versions_(supported_versions),
-      supported_versions_no_flow_control_(supported_versions),
       supported_versions_no_connection_flow_control_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
@@ -181,17 +180,6 @@ void QuicDispatcher::Initialize(QuicServerPacketWriter* writer) {
   DCHECK(writer_ == NULL);
   writer_.reset(writer);
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
-
-  // Remove all versions > QUIC_VERSION_16 from the
-  // supported_versions_no_flow_control_ vector.
-  QuicVersionVector::iterator it =
-      find(supported_versions_no_flow_control_.begin(),
-           supported_versions_no_flow_control_.end(), QUIC_VERSION_17);
-  if (it != supported_versions_no_flow_control_.end()) {
-    supported_versions_no_flow_control_.erase(
-        supported_versions_no_flow_control_.begin(), it + 1);
-  }
-  CHECK(!supported_versions_no_flow_control_.empty());
 
   // Remove all versions > QUIC_VERSION_18 from the
   // supported_versions_no_connection_flow_control_ vector.
@@ -380,25 +368,16 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
     const IPEndPoint& client_address,
     QuicPerConnectionPacketWriter* writer) {
   QuicConnection* connection;
-  if (FLAGS_enable_quic_stream_flow_control_2 &&
-      FLAGS_enable_quic_connection_flow_control_2) {
+  if (FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Creating QuicDispatcher with all versions.";
     connection = new QuicConnection(connection_id, client_address, helper_,
                                     writer, true, supported_versions_);
-  } else if (FLAGS_enable_quic_stream_flow_control_2 &&
-      !FLAGS_enable_quic_connection_flow_control_2) {
+  } else {
     DVLOG(1) << "Connection flow control disabled, creating QuicDispatcher "
              << "WITHOUT version 19 or higher.";
     connection = new QuicConnection(
-        connection_id, client_address, helper_,
-        writer, true,
+        connection_id, client_address, helper_, writer, true,
         supported_versions_no_connection_flow_control_);
-  } else {
-    DVLOG(1) << "Flow control disabled, creating QuicDispatcher WITHOUT "
-             << "version 17 or higher.";
-    connection = new QuicConnection(connection_id, client_address, helper_,
-                                    writer, true,
-                                    supported_versions_no_flow_control_);
   }
   writer->set_connection(connection);
   return connection;

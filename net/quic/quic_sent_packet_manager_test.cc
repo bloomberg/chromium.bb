@@ -5,6 +5,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 
 #include "base/stl_util.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -1321,6 +1322,36 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetection) {
                 &manager_)->GetLossDetectionType());
 }
 
+TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
+  EXPECT_EQ(kNack,
+            QuicSentPacketManagerPeer::GetLossAlgorithm(
+                &manager_)->GetLossDetectionType());
+
+  QuicConfig config;
+  QuicTagVector options;
+  options.push_back(kTIME);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+
+  EXPECT_EQ(kTime,
+            QuicSentPacketManagerPeer::GetLossAlgorithm(
+                &manager_)->GetLossDetectionType());
+}
+
+TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
+  EXPECT_FALSE(manager_.using_pacing());
+
+  QuicConfig config;
+  QuicTagVector options;
+  options.push_back(kPACE);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+
+  EXPECT_TRUE(manager_.using_pacing());
+}
 
 }  // namespace
 }  // namespace test

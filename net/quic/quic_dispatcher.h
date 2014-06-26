@@ -45,8 +45,17 @@ class QuicDispatcherPeer;
 
 class DeleteSessionsAlarm;
 
+class ProcessPacketInterface {
+ public:
+  virtual ~ProcessPacketInterface() {}
+  virtual void ProcessPacket(const IPEndPoint& server_address,
+                             const IPEndPoint& client_address,
+                             const QuicEncryptedPacket& packet) = 0;
+};
+
 class QuicDispatcher : public QuicBlockedWriterInterface,
-                       public QuicServerSessionVisitor {
+                       public QuicServerSessionVisitor,
+                       public ProcessPacketInterface {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -68,7 +77,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // an existing session, or passing it to the TimeWaitListManager.
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
-                             const QuicEncryptedPacket& packet);
+                             const QuicEncryptedPacket& packet) OVERRIDE;
 
   // Returns true if there's anything in the blocked writer list.
   virtual bool HasPendingWrites() const;
@@ -127,10 +136,6 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
 
   const QuicVersionVector& supported_versions() const {
     return supported_versions_;
-  }
-
-  const QuicVersionVector& supported_versions_no_flow_control() const {
-    return supported_versions_no_flow_control_;
   }
 
   const QuicVersionVector& supported_versions_no_connection_flow_control()
@@ -202,12 +207,6 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // skipped as necessary).
   const QuicVersionVector supported_versions_;
 
-  // Versions which do not support flow control (introduced in QUIC_VERSION_17).
-  // This is used to construct new QuicConnections when flow control is disabled
-  // via flag.
-  // TODO(rjshade): Remove this when
-  // FLAGS_enable_quic_stream_flow_control_2 is removed.
-  QuicVersionVector supported_versions_no_flow_control_;
   // Versions which do not support *connection* flow control (introduced in
   // QUIC_VERSION_19).
   // This is used to construct new QuicConnections when connection flow control

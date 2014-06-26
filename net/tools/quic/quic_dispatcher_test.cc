@@ -260,48 +260,6 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   ProcessPacket(client_address, connection_id, false, "foo");
 }
 
-TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
-  // If FLAGS_enable_quic_stream_flow_control_2 is disabled
-  // then the dispatcher should stop creating connections that support
-  // QUIC_VERSION_17 (existing connections will stay alive).
-  // TODO(rjshade): Remove once
-  // FLAGS_enable_quic_stream_flow_control_2 is removed.
-
-  EpollServer eps;
-  QuicConfig config;
-  QuicCryptoServerConfig server_config(QuicCryptoServerConfig::TESTING,
-                                       QuicRandom::GetInstance());
-  IPEndPoint client(net::test::Loopback4(), 1);
-  IPEndPoint server(net::test::Loopback4(), 1);
-  QuicConnectionId kCID = 1234;
-
-  QuicVersion kTestQuicVersions[] = {QUIC_VERSION_17,
-                                     QUIC_VERSION_16,
-                                     QUIC_VERSION_15};
-  QuicVersionVector kTestVersions;
-  for (size_t i = 0; i < arraysize(kTestQuicVersions); ++i) {
-    kTestVersions.push_back(kTestQuicVersions[i]);
-  }
-
-  QuicDispatcher dispatcher(config, server_config, kTestVersions, &eps);
-  dispatcher.Initialize(0);
-
-  // When flag is enabled, new connections should support QUIC_VERSION_17.
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
-  scoped_ptr<QuicConnection> connection_1(
-      QuicDispatcherPeer::CreateQuicConnection(&dispatcher, kCID, client,
-                                               server));
-  EXPECT_EQ(QUIC_VERSION_17, connection_1->version());
-
-
-  // When flag is disabled, new connections should not support QUIC_VERSION_17.
-  FLAGS_enable_quic_stream_flow_control_2 = false;
-  scoped_ptr<QuicConnection> connection_2(
-      QuicDispatcherPeer::CreateQuicConnection(&dispatcher, kCID, client,
-                                               server));
-  EXPECT_EQ(QUIC_VERSION_16, connection_2->version());
-}
-
 class BlockingWriter : public QuicPacketWriterWrapper {
  public:
   BlockingWriter() : write_blocked_(false) {}

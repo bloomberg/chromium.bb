@@ -634,7 +634,6 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   if (version() < QUIC_VERSION_17) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   // Ensure that Writev consumes all the data it is given (simulate no socket
   // blocking).
@@ -663,7 +662,6 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   if (version() <= QUIC_VERSION_16 || version() > QUIC_VERSION_19) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialFlowControlWindow(session_.config(),
@@ -680,7 +678,6 @@ TEST_P(QuicSessionTest, InvalidStreamFlowControlWindowInHandshake) {
   if (version() <= QUIC_VERSION_19) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
@@ -697,7 +694,6 @@ TEST_P(QuicSessionTest, InvalidSessionFlowControlWindowInHandshake) {
   if (version() <= QUIC_VERSION_19) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
@@ -713,7 +709,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
     return;
   }
 
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
   // Test that when we receive an out of order stream RST we correctly adjust
@@ -744,7 +739,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
     return;
   }
 
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
   // Test the situation where we receive a FIN on a stream, and before we fully
@@ -793,7 +787,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
     return;
   }
 
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
   // Connection starts with some non-zero highest received byte offset,
@@ -838,7 +831,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
     return;
   }
 
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
   // Connection starts with some non-zero highest received byte offset,
@@ -875,7 +867,6 @@ TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
   if (version() < QUIC_VERSION_17) {
     return;
   }
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
 
@@ -903,7 +894,6 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
     return;
   }
 
-  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
                               true);
   // Test that after successful version negotiation, flow control is disabled

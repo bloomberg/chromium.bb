@@ -109,7 +109,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       2 * kInitialSessionFlowControlWindowForTest);
   QuicTagVector copt;
   copt.push_back(kTBBR);
-  client_config.SetCongestionOptionsToSend(copt);
+  client_config.SetConnectionOptionsToSend(copt);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -126,9 +126,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_FALSE(config_.HasReceivedLossDetection());
-  EXPECT_TRUE(config_.HasReceivedCongestionOptions());
-  EXPECT_EQ(1u, config_.ReceivedCongestionOptions().size());
-  EXPECT_EQ(config_.ReceivedCongestionOptions()[0], kTBBR);
+  EXPECT_TRUE(config_.HasReceivedConnectionOptions());
+  EXPECT_EQ(1u, config_.ReceivedConnectionOptions().size());
+  EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),

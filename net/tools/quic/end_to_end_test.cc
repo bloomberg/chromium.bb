@@ -169,9 +169,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     negotiated_version_ = GetParam().negotiated_version;
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
 
-    if (negotiated_version_ >= QUIC_VERSION_17) {
-      FLAGS_enable_quic_stream_flow_control_2 = true;
-    }
     if (negotiated_version_ >= QUIC_VERSION_19) {
       FLAGS_enable_quic_connection_flow_control_2 = true;
     }

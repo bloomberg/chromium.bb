@@ -325,7 +325,6 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, NoFlowControl) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
   EXPECT_FALSE(headers_stream_->flow_controller()->IsEnabled());
 }
 

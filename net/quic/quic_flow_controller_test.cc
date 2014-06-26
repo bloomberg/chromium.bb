@@ -5,7 +5,6 @@
 #include "net/quic/quic_flow_controller.h"
 
 #include "base/strings/stringprintf.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
@@ -27,8 +26,7 @@ class QuicFlowControllerTest : public ::testing::Test {
         send_window_(kInitialSessionFlowControlWindowForTest),
         receive_window_(kInitialSessionFlowControlWindowForTest),
         max_receive_window_(kInitialSessionFlowControlWindowForTest),
-        connection_(false),
-        old_flag_(&FLAGS_enable_quic_stream_flow_control_2, true) {
+        connection_(false) {
   }
 
   void Initialize() {
@@ -44,7 +42,6 @@ class QuicFlowControllerTest : public ::testing::Test {
   uint64 max_receive_window_;
   scoped_ptr<QuicFlowController> flow_controller_;
   MockConnection connection_;
-  ValueRestore<bool> old_flag_;
 };
 
 TEST_F(QuicFlowControllerTest, SendingBytes) {

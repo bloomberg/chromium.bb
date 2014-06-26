@@ -41,5 +41,11 @@ void QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
       window_bytes);
 }
 
+// static
+void QuicConfigPeer::SetReceivedConnectionOptions(QuicConfig* config,
+                                                  const QuicTagVector options) {
+  config->connection_options_.SetReceivedValues(options);
+}
+
 }  // namespace test
 }  // namespace net

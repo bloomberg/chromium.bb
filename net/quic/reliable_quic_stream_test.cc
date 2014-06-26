@@ -395,7 +395,6 @@ TEST_F(ReliableQuicStreamTest, OnlySendOneRst) {
 }
 
 TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
   set_initial_flow_control_window_bytes(1000);
 
   Initialize(kShouldProcessData);
@@ -431,7 +430,6 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 TEST_F(ReliableQuicStreamTest, StreamFlowControlShouldNotBlockInLessThanQ017) {
   // TODO(rjshade): Remove this test when we no longer have any versions <
   //                QUIC_VERSION_17.
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   // Make sure we are using a version which does not support flow control.
   QuicVersion kTestQuicVersions[] = {QUIC_VERSION_16};
@@ -636,8 +634,6 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
 // as we check for violation and close the connection early.
 TEST_F(ReliableQuicStreamTest,
        StreamSequencerNeverSeesPacketsViolatingFlowControl) {
-  ValueRestore<bool> old_stream_flag(
-      &FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_connection_flag(
       &FLAGS_enable_quic_connection_flow_control_2, true);
 

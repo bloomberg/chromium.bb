@@ -59,7 +59,7 @@ class QuicServer : public EpollCallbackInterface {
   // dropped packets, and some packets are read, it will be set to the number of
   // dropped packets.
   static bool ReadAndDispatchSinglePacket(int fd, int port,
-                                          QuicDispatcher* dispatcher,
+                                          ProcessPacketInterface* processor,
                                           uint32* packets_dropped);
 
   virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}

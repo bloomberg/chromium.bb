@@ -426,7 +426,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
 
 QuicConfig::QuicConfig()
     : congestion_feedback_(kCGST, PRESENCE_REQUIRED),
-      congestion_options_(kCOPT, PRESENCE_OPTIONAL),
+      connection_options_(kCOPT, PRESENCE_OPTIONAL),
       loss_detection_(kLOSS, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
       keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
@@ -457,17 +457,17 @@ QuicTag QuicConfig::congestion_feedback() const {
   return congestion_feedback_.GetTag();
 }
 
-void QuicConfig::SetCongestionOptionsToSend(
-    const QuicTagVector& congestion_options) {
-  congestion_options_.SetSendValues(congestion_options);
+void QuicConfig::SetConnectionOptionsToSend(
+    const QuicTagVector& connection_options) {
+  connection_options_.SetSendValues(connection_options);
 }
 
-bool QuicConfig::HasReceivedCongestionOptions() const {
-  return congestion_options_.HasReceivedValues();
+bool QuicConfig::HasReceivedConnectionOptions() const {
+  return connection_options_.HasReceivedValues();
 }
 
-QuicTagVector QuicConfig::ReceivedCongestionOptions() const {
-  return congestion_options_.GetReceivedValues();
+QuicTagVector QuicConfig::ReceivedConnectionOptions() const {
+  return connection_options_.GetReceivedValues();
 }
 
 void QuicConfig::SetLossDetectionToSend(QuicTag loss_detection) {
@@ -659,7 +659,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   initial_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_stream_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_session_flow_control_window_bytes_.ToHandshakeMessage(out);
-  congestion_options_.ToHandshakeMessage(out);
+  connection_options_.ToHandshakeMessage(out);
 }
 
 QuicErrorCode QuicConfig::ProcessPeerHello(
@@ -710,7 +710,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {
-    error = congestion_options_.ProcessPeerHello(
+    error = connection_options_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   return error;

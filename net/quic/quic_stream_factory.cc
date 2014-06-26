@@ -95,7 +95,7 @@ QuicConfig InitializeQuicConfig(bool enable_pacing,
   config.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
-  config.SetCongestionOptionsToSend(connection_options);
+  config.SetConnectionOptionsToSend(connection_options);
   return config;
 }
 
