@@ -1209,7 +1209,7 @@ Press any key to continue exploring.
     Enabling this setting allows kiosk applications to launch automatically on startup.
   </message>
   <message name="IDS_KIOSK_ENABLE_SCREEN_SUCCESS" desc="Confirmation text shown on kiosk auto-launch enable screen after the feature is successfully enabled.">
-    Kiosk applications can now now configured to auto-launch on this device.
+    Kiosk applications can now be configured to auto-launch on this device.
   </message>
   <message name="IDS_KIOSK_ENABLE_SCREEN_ERROR" desc="Error text shown on kiosk enable screen after we failed enabling this feature.">
    An error occurred. Kiosk application will not be able to auto-launch on this device.
