@@ -400,7 +400,24 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
     PlainTextRange selectionOffsets(getSelectionOffsets());
     if (selectionOffsets.isNull())
         return;
-    setSelectionOffsets(PlainTextRange(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after));
+
+    // A common call of before=1 and after=0 will fail if the last character
+    // is multi-code-word UTF-16, including both multi-16bit code-points and
+    // Unicode combining character sequences of multiple single-16bit code-
+    // points (officially called "compositions"). Try more until success.
+    // http://crbug.com/355995
+    //
+    // FIXME: Note that this is not an ideal solution when this function is
+    // called to implement "backspace". In that case, there should be some call
+    // that will not delete a full multi-code-point composition but rather
+    // only the last code-point so that it's possible for a user to correct
+    // a composition without starting it from the beginning.
+    // http://crbug.com/37993
+    do {
+        if (!setSelectionOffsets(PlainTextRange(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after)))
+            return;
+        ++before;
+    } while (m_frame.selection().start() == m_frame.selection().end() && before <= static_cast<int>(selectionOffsets.start()));
     TypingCommand::deleteSelection(*m_frame.document());
 }
 
