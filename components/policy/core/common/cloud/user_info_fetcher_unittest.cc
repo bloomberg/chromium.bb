@@ -4,6 +4,7 @@
 
 #include "base/values.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -20,7 +21,7 @@ static const char kUserInfoResponse[] =
     "{"
     "  \"email\": \"test_user@test.com\","
     "  \"verified_email\": true,"
-    "  \"hd\": \"test.com\""
+    "  \"domain\": \"test.com\""
     "}";
 
 class MockUserInfoFetcherDelegate : public UserInfoFetcher::Delegate {
@@ -49,7 +50,8 @@ TEST_F(UserInfoFetcherTest, FailedFetch) {
 
   // Fake a failed fetch - should result in the failure callback being invoked.
   EXPECT_CALL(delegate, OnGetUserInfoFailure(_));
-  net::TestURLFetcher* url_fetcher = url_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher =
+      url_factory_.GetFetcherByID(gaia::GaiaOAuthClient::kUrlFetcherId);
   url_fetcher->set_status(net::URLRequestStatus(
       net::URLRequestStatus::FAILED, -1));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
@@ -65,12 +67,13 @@ TEST_F(UserInfoFetcherTest, SuccessfulFetch) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("email", "test_user@test.com");
   dict->SetBoolean("verified_email", true);
-  dict->SetString("hd", "test.com");
+  dict->SetString("domain", "test.com");
 
   // Fake a successful fetch - should result in the data being parsed and
   // the values passed off to the success callback.
   EXPECT_CALL(delegate, OnGetUserInfoSuccess(MatchDict(dict.get())));
-  net::TestURLFetcher* url_fetcher = url_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher =
+      url_factory_.GetFetcherByID(gaia::GaiaOAuthClient::kUrlFetcherId);
   url_fetcher->set_response_code(net::HTTP_OK);
   url_fetcher->SetResponseString(kUserInfoResponse);
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);

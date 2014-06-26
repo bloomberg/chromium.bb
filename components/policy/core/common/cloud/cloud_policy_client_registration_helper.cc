@@ -24,7 +24,7 @@ namespace policy {
 
 // The key under which the hosted-domain value is stored in the UserInfo
 // response.
-const char kGetHostedDomainKey[] = "hd";
+const char kGetHostedDomainKey[] = "domain";
 
 typedef base::Callback<void(const std::string&)> StringCallback;
 
