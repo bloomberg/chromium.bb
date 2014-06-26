@@ -46,6 +46,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
             quota::QuotaManagerProxy* quota_manager_proxy);
   void Shutdown();
 
+  // Deletes all files on disk and restarts the system asynchronously. This
+  // leaves the system in a disabled state until it's done. This should be
+  // called on the IO thread.
+  void DeleteAndStartOver();
+
   // The core context is only for use on the IO thread.
   ServiceWorkerContextCore* context();
 
@@ -78,6 +83,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                     base::MessageLoopProxy* disk_cache_thread,
                     quota::QuotaManagerProxy* quota_manager_proxy);
   void ShutdownOnIO();
+
+  void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;

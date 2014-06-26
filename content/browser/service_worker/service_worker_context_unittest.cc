@@ -382,4 +382,79 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_version_id, new_version_id);
 }
 
+// TODO(nhiroki): Test this for on-disk storage.
+TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
+  int64 registration_id = kInvalidServiceWorkerRegistrationId;
+  int64 version_id = kInvalidServiceWorkerVersionId;
+  bool called = false;
+  context()->RegisterServiceWorker(
+      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      NULL,
+      MakeRegisteredCallback(&called, &registration_id, &version_id));
+
+  ASSERT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  context()->storage()->FindRegistrationForId(
+      registration_id,
+      GURL("http://www.example.com"),
+      base::Bind(&ExpectRegisteredWorkers,
+                 SERVICE_WORKER_OK,
+                 version_id,
+                 false /* expect_waiting */,
+                 true /* expect_active */));
+  base::RunLoop().RunUntilIdle();
+
+  context()->ScheduleDeleteAndStartOver();
+
+  // The storage is disabled while the recovery process is running, so the
+  // operation should be failed.
+  context()->storage()->FindRegistrationForId(
+      registration_id,
+      GURL("http://www.example.com"),
+      base::Bind(&ExpectRegisteredWorkers,
+                 SERVICE_WORKER_ERROR_FAILED,
+                 version_id,
+                 false /* expect_waiting */,
+                 true /* expect_active */));
+  base::RunLoop().RunUntilIdle();
+
+  // The context started over and the storage was re-initialized, so the
+  // registration should not be found.
+  context()->storage()->FindRegistrationForId(
+      registration_id,
+      GURL("http://www.example.com"),
+      base::Bind(&ExpectRegisteredWorkers,
+                 SERVICE_WORKER_ERROR_NOT_FOUND,
+                 version_id,
+                 false /* expect_waiting */,
+                 true /* expect_active */));
+  base::RunLoop().RunUntilIdle();
+
+  called = false;
+  context()->RegisterServiceWorker(
+      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      NULL,
+      MakeRegisteredCallback(&called, &registration_id, &version_id));
+
+  ASSERT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  context()->storage()->FindRegistrationForId(
+      registration_id,
+      GURL("http://www.example.com"),
+      base::Bind(&ExpectRegisteredWorkers,
+                 SERVICE_WORKER_OK,
+                 version_id,
+                 false /* expect_waiting */,
+                 true /* expect_active */));
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace content

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
@@ -45,6 +46,12 @@ void ServiceWorkerContextWrapper::Shutdown() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ServiceWorkerContextWrapper::ShutdownOnIO, this));
+}
+
+void ServiceWorkerContextWrapper::DeleteAndStartOver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  context_core_->DeleteAndStartOver(
+      base::Bind(&ServiceWorkerContextWrapper::DidDeleteAndStartOver, this));
 }
 
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
@@ -161,6 +168,17 @@ void ServiceWorkerContextWrapper::InitInternal(
 void ServiceWorkerContextWrapper::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_core_.reset();
+}
+
+void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    context_core_.reset();
+    return;
+  }
+  context_core_.reset(new ServiceWorkerContextCore(context_core_.get(), this));
+  DVLOG(1) << "Restarted ServiceWorkerContextCore successfully.";
 }
 
 }  // namespace content

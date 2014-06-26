@@ -52,6 +52,7 @@ class ServiceWorkerStorage;
 class CONTENT_EXPORT ServiceWorkerContextCore
     : public ServiceWorkerVersion::Listener {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               int64 registration_id,
                               int64 version_id)> RegistrationCallback;
@@ -92,6 +93,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       base::MessageLoopProxy* disk_cache_thread,
       quota::QuotaManagerProxy* quota_manager_proxy,
       ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
+      ServiceWorkerContextWrapper* wrapper);
+  ServiceWorkerContextCore(
+      ServiceWorkerContextCore* old_context,
       ServiceWorkerContextWrapper* wrapper);
   virtual ~ServiceWorkerContextCore();
 
@@ -157,6 +161,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Returns new context-local unique ID for ServiceWorkerHandle.
   int GetNewServiceWorkerHandleId();
 
+  void ScheduleDeleteAndStartOver() const;
+
+  // Deletes all files on disk and restarts the system. This leaves the system
+  // in a disabled state until it's done.
+  void DeleteAndStartOver(const StatusCallback& callback);
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -166,7 +176,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
 
   ProviderMap* GetProviderMapForProcess(int process_id) {
-    return providers_.Lookup(process_id);
+    return providers_->Lookup(process_id);
   }
 
   void RegistrationComplete(const GURL& pattern,
@@ -184,7 +194,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
-  ProcessToProviderMap providers_;
+  scoped_ptr<ProcessToProviderMap> providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;

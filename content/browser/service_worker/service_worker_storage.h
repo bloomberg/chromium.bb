@@ -55,12 +55,19 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       void(ServiceWorkerStatusCode status, int result)>
           CompareCallback;
 
-  ServiceWorkerStorage(const base::FilePath& path,
-                       base::WeakPtr<ServiceWorkerContextCore> context,
-                       base::SequencedTaskRunner* database_task_runner,
-                       base::MessageLoopProxy* disk_cache_thread,
-                       quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
+
+  static scoped_ptr<ServiceWorkerStorage> Create(
+      const base::FilePath& path,
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::SequencedTaskRunner* database_task_runner,
+      base::MessageLoopProxy* disk_cache_thread,
+      quota::QuotaManagerProxy* quota_manager_proxy);
+
+  // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
+  static scoped_ptr<ServiceWorkerStorage> Create(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerStorage* old_storage);
 
   // Finds registration for |document_url| or |pattern| or |registration_id|.
   // The Find methods will find stored and initially installing registrations.
@@ -117,6 +124,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // purgeable list and purges it.
   void DoomUncommittedResponse(int64 id);
 
+  // Deletes the storage and starts over.
+  void DeleteAndStartOver(const StatusCallback& callback);
+
   // Returns new IDs which are guaranteed to be unique in the storage.
   int64 NewRegistrationId();
   int64 NewVersionId();
@@ -129,6 +139,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version,
       ServiceWorkerStatusCode status);
+
+  void Disable();
+  bool IsDisabled() const;
 
  private:
   friend class ServiceWorkerStorageTest;
@@ -163,6 +176,12 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)> FindInDBCallback;
+
+  ServiceWorkerStorage(const base::FilePath& path,
+                       base::WeakPtr<ServiceWorkerContextCore> context,
+                       base::SequencedTaskRunner* database_task_runner,
+                       base::MessageLoopProxy* disk_cache_thread,
+                       quota::QuotaManagerProxy* quota_manager_proxy);
 
   base::FilePath GetDatabasePath();
   base::FilePath GetDiskCachePath();
@@ -261,6 +280,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       int64 registration_id,
       const GURL& origin,
       const FindInDBCallback& callback);
+
+  void ScheduleDeleteAndStartOver();
+  void DidDeleteDatabase(
+      const StatusCallback& callback,
+      ServiceWorkerDatabase::Status status);
+  void DidDeleteDiskCache(
+      const StatusCallback& callback,
+      bool result);
 
   // For finding registrations being installed.
   RegistrationRefsById installing_registrations_;

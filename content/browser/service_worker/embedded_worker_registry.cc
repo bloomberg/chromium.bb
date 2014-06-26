@@ -17,12 +17,22 @@
 
 namespace content {
 
-EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int initial_embedded_worker_id)
-    : context_(context),
-      next_embedded_worker_id_(initial_embedded_worker_id),
-      initial_embedded_worker_id_(initial_embedded_worker_id) {
+// static
+scoped_refptr<EmbeddedWorkerRegistry> EmbeddedWorkerRegistry::Create(
+    const base::WeakPtr<ServiceWorkerContextCore>& context) {
+  return make_scoped_refptr(new EmbeddedWorkerRegistry(context, 0));
+}
+
+// static
+scoped_refptr<EmbeddedWorkerRegistry> EmbeddedWorkerRegistry::Create(
+    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    EmbeddedWorkerRegistry* old_registry) {
+  scoped_refptr<EmbeddedWorkerRegistry> registry =
+      new EmbeddedWorkerRegistry(
+          context,
+          old_registry->next_embedded_worker_id_);
+  registry->process_sender_map_.swap(old_registry->process_sender_map_);
+  return registry;
 }
 
 scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
@@ -200,6 +210,14 @@ bool EmbeddedWorkerRegistry::CanHandle(int embedded_worker_id) const {
     return false;
   }
   return true;
+}
+
+EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
+    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    int initial_embedded_worker_id)
+    : context_(context),
+      next_embedded_worker_id_(initial_embedded_worker_id),
+      initial_embedded_worker_id_(initial_embedded_worker_id) {
 }
 
 EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
