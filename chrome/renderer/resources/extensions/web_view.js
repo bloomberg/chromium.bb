@@ -240,6 +240,13 @@ WebViewInternal.prototype.go = function(relativeIndex) {
 /**
  * @private
  */
+WebViewInternal.prototype.print = function() {
+  this.executeScript({code: 'window.print();'});
+};
+
+/**
+ * @private
+ */
 WebViewInternal.prototype.reload = function() {
   if (!this.instanceId) {
     return;
@@ -805,6 +812,7 @@ function registerWebViewElement() {
     'clearData',
     'getProcessId',
     'go',
+    'print',
     'reload',
     'stop',
     'terminate',

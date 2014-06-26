@@ -476,6 +476,11 @@
         "description": "Indicates whether or not the webview's user agent string has been overridden by $(ref:webviewTag.setUserAgentOverride)"
       },
       {
+        "name": "print",
+        "type": "function",
+        "description": "Prints the contents of the webview, this is equivalent to calling scripted print function from the webview itself."
+      },
+      {
         "name": "reload",
         "type": "function",
         "description": "Reloads the current top-level page.",
