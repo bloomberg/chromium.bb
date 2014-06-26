@@ -108,8 +108,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo *info);
 
-  virtual bool CloseManifestEntry(int32_t desc);
-
   virtual void ReportCrash();
 
   virtual void ReportExitStatus(int exit_status);

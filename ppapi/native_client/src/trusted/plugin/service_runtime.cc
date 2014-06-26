@@ -277,12 +277,6 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
   }
 }
 
-bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
-  // We don't take any action on a call to CloseManifestEntry today, so always
-  // return success.
-  return true;
-}
-
 void PluginReverseInterface::ReportCrash() {
   NaClLog(4, "PluginReverseInterface::ReportCrash\n");
 
