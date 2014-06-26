@@ -44,6 +44,7 @@ X11DesktopHandler::X11DesktopHandler()
       x_root_window_(DefaultRootWindow(xdisplay_)),
       wm_user_time_ms_(0),
       current_window_(None),
+      current_window_active_state_(NOT_ACTIVE),
       atom_cache_(xdisplay_, kAtomsToCache),
       wm_supports_active_window_(false) {
   if (ui::PlatformEventSource::GetInstance())
@@ -69,6 +70,19 @@ X11DesktopHandler::~X11DesktopHandler() {
 }
 
 void X11DesktopHandler::ActivateWindow(::Window window) {
+  if (current_window_ == window &&
+      current_window_active_state_ == NOT_ACTIVE) {
+    // |window| is most likely still active wrt to the X server. Undo the
+    // changes made in DeactivateWindow().
+    OnActiveWindowChanged(window, ACTIVE);
+
+    // Go through the regular activation path such that calling
+    // DeactivateWindow() and ActivateWindow() immediately afterwards results
+    // in an active X window.
+  }
+
+  XRaiseWindow(xdisplay_, window);
+
   if (wm_supports_active_window_) {
     DCHECK_EQ(gfx::GetXDisplay(), xdisplay_);
 
@@ -88,30 +102,43 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
                SubstructureRedirectMask | SubstructureNotifyMask,
                &xclient);
   } else {
-    XRaiseWindow(xdisplay_, window);
-
     // XRaiseWindow will not give input focus to the window. We now need to ask
     // the X server to do that. Note that the call will raise an X error if the
     // window is not mapped.
     XSetInputFocus(xdisplay_, window, RevertToParent, CurrentTime);
 
-    OnActiveWindowChanged(window);
+    OnActiveWindowChanged(window, ACTIVE);
   }
 }
 
+void X11DesktopHandler::DeactivateWindow(::Window window) {
+  if (!IsActiveWindow(window))
+    return;
+
+  XLowerWindow(xdisplay_, window);
+
+  // Per ICCCM: http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.7
+  // "Clients should not give up the input focus of their own volition.
+  // They should ignore input that they receive instead."
+  //
+  // There is nothing else that we can do. Pretend that we have been
+  // deactivated and ignore keyboard input in DesktopWindowTreeHostX11.
+  OnActiveWindowChanged(window, NOT_ACTIVE);
+}
+
 bool X11DesktopHandler::IsActiveWindow(::Window window) const {
-  return window == current_window_;
+  return window == current_window_ && current_window_active_state_ == ACTIVE;
 }
 
 void X11DesktopHandler::ProcessXEvent(XEvent* event) {
   switch (event->type) {
     case FocusIn:
       if (current_window_ != event->xfocus.window)
-        OnActiveWindowChanged(event->xfocus.window);
+        OnActiveWindowChanged(event->xfocus.window, ACTIVE);
       break;
     case FocusOut:
       if (current_window_ == event->xfocus.window)
-        OnActiveWindowChanged(None);
+        OnActiveWindowChanged(None, NOT_ACTIVE);
       break;
     default:
       NOTREACHED();
@@ -134,7 +161,7 @@ uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
         ::Window window;
         if (ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &window) &&
             window) {
-          OnActiveWindowChanged(window);
+          OnActiveWindowChanged(window, ACTIVE);
         }
       }
       break;
@@ -175,21 +202,28 @@ void X11DesktopHandler::OnWillDestroyEnv() {
   delete this;
 }
 
-void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
-  if (current_window_ == xid)
+void X11DesktopHandler::OnActiveWindowChanged(::Window xid,
+                                              ActiveState active_state) {
+  if (current_window_ == xid && current_window_active_state_ == active_state)
     return;
-  DesktopWindowTreeHostX11* old_host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(current_window_);
-  if (old_host)
-    old_host->HandleNativeWidgetActivationChanged(false);
+
+  if (current_window_active_state_ == ACTIVE) {
+    DesktopWindowTreeHostX11* old_host =
+        views::DesktopWindowTreeHostX11::GetHostForXID(current_window_);
+    if (old_host)
+      old_host->HandleNativeWidgetActivationChanged(false);
+  }
 
   // Update the current window ID to effectively change the active widget.
   current_window_ = xid;
+  current_window_active_state_ = active_state;
 
-  DesktopWindowTreeHostX11* new_host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(xid);
-  if (new_host)
-    new_host->HandleNativeWidgetActivationChanged(true);
+  if (active_state == ACTIVE) {
+    DesktopWindowTreeHostX11* new_host =
+        views::DesktopWindowTreeHostX11::GetHostForXID(xid);
+    if (new_host)
+      new_host->HandleNativeWidgetActivationChanged(true);
+  }
 }
 
 }  // namespace views

@@ -43,6 +43,11 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // This method should only be called if the window is already mapped.
   void ActivateWindow(::Window window);
 
+  // Attempts to get the window manager to deactivate |window| by moving it to
+  // the bottom of the stack. Regardless of whether |window| was actually
+  // deactivated, sets the window as inactive in our internal state.
+  void DeactivateWindow(::Window window);
+
   // Checks if the current active window is |window|.
   bool IsActiveWindow(::Window window) const;
 
@@ -60,11 +65,16 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   virtual void OnWillDestroyEnv() OVERRIDE;
 
  private:
-  explicit X11DesktopHandler();
+  enum ActiveState {
+    ACTIVE,
+    NOT_ACTIVE
+  };
+
+  X11DesktopHandler();
   virtual ~X11DesktopHandler();
 
   // Handles changes in activation.
-  void OnActiveWindowChanged(::Window window);
+  void OnActiveWindowChanged(::Window window, ActiveState active_state);
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
@@ -76,8 +86,12 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // on a Chrome window.
   unsigned long wm_user_time_ms_;
 
-  // The activated window.
+  // The active window according to X11 server.
   ::Window current_window_;
+
+  // Whether we should treat |current_window_| as active. In particular, we
+  // pretend that a window is deactivated after a call to DeactivateWindow().
+  ActiveState current_window_active_state_;
 
   ui::X11AtomCache atom_cache_;
 

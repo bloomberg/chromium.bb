@@ -511,7 +511,7 @@ void DesktopWindowTreeHostX11::Deactivate() {
     return;
 
   x11_capture_.reset();
-  XLowerWindow(xdisplay_, xwindow_);
+  X11DesktopHandler::get()->DeactivateWindow(xwindow_);
 }
 
 bool DesktopWindowTreeHostX11::IsActive() const {
@@ -1565,14 +1565,16 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       compositor()->ScheduleRedrawRect(damage_rect);
       break;
     }
-    case KeyPress: {
-      ui::KeyEvent keydown_event(xev, false);
-      SendEventToProcessor(&keydown_event);
-      break;
-    }
+    case KeyPress:
     case KeyRelease: {
-      ui::KeyEvent keyup_event(xev, false);
-      SendEventToProcessor(&keyup_event);
+      // There is no way to deactivate a window in X11 so ignore input if
+      // window is supposed to be 'inactive'. See comments in
+      // X11DesktopHandler::DeactivateWindow() for more details.
+      if (!IsActive() && !HasCapture())
+        break;
+
+      ui::KeyEvent key_event(xev, false);
+      SendEventToProcessor(&key_event);
       break;
     }
     case ButtonPress:
