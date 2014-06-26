@@ -53,6 +53,8 @@ static void Event_Rel(EvdevPtr, struct input_event*);
 
 static void Event_Get_Time(struct timeval*, bool);
 
+static int Event_Is_Valid(struct input_event*);
+
 const char*
 Evdev_Get_Version() {
     return VCSID;
@@ -465,6 +467,12 @@ bool
 Event_Process(EvdevPtr device, struct input_event* ev)
 {
     Event_Print(device, ev);
+    if (Event_Is_Valid(ev)) {
+        if (!(ev->type == EV_SYN && ev->code == SYN_REPORT))
+            device->got_valid_event = 1;
+    } else {
+        return false;
+    }
 
     switch (ev->type) {
     case EV_SYN:
@@ -587,11 +595,13 @@ static void
 Event_Syn_Report(EvdevPtr device, struct input_event* ev)
 {
     EventStatePtr evstate = device->evstate;
-    device->syn_report(device->syn_report_udata, evstate, &ev->time);
+    if (device->got_valid_event)
+        device->syn_report(device->syn_report_udata, evstate, &ev->time);
 
     MT_Print_Slots(device);
 
     Event_Clear_Ev_Rel_State(device);
+    device->got_valid_event = 0;
 }
 
 static void
@@ -685,4 +695,13 @@ Event_Rel(EvdevPtr device, struct input_event* ev)
         evstate->rel_hwheel = ev->value;
         break;
     }
+}
+
+static int Event_Is_Valid(struct input_event* ev)
+{
+    /* Key repeats are invalid. They're handled by X anyway */
+    if (ev->type == EV_KEY &&
+        ev->value == 2)
+        return 0;
+    return 1;
 }

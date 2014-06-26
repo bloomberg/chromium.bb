@@ -56,6 +56,7 @@ typedef struct EvdevInfo_ EvdevInfo, *EvdevInfoPtr;
 struct Evdev_ {
   syn_report_callback syn_report;
   void* syn_report_udata;
+  int got_valid_event;
 
   log_callback log;
   void* log_udata;
