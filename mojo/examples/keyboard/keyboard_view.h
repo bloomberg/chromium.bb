@@ -54,6 +54,7 @@ class KeyboardView : public views::View, public views::ButtonListener {
   // Lays out the buttons for the specified row.
   void LayoutRow(const Row& row,
                  int row_index,
+                 int initial_x,
                  int button_width,
                  int button_height);
 

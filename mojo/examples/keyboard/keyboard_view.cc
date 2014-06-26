@@ -77,8 +77,12 @@ void KeyboardView::Layout() {
   const int button_height =
       (height() - (static_cast<int>(rows_.size() - 1) * kVerticalPadding)) /
       static_cast<int>(rows_.size());
-  for (size_t i = 0; i < rows_.size(); ++i)
-    LayoutRow(*(rows_[i]), static_cast<int>(i), button_width, button_height);
+  const int initial_x = (width() - button_width * max_keys_in_row_ -
+                         kHorizontalPadding * (max_keys_in_row_ - 1)) / 2;
+  for (size_t i = 0; i < rows_.size(); ++i) {
+    LayoutRow(*(rows_[i]), static_cast<int>(i), initial_x, button_width,
+              button_height);
+  }
 
   views::LabelButtonBorder border(views::Button::STYLE_TEXTBUTTON);
   gfx::Insets insets(border.GetInsets());
@@ -108,9 +112,10 @@ void KeyboardView::SetLayout(KeyboardLayout keyboard_layout) {
 
 void KeyboardView::LayoutRow(const Row& row,
                              int row_index,
+                             int initial_x,
                              int button_width,
                              int button_height) {
-  int x = row.padding * (button_width + kHorizontalPadding);
+  int x = initial_x + row.padding * (button_width + kHorizontalPadding);
   const int y = row_index * (button_height + kVerticalPadding);
   for (size_t i = 0; i < row.num_keys; ++i) {
     views::View* button = GetButton(row_index, static_cast<int>(i));

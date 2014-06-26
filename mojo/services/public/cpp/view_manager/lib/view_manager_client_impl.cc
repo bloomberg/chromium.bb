@@ -147,7 +147,6 @@ class ViewManagerTransaction {
  private:
   // General callback to be used for commits to the service.
   void OnActionCompleted(bool success) {
-    DCHECK(success);
     DoActionCompleted(success);
     client_->RemoveFromPendingQueue(this);
   }
@@ -172,6 +171,7 @@ class CreateViewTransaction : public ViewManagerTransaction {
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): failure.
+    DCHECK(success);
   }
 
   const Id view_id_;
@@ -193,6 +193,7 @@ class DestroyViewTransaction : public ViewManagerTransaction {
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
+    DCHECK(success);
   }
 
   const Id view_id_;
@@ -217,6 +218,7 @@ class CreateNodeTransaction : public ViewManagerTransaction {
     //             connection. It also could mean we tried to do something
     //             invalid, or we tried applying a change out of order. Figure
     //             out what to do.
+    DCHECK(success);
   }
 
   const Id node_id_;
@@ -240,6 +242,7 @@ class DestroyNodeTransaction : public ViewManagerTransaction {
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
+    DCHECK(success);
   }
 
   const Id node_id_;
@@ -267,6 +270,7 @@ class AddChildTransaction : public ViewManagerTransaction {
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
+    DCHECK(success);
   }
 
   const Id child_id_;
@@ -293,6 +297,7 @@ class RemoveChildTransaction : public ViewManagerTransaction {
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
+    DCHECK(success);
   }
 
   const Id child_id_;
@@ -324,6 +329,7 @@ class ReorderNodeTransaction : public ViewManagerTransaction {
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
+    DCHECK(success);
   }
 
   const Id node_id_;

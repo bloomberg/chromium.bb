@@ -106,8 +106,8 @@ class KeyboardManager : public KeyboardClient {
             const gfx::Rect& bounds) {
     view_manager_ = view_manager;
     node_ = Node::Create(view_manager);
-    parent->AddChild(node_);
     node_->SetBounds(bounds);
+    parent->AddChild(node_);
     node_->Embed("mojo:mojo_keyboard");
     application->ConnectToService("mojo:mojo_keyboard", &keyboard_service_);
     keyboard_service_.set_client(this);
@@ -115,10 +115,12 @@ class KeyboardManager : public KeyboardClient {
 
   void Show(Id view_id, const gfx::Rect& bounds) {
     keyboard_service_->SetTarget(view_id);
+    node_->SetVisible(true);
   }
 
   void Hide(Id view_id) {
     keyboard_service_->SetTarget(0);
+    node_->SetVisible(false);
   }
 
  private:
@@ -177,11 +179,17 @@ class WindowManager : public ApplicationDelegate,
     // TODO: this needs to validate |view_id|. That is, it shouldn't assume
     // |view_id| is valid and it also needs to make sure the client that sent
     // this really owns |view_id|.
+    // TODO: honor |bounds|.
     if (!keyboard_manager_) {
       keyboard_manager_.reset(new KeyboardManager);
-      keyboard_manager_->Init(app_, view_manager_,
-                              view_manager_->GetRoots().back(),
-                              gfx::Rect(0, 400, 400, 200));
+      Node* parent = view_manager_->GetRoots().back();
+      int ideal_height = 200;
+      // TODO(sky): 10 is a bit of a hack here. There is a bug that causes
+      // white strips to appear when 0 is used. Figure this out!
+      const gfx::Rect keyboard_bounds(
+          10, parent->bounds().height() - ideal_height,
+          parent->bounds().width() - 20, ideal_height);
+      keyboard_manager_->Init(app_, view_manager_, parent, keyboard_bounds);
     }
     keyboard_manager_->Show(view_id, bounds);
   }

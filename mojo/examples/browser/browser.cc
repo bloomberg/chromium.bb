@@ -19,6 +19,7 @@
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -59,8 +60,10 @@ class BrowserLayoutManager : public views::LayoutManager {
 // TODO(sky): it would be nice if this were put in NativeWidgetViewManager, but
 // that requires NativeWidgetViewManager to take an IWindowManager. That may be
 // desirable anyway...
-class KeyboardManager : public views::FocusChangeListener,
-                        public views::WidgetObserver {
+class KeyboardManager
+    : public views::FocusChangeListener,
+      public ui::EventHandler,
+      public views::WidgetObserver {
  public:
   KeyboardManager(views::Widget* widget,
                   IWindowManager* window_manager,
@@ -68,15 +71,42 @@ class KeyboardManager : public views::FocusChangeListener,
       : widget_(widget),
         window_manager_(window_manager),
         node_(node),
-        last_view_id_(0) {
-    widget_->AddObserver(this);
+        last_view_id_(0),
+        focused_view_(NULL) {
     widget_->GetFocusManager()->AddFocusChangeListener(this);
+    widget_->AddObserver(this);
+    widget_->GetNativeView()->AddPostTargetHandler(this);
   }
 
  private:
   virtual ~KeyboardManager() {
     widget_->GetFocusManager()->RemoveFocusChangeListener(this);
+    widget_->GetNativeView()->RemovePostTargetHandler(this);
     widget_->RemoveObserver(this);
+
+    HideKeyboard();
+  }
+
+  void ShowKeyboard(views::View* view) {
+    if (focused_view_ == view)
+      return;
+
+    const gfx::Rect bounds_in_widget =
+        view->ConvertRectToWidget(gfx::Rect(view->bounds().size()));
+    last_view_id_ = node_->active_view()->id();
+    window_manager_->ShowKeyboard(last_view_id_,
+                                  Rect::From(bounds_in_widget));
+    // TODO(sky): listen for view to be removed.
+    focused_view_ = view;
+  }
+
+  void HideKeyboard() {
+    if (!focused_view_)
+      return;
+
+    window_manager_->HideKeyboard(last_view_id_);
+    last_view_id_ = 0;
+    focused_view_ = NULL;
   }
 
   // views::FocusChangeListener:
@@ -85,17 +115,17 @@ class KeyboardManager : public views::FocusChangeListener,
   }
   virtual void OnDidChangeFocus(views::View* focused_before,
                                 views::View* focused_now) OVERRIDE {
+    if (focused_view_ && focused_now != focused_view_)
+      HideKeyboard();
+  }
+
+  // ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    views::View* focused_now = widget_->GetFocusManager()->GetFocusedView();
     if (focused_now &&
-        focused_now->GetClassName() == views::Textfield::kViewClassName) {
-      const gfx::Rect bounds_in_widget =
-          focused_now->ConvertRectToWidget(
-              gfx::Rect(focused_now->bounds().size()));
-      last_view_id_ = node_->active_view()->id();
-      window_manager_->ShowKeyboard(last_view_id_,
-                                    Rect::From(bounds_in_widget));
-    } else {
-      window_manager_->HideKeyboard(last_view_id_);
-      last_view_id_ = 0;
+        focused_now->GetClassName() == views::Textfield::kViewClassName &&
+        (event->flags() & ui::EF_FROM_TOUCH) != 0) {
+      ShowKeyboard(focused_now);
     }
   }
 
@@ -108,6 +138,7 @@ class KeyboardManager : public views::FocusChangeListener,
   IWindowManager* window_manager_;
   view_manager::Node* node_;
   view_manager::Id last_view_id_;
+  views::View* focused_view_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
 };
