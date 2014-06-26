@@ -61,8 +61,13 @@ DataReductionProxyParams::~DataReductionProxyParams() {
 DataReductionProxyParams::DataReductionProxyList
 DataReductionProxyParams::GetAllowedProxies() const {
   DataReductionProxyList list;
-  if (allowed_)
+  if (allowed_) {
     list.push_back(origin_);
+    // TODO(bolian): revert this once the proxy PAC fix is ready.
+    if (GURL(GetDefaultDevOrigin()) == origin()) {
+      list.push_back(GURL(GetDefaultOrigin()));
+    }
+  }
   if (allowed_ && fallback_allowed_)
     list.push_back(fallback_origin_);
   if (alt_allowed_) {
@@ -234,6 +239,23 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     }
     return true;
   }
+
+  // TODO(bolian): revert this once the proxy PAC fix is ready.
+  //
+  // If dev host is configured as the primary proxy, we treat the default
+  // origin as a valid data reduction proxy to workaround PAC script.
+  if (GURL(GetDefaultDevOrigin()) == origin()) {
+    const GURL& default_origin = GURL(GetDefaultOrigin());
+    if (net::HostPortPair::FromURL(default_origin).Equals(host_port_pair)) {
+      if (proxy_servers) {
+        (*proxy_servers).first = default_origin;
+        if (fallback_allowed())
+          (*proxy_servers).second = fallback_origin();
+      }
+      return true;
+    }
+  }
+
   if (fallback_allowed() &&
       net::HostPortPair::FromURL(fallback_origin()).Equals(host_port_pair)) {
     if (proxy_servers) {

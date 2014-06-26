@@ -431,6 +431,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
   const struct {
     net::HostPortPair host_port_pair;
     bool fallback_allowed;
+    bool set_dev_origin;
     bool expected_result;
     net::HostPortPair expected_first;
     net::HostPortPair expected_second;
@@ -438,6 +439,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
         true,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
@@ -447,6 +449,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
         false,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
@@ -455,6 +458,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
         true,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
@@ -464,12 +468,14 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
         false,
         false,
+        false,
         net::HostPortPair::FromURL(GURL()),
         net::HostPortPair::FromURL(GURL())
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
         true,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
@@ -479,6 +485,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
         false,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
@@ -487,6 +494,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(
             GURL(TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
         true,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
@@ -494,6 +502,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
+        false,
         false,
         false,
         net::HostPortPair::FromURL(GURL()),
@@ -502,10 +511,31 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultSSLOrigin())),
         true,
+        false,
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultSSLOrigin())),
         net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultDevOrigin())),
+        true,
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultDevOrigin())),
+        net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultFallbackOrigin()))
+      },
+      { net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultOrigin())),
+        true,
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultOrigin())),
+        net::HostPortPair::FromURL(GURL(
+            TestDataReductionProxyParams::DefaultFallbackOrigin()))
       },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
@@ -513,10 +543,11 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
                 DataReductionProxyParams::kAlternativeAllowed;
     if (tests[i].fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
-    TestDataReductionProxyParams params(
-        flags,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN);
+    unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
+    if (!tests[i].set_dev_origin) {
+      has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
+    }
+    TestDataReductionProxyParams params(flags, has_definitions);
     std::pair<GURL, GURL> proxy_servers;
     EXPECT_EQ(tests[i].expected_result,
               params.IsDataReductionProxy(
