@@ -1060,14 +1060,6 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html 
 
 crbug.com/328961 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/emphasis-vertical.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/basic/009.html [ NeedsRebaseline ]
-crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-
 crbug.com/388676 svg/W3C-SVG-1.1/shapes-rect-02-t.svg [ NeedsRebaseline ]
 
 crbug.com/389047 screen_orientation/page-visibility.html [ Pass Failure ]
