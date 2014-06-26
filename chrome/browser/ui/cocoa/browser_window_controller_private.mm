@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -842,6 +843,19 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
+  // In Yosemite, some combination of the titlebar and toolbar always show in
+  // full-screen mode. We do not want either to show. Search for the window that
+  // contains the views, and hide it. There is no need to ever unhide the view.
+  // http://crbug.com/380235
+  if (base::mac::IsOSYosemiteOrLater()) {
+    for (NSWindow* window in [[NSApplication sharedApplication] windows]) {
+      if ([window
+              isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
+        [window.contentView setHidden:YES];
+      }
+    }
+  }
+
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
