@@ -82,7 +82,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
     private void performVSyncPeriodTest(boolean enableJBVSync) throws InterruptedException {
         // Collect roughly one second of data on a 60 fps display.
         collectAndCheckVSync(enableJBVSync, 60, true);
-        collectAndCheckVSync(enableJBVSync, 60, false);
+        collectAndCheckVSync(enableJBVSync, VSyncMonitor.MAX_AUTO_ONVSYNC_COUNT, false);
     }
 
     private void collectAndCheckVSync(
