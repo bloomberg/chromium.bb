@@ -7,13 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/gesture_detection/mock_motion_event.h"
 #include "ui/events/gesture_detection/velocity_tracker_state.h"
+#include "ui/events/test/mock_motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
+using ui::test::MockMotionEvent;
 
 namespace ui {
 namespace {

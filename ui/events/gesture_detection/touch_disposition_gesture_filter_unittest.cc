@@ -5,8 +5,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/gesture_detection/mock_motion_event.h"
 #include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
+#include "ui/events/test/mock_motion_event.h"
+
+using ui::test::MockMotionEvent;
 
 namespace ui {
 

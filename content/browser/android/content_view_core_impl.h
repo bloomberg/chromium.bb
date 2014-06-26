@@ -320,6 +320,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetAccessibilityEnabledInternal(bool enabled);
 
+  void ShowSelectionHandlesAutomatically() const;
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------

@@ -533,6 +533,7 @@
         'browser/quota/usage_tracker_unittest.cc',
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
         'browser/renderer_host/input/gesture_event_queue_unittest.cc',
+        'browser/renderer_host/input/gesture_text_selector_unittest.cc',
         'browser/renderer_host/input/input_router_impl_unittest.cc',
         'browser/renderer_host/input/mock_input_ack_handler.cc',
         'browser/renderer_host/input/mock_input_ack_handler.h',

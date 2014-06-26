@@ -187,6 +187,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
           switches::kDisableOverscrollEdgeEffect)),
       overscroll_effect_(OverscrollGlow::Create(overscroll_effect_enabled_)),
       gesture_provider_(CreateGestureProviderConfig(), this),
+      gesture_text_selector_(this),
       flush_input_requested_(false),
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
@@ -557,6 +558,11 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   if (!gesture_provider_.OnTouchEvent(event))
     return false;
+
+  if (gesture_text_selector_.OnTouchEvent(event)) {
+    gesture_provider_.OnTouchEventAck(false);
+    return true;
+  }
 
   // Short-circuit touch forwarding if no touch handlers exist.
   if (!host_->ShouldForwardTouchEvent()) {
@@ -1287,6 +1293,9 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
+  if (gesture_text_selector_.OnGestureEvent(gesture))
+    return;
+
   SendGestureEvent(CreateWebGestureEventFromGestureEventData(gesture));
 }
 
@@ -1432,6 +1441,23 @@ SkBitmap::Config RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
       return SkBitmap::kRGB_565_Config;
   }
   return SkBitmap::kARGB_8888_Config;
+}
+
+void RenderWidgetHostViewAndroid::ShowSelectionHandlesAutomatically() {
+  if (content_view_core_)
+    content_view_core_->ShowSelectionHandlesAutomatically();
+}
+
+void RenderWidgetHostViewAndroid::SelectRange(
+    float x1, float y1, float x2, float y2) {
+  if (content_view_core_)
+    static_cast<WebContentsImpl*>(content_view_core_->GetWebContents())->
+        SelectRange(gfx::Point(x1, y1), gfx::Point(x2, y2));
+}
+
+void RenderWidgetHostViewAndroid::Unselect() {
+  if (content_view_core_)
+    content_view_core_->GetWebContents()->Unselect();
 }
 
 // static

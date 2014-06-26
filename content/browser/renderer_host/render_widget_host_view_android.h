@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
+#include "content/browser/renderer_host/input/gesture_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -65,7 +66,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ImageTransportFactoryAndroidObserver,
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
-      public DelegatedFrameEvictorClient {
+      public DelegatedFrameEvictorClient,
+      public GestureTextSelectorClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -185,6 +187,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void EvictDelegatedFrame() OVERRIDE;
 
   virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
+  // GestureTextSelectorClient implementation.
+  virtual void ShowSelectionHandlesAutomatically() OVERRIDE;
+  virtual void SelectRange(float x1, float y1, float x2, float y2) OVERRIDE;
+  virtual void Unselect() OVERRIDE;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
@@ -334,6 +341,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Provides gesture synthesis given a stream of touch events (derived from
   // Android MotionEvent's) and touch event acks.
   ui::FilteredGestureProvider gesture_provider_;
+
+  // Handles gesture based text selection
+  GestureTextSelector gesture_text_selector_;
 
   bool flush_input_requested_;
 

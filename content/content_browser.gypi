@@ -913,6 +913,8 @@
       'browser/renderer_host/ime_adapter_android.h',
       'browser/renderer_host/input/gesture_event_queue.cc',
       'browser/renderer_host/input/gesture_event_queue.h',
+      'browser/renderer_host/input/gesture_text_selector.cc',
+      'browser/renderer_host/input/gesture_text_selector.h',
       'browser/renderer_host/input/input_ack_handler.h',
       'browser/renderer_host/input/input_router.h',
       'browser/renderer_host/input/input_router_client.h',

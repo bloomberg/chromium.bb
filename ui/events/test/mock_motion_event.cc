@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/gesture_detection/mock_motion_event.h"
+#include "ui/events/test/mock_motion_event.h"
 
 #include "base/logging.h"
 
 using base::TimeTicks;
 
 namespace ui {
+namespace test {
 
 MockMotionEvent::MockMotionEvent()
-    : action(ACTION_CANCEL), pointer_count(1), touch_major(TOUCH_MAJOR), id(0) {
+    : action(ACTION_CANCEL), pointer_count(1), touch_major(TOUCH_MAJOR), id(0),
+      button_state(0) {
 }
 
 MockMotionEvent::MockMotionEvent(Action action)
-    : action(action), pointer_count(1), touch_major(TOUCH_MAJOR), id(0) {
+    : action(action), pointer_count(1), touch_major(TOUCH_MAJOR), id(0),
+      button_state(0) {
 }
 
 MockMotionEvent::MockMotionEvent(Action action,
@@ -26,8 +29,10 @@ MockMotionEvent::MockMotionEvent(Action action,
       pointer_count(1),
       time(time),
       touch_major(TOUCH_MAJOR),
-      id(0) {
+      id(0),
+      button_state(0) {
   points[0].SetPoint(x, y);
+  tool_types[0] = TOOL_TYPE_UNKNOWN;
 }
 
 MockMotionEvent::MockMotionEvent(Action action,
@@ -40,9 +45,12 @@ MockMotionEvent::MockMotionEvent(Action action,
       pointer_count(2),
       time(time),
       touch_major(TOUCH_MAJOR),
-      id(0) {
+      id(0),
+      button_state(0) {
   points[0].SetPoint(x0, y0);
+  tool_types[0] = TOOL_TYPE_UNKNOWN;
   points[1].SetPoint(x1, y1);
+  tool_types[1] = TOOL_TYPE_UNKNOWN;
 }
 
 MockMotionEvent::MockMotionEvent(Action action,
@@ -57,10 +65,14 @@ MockMotionEvent::MockMotionEvent(Action action,
       pointer_count(3),
       time(time),
       touch_major(TOUCH_MAJOR),
-      id(0) {
+      id(0),
+      button_state(0) {
   points[0].SetPoint(x0, y0);
+  tool_types[0] = TOOL_TYPE_UNKNOWN;
   points[1].SetPoint(x1, y1);
+  tool_types[1] = TOOL_TYPE_UNKNOWN;
   points[2].SetPoint(x2, y2);
+  tool_types[2] = TOOL_TYPE_UNKNOWN;
 }
 
 MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
@@ -68,9 +80,12 @@ MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
       pointer_count(other.pointer_count),
       time(other.time),
       touch_major(other.touch_major),
-      id(other.GetId()) {
-  for (size_t i = 0; i < pointer_count; ++i)
+      id(other.GetId()),
+      button_state(other.GetButtonState()) {
+  for (size_t i = 0; i < pointer_count; ++i) {
     points[i] = other.points[i];
+    tool_types[i] = other.tool_types[i];
+  }
 }
 
 MockMotionEvent::~MockMotionEvent() {}
@@ -141,11 +156,12 @@ float MockMotionEvent::GetHistoricalY(size_t pointer_index,
 }
 
 MotionEvent::ToolType MockMotionEvent::GetToolType(size_t pointer_index) const {
-  return MotionEvent::TOOL_TYPE_UNKNOWN;
+  DCHECK_LT(pointer_index, pointer_count);
+  return tool_types[pointer_index];
 }
 
 int MockMotionEvent::GetButtonState() const {
-  return 0;
+  return button_state;
 }
 
 scoped_ptr<MotionEvent> MockMotionEvent::Clone() const {
@@ -174,12 +190,14 @@ void MockMotionEvent::PressPoint(float x, float y) {
 
   DCHECK_LT(pointer_count, static_cast<size_t>(MAX_POINTERS));
   points[pointer_count++] = gfx::PointF(x, y);
+  tool_types[pointer_count] = TOOL_TYPE_UNKNOWN;
   action = pointer_count > 1 ? ACTION_POINTER_DOWN : ACTION_DOWN;
 }
 
 void MockMotionEvent::MovePoint(size_t index, float x, float y) {
   DCHECK_LT(index, pointer_count);
   points[index] = gfx::PointF(x, y);
+  tool_types[index] = TOOL_TYPE_UNKNOWN;
   action = ACTION_MOVE;
 }
 
@@ -209,4 +227,14 @@ void MockMotionEvent::SetRawOffset(float raw_offset_x, float raw_offset_y) {
   raw_offset.set_y(raw_offset_y);
 }
 
+void MockMotionEvent::SetToolType(size_t pointer_index, ToolType tool_type) {
+  DCHECK_LT(pointer_index, pointer_count);
+  tool_types[pointer_index] = tool_type;
+}
+
+void MockMotionEvent::SetButtonState(int new_button_state) {
+  button_state = new_button_state;
+}
+
+}  // namespace test
 }  // namespace ui

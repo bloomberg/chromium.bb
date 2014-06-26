@@ -11,12 +11,13 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/gesture_provider.h"
-#include "ui/events/gesture_detection/mock_motion_event.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/test/mock_motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
+using ui::test::MockMotionEvent;
 
 namespace ui {
 namespace {
