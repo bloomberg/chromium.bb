@@ -56,10 +56,6 @@ class SharedRendererState {
   void SetHardwareAllowed(bool allowed);
   bool IsHardwareAllowed() const;
 
-  // Set by RT and read by UI.
-  void SetHardwareInitialized(bool initialized);
-  bool IsHardwareInitialized() const;
-
   void SetSharedContext(gpu::GLInProcessContext* context);
   gpu::GLInProcessContext* GetSharedContext() const;
 
@@ -81,7 +77,6 @@ class SharedRendererState {
   mutable base::Lock lock_;
   scoped_ptr<DrawGLInput> draw_gl_input_;
   bool hardware_allowed_;
-  bool hardware_initialized_;
   gpu::GLInProcessContext* share_context_;
   cc::ReturnedResourceArray returned_resources_;
 };

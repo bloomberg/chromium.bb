@@ -358,7 +358,6 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   if (!shared_renderer_state_.IsHardwareAllowed()) {
     hardware_renderer_.reset();
-    shared_renderer_state_.SetHardwareInitialized(false);
     return;
   }
 
@@ -366,9 +365,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     return;
 
   if (!hardware_renderer_) {
-    DCHECK(!shared_renderer_state_.IsHardwareInitialized());
     hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
-    shared_renderer_state_.SetHardwareInitialized(true);
   }
 
   if (hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
@@ -866,7 +863,7 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   shared_renderer_state_.SetHardwareAllowed(false);
 
-  bool hardware_initialized = shared_renderer_state_.IsHardwareInitialized();
+  bool hardware_initialized = browser_view_renderer_.hardware_enabled();
   if (hardware_initialized) {
     bool draw_functor_succeeded = RequestDrawGL(NULL, true);
     if (!draw_functor_succeeded) {
@@ -1138,10 +1135,6 @@ void AwContents::TrimMemory(JNIEnv* env,
                             jint level,
                             jboolean visible) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!shared_renderer_state_.IsHardwareInitialized())
-    return;
-
   browser_view_renderer_.TrimMemory(level, visible);
 }
 

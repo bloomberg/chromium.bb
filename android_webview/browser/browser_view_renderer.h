@@ -104,9 +104,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ScrollTo(gfx::Vector2d new_value);
 
   // Android views hierarchy gluing.
-  bool IsAttachedToWindow() const;
   bool IsVisible() const;
   gfx::Rect GetScreenRect() const;
+  bool attached_to_window() const { return attached_to_window_; }
+  bool hardware_enabled() const { return hardware_enabled_; }
 
   // Set the memory policy in shared renderer state and request the tiles from
   // GlobalTileManager. The actually amount of memory allowed by

@@ -144,7 +144,7 @@ std::string GetViewDescription(WebContents* web_contents) {
           ->GetBrowserViewRenderer();
   if (!bvr) return "";
   base::DictionaryValue description;
-  description.SetBoolean("attached", bvr->IsAttachedToWindow());
+  description.SetBoolean("attached", bvr->attached_to_window());
   description.SetBoolean("visible", bvr->IsVisible());
   gfx::Rect screen_rect = bvr->GetScreenRect();
   description.SetInteger("screenX", screen_rect.x());

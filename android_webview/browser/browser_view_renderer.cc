@@ -446,10 +446,6 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   // See AwContents::ReleaseHardwareDrawOnRenderThread(JNIEnv*, jobject).
 }
 
-bool BrowserViewRenderer::IsAttachedToWindow() const {
-  return attached_to_window_;
-}
-
 bool BrowserViewRenderer::IsVisible() const {
   // Ignore |window_visible_| if |attached_to_window_| is false.
   return view_visible_ && (!attached_to_window_ || window_visible_);

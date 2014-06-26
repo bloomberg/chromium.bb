@@ -24,7 +24,6 @@ SharedRendererState::SharedRendererState(
       weak_factory_on_ui_thread_(this),
       ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
       hardware_allowed_(false),
-      hardware_initialized_(false),
       share_context_(NULL) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
@@ -69,16 +68,6 @@ void SharedRendererState::SetHardwareAllowed(bool allowed) {
 bool SharedRendererState::IsHardwareAllowed() const {
   base::AutoLock lock(lock_);
   return hardware_allowed_;
-}
-
-void SharedRendererState::SetHardwareInitialized(bool initialized) {
-  base::AutoLock lock(lock_);
-  hardware_initialized_ = initialized;
-}
-
-bool SharedRendererState::IsHardwareInitialized() const {
-  base::AutoLock lock(lock_);
-  return hardware_initialized_;
 }
 
 void SharedRendererState::SetSharedContext(gpu::GLInProcessContext* context) {
