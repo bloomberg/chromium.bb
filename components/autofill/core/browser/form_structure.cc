@@ -286,6 +286,12 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "cc-type")
     return HTML_TYPE_CREDIT_CARD_TYPE;
 
+  if (autocomplete_attribute_value == "transaction-amount")
+    return HTML_TYPE_TRANSACTION_AMOUNT;
+
+  if (autocomplete_attribute_value == "transaction-currency")
+    return HTML_TYPE_TRANSACTION_CURRENCY;
+
   if (autocomplete_attribute_value == "tel")
     return HTML_TYPE_TEL;
 
@@ -1161,6 +1167,24 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
   }
 
   return values;
+}
+
+base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
+  base::string16 value;
+  for (std::vector<AutofillField*>::const_iterator iter = fields_.begin();
+       iter != fields_.end(); ++iter) {
+    const AutofillField* field = *iter;
+    if (field->html_type() != type)
+      continue;
+
+    // More than one value found; abort rather than choosing one arbitrarily.
+    if (!value.empty() && !field->value.empty())
+      return base::string16();
+
+    value = field->value;
+  }
+
+  return value;
 }
 
 void FormStructure::IdentifySections(bool has_author_specified_sections) {

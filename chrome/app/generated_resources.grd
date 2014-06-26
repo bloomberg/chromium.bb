@@ -10391,6 +10391,9 @@ Chrome ran out of memory.
         <message name="IDS_AUTOFILL_WALLET_UNSUPPORTED_AGENT_OR_API_KEY" desc="Text explaining that Wallet encountered an error with the Chrome version or Google API key.">
           Google Wallet doesn't support this version of Chrome or doesn't recognize your Google API key.
         </message>
+        <message name="IDS_AUTOFILL_WALLET_BAD_TRANSACTION_AMOUNT" desc="Text explaining that the transaction amoutn is too big or otherwise unrecognized.">
+          Wallet can't handle this transaction.
+        </message>
         <message name="IDS_AUTOFILL_WALLET_ERROR_CODE_TOOLTIP" desc="Text shown in a (?) tooltip to explain which error Chrome encountered when trying to communicate with Online Wallet.">
           Error code: <ph name="ERROR_CODE">$1<ex>54</ex></ph>
         </message>

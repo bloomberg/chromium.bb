@@ -147,6 +147,10 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
     case ::autofill::PASSWORD_FIELD:
       group = PASSWORD;
       break;
+
+    case ::autofill::TRANSACTION:
+      NOTREACHED();
+      break;
   }
 
   // Interpolate the |metric| with the |group|, so that all metrics for a given

@@ -470,7 +470,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     if (controller() &&
         !profile()->GetPrefs()->GetBoolean(
             ::prefs::kAutofillDialogPayWithoutWallet)) {
-      EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+      EXPECT_CALL(*controller()->GetTestingWalletClient(),
+                  GetWalletItems(_, _));
       controller()->OnDidFetchWalletCookieValue(std::string());
       controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
     }
@@ -2606,7 +2607,7 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->OnDidGetFullWallet(
       wallet::GetTestFullWalletWithRequiredActions(
           std::vector<wallet::RequiredAction>(
@@ -2678,7 +2679,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->TabActivated();
 
   // Simulate a response that includes different items.
@@ -2726,7 +2727,7 @@ TEST_F(AutofillDialogControllerTest,
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->TabActivated();
 
   // Simulate a response that includes different default values.
@@ -2763,7 +2764,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->TabActivated();
 
   controller()->OnDidGetWalletItems(
@@ -3110,7 +3111,7 @@ TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
 
   // When clicked, this link will ask for wallet items. If there's a signin
   // failure, the link will switch to "Sign in to use Google Wallet".
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->SignInLinkClicked();
   EXPECT_NE(TestAutofillDialogController::NOT_CHECKED,
             controller()->SignedInState());
@@ -3133,7 +3134,7 @@ TEST_F(AutofillDialogControllerTest, MultiAccountSwitch) {
   EXPECT_EQ(0U, controller()->GetTestingWalletClient()->user_index());
 
   // GetWalletItems should be called when the user switches accounts.
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->MenuModelForAccountChooser()->ActivatedAt(1);
   // The wallet client should be updated to the new user index.
   EXPECT_EQ(1U, controller()->GetTestingWalletClient()->user_index());

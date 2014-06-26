@@ -880,6 +880,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
     case NO_GROUP:
     case CREDIT_CARD:
     case PASSWORD_FIELD:
+    case TRANSACTION:
         return NULL;
   }
 

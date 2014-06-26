@@ -161,6 +161,10 @@ class FormStructure {
   // All returned values are standardized to upper case.
   std::set<base::string16> PossibleValues(ServerFieldType type);
 
+  // Gets the form's current value for |type|. For example, it may return
+  // the contents of a text input or the currently selected <option>.
+  base::string16 GetUniqueValue(HtmlFieldType type) const;
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;

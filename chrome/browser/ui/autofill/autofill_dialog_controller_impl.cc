@@ -390,8 +390,13 @@ scoped_ptr<DialogNotification> GetWalletError(
       break;
 
     case wallet::WalletClient::INVALID_PARAMS:
-      error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
-      error_code = 42;
+      // TODO(estade): re-enable this code when we can distinguish between
+      // Chrome-triggered errors and merchant-triggered ones. See
+      // http://crbug.com/354897
+      // error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
+      // error_code = 42;
+      error_ids = IDS_AUTOFILL_WALLET_BAD_TRANSACTION_AMOUNT;
+      error_code = 76;
       break;
 
     case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
@@ -434,7 +439,14 @@ scoped_ptr<DialogNotification> GetWalletError(
       error_code = 75;
       break;
 
-    default:
+    case wallet::WalletClient::SPENDING_LIMIT_EXCEEDED:
+      error_ids = IDS_AUTOFILL_WALLET_BAD_TRANSACTION_AMOUNT;
+      break;
+
+    // Handled in the prior switch().
+    case wallet::WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
+    case wallet::WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED:
+      NOTREACHED();
       break;
   }
 
@@ -817,6 +829,11 @@ void AutofillDialogControllerImpl::Show() {
       base::Bind(NullGetInfo),
       g_browser_process->GetApplicationLocale());
 
+  transaction_amount_ = form_structure_.GetUniqueValue(
+      HTML_TYPE_TRANSACTION_AMOUNT);
+  transaction_currency_ = form_structure_.GetUniqueValue(
+      HTML_TYPE_TRANSACTION_CURRENCY);
+
   account_chooser_model_.reset(
       new AccountChooserModel(this,
                               profile_,
@@ -1101,7 +1118,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   // The "Loading..." page should be showing now, which should cause the
   // account chooser to hide.
   view_->UpdateAccountChooser();
-  wallet_client->GetWalletItems();
+  wallet_client->GetWalletItems(transaction_amount_, transaction_currency_);
 }
 
 void AutofillDialogControllerImpl::HideSignIn() {

@@ -191,6 +191,10 @@ enum HtmlFieldType {
   // Email.
   HTML_TYPE_EMAIL,
 
+  // Transaction details.
+  HTML_TYPE_TRANSACTION_AMOUNT,
+  HTML_TYPE_TRANSACTION_CURRENCY,
+
   // Variants of type hints specified in the HTML specification that are
   // inferred based on a field's 'maxlength' attribute.
   // TODO(isherman): Remove these types, in favor of understanding maxlength
@@ -222,6 +226,7 @@ enum FieldTypeGroup {
   PHONE_BILLING,
   CREDIT_CARD,
   PASSWORD_FIELD,
+  TRANSACTION,
 };
 
 typedef std::set<ServerFieldType> ServerFieldTypeSet;

@@ -325,6 +325,8 @@ class AutofillDialogControllerImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerI18nTest,
                            CorrectCountryFromInputs);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           TransactionAmount);
 
   // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
@@ -735,6 +737,11 @@ class AutofillDialogControllerImpl
   // Whether |form_structure_| has asked for any details that would indicate
   // we should show a shipping section.
   bool cares_about_shipping_;
+
+  // Site-provided transaction amount and currency. No attempt to validate this
+  // input; it's passed directly to Wallet.
+  base::string16 transaction_amount_;
+  base::string16 transaction_currency_;
 
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;

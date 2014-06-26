@@ -373,6 +373,16 @@ const char kGetWalletItemsValidRequest[] =
         "\"use_minimal_addresses\":false"
     "}";
 
+const char kGetWalletItemsWithTransactionDetails[] =
+    "{"
+        "\"currency_code\":\"USD\","
+        "\"estimated_total_price\":\"100.00\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
+        "\"shipping_address_required\":true,"
+        "\"use_minimal_addresses\":false"
+    "}";
+
 const char kGetWalletItemsNoShippingRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
@@ -850,7 +860,7 @@ class WalletClientTest : public testing::Test {
     delegate_.ExpectBaselineMetrics();
     delegate_.ExpectWalletErrorMetric(expected_autofill_metric);
 
-    wallet_client_->GetWalletItems();
+    wallet_client_->GetWalletItems(base::string16(), base::string16());
     std::string buyer_error;
     if (!message_type_for_buyer_string.empty()) {
       buyer_error = base::StringPrintf("\"message_type_for_buyer\":\"%s\",",
@@ -986,6 +996,7 @@ TEST_F(WalletClientTest, WalletErrorCodes) {
   }
 }
 
+
 TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::UNKNOWN_ERROR)).Times(1);
@@ -994,7 +1005,7 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_UNKNOWN_ERROR);
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorTypeMissingInResponse);
@@ -1007,7 +1018,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
                          kGetWalletItemsValidRequest,
                          std::string());
@@ -1020,7 +1031,7 @@ TEST_F(WalletClientTest, RequestError) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   VerifyAndFinishRequest(net::HTTP_BAD_REQUEST,
                          kGetWalletItemsValidRequest,
                          std::string());
@@ -1192,10 +1203,24 @@ TEST_F(WalletClientTest, GetWalletItems) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
+                         kGetWalletItemsValidResponse);
+  EXPECT_EQ(1U, delegate_.wallet_items_received());
+}
+
+TEST_F(WalletClientTest, GetWalletItemsWithTransactionDetails) {
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
+                                           1);
+  delegate_.ExpectBaselineMetrics();
+
+  wallet_client_->GetWalletItems(base::ASCIIToUTF16("100.00"),
+                                 base::ASCIIToUTF16("USD"));
+
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kGetWalletItemsWithTransactionDetails,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
 }
@@ -1206,7 +1231,7 @@ TEST_F(WalletClientTest, GetWalletItemsRespectsDelegateForShippingRequired) {
   delegate_.ExpectBaselineMetrics();
   delegate_.SetIsShippingAddressRequired(false);
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsNoShippingRequest,
@@ -1723,7 +1748,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
 
   VerifyAndFinishRequest(net::HTTP_OK,
@@ -1735,7 +1760,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
 TEST_F(WalletClientTest, ErrorResponse) {
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
   delegate_.ExpectBaselineMetrics();
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
   testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
@@ -1757,7 +1782,7 @@ TEST_F(WalletClientTest, CancelRequest) {
                                            0);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems(base::string16(), base::string16());
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
   wallet_client_->CancelRequest();
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());

@@ -266,9 +266,8 @@ class AutofillMetrics {
     WALLET_INVALID_PARAMS,
     // Online Wallet is down.
     WALLET_SERVICE_UNAVAILABLE,
-    // User needs make a cheaper transaction or not use Online Wallet. This
-    // value has been deprecated.
-    WALLET_SPENDING_LIMIT_EXCEEDED_DEPRECATED,
+    // User needs make a cheaper transaction or not use Online Wallet.
+    WALLET_SPENDING_LIMIT_EXCEEDED,
     // The server API version of the request is no longer supported.
     WALLET_UNSUPPORTED_API_VERSION,
     // Catch all error type.

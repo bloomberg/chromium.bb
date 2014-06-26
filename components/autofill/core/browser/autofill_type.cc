@@ -177,6 +177,10 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_CREDIT_CARD_TYPE:
       return CREDIT_CARD;
 
+    case HTML_TYPE_TRANSACTION_AMOUNT:
+    case HTML_TYPE_TRANSACTION_CURRENCY:
+      return TRANSACTION;
+
     case HTML_TYPE_TEL:
     case HTML_TYPE_TEL_COUNTRY_CODE:
     case HTML_TYPE_TEL_NATIONAL:
@@ -382,6 +386,11 @@ ServerFieldType AutofillType::GetStorableType() const {
 
     case HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return CREDIT_CARD_EXP_4_DIGIT_YEAR;
+
+    // These types aren't stored; they're transient.
+    case HTML_TYPE_TRANSACTION_AMOUNT:
+    case HTML_TYPE_TRANSACTION_CURRENCY:
+      return UNKNOWN_TYPE;
   }
 
   NOTREACHED();
@@ -682,6 +691,10 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR";
     case HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return "HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR";
+    case HTML_TYPE_TRANSACTION_AMOUNT:
+      return "HTML_TRANSACTION_AMOUNT";
+    case HTML_TYPE_TRANSACTION_CURRENCY:
+      return "HTML_TRANSACTION_CURRENCY";
   }
 
   NOTREACHED();

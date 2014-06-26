@@ -1188,7 +1188,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 
   sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
 
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   continue_page_observer.Wait();
   content::RunAllPendingInMessageLoop();
 
@@ -1264,7 +1264,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
                                 true);
   sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
 
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   continue_page_observer.Wait();
   content::RunAllPendingInMessageLoop();
 
@@ -1416,8 +1416,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RefreshOnManageTabClose) {
   ASSERT_TRUE(browser()->is_type_tabbed());
 
-  // GetWalletItems() is called when controller() is created in SetUp().
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  // GetWalletItems(_, _) is called when controller() is created in SetUp().
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
@@ -1435,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RefreshOnManageTabClose) {
   // Closing the tab opened by "Manage my shipping details..." should refresh
   // the dialog.
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_, _));
   GetActiveWebContents()->Close();
 }
 
@@ -1738,6 +1738,20 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RulesLoaded) {
   // Cancelling the dialog causes additional validation to see if the user
   // cancelled with invalid fields, so verify and clear here.
   testing::Mock::VerifyAndClearExpectations(controller()->GetMockValidator());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       TransactionAmount) {
+  std::string html(
+      "<input type='number' step='0.01'"
+      "   autocomplete='transaction-amount' value='24'>"
+      "<input autocomplete='transaction-currency' value='USD'>"
+      "<input autocomplete='cc-csc'>");
+  AutofillDialogControllerImpl* controller = SetUpHtmlAndInvoke(html);
+  ASSERT_TRUE(controller);
+
+  EXPECT_EQ(ASCIIToUTF16("24"), controller->transaction_amount_);
+  EXPECT_EQ(ASCIIToUTF16("USD"), controller->transaction_currency_);
 }
 
 }  // namespace autofill

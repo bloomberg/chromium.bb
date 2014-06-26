@@ -80,6 +80,8 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
     return WalletClient::UNSUPPORTED_API_VERSION;
   if (LowerCaseEqualsASCII(trimmed, "unsupported_user_agent"))
     return WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY;
+  if (LowerCaseEqualsASCII(trimmed, "spending_limit_exceeded"))
+    return WalletClient::SPENDING_LIMIT_EXCEEDED;
 
   DVLOG(1) << "Unknown wallet error string: \"" << error_type << '"';
   return WalletClient::UNKNOWN_ERROR;
@@ -160,6 +162,8 @@ AutofillMetrics::WalletErrorMetric ErrorTypeToUmaMetric(
       return AutofillMetrics::WALLET_UNSUPPORTED_API_VERSION;
     case WalletClient::UNSUPPORTED_MERCHANT:
       return AutofillMetrics::WALLET_UNSUPPORTED_MERCHANT;
+    case WalletClient::SPENDING_LIMIT_EXCEEDED:
+      return AutofillMetrics::WALLET_SPENDING_LIMIT_EXCEEDED;
     case WalletClient::MALFORMED_RESPONSE:
       return AutofillMetrics::WALLET_MALFORMED_RESPONSE;
     case WalletClient::NETWORK_ERROR:
@@ -231,6 +235,8 @@ const char kSelectedInstrumentIdKey[] = "selected_instrument_id";
 const char kShippingAddressIdKey[] = "shipping_address_id";
 const char kShippingAddressKey[] = "shipping_address";
 const char kShippingAddressRequired[] = "shipping_address_required";
+const char kTransactionAmountKey[] = "estimated_total_price";
+const char kTransactionCurrencyKey[] = "currency_code";
 const char kUpgradedBillingAddressKey[] = "upgraded_billing_address";
 const char kUpgradedInstrumentIdKey[] = "upgraded_instrument_id";
 const char kUseMinimalAddresses[] = "use_minimal_addresses";
@@ -453,7 +459,8 @@ void WalletClient::SaveToWallet(
   }
 }
 
-void WalletClient::GetWalletItems() {
+void WalletClient::GetWalletItems(const base::string16& amount,
+                                  const base::string16& currency) {
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kMerchantDomainKey,
@@ -462,6 +469,11 @@ void WalletClient::GetWalletItems() {
                           delegate_->IsShippingAddressRequired());
   request_dict.SetBoolean(kUseMinimalAddresses, false);
   request_dict.SetBoolean(kPhoneNumberRequired, true);
+
+  if (!amount.empty())
+    request_dict.SetString(kTransactionAmountKey, amount);
+  if (!currency.empty())
+    request_dict.SetString(kTransactionCurrencyKey, currency);
 
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);
@@ -720,6 +732,9 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
       break;
     case WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
       error_message = "WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS";
+      break;
+    case WalletClient::SPENDING_LIMIT_EXCEEDED:
+      error_message = "SPENDING_LIMIT_EXCEEDED";
       break;
     case WalletClient::SERVICE_UNAVAILABLE:
       error_message = "WALLET_SERVICE_UNAVAILABLE";

@@ -282,7 +282,10 @@ void AutofillAgent::didRequestAutocomplete(
   } else if (!WebFormElementToFormData(form,
                                        WebFormControlElement(),
                                        REQUIRE_AUTOCOMPLETE,
-                                       EXTRACT_OPTIONS,
+                                       static_cast<ExtractMask>(
+                                           EXTRACT_VALUE |
+                                           EXTRACT_OPTION_TEXT |
+                                           EXTRACT_OPTIONS),
                                        &form_data,
                                        NULL)) {
     error_message = "failed to parse form.";

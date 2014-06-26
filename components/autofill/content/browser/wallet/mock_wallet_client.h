@@ -26,7 +26,8 @@ class MockWalletClient : public WalletClient {
                    const GURL& source_url);
   virtual ~MockWalletClient();
 
-  MOCK_METHOD0(GetWalletItems, void());
+  MOCK_METHOD2(GetWalletItems,
+      void(const base::string16&, const base::string16&));
 
   MOCK_METHOD2(AcceptLegalDocuments,
       void(const std::vector<WalletItems::LegalDocument*>& documents,

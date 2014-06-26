@@ -809,19 +809,17 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 
   base::string16 value = element.value();
 
-  if (IsSelectElement(element)) {
+  if (IsSelectElement(element) && (extract_mask & EXTRACT_OPTION_TEXT)) {
     const WebSelectElement select_element = element.toConst<WebSelectElement>();
     // Convert the |select_element| value to text if requested.
-    if (extract_mask & EXTRACT_OPTION_TEXT) {
-      WebVector<WebElement> list_items = select_element.listItems();
-      for (size_t i = 0; i < list_items.size(); ++i) {
-        if (IsOptionElement(list_items[i])) {
-          const WebOptionElement option_element =
-              list_items[i].toConst<WebOptionElement>();
-          if (option_element.value() == value) {
-            value = option_element.text();
-            break;
-          }
+    WebVector<WebElement> list_items = select_element.listItems();
+    for (size_t i = 0; i < list_items.size(); ++i) {
+      if (IsOptionElement(list_items[i])) {
+        const WebOptionElement option_element =
+            list_items[i].toConst<WebOptionElement>();
+        if (option_element.value() == value) {
+          value = option_element.text();
+          break;
         }
       }
     }
