@@ -4193,6 +4193,7 @@ fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, voi
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.fullscreen = !shsurf->state.fullscreen;
+	shsurf->fullscreen_output = shsurf->output;
 	send_configure_for_surface(shsurf);
 }
 
