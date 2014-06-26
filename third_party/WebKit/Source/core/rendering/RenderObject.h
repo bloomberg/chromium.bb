@@ -109,6 +109,7 @@ enum MapCoordinatesMode {
 typedef unsigned MapCoordinatesFlags;
 
 enum InvalidationReason {
+    InvalidationNone,
     InvalidationIncremental,
     InvalidationFull,
     InvalidationBorderFitLines,
@@ -1070,6 +1071,12 @@ protected:
     // Add hit-test rects for this renderer only to the provided list. layerOffset is the offset
     // of this renderer within the current layer that should be used for each result.
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
+
+    virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
+        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
+        const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer);
+    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+    void fullyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 private:
     RenderBlock* containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;

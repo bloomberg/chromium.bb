@@ -4041,6 +4041,85 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
+InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
+    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
+{
+    InvalidationReason invalidationReason = RenderBoxModelObject::getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+    if (invalidationReason != InvalidationNone && invalidationReason != InvalidationIncremental)
+        return invalidationReason;
+
+    // FIXME: The following checks should use old and new border box rects instead of old and new bounds.
+
+    if (style()->hasBorderRadius()) {
+        // If a border-radius exists and width/height is smaller than
+        // radius width/height, we cannot use delta-paint-invalidation.
+        RoundedRect oldRoundedRect = style()->getRoundedBorderFor(oldBounds);
+        RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds);
+        if (oldRoundedRect.radii() != newRoundedRect.radii())
+            return InvalidationBorderRadius;
+    }
+
+    if (oldBounds.width() != newBounds.width() && mustInvalidateBackgroundOrBorderPaintOnWidthChange())
+        return InvalidationBoundsChangeWithBackground;
+    if (oldBounds.height() != newBounds.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
+        return InvalidationBoundsChangeWithBackground;
+
+    return invalidationReason;
+}
+
+void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+{
+    RenderBoxModelObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
+
+    if (!style()->hasBorder() && !style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
+        return;
+
+    RenderStyle* outlineStyle = outlineStyleForPaintInvalidation();
+    LayoutUnit outlineWidth = outlineStyle->outlineSize();
+    LayoutBoxExtent insetShadowExtent = style()->getBoxShadowInsetExtent();
+    LayoutUnit deltaWidth = absoluteValue(newBounds.width() - oldBounds.width());
+    if (deltaWidth) {
+        LayoutUnit shadowLeft;
+        LayoutUnit shadowRight;
+        style()->getBoxShadowHorizontalExtent(shadowLeft, shadowRight);
+        LayoutUnit boxWidth = width();
+        LayoutUnit minInsetRightShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.right(), std::min<LayoutUnit>(newBounds.width(), oldBounds.width()));
+        LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight(), std::max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
+        LayoutUnit decorationsLeftWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowLeft);
+        LayoutUnit decorationsRightWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowRight);
+        LayoutRect rightRect(newBounds.x() + std::min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
+            newBounds.y(),
+            deltaWidth + decorationsLeftWidth + decorationsRightWidth,
+            std::max(newBounds.height(), oldBounds.height()));
+        LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
+        if (rightRect.x() < right) {
+            rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
+            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(rightRect), InvalidationIncremental);
+        }
+    }
+
+    LayoutUnit deltaHeight = absoluteValue(newBounds.height() - oldBounds.height());
+    if (deltaHeight) {
+        LayoutUnit shadowTop;
+        LayoutUnit shadowBottom;
+        style()->getBoxShadowVerticalExtent(shadowTop, shadowBottom);
+        LayoutUnit boxHeight = height();
+        LayoutUnit minInsetBottomShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.bottom(), std::min<LayoutUnit>(newBounds.height(), oldBounds.height()));
+        LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom(), std::max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
+        LayoutUnit decorationsTopHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowTop);
+        LayoutUnit decorationsBottomHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowBottom);
+        LayoutRect bottomRect(newBounds.x(),
+            std::min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
+            std::max(newBounds.width(), oldBounds.width()),
+            deltaHeight + decorationsTopHeight + decorationsBottomHeight);
+        LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
+        if (bottomRect.y() < bottom) {
+            bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
+            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(bottomRect), InvalidationIncremental);
+        }
+    }
+}
+
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
 {
     ASSERT(!needsLayout());

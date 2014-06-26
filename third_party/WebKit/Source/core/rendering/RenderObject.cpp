@@ -1550,6 +1550,8 @@ IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
 const char* RenderObject::invalidationReasonToString(InvalidationReason reason) const
 {
     switch (reason) {
+    case InvalidationNone:
+        return "none";
     case InvalidationIncremental:
         return "incremental";
     case InvalidationFull:
@@ -1619,134 +1621,79 @@ bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject* paintIn
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForOldAndNewRects(oldBounds, newBounds)));
 
-    InvalidationReason invalidationReason = shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental;
+    InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
-    // Presumably a background or a border exists if border-fit:lines was specified.
-    if (invalidationReason == InvalidationIncremental && style()->borderFit() == BorderFitLines)
-        invalidationReason = InvalidationBorderFitLines;
+    if (invalidationReason == InvalidationNone)
+        return false;
 
-    if (invalidationReason == InvalidationIncremental && style()->hasBorderRadius()) {
-        // If a border-radius exists and width/height is smaller than
-        // radius width/height, we cannot use delta-paint-invalidation.
-        RoundedRect oldRoundedRect = style()->getRoundedBorderFor(oldBounds);
-        RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds);
-        if (oldRoundedRect.radii() != newRoundedRect.radii())
-            invalidationReason = InvalidationBorderRadius;
+    if (invalidationReason == InvalidationIncremental) {
+        incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
+        return false;
     }
 
-    if (invalidationReason == InvalidationIncremental && compositingState() != PaintsIntoOwnBacking && newLocation != oldLocation)
-        invalidationReason = InvalidationLocationChange;
+    fullyInvalidatePaint(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
+    return true;
+}
+
+InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
+    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
+{
+    if (shouldDoFullPaintInvalidationAfterLayout())
+        return InvalidationFull;
+
+    // Presumably a background or a border exists if border-fit:lines was specified.
+    if (style()->borderFit() == BorderFitLines)
+        return InvalidationBorderFitLines;
+
+    if (compositingState() != PaintsIntoOwnBacking && newLocation != oldLocation)
+        return InvalidationLocationChange;
 
     // If the bounds are the same then we know that none of the statements below
     // can match, so we can early out since we will not need to do any
     // invalidation.
-    if (invalidationReason == InvalidationIncremental && oldBounds == newBounds)
-        return false;
-
-    if (invalidationReason == InvalidationIncremental) {
-        if (oldBounds.width() != newBounds.width() && mustInvalidateBackgroundOrBorderPaintOnWidthChange())
-            invalidationReason = InvalidationBoundsChangeWithBackground;
-        else if (oldBounds.height() != newBounds.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
-            invalidationReason = InvalidationBoundsChangeWithBackground;
-    }
+    if (oldBounds == newBounds)
+        return InvalidationNone;
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
     // be caused by some layout property (left / top) or some in-flow renderer inserted / removed before us in the tree.
-    if (invalidationReason == InvalidationIncremental && newBounds.location() != oldBounds.location())
-        invalidationReason = InvalidationBoundsChange;
+    if (newBounds.location() != oldBounds.location())
+        return InvalidationBoundsChange;
 
     // If the size is zero on one of our bounds then we know we're going to have
     // to do a full invalidation of either old bounds or new bounds. If we fall
     // into the incremental invalidation we'll issue two invalidations instead
     // of one.
-    if (invalidationReason == InvalidationIncremental && (oldBounds.size().isZero() || newBounds.size().isZero()))
-        invalidationReason = InvalidationBoundsChange;
+    if (oldBounds.size().isZero() || newBounds.size().isZero())
+        return InvalidationBoundsChange;
 
+    return InvalidationIncremental;
+}
+
+void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+{
     ASSERT(paintInvalidationContainer);
 
-    if (invalidationReason != InvalidationIncremental) {
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds), invalidationReason);
-        if (newBounds != oldBounds)
-            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds), invalidationReason);
-        return true;
-    }
-
-    LayoutUnit deltaLeft = newBounds.x() - oldBounds.x();
-    if (deltaLeft > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), deltaLeft, oldBounds.height()), invalidationReason);
-    else if (deltaLeft < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), -deltaLeft, newBounds.height()), invalidationReason);
+    ASSERT(oldBounds.location() == newBounds.location());
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
     if (deltaRight > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), InvalidationIncremental);
     else if (deltaRight < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), invalidationReason);
-
-    LayoutUnit deltaTop = newBounds.y() - oldBounds.y();
-    if (deltaTop > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), oldBounds.width(), deltaTop), invalidationReason);
-    else if (deltaTop < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), newBounds.width(), -deltaTop), invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), InvalidationIncremental);
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), InvalidationIncremental);
     else if (deltaBottom < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), InvalidationIncremental);
+}
 
-    // FIXME: This is a limitation of our visual overflow being a single rectangle.
-    if (!style()->hasBorder() && !style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
-        return false;
-
-    // We didn't move, but we did change size. Invalidate the delta, which will consist of possibly
-    // two rectangles (but typically only one).
-    RenderStyle* outlineStyle = outlineStyleForPaintInvalidation();
-    LayoutUnit outlineWidth = outlineStyle->outlineSize();
-    LayoutBoxExtent insetShadowExtent = style()->getBoxShadowInsetExtent();
-    LayoutUnit width = absoluteValue(newBounds.width() - oldBounds.width());
-    if (width) {
-        LayoutUnit shadowLeft;
-        LayoutUnit shadowRight;
-        style()->getBoxShadowHorizontalExtent(shadowLeft, shadowRight);
-        int borderRight = isBox() ? toRenderBox(this)->borderRight() : 0;
-        LayoutUnit boxWidth = isBox() ? toRenderBox(this)->width() : LayoutUnit();
-        LayoutUnit minInsetRightShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.right(), std::min<LayoutUnit>(newBounds.width(), oldBounds.width()));
-        LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight, std::max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
-        LayoutUnit decorationsLeftWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowLeft);
-        LayoutUnit decorationsRightWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowRight);
-        LayoutRect rightRect(newBounds.x() + std::min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
-            newBounds.y(),
-            width + decorationsLeftWidth + decorationsRightWidth,
-            std::max(newBounds.height(), oldBounds.height()));
-        LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
-        if (rightRect.x() < right) {
-            rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(rightRect), invalidationReason);
-        }
-    }
-    LayoutUnit height = absoluteValue(newBounds.height() - oldBounds.height());
-    if (height) {
-        LayoutUnit shadowTop;
-        LayoutUnit shadowBottom;
-        style()->getBoxShadowVerticalExtent(shadowTop, shadowBottom);
-        int borderBottom = isBox() ? toRenderBox(this)->borderBottom() : 0;
-        LayoutUnit boxHeight = isBox() ? toRenderBox(this)->height() : LayoutUnit();
-        LayoutUnit minInsetBottomShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.bottom(), std::min<LayoutUnit>(newBounds.height(), oldBounds.height()));
-        LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom, std::max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
-        LayoutUnit decorationsTopHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowTop);
-        LayoutUnit decorationsBottomHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowBottom);
-        LayoutRect bottomRect(newBounds.x(),
-            std::min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
-            std::max(newBounds.width(), oldBounds.width()),
-            height + decorationsTopHeight + decorationsBottomHeight);
-        LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
-        if (bottomRect.y() < bottom) {
-            bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(bottomRect), invalidationReason);
-        }
-    }
-    return false;
+void RenderObject::fullyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+{
+    // Otherwise do full paint invalidation.
+    invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds), invalidationReason);
+    if (newBounds != oldBounds)
+        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds), invalidationReason);
 }
 
 void RenderObject::invalidatePaintForOverflow()
