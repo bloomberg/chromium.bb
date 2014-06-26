@@ -19,8 +19,8 @@
 namespace ash {
 namespace {
 
-class ASH_EXPORT AshWindowTreeHostWin : public AshWindowTreeHost,
-                                        public aura::WindowTreeHostWin {
+class AshWindowTreeHostWin : public AshWindowTreeHost,
+                             public aura::WindowTreeHostWin {
  public:
   explicit AshWindowTreeHostWin(const gfx::Rect& initial_bounds)
       : aura::WindowTreeHostWin(initial_bounds),
