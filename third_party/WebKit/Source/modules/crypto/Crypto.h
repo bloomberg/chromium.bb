@@ -33,8 +33,6 @@
 #include "modules/crypto/SubtleCrypto.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

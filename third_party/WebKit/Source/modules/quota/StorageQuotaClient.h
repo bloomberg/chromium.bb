@@ -32,6 +32,7 @@
 #define StorageQuotaClient_h
 
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "wtf/Forward.h"
 

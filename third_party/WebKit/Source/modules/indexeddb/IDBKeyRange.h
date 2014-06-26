@@ -29,8 +29,6 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

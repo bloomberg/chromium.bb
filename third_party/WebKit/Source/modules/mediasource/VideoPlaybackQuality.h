@@ -32,7 +32,7 @@
 #define VideoPlaybackQuality_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

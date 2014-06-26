@@ -32,7 +32,6 @@
 #include "modules/speech/SpeechSynthesisVoice.h"
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -81,11 +80,12 @@ public:
 
 private:
     SpeechSynthesisUtterance(ExecutionContext*, const String&);
-    Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
-    Member<SpeechSynthesisVoice> m_voice;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
+
+    Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
+    Member<SpeechSynthesisVoice> m_voice;
 };
 
 } // namespace WebCore

@@ -7,7 +7,6 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

@@ -34,7 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
@@ -43,7 +43,7 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageInfo : public GarbageCollectedFinalized<DeprecatedStorageInfo>, public ScriptWrappable {
+class DeprecatedStorageInfo FINAL : public GarbageCollectedFinalized<DeprecatedStorageInfo>, public ScriptWrappable {
 public:
     enum {
         TEMPORARY,

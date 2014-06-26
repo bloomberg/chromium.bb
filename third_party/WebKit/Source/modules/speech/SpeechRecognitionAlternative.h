@@ -34,7 +34,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class SpeechRecognitionAlternative : public GarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
+class SpeechRecognitionAlternative FINAL : public GarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
 public:
     static SpeechRecognitionAlternative* create(const String&, double);
 

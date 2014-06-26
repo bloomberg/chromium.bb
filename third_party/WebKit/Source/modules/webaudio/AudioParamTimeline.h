@@ -31,8 +31,7 @@
 
 #include "modules/webaudio/AudioContext.h"
 #include "wtf/Float32Array.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "wtf/Forward.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 

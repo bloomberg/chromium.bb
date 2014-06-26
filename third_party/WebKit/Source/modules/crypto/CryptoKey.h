@@ -37,7 +37,6 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

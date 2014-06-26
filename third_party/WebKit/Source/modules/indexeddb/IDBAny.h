@@ -30,9 +30,7 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -49,7 +49,7 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<SharedWorker>::trace(visitor); }
 
 private:
-    explicit SharedWorkerPerformance();
+    SharedWorkerPerformance();
     static const char* supplementName();
 
     double m_timeOrigin;

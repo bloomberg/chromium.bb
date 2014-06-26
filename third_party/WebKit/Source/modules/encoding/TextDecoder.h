@@ -34,7 +34,6 @@
 #include "bindings/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"

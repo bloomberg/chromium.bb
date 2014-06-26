@@ -31,7 +31,6 @@
 #include "modules/gamepad/GamepadCommon.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

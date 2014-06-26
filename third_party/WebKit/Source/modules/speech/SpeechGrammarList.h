@@ -34,7 +34,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class SpeechGrammarList : public GarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
+class SpeechGrammarList FINAL : public GarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
 public:
     static SpeechGrammarList* create();
 
