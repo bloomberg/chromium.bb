@@ -24,15 +24,22 @@ function getIntersectionArea(rect1, rect2) {
  * @param {Object} sizer is the element which represents the size of the
  *     document in the viewport
  * @param {Function} viewportChangedCallback is run when the viewport changes
+ * @param {Function} beforeZoomCallback is run before a change in zoom
+ * @param {Function} afterZoomCallback is run after a change in zoom
  * @param {number} scrollbarWidth the width of scrollbars on the page
  */
 function Viewport(window,
                   sizer,
                   viewportChangedCallback,
+                  beforeZoomCallback,
+                  afterZoomCallback,
                   scrollbarWidth) {
   this.window_ = window;
   this.sizer_ = sizer;
   this.viewportChangedCallback_ = viewportChangedCallback;
+  this.beforeZoomCallback_ = beforeZoomCallback;
+  this.afterZoomCallback_ = afterZoomCallback;
+  this.allowedToChangeZoom_ = false;
   this.zoom_ = 1;
   this.documentDimensions_ = null;
   this.pageDimensions_ = [];
@@ -83,6 +90,12 @@ Viewport.prototype = {
    *     respectively.
    */
   documentNeedsScrollbars_: function(zoom) {
+    if (!this.documentDimensions_) {
+      return {
+        horizontal: false,
+        vertical: false
+      };
+    }
     var documentWidth = this.documentDimensions_.width * zoom;
     var documentHeight = this.documentDimensions_.height * zoom;
     return {
@@ -175,10 +188,27 @@ Viewport.prototype = {
 
   /**
    * @private
+   * Used to wrap a function that might perform zooming on the viewport. This is
+   * required so that we can notify the plugin that zooming is in progress
+   * so that while zooming is taking place it can stop reacting to scroll events
+   * from the viewport. This is to avoid flickering.
+   */
+  mightZoom_: function(f) {
+    this.beforeZoomCallback_();
+    this.allowedToChangeZoom_ = true;
+    f();
+    this.allowedToChangeZoom_ = false;
+    this.afterZoomCallback_();
+  },
+
+  /**
+   * @private
    * Sets the zoom of the viewport.
    * @param {number} newZoom the zoom level to zoom to.
    */
   setZoom_: function(newZoom) {
+    if (!this.allowedToChangeZoom_)
+      throw 'Called Viewport.setZoom_ without calling Viewport.mightZoom_.';
     var oldZoom = this.zoom_;
     this.zoom_ = newZoom;
     // Record the scroll position (relative to the middle of the window).
@@ -191,6 +221,16 @@ Viewport.prototype = {
     this.window_.scrollTo(
         currentScrollPos[0] * newZoom - this.window_.innerWidth / 2,
         currentScrollPos[1] * newZoom - this.window_.innerHeight / 2);
+  },
+
+  /**
+   * @private
+   * Sets the zoom for testing purposes.
+   */
+  setZoomForTest_: function(newZoom) {
+    this.mightZoom_(function() {
+      this.setZoom_(newZoom);
+    }.bind(this));
   },
 
   /**
@@ -333,17 +373,19 @@ Viewport.prototype = {
    * Zoom the viewport so that the page-width consumes the entire viewport.
    */
   fitToWidth: function() {
-    this.fittingType_ = Viewport.FittingType.FIT_TO_WIDTH;
-    if (!this.documentDimensions_)
-      return;
-    // Track the last y-position so we stay at the same position after zooming.
-    var oldY = this.window_.pageYOffset / this.zoom_;
-    // When computing fit-to-width, the maximum width of a page in the document
-    // is used, which is equal to the size of the document width.
-    this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
-    var page = this.getMostVisiblePage();
-    this.window_.scrollTo(0, oldY * this.zoom_);
-    this.updateViewport_();
+    this.mightZoom_(function() {
+      this.fittingType_ = Viewport.FittingType.FIT_TO_WIDTH;
+      if (!this.documentDimensions_)
+        return;
+      // Track the last y-position to stay at the same position after zooming.
+      var oldY = this.window_.pageYOffset / this.zoom_;
+      // When computing fit-to-width, the maximum width of a page in the
+      // document is used, which is equal to the size of the document width.
+      this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
+      var page = this.getMostVisiblePage();
+      this.window_.scrollTo(0, oldY * this.zoom_);
+      this.updateViewport_();
+    }.bind(this));
   },
 
   /**
@@ -351,47 +393,54 @@ Viewport.prototype = {
    * to the top of the most visible page.
    */
   fitToPage: function() {
-    this.fittingType_ = Viewport.FittingType.FIT_TO_PAGE;
-    if (!this.documentDimensions_)
-      return;
-    var page = this.getMostVisiblePage();
-    this.setZoom_(this.computeFittingZoom_(this.pageDimensions_[page], false));
-    // Center the document in the page by scrolling by the amount of empty
-    // space to the left of the document.
-    var xOffset =
-        (this.documentDimensions_.width - this.pageDimensions_[page].width) *
-        this.zoom_ / 2;
-    this.window_.scrollTo(xOffset,
-                          this.pageDimensions_[page].y * this.zoom_);
-    this.updateViewport_();
+    this.mightZoom_(function() {
+      this.fittingType_ = Viewport.FittingType.FIT_TO_PAGE;
+      if (!this.documentDimensions_)
+        return;
+      var page = this.getMostVisiblePage();
+      this.setZoom_(this.computeFittingZoom_(
+          this.pageDimensions_[page], false));
+      // Center the document in the page by scrolling by the amount of empty
+      // space to the left of the document.
+      var xOffset =
+          (this.documentDimensions_.width - this.pageDimensions_[page].width) *
+          this.zoom_ / 2;
+      this.window_.scrollTo(xOffset,
+                            this.pageDimensions_[page].y * this.zoom_);
+      this.updateViewport_();
+    }.bind(this));
   },
 
   /**
    * Zoom out to the next predefined zoom level.
    */
   zoomOut: function() {
-    this.fittingType_ = Viewport.FittingType.NONE;
-    var nextZoom = Viewport.ZOOM_FACTORS[0];
-    for (var i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
-      if (Viewport.ZOOM_FACTORS[i] < this.zoom_)
-        nextZoom = Viewport.ZOOM_FACTORS[i];
-    }
-    this.setZoom_(nextZoom);
-    this.updateViewport_();
+    this.mightZoom_(function() {
+      this.fittingType_ = Viewport.FittingType.NONE;
+      var nextZoom = Viewport.ZOOM_FACTORS[0];
+      for (var i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
+        if (Viewport.ZOOM_FACTORS[i] < this.zoom_)
+          nextZoom = Viewport.ZOOM_FACTORS[i];
+      }
+      this.setZoom_(nextZoom);
+      this.updateViewport_();
+    }.bind(this));
   },
 
   /**
    * Zoom in to the next predefined zoom level.
    */
   zoomIn: function() {
-    this.fittingType_ = Viewport.FittingType.NONE;
-    var nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
-    for (var i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
-      if (Viewport.ZOOM_FACTORS[i] > this.zoom_)
-        nextZoom = Viewport.ZOOM_FACTORS[i];
-    }
-    this.setZoom_(nextZoom);
-    this.updateViewport_();
+    this.mightZoom_(function() {
+      this.fittingType_ = Viewport.FittingType.NONE;
+      var nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
+      for (var i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
+        if (Viewport.ZOOM_FACTORS[i] > this.zoom_)
+          nextZoom = Viewport.ZOOM_FACTORS[i];
+      }
+      this.setZoom_(nextZoom);
+      this.updateViewport_();
+    }.bind(this));
   },
 
   /**
@@ -399,14 +448,18 @@ Viewport.prototype = {
    * @param {number} page the index of the page to go to.
    */
   goToPage: function(page) {
-    if (this.pageDimensions_.length == 0)
-      return;
-    if (page < 0)
-      page = 0;
-    if (page >= this.pageDimensions_.length)
-      page = this.pageDimensions_.length - 1;
-    var dimensions = this.pageDimensions_[page];
-    this.window_.scrollTo(dimensions.x * this.zoom_, dimensions.y * this.zoom_);
+    this.mightZoom_(function() {
+      if (this.pageDimensions_.length == 0)
+        return;
+      if (page < 0)
+        page = 0;
+      if (page >= this.pageDimensions_.length)
+        page = this.pageDimensions_.length - 1;
+      var dimensions = this.pageDimensions_[page];
+      this.window_.scrollTo(dimensions.x * this.zoom_,
+                            dimensions.y * this.zoom_);
+      this.updateViewport_();
+    }.bind(this));
   },
 
   /**
@@ -414,17 +467,19 @@ Viewport.prototype = {
    * @param {Object} documentDimensions the dimensions of the document
    */
   setDocumentDimensions: function(documentDimensions) {
-    var initialDimensions = !this.documentDimensions_;
-    this.documentDimensions_ = documentDimensions;
-    this.pageDimensions_ = this.documentDimensions_.pageDimensions;
-    if (initialDimensions) {
-      this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
-      if (this.zoom_ > 1)
-        this.setZoom_(1);
-      this.window_.scrollTo(0, 0);
-    }
-    this.contentSizeChanged_();
-    this.resize_();
+    this.mightZoom_(function() {
+      var initialDimensions = !this.documentDimensions_;
+      this.documentDimensions_ = documentDimensions;
+      this.pageDimensions_ = this.documentDimensions_.pageDimensions;
+      if (initialDimensions) {
+        this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
+        if (this.zoom_ > 1)
+          this.setZoom_(1);
+        this.window_.scrollTo(0, 0);
+      }
+      this.contentSizeChanged_();
+      this.resize_();
+    }.bind(this));
   },
 
   /**
@@ -434,6 +489,14 @@ Viewport.prototype = {
    * @return {Object} a rect representing the page in screen coordinates.
    */
   getPageScreenRect: function(page) {
+    if (!this.documentDimensions_) {
+      return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      };
+    }
     if (page >= this.pageDimensions_.length)
       page = this.pageDimensions_.length - 1;
 

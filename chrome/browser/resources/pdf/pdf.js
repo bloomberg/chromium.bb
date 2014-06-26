@@ -52,7 +52,9 @@ function PDFViewer() {
   // Create the viewport.
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
-                                this.viewportChangedCallback_.bind(this),
+                                this.viewportChanged_.bind(this),
+                                this.beforeZoom_.bind(this),
+                                this.afterZoom_.bind(this),
                                 getScrollbarWidth());
 
   // Create the plugin object dynamically so we can set its src. The plugin
@@ -108,6 +110,15 @@ function PDFViewer() {
   if (window.top == window)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
+
+  // TODO(raymes): Remove this spurious message once crbug.com/388606 is fixed.
+  // This is a hack to initialize pepper sync scripting and avoid re-entrancy.
+  this.plugin_.postMessage({
+    type: 'viewport',
+    zoom: 1,
+    xOffset: 0,
+    yOffset: 0
+  });
 
   // Setup the button event listeners.
   $('fit-to-width-button').addEventListener('click',
@@ -353,9 +364,36 @@ PDFViewer.prototype = {
 
   /**
    * @private
-   * A callback that's called when the viewport changes.
+   * A callback that's called before the zoom changes. Notify the plugin to stop
+   * reacting to scroll events while zoom is taking place to avoid flickering.
    */
-  viewportChangedCallback_: function() {
+  beforeZoom_: function() {
+    this.plugin_.postMessage({
+      type: 'stopScrolling'
+    });
+  },
+
+  /**
+   * @private
+   * A callback that's called after the zoom changes. Notify the plugin of the
+   * zoom change and to continue reacting to scroll events.
+   */
+  afterZoom_: function() {
+    var position = this.viewport_.position;
+    var zoom = this.viewport_.zoom;
+    this.plugin_.postMessage({
+      type: 'viewport',
+      zoom: zoom,
+      xOffset: position.x,
+      yOffset: position.y
+    });
+  },
+
+  /**
+   * @private
+   * A callback that's called after the viewport changes.
+   */
+  viewportChanged_: function() {
     if (!this.documentDimensions_)
       return;
 
@@ -390,16 +428,6 @@ PDFViewer.prototype = {
     } else {
       this.pageIndicator_.style.visibility = 'hidden';
     }
-
-    var position = this.viewport_.position;
-    var zoom = this.viewport_.zoom;
-    // Notify the plugin of the viewport change.
-    this.plugin_.postMessage({
-      type: 'viewport',
-      zoom: zoom,
-      xOffset: position.x,
-      yOffset: position.y
-    });
 
     var visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
     var size = this.viewport_.size;

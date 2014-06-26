@@ -34,6 +34,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/private/pdf.h"
+#include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -70,6 +71,8 @@ const char* kJSViewportType = "viewport";
 const char* kJSXOffset = "xOffset";
 const char* kJSYOffset = "yOffset";
 const char* kJSZoom = "zoom";
+// Stop scrolling message (Page -> Plugin)
+const char* kJSStopScrollingType = "stopScrolling";
 // Document dimension arguments (Plugin -> Page).
 const char* kJSDocumentDimensionsType = "documentDimensions";
 const char* kJSDocumentWidth = "width";
@@ -244,7 +247,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       last_progress_sent_(0),
       recently_sent_find_update_(false),
       received_viewport_message_(false),
-      did_call_start_loading_(false) {
+      did_call_start_loading_(false),
+      stop_scrolling_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -355,20 +359,17 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
       dict.Get(pp::Var(kJSYOffset)).is_int() &&
       dict.Get(pp::Var(kJSZoom)).is_number()) {
     received_viewport_message_ = true;
+    stop_scrolling_ = false;
     double zoom = dict.Get(pp::Var(kJSZoom)).AsDouble();
-    int x = dict.Get(pp::Var(kJSXOffset)).AsInt();
-    int y = dict.Get(pp::Var(kJSYOffset)).AsInt();
+    pp::Point scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsInt(),
+                            dict.Get(pp::Var(kJSYOffset)).AsInt());
 
     // Bound the input parameters.
     zoom = std::max(kMinZoom, zoom);
-    int max_x = document_size_.width() * zoom - plugin_dip_size_.width();
-    x = std::max(std::min(x, max_x), 0);
-    int max_y = document_size_.height() * zoom - plugin_dip_size_.height();
-    y = std::max(std::min(y, max_y), 0);
-
     SetZoom(zoom);
-    engine_->ScrolledToXPosition(x * device_scale_);
-    engine_->ScrolledToYPosition(y * device_scale_);
+    scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
+    engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
+    engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
   } else if (type == kJSGetPasswordCompleteType &&
              dict.Get(pp::Var(kJSPassword)).is_string()) {
     if (password_callback_) {
@@ -425,6 +426,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
       reply.Set(pp::Var(kJSAccessibilityJSON), pp::Var(json));
     }
     PostMessage(reply);
+  } else if (type == kJSStopScrollingType) {
+    stop_scrolling_ = true;
   } else {
     NOTREACHED();
   }
@@ -507,32 +510,38 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   pp::Size view_device_size(view_rect.width() * device_scale,
                             view_rect.height() * device_scale);
 
-  if (view_device_size == plugin_size_ && device_scale == device_scale_)
-    return; // We don't care about the position, only the size.
+  if (view_device_size != plugin_size_ || device_scale != device_scale_) {
+    device_scale_ = device_scale;
+    plugin_dip_size_ = view_rect.size();
+    plugin_size_ = view_device_size;
 
-  device_scale_ = device_scale;
-  plugin_dip_size_ = view_rect.size();
-  plugin_size_ = view_device_size;
+    paint_manager_.SetSize(view_device_size, device_scale_);
 
-  paint_manager_.SetSize(view_device_size, device_scale_);
+    pp::Size new_image_data_size = PaintManager::GetNewContextSize(
+        image_data_.size(),
+        plugin_size_);
+    if (new_image_data_size != image_data_.size()) {
+      image_data_ = pp::ImageData(this,
+                                  PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                  new_image_data_size,
+                                  false);
+      first_paint_ = true;
+    }
 
-  pp::Size new_image_data_size = PaintManager::GetNewContextSize(
-      image_data_.size(),
-      plugin_size_);
-  if (new_image_data_size != image_data_.size()) {
-    image_data_ = pp::ImageData(this,
-                                PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                new_image_data_size,
-                                false);
-    first_paint_ = true;
+    if (image_data_.is_null()) {
+      DCHECK(plugin_size_.IsEmpty());
+      return;
+    }
+
+    OnGeometryChanged(zoom_, old_device_scale);
   }
 
-  if (image_data_.is_null()) {
-    DCHECK(plugin_size_.IsEmpty());
-    return;
+  if (!stop_scrolling_) {
+    pp::Point scroll_offset(
+        BoundScrollOffsetToDocument(view.GetScrollOffset()));
+    engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
+    engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
   }
-
-  OnGeometryChanged(zoom_, old_device_scale);
 }
 
 pp::Var OutOfProcessInstance::GetLinkAtPosition(
@@ -786,7 +795,8 @@ void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
 }
 
 void OutOfProcessInstance::Scroll(const pp::Point& point) {
-  paint_manager_.ScrollRect(available_area_, point);
+  if (!image_data_.is_null())
+    paint_manager_.ScrollRect(available_area_, point);
 }
 
 void OutOfProcessInstance::ScrollToX(int x) {
@@ -1402,6 +1412,15 @@ void OutOfProcessInstance::UserMetricsRecordAction(
     const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
+}
+
+pp::Point OutOfProcessInstance::BoundScrollOffsetToDocument(
+    const pp::Point& scroll_offset) {
+  int max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
+  int x = std::max(std::min(scroll_offset.x(), max_x), 0);
+  int max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
+  int y = std::max(std::min(scroll_offset.y(), max_y), 0);
+  return pp::Point(x, y);
 }
 
 }  // namespace chrome_pdf
