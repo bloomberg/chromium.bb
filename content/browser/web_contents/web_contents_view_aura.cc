@@ -1149,7 +1149,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
-  window_->set_title(title);
+  window_->SetTitle(title);
 }
 
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {

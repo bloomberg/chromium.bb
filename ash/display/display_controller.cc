@@ -731,7 +731,7 @@ AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
 
   host->window()->SetName(base::StringPrintf("RootWindow-%d", host_count++));
-  host->window()->set_title(base::UTF8ToUTF16(display_info.name()));
+  host->window()->SetTitle(base::UTF8ToUTF16(display_info.name()));
   host->compositor()->SetBackgroundColor(SK_ColorBLACK);
   // No need to remove our observer observer because the DisplayController
   // outlives the host.

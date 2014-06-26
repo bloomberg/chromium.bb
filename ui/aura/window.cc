@@ -305,6 +305,13 @@ void Window::SetName(const std::string& name) {
     UpdateLayerName();
 }
 
+void Window::SetTitle(const base::string16& title) {
+  title_ = title;
+  FOR_EACH_OBSERVER(WindowObserver,
+                    observers_,
+                    OnWindowTitleChanged(this));
+}
+
 void Window::SetTransparent(bool transparent) {
   transparent_ = transparent;
   if (layer())
