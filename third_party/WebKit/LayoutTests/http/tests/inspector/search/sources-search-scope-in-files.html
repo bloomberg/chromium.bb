@@ -129,30 +129,51 @@ function test()
             runSearchAndDumpResults(searchConfig, next);
         },
 
-        function testSeveralQueries(next)
+        function testSpaceQueries(next)
         {
-            var query = "search" + " " + "Test" + "Unique";
+            var query = "searchTest" + "Unique" + " space" + " String";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSpaceQueriesFileHTML(next)
+        {
+            var query = "file:html " + "searchTest" + "Unique" + " space" + " String";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSpaceQueriesFileHTML_SEARCH(next)
+        {
+            var query = "file:html " + "searchTest" + "Unique" + " space" + " String" + " file:search";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSpaceQueriesFileJS_SEARCH_HTML(next)
+        {
+            var query = "file:js " + "searchTest" + "Unique" + " space" + " String" + " file:search file:html";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
 
         function testSeveralQueriesFileHTML(next)
         {
-            var query = "file:html " + "search" + " " + "Test" + "Unique";
+            var query = "searchTest" + "Unique" + " file:html " + " space" + " String";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
 
         function testSeveralQueriesFileHTML_SEARCH(next)
         {
-            var query = "file:html " + "search" + " " + "Test" + "Unique" + " file:search";
+            var query = "searchTest" + "Unique" + " file:html " + " space" + " String" + " file:search";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
 
         function testSeveralQueriesFileJS_SEARCH_HTML(next)
         {
-            var query = "file:js " + "search" + " " + "Test" + "Unique" + " file:search file:html";
+            var query = "file:js " + "searchTest" + "Unique" + " file:html " + " space" + " String" + " file:search";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
