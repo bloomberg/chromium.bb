@@ -272,15 +272,6 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     std::string service_path;
     value.GetAsString(&service_path);
     listener_->DefaultNetworkServiceChanged(service_path);
-  } else if (key == shill::kServicesProperty) {
-    const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist) {
-      // We only use the Services property to determine which networks we
-      // observe. This is more convenient and reliable than waiting to revceive
-      // the Visible property of each kServiceCompleteList entry. We limit the
-      // number of observed networks to kMaxObserved.
-      UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
-    }
   } else if (key == shill::kServiceCompleteListProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
