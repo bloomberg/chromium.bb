@@ -196,7 +196,7 @@ void FrameLoader::saveScrollState()
     else
         m_currentItem->setPinchViewportScrollPoint(FloatPoint(-1, -1));
 
-    if (m_frame->isMainFrame() && !m_frame->page()->inspectorController().deviceEmulationEnabled())
+    if (m_frame->isMainFrame())
         m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
 
     client()->didUpdateCurrentHistoryItem();

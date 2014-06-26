@@ -405,7 +405,6 @@ void WebDevToolsAgentImpl::enableViewportEmulation()
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
     m_webViewImpl->setIgnoreViewportTagScaleLimits(true);
     m_webViewImpl->setZoomFactorOverride(1);
-    // FIXME: with touch and viewport emulation enabled, we may want to disable overscroll navigation.
     updatePageScaleFactorLimits();
 }
 
@@ -432,11 +431,18 @@ void WebDevToolsAgentImpl::updatePageScaleFactorLimits()
             m_originalMaximumPageScaleFactor = m_webViewImpl->maximumPageScaleFactor();
             m_pageScaleLimitsOverriden = true;
         }
-        m_webViewImpl->setPageScaleFactorLimits(1, 4);
+        if (m_emulateViewportEnabled) {
+            m_webViewImpl->setPageScaleFactorLimits(-1, -1);
+            m_webViewImpl->setInitialPageScaleOverride(-1);
+        } else {
+            m_webViewImpl->setPageScaleFactorLimits(1, 4);
+            m_webViewImpl->setInitialPageScaleOverride(1);
+        }
     } else {
         if (m_pageScaleLimitsOverriden) {
             m_pageScaleLimitsOverriden = false;
             m_webViewImpl->setPageScaleFactorLimits(m_originalMinimumPageScaleFactor, m_originalMaximumPageScaleFactor);
+            m_webViewImpl->setInitialPageScaleOverride(1);
         }
     }
 }
