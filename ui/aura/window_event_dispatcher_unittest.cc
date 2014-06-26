@@ -909,10 +909,18 @@ TEST_F(WindowEventDispatcherTest, DispatchSyntheticMouseEvents) {
   root_window()->RemovePreTargetHandler(&recorder);
 }
 
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 // Tests synthetic mouse events generated when window bounds changes such that
 // the cursor previously outside the window becomes inside, or vice versa.
 // Do not synthesize events if the window ignores events or is invisible.
-TEST_F(WindowEventDispatcherTest, SynthesizeMouseEventsOnWindowBoundsChanged) {
+// Flaky on 32-bit Windows bots.  http://crbug.com/388272
+TEST_F(WindowEventDispatcherTest,
+       MAYBE(SynthesizeMouseEventsOnWindowBoundsChanged)) {
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1234, gfx::Rect(5, 5, 100, 100), root_window()));
