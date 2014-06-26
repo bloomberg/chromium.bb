@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<style>
+    canvas {
+        width: 100px;
+        height: 100px;
+        image-rendering: auto;
+    }
+    img {
+        width: 100px;
+        height: 100px;
+        image-rendering: auto;
+    }
+    svg {
+        width: 100px;
+        height: 100px;
+    }
+    image {
+        image-rendering: auto;
+    }
+</style>
+<body>
+    <!-- Since all images are being downscaled, this should look the same with and without "image-rendering: pixelated" -->
+    <canvas width="512" height="512"></canvas>
+    <img onload="drawImageToCanvas()" src="resources/radial-lines.png">
+    <svg><image width="100" height="100" xlink:href="resources/radial-lines.png"/></svg>
+</body>
+<script>
+    // Ignore the render tree.
+    if (window.testRunner)
+      window.testRunner.dumpAsTextWithPixelResults();
+
+    function drawImageToCanvas() {
+        var image = document.getElementsByTagName("img")[0];
+        var canvas = document.getElementsByTagName("canvas")[0].getContext("2d");
+        canvas.drawImage(image, 0, 0);
+    }
+</script>

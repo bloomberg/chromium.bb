@@ -62,11 +62,10 @@ void ImageQualityController::remove(RenderObject* renderer)
 
 InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, RenderObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
 {
-    // FIXME: This ImageRenderingPixelated should only be InterpolationNone when
-    // upscaling. It should be the same as ImageRenderingAuto when downscaling.
-    // See crbug.com/386944.
-    if (object->style()->imageRendering() == ImageRenderingPixelated)
+    if (object->style()->imageRendering() == ImageRenderingPixelated
+        && (layoutSize.width() > image->width() || layoutSize.height() > image->height())) {
         return InterpolationNone;
+    }
 
     if (InterpolationDefault == InterpolationLow)
         return InterpolationLow;

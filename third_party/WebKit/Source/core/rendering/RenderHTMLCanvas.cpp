@@ -69,15 +69,16 @@ void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& pa
     // See bug for more details: crbug.com/353716.
     InterpolationQuality interpolationQuality = style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
 
-    // FIXME: This ImageRenderingPixelated should only be InterpolationNone when
-    // upscaling. It should be the same as ImageRenderingAuto when downscaling.
-    // See crbug.com/386944.
-    if (style()->imageRendering() == ImageRenderingPixelated)
+    HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
+    LayoutSize layoutSize = contentRect.size();
+    if (style()->imageRendering() == ImageRenderingPixelated
+        && (layoutSize.width() > canvas->width() || layoutSize.height() > canvas->height())) {
         interpolationQuality = InterpolationNone;
+    }
 
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    toHTMLCanvasElement(node())->paint(context, paintRect);
+    canvas->paint(context, paintRect);
     context->setImageInterpolationQuality(previousInterpolationQuality);
 
     if (clip)
