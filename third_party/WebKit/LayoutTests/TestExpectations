@@ -768,14 +768,6 @@ crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 
-crbug.com/385103 fast/repaint/crbug-371640-2.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/crbug-371640.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/crbug-371640-4.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/crbug-371640-3.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/repaint-descandant-on-ancestor-layer-move.html [ NeedsRebaseline ]
-crbug.com/385103 fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
-
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
