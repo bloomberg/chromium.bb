@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/display.h"
@@ -124,6 +125,7 @@ DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
 
 DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
+      blocked_keyboard_(false),
       atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
   CHECK(gfx::GetXDisplay());
@@ -664,6 +666,46 @@ bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
     return true;
   }
 #endif  // defined(OS_CHROMEOS) && defined(USE_XI2_MT)
+  return false;
+}
+
+void DeviceDataManagerX11::DisableKeyboard(
+    scoped_ptr<std::set<KeyboardCode> > excepted_keys) {
+  DCHECK(!blocked_keyboard_);
+  DCHECK(!blocked_keyboard_allowed_keys_.get());
+  blocked_keyboard_ = true;
+  blocked_keyboard_allowed_keys_ = excepted_keys.Pass();
+}
+
+void DeviceDataManagerX11::EnableKeyboard() {
+  DCHECK(blocked_keyboard_);
+  blocked_keyboard_ = false;
+  blocked_keyboard_allowed_keys_.reset();
+}
+
+void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
+  blocked_devices_.set(deviceid, true);
+}
+
+void DeviceDataManagerX11::EnableDevice(unsigned int deviceid) {
+  blocked_devices_.set(deviceid, false);
+}
+
+bool DeviceDataManagerX11::IsEventBlocked(
+    const base::NativeEvent& native_event) {
+  switch (native_event->type) {
+    case KeyPress:
+    case KeyRelease:
+      return blocked_keyboard_ && (!blocked_keyboard_allowed_keys_ ||
+          blocked_keyboard_allowed_keys_->find(
+              KeyboardCodeFromXKeyEvent(native_event)) ==
+                  blocked_keyboard_allowed_keys_->end());
+    case GenericEvent:
+      return blocked_devices_.test(
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid);
+    default:
+      break;
+  }
   return false;
 }
 

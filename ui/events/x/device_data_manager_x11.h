@@ -16,6 +16,7 @@
 
 #include <bitset>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -223,6 +224,18 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   bool TouchEventNeedsCalibrate(int touch_device_id) const;
 
+  // Disables the physical keyboard except for the |excepted_keys| provided.
+  void DisableKeyboard(scoped_ptr<std::set<KeyboardCode> > excepted_keys);
+  // Re-enables the keyboard after a previous call to DisableKeyboard.
+  void EnableKeyboard();
+
+  // Disables and enables events from devices by device id.
+  void DisableDevice(unsigned int deviceid);
+  void EnableDevice(unsigned int deviceid);
+
+  // Returns true if |native_event| should be blocked.
+  bool IsEventBlocked(const base::NativeEvent& native_event);
+
  private:
   DeviceDataManagerX11();
   virtual ~DeviceDataManagerX11();
@@ -252,6 +265,18 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // should be processed.
   std::bitset<kMaxDeviceNum> cmt_devices_;
   std::bitset<kMaxDeviceNum> touchpads_;
+
+  // A quick lookup table for determining if events from the XI device
+  // should be blocked.
+  std::bitset<kMaxDeviceNum> blocked_devices_;
+
+  // When true, keyboard events will be blocked.
+  // TODO(flackr): Only block the internal keyboard when XI2 is used for key
+  // events. http://crbug.com/362881.
+  bool blocked_keyboard_;
+
+  // The set of keys allowed while the keyboard is blocked.
+  scoped_ptr<std::set<KeyboardCode> > blocked_keyboard_allowed_keys_;
 
   // Number of valuators on the specific device.
   int valuator_count_[kMaxDeviceNum];

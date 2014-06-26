@@ -23,7 +23,7 @@ class EventHandler;
 namespace ash {
 
 class MaximizeModeControllerTest;
-class MaximizeModeEventBlocker;
+class ScopedDisableInternalMouseAndKeyboard;
 class MaximizeModeWindowManager;
 class MaximizeModeWindowManagerTest;
 
@@ -136,9 +136,9 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver,
   // The maximized window manager (if enabled).
   scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
-  // An event targeter controller which traps mouse and keyboard events while
-  // maximize mode is engaged.
-  scoped_ptr<MaximizeModeEventBlocker> event_blocker_;
+  // A helper class which when instantiated will block native events from the
+  // internal keyboard and touchpad.
+  scoped_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
 
   // An event handler used to detect screenshot actions while in maximize mode.
   scoped_ptr<ui::EventHandler> event_handler_;
