@@ -63,6 +63,11 @@ class Connector : public MessageReceiver {
   // a quiescent state.
   ScopedMessagePipeHandle PassMessagePipe();
 
+  // Waits for the next message on the pipe, blocking until one arrives or an
+  // error happens. Returns |true| if a message has been delivered, |false|
+  // otherwise.
+  bool WaitForIncomingMessage();
+
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
 
@@ -73,7 +78,12 @@ class Connector : public MessageReceiver {
   void WaitToReadMore();
 
   // Returns false if |this| was destroyed during message dispatch.
-  MOJO_WARN_UNUSED_RESULT bool ReadMore();
+  MOJO_WARN_UNUSED_RESULT bool ReadSingleMessage(MojoResult* read_result);
+
+  // |this| can be destroyed during message dispatch.
+  void ReadAllAvailableMessages();
+
+  void NotifyError();
 
   ErrorHandler* error_handler_;
   const MojoAsyncWaiter* waiter_;

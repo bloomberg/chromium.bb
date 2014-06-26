@@ -152,6 +152,31 @@ TEST_F(RouterTest, BasicRequestResponse) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
+TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
+  internal::Router router0(handle0_.Pass(), internal::FilterChain());
+  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+
+  ResponseGenerator generator;
+  router1.set_incoming_receiver(&generator);
+
+  Message request;
+  AllocRequestMessage(1, "hello", &request);
+
+  internal::MessageQueue message_queue;
+  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+
+  router1.WaitForIncomingMessage();
+  router0.WaitForIncomingMessage();
+
+  EXPECT_FALSE(message_queue.IsEmpty());
+
+  Message response;
+  message_queue.Pop(&response);
+
+  EXPECT_EQ(std::string("world"),
+            std::string(reinterpret_cast<const char*>(response.payload())));
+}
+
 TEST_F(RouterTest, RequestWithNoReceiver) {
   internal::Router router0(handle0_.Pass(), internal::FilterChain());
   internal::Router router1(handle1_.Pass(), internal::FilterChain());

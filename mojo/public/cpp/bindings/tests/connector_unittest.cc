@@ -39,6 +39,43 @@ class MessageAccumulator : public MessageReceiver {
   internal::MessageQueue queue_;
 };
 
+class ConnectorDeletingMessageAccumulator : public MessageAccumulator {
+ public:
+  ConnectorDeletingMessageAccumulator(internal::Connector** connector)
+      : connector_(connector) {}
+
+  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+    delete *connector_;
+    *connector_ = 0;
+    return MessageAccumulator::Accept(message);
+  }
+
+ private:
+  internal::Connector** connector_;
+};
+
+class ReentrantMessageAccumulator : public MessageAccumulator {
+ public:
+  ReentrantMessageAccumulator(internal::Connector* connector)
+      : connector_(connector), number_of_calls_(0) {}
+
+  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+    if (!MessageAccumulator::Accept(message))
+      return false;
+    number_of_calls_++;
+    if (number_of_calls_ == 1) {
+      return connector_->WaitForIncomingMessage();
+    }
+    return true;
+  }
+
+  int number_of_calls() { return number_of_calls_; }
+
+ private:
+  internal::Connector* connector_;
+  int number_of_calls_;
+};
+
 class ConnectorTest : public testing::Test {
  public:
   ConnectorTest() {
@@ -86,6 +123,32 @@ TEST_F(ConnectorTest, Basic) {
   connector1.set_incoming_receiver(&accumulator);
 
   PumpMessages();
+
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  Message message_received;
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(
+      std::string(kText),
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
+}
+
+TEST_F(ConnectorTest, Basic_Synchronous) {
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  connector0.Accept(&message);
+
+  MessageAccumulator accumulator;
+  connector1.set_incoming_receiver(&accumulator);
+
+  connector1.WaitForIncomingMessage();
 
   ASSERT_FALSE(accumulator.IsEmpty());
 
@@ -151,6 +214,36 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
         std::string(kText[i]),
         std::string(reinterpret_cast<const char*>(message_received.payload())));
   }
+}
+
+TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
+
+  const char* kText[] = { "hello", "world" };
+
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
+    Message message;
+    AllocMessage(kText[i], &message);
+
+    connector0.Accept(&message);
+  }
+
+  MessageAccumulator accumulator;
+  connector1.set_incoming_receiver(&accumulator);
+
+  connector1.WaitForIncomingMessage();
+
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  Message message_received;
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(
+      std::string(kText[0]),
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
+
+  ASSERT_TRUE(accumulator.IsEmpty());
 }
 
 TEST_F(ConnectorTest, WriteToClosedPipe) {
@@ -237,6 +330,72 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   EXPECT_EQ(
       std::string(kText),
       std::string(reinterpret_cast<const char*>(message_received.payload())));
+}
+
+TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
+  internal::Connector connector0(handle0_.Pass());
+  // Close the other end of the pipe.
+  handle1_.reset();
+  ASSERT_FALSE(connector0.WaitForIncomingMessage());
+}
+
+TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector* connector1 = new internal::Connector(handle1_.Pass());
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  connector0.Accept(&message);
+
+  ConnectorDeletingMessageAccumulator accumulator(&connector1);
+  connector1->set_incoming_receiver(&accumulator);
+
+  connector1->WaitForIncomingMessage();
+
+  ASSERT_FALSE(connector1);
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  Message message_received;
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(
+      std::string(kText),
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
+}
+
+TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
+
+  const char* kText[] = { "hello", "world" };
+
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
+    Message message;
+    AllocMessage(kText[i], &message);
+
+    connector0.Accept(&message);
+  }
+
+  ReentrantMessageAccumulator accumulator(&connector1);
+  connector1.set_incoming_receiver(&accumulator);
+
+  PumpMessages();
+
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
+    ASSERT_FALSE(accumulator.IsEmpty());
+
+    Message message_received;
+    accumulator.Pop(&message_received);
+
+    EXPECT_EQ(
+        std::string(kText[i]),
+        std::string(reinterpret_cast<const char*>(message_received.payload())));
+  }
+
+  ASSERT_EQ(2, accumulator.number_of_calls());
 }
 
 }  // namespace

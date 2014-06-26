@@ -28,6 +28,14 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
   // until this instance is deleted.
   Client* client() { return internal_state_.client(); }
 
+  // Blocks the current thread for the first incoming method call, i.e., either
+  // a call to a method or a client callback method. Returns |true| if a method
+  // has been called, |false| in case of error. It must only be called on a
+  // bound object.
+  bool WaitForIncomingMethodCall() {
+    return internal_state_.WaitForIncomingMethodCall();
+  }
+
   // Called when the client has connected to this instance.
   virtual void OnConnectionEstablished() {}
 
