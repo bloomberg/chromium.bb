@@ -14,7 +14,7 @@ InspectorTest.dumpSyntaxHighlight = function(str, mimeType)
             node_parts.push("*");
         }
     }
-    InspectorTest.addResult(str + ": " + node_parts.join(","));
+    InspectorTest.addResult(str + ": " + node_parts.join(", "));
 };
 
 };
