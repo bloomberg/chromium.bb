@@ -7,7 +7,7 @@ from measurements import memory_pressure
 import page_sets
 
 
-@test.Disabled('android')  # crbug.com/379561
+@test.Enabled('has tabs')
 class MemoryPressure(test.Test):
   test = memory_pressure.MemoryPressure
   page_set = page_sets.Typical25PageSet
