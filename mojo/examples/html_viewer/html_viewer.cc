@@ -41,7 +41,7 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 class HTMLViewer : public ApplicationDelegate,
                    public view_manager::ViewManagerDelegate {
  public:
-  HTMLViewer() : document_view_(NULL) {
+  HTMLViewer() : application_impl_(NULL), document_view_(NULL) {
   }
   virtual ~HTMLViewer() {
     blink::shutdown();
@@ -58,6 +58,7 @@ class HTMLViewer : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+    application_impl_ = app;
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
   }
@@ -72,7 +73,9 @@ class HTMLViewer : public ApplicationDelegate,
   // Overridden from view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
                            view_manager::Node* root) OVERRIDE {
-    document_view_ = new HTMLDocumentView(view_manager);
+    document_view_ = new HTMLDocumentView(
+        application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
+            GetServiceProvider(), view_manager);
     document_view_->AttachToNode(root);
     MaybeLoad();
   }
@@ -83,6 +86,7 @@ class HTMLViewer : public ApplicationDelegate,
   }
 
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
+  ApplicationImpl* application_impl_;
 
   // TODO(darin): Figure out proper ownership of this instance.
   HTMLDocumentView* document_view_;

@@ -39,13 +39,49 @@ void ConfigureSettings(blink::WebSettings* settings) {
   settings->setJavaScriptEnabled(true);
 }
 
+navigation::Target WebNavigationPolicyToNavigationTarget(
+    blink::WebNavigationPolicy policy) {
+  switch (policy) {
+    case blink::WebNavigationPolicyCurrentTab:
+      return navigation::SOURCE_NODE;
+    case blink::WebNavigationPolicyNewBackgroundTab:
+    case blink::WebNavigationPolicyNewForegroundTab:
+    case blink::WebNavigationPolicyNewWindow:
+    case blink::WebNavigationPolicyNewPopup:
+      return navigation::NEW_NODE;
+    default:
+      return navigation::DEFAULT;
+  }
+}
+
+bool CanNavigateLocally(blink::WebFrame* frame,
+                        const blink::WebURLRequest& request) {
+  // For now, we just load child frames locally.
+  // TODO(aa): In the future, this should use embedding to connect to a
+  // different instance of Blink if the frame is cross-origin.
+  if (frame->parent())
+    return true;
+
+  // If we have extraData() it means we already have the url response
+  // (presumably because we are being called via Navigate()). In that case we
+  // can go ahead and navigate locally.
+  if (request.extraData())
+    return true;
+
+  // Otherwise we don't know if we're the right app to handle this request. Ask
+  // host to do the navigation for us.
+  return false;
+}
+
 }  // namespace
 
-HTMLDocumentView::HTMLDocumentView(view_manager::ViewManager* view_manager)
+HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
+                                   view_manager::ViewManager* view_manager)
     : view_manager_(view_manager),
       view_(view_manager::View::Create(view_manager_)),
       web_view_(NULL),
       repaint_pending_(false),
+      navigator_host_(service_provider),
       weak_factory_(this) {
   view_->AddObserver(this);
 }
@@ -109,12 +145,37 @@ bool HTMLDocumentView::allowsBrokenNullLayerTreeView() const {
   return true;
 }
 
+blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
+    blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
+    const blink::WebURLRequest& request, blink::WebNavigationType nav_type,
+    blink::WebNavigationPolicy default_policy, bool is_redirect) {
+  if (CanNavigateLocally(frame, request))
+    return default_policy;
+
+  navigation::NavigationDetailsPtr nav_details(
+      navigation::NavigationDetails::New());
+  nav_details->url = request.url().string().utf8();
+  navigator_host_->RequestNavigate(
+      view_->node()->id(),
+      WebNavigationPolicyToNavigationTarget(default_policy),
+      nav_details.Pass());
+
+  return blink::WebNavigationPolicyIgnore;
+}
+
 void HTMLDocumentView::didAddMessageToConsole(
     const blink::WebConsoleMessage& message,
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
   printf("### console: %s\n", std::string(message.text.utf8()).c_str());
+}
+
+void HTMLDocumentView::didNavigateWithinPage(
+    blink::WebLocalFrame* frame, const blink::WebHistoryItem& history_item,
+    blink::WebHistoryCommitType commit_type) {
+  navigator_host_->DidNavigateLocally(view_->node()->id(),
+                                      history_item.urlString().utf8());
 }
 
 void HTMLDocumentView::OnViewInputEvent(view_manager::View* view,

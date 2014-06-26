@@ -7,7 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/application/lazy_interface_ptr.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
@@ -27,7 +30,8 @@ class HTMLDocumentView : public blink::WebViewClient,
                          public blink::WebFrameClient,
                          public view_manager::ViewObserver {
  public:
-  explicit HTMLDocumentView(view_manager::ViewManager* view_manager);
+  HTMLDocumentView(ServiceProvider* service_provider,
+                   view_manager::ViewManager* view_manager);
   virtual ~HTMLDocumentView();
 
   void AttachToNode(view_manager::Node* node);
@@ -44,11 +48,19 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual bool allowsBrokenNullLayerTreeView() const;
 
   // WebFrameClient methods:
+  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
+      blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
+      const blink::WebURLRequest& request, blink::WebNavigationType nav_type,
+      blink::WebNavigationPolicy default_policy, bool isRedirect) OVERRIDE;
   virtual void didAddMessageToConsole(
       const blink::WebConsoleMessage& message,
       const blink::WebString& source_name,
       unsigned source_line,
-      const blink::WebString& stack_trace);
+      const blink::WebString& stack_trace) OVERRIDE;
+  virtual void didNavigateWithinPage(
+      blink::WebLocalFrame* frame,
+      const blink::WebHistoryItem& history_item,
+      blink::WebHistoryCommitType commit_type) OVERRIDE;
 
   // ViewObserver methods:
   virtual void OnViewInputEvent(view_manager::View* view,
@@ -60,9 +72,9 @@ class HTMLDocumentView : public blink::WebViewClient,
   view_manager::View* view_;
   blink::WebView* web_view_;
   bool repaint_pending_;
+  LazyInterfacePtr<navigation::NavigatorHost> navigator_host_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);
 };
 

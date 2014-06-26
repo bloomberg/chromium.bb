@@ -85,6 +85,8 @@ class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
   }
 
  private:
+  virtual void DidNavigateLocally(uint32 source_node_id,
+                                  const mojo::String& url) OVERRIDE;
   virtual void RequestNavigate(
       uint32 source_node_id,
       navigation::Target target,
@@ -207,6 +209,11 @@ class WindowManager : public ApplicationDelegate,
     // See comment in ShowKeyboard() about validating args.
     if (keyboard_manager_)
       keyboard_manager_->Hide(view_id);
+  }
+
+  void DidNavigateLocally(uint32 source_node_id, const mojo::String& url) {
+    LOG(ERROR) << "DidNavigateLocally: source_node_id: " << source_node_id
+               << " url: " << url.To<std::string>();
   }
 
   void RequestNavigate(
@@ -433,6 +440,11 @@ void WindowManagerConnection::ShowKeyboard(Id view_id, RectPtr bounds) {
 
 void WindowManagerConnection::HideKeyboard(Id node_id) {
   window_manager_->HideKeyboard(node_id);
+}
+
+void NavigatorHost::DidNavigateLocally(uint32 source_node_id,
+                                       const mojo::String& url) {
+  window_manager_->DidNavigateLocally(source_node_id, url);
 }
 
 void NavigatorHost::RequestNavigate(

@@ -34,6 +34,10 @@ struct ResponseDetails {
 interface NavigatorHost {
   RequestNavigate(uint32 source_node_id, Target target,
                   NavigationDetails details);
+
+  // Applications call this to inform hosts of navigations they performed
+  // locally. For example, pushState() navigations in an HTML application.
+  DidNavigateLocally(uint32 source_node_id, string url);
 };
 
 // Applications implement this interface to support navigation of their views
