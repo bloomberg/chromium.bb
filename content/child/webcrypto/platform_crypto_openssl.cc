@@ -397,6 +397,16 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   return Status::ErrorUnsupported();
 }
 
+const EVP_AEAD* GetAesGcmAlgorithmFromKeySize(unsigned int key_size_bytes) {
+  switch (key_size_bytes) {
+    case 16:
+      return EVP_aead_aes_128_gcm();
+    // TODO(eroman): Hook up 256-bit support when it is available.
+    default:
+      return NULL;
+  }
+}
+
 Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& data,
@@ -404,8 +414,66 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
                             std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
+  DCHECK(tag_length_bits % 8 == 0);
+  const unsigned int tag_length_bytes = tag_length_bits / 8;
+
+  EVP_AEAD_CTX ctx;
+
+  const EVP_AEAD* const aead_alg =
+      GetAesGcmAlgorithmFromKeySize(key->key().size());
+  if (!aead_alg)
+    return Status::ErrorUnexpected();
+
+  if (!EVP_AEAD_CTX_init(&ctx,
+                         aead_alg,
+                         Uint8VectorStart(key->key()),
+                         key->key().size(),
+                         tag_length_bytes,
+                         NULL)) {
+    return Status::OperationError();
+  }
+
+  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup> ctx_cleanup(&ctx);
+
+  ssize_t len;
+
+  if (mode == DECRYPT) {
+    if (data.byte_length() < tag_length_bytes)
+      return Status::ErrorDataTooSmall();
+
+    buffer->resize(data.byte_length() - tag_length_bytes);
+
+    len = EVP_AEAD_CTX_open(&ctx,
+                            Uint8VectorStart(buffer),
+                            buffer->size(),
+                            iv.bytes(),
+                            iv.byte_length(),
+                            data.bytes(),
+                            data.byte_length(),
+                            additional_data.bytes(),
+                            additional_data.byte_length());
+  } else {
+    // No need to check for unsigned integer overflow here (seal fails if
+    // the output buffer is too small).
+    buffer->resize(data.byte_length() + tag_length_bytes);
+
+    len = EVP_AEAD_CTX_seal(&ctx,
+                            Uint8VectorStart(buffer),
+                            buffer->size(),
+                            iv.bytes(),
+                            iv.byte_length(),
+                            data.bytes(),
+                            data.byte_length(),
+                            additional_data.bytes(),
+                            additional_data.byte_length());
+  }
+
+  if (len < 0)
+    return Status::OperationError();
+  buffer->resize(len);
+  return Status::Success();
 }
 
 Status EncryptRsaOaep(PublicKey* key,

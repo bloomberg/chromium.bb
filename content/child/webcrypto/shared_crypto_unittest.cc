@@ -1088,7 +1088,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesCbcSampleSets)) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAes)) {
+TEST_F(SharedCryptoTest, GenerateKeyAes) {
   // Check key generation for each of AES-CBC, AES-GCM, and AES-KW, and for each
   // allowed key length.
   std::vector<blink::WebCryptoAlgorithm> algorithm;
@@ -1123,7 +1123,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAes)) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAesBadLength)) {
+TEST_F(SharedCryptoTest, GenerateKeyAesBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kKeyLen); ++i) {
@@ -3206,7 +3206,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
 //   * Test decryption when the tag length exceeds input size
 //   * Test decryption with empty input
 //   * Test decryption with tag length of 0.
-TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
+TEST_F(SharedCryptoTest, AesGcmSampleSets) {
   // Some Linux test runners may not have a new enough version of NSS.
   if (!SupportsAesGcm()) {
     LOG(WARNING) << "AES GCM not supported, skipping tests";
@@ -3233,6 +3233,15 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
     const unsigned int test_tag_size_bits = test_authentication_tag.size() * 8;
     const std::vector<uint8> test_cipher_text =
         GetBytesFromHexString(test, "cipher_text");
+
+#if defined(USE_OPENSSL)
+    // TODO(eroman): Add support for 256-bit keys.
+    if (test_key.size() == 32) {
+      LOG(WARNING)
+          << "OpenSSL doesn't support 256-bit keys for AES-GCM; skipping";
+      continue;
+    }
+#endif
 
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
         test_key,
