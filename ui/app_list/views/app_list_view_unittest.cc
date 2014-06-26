@@ -307,15 +307,21 @@ void AppListViewTestContext::RunStartPageTest() {
   if (test_type_ == EXPERIMENTAL) {
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
 
+    // Show the start page view.
     ContentsView* contents_view = main_view->contents_view();
     ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
         ContentsView::NAMED_PAGE_START));
     EXPECT_FALSE(main_view->search_box_view()->visible());
     EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
 
+    gfx::Size view_size(view_->GetPreferredSize());
     ShowContentsViewPageAndVerify(
         contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
     EXPECT_TRUE(main_view->search_box_view()->visible());
+
+    // Hiding and showing the search box should not affect the app list's
+    // preferred size. This is a regression test for http://crbug.com/386912.
+    EXPECT_EQ(view_size.ToString(), view_->GetPreferredSize().ToString());
 
     // Check tiles hide and show on deletion and addition.
     model->CreateAndAddItem("Test app");

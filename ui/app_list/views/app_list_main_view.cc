@@ -27,6 +27,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -38,6 +39,32 @@ const int kInnerPadding = 1;
 
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
+
+// A view that holds another view and takes its preferred size. This is used for
+// wrapping the search box view so it still gets laid out while hidden. This is
+// a separate class so it can notify the main view on search box visibility
+// change.
+class SearchBoxContainerView : public views::View {
+ public:
+  SearchBoxContainerView(AppListMainView* host, SearchBoxView* search_box)
+      : host_(host), search_box_(search_box) {
+    SetLayoutManager(new views::FillLayout());
+    AddChildView(search_box);
+  }
+  virtual ~SearchBoxContainerView() {}
+
+ private:
+  // Overridden from views::View:
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
+    DCHECK_EQ(search_box_, child);
+    host_->NotifySearchBoxVisibilityChanged();
+  }
+
+  AppListMainView* host_;
+  SearchBoxView* search_box_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxContainerView);
+};
 
 }  // namespace
 
@@ -96,7 +123,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                         kInnerPadding));
 
   search_box_view_ = new SearchBoxView(this, delegate);
-  AddChildView(search_box_view_);
+  AddChildView(new SearchBoxContainerView(this, search_box_view_));
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.
@@ -253,10 +280,11 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
   }
 }
 
-void AppListMainView::ChildVisibilityChanged(views::View* child) {
+void AppListMainView::NotifySearchBoxVisibilityChanged() {
   // Repaint the AppListView's background which will repaint the background for
-  // the search box.
-  if (child == search_box_view_ && parent())
+  // the search box. This is needed because this view paints to a layer and
+  // won't propagate paints upward.
+  if (parent())
     parent()->SchedulePaint();
 }
 
