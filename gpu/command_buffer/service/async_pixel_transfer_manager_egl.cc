@@ -664,10 +664,12 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
 AsyncPixelTransferManagerEGL::SharedState::SharedState()
     // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
     : texture_upload_stats(new AsyncPixelTransferUploadStats) {
-  std::string vendor;
-  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  is_imagination = vendor.find("Imagination") != std::string::npos;
-  is_qualcomm = vendor.find("Qualcomm") != std::string::npos;
+  const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  if (vendor) {
+    is_imagination =
+        std::string(vendor).find("Imagination") != std::string::npos;
+    is_qualcomm = std::string(vendor).find("Qualcomm") != std::string::npos;
+  }
 }
 
 AsyncPixelTransferManagerEGL::SharedState::~SharedState() {}
