@@ -149,12 +149,14 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   // getifaddrs() may require IO operations.
   base::ThreadRestrictions::AssertIOAllowed();
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   int ioctl_socket = -1;
   if (policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE) {
     // we need a socket to query information about temporary address.
     ioctl_socket = socket(AF_INET6, SOCK_DGRAM, 0);
     DCHECK_GT(ioctl_socket, 0);
   }
+#endif
 
   ifaddrs *interfaces;
   if (getifaddrs(&interfaces) < 0) {
@@ -253,9 +255,11 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     }
   }
   freeifaddrs(interfaces);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   if (ioctl_socket >= 0) {
     close(ioctl_socket);
   }
+#endif
 
   if (policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE) {
     RemovePermanentIPv6AddressesWhereTemporaryExists(&network_infos);
