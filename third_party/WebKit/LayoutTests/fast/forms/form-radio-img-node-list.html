@@ -1,5 +1,6 @@
 <!doctype html>
 <script src="../../resources/js-test.js"></script>
+<img name=outside1></img>
 <form id="f1">
     <button id=n1></button>
     <keygen id=n1></keygen>
@@ -13,6 +14,8 @@
     <img name=n2></img>
     <img id=n2></img>
 </form>
+<!-- The img element isn't 'reassociatable'; add @form to verify it is so. -->
+<img name=n2 form=f1></img>
 <script>
 description("Test RadioNodeLists returned by the HTMLFormElement named-getter.");
 

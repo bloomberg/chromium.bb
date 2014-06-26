@@ -105,8 +105,11 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testEl
 
 bool RadioNodeList::elementMatches(const Element& element) const
 {
-    if (m_onlyMatchImgElements)
-        return isHTMLImageElement(element);
+    if (m_onlyMatchImgElements) {
+        if (!isHTMLImageElement(element))
+            return false;
+        return toHTMLElement(element).formOwner() == ownerNode();
+    }
 
     if (!isHTMLObjectElement(element) && !element.isFormControlElement())
         return false;
@@ -118,4 +121,3 @@ bool RadioNodeList::elementMatches(const Element& element) const
 }
 
 } // namespace
-
