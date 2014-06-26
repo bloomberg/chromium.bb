@@ -162,7 +162,7 @@ class PNGViewer : public ApplicationDelegate,
                            view_manager::Node* root) OVERRIDE {
     content_view_ = view_manager::View::Create(view_manager);
     root->SetActiveView(content_view_);
-    content_view_->SetColor(SK_ColorRED);
+    content_view_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
   }
@@ -170,11 +170,6 @@ class PNGViewer : public ApplicationDelegate,
   void DrawBitmap() {
     if (!content_view_)
       return;
-
-    if (zoom_percentage_ == kDefaultZoomPercentage) {
-      content_view_->SetContents(bitmap_);
-      return;
-    }
 
     skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::CreatePlatformCanvas(
         content_view_->node()->bounds().width(),

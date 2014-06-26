@@ -21,6 +21,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
@@ -174,6 +175,8 @@ class Browser : public ApplicationDelegate,
     textfield->set_controller(this);
 
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
+    widget_delegate->GetContentsView()->set_background(
+        views::Background::CreateSolidBackground(SK_ColorBLUE));
     widget_delegate->GetContentsView()->AddChildView(textfield);
     widget_delegate->GetContentsView()->SetLayoutManager(
         new BrowserLayoutManager);

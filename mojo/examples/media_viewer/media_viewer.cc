@@ -30,6 +30,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -140,6 +141,9 @@ class ControlPanel : public views::ButtonListener {
 
     widget_delegate->GetContentsView()->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 5, 2, 5));
+
+    widget_delegate->GetContentsView()->set_background(
+        views::Background::CreateSolidBackground(SK_ColorLTGRAY));
 
     for (int type = 0; type < CONTROL_COUNT; ++type) {
       views::Button* button = new views::LabelButton(
