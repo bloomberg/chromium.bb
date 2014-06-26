@@ -330,13 +330,6 @@ surface_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-empty_region(pixman_region32_t *region)
-{
-	pixman_region32_fini(region);
-	pixman_region32_init(region);
-}
-
-static void
 region_init_infinite(pixman_region32_t *region)
 {
 	pixman_region32_init_rect(region, INT32_MIN, INT32_MIN,
@@ -1561,7 +1554,7 @@ surface_flush_damage(struct weston_surface *surface)
 	    wl_shm_buffer_get(surface->buffer_ref.buffer->resource))
 		surface->compositor->renderer->flush_damage(surface);
 
-	empty_region(&surface->damage);
+	pixman_region32_clear(&surface->damage);
 }
 
 static void
@@ -2020,7 +2013,7 @@ surface_set_opaque_region(struct wl_client *client,
 		pixman_region32_copy(&surface->pending.opaque,
 				     &region->region);
 	} else {
-		empty_region(&surface->pending.opaque);
+		pixman_region32_clear(&surface->pending.opaque);
 	}
 }
 
@@ -2083,10 +2076,8 @@ weston_surface_commit(struct weston_surface *surface)
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->pending.damage);
 	pixman_region32_intersect_rect(&surface->damage, &surface->damage,
-				       0, 0,
-				       surface->width,
-				       surface->height);
-	empty_region(&surface->pending.damage);
+				       0, 0, surface->width, surface->height);
+	pixman_region32_clear(&surface->pending.damage);
 
 	/* wl_surface.set_opaque_region */
 	pixman_region32_init_rect(&opaque, 0, 0,
@@ -2334,7 +2325,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 				       0, 0,
 				       surface->width,
 				       surface->height);
-	empty_region(&sub->cached.damage);
+	pixman_region32_clear(&sub->cached.damage);
 
 	/* wl_surface.set_opaque_region */
 	pixman_region32_init_rect(&opaque, 0, 0,
@@ -2386,7 +2377,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 				  -surface->pending.sx, -surface->pending.sy);
 	pixman_region32_union(&sub->cached.damage, &sub->cached.damage,
 			      &surface->pending.damage);
-	empty_region(&surface->pending.damage);
+	pixman_region32_clear(&surface->pending.damage);
 
 	if (surface->pending.newly_attached) {
 		sub->cached.newly_attached = 1;

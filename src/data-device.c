@@ -53,13 +53,6 @@ struct weston_touch_drag {
 };
 
 static void
-empty_region(pixman_region32_t *region)
-{
-	pixman_region32_fini(region);
-	pixman_region32_init(region);
-}
-
-static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t serial, const char *mime_type)
 {
@@ -203,7 +196,7 @@ drag_surface_configure(struct weston_drag *drag,
 		wl_list_remove(&drag->icon->layer_link);
 		wl_list_insert(list, &drag->icon->layer_link);
 		weston_view_update_transform(drag->icon);
-		empty_region(&es->pending.input);
+		pixman_region32_clear(&es->pending.input);
 	}
 
 	drag->dx += sx;
@@ -358,7 +351,7 @@ data_device_end_drag_grab(struct weston_drag *drag,
 			weston_view_unmap(drag->icon);
 
 		drag->icon->surface->configure = NULL;
-		empty_region(&drag->icon->surface->pending.input);
+		pixman_region32_clear(&drag->icon->surface->pending.input);
 		wl_list_remove(&drag->icon_destroy_listener.link);
 		weston_view_destroy(drag->icon);
 	}

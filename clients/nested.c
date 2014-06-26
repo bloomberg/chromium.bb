@@ -551,13 +551,6 @@ surface_set_input_region(struct wl_client *client,
 }
 
 static void
-empty_region(pixman_region32_t *region)
-{
-	pixman_region32_fini(region);
-	pixman_region32_init(region);
-}
-
-static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
@@ -574,7 +567,7 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	surface->pending.newly_attached = 0;
 
 	/* wl_surface.damage */
-	empty_region(&surface->pending.damage);
+	pixman_region32_clear(&surface->pending.damage);
 
 	/* wl_surface.frame */
 	wl_list_insert_list(&surface->frame_callback_list,

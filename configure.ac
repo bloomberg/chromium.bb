@@ -59,7 +59,7 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
-COMPOSITOR_MODULES="wayland-server >= 1.3.90 pixman-1"
+COMPOSITOR_MODULES="wayland-server >= 1.3.90 pixman-1 >= 0.25.2"
 
 AC_ARG_ENABLE(egl, [  --disable-egl],,
               enable_egl=yes)
