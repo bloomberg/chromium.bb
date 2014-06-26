@@ -88,6 +88,13 @@ ShellMainDelegate::CreateShellRendererMainDelegate() {
   return scoped_ptr<ShellRendererMainDelegate>();
 }
 
+void ShellMainDelegate::InitializeResourceBundle() {
+  base::FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(
+      pak_dir.AppendASCII("app_shell.pak"));
+}
+
 // static
 bool ShellMainDelegate::ProcessNeedsResourceBundle(
     const std::string& process_type) {
@@ -97,13 +104,6 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
          process_type == switches::kZygoteProcess ||
          process_type == switches::kRendererProcess ||
          process_type == switches::kUtilityProcess;
-}
-
-void ShellMainDelegate::InitializeResourceBundle() {
-  base::FilePath pak_dir;
-  PathService::Get(base::DIR_MODULE, &pak_dir);
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      pak_dir.AppendASCII("app_shell.pak"));
 }
 
 }  // namespace apps

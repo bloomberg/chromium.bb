@@ -19,8 +19,10 @@
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "content/public/app/content_main.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/wm/core/visibility_controller.h"
 
 namespace {
@@ -111,6 +113,14 @@ class AthenaMainDelegate : public apps::ShellMainDelegate {
   CreateShellRendererMainDelegate() OVERRIDE {
     return scoped_ptr<apps::ShellRendererMainDelegate>(
         new AthenaRendererMainDelegate());
+  }
+
+  virtual void InitializeResourceBundle() OVERRIDE {
+    base::FilePath pak_dir;
+    PathService::Get(base::DIR_MODULE, &pak_dir);
+    base::FilePath pak_file =
+        pak_dir.Append(FILE_PATH_LITERAL("athena_resources.pak"));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaMainDelegate);

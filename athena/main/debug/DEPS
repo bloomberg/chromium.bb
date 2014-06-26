@@ -1,5 +1,7 @@
 include_rules = [
+  "+athena/resources",
   "+chromeos",
   "+ui/aura",
+  "+ui/gfx",
   "+ui/views",
 ]
