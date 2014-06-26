@@ -1,0 +1,7 @@
+PERMISSION CLIENT: allowMedia((file test):media/content/test.ogv): true
+PERMISSION CLIENT: allowMedia((file test):media/content/test.ogv?nocache): false
+PERMISSION CLIENT: allowMedia((file test):media/content/test.ogv): false
+PERMISSION CLIENT: allowMedia((file test):media/content/test.ogv): false
+ 
+PASS: first video loaded
+

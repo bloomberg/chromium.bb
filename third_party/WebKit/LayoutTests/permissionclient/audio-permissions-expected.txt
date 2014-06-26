@@ -1,0 +1,7 @@
+PERMISSION CLIENT: allowMedia((file test):media/content/silence.oga): true
+PERMISSION CLIENT: allowMedia((file test):media/content/silence.oga?nocache): false
+PERMISSION CLIENT: allowMedia((file test):media/content/silence.oga): false
+PERMISSION CLIENT: allowMedia((file test):media/content/silence.oga): false
+
+PASS: first sound loaded
+

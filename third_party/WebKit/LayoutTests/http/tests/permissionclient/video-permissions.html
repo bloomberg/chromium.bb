@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpPermissionClientCallbacks();
+    testRunner.waitUntilDone();
+}
+
+function log(a)
+{
+    document.getElementById("results").innerHTML += a + "<br>";
+}
+
+function done() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+function loaded()
+{
+    var video = document.querySelector("video");
+    if (video.duration)
+        log("PASS: video loaded");
+    else
+        log("FAIL: video not loaded");
+    done();
+}
+
+function error()
+{
+    log("FAIL: video loading error");
+    done();
+}
+</script>
+</head>
+<body>
+<p>
+This test checks that all URLs in a redirect chain are passed to the
+PermissionClient.
+</p>
+<video src="http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/media/resources/test.ogv" onerror="error()" onloadeddata="loaded()">
+</video>
+<div id="results"></div>
+</body>
+</html>

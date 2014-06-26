@@ -578,6 +578,11 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::TextTrack:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url, cspReporting))
             return false;
+
+        if (frame()) {
+            if (!frame()->loader().client()->allowMedia(url))
+                return false;
+        }
         break;
     }
 

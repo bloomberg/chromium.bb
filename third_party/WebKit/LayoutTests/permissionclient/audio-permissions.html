@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+// Blocked sounds can be reloaded, so neither onloadeddata nor onerror is called.
+// Only check here that onloadeddata is never called when sound is blocked.
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpPermissionClientCallbacks();
+}
+
+function log(a)
+{
+    document.getElementById("results").innerHTML += a + "<br>";
+}
+
+function loaded()
+{
+    log("PASS: first sound loaded");
+    if (window.testRunner && testRunner.setMediaAllowed)
+        testRunner.setMediaAllowed(false);
+    else
+        log("This test requires testRunner.setMediaAllowed, so it be can't run in a browser.");
+
+    // Load a sound not in cache.
+    var audio = document.createElement('audio');
+    audio.onloadeddata = function () { log("FAIL: not cached audio loaded"); }
+    audio.src = "../media/content/silence.oga?nocache";
+    document.getElementById("audio").appendChild(audio);
+
+    // Load a sound from cache.
+    var audioFromCache = document.createElement('audio');
+    audioFromCache.onloadeddata = function () { log("FAIL: audio from cache loaded"); }
+    audioFromCache.src = "../media/content/silence.oga";
+    document.getElementById("audio").appendChild(audioFromCache);
+
+    // Add an iframe with a sound.
+    var iframe = document.createElement('iframe');
+    iframe.src = "resources/audio.html";
+    document.getElementById("audio").appendChild(iframe);
+}
+</script>
+</head>
+<body>
+<audio src="../media/content/silence.oga" onloadeddata="loaded()"></audio>
+<div id="audio"></div>
+<div id="results"></div>
+</body>
+</html>

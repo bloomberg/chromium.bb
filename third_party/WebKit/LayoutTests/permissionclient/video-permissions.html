@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+// Blocked videos can be reloaded, so neither onloadeddata nor onerror is called.
+// Only check here that onloadeddata is never called when video is blocked.
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpPermissionClientCallbacks();
+}
+
+function log(a)
+{
+    document.getElementById("results").innerHTML += a + "<br>";
+}
+
+function loaded()
+{
+    log("PASS: first video loaded");
+    if (window.testRunner && testRunner.setMediaAllowed)
+        testRunner.setMediaAllowed(false);
+    else
+        log("This test requires testRunner.setMediaAllowed, so it be can't run in a browser.");
+
+    // Load a video not in cache.
+    var video = document.createElement('video');
+    video.onloadeddata = function () { log("FAIL: not cached video loaded"); }
+    video.src = "../media/content/test.ogv?nocache";
+    document.getElementById("video").appendChild(video);
+
+    // Load a video from cache.
+    var videoFromCache = document.createElement('video');
+    videoFromCache.onloadeddata = function () { log("FAIL: video from cache loaded"); }
+    videoFromCache.src = "../media/content/test.ogv";
+    document.getElementById("video").appendChild(videoFromCache);
+
+    // Add an iframe with a video.
+    var iframe = document.createElement('iframe');
+    iframe.src = "resources/video.html";
+    document.getElementById("video").appendChild(iframe);
+}
+</script>
+</head>
+<body>
+<video src="../media/content/test.ogv" onloadeddata="loaded()"></video>
+<div id="video"></div>
+<div id="results"></div>
+</body>
+</html>

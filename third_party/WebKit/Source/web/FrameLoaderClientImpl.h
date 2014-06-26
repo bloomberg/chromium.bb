@@ -133,6 +133,7 @@ public:
     virtual bool allowScriptFromSource(bool enabledPerSettings, const WebCore::KURL& scriptURL) OVERRIDE;
     virtual bool allowPlugins(bool enabledPerSettings) OVERRIDE;
     virtual bool allowImage(bool enabledPerSettings, const WebCore::KURL& imageURL) OVERRIDE;
+    virtual bool allowMedia(const WebCore::KURL& mediaURL) OVERRIDE;
     virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, WebCore::SecurityOrigin*, const WebCore::KURL&) OVERRIDE;
     virtual bool allowRunningInsecureContent(bool enabledPerSettings, WebCore::SecurityOrigin*, const WebCore::KURL&) OVERRIDE;
     virtual void didNotAllowScript() OVERRIDE;

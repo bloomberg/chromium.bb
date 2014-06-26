@@ -41,6 +41,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "platform/KeyboardCodes.h"
 
 namespace WebCore {
@@ -110,6 +111,10 @@ void MediaDocumentParser::createDocumentStructure()
 void MediaDocumentParser::appendBytes(const char*, size_t)
 {
     if (m_didBuildDocumentStructure)
+        return;
+
+    LocalFrame* frame = document()->frame();
+    if (!frame->loader().client()->allowMedia(document()->url()))
         return;
 
     createDocumentStructure();
