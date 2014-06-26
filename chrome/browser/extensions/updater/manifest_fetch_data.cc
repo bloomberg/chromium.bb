@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -30,7 +30,8 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url, int request_id)
       full_url_(update_url) {
   std::string query = full_url_.has_query() ?
       full_url_.query() + "&" : std::string();
-  query += chrome::OmahaQueryParams::Get(chrome::OmahaQueryParams::CRX);
+  query += omaha_query_params::OmahaQueryParams::Get(
+      omaha_query_params::OmahaQueryParams::CRX);
   GURL::Replacements replacements;
   replacements.SetQueryStr(query);
   full_url_ = full_url_.ReplaceComponents(replacements);

@@ -38,6 +38,7 @@ include_rules = [
   "+components/navigation_interception",
   "+components/navigation_metrics",
   "+components/network_time",
+  "+components/omaha_query_params",
   "+components/os_crypt",
   "+components/password_manager",
   "+components/policy",

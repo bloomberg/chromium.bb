@@ -130,6 +130,7 @@
             'metrics/persisted_logs_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
+            'omaha_query_params/omaha_query_params_unittest.cc',
             'os_crypt/ie7_password_win_unittest.cc',
             'os_crypt/keychain_password_mac_unittest.mm',
             'os_crypt/os_crypt_unittest.cc',
@@ -303,6 +304,9 @@
 
             # Dependencies of network_time
             'components.gyp:network_time',
+
+            # Dependencies of omaha_query_params
+            'components.gyp:omaha_query_params',
 
             # Dependencies of os_crypt
             'components.gyp:os_crypt',

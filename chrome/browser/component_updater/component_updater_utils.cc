@@ -16,13 +16,16 @@
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
+#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+
+using omaha_query_params::OmahaQueryParams;
 
 namespace component_updater {
 
@@ -39,10 +42,12 @@ int GetPhysicalMemoryGB() {
 
 std::string BuildProtocolRequest(const std::string& request_body,
                                  const std::string& additional_attributes) {
-  const std::string prod_id(chrome::OmahaQueryParams::GetProdIdString(
-      chrome::OmahaQueryParams::CHROME));
+  const std::string prod_id(
+      OmahaQueryParams::GetProdIdString(OmahaQueryParams::CHROME));
   const chrome::VersionInfo chrome_version_info;
   const std::string chrome_version(chrome_version_info.Version());
+  const std::string channel(ChromeOmahaQueryParamsDelegate::GetChannelString());
+  const std::string lang(ChromeOmahaQueryParamsDelegate::GetLang());
 
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -58,15 +63,15 @@ std::string BuildProtocolRequest(const std::string& request_body,
       "requestid=\"{%s}\" lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
       prod_id.c_str(),
-      chrome_version.c_str(),                        // "version"
-      chrome_version.c_str(),                        // "prodversion"
-      base::GenerateGUID().c_str(),                  // "requestid"
-      chrome::OmahaQueryParams::GetLang(),           // "lang",
-      chrome::OmahaQueryParams::GetChannelString(),  // "updaterchannel"
-      chrome::OmahaQueryParams::GetChannelString(),  // "prodchannel"
-      chrome::OmahaQueryParams::GetOS(),             // "os"
-      chrome::OmahaQueryParams::GetArch(),           // "arch"
-      chrome::OmahaQueryParams::GetNaclArch());      // "nacl_arch"
+      chrome_version.c_str(),            // "version"
+      chrome_version.c_str(),            // "prodversion"
+      base::GenerateGUID().c_str(),      // "requestid"
+      lang.c_str(),                      // "lang",
+      channel.c_str(),                   // "updaterchannel"
+      channel.c_str(),                   // "prodchannel"
+      OmahaQueryParams::GetOS(),         // "os"
+      OmahaQueryParams::GetArch(),       // "arch"
+      OmahaQueryParams::GetNaclArch());  // "nacl_arch"
 #if defined(OS_WIN)
   const bool is_wow64(base::win::OSInfo::GetInstance()->wow64_status() ==
                       base::win::OSInfo::WOW64_ENABLED);

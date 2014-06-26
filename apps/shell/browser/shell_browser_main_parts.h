@@ -13,7 +13,6 @@
 #include "ui/aura/window_tree_host_observer.h"
 
 namespace content {
-class ShellBrowserContext;
 class ShellDevToolsDelegate;
 struct MainFunctionParams;
 }
@@ -21,6 +20,7 @@ struct MainFunctionParams;
 namespace extensions {
 class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
+class ShellOmahaQueryParamsDelegate;
 }
 
 namespace views {
@@ -80,8 +80,9 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<extensions::ShellExtensionsBrowserClient>
       extensions_browser_client_;
   scoped_ptr<net::NetLog> net_log_;
-
   scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
+  scoped_ptr<extensions::ShellOmahaQueryParamsDelegate>
+      omaha_query_params_delegate_;
 
   // Owned by the KeyedService system.
   extensions::ShellExtensionSystem* extension_system_;

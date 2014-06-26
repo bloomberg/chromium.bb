@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/omaha_query_params/omaha_query_params_delegate.h"
+
+namespace omaha_query_params {
 
 namespace {
 
@@ -50,43 +52,34 @@ const char kArch[] =
 
 const char kChrome[] = "chrome";
 
-const char kStable[] = "stable";
-const char kBeta[] = "beta";
-const char kDev[] = "dev";
-const char kCanary[] = "canary";
-
 #if defined(GOOGLE_CHROME_BUILD)
 const char kChromeCrx[] = "chromecrx";
 #else
 const char kChromiumCrx[] = "chromiumcrx";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-}  // namespace
+OmahaQueryParamsDelegate* g_delegate = NULL;
 
-namespace chrome {
+}  // namespace
 
 // static
 std::string OmahaQueryParams::Get(ProdId prod) {
   return base::StringPrintf(
-      "os=%s&arch=%s&nacl_arch=%s&prod=%s&prodchannel=%s"
-          "&prodversion=%s&lang=%s",
+      "os=%s&arch=%s&nacl_arch=%s&prod=%s%s",
       kOs,
       kArch,
       GetNaclArch(),
       GetProdIdString(prod),
-      GetChannelString(),
-      chrome::VersionInfo().Version().c_str(),
-      GetLang());
+      g_delegate ? g_delegate->GetExtraParams().c_str() : "");
 }
 
 // static
-const char* OmahaQueryParams::GetProdIdString(
-    chrome::OmahaQueryParams::ProdId prod) {
+const char* OmahaQueryParams::GetProdIdString(OmahaQueryParams::ProdId prod) {
   switch (prod) {
-    case chrome::OmahaQueryParams::CHROME:
+    case OmahaQueryParams::CHROME:
       return kChrome;
       break;
-    case chrome::OmahaQueryParams::CRX:
+    case OmahaQueryParams::CRX:
 #if defined(GOOGLE_CHROME_BUILD)
       return kChromeCrx;
 #else
@@ -132,29 +125,10 @@ const char* OmahaQueryParams::GetNaclArch() {
 #endif
 }
 
-const char* OmahaQueryParams::GetChannelString() {
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return kStable;
-      break;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return kBeta;
-      break;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return kDev;
-      break;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return kCanary;
-      break;
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return kUnknown;
-      break;
-  }
-  return kUnknown;
+// static
+void OmahaQueryParams::SetDelegate(OmahaQueryParamsDelegate* delegate) {
+  DCHECK(!g_delegate || !delegate);
+  g_delegate = delegate;
 }
 
-const char* OmahaQueryParams::GetLang() {
-  return g_browser_process->GetApplicationLocale().c_str();
-}
-
-}  // namespace chrome
+}  // namespace omaha_query_params

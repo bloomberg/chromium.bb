@@ -6,13 +6,14 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/webstore_installer.h"
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
+#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/id_util.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
-using chrome::OmahaQueryParams;
+using omaha_query_params::OmahaQueryParams;
 
 namespace extensions {
 
@@ -37,8 +38,9 @@ TEST(WebstoreInstallerTest, PlatformParams) {
       Contains(query,
                net::EscapeQueryParamValue(
                    StringPrintf("installsource=%s", source.c_str()), true)));
-  EXPECT_TRUE(
-      Contains(query, StringPrintf("lang=%s", OmahaQueryParams::GetLang())));
+  EXPECT_TRUE(Contains(
+      query,
+      StringPrintf("lang=%s", ChromeOmahaQueryParamsDelegate::GetLang())));
 }
 
 }  // namespace extensions

@@ -2600,6 +2600,7 @@
         '../components/components.gyp:dom_distiller_webui',
         '../components/components.gyp:feedback_proto',
         '../components/components.gyp:invalidation',
+        '../components/components.gyp:omaha_query_params',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
         '../components/components_resources.gyp:components_resources',

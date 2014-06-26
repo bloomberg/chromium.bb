@@ -26,13 +26,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
-using chrome::OmahaQueryParams;
 using content::BrowserThread;
+using omaha_query_params::OmahaQueryParams;
 
 namespace component_updater {
 

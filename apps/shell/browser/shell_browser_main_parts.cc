@@ -10,9 +10,11 @@
 #include "apps/shell/browser/shell_extension_system.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extensions_browser_client.h"
+#include "apps/shell/browser/shell_omaha_query_params_delegate.h"
 #include "apps/shell/common/shell_extensions_client.h"
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -98,6 +100,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions_browser_client_.reset(
       new extensions::ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
+  omaha_query_params_delegate_.reset(
+      new extensions::ShellOmahaQueryParamsDelegate);
+  omaha_query_params::OmahaQueryParams::SetDelegate(
+      omaha_query_params_delegate_.get());
 
   // Create our custom ExtensionSystem first because other
   // KeyedServices depend on it.

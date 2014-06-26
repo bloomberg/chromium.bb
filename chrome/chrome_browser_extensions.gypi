@@ -29,6 +29,7 @@
         'safe_browsing_proto',
         'sync_file_system_proto',
         '../third_party/re2/re2.gyp:re2',
+        '../components/components.gyp:omaha_query_params',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:url_matcher',
         '../components/components_strings.gyp:components_strings',

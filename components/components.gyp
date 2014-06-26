@@ -34,6 +34,7 @@
     'metrics.gypi',
     'navigation_metrics.gypi',
     'network_time.gypi',
+    'omaha_query_params.gypi',
     'onc.gypi',
     'os_crypt.gypi',
     'password_manager.gypi',

@@ -2,15 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
-#define CHROME_BROWSER_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
+#ifndef COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
+#define COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
-namespace chrome {
+namespace omaha_query_params {
 
+class OmahaQueryParamsDelegate;
+
+// Generates a string of URL query parameters to be used when getting
+// component and extension updates. These parameters generally remain
+// fixed for a particular build. Embedders can use the delegate to
+// define different implementations. This should be used only in the
+// browser process.
 class OmahaQueryParams {
  public:
   enum ProdId {
@@ -18,14 +25,13 @@ class OmahaQueryParams {
     CRX,
   };
 
-  // Generates a string of URL query paramaters to be used when getting
-  // component and extension updates. Includes the following fields: os, arch,
-  // prod, prodchannel, prodversion, lang.
+  // Generates a string of URL query parameters for Omaha. Includes the
+  // following fields: os, arch, prod, prodchannel, prodversion, lang.
   static std::string Get(ProdId prod);
 
   // Returns the value we use for the "prod=" parameter. Possible return values
   // include "chrome", "chromecrx", "chromiumcrx", and "unknown".
-  static const char* GetProdIdString(chrome::OmahaQueryParams::ProdId prod);
+  static const char* GetProdIdString(ProdId prod);
 
   // Returns the value we use for the "os=" parameter. Possible return values
   // include: "mac", "win", "android", "cros", "linux", and "openbsd".
@@ -41,19 +47,13 @@ class OmahaQueryParams {
   // "arm", and "mips32".
   static const char* GetNaclArch();
 
-  // Returns the value we use for the "updaterchannel=" and "prodchannel="
-  // parameters. Possible return values include: "canary", "dev", "beta", and
-  // "stable".
-  static const char* GetChannelString();
-
-  // Returns the language for the present locale. Possible return values are
-  // standard tags for languages, such as "en", "en-US", "de", "fr", "af", etc.
-  static const char* GetLang();
+  // Use this delegate.
+  static void SetDelegate(OmahaQueryParamsDelegate* delegate);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmahaQueryParams);
 };
 
-}  // namespace chrome
+}  // namespace omaha_query_params
 
-#endif  // CHROME_BROWSER_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
+#endif  // COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_

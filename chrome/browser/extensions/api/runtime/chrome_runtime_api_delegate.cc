@@ -12,11 +12,11 @@
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/runtime.h"
@@ -183,7 +183,7 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
 }
 
 bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
-  const char* os = chrome::OmahaQueryParams::GetOS();
+  const char* os = omaha_query_params::OmahaQueryParams::GetOS();
   if (strcmp(os, "mac") == 0) {
     info->os = PlatformInfo::OS_MAC_;
   } else if (strcmp(os, "win") == 0) {
@@ -201,7 +201,7 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
     return false;
   }
 
-  const char* arch = chrome::OmahaQueryParams::GetArch();
+  const char* arch = omaha_query_params::OmahaQueryParams::GetArch();
   if (strcmp(arch, "arm") == 0) {
     info->arch = PlatformInfo::ARCH_ARM;
   } else if (strcmp(arch, "x86") == 0) {
@@ -213,7 +213,7 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
     return false;
   }
 
-  const char* nacl_arch = chrome::OmahaQueryParams::GetNaclArch();
+  const char* nacl_arch = omaha_query_params::OmahaQueryParams::GetNaclArch();
   if (strcmp(nacl_arch, "arm") == 0) {
     info->nacl_arch = PlatformInfo::NACL_ARCH_ARM;
   } else if (strcmp(nacl_arch, "x86-32") == 0) {
