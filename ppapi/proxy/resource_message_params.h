@@ -84,7 +84,7 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   bool ReadHandles(const IPC::Message* msg, PickleIterator* iter);
 
  private:
-  class SerializedHandles
+  class PPAPI_PROXY_EXPORT SerializedHandles
       : public base::RefCountedThreadSafe<SerializedHandles> {
    public:
     SerializedHandles();
