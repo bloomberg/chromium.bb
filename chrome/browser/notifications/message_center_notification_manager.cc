@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -91,6 +92,10 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
   message_center_->SetNotifierSettingsProvider(NULL);
   message_center_->RemoveObserver(this);
+
+  STLDeleteContainerPairSecondPointers(profile_notifications_.begin(),
+                                       profile_notifications_.end());
+  profile_notifications_.clear();
 }
 
 void MessageCenterNotificationManager::RegisterPrefs(
@@ -112,6 +117,9 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   DesktopNotificationServiceFactory::GetForProfile(profile)->
       ShowWelcomeNotificationIfNecessary(notification);
 
+  // WARNING: You MUST use AddProfileNotification or update the message center
+  // via the notification within a ProfileNotification object or the profile ID
+  // will not be correctly set for ChromeOS.
   AddProfileNotification(
       new ProfileNotification(profile, notification, message_center_));
 }
@@ -138,7 +146,6 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // the immediate update allowed in the message center.
       std::string old_id =
           old_notification->notification().delegate_id();
-      DCHECK(message_center_->FindVisibleNotificationById(old_id));
 
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.
@@ -148,11 +155,13 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
           new ProfileNotification(profile, notification, message_center_);
       profile_notifications_[notification.delegate_id()] = new_notification;
 
-      // Now pass a copy to message center.
-      scoped_ptr<message_center::Notification> message_center_notification(
-          make_scoped_ptr(new message_center::Notification(notification)));
-      message_center_->UpdateNotification(old_id,
-                                          message_center_notification.Pass());
+      // WARNING: You MUST use AddProfileNotification or update the message
+      // center via the notification within a ProfileNotification object or the
+      // profile ID will not be correctly set for ChromeOS.
+      message_center_->UpdateNotification(
+          old_id,
+          make_scoped_ptr(new message_center::Notification(
+              new_notification->notification())));
 
       new_notification->StartDownloads();
       return true;

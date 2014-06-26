@@ -1138,7 +1138,7 @@
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/extension_welcome_notification_unittest.cc',
         'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
-        'browser/notifications/message_center_notifications_unittest_win.cc',
+        'browser/notifications/message_center_notifications_unittest.cc',
         'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_delegate_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
