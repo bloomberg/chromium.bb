@@ -23,6 +23,7 @@
       'tab_capture.idl',
       'tabs.json',
       'types.json',
+      'web_navigation.json',
       'windows.json',
     ],
 
@@ -124,7 +125,7 @@
       'webrtc_audio_private.idl',
       'webrtc_logging_private.idl',
       'webstore_private.json',
-      'webview.json',
+      'web_view_internal.json',
       'windows.json',
     ],
     'main_non_compiled_schema_files': [

@@ -13,9 +13,10 @@ var ContextMenusSchema =
 var CreateEvent = require('webViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var MessagingNatives = requireNative('messaging_natives');
-var WebView = require('webView').WebView;
+var WebView = require('webViewInternal').WebView;
 var WebViewInternal = require('webView').WebViewInternal;
-var WebViewSchema = requireNative('schema_registry').GetSchema('webview');
+var WebViewSchema =
+    requireNative('schema_registry').GetSchema('webViewInternal');
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
@@ -35,7 +36,7 @@ var utils = require('utils');
 //     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EXPERIMENTAL_EVENTS = {
   'findupdate': {
-    evt: CreateEvent('webview.onFindReply'),
+    evt: CreateEvent('webViewInternal.onFindReply'),
     fields: [
       'searchText',
       'numberOfMatches',
@@ -46,7 +47,7 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
     ]
   },
   'zoomchange': {
-    evt: CreateEvent('webview.onZoomChange'),
+    evt: CreateEvent('webViewInternal.onZoomChange'),
     fields: ['oldZoomFactor', 'newZoomFactor']
   }
 };
@@ -55,7 +56,7 @@ function GetUniqueSubEventName(eventName) {
   return eventName + "/" + idGeneratorNatives.GetNextId();
 }
 
-// This is the only "webview.onClicked" named event for this renderer.
+// This is the only "webViewInternal.onClicked" named event for this renderer.
 //
 // Since we need an event per <webview>, we define events with suffix
 // (subEventName) in each of the <webview>. Behind the scenes, this event is
@@ -63,7 +64,7 @@ function GetUniqueSubEventName(eventName) {
 // |viewInstanceId|. Any time a ContextMenusEvent is dispatched, we re-dispatch
 // it to the subEvent's listeners. This way
 // <webview>.contextMenus.onClicked behave as a regular chrome Event type.
-var ContextMenusEvent = CreateEvent('webview.onClicked');
+var ContextMenusEvent = CreateEvent('webViewInternal.onClicked');
 
 /**
  * This event is exposed as <webview>.contextMenus.onClicked.
@@ -259,7 +260,7 @@ WebViewInternal.prototype.setupExperimentalContextMenus = function() {
       var getOnClickedEvent = function() {
         return function() {
           if (!self.contextMenusOnClickedEvent_) {
-            var eventName = 'webview.onClicked';
+            var eventName = 'webViewInternal.onClicked';
             // TODO(lazyboy): Find event by name instead of events[0].
             var eventSchema = WebViewSchema.events[0];
             var eventOptions = {supportsListeners: true};

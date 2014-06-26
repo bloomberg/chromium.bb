@@ -27,7 +27,7 @@
       <include name="IDR_EXTENSION_API_JSON_TYPES" file="extensions\api\types.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES_PRIVATE" file="extensions\api\types_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTORE" file="extensions\api\webstore.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST" file="extensions\api\webview_request.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_WEB_VIEW_REQUEST" file="extensions\api\web_view_request.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

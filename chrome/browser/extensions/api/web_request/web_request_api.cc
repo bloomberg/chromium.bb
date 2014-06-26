@@ -92,8 +92,7 @@ namespace activitylog = activity_log_web_request_constants;
 
 namespace {
 
-const char kWebRequest[] = "webRequest";
-const char kWebView[] = "webview";
+const char kWebRequestEventPrefix[] = "webRequest.";
 
 // List of all the webRequest events.
 const char* const kWebRequestEvents[] = {
@@ -140,8 +139,11 @@ const char* GetRequestStageAsString(
 
 bool IsWebRequestEvent(const std::string& event_name) {
   std::string web_request_event_name(event_name);
-  if (web_request_event_name.find(kWebView) != std::string::npos)
-    web_request_event_name.replace(0, sizeof(kWebView) - 1, kWebRequest);
+  if (StartsWithASCII(
+          web_request_event_name, webview::kWebViewEventPrefix, true)) {
+    web_request_event_name.replace(
+        0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
+  }
   return std::find(kWebRequestEvents, ARRAYEND(kWebRequestEvents),
                    web_request_event_name) != ARRAYEND(kWebRequestEvents);
 }
@@ -454,7 +456,8 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     event_router->RegisterObserver(this, event_name);
 
     // Also observe the corresponding webview event.
-    event_name.replace(0, sizeof(kWebRequest) - 1, kWebView);
+    event_name.replace(
+        0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
     event_router->RegisterObserver(this, event_name);
   }
 }
@@ -1466,8 +1469,10 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
   ExtensionRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = ExtensionRendererState::GetInstance()->
       GetWebViewInfo(render_process_host_id, routing_id, &web_view_info);
-  if (is_web_view_guest)
-    web_request_event_name.replace(0, sizeof(kWebRequest) - 1, kWebView);
+  if (is_web_view_guest) {
+    web_request_event_name.replace(
+        0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
+  }
 
   std::set<EventListener>& listeners =
       listeners_[profile][web_request_event_name];
