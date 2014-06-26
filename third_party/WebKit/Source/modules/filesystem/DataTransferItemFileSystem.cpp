@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
-#include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
@@ -60,7 +60,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionC
         return 0;
     ASSERT(file->isFile());
 
-    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystem::getDOMFileSystem(item.clipboard()->dataObject().get(), executionContext);
+    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystem::getDOMFileSystem(item.dataTransfer()->dataObject().get(), executionContext);
     if (!domFileSystem) {
         // IsolatedFileSystem may not be enabled.
         return 0;

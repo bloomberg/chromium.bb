@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClipboardAccessPolicy_h
-#define ClipboardAccessPolicy_h
+#ifndef DataTransferAccessPolicy_h
+#define DataTransferAccessPolicy_h
 
 namespace WebCore {
 
-enum ClipboardAccessPolicy {
-    ClipboardNumb, ClipboardImageWritable, ClipboardWritable, ClipboardTypesReadable, ClipboardReadable
+enum DataTransferAccessPolicy {
+    DataTransferNumb, DataTransferImageWritable, DataTransferWritable, DataTransferTypesReadable, DataTransferReadable
 };
 
 } // namespace
 
-#endif
+#endif // DataTransferAccessPolicy_h

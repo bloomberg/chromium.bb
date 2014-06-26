@@ -31,8 +31,8 @@
 #include "config.h"
 #include "web/DragClientImpl.h"
 
-#include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntSize.h"
@@ -60,18 +60,13 @@ DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)
         DragDestinationActionDHTML | DragDestinationActionEdit);
 }
 
-void DragClientImpl::startDrag(DragImage* dragImage,
-                               const IntPoint& dragImageOrigin,
-                               const IntPoint& eventPos,
-                               Clipboard* clipboard,
-                               LocalFrame* frame,
-                               bool isLinkDrag)
+void DragClientImpl::startDrag(DragImage* dragImage, const IntPoint& dragImageOrigin, const IntPoint& eventPos, DataTransfer* dataTransfer, LocalFrame* frame, bool isLinkDrag)
 {
     // Add a ref to the frame just in case a load occurs mid-drag.
     RefPtr<LocalFrame> frameProtector = frame;
 
-    WebDragData dragData(clipboard->dataObject());
-    WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
+    WebDragData dragData(dataTransfer->dataObject());
+    WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(dataTransfer->sourceOperation());
     WebImage image;
     IntSize offsetSize(eventPos - dragImageOrigin);
     WebPoint offsetPoint(offsetSize.width(), offsetSize.height());

@@ -28,16 +28,16 @@
 #include "core/clipboard/DataTransferItemList.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtrWillBeRawPtr<Clipboard> clipboard, PassRefPtrWillBeRawPtr<DataObject> list)
+PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObject> list)
 {
-    return adoptRefWillBeNoop(new DataTransferItemList(clipboard, list));
+    return adoptRefWillBeNoop(new DataTransferItemList(dataTransfer, list));
 }
 
 DataTransferItemList::~DataTransferItemList()
@@ -46,25 +46,25 @@ DataTransferItemList::~DataTransferItemList()
 
 size_t DataTransferItemList::length() const
 {
-    if (!m_clipboard->canReadTypes())
+    if (!m_dataTransfer->canReadTypes())
         return 0;
     return m_dataObject->length();
 }
 
 PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
 {
-    if (!m_clipboard->canReadTypes())
+    if (!m_dataTransfer->canReadTypes())
         return nullptr;
     RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->item(index);
     if (!item)
         return nullptr;
 
-    return DataTransferItem::create(m_clipboard, item);
+    return DataTransferItem::create(m_dataTransfer, item);
 }
 
 void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& exceptionState)
 {
-    if (!m_clipboard->canWriteData()) {
+    if (!m_dataTransfer->canWriteData()) {
         exceptionState.throwDOMException(InvalidStateError, "The list is not writable.");
         return;
     }
@@ -73,35 +73,35 @@ void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& excep
 
 void DataTransferItemList::clear()
 {
-    if (!m_clipboard->canWriteData())
+    if (!m_dataTransfer->canWriteData())
         return;
     m_dataObject->clearAll();
 }
 
 PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
 {
-    if (!m_clipboard->canWriteData())
+    if (!m_dataTransfer->canWriteData())
         return nullptr;
     RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->add(data, type);
     if (!item) {
         exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
         return nullptr;
     }
-    return DataTransferItem::create(m_clipboard, item);
+    return DataTransferItem::create(m_dataTransfer, item);
 }
 
 PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(PassRefPtrWillBeRawPtr<File> file)
 {
-    if (!m_clipboard->canWriteData())
+    if (!m_dataTransfer->canWriteData())
         return nullptr;
     RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->add(file);
     if (!item)
         return nullptr;
-    return DataTransferItem::create(m_clipboard, item);
+    return DataTransferItem::create(m_dataTransfer, item);
 }
 
-DataTransferItemList::DataTransferItemList(PassRefPtrWillBeRawPtr<Clipboard> clipboard, PassRefPtrWillBeRawPtr<DataObject> dataObject)
-    : m_clipboard(clipboard)
+DataTransferItemList::DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+    : m_dataTransfer(dataTransfer)
     , m_dataObject(dataObject)
 {
     ScriptWrappable::init(this);
@@ -109,7 +109,7 @@ DataTransferItemList::DataTransferItemList(PassRefPtrWillBeRawPtr<Clipboard> cli
 
 void DataTransferItemList::trace(Visitor* visitor)
 {
-    visitor->trace(m_clipboard);
+    visitor->trace(m_dataTransfer);
     visitor->trace(m_dataObject);
 }
 

@@ -307,7 +307,7 @@ public:
     EmptyDragClient() { }
     virtual ~EmptyDragClient() {}
     virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE { return DragDestinationActionNone; }
-    virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, LocalFrame*, bool) OVERRIDE { }
+    virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, DataTransfer*, LocalFrame*, bool) OVERRIDE { }
 };
 
 class EmptyInspectorClient FINAL : public InspectorClient {

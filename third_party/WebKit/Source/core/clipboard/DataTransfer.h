@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef Clipboard_h
-#define Clipboard_h
+#ifndef DataTransfer_h
+#define DataTransfer_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/clipboard/ClipboardAccessPolicy.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
@@ -48,20 +48,22 @@ class ImageResource;
 class Node;
 class Range;
 
-// State available during IE's events for drag and drop and copy/paste
-class Clipboard : public RefCountedWillBeGarbageCollectedFinalized<Clipboard>, public ScriptWrappable {
+// Used for drag and drop and copy/paste.
+// Drag and Drop: http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html
+// Clipboard API (copy/paste): http://dev.w3.org/2006/webapi/clipops/clipops.html
+class DataTransfer : public RefCountedWillBeGarbageCollectedFinalized<DataTransfer>, public ScriptWrappable {
 public:
-    // Whether this clipboard is serving a drag-drop or copy-paste request.
-    enum ClipboardType {
+    // Whether this transfer is serving a drag-drop or copy-paste request.
+    enum DataTransferType {
         CopyAndPaste,
         DragAndDrop,
     };
 
-    static PassRefPtrWillBeRawPtr<Clipboard> create(ClipboardType, ClipboardAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
-    ~Clipboard();
+    static PassRefPtrWillBeRawPtr<DataTransfer> create(DataTransferType, DataTransferAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
+    ~DataTransfer();
 
-    bool isForCopyAndPaste() const { return m_clipboardType == CopyAndPaste; }
-    bool isForDragAndDrop() const { return m_clipboardType == DragAndDrop; }
+    bool isForCopyAndPaste() const { return m_transferType == CopyAndPaste; }
+    bool isForDragAndDrop() const { return m_transferType == DragAndDrop; }
 
     String dropEffect() const { return dropEffectIsUninitialized() ? "none" : m_dropEffect; }
     void setDropEffect(const String&);
@@ -93,7 +95,7 @@ public:
 
     bool hasData();
 
-    void setAccessPolicy(ClipboardAccessPolicy);
+    void setAccessPolicy(DataTransferAccessPolicy);
     bool canReadTypes() const;
     bool canReadData() const;
     bool canWriteData() const;
@@ -117,7 +119,7 @@ public:
     void trace(Visitor*);
 
 private:
-    Clipboard(ClipboardType, ClipboardAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
+    DataTransfer(DataTransferType, DataTransferAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
 
     void setDragImage(ImageResource*, Node*, const IntPoint&);
 
@@ -125,10 +127,10 @@ private:
     bool hasStringOfType(const String&) const;
 
     // Instead of using this member directly, prefer to use the can*() methods above.
-    ClipboardAccessPolicy m_policy;
+    DataTransferAccessPolicy m_policy;
     String m_dropEffect;
     String m_effectAllowed;
-    ClipboardType m_clipboardType;
+    DataTransferType m_transferType;
     RefPtrWillBeMember<DataObject> m_dataObject;
 
     IntPoint m_dragLoc;
@@ -141,4 +143,4 @@ String convertDragOperationToDropZoneOperation(DragOperation);
 
 } // namespace WebCore
 
-#endif // Clipboard_h
+#endif // DataTransfer_h

@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/events/WheelEvent.h"
 
-#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataTransfer.h"
 #include "platform/PlatformWheelEvent.h"
 
 namespace WebCore {

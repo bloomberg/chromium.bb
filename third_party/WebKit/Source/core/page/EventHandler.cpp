@@ -31,8 +31,8 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -1614,7 +1614,7 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
 }
 
 
-bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTarget, const PlatformMouseEvent& event, Clipboard* clipboard)
+bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTarget, const PlatformMouseEvent& event, DataTransfer* dataTransfer)
 {
     FrameView* view = m_frame->view();
 
@@ -1627,7 +1627,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        0, nullptr, clipboard);
+        0, nullptr, dataTransfer);
 
     dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
     return me->defaultPrevented();
@@ -1646,7 +1646,7 @@ static bool targetIsFrame(Node* target, LocalFrame*& frame)
     return true;
 }
 
-static bool findDropZone(Node* target, Clipboard* clipboard)
+static bool findDropZone(Node* target, DataTransfer* dataTransfer)
 {
     Element* element = target->isElementNode() ? toElement(target) : target->parentElement();
     for (; element; element = element->parentElement()) {
@@ -1668,21 +1668,22 @@ static bool findDropZone(Node* target, Clipboard* clipboard)
             if (op != DragOperationNone) {
                 if (dragOperation == DragOperationNone)
                     dragOperation = op;
-            } else
-                matched = matched || clipboard->hasDropZoneType(keywords[i].string());
+            } else {
+                matched = matched || dataTransfer->hasDropZoneType(keywords[i].string());
+            }
 
             if (matched && dragOperation != DragOperationNone)
                 break;
         }
         if (matched) {
-            clipboard->setDropEffect(convertDragOperationToDropZoneOperation(dragOperation));
+            dataTransfer->setDropEffect(convertDragOperationToDropZoneOperation(dragOperation));
             return true;
         }
     }
     return false;
 }
 
-bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
+bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, DataTransfer* dataTransfer)
 {
     bool accept = false;
 
@@ -1709,23 +1710,24 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         LocalFrame* targetFrame;
         if (targetIsFrame(newTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, dataTransfer);
         } else if (newTarget) {
             // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag event before firing a dragenter, dragleave, or dragover event.
             if (dragState().m_dragSrc) {
                 // for now we don't care if event handler cancels default behavior, since there is none
                 dispatchDragSrcEvent(EventTypeNames::drag, event);
             }
-            accept = dispatchDragEvent(EventTypeNames::dragenter, newTarget.get(), event, clipboard);
+            accept = dispatchDragEvent(EventTypeNames::dragenter, newTarget.get(), event, dataTransfer);
             if (!accept)
-                accept = findDropZone(newTarget.get(), clipboard);
+                accept = findDropZone(newTarget.get(), dataTransfer);
         }
 
         if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
-        } else if (m_dragTarget)
-            dispatchDragEvent(EventTypeNames::dragleave, m_dragTarget.get(), event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, dataTransfer);
+        } else if (m_dragTarget) {
+            dispatchDragEvent(EventTypeNames::dragleave, m_dragTarget.get(), event, dataTransfer);
+        }
 
         if (newTarget) {
             // We do not explicitly call dispatchDragEvent here because it could ultimately result in the appearance that
@@ -1736,16 +1738,16 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         LocalFrame* targetFrame;
         if (targetIsFrame(newTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, dataTransfer);
         } else if (newTarget) {
             // Note, when dealing with sub-frames, we may need to fire only a dragover event as a drag event may have been fired earlier.
             if (!m_shouldOnlyFireDragOverEvent && dragState().m_dragSrc) {
                 // for now we don't care if event handler cancels default behavior, since there is none
                 dispatchDragSrcEvent(EventTypeNames::drag, event);
             }
-            accept = dispatchDragEvent(EventTypeNames::dragover, newTarget.get(), event, clipboard);
+            accept = dispatchDragEvent(EventTypeNames::dragover, newTarget.get(), event, dataTransfer);
             if (!accept)
-                accept = findDropZone(newTarget.get(), clipboard);
+                accept = findDropZone(newTarget.get(), dataTransfer);
             m_shouldOnlyFireDragOverEvent = false;
         }
     }
@@ -1754,29 +1756,30 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     return accept;
 }
 
-void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
+void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, DataTransfer* dataTransfer)
 {
     LocalFrame* targetFrame;
     if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
         if (targetFrame)
-            targetFrame->eventHandler().cancelDragAndDrop(event, clipboard);
+            targetFrame->eventHandler().cancelDragAndDrop(event, dataTransfer);
     } else if (m_dragTarget.get()) {
         if (dragState().m_dragSrc)
             dispatchDragSrcEvent(EventTypeNames::drag, event);
-        dispatchDragEvent(EventTypeNames::dragleave, m_dragTarget.get(), event, clipboard);
+        dispatchDragEvent(EventTypeNames::dragleave, m_dragTarget.get(), event, dataTransfer);
     }
     clearDragState();
 }
 
-bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
+bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, DataTransfer* dataTransfer)
 {
     LocalFrame* targetFrame;
     bool preventedDefault = false;
     if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
         if (targetFrame)
-            preventedDefault = targetFrame->eventHandler().performDragAndDrop(event, clipboard);
-    } else if (m_dragTarget.get())
-        preventedDefault = dispatchDragEvent(EventTypeNames::drop, m_dragTarget.get(), event, clipboard);
+            preventedDefault = targetFrame->eventHandler().performDragAndDrop(event, dataTransfer);
+    } else if (m_dragTarget.get()) {
+        preventedDefault = dispatchDragEvent(EventTypeNames::drop, m_dragTarget.get(), event, dataTransfer);
+    }
     clearDragState();
     return preventedDefault;
 }
@@ -3039,11 +3042,11 @@ bool EventHandler::dragHysteresisExceeded(const IntPoint& dragViewportLocation) 
     return abs(delta.width()) >= threshold || abs(delta.height()) >= threshold;
 }
 
-void EventHandler::freeClipboard()
+void EventHandler::clearDragDataTransfer()
 {
-    if (dragState().m_dragClipboard) {
-        dragState().m_dragClipboard->clearDragImage();
-        dragState().m_dragClipboard->setAccessPolicy(ClipboardNumb);
+    if (dragState().m_dragDataTransfer) {
+        dragState().m_dragDataTransfer->clearDragImage();
+        dragState().m_dragDataTransfer->setAccessPolicy(DataTransferNumb);
     }
 }
 
@@ -3054,11 +3057,11 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperat
     prepareMouseEvent(request, event);
 
     if (dragState().m_dragSrc) {
-        dragState().m_dragClipboard->setDestinationOperation(operation);
+        dragState().m_dragDataTransfer->setDestinationOperation(operation);
         // for now we don't care if event handler cancels default behavior, since there is none
         dispatchDragSrcEvent(EventTypeNames::dragend, event);
     }
-    freeClipboard();
+    clearDragDataTransfer();
     dragState().m_dragSrc = nullptr;
     // In case the drag was ended due to an escape key press we need to ensure
     // that consecutive mousemove events don't reinitiate the drag and drop.
@@ -3075,7 +3078,7 @@ void EventHandler::updateDragStateAfterEditDragIfNeeded(Element* rootEditableEle
 // returns if we should continue "default processing", i.e., whether eventhandler canceled
 bool EventHandler::dispatchDragSrcEvent(const AtomicString& eventType, const PlatformMouseEvent& event)
 {
-    return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragClipboard.get());
+    return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragDataTransfer.get());
 }
 
 bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDragHysteresis checkDragHysteresis)
@@ -3130,7 +3133,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
 
     if (!tryStartDrag(event)) {
         // Something failed to start the drag, clean up.
-        freeClipboard();
+        clearDragDataTransfer();
         dragState().m_dragSrc = nullptr;
     }
 
@@ -3141,9 +3144,11 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
 
 bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
 {
-    freeClipboard(); // would only happen if we missed a dragEnd.  Do it anyway, just
-                     // to make sure it gets numbified
-    dragState().m_dragClipboard = createDraggingClipboard();
+    // The DataTransfer would only be non-empty if we missed a dragEnd.
+    // Clear it anyway, just to make sure it gets numbified.
+    clearDragDataTransfer();
+
+    dragState().m_dragDataTransfer = createDraggingDataTransfer();
 
     // Check to see if this a DOM based drag, if it is get the DOM specified drag
     // image and offset
@@ -3151,7 +3156,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
         if (RenderObject* renderer = dragState().m_dragSrc->renderer()) {
             FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), UseTransforms);
             IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
-            dragState().m_dragClipboard->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
+            dragState().m_dragDataTransfer->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
         } else {
             // The renderer has disappeared, this can happen if the onStartDrag handler has hidden
             // the element in some way. In this case we just kill the drag.
@@ -3160,14 +3165,14 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     }
 
     DragController& dragController = m_frame->page()->dragController();
-    if (!dragController.populateDragClipboard(m_frame, dragState(), m_mouseDownPos))
+    if (!dragController.populateDragDataTransfer(m_frame, dragState(), m_mouseDownPos))
         return false;
     m_mouseDownMayStartDrag = dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown)
         && !m_frame->selection().isInPasswordField();
 
     // Invalidate clipboard here against anymore pasteboard writing for security. The drag
     // image can still be changed as we drag, but not the pasteboard data.
-    dragState().m_dragClipboard->setAccessPolicy(ClipboardImageWritable);
+    dragState().m_dragDataTransfer->setAccessPolicy(DataTransferImageWritable);
 
     if (m_mouseDownMayStartDrag) {
         // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
@@ -3735,9 +3740,9 @@ bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestR
     return false;
 }
 
-PassRefPtrWillBeRawPtr<Clipboard> EventHandler::createDraggingClipboard() const
+PassRefPtrWillBeRawPtr<DataTransfer> EventHandler::createDraggingDataTransfer() const
 {
-    return Clipboard::create(Clipboard::DragAndDrop, ClipboardWritable, DataObject::create());
+    return DataTransfer::create(DataTransfer::DragAndDrop, DataTransferWritable, DataObject::create());
 }
 
 void EventHandler::focusDocumentView()

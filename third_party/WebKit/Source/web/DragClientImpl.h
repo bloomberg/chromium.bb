@@ -34,14 +34,6 @@
 #include "core/page/DragActions.h"
 #include "core/page/DragClient.h"
 
-namespace WebCore {
-class ClipBoard;
-class DragData;
-class DragImage;
-class IntPoint;
-class KURL;
-}
-
 namespace blink {
 class WebViewImpl;
 
@@ -54,7 +46,7 @@ public:
         WebCore::DragImage*,
         const WebCore::IntPoint& dragImageOrigin,
         const WebCore::IntPoint& eventPos,
-        WebCore::Clipboard* clipboard,
+        WebCore::DataTransfer*,
         WebCore::LocalFrame* frame,
         bool isLinkDrag = false) OVERRIDE;
 

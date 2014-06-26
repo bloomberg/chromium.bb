@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/events/ClipboardEvent.h"
 
-#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataTransfer.h"
 
 namespace WebCore {
 
@@ -31,8 +31,8 @@ ClipboardEvent::ClipboardEvent()
 {
 }
 
-ClipboardEvent::ClipboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Clipboard> clipboard)
-    : Event(eventType, canBubble, cancelable), m_clipboard(clipboard)
+ClipboardEvent::ClipboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> clipboardData)
+    : Event(eventType, canBubble, cancelable), m_clipboardData(clipboardData)
 {
 }
 
@@ -42,7 +42,7 @@ ClipboardEvent::~ClipboardEvent()
 
 const AtomicString& ClipboardEvent::interfaceName() const
 {
-    // Notice that there is no ClipboardEvent.idl.
+    // FIXME: create an ClipboardEvent.idl matching http://dev.w3.org/2006/webapi/clipops/clipops.html#clipboard-event-interfaces
     return EventNames::Event;
 }
 
@@ -53,7 +53,7 @@ bool ClipboardEvent::isClipboardEvent() const
 
 void ClipboardEvent::trace(Visitor* visitor)
 {
-    visitor->trace(m_clipboard);
+    visitor->trace(m_clipboardData);
     Event::trace(visitor);
 }
 

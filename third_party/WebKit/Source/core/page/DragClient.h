@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class Clipboard;
+class DataTransfer;
 class DragData;
 class DragImage;
 class LocalFrame;
@@ -40,7 +40,7 @@ class IntPoint;
 class DragClient {
 public:
     virtual DragDestinationAction actionMaskForDrag(DragData*) = 0;
-    virtual void startDrag(DragImage*, const IntPoint& dragImageOrigin, const IntPoint& eventPos, Clipboard*, LocalFrame*, bool linkDrag = false) = 0;
+    virtual void startDrag(DragImage*, const IntPoint& dragImageOrigin, const IntPoint& eventPos, DataTransfer*, LocalFrame*, bool linkDrag = false) = 0;
     virtual ~DragClient() { }
 };
 

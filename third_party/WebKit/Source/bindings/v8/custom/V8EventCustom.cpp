@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/V8DataTransfer.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"
 #include "modules/EventModulesHeaders.h"
@@ -46,7 +46,7 @@ void V8Event::clipboardDataAttributeGetterCustom(const v8::PropertyCallbackInfo<
     Event* event = V8Event::toNative(info.Holder());
 
     if (event->isClipboardEvent()) {
-        v8SetReturnValueFast(info, static_cast<ClipboardEvent*>(event)->clipboard(), event);
+        v8SetReturnValueFast(info, static_cast<ClipboardEvent*>(event)->clipboardData(), event);
         return;
     }
 }

@@ -40,7 +40,7 @@
 namespace WebCore {
 
 class DataObject;
-class Clipboard;
+class DataTransfer;
 class DataTransferItem;
 class File;
 
@@ -48,7 +48,7 @@ class ExceptionState;
 
 class DataTransferItemList : public RefCountedWillBeGarbageCollectedFinalized<DataTransferItemList>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DataTransferItemList> create(PassRefPtrWillBeRawPtr<Clipboard>, PassRefPtrWillBeRawPtr<DataObject>);
+    static PassRefPtrWillBeRawPtr<DataTransferItemList> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);
     ~DataTransferItemList();
 
     size_t length() const;
@@ -61,9 +61,9 @@ public:
     void trace(Visitor*);
 
 private:
-    DataTransferItemList(PassRefPtrWillBeRawPtr<Clipboard>, PassRefPtrWillBeRawPtr<DataObject>);
+    DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);
 
-    RefPtrWillBeMember<Clipboard> m_clipboard;
+    RefPtrWillBeMember<DataTransfer> m_dataTransfer;
     RefPtrWillBeMember<DataObject> m_dataObject;
 };
 

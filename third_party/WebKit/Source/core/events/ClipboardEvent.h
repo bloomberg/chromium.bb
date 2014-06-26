@@ -28,30 +28,30 @@
 
 namespace WebCore {
 
-    class Clipboard;
+class DataTransfer;
 
-    class ClipboardEvent FINAL : public Event {
-    public:
-        virtual ~ClipboardEvent();
+class ClipboardEvent FINAL : public Event {
+public:
+    virtual ~ClipboardEvent();
 
-        static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard> clipboardArg)
-        {
-            return adoptRefWillBeNoop(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
-        }
+    static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer)
+    {
+        return adoptRefWillBeNoop(new ClipboardEvent(type, canBubble, cancelable, dataTransfer));
+    }
 
-        Clipboard* clipboard() const { return m_clipboard.get(); }
+    DataTransfer* clipboardData() const { return m_clipboardData.get(); }
 
-        virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
 
-    private:
-        ClipboardEvent();
-        ClipboardEvent(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard>);
+private:
+    ClipboardEvent();
+    ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> clipboardData);
 
-        virtual const AtomicString& interfaceName() const OVERRIDE;
-        virtual bool isClipboardEvent() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual bool isClipboardEvent() const OVERRIDE;
 
-        RefPtrWillBeMember<Clipboard> m_clipboard;
-    };
+    RefPtrWillBeMember<DataTransfer> m_clipboardData;
+};
 
 } // namespace WebCore
 

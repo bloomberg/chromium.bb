@@ -34,84 +34,84 @@
 
 namespace WebCore {
 
-    class Clipboard;
-    class Document;
-    class DragClient;
-    class DragData;
-    class DragImage;
-    struct DragSession;
-    class DragState;
-    class Element;
-    class LocalFrame;
-    class FrameSelection;
-    class HTMLInputElement;
-    class Image;
-    class IntRect;
-    class Node;
-    class Page;
-    class PlatformMouseEvent;
-    class Range;
+class DataTransfer;
+class Document;
+class DragClient;
+class DragData;
+class DragImage;
+struct DragSession;
+class DragState;
+class Element;
+class LocalFrame;
+class FrameSelection;
+class HTMLInputElement;
+class Image;
+class IntRect;
+class Node;
+class Page;
+class PlatformMouseEvent;
+class Range;
 
-    class DragController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
-        WTF_MAKE_NONCOPYABLE(DragController);
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    public:
-        ~DragController();
+class DragController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
+    WTF_MAKE_NONCOPYABLE(DragController);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    ~DragController();
 
-        static PassOwnPtrWillBeRawPtr<DragController> create(Page*, DragClient*);
+    static PassOwnPtrWillBeRawPtr<DragController> create(Page*, DragClient*);
 
-        DragSession dragEntered(DragData*);
-        void dragExited(DragData*);
-        DragSession dragUpdated(DragData*);
-        bool performDrag(DragData*);
+    DragSession dragEntered(DragData*);
+    void dragExited(DragData*);
+    DragSession dragUpdated(DragData*);
+    bool performDrag(DragData*);
 
-        enum SelectionDragPolicy {
-            ImmediateSelectionDragResolution,
-            DelayedSelectionDragResolution,
-        };
-        Node* draggableNode(const LocalFrame*, Node*, const IntPoint&, SelectionDragPolicy, DragSourceAction&) const;
-        void dragEnded();
-
-        bool populateDragClipboard(LocalFrame* src, const DragState&, const IntPoint& dragOrigin);
-        bool startDrag(LocalFrame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
-
-        void trace(Visitor*);
-
-        static const int DragIconRightInset;
-        static const int DragIconBottomInset;
-
-    private:
-        DragController(Page*, DragClient*);
-
-        bool dispatchTextInputEventFor(LocalFrame*, DragData*);
-        bool canProcessDrag(DragData*);
-        bool concludeEditDrag(DragData*);
-        DragSession dragEnteredOrUpdated(DragData*);
-        DragOperation operationForLoad(DragData*);
-        bool tryDocumentDrag(DragData*, DragDestinationAction, DragSession&);
-        bool tryDHTMLDrag(DragData*, DragOperation&);
-        DragOperation dragOperation(DragData*);
-        void cancelDrag();
-        bool dragIsMove(FrameSelection&, DragData*);
-        bool isCopyKeyDown(DragData*);
-
-        void mouseMovedIntoDocument(Document*);
-
-        void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, Clipboard*, LocalFrame*, bool forLink);
-        void cleanupAfterSystemDrag();
-
-        RawPtrWillBeMember<Page> m_page;
-        DragClient* m_client;
-
-        RefPtrWillBeMember<Document> m_documentUnderMouse; // The document the mouse was last dragged over.
-        RefPtrWillBeMember<Document> m_dragInitiator; // The Document (if any) that initiated the drag.
-        RefPtrWillBeMember<HTMLInputElement> m_fileInputElementUnderMouse;
-        bool m_documentIsHandlingDrag;
-
-        DragDestinationAction m_dragDestinationAction;
-        bool m_didInitiateDrag;
+    enum SelectionDragPolicy {
+        ImmediateSelectionDragResolution,
+        DelayedSelectionDragResolution,
     };
+    Node* draggableNode(const LocalFrame*, Node*, const IntPoint&, SelectionDragPolicy, DragSourceAction&) const;
+    void dragEnded();
 
-}
+    bool populateDragDataTransfer(LocalFrame* src, const DragState&, const IntPoint& dragOrigin);
+    bool startDrag(LocalFrame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
 
-#endif
+    void trace(Visitor*);
+
+    static const int DragIconRightInset;
+    static const int DragIconBottomInset;
+
+private:
+    DragController(Page*, DragClient*);
+
+    bool dispatchTextInputEventFor(LocalFrame*, DragData*);
+    bool canProcessDrag(DragData*);
+    bool concludeEditDrag(DragData*);
+    DragSession dragEnteredOrUpdated(DragData*);
+    DragOperation operationForLoad(DragData*);
+    bool tryDocumentDrag(DragData*, DragDestinationAction, DragSession&);
+    bool tryDHTMLDrag(DragData*, DragOperation&);
+    DragOperation dragOperation(DragData*);
+    void cancelDrag();
+    bool dragIsMove(FrameSelection&, DragData*);
+    bool isCopyKeyDown(DragData*);
+
+    void mouseMovedIntoDocument(Document*);
+
+    void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, DataTransfer*, LocalFrame*, bool forLink);
+    void cleanupAfterSystemDrag();
+
+    RawPtrWillBeMember<Page> m_page;
+    DragClient* m_client;
+
+    RefPtrWillBeMember<Document> m_documentUnderMouse; // The document the mouse was last dragged over.
+    RefPtrWillBeMember<Document> m_dragInitiator; // The Document (if any) that initiated the drag.
+    RefPtrWillBeMember<HTMLInputElement> m_fileInputElementUnderMouse;
+    bool m_documentIsHandlingDrag;
+
+    DragDestinationAction m_dragDestinationAction;
+    bool m_didInitiateDrag;
+};
+
+} // namespace WebCore
+
+#endif // DragController_h

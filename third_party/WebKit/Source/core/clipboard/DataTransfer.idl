@@ -27,7 +27,6 @@
  */
 
 [
-    ImplementedAs=Clipboard,
     WillBeGarbageCollected
 ] interface DataTransfer {
              [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/clipboard/Clipboard.h"
+#include "core/clipboard/DataTransfer.h"
 
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
@@ -45,11 +45,9 @@
 
 namespace WebCore {
 
-// These "conversion" methods are called by both WebCore and WebKit, and never make sense to JS, so we don't
-// worry about security for these. They don't allow access to the pasteboard anyway.
-static DragOperation dragOpFromIEOp(const String& op)
+static DragOperation convertEffectAllowedToDragOperation(const String& op)
 {
-    // yep, it's really just this fixed set
+    // Values specified in http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dom-datatransfer-effectallowed
     if (op == "uninitialized")
         return DragOperationEvery;
     if (op == "none")
@@ -71,7 +69,7 @@ static DragOperation dragOpFromIEOp(const String& op)
     return DragOperationPrivate; // really a marker for "no conversion"
 }
 
-static String IEOpFromDragOp(DragOperation op)
+static String convertDragOperationToEffectAllowed(DragOperation op)
 {
     bool moveSet = !!((DragOperationGeneric | DragOperationMove) & op);
 
@@ -108,16 +106,16 @@ static String normalizeType(const String& type, bool* convertToURL = 0)
     return cleanType;
 }
 
-PassRefPtrWillBeRawPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+PassRefPtrWillBeRawPtr<DataTransfer> DataTransfer::create(DataTransferType type, DataTransferAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
 {
-    return adoptRefWillBeNoop(new Clipboard(type, policy , dataObject));
+    return adoptRefWillBeNoop(new DataTransfer(type, policy, dataObject));
 }
 
-Clipboard::~Clipboard()
+DataTransfer::~DataTransfer()
 {
 }
 
-void Clipboard::setDropEffect(const String &effect)
+void DataTransfer::setDropEffect(const String &effect)
 {
     if (!isForDragAndDrop())
         return;
@@ -132,12 +130,12 @@ void Clipboard::setDropEffect(const String &effect)
         m_dropEffect = effect;
 }
 
-void Clipboard::setEffectAllowed(const String &effect)
+void DataTransfer::setEffectAllowed(const String &effect)
 {
     if (!isForDragAndDrop())
         return;
 
-    if (dragOpFromIEOp(effect) == DragOperationPrivate) {
+    if (convertEffectAllowedToDragOperation(effect) == DragOperationPrivate) {
         // This means that there was no conversion, and the effectAllowed that
         // we are passed isn't a valid effectAllowed, so we should ignore it,
         // and not set m_effectAllowed.
@@ -152,7 +150,7 @@ void Clipboard::setEffectAllowed(const String &effect)
         m_effectAllowed = effect;
 }
 
-void Clipboard::clearData(const String& type)
+void DataTransfer::clearData(const String& type)
 {
     if (!canWriteData())
         return;
@@ -163,7 +161,7 @@ void Clipboard::clearData(const String& type)
         m_dataObject->clearData(normalizeType(type));
 }
 
-String Clipboard::getData(const String& type) const
+String DataTransfer::getData(const String& type) const
 {
     if (!canReadData())
         return String();
@@ -175,7 +173,7 @@ String Clipboard::getData(const String& type) const
     return convertURIListToURL(data);
 }
 
-void Clipboard::setData(const String& type, const String& data)
+void DataTransfer::setData(const String& type, const String& data)
 {
     if (!canWriteData())
         return;
@@ -184,7 +182,7 @@ void Clipboard::setData(const String& type, const String& data)
 }
 
 // extensions beyond IE's API
-Vector<String> Clipboard::types() const
+Vector<String> DataTransfer::types() const
 {
     Vector<String> types;
     if (!canReadTypes())
@@ -195,7 +193,7 @@ Vector<String> Clipboard::types() const
     return types;
 }
 
-PassRefPtrWillBeRawPtr<FileList> Clipboard::files() const
+PassRefPtrWillBeRawPtr<FileList> DataTransfer::files() const
 {
     RefPtrWillBeRawPtr<FileList> files = FileList::create();
     if (!canReadData())
@@ -212,7 +210,7 @@ PassRefPtrWillBeRawPtr<FileList> Clipboard::files() const
     return files.release();
 }
 
-void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& exceptionState)
+void DataTransfer::setDragImage(Element* image, int x, int y, ExceptionState& exceptionState)
 {
     if (!isForDragAndDrop())
         return;
@@ -228,7 +226,7 @@ void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& excep
         setDragImageElement(image, location);
 }
 
-void Clipboard::clearDragImage()
+void DataTransfer::clearDragImage()
 {
     if (!canSetDragImage())
         return;
@@ -238,17 +236,17 @@ void Clipboard::clearDragImage()
     m_dragImageElement = nullptr;
 }
 
-void Clipboard::setDragImageResource(ImageResource* img, const IntPoint& loc)
+void DataTransfer::setDragImageResource(ImageResource* img, const IntPoint& loc)
 {
     setDragImage(img, 0, loc);
 }
 
-void Clipboard::setDragImageElement(Node* node, const IntPoint& loc)
+void DataTransfer::setDragImageElement(Node* node, const IntPoint& loc)
 {
     setDragImage(0, node, loc);
 }
 
-PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, LocalFrame* frame) const
+PassOwnPtr<DragImage> DataTransfer::createDragImage(IntPoint& loc, LocalFrame* frame) const
 {
     if (m_dragImageElement) {
         loc = m_dragLoc;
@@ -322,7 +320,7 @@ static void writeImageToDataObject(DataObject* dataObject, Element* element, con
     dataObject->addSharedBuffer(filename + imageExtension, imageBuffer);
 }
 
-void Clipboard::declareAndWriteDragImage(Element* element, const KURL& url, const String& title)
+void DataTransfer::declareAndWriteDragImage(Element* element, const KURL& url, const String& title)
 {
     if (!m_dataObject)
         return;
@@ -336,7 +334,7 @@ void Clipboard::declareAndWriteDragImage(Element* element, const KURL& url, cons
     m_dataObject->setData(mimeTypeTextHTML, createMarkup(element, IncludeNode, 0, ResolveAllURLs));
 }
 
-void Clipboard::writeURL(const KURL& url, const String& title)
+void DataTransfer::writeURL(const KURL& url, const String& title)
 {
     if (!m_dataObject)
         return;
@@ -351,7 +349,7 @@ void Clipboard::writeURL(const KURL& url, const String& title)
     m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);
 }
 
-void Clipboard::writeRange(Range* selectedRange, LocalFrame* frame)
+void DataTransfer::writeRange(Range* selectedRange, LocalFrame* frame)
 {
     ASSERT(selectedRange);
     if (!m_dataObject)
@@ -367,7 +365,7 @@ void Clipboard::writeRange(Range* selectedRange, LocalFrame* frame)
     m_dataObject->setData(mimeTypeTextPlain, str);
 }
 
-void Clipboard::writePlainText(const String& text)
+void DataTransfer::writePlainText(const String& text)
 {
     if (!m_dataObject)
         return;
@@ -381,67 +379,67 @@ void Clipboard::writePlainText(const String& text)
     m_dataObject->setData(mimeTypeTextPlain, str);
 }
 
-bool Clipboard::hasData()
+bool DataTransfer::hasData()
 {
     ASSERT(isForDragAndDrop());
 
     return m_dataObject->length() > 0;
 }
 
-void Clipboard::setAccessPolicy(ClipboardAccessPolicy policy)
+void DataTransfer::setAccessPolicy(DataTransferAccessPolicy policy)
 {
     // once you go numb, can never go back
-    ASSERT(m_policy != ClipboardNumb || policy == ClipboardNumb);
+    ASSERT(m_policy != DataTransferNumb || policy == DataTransferNumb);
     m_policy = policy;
 }
 
-bool Clipboard::canReadTypes() const
+bool DataTransfer::canReadTypes() const
 {
-    return m_policy == ClipboardReadable || m_policy == ClipboardTypesReadable || m_policy == ClipboardWritable;
+    return m_policy == DataTransferReadable || m_policy == DataTransferTypesReadable || m_policy == DataTransferWritable;
 }
 
-bool Clipboard::canReadData() const
+bool DataTransfer::canReadData() const
 {
-    return m_policy == ClipboardReadable || m_policy == ClipboardWritable;
+    return m_policy == DataTransferReadable || m_policy == DataTransferWritable;
 }
 
-bool Clipboard::canWriteData() const
+bool DataTransfer::canWriteData() const
 {
-    return m_policy == ClipboardWritable;
+    return m_policy == DataTransferWritable;
 }
 
-bool Clipboard::canSetDragImage() const
+bool DataTransfer::canSetDragImage() const
 {
-    return m_policy == ClipboardImageWritable || m_policy == ClipboardWritable;
+    return m_policy == DataTransferImageWritable || m_policy == DataTransferWritable;
 }
 
-DragOperation Clipboard::sourceOperation() const
+DragOperation DataTransfer::sourceOperation() const
 {
-    DragOperation op = dragOpFromIEOp(m_effectAllowed);
+    DragOperation op = convertEffectAllowedToDragOperation(m_effectAllowed);
     ASSERT(op != DragOperationPrivate);
     return op;
 }
 
-DragOperation Clipboard::destinationOperation() const
+DragOperation DataTransfer::destinationOperation() const
 {
-    DragOperation op = dragOpFromIEOp(m_dropEffect);
+    DragOperation op = convertEffectAllowedToDragOperation(m_dropEffect);
     ASSERT(op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == (DragOperation)(DragOperationGeneric | DragOperationMove) || op == DragOperationEvery);
     return op;
 }
 
-void Clipboard::setSourceOperation(DragOperation op)
+void DataTransfer::setSourceOperation(DragOperation op)
 {
     ASSERT_ARG(op, op != DragOperationPrivate);
-    m_effectAllowed = IEOpFromDragOp(op);
+    m_effectAllowed = convertDragOperationToEffectAllowed(op);
 }
 
-void Clipboard::setDestinationOperation(DragOperation op)
+void DataTransfer::setDestinationOperation(DragOperation op)
 {
     ASSERT_ARG(op, op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == (DragOperation)(DragOperationGeneric | DragOperationMove));
-    m_dropEffect = IEOpFromDragOp(op);
+    m_dropEffect = convertDragOperationToEffectAllowed(op);
 }
 
-bool Clipboard::hasDropZoneType(const String& keyword)
+bool DataTransfer::hasDropZoneType(const String& keyword)
 {
     if (keyword.startsWith("file:"))
         return hasFileOfType(keyword.substring(5));
@@ -452,7 +450,7 @@ bool Clipboard::hasDropZoneType(const String& keyword)
     return false;
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItemList> Clipboard::items()
+PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransfer::items()
 {
     // FIXME: According to the spec, we are supposed to return the same collection of items each
     // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
@@ -460,22 +458,22 @@ PassRefPtrWillBeRawPtr<DataTransferItemList> Clipboard::items()
     return DataTransferItemList::create(this, m_dataObject);
 }
 
-PassRefPtrWillBeRawPtr<DataObject> Clipboard::dataObject() const
+PassRefPtrWillBeRawPtr<DataObject> DataTransfer::dataObject() const
 {
     return m_dataObject;
 }
 
-Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+DataTransfer::DataTransfer(DataTransferType type, DataTransferAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
     : m_policy(policy)
     , m_dropEffect("uninitialized")
     , m_effectAllowed("uninitialized")
-    , m_clipboardType(type)
+    , m_transferType(type)
     , m_dataObject(dataObject)
 {
     ScriptWrappable::init(this);
 }
 
-void Clipboard::setDragImage(ImageResource* image, Node* node, const IntPoint& loc)
+void DataTransfer::setDragImage(ImageResource* image, Node* node, const IntPoint& loc)
 {
     if (!canSetDragImage())
         return;
@@ -485,7 +483,7 @@ void Clipboard::setDragImage(ImageResource* image, Node* node, const IntPoint& l
     m_dragImageElement = node;
 }
 
-bool Clipboard::hasFileOfType(const String& type) const
+bool DataTransfer::hasFileOfType(const String& type) const
 {
     if (!canReadTypes())
         return false;
@@ -501,7 +499,7 @@ bool Clipboard::hasFileOfType(const String& type) const
     return false;
 }
 
-bool Clipboard::hasStringOfType(const String& type) const
+bool DataTransfer::hasStringOfType(const String& type) const
 {
     if (!canReadTypes())
         return false;
@@ -534,7 +532,7 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
     }
 }
 
-void Clipboard::trace(Visitor* visitor)
+void DataTransfer::trace(Visitor* visitor)
 {
     visitor->trace(m_dataObject);
     visitor->trace(m_dragImageElement);

@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class Clipboard;
+class DataTransfer;
 class Node;
 
 class DragState : public NoBaseWillBeGarbageCollected<DragState> {
@@ -42,12 +42,12 @@ public:
 
     RefPtrWillBeMember<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
     DragSourceAction m_dragType;
-    RefPtrWillBeMember<Clipboard> m_dragClipboard; // used on only the source side of dragging
+    RefPtrWillBeMember<DataTransfer> m_dragDataTransfer; // used on only the source side of dragging
 
     void trace(Visitor* visitor)
     {
         visitor->trace(m_dragSrc);
-        visitor->trace(m_dragClipboard);
+        visitor->trace(m_dragDataTransfer);
     }
 };
 

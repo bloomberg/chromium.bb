@@ -33,8 +33,8 @@
 #include "core/HTMLNames.h"
 #include "core/XLinkNames.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
@@ -193,17 +193,17 @@ bool Editor::canEditRichly() const
 
 bool Editor::canDHTMLCut()
 {
-    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecut, ClipboardNumb);
+    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecut, DataTransferNumb);
 }
 
 bool Editor::canDHTMLCopy()
 {
-    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecopy, ClipboardNumb);
+    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecopy, DataTransferNumb);
 }
 
 bool Editor::canDHTMLPaste()
 {
-    return !dispatchCPPEvent(EventTypeNames::beforepaste, ClipboardNumb);
+    return !dispatchCPPEvent(EventTypeNames::beforepaste, DataTransferNumb);
 }
 
 bool Editor::canCut() const
@@ -362,7 +362,7 @@ bool Editor::tryDHTMLCopy()
     if (m_frame.selection().isInPasswordField())
         return false;
 
-    return !dispatchCPPEvent(EventTypeNames::copy, ClipboardWritable);
+    return !dispatchCPPEvent(EventTypeNames::copy, DataTransferWritable);
 }
 
 bool Editor::tryDHTMLCut()
@@ -370,12 +370,12 @@ bool Editor::tryDHTMLCut()
     if (m_frame.selection().isInPasswordField())
         return false;
 
-    return !dispatchCPPEvent(EventTypeNames::cut, ClipboardWritable);
+    return !dispatchCPPEvent(EventTypeNames::cut, DataTransferWritable);
 }
 
 bool Editor::tryDHTMLPaste(PasteMode pasteMode)
 {
-    return !dispatchCPPEvent(EventTypeNames::paste, ClipboardReadable, pasteMode);
+    return !dispatchCPPEvent(EventTypeNames::paste, DataTransferReadable, pasteMode);
 }
 
 void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
@@ -450,29 +450,29 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
 
 // Returns whether caller should continue with "the default processing", which is the same as
 // the event handler NOT setting the return value to false
-bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPolicy policy, PasteMode pasteMode)
+bool Editor::dispatchCPPEvent(const AtomicString &eventType, DataTransferAccessPolicy policy, PasteMode pasteMode)
 {
     Node* target = findEventTargetFromSelection();
     if (!target)
         return true;
 
-    RefPtrWillBeRawPtr<Clipboard> clipboard = Clipboard::create(
-        Clipboard::CopyAndPaste,
+    RefPtrWillBeRawPtr<DataTransfer> dataTransfer = DataTransfer::create(
+        DataTransfer::CopyAndPaste,
         policy,
-        policy == ClipboardWritable
+        policy == DataTransferWritable
             ? DataObject::create()
             : DataObject::createFromPasteboard(pasteMode));
 
-    RefPtrWillBeRawPtr<Event> evt = ClipboardEvent::create(eventType, true, true, clipboard);
+    RefPtrWillBeRawPtr<Event> evt = ClipboardEvent::create(eventType, true, true, dataTransfer);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
-    if (noDefaultProcessing && policy == ClipboardWritable) {
-        RefPtrWillBeRawPtr<DataObject> dataObject = clipboard->dataObject();
+    if (noDefaultProcessing && policy == DataTransferWritable) {
+        RefPtrWillBeRawPtr<DataObject> dataObject = dataTransfer->dataObject();
         Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
     }
 
     // invalidate clipboard here for security
-    clipboard->setAccessPolicy(ClipboardNumb);
+    dataTransfer->setAccessPolicy(DataTransferNumb);
 
     return !noDefaultProcessing;
 }

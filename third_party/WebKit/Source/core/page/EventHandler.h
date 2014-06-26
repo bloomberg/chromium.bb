@@ -47,7 +47,7 @@
 namespace WebCore {
 
 class AutoscrollController;
-class Clipboard;
+class DataTransfer;
 class Document;
 class Element;
 class Event;
@@ -116,9 +116,9 @@ public:
 
     void setCapturingMouseEventsNode(PassRefPtrWillBeRawPtr<Node>); // A caller is responsible for resetting capturing node to 0.
 
-    bool updateDragAndDrop(const PlatformMouseEvent&, Clipboard*);
-    void cancelDragAndDrop(const PlatformMouseEvent&, Clipboard*);
-    bool performDragAndDrop(const PlatformMouseEvent&, Clipboard*);
+    bool updateDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
+    void cancelDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
+    bool performDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
     void updateDragStateAfterEditDragIfNeeded(Element* rootEditableElement);
 
     void scheduleHoverStateUpdate();
@@ -184,7 +184,7 @@ public:
 private:
     static DragState& dragState();
 
-    PassRefPtrWillBeRawPtr<Clipboard> createDraggingClipboard() const;
+    PassRefPtrWillBeRawPtr<DataTransfer> createDraggingDataTransfer() const;
 
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
@@ -257,9 +257,9 @@ private:
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
     bool dispatchMouseEvent(const AtomicString& eventType, Node* target, int clickCount, const PlatformMouseEvent&, bool setUnder);
-    bool dispatchDragEvent(const AtomicString& eventType, Node* target, const PlatformMouseEvent&, Clipboard*);
+    bool dispatchDragEvent(const AtomicString& eventType, Node* target, const PlatformMouseEvent&, DataTransfer*);
 
-    void freeClipboard();
+    void clearDragDataTransfer();
 
     bool handleDrag(const MouseEventWithHitTestResults&, CheckDragHysteresis);
     bool tryStartDrag(const MouseEventWithHitTestResults&);
@@ -279,7 +279,6 @@ private:
     bool passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults&);
 
     bool passWheelEventToWidget(const PlatformWheelEvent&, Widget*);
-
     void defaultSpaceEventHandler(KeyboardEvent*);
     void defaultBackspaceEventHandler(KeyboardEvent*);
     void defaultTabEventHandler(KeyboardEvent*);
