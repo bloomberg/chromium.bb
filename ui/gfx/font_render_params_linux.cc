@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/switches.h"
 
 #include <fontconfig/fontconfig.h>
@@ -20,16 +19,9 @@ namespace gfx {
 namespace {
 
 bool SubpixelPositioningRequested(bool renderer) {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (renderer) {
-    // Text rendered by Blink in high-DPI mode is poorly-hinted unless subpixel
-    // positioning is used (as opposed to each glyph being individually snapped
-    // to the pixel grid).
-    return cl->HasSwitch(switches::kEnableWebkitTextSubpixelPositioning) ||
-           (Display::HasForceDeviceScaleFactor() &&
-            Display::GetForcedDeviceScaleFactor() != 1.0);
-  }
-  return cl->HasSwitch(switches::kEnableBrowserTextSubpixelPositioning);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      renderer ? switches::kEnableWebkitTextSubpixelPositioning
+               : switches::kEnableBrowserTextSubpixelPositioning);
 }
 
 // Initializes |params| with the system's default settings. |renderer| is true
