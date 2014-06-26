@@ -210,6 +210,20 @@ class WindowSelectorTest : public test::AshTestBase {
     return window->window_label_.get();
   }
 
+  // Tests that a window is contained within a given WindowSelectorItem, and
+  // that both the window and its matching close button are within the same
+  // screen.
+  void IsWindowAndCloseButtonInScreen(aura::Window* window,
+                                      WindowSelectorItem* window_item) {
+    aura::Window* root_window = window_item->GetRootWindow();
+    EXPECT_TRUE(window_item->Contains(window));
+    EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
+        ToEnclosingRect(GetTransformedTargetBounds(window))));
+    EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
+        ToEnclosingRect(GetTransformedTargetBounds(
+            GetCloseButton(window_item)->GetNativeView()))));
+  }
+
   test::ShelfViewTestAPI* shelf_view_test() {
     return shelf_view_test_.get();
   }
@@ -595,7 +609,7 @@ TEST_F(WindowSelectorTest, ClickModalWindowParent) {
 }
 
 // Tests that windows remain on the display they are currently on in overview
-// mode.
+// mode, and that the close buttons are on matching displays.
 TEST_F(WindowSelectorTest, MultipleDisplays) {
   if (!SupportsMultipleDisplays())
     return;
@@ -634,23 +648,22 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
   EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
 
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(window3.get()))));
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(window4.get()))));
+  const std::vector<WindowSelectorItem*>& primary_window_items =
+      GetWindowItemsForRoot(0);
+  const std::vector<WindowSelectorItem*>& secondary_window_items =
+      GetWindowItemsForRoot(1);
 
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(panel1.get()))));
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(panel2.get()))));
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(panel3.get()))));
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
-      ToEnclosingRect(GetTransformedTargetBounds(panel4.get()))));
+  // Window indices are based on top-down order. The reverse of our creation.
+  IsWindowAndCloseButtonInScreen(window1.get(), primary_window_items[2]);
+  IsWindowAndCloseButtonInScreen(window2.get(), primary_window_items[1]);
+  IsWindowAndCloseButtonInScreen(window3.get(), secondary_window_items[2]);
+  IsWindowAndCloseButtonInScreen(window4.get(), secondary_window_items[1]);
+
+  IsWindowAndCloseButtonInScreen(panel1.get(), primary_window_items[0]);
+  IsWindowAndCloseButtonInScreen(panel2.get(), primary_window_items[0]);
+  IsWindowAndCloseButtonInScreen(panel3.get(), secondary_window_items[0]);
+  IsWindowAndCloseButtonInScreen(panel4.get(), secondary_window_items[0]);
+
   EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
   EXPECT_TRUE(WindowsOverlapping(panel3.get(), panel4.get()));
   EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel3.get()));

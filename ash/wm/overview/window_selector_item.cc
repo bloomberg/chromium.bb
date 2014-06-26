@@ -172,8 +172,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
 
 void WindowSelectorItem::UpdateCloseButtonBounds(aura::Window* root_window,
                                                  bool animate) {
-  gfx::RectF align_bounds(ScreenUtil::ConvertRectFromScreen(
-      root_window, SelectionWindow()->layer()->bounds()));
+  gfx::RectF align_bounds(SelectionWindow()->layer()->bounds());
   gfx::Transform window_transform;
   window_transform.Translate(align_bounds.x(), align_bounds.y());
   window_transform.PreconcatTransform(SelectionWindow()->layer()->
