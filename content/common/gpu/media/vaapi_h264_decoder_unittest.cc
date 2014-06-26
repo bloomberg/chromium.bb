@@ -127,7 +127,8 @@ bool VaapiH264DecoderLoop::Initialize(base::FilePath input_file,
   media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
   base::Closure report_error_cb =
       base::Bind(&LogOnError, VaapiH264Decoder::VAAPI_ERROR);
-  wrapper_ = VaapiWrapper::Create(profile, x_display_, report_error_cb);
+  wrapper_ = VaapiWrapper::Create(
+      VaapiWrapper::kDecode, profile, x_display_, report_error_cb);
   if (!wrapper_.get()) {
     LOG(ERROR) << "Can't create vaapi wrapper";
     return false;

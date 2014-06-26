@@ -488,8 +488,8 @@ bool VaapiH264Decoder::DecodePicture() {
     return false;
   }
 
-  if (!vaapi_wrapper_->DecodeAndDestroyPendingBuffers(
-      dec_surface->va_surface()->id())) {
+  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+          dec_surface->va_surface()->id())) {
     DVLOG(1) << "Failed decoding picture";
     return false;
   }

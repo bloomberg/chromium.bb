@@ -63,6 +63,26 @@ enum {
 struct MEDIA_EXPORT H264SPS {
   H264SPS();
 
+  enum H264ProfileIDC {
+    kProfileIDCBaseline = 66,
+    kProfileIDCConstrainedBaseline = kProfileIDCBaseline,
+    kProfileIDCMain = 77,
+    kProfileIDCHigh = 100,
+  };
+
+  enum AspectRatioIdc {
+    kExtendedSar = 255,
+  };
+
+  enum {
+    // Constants for HRD parameters (spec ch. E.2.2).
+    kBitRateScaleConstantTerm = 6,  // Equation E-37.
+    kCPBSizeScaleConstantTerm = 4,  // Equation E-38.
+    kDefaultInitialCPBRemovalDelayLength = 24,
+    kDefaultDPBOutputDelayLength = 24,
+    kDefaultTimeOffsetLength = 24,
+  };
+
   int profile_idc;
   bool constraint_set0_flag;
   bool constraint_set1_flag;
@@ -111,6 +131,25 @@ struct MEDIA_EXPORT H264SPS {
   bool bitstream_restriction_flag;
   int max_num_reorder_frames;
   int max_dec_frame_buffering;
+  bool timing_info_present_flag;
+  int num_units_in_tick;
+  int time_scale;
+  bool fixed_frame_rate_flag;
+
+  // TODO(posciak): actually parse these instead of ParseAndIgnoreHRDParameters.
+  bool nal_hrd_parameters_present_flag;
+  int cpb_cnt_minus1;
+  int bit_rate_scale;
+  int cpb_size_scale;
+  int bit_rate_value_minus1[32];
+  int cpb_size_value_minus1[32];
+  bool cbr_flag[32];
+  int initial_cpb_removal_delay_length_minus_1;
+  int cpb_removal_delay_length_minus1;
+  int dpb_output_delay_length_minus1;
+  int time_offset_length;
+
+  bool low_delay_hrd_flag;
 
   int chroma_array_type;
 };

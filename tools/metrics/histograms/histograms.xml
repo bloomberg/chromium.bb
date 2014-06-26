@@ -10312,6 +10312,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VAVEA.EncoderFailure" enum="VAVEAEncoderFailure">
+  <owner>posciak@chromium.org</owner>
+  <summary>
+    Error codes reported by video encode using VA-API hardware video encoder.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.AspectRatio">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -47024,6 +47031,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="MID_STREAM_RESOLUTION_CHANGE"/>
   <int value="3" label="INTERLACED_STREAM"/>
   <int value="4" label="VAAPI_ERROR"/>
+</enum>
+
+<enum name="VAVEAEncoderFailure" type="int">
+  <int value="0" label="VAAPI_ERROR"/>
 </enum>
 
 <enum name="VideoCodec" type="int">
