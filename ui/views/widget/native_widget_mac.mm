@@ -9,38 +9,12 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/font_list.h"
-#import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 
 namespace views {
-namespace {
-
-NSInteger StyleMaskForParams(const Widget::InitParams& params) {
-  // TODO(tapted): Determine better masks when there are use cases for it.
-  if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    return NSTitledWindowMask | NSClosableWindowMask |
-           NSMiniaturizableWindowMask | NSResizableWindowMask;
-  }
-  return NSBorderlessWindowMask;
-}
-
-NSRect ValidateContentRect(NSRect content_rect) {
-  // A contentRect with zero width or height is a banned practice in Chrome, due
-  // to unpredictable OSX treatment. For now, silently give a minimum dimension.
-  // TODO(tapted): Add a DCHECK, or add emulation logic (e.g. to auto-hide).
-  if (NSWidth(content_rect) == 0)
-    content_rect.size.width = 1;
-
-  if (NSHeight(content_rect) == 0)
-    content_rect.size.height = 1;
-
-  return content_rect;
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, public:
@@ -74,11 +48,12 @@ void NativeWidgetMac::OnWindowWillClose() {
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
-  NSInteger style_mask = StyleMaskForParams(params);
-  NSRect content_rect = ValidateContentRect(
-      [NSWindow contentRectForFrameRect:gfx::ScreenRectToNSRect(params.bounds)
-                              styleMask:style_mask]);
-
+  // TODO(tapted): Convert position into Cocoa's flipped coordinate space.
+  NSRect content_rect =
+      NSMakeRect(0, 0, params.bounds.width(), params.bounds.height());
+  // TODO(tapted): Determine a good initial style mask from |params|.
+  NSInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                         NSMiniaturizableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
       [[NSWindow alloc] initWithContentRect:content_rect
                                   styleMask:style_mask
@@ -218,13 +193,13 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
 }
 
 gfx::Rect NativeWidgetMac::GetWindowBoundsInScreen() const {
-  return gfx::ScreenRectFromNSRect([GetNativeWindow() frame]);
+  NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMac::GetClientAreaBoundsInScreen() const {
-  NSWindow* window = GetNativeWindow();
-  return gfx::ScreenRectFromNSRect(
-      [window contentRectForFrameRect:[window frame]]);
+  NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
@@ -233,15 +208,11 @@ gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
-  [GetNativeWindow() setFrame:gfx::ScreenRectToNSRect(bounds)
-                      display:YES
-                      animate:NO];
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMac::SetSize(const gfx::Size& size) {
-  // Ensure the top-left corner stays in-place (rather than the bottom-left,
-  // which -[NSWindow setContentSize:] would do).
-  SetBounds(gfx::Rect(GetWindowBoundsInScreen().origin(), size));
+  [GetNativeWindow() setContentSize:NSMakeSize(size.width(), size.height())];
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
@@ -261,13 +232,10 @@ void NativeWidgetMac::SetShape(gfx::NativeRegion shape) {
 }
 
 void NativeWidgetMac::Close() {
-  NSWindow* window = GetNativeWindow();
-  // Calling performClose: will momentarily highlight the close button, but
-  // AppKit will reject it if there is no close button.
-  SEL close_selector = ([window styleMask] & NSClosableWindowMask)
-                           ? @selector(performClose:)
-                           : @selector(close);
-  [window performSelector:close_selector withObject:nil afterDelay:0];
+  // Calling performClose: will momentarily highlight the close button.
+  [GetNativeWindow() performSelector:@selector(performClose:)
+                          withObject:nil
+                          afterDelay:0];
 }
 
 void NativeWidgetMac::CloseNow() {
