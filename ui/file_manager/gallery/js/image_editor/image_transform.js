@@ -183,15 +183,17 @@ ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
  * @param {number} x Event X coordinate.
  * @param {number} y Event Y coordinate.
  * @param {boolean} touch True if it's a touch event, false if mouse.
- * @return {function(number,number)} A function to be called on mouse drag.
+ * @return {function(number,number,boolean)} A function to be called on mouse
+ *     drag. It takes x coordinate value, y coordinate value, and shift key
+ *     flag.
  */
 ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
   var cropDragHandler = this.cropRect_.getDragHandler(x, y, touch);
   if (!cropDragHandler)
     return null;
 
-  return function(x, y) {
-    cropDragHandler(x, y);
+  return function(x, y, shiftKey) {
+    cropDragHandler(x, y, shiftKey);
     this.markUpdated();
     this.positionDOM();
   }.bind(this);
@@ -414,26 +416,27 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
  * @param {number} startScreenX X coordinate for cursor in the screen.
  * @param {number} startScreenY Y coordinate for cursor in the screen.
  * @param {boolean} touch Whether the operaiton is done by touch or not.
- * @return {function(number,number)} Drag handler.
+ * @return {function(number,number,boolean)} Drag handler that takes x
+ *     coordinate value, y coordinate value, and shift key flag.
  */
 DraggableRect.prototype.getDragHandler = function(
-    startScreenX, startScreenY, touch) {
-  // Check if the start coordinate in the clip rect.
-  var startX = this.viewport_.screenToImageX(startScreenX);
-  var startY = this.viewport_.screenToImageY(startScreenY);
+    initialScreenX, initialScreenY, touch) {
+  // Check if the initial coordinate in the clip rect.
+  var initialX = this.viewport_.screenToImageX(initialScreenX);
+  var initialY = this.viewport_.screenToImageY(initialScreenY);
+  var initialWidth = this.bounds_.right - this.bounds_.left;
+  var initialHeight = this.bounds_.bottom - this.bounds_.top;
   var clipRect = this.viewport_.getImageClipped();
-  if (!clipRect.inside(startX, startY))
+  if (!clipRect.inside(initialX, initialY))
     return null;
 
   // Obtain the drag mode.
-  this.dragMode_ = this.getDragMode(startX, startY, touch);
+  this.dragMode_ = this.getDragMode(initialX, initialY, touch);
 
   if (this.dragMode_.whole) {
     // Calc constant values during the operation.
-    var mouseBiasX = this.bounds_.left - startX;
-    var mouseBiasY = this.bounds_.top - startY;
-    var initialWidth = this.bounds_.right - this.bounds_.left;
-    var initialHeight = this.bounds_.bottom - this.bounds_.top;
+    var mouseBiasX = this.bounds_.left - initialX;
+    var mouseBiasY = this.bounds_.top - initialY;
     var maxX = clipRect.left + clipRect.width - initialWidth;
     var maxY = clipRect.top + clipRect.height - initialHeight;
 
@@ -450,13 +453,13 @@ DraggableRect.prototype.getDragHandler = function(
     }.bind(this);
   } else {
     // Calc constant values during the operation.
-    var mouseBiasX = this.bounds_[this.dragMode_.xSide] - startX;
-    var mouseBiasY = this.bounds_[this.dragMode_.ySide] - startY;
+    var mouseBiasX = this.bounds_[this.dragMode_.xSide] - initialX;
+    var mouseBiasY = this.bounds_[this.dragMode_.ySide] - initialY;
     var maxX = clipRect.left + clipRect.width;
     var maxY = clipRect.top + clipRect.height;
 
     // Returns a handler.
-    return function(newScreenX, newScreenY) {
+    return function(newScreenX, newScreenY, shiftKey) {
       var newX = this.viewport_.screenToImageX(newScreenX);
       var newY = this.viewport_.screenToImageY(newScreenY);
 
@@ -476,8 +479,8 @@ DraggableRect.prototype.getDragHandler = function(
         if (this.bounds_.left > this.bounds_.right) {
           var left = this.bounds_.left;
           var right = this.bounds_.right;
-          this.bounds_.left = right;
-          this.bounds_.right = left;
+          this.bounds_.left = right - 1;
+          this.bounds_.right = left + 1;
           this.dragMode_.xSide =
               this.dragMode_.xSide == 'left' ? 'right' : 'left';
         }
@@ -490,12 +493,16 @@ DraggableRect.prototype.getDragHandler = function(
         if (this.bounds_.top > this.bounds_.bottom) {
           var top = this.bounds_.top;
           var bottom = this.bounds_.bottom;
-          this.bounds_.top = bottom;
-          this.bounds_.bottom = top;
+          this.bounds_.top = bottom - 1;
+          this.bounds_.bottom = top + 1;
           this.dragMode_.ySide =
               this.dragMode_.ySide === 'top' ? 'bottom' : 'top';
         }
       }
+
+      // Update aspect ratio.
+      if (shiftKey)
+        this.forceAspectRatio(initialWidth / initialHeight, clipRect);
     }.bind(this);
   }
 };
@@ -517,4 +524,89 @@ DraggableRect.prototype.getDoubleTapAction = function(x, y, touch) {
     return ImageBuffer.DoubleTapAction.COMMIT;
   else
     return ImageBuffer.DoubleTapAction.NOTHING;
+};
+
+/**
+ * Forces the aspect ratio.
+ *
+ * @param {number} aspectRatio Aspect ratio.
+ * @param {Object} clipRect Clip rect.
+ */
+DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
+  // Get current rectangle scale.
+  var width = this.bounds_.right - this.bounds_.left;
+  var height = this.bounds_.bottom - this.bounds_.top;
+  var currentScale;
+  if (this.dragMode_.xSide === 'none')
+    currentScale = height;
+  else if (this.dragMode_.ySide === 'none')
+    currentScale = width / aspectRatio;
+  else
+    currentScale = Math.max(width / aspectRatio, height);
+
+  // Get maximum width/height scale.
+  var maxWidth;
+  var maxHeight;
+  var center = (this.bounds_.left + this.bounds_.right) / 2;
+  var middle = (this.bounds_.top + this.bounds_.bottom) / 2;
+  switch (this.dragMode_.xSide) {
+    case 'left':
+      maxWidth = this.bounds_.right - clipRect.left;
+      break;
+    case 'right':
+      maxWidth = clipRect.left + clipRect.width - this.bounds_.left;
+      break;
+    case 'none':
+      maxWidth = Math.min(
+          clipRect.left + clipRect.width - center,
+          center - clipRect.left) * 2;
+      break;
+  }
+  switch (this.dragMode_.ySide) {
+    case 'top':
+      maxHeight = this.bounds_.bottom - clipRect.top;
+      break;
+    case 'bottom':
+      maxHeight = clipRect.top + clipRect.height - this.bounds_.top;
+      break;
+    case 'none':
+      maxHeight = Math.min(
+          clipRect.top + clipRect.height - middle,
+          middle - clipRect.top) * 2;
+      break;
+  }
+
+  // Obtains target scale.
+  var targetScale = Math.min(
+      currentScale,
+      maxWidth / aspectRatio,
+      maxHeight);
+
+  // Update bounds.
+  var newWidth = targetScale * aspectRatio;
+  var newHeight = targetScale;
+  switch (this.dragMode_.xSide) {
+    case 'left':
+      this.bounds_.left = this.bounds_.right - newWidth;
+      break;
+    case 'right':
+      this.bounds_.right = this.bounds_.left + newWidth;
+      break;
+    case 'none':
+      this.bounds_.left = center - newWidth / 2;
+      this.bounds_.right = center + newWidth / 2;
+      break;
+  }
+  switch (this.dragMode_.ySide) {
+    case 'top':
+      this.bounds_.top = this.bounds_.bottom - newHeight;
+      break;
+    case 'bottom':
+      this.bounds_.bottom = this.bounds_.top + newHeight;
+      break;
+    case 'none':
+      this.bounds_.top = middle - newHeight / 2;
+      this.bounds_.bottom = middle + newHeight / 2;
+      break;
+  }
 };

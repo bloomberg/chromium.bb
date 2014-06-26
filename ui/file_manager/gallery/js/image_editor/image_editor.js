@@ -441,7 +441,7 @@ ImageEditor.prototype.createToolButtons = function() {
 /**
  * @return {ImageEditor.Mode} The current mode.
  */
-ImageEditor.prototype.getMode = function() { return this.currentMode_ };
+ImageEditor.prototype.getMode = function() { return this.currentMode_; };
 
 /**
  * The user clicked on the mode button.
@@ -814,7 +814,7 @@ ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
     this.dragHappened_ = !tapCircle.inside(position.x, position.y);
   }
   if (this.dragHandler_ && this.dragHappened_) {
-    this.dragHandler_(position.x, position.y);
+    this.dragHandler_(position.x, position.y, e.shiftKey);
     this.lockMouse_(true);
   }
 };
@@ -862,7 +862,7 @@ ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
 
   this.updateCursor_(position);
   if (this.dragHandler_) {
-    this.dragHandler_(position.x, position.y);
+    this.dragHandler_(position.x, position.y, e.shiftKey);
     this.dragHappened_ = true;
     this.lockMouse_(true);
   }
