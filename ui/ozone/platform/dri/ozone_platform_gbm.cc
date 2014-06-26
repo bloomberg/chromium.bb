@@ -12,9 +12,12 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/ozone_platform.h"
+#include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
+#include "ui/ozone/platform/dri/gpu_platform_support_gbm.h"
+#include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
@@ -104,11 +107,11 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_ozone_.reset(new GbmSurfaceFactory(NULL, NULL, NULL));
 
     device_manager_ = CreateDeviceManager();
-    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
+    cursor_factory_ozone_.reset(
+        new CursorFactoryEvdevDri(gpu_platform_support_host_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
-        NULL, device_manager_.get()));
-
-    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+        cursor_factory_ozone_.get(), device_manager_.get()));
   }
 
   virtual void InitializeGPU() OVERRIDE {
@@ -121,7 +124,8 @@ class OzonePlatformGbm : public OzonePlatform {
                               surface_generator_->device(),
                               screen_manager_.get()));
 
-    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
+    gpu_platform_support_.reset(
+        new GpuPlatformSupportGbm(surface_factory_ozone_.get()));
   }
 
  private:
@@ -132,11 +136,11 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<DeviceManager> device_manager_;
 
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
-  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<GpuPlatformSupportGbm> gpu_platform_support_;
+  scoped_ptr<GpuPlatformSupportHostGbm> gpu_platform_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

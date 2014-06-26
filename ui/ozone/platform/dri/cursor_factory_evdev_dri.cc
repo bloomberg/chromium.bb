@@ -6,11 +6,12 @@
 
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 
 namespace ui {
 
-CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
-    : dri_(dri) {
+CursorFactoryEvdevDri::CursorFactoryEvdevDri(HardwareCursorDelegate* hardware)
+    : hardware_(hardware) {
   // TODO(dnicoara) Assume the first widget since at this point there are no
   // widgets initialized.
   cursor_window_ = DriSurfaceFactory::kDefaultWidgetHandle;
@@ -27,26 +28,26 @@ void CursorFactoryEvdevDri::SetBitmapCursor(
 
   cursor_ = cursor;
   if (cursor_)
-    dri_->SetHardwareCursor(
+    hardware_->SetHardwareCursor(
         cursor_window_, cursor_->bitmap(), bitmap_location());
   else
-    dri_->UnsetHardwareCursor(cursor_window_);
+    hardware_->SetHardwareCursor(cursor_window_, SkBitmap(), gfx::Point());
 }
 
 void CursorFactoryEvdevDri::MoveCursorTo(gfx::AcceleratedWidget widget,
                                          const gfx::PointF& location) {
   if (widget != cursor_window_)
-    dri_->UnsetHardwareCursor(cursor_window_);
+    hardware_->SetHardwareCursor(cursor_window_, SkBitmap(), gfx::Point());
 
   cursor_window_ = widget;
   cursor_location_ = location;
 
-  gfx::Size size = dri_->GetWidgetSize(cursor_window_);
+  gfx::Size size = gfx::Size(2560, 1700);  // TODO(spang): Fix.
   cursor_location_.SetToMax(gfx::PointF(0, 0));
   cursor_location_.SetToMin(gfx::PointF(size.width(), size.height()));
 
   if (cursor_)
-    dri_->MoveHardwareCursor(cursor_window_, bitmap_location());
+    hardware_->MoveHardwareCursor(cursor_window_, bitmap_location());
 }
 
 void CursorFactoryEvdevDri::MoveCursor(const gfx::Vector2dF& delta) {

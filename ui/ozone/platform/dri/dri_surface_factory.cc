@@ -213,15 +213,6 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
     controller->MoveCursor(location);
 }
 
-void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
-  cursor_bitmap_.reset();
-
-  if (state_ != INITIALIZED)
-    return;
-
-  ResetCursor(window);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 
