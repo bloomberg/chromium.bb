@@ -19,18 +19,6 @@ body { width: 800px; margin: 0; overflow-y: hidden; }
     This text should not be autosized (its computed font size should remain 16px), since the float:left causes this to be a new cluster, and this cluster doesn't contain enough text.
 </div>
 
-<table cellpadding="0" cellspacing="0">
-    <tr>
-        <td style="width: 50%; font-size: 1.25rem">
-            This text should be 20px because the text in the right cell has the same width and is autosized.
-        </td>
-        <td style="width: 50%; font-size: 1.25rem">
-            However this text should be autosized to 20px computed font size, since this table cell does contain enough text.<br>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-        </td>
-    </tr>
-</table>
-
 <div style="-webkit-writing-mode: vertical-rl">
     This text should not be autosized (its computed font size should remain 16px), since the perpendicular writing-mode compared to its containing block causes this to be a new cluster, and this cluster doesn't contain enough text (or have large enough logicalWidth).
 </div>
