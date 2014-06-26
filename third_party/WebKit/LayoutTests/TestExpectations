@@ -89,9 +89,6 @@ crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fix
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
 
-crbug.com/388324 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-crbug.com/388324 virtual/softwarecompositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
