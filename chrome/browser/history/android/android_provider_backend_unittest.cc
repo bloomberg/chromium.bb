@@ -115,7 +115,8 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
 class AndroidProviderBackendTest : public testing::Test {
  public:
   AndroidProviderBackendTest()
-      : profile_manager_(
+      : thumbnail_db_(NULL),
+        profile_manager_(
           TestingBrowserProcess::GetGlobal()),
         bookmark_model_(NULL),
         ui_thread_(BrowserThread::UI, &message_loop_),
@@ -2009,7 +2010,7 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
 
   {
     HistoryDatabase history_db;
-    ThumbnailDatabase thumbnail_db;
+    ThumbnailDatabase thumbnail_db(NULL);
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_));
 
@@ -2086,7 +2087,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
 
   {
     HistoryDatabase history_db;
-    ThumbnailDatabase thumbnail_db;
+    ThumbnailDatabase thumbnail_db(NULL);
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_));
     scoped_ptr<AndroidProviderBackend> backend(

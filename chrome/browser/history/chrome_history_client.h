@@ -22,6 +22,7 @@ class ChromeHistoryClient : public history::HistoryClient {
   virtual void GetBookmarks(
       std::vector<history::URLAndTitle>* bookmarks) OVERRIDE;
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE;
+  virtual bool ShouldReportDatabaseError() OVERRIDE;
 
   // KeyedService:
   virtual void Shutdown() OVERRIDE;

@@ -129,7 +129,7 @@ class ExpireHistoryTest : public testing::Test,
       main_db_.reset();
 
     base::FilePath thumb_name = path().Append(kThumbnailFile);
-    thumb_db_.reset(new ThumbnailDatabase);
+    thumb_db_.reset(new ThumbnailDatabase(NULL));
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();
 

@@ -23,6 +23,8 @@ class Time;
 
 namespace history {
 
+class HistoryClient;
+
 // This database interface is owned by the history backend and runs on the
 // history thread. It is a totally separate component from history partially
 // because we may want to move it to its own thread in the future. The
@@ -32,7 +34,7 @@ namespace history {
 // higher priority history operations.
 class ThumbnailDatabase {
  public:
-  ThumbnailDatabase();
+  explicit ThumbnailDatabase(HistoryClient* history_client);
   ~ThumbnailDatabase();
 
   // Must be called after creation but before any other methods are called.
@@ -245,8 +247,8 @@ class ThumbnailDatabase {
   // it is created.
   // |db| is the database to open.
   // |db_name| is a path to the database file.
-  static sql::InitStatus OpenDatabase(sql::Connection* db,
-                                      const base::FilePath& db_name);
+  sql::InitStatus OpenDatabase(sql::Connection* db,
+                               const base::FilePath& db_name);
 
   // Helper function to implement internals of Init().  This allows
   // Init() to retry in case of failure, since some failures run
@@ -267,6 +269,8 @@ class ThumbnailDatabase {
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
+
+  HistoryClient* history_client_;
 };
 
 }  // namespace history

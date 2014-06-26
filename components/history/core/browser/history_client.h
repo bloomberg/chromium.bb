@@ -49,6 +49,9 @@ class HistoryClient : public KeyedService {
   // Must be called from the main thread.
   virtual void NotifyProfileError(sql::InitStatus init_status);
 
+  // Returns whether database errors should be reported to the crash server.
+  virtual bool ShouldReportDatabaseError();
+
  protected:
   DISALLOW_COPY_AND_ASSIGN(HistoryClient);
 };
