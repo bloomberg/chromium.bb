@@ -54,8 +54,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
       blink::WebContentDecryptionModuleSession::Client* client);
 
   // Adds a session to the internal map. Called once the session is successfully
-  // initialized.
-  void RegisterSession(
+  // initialized. Returns true if the session was registered, false if there is
+  // already an existing session with the same |web_session_id|.
+  bool RegisterSession(
       const std::string& web_session_id,
       base::WeakPtr<WebContentDecryptionModuleSessionImpl> session);
 
