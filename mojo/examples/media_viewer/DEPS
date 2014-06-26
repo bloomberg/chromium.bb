@@ -1,4 +1,6 @@
 include_rules = [
+  "+skia/ext",
+  "+third_party/skia/include",
   "+ui/events",
   "+ui/gfx",
   "+ui/views",

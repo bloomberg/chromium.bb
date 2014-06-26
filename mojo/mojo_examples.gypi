@@ -132,6 +132,20 @@
       ],
     },
     {
+      'target_name': 'mojo_media_viewer_bindings',
+      'type': 'static_library',
+      'sources': [
+        'examples/media_viewer/media_viewer.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
       'target_name': 'mojo_png_viewer',
       'type': 'shared_library',
       'dependencies': [
@@ -140,6 +154,7 @@
         'mojo_application',
         'mojo_cpp_bindings',
         'mojo_environment_chromium',
+        'mojo_media_viewer_bindings',
         'mojo_navigation_bindings',
         'mojo_network_bindings',
         'mojo_launcher_bindings',
@@ -518,10 +533,16 @@
           'type': 'shared_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/views/views.gyp:views',
             'mojo_application',
             'mojo_environment_chromium',
+            'mojo_input_events_lib',
+            'mojo_media_viewer_bindings',
             'mojo_navigation_bindings',
             'mojo_system_impl',
+            'mojo_views_support',
             'mojo_view_manager_bindings',
             'mojo_view_manager_lib',
           ],
