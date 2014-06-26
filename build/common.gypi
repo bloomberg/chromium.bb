@@ -1438,7 +1438,7 @@
     # Chrome OS: whether to build ChromeVox from sources in the Chromium
     # repository rather than using precompiled JavaScript in
     # chrome/third_party/chromevox.  This is still experimental.
-    'use_migrated_chromevox%': 0,
+    'use_migrated_chromevox%': 1,
 
     # Chrome OS: whether to also build the upcoming version of
     # ChromeVox, which can then be enabled via a command-line switch.
