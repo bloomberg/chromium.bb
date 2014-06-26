@@ -9,7 +9,10 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -32,12 +35,16 @@ const char kTestDataPath[] = "extensions/platform_apps/ephemeral_launcher";
 
 const char kExtensionId[] = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeid";
 const char kExtensionTestPath[] = "extension";
+const char kLegacyAppId[] = "lnbochkobjfnhbnbljgfgokadhmbahcn";
+const char kLegacyAppTestPath[] = "legacy_app";
 const char kNonExistentId[] = "baaaaaaaaaaaaaaaaaaaaaaaaaaaadid";
 const char kDefaultAppId[] = "kbiancnbopdghkfedjhfdoegjadfjeal";
 const char kDefaultAppCrxFilename[] = "app.crx";
 const char kDefaultAppTestPath[] = "app";
 const char kAppWithPermissionsId[] = "mbfcnecjknjpipkfkoangpfnhhlpamki";
 const char kAppWithPermissionsFilename[] = "app_with_permissions.crx";
+const char kHostedAppId[] = "haaaaaaaaaaaaaaaaaaaaaaaaaaappid";
+const char kHostedAppLaunchUrl[] = "http://foo.bar.com";
 
 class ExtensionInstallCheckerMock : public extensions::ExtensionInstallChecker {
  public:
@@ -69,6 +76,13 @@ class ExtensionInstallCheckerMock : public extensions::ExtensionInstallChecker {
 
 class EphemeralAppLauncherForTest : public EphemeralAppLauncher {
  public:
+  EphemeralAppLauncherForTest(const std::string& id,
+                              Profile* profile,
+                              const LaunchCallback& callback)
+      : EphemeralAppLauncher(id, profile, NULL, callback),
+        install_initiated_(false),
+        install_prompt_created_(false) {}
+
   EphemeralAppLauncherForTest(const std::string& id, Profile* profile)
       : EphemeralAppLauncher(id, profile, NULL, LaunchCallback()),
         install_initiated_(false),
@@ -347,6 +361,50 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, LaunchExtension) {
   RunLaunchTest(extension->id(),
                 webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE,
                 false);
+}
+
+// Verifies that a legacy packaged app will not be installed ephemerally.
+IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, InstallLegacyApp) {
+  RunLaunchTest(
+      kLegacyAppId, webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE, false);
+  EXPECT_FALSE(GetInstalledExtension(kLegacyAppId));
+}
+
+// Verifies that a legacy packaged app that is already installed can be
+// launched.
+IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, LaunchLegacyApp) {
+  const Extension* extension =
+      InstallExtension(GetTestPath(kLegacyAppTestPath), 1);
+  ASSERT_TRUE(extension);
+  RunLaunchTest(extension->id(), webstore_install::SUCCESS, false);
+}
+
+// Verifies that a hosted app is not installed. Launch succeeds because we
+// navigate to its launch url.
+IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, LaunchHostedApp) {
+  LaunchObserver launch_observer;
+
+  scoped_refptr<EphemeralAppLauncherForTest> launcher(
+      new EphemeralAppLauncherForTest(
+          kHostedAppId,
+          profile(),
+          base::Bind(&LaunchObserver::OnLaunchCallback,
+                     base::Unretained(&launch_observer))));
+  launcher->Start();
+  launch_observer.Wait();
+
+  EXPECT_EQ(webstore_install::SUCCESS, launch_observer.result());
+  EXPECT_FALSE(launcher->install_initiated());
+  EXPECT_FALSE(GetInstalledExtension(kHostedAppId));
+
+  // Verify that a navigation to the launch url was attempted.
+  Browser* browser =
+      FindBrowserWithProfile(profile(), chrome::GetActiveDesktop());
+  ASSERT_TRUE(browser);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  EXPECT_EQ(GURL(kHostedAppLaunchUrl), web_contents->GetVisibleURL());
 }
 
 // Verifies that the EphemeralAppLauncher handles non-existent extension ids.

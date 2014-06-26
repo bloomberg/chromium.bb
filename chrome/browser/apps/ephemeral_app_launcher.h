@@ -68,6 +68,19 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
 
   virtual ~EphemeralAppLauncher();
 
+  // Creates an install checker. Allows tests to mock the install checker.
+  virtual scoped_ptr<extensions::ExtensionInstallChecker>
+      CreateInstallChecker();
+
+  // WebstoreStandaloneInstaller implementation overridden in tests.
+  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
+  virtual scoped_ptr<extensions::WebstoreInstaller::Approval> CreateApproval()
+      const OVERRIDE;
+
+ private:
+  friend class base::RefCountedThreadSafe<EphemeralAppLauncher>;
+  friend class EphemeralAppLauncherTest;
+
   // Returns true if an app that is already installed in extension system can
   // be launched.
   bool CanLaunchInstalledApp(const extensions::Extension* extension,
@@ -85,6 +98,9 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   // can be launched.
   void LaunchApp(const extensions::Extension* extension) const;
 
+  // Navigates to the launch URL of a hosted app in a new browser tab.
+  bool LaunchHostedApp(const extensions::Extension* extension) const;
+
   // Notifies the client of the launch outcome.
   void InvokeCallback(extensions::webstore_install::Result result,
                       const std::string& error);
@@ -92,10 +108,6 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   // Aborts the ephemeral install and notifies the client of the outcome.
   void AbortLaunch(extensions::webstore_install::Result result,
                    const std::string& error);
-
-  // Creates an install checker. Allows tests to mock the install checker.
-  virtual scoped_ptr<extensions::ExtensionInstallChecker>
-      CreateInstallChecker();
 
   // Determines whether the app can be installed ephemerally.
   void CheckEphemeralInstallPermitted();
@@ -118,9 +130,6 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
       const base::DictionaryValue& webstore_data,
       std::string* error) const OVERRIDE;
   virtual void OnManifestParsed() OVERRIDE;
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
-  virtual scoped_ptr<extensions::WebstoreInstaller::Approval>
-      CreateApproval() const OVERRIDE;
   virtual void CompleteInstall(extensions::webstore_install::Result result,
                                const std::string& error) OVERRIDE;
 
@@ -130,10 +139,6 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   // ExtensionEnableFlowDelegate implementation.
   virtual void ExtensionEnableFlowFinished() OVERRIDE;
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
-
- private:
-  friend class base::RefCountedThreadSafe<EphemeralAppLauncher>;
-  friend class EphemeralAppLauncherTest;
 
   LaunchCallback launch_callback_;
 

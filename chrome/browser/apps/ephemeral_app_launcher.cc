@@ -10,9 +10,12 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -33,7 +36,8 @@ namespace webstore_install = extensions::webstore_install;
 namespace {
 
 const char kInvalidManifestError[] = "Invalid manifest";
-const char kExtensionTypeError[] = "Cannot launch an extension";
+const char kExtensionTypeError[] = "Not an app";
+const char kAppTypeError[] = "Ephemeral legacy packaged apps not supported";
 const char kUserCancelledError[] = "Launch cancelled by the user";
 const char kBlacklistedError[] = "App is blacklisted for malware";
 const char kRequirementsError[] = "App has missing requirements";
@@ -58,7 +62,7 @@ gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
 // Check whether an extension can be launched. The extension does not need to
 // be currently installed.
 bool CheckCommonLaunchCriteria(Profile* profile,
-                               const extensions::Extension* extension,
+                               const Extension* extension,
                                webstore_install::Result* reason,
                                std::string* error) {
   // Only apps can be launched.
@@ -174,6 +178,27 @@ EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
 
 EphemeralAppLauncher::~EphemeralAppLauncher() {}
 
+scoped_ptr<extensions::ExtensionInstallChecker>
+EphemeralAppLauncher::CreateInstallChecker() {
+  return make_scoped_ptr(new ExtensionInstallChecker(profile()));
+}
+
+scoped_ptr<ExtensionInstallPrompt> EphemeralAppLauncher::CreateInstallUI() {
+  if (web_contents())
+    return make_scoped_ptr(new ExtensionInstallPrompt(web_contents()));
+
+  return make_scoped_ptr(
+      new ExtensionInstallPrompt(profile(), parent_window_, NULL));
+}
+
+scoped_ptr<WebstoreInstaller::Approval> EphemeralAppLauncher::CreateApproval()
+    const {
+  scoped_ptr<WebstoreInstaller::Approval> approval =
+      WebstoreStandaloneInstaller::CreateApproval();
+  approval->is_ephemeral = true;
+  return approval.Pass();
+}
+
 bool EphemeralAppLauncher::CanLaunchInstalledApp(
     const extensions::Extension* extension,
     webstore_install::Result* reason,
@@ -250,6 +275,20 @@ void EphemeralAppLauncher::LaunchApp(const Extension* extension) const {
   OpenApplication(params);
 }
 
+bool EphemeralAppLauncher::LaunchHostedApp(const Extension* extension) const {
+  GURL launch_url = extensions::AppLaunchInfo::GetLaunchWebURL(extension);
+  if (!launch_url.is_valid())
+    return false;
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      profile(), chrome::GetHostDesktopTypeForNativeWindow(parent_window_));
+  chrome::NavigateParams params(
+      displayer.browser(), launch_url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+  return true;
+}
+
 void EphemeralAppLauncher::InvokeCallback(webstore_install::Result result,
                                           const std::string& error) {
   if (!launch_callback_.is_null()) {
@@ -261,13 +300,7 @@ void EphemeralAppLauncher::InvokeCallback(webstore_install::Result result,
 void EphemeralAppLauncher::AbortLaunch(webstore_install::Result result,
                                        const std::string& error) {
   InvokeCallback(result, error);
-  WebstoreStandaloneInstaller::CompleteInstall(webstore_install::ABORTED,
-                                               std::string());
-}
-
-scoped_ptr<extensions::ExtensionInstallChecker>
-EphemeralAppLauncher::CreateInstallChecker() {
-  return make_scoped_ptr(new ExtensionInstallChecker(profile()));
+  WebstoreStandaloneInstaller::CompleteInstall(result, error);
 }
 
 void EphemeralAppLauncher::CheckEphemeralInstallPermitted() {
@@ -370,23 +403,23 @@ void EphemeralAppLauncher::OnManifestParsed() {
     return;
   }
 
+  if (extension->is_legacy_packaged_app()) {
+    AbortLaunch(webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE,
+                kAppTypeError);
+    return;
+  }
+
+  if (extension->is_hosted_app()) {
+    // Hosted apps do not need to be installed ephemerally. Just navigate to
+    // their launch url.
+    if (LaunchHostedApp(extension))
+      AbortLaunch(webstore_install::SUCCESS, std::string());
+    else
+      AbortLaunch(webstore_install::INVALID_MANIFEST, kInvalidManifestError);
+    return;
+  }
+
   CheckEphemeralInstallPermitted();
-}
-
-scoped_ptr<ExtensionInstallPrompt> EphemeralAppLauncher::CreateInstallUI() {
-  if (web_contents())
-    return make_scoped_ptr(new ExtensionInstallPrompt(web_contents()));
-
-  return make_scoped_ptr(
-      new ExtensionInstallPrompt(profile(), parent_window_, NULL));
-}
-
-scoped_ptr<WebstoreInstaller::Approval>
-EphemeralAppLauncher::CreateApproval() const {
-  scoped_ptr<WebstoreInstaller::Approval> approval =
-      WebstoreStandaloneInstaller::CreateApproval();
-  approval->is_ephemeral = true;
-  return approval.Pass();
 }
 
 void EphemeralAppLauncher::CompleteInstall(webstore_install::Result result,

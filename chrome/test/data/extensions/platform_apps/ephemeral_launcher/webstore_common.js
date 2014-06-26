@@ -14,7 +14,7 @@ var kInstallInProgressError =
     "[install_in_progress]: An install is already in progress";
 var kUnsupportedExtensionTypeCode = "unsupported_extension_type";
 var kUnsupportedExtensionTypeError =
-    "[unsupported_extension_type]: Cannot launch an extension";
+    "[unsupported_extension_type]: Not an app";
 
 // App ids.
 var kDefaultAppId = "kbiancnbopdghkfedjhfdoegjadfjeal";
