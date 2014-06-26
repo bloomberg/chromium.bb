@@ -122,7 +122,7 @@ Mock4JSException.prototype = {
  */ 
 assertThat = function(expected, argumentMatcher) {
 	if(!argumentMatcher.argumentMatches(expected)) {
-		fail("Expected '"+expected+"' to be "+argumentMatcher.describe());
+		throw new Mock4JSException("Expected '"+expected+"' to be "+argumentMatcher.describe());
 	}
 }
 
