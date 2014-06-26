@@ -81,38 +81,41 @@
     ['OS=="linux" and enable_remoting_host==1', {
       'targets': [
         # Linux breakpad processing
-        {
-          'target_name': 'remoting_linux_symbols',
-          'type': 'none',
-          'conditions': [
-            ['linux_dump_symbols==1', {
-              'actions': [
-                {
-                  'action_name': 'dump_symbols',
-                  'inputs': [
-                    '<(DEPTH)/build/linux/dump_app_syms',
-                    '<(PRODUCT_DIR)/dump_syms',
-                    '<(PRODUCT_DIR)/remoting_me2me_host',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/remoting_me2me_host.breakpad.<(target_arch)',
-                  ],
-                  'action': ['<(DEPTH)/build/linux/dump_app_syms',
-                             '<(PRODUCT_DIR)/dump_syms',
-                             '<(linux_strip_binary)',
-                             '<(PRODUCT_DIR)/remoting_me2me_host',
-                             '<@(_outputs)'],
-                  'message': 'Dumping breakpad symbols to <(_outputs)',
-                  'process_outputs_as_sources': 1,
-                },
-              ],
-              'dependencies': [
-                'remoting_me2me_host',
-                '../breakpad/breakpad.gyp:dump_syms',
-              ],
-            }],  # 'linux_dump_symbols==1'
-          ],  # end of 'conditions'
-        },  # end of target 'linux_symbols'
+        # The following target is disabled temporarily because it was failing
+        # on build bots. See crbug.com/386886 .
+        #
+        # {
+        #   'target_name': 'remoting_linux_symbols',
+        #   'type': 'none',
+        #   'conditions': [
+        #     ['linux_dump_symbols==1', {
+        #       'actions': [
+        #         {
+        #           'action_name': 'dump_symbols',
+        #           'inputs': [
+        #             '<(DEPTH)/build/linux/dump_app_syms',
+        #             '<(PRODUCT_DIR)/dump_syms',
+        #             '<(PRODUCT_DIR)/remoting_me2me_host',
+        #           ],
+        #           'outputs': [
+        #             '<(PRODUCT_DIR)/remoting_me2me_host.breakpad.<(target_arch)',
+        #           ],
+        #           'action': ['<(DEPTH)/build/linux/dump_app_syms',
+        #                      '<(PRODUCT_DIR)/dump_syms',
+        #                      '<(linux_strip_binary)',
+        #                      '<(PRODUCT_DIR)/remoting_me2me_host',
+        #                      '<@(_outputs)'],
+        #           'message': 'Dumping breakpad symbols to <(_outputs)',
+        #           'process_outputs_as_sources': 1,
+        #         },
+        #       ],
+        #       'dependencies': [
+        #         'remoting_me2me_host',
+        #         '../breakpad/breakpad.gyp:dump_syms',
+        #       ],
+        #     }],  # 'linux_dump_symbols==1'
+        #   ],  # end of 'conditions'
+        # },  # end of target 'remoting_linux_symbols'
         {
           'target_name': 'remoting_start_host',
           'type': 'executable',
