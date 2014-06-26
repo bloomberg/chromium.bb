@@ -104,6 +104,12 @@ class NexeLoadManager {
   // Returns true if dev interfaces are enabled for this plugin.
   bool DevInterfacesEnabled() const;
 
+  // Returns the time that the work for PNaCl translation began.
+  base::Time pnacl_start_time() const { return pnacl_start_time_; }
+  void set_pnacl_start_time(base::Time time) {
+    pnacl_start_time_ = time;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
@@ -158,6 +164,8 @@ class NexeLoadManager {
   // We store mime_type_ outside of args_ explicitly because we change it to be
   // lowercase.
   std::string mime_type_;
+
+  base::Time pnacl_start_time_;
 
   scoped_ptr<TrustedPluginChannel> trusted_plugin_channel_;
   scoped_ptr<ManifestServiceChannel> manifest_service_channel_;

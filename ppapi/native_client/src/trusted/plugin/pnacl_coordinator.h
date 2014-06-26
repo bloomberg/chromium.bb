@@ -195,7 +195,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   bool error_already_reported_;
 
   // State for timing and size information for UMA stats.
-  int64_t pnacl_init_time_;
   int64_t pexe_size_;  // Count as we stream -- will converge to pexe size.
   int64_t pexe_bytes_compiled_;  // Count as we compile.
   int64_t expected_pexe_size_;   // Expected download total (-1 if unknown).

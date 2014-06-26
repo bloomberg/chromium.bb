@@ -659,8 +659,7 @@ void ReportTranslationFinished(PP_Instance instance,
                                PP_Bool success,
                                int32_t opt_level,
                                int64_t pexe_size,
-                               int64_t compile_time_us,
-                               int64_t total_time_us) {
+                               int64_t compile_time_us) {
   if (success == PP_TRUE) {
     static const int32_t kUnknownOptLevel = 4;
     if (opt_level < 0 || opt_level > 3)
@@ -673,11 +672,16 @@ void ReportTranslationFinished(PP_Instance instance,
                       compile_time_us);
     HistogramSizeKB("NaCl.Perf.Size.Pexe", pexe_size / 1024);
 
-    HistogramTimeTranslation("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
-                             total_time_us / 1000);
-    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
-                      pexe_size / 1024,
-                      total_time_us);
+    NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+    if (load_manager) {
+      base::TimeDelta total_time = base::Time::Now() -
+                                   load_manager->pnacl_start_time();
+      HistogramTimeTranslation("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
+                               total_time.InMilliseconds());
+      HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
+                        pexe_size / 1024,
+                        total_time.InMicroseconds());
+    }
   }
 
   // If the resource host isn't initialized, don't try to do that here.
@@ -1585,6 +1589,12 @@ void OpenManifestEntry(PP_Instance instance,
                base::Bind(&DidOpenManifestEntry, out_file_info, callback));
 }
 
+void SetPNaClStartTime(PP_Instance instance) {
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->set_pnacl_start_time(base::Time::Now());
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1624,7 +1634,8 @@ const PPB_NaCl_Private nacl_interface = {
   &DownloadNexe,
   &ReportSelLdrStatus,
   &LogTranslateTime,
-  &OpenManifestEntry
+  &OpenManifestEntry,
+  &SetPNaClStartTime
 };
 
 }  // namespace

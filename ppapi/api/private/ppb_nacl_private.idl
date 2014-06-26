@@ -288,8 +288,7 @@ interface PPB_NaCl_Private {
                                  [in] PP_Bool success,
                                  [in] int32_t opt_level,
                                  [in] int64_t pexe_size,
-                                 [in] int64_t compile_time_us,
-                                 [in] int64_t total_time_us);
+                                 [in] int64_t compile_time_us);
 
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
@@ -435,4 +434,9 @@ interface PPB_NaCl_Private {
                          [in] str_t key,
                          [out] PP_NaClFileInfo file_info,
                          [in] PP_CompletionCallback callback);
+
+  /* Sets the start time for PNaCl downloading and translation to the current
+   * time.
+   */
+  void SetPNaClStartTime([in] PP_Instance instance);
 };

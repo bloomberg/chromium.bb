@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jun 25 11:40:03 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Jun 25 16:42:25 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -332,8 +332,7 @@ struct PPB_NaCl_Private_1_0 {
                                     PP_Bool success,
                                     int32_t opt_level,
                                     int64_t pexe_size,
-                                    int64_t compile_time_us,
-                                    int64_t total_time_us);
+                                    int64_t compile_time_us);
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
    */
@@ -445,6 +444,10 @@ struct PPB_NaCl_Private_1_0 {
                             const char* key,
                             struct PP_NaClFileInfo* file_info,
                             struct PP_CompletionCallback callback);
+  /* Sets the start time for PNaCl downloading and translation to the current
+   * time.
+   */
+  void (*SetPNaClStartTime)(PP_Instance instance);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
