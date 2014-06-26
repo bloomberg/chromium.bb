@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,6 +126,24 @@ TEST_F(DefaultAppOrderTest, BadExternalFile) {
   std::vector<std::string> apps;
   default_app_order::Get(&apps);
   EXPECT_TRUE(IsBuiltInDefault(apps));
+}
+
+TEST_F(DefaultAppOrderTest, ImportDefault) {
+  const char kExternalOrder[] =
+      "[\"app1\","
+      "{ \"import_default_order\": true }, \"app2\"]";
+  CreateExternalOrderFile(std::string(kExternalOrder));
+
+  scoped_ptr<default_app_order::ExternalLoader> loader(
+      new default_app_order::ExternalLoader(false));
+
+  std::vector<std::string> apps;
+  default_app_order::Get(&apps);
+  EXPECT_EQ(default_app_order::kDefaultAppOrderCount + 2, apps.size());
+  EXPECT_EQ(std::string("app1"), apps[0]);
+  EXPECT_EQ(extension_misc::kChromeAppId, apps[1]);
+  EXPECT_EQ(std::string("app2"),
+            apps[default_app_order::kDefaultAppOrderCount + 1]);
 }
 
 }  // namespace chromeos

@@ -48,6 +48,9 @@ void Get(std::vector<std::string>* app_ids);
 // Get the name of OEM apps folder in app launcher.
 std::string GetOemAppsFolderName();
 
+// Number of apps in hard-coded apps order.
+extern const size_t kDefaultAppOrderCount;
+
 }  // namespace default_app_order
 }  // namespace chromeos
 

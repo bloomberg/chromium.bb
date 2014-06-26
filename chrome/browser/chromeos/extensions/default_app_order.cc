@@ -18,7 +18,6 @@
 
 namespace chromeos {
 namespace default_app_order {
-
 namespace {
 
 // The single ExternalLoader instance.
@@ -29,6 +28,32 @@ const char kOemAppsFolderAttr[] = "oem_apps_folder";
 const char kLocalizedContentAttr[] = "localized_content";
 const char kDefaultAttr[] = "default";
 const char kNameAttr[] = "name";
+const char kImportDefaultOrderAttr[] = "import_default_order";
+
+const char* kDefaultAppOrder[] = {
+    extension_misc::kChromeAppId,
+    extension_misc::kWebStoreAppId,
+    extension_misc::kGoogleSearchAppId,
+    extension_misc::kYoutubeAppId,
+    extension_misc::kGmailAppId,
+    "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
+    "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
+    "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
+    "apdfllckaahabafndbhieahigkjlhalf",  // Drive
+    extension_misc::kGoogleDocAppId,
+    extension_misc::kGoogleSheetsAppId,
+    extension_misc::kGoogleSlidesAppId,
+    "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
+    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
+    "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
+    extension_misc::kGooglePlayMusicAppId,
+    "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
+    "gdijeikdkaembjbdobgfkoidjkpbmlkd",  // Play Movies & TV
+    "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
+    "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
+    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
+    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+};
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL
 // if the file does not exist or could not be parsed properly. Caller takes
@@ -82,38 +107,13 @@ std::string GetLocaleSpecificStringImpl(
 
 // Gets built-in default app order.
 void GetDefault(std::vector<std::string>* app_ids) {
-  DCHECK(app_ids && app_ids->empty());
-
-  const char* kDefaultAppOrder[] = {
-    extension_misc::kChromeAppId,
-    extension_misc::kWebStoreAppId,
-    extension_misc::kGoogleSearchAppId,
-    extension_misc::kYoutubeAppId,
-    extension_misc::kGmailAppId,
-    "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
-    "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
-    "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
-    "apdfllckaahabafndbhieahigkjlhalf",  // Drive
-    extension_misc::kGoogleDocAppId,
-    extension_misc::kGoogleSheetsAppId,
-    extension_misc::kGoogleSlidesAppId,
-    "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
-    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
-    "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
-    extension_misc::kGooglePlayMusicAppId,
-    "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
-    "gdijeikdkaembjbdobgfkoidjkpbmlkd",  // Play Movies & TV
-    "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
-    "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
-    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
-    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
-  };
-
   for (size_t i = 0; i < arraysize(kDefaultAppOrder); ++i)
     app_ids->push_back(std::string(kDefaultAppOrder[i]));
 }
 
 }  // namespace
+
+const size_t kDefaultAppOrderCount = arraysize(kDefaultAppOrder);
 
 ExternalLoader::ExternalLoader(bool async)
     : loaded_(true /* manual_rest */, false /* initially_signaled */) {
@@ -160,13 +160,15 @@ void ExternalLoader::Load() {
       if (ordinals_value->GetString(i, &app_id)) {
         app_ids_.push_back(app_id);
       } else if (ordinals_value->GetDictionary(i, &dict)) {
-        bool is_oem_apps_folder = false;
-        if (!dict->GetBoolean(kOemAppsFolderAttr, &is_oem_apps_folder) ||
-            !is_oem_apps_folder) {
+        bool flag = false;
+        if (dict->GetBoolean(kOemAppsFolderAttr, &flag) && flag) {
+          oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
+              dict, locale, kLocalizedContentAttr, kNameAttr);
+        } else if (dict->GetBoolean(kImportDefaultOrderAttr, &flag) && flag) {
+          GetDefault(&app_ids_);
+        } else {
           LOG(ERROR) << "Invalid syntax in default_app_order.json";
         }
-        oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
-            dict, locale, kLocalizedContentAttr, kNameAttr);
       } else {
         LOG(ERROR) << "Invalid entry in default_app_order.json";
       }
