@@ -1525,3 +1525,5 @@ crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/basic/009.html [ Need
 crbug.com/356823 [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
 
 crbug.com/388676 svg/W3C-SVG-1.1/shapes-rect-02-t.svg [ NeedsRebaseline ]
+
+crbug.com/389047 screen_orientation/page-visibility.html [ Pass Failure ]
