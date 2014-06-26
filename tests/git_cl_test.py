@@ -803,11 +803,12 @@ class TestGitCl(TestCase):
 
 
 class ChangelistMock(object):
+  # Disable "Method could be a function"
+  # pylint: disable=R0201
+
   def __init__(self, change_mock):
     self.change_mock = change_mock
 
-  # Disable "Method could be a function"
-  # pylint: disable=R0201
   def GetChange(self, *args):
     return self.change_mock
 
@@ -843,11 +844,12 @@ class ChangelistMock(object):
 
 
 class ChangeMock(object):
+  # Disable "Method could be a function"
+  # pylint: disable=R0201
+
   def __init__(self):
     self.stored_description = None
 
-  # Disable "Method could be a function"
-  # pylint: disable=R0201
   def SetDescriptionText(self, desc):
     self.stored_description = desc
 
