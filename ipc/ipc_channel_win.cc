@@ -265,9 +265,8 @@ bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
 
   if (pipe_ == INVALID_HANDLE_VALUE) {
     // If this process is being closed, the pipe may be gone already.
-    LOG(WARNING) << "Unable to create pipe \"" << pipe_name <<
-                    "\" in " << (mode & MODE_SERVER_FLAG ? "server" : "client")
-                    << " mode. Error :" << GetLastError();
+    PLOG(WARNING) << "Unable to create pipe \"" << pipe_name << "\" in "
+                  << (mode & MODE_SERVER_FLAG ? "server" : "client") << " mode";
     return false;
   }
 
