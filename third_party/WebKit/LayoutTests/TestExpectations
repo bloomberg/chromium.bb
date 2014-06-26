@@ -24,6 +24,11 @@ crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
+Bug(fmalita) svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
+Bug(fmalita) virtual/threaded/printing/return-from-printing-mode.html [ NeedsRebaseline ]
+
+crbug.com/389286 virtual/implsidepainting/inspector/timeline/timeline-receive-response-event.html [ Pass Failure ]
+
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
@@ -52,6 +57,8 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Image
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
 crbug.com/316604 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
+
+crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 
