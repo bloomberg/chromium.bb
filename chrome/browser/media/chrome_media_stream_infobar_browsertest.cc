@@ -105,9 +105,9 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
 // Actual tests ---------------------------------------------------------------
 
-// Failing on ChromiumOS Debug and Win Aura, so disabling on both.
+// Failing on Win Aura, so disabling on that.
 // See http://crbug.com/263333.
-#if (defined(OS_CHROMEOS) && !defined(NDEBUG)) || defined(USE_AURA)
+#if defined(OS_WIN) && defined(USE_AURA)
 #define MAYBE_TestAllowingUserMedia DISABLED_TestAllowingUserMedia
 #else
 #define MAYBE_TestAllowingUserMedia TestAllowingUserMedia
@@ -132,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMediaIncognito) {
   GetUserMediaAndDeny(tab_contents);
 }
 
-// Failing on ChromiumOS Debug and Win Aura, so disabling on Aura.
+// Failing on Win Aura, so disabling on that.
 // See http://crbug.com/263333.
-#if defined(USE_AURA)
+#if defined(OS_WIN) && defined(USE_AURA)
 #define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
   DISABLED_TestAcceptThenDenyWhichShouldBeSticky
 #else
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
 
 // Failing on Win Aura, so disabling on that.
 // See http://crbug.com/263333.
-#if defined(USE_AURA)
+#if defined(OS_WIN) && defined(USE_AURA)
 #define MAYBE_TestAcceptIsNotSticky DISABLED_TestAcceptIsNotSticky
 #else
 #define MAYBE_TestAcceptIsNotSticky TestAcceptIsNotSticky
@@ -225,15 +225,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                                                kVideoOnlyCallConstraints);
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-#define MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics \
-  DISABLED_DenyingCameraDoesNotCauseStickyDenyForMics
-#else
-#define MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics \
-  DenyingCameraDoesNotCauseStickyDenyForMics
-#endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics) {
+                       DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If camera blocking also blocked mics, the second call here would hang.
