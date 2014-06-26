@@ -37,6 +37,10 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       last_video_frame_format_(VideoFrame::UNKNOWN),
       hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
+
+  // Prevent non-deterministic buffering state callbacks from firing (e.g., slow
+  // machine, valgrind).
+  pipeline_->set_underflow_disabled_for_testing(true);
 }
 
 PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
@@ -128,9 +132,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         kTestType test_type) {
   hashing_enabled_ = test_type == kHashed;
   clockless_playback_ = test_type == kClockless;
-  if (clockless_playback_) {
+  if (clockless_playback_)
     pipeline_->SetClockForTesting(new Clock(&dummy_clock_));
-  }
   return Start(file_path, expected_status);
 }
 
