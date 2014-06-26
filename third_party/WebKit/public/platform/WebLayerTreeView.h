@@ -42,6 +42,7 @@ class WebLayer;
 struct WebPoint;
 struct WebRect;
 struct WebRenderingStats;
+struct WebSelectionBound;
 
 class WebLayerTreeView {
 public:
@@ -124,6 +125,13 @@ public:
         const WebLayer* innerViewportScrollLayer,
         const WebLayer* outerViewportScrollLayer) { }
     virtual void clearViewportLayers() { }
+
+    // Used to update the active selection bounds.
+    // If the (empty) selection is an insertion point, |anchor| and |focus| will be identical with type |Caret|.
+    // If the (non-empty) selection has mixed RTL/LTR text, |anchor| and |focus| may share the same type,
+    // |SelectionLeft| or |SelectionRight|.
+    virtual void registerSelection(const WebSelectionBound& anchor, const WebSelectionBound& focus) { }
+    virtual void clearSelection() { }
 
     // Debugging / dangerous ---------------------------------------------
 
