@@ -382,6 +382,10 @@ void ProfileManager::CreateProfileAsync(
     const base::string16& icon_url,
     const std::string& supervised_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT1("startup",
+               "ProfileManager::CreateProfileAsync",
+               "profile_path",
+               profile_path.value().c_str());
 
   // Make sure that this profile is not pending deletion.
   if (IsProfileMarkedForDeletion(profile_path)) {

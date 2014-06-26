@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
@@ -88,6 +89,55 @@ using content::BrowserThread;
 
 namespace chromeos {
 
+namespace {
+
+// Returns new CommandLine with per-user flags.
+CommandLine CreatePerSessionCommandLine(Profile* profile) {
+  CommandLine user_flags(CommandLine::NO_PROGRAM);
+  about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
+  about_flags::ConvertFlagsToSwitches(
+      &flags_storage_, &user_flags, about_flags::kAddSentinels);
+  return user_flags;
+}
+
+// Returns true if restart is needed to apply per-session flags.
+bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
+  // Don't restart browser if it is not first profile in session.
+  if (UserManager::Get()->GetLoggedInUsers().size() != 1)
+    return false;
+
+  // Only restart if needed and if not going into managed mode.
+  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser())
+    return false;
+
+  if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+          user_flags, *CommandLine::ForCurrentProcess())) {
+    return false;
+  }
+
+  return true;
+}
+
+bool CanPerformEarlyRestart() {
+  LOG(ERROR) << "CanPerformEarlyRestart(): called.";
+  const ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (!controller)
+    return true;
+
+  // Early restart is possible only if OAuth token is up to date.
+
+  if (controller->password_changed())
+    return false;
+
+  if (controller->auth_mode() != LoginPerformer::AUTH_MODE_INTERNAL)
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
 struct DoBrowserLaunchOnLocaleLoadedData;
 
 class LoginUtilsImpl
@@ -114,6 +164,8 @@ class LoginUtilsImpl
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
+  virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                   bool early_restart) OVERRIDE;
 
   // SessionManager::Delegate implementation:
    virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
@@ -212,25 +264,8 @@ void LoginUtilsImpl::DoBrowserLaunchOnLocaleLoadedImpl(
     return;
   }
 
-  CommandLine user_flags(CommandLine::NO_PROGRAM);
-  about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
-  about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
-                                      about_flags::kAddSentinels);
-  // Only restart if needed and if not going into managed mode.
-  // Don't restart browser if it is not first profile in session.
-  if (UserManager::Get()->GetLoggedInUsers().size() == 1 &&
-      !UserManager::Get()->IsLoggedInAsLocallyManagedUser() &&
-      !about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-          user_flags, *CommandLine::ForCurrentProcess())) {
-    CommandLine::StringVector flags;
-    // argv[0] is the program name |CommandLine::NO_PROGRAM|.
-    flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
-    VLOG(1) << "Restarting to apply per-session flags...";
-    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        UserManager::Get()->GetActiveUser()->email(), flags);
-    AttemptRestart(profile);
+  if (RestartToApplyPerSessionFlagsIfNeed(profile, false))
     return;
-  }
 
   if (login_host) {
     login_host->SetStatusAreaVisible(true);
@@ -240,6 +275,7 @@ void LoginUtilsImpl::DoBrowserLaunchOnLocaleLoadedImpl(
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
+  TRACE_EVENT0("login", "LaunchBrowser");
   StartupBrowserCreator browser_creator;
   int return_code;
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
@@ -307,6 +343,25 @@ void LoginUtilsImpl::PrepareProfile(
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
   if (delegate_ == delegate)
     delegate_ = NULL;
+}
+
+bool LoginUtilsImpl::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                         bool early_restart) {
+  if (early_restart && !CanPerformEarlyRestart())
+    return false;
+
+  const CommandLine user_flags(CreatePerSessionCommandLine(profile));
+  if (!NeedRestartToApplyPerSessionFlags(user_flags))
+    return false;
+
+  CommandLine::StringVector flags;
+  // argv[0] is the program name |CommandLine::NO_PROGRAM|.
+  flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
+  VLOG(1) << "Restarting to apply per-session flags...";
+  DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+      UserManager::Get()->GetActiveUser()->email(), flags);
+  AttemptRestart(profile);
+  return true;
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

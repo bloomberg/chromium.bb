@@ -34,6 +34,8 @@ class TestLoginUtils : public LoginUtils {
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE {}
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
+  virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                   bool early_restart) OVERRIDE;
 
  private:
   UserContext expected_user_context_;

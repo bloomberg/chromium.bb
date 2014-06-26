@@ -102,6 +102,12 @@ scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
   return authenticator_;
 }
 
+bool FakeLoginUtils::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                         bool early_restart) {
+  NOTREACHED() << "Method not implemented.";
+  return false;
+}
+
 void FakeLoginUtils::SetExpectedCredentials(const UserContext& user_context) {
   expected_user_context_ = user_context;
   if (authenticator_) {

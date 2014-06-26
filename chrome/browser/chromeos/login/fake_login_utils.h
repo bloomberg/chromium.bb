@@ -31,6 +31,8 @@ class FakeLoginUtils : public LoginUtils {
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
+  virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                   bool early_restart) OVERRIDE;
 
   void SetExpectedCredentials(const UserContext& user_context);
   void set_should_launch_browser(bool should_launch_browser) {

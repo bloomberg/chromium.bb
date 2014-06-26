@@ -43,6 +43,8 @@ class MockLoginUtils : public LoginUtils {
                void(Profile*, Profile*));
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
+  MOCK_METHOD2(RestartToApplyPerSessionFlagsIfNeed,
+               bool(Profile*, bool early_restart));
 
   void DelegateToFake();
   FakeLoginUtils* GetFakeLoginUtils();

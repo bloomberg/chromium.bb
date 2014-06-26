@@ -121,6 +121,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
     return host_;
   }
 
+  // Returns value of LoginPerformer::auth_mode() (cached if performer is
+  // destroyed).
+  LoginPerformer::AuthorizationMode auth_mode() const;
+
+  // Returns value of LoginPerformer::password_changed() (cached if performer is
+  // destroyed).
+  bool password_changed() const;
+
  private:
   friend class ExistingUserControllerTest;
   friend class ExistingUserControllerAutoLoginTest;
@@ -280,6 +288,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // True if password has been changed for user who is completing sign in.
   // Set in OnLoginSuccess. Before that use LoginPerformer::password_changed().
   bool password_changed_;
+
+  // Set in OnLoginSuccess. Before that use LoginPerformer::auth_mode().
+  // Initialized with AUTH_MODE_EXTENSION as more restricted mode.
+  LoginPerformer::AuthorizationMode auth_mode_;
 
   // True if auto-enrollment should be performed before starting the user's
   // session.

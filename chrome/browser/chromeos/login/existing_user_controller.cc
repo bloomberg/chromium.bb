@@ -131,6 +131,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       offline_failed_(false),
       is_login_in_progress_(false),
       password_changed_(false),
+      auth_mode_(LoginPerformer::AUTH_MODE_EXTENSION),
       do_auto_enrollment_(false),
       signin_screen_ready_(false),
       network_state_helper_(new login::NetworkStateHelper) {
@@ -770,6 +771,11 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   offline_failed_ = false;
   login_display_->set_signin_completed(true);
 
+  // Login performer will be gone so cache this value to use
+  // once profile is loaded.
+  password_changed_ = login_performer_->password_changed();
+  auth_mode_ = login_performer_->auth_mode();
+
   UserManager::Get()->GetUserFlow(user_context.GetUserID())->
       HandleLoginSuccess(user_context);
 
@@ -778,10 +784,6 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   const bool has_auth_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
       user_context.GetAuthCode().empty();
-
-  // Login performer will be gone so cache this value to use
-  // once profile is loaded.
-  password_changed_ = login_performer_->password_changed();
 
   // LoginPerformer instance will delete itself once online auth result is OK.
   // In case of failure it'll bring up ScreenLock and ask for
@@ -953,6 +955,20 @@ void ExistingUserController::DeviceSettingsChanged() {
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(screen_name, params.Pass());
+}
+
+LoginPerformer::AuthorizationMode ExistingUserController::auth_mode() const {
+  if (login_performer_)
+    return login_performer_->auth_mode();
+
+  return auth_mode_;
+}
+
+bool ExistingUserController::password_changed() const {
+  if (login_performer_)
+    return login_performer_->password_changed();
+
+  return password_changed_;
 }
 
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {

@@ -35,4 +35,9 @@ scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
   return new MockAuthenticator(consumer, expected_user_context_);
 }
 
+bool TestLoginUtils::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                                         bool early_restart) {
+  return false;
+}
+
 }  // namespace chromeos

@@ -125,6 +125,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #else
@@ -267,7 +268,11 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
 Profile* Profile::CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
-  TRACE_EVENT0("browser", "Profile::CreateProfile")
+  TRACE_EVENT_BEGIN1("browser",
+                     "Profile::CreateProfile",
+                     "profile_path",
+                     path.value().c_str());
+
   // Get sequenced task runner for making sure that file operations of
   // this profile (defined by |path|) are executed in expected order
   // (what was previously assured by the FILE thread).
@@ -627,6 +632,18 @@ void ProfileImpl::DoFinalInit() {
   RegisterDomDistillerViewerSource(this);
 
   // Creation has been finished.
+  TRACE_EVENT_END1("browser",
+                   "Profile::CreateProfile",
+                   "profile_path",
+                   path_.value().c_str());
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::LoginUtils::Get()->RestartToApplyPerSessionFlagsIfNeed(this,
+                                                                       true)) {
+    return;
+  }
+#endif
+
   if (delegate_) {
     TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
     delegate_->OnProfileCreated(this, true, IsNewProfile());
