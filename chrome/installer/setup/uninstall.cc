@@ -47,6 +47,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "content/public/common/result_codes.h"
 #include "rlz/lib/rlz_lib.h"
 
@@ -864,6 +865,20 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
   }
 }
 
+// Removes the persistent blacklist state for the current user.  Note: this will
+// not remove the state for users other than the one uninstalling chrome on a
+// system-level install (http://crbug.com/388725). Doing so would require
+// extracting the per-user registry hive iteration from
+// UninstallActiveSetupEntries so that it could service multiple tasks.
+void RemoveBlacklistState() {
+  InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
+                                 blacklist::kRegistryBeaconPath,
+                                 0);  // wow64_access
+  InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
+                                 blacklist::kRegistryFinchListPath,
+                                 0);  // wow64_access
+}
+
 }  // namespace
 
 DeleteResult DeleteChromeDirectoriesIfEmpty(
@@ -1257,6 +1272,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     UninstallActiveSetupEntries(installer_state, product);
 
     UninstallFirewallRules(browser_dist, base::FilePath(chrome_exe));
+
+    RemoveBlacklistState();
 
     // Notify the shell that associations have changed since Chrome was likely
     // unregistered.
