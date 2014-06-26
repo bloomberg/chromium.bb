@@ -595,7 +595,7 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
     return GCMClient::UNKNOWN_ERROR;
 
   // TODO(jianli): To be removed when sign-in enforcement is dropped.
-  if (!signed_in_)
+  if (!signed_in_ && !GCMDriver::IsAllowedForAllUsers())
     return GCMClient::NOT_SIGNED_IN;
 
   DCHECK(!delayed_task_controller_);
@@ -669,8 +669,8 @@ void GCMDriverDesktop::OnConnected(const net::IPEndPoint& ip_endpoint) {
 
   connected_ = true;
 
-  // Drop the event if signed out.
-  if (!signed_in_)
+  // Drop the event if the service has been stopped.
+  if (!gcm_started_)
     return;
 
   const GCMAppHandlerMap& app_handler_map = app_handlers();
@@ -687,8 +687,8 @@ void GCMDriverDesktop::OnDisconnected() {
 
   connected_ = false;
 
-  // Drop the event if signed out.
-  if (!signed_in_)
+  // Drop the event if the service has been stopped.
+  if (!gcm_started_)
     return;
 
   const GCMAppHandlerMap& app_handler_map = app_handlers();

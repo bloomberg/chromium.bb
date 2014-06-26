@@ -225,10 +225,8 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
   gcm::GCMProfileService* profile_service =
     gcm::GCMProfileServiceFactory::GetForProfile(profile);
 
-  if (!profile_service) {
+  if (!profile_service || !profile_service->driver()) {
     ReturnResults(profile, NULL, NULL);
-  } else if (profile_service->SignedInUserName().empty()) {
-    ReturnResults(profile, profile_service, NULL);
   } else {
     profile_service->driver()->GetGCMStatistics(
         base::Bind(&GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
