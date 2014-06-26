@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <set>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -142,6 +141,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
       will_check_soon_(false), extension_prefs_(extension_prefs),
       prefs_(prefs), profile_(profile),
       next_request_id_(0),
+      extension_registry_observer_(this),
       crx_install_is_running_(false),
       extension_cache_(cache) {
   DCHECK_GE(frequency_seconds_, 5);
@@ -152,9 +152,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
 #endif
   frequency_seconds_ = std::min(frequency_seconds_, kMaxUpdateFrequencySeconds);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 ExtensionUpdater::~ExtensionUpdater() {
@@ -598,36 +596,32 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
 void ExtensionUpdater::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
-      // No need to listen for CRX_INSTALLER_DONE anymore.
-      registrar_.Remove(this,
-                        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                        source);
-      crx_install_is_running_ = false;
+  DCHECK_EQ(type, chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
-      const FetchedCRXFile& crx_file = current_crx_file_;
-      for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
-          it != crx_file.request_ids.end(); ++it) {
-        InProgressCheck& request = requests_in_progress_[*it];
-        request.in_progress_ids_.remove(crx_file.extension_id);
-        NotifyIfFinished(*it);
-      }
+  registrar_.Remove(this,
+                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                    source);
+  crx_install_is_running_ = false;
 
-      // If any files are available to update, start one.
-      MaybeInstallCRXFile();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      if (extension)
-        throttle_info_.erase(extension->id());
-      break;
-    }
-    default:
-      NOTREACHED();
+  const FetchedCRXFile& crx_file = current_crx_file_;
+  for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
+      it != crx_file.request_ids.end(); ++it) {
+    InProgressCheck& request = requests_in_progress_[*it];
+    request.in_progress_ids_.remove(crx_file.extension_id);
+    NotifyIfFinished(*it);
   }
+
+  // If any files are available to update, start one.
+  MaybeInstallCRXFile();
+}
+
+void ExtensionUpdater::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  throttle_info_.erase(extension->id());
 }
 
 void ExtensionUpdater::NotifyStarted() {

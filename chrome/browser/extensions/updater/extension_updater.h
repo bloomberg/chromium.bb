@@ -17,23 +17,30 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;
 class PrefService;
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class ExtensionCache;
 class ExtensionDownloader;
 class ExtensionPrefs;
+class ExtensionRegistry;
 class ExtensionSet;
 class ExtensionUpdaterTest;
 
@@ -48,6 +55,7 @@ class ExtensionUpdaterTest;
 // ....
 // updater->Stop();
 class ExtensionUpdater : public ExtensionDownloaderDelegate,
+                         public ExtensionRegistryObserver,
                          public content::NotificationObserver {
  public:
   typedef base::Closure FinishedCallback;
@@ -168,7 +176,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Posted by CheckSoon().
   void DoCheckSoon();
 
-  // Implenentation of ExtensionDownloaderDelegate.
+  // Implementation of ExtensionDownloaderDelegate.
   virtual void OnExtensionDownloadFailed(
       const std::string& id,
       Error error,
@@ -183,6 +191,14 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
       const std::string& version,
       const PingResult& ping,
       const std::set<int>& request_id) OVERRIDE;
+
+  // Implementation of ExtensionRegistryObserver.
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
 
   virtual bool GetPingDataForExtension(
       const std::string& id,
@@ -238,6 +254,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   // Observes CRX installs we initiate.
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // True when a CrxInstaller is doing an install.  Used in MaybeUpdateCrxFile()
   // to keep more than one install from running at once.
