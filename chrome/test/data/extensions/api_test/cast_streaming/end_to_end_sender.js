@@ -37,21 +37,22 @@ function updateTestPattern() {
   }
 
   if (!this.audioContext) {
-    this.audioContext = new webkitAudioContext();
-    this.gainNode = this.audioContext.createGainNode();
+    this.audioContext = new AudioContext();
+    this.gainNode = this.audioContext.createGain();
     this.gainNode.gain.value = 0.5;
     this.gainNode.connect(this.audioContext.destination);
   } else {
+    this.oscillator.stop();
     this.oscillator.disconnect();
   }
   // Note: We recreate the oscillator each time because this switches the audio
   // frequency immediately.  Re-using the same oscillator tends to take several
   // hundred milliseconds to ramp-up/down the frequency.
   this.oscillator = audioContext.createOscillator();
-  this.oscillator.type = "sine";
+  this.oscillator.type = OscillatorNode.SINE;
   this.oscillator.frequency.value = freqs[curTestIdx];
-  this.oscillator.connect(gainNode);
-  this.oscillator.noteOn(0);
+  this.oscillator.connect(this.gainNode);
+  this.oscillator.start();
 }
 
 // Calls updateTestPattern(), then waits and calls itself again to advance to
@@ -95,8 +96,8 @@ chrome.test.runTests([
       return;
     }
 
-    var width = 128;
-    var height = 128;
+    var width = 400;
+    var height = 400;
     var frameRate = 15;
 
     chrome.tabCapture.capture(
