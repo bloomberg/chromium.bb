@@ -444,10 +444,6 @@ void MediaDrmBridge::UpdateSession(uint32 session_id,
       base::android::ToJavaByteArray(env, response, response_length);
   Java_MediaDrmBridge_updateSession(
       env, j_media_drm_.obj(), session_id, j_response.obj());
-
-  // TODO(xhwang/jrummell): Move this when usableKeyIds/keyschange are
-  // implemented.
-  player_tracker_.NotifyNewKey();
 }
 
 void MediaDrmBridge::ReleaseSession(uint32 session_id) {
@@ -522,6 +518,9 @@ void MediaDrmBridge::OnSessionReady(JNIEnv* env,
                                     jint j_session_id) {
   uint32 session_id = j_session_id;
   session_ready_cb_.Run(session_id);
+  // TODO(xhwang/jrummell): Move this when usableKeyIds/keyschange are
+  // implemented.
+  player_tracker_.NotifyNewKey();
 }
 
 void MediaDrmBridge::OnSessionClosed(JNIEnv* env,
