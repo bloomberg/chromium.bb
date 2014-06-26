@@ -32,7 +32,7 @@ static void verifyCSSCalc(String text, double value, bool valid, unsigned fontSi
 {
     CSSLengthArray lengthArray;
     initLengthArray(lengthArray);
-    RefPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
     propertySet->setProperty(CSSPropertyLeft, text);
     RefPtrWillBeRawPtr<CSSValue> cssValue = propertySet->getPropertyCSSValue(CSSPropertyLeft);
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue.get());

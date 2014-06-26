@@ -57,18 +57,18 @@ public:
 
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     String cssText() const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
     static PassOwnPtr<Vector<double> > createKeyList(CSSParserValueList*);
 
 private:
     StyleKeyframe();
 
-    RefPtr<StylePropertySet> m_properties;
+    RefPtrWillBeMember<StylePropertySet> m_properties;
     // These are both calculated lazily. Either one can be set, which invalidates the other.
     mutable String m_keyText;
     mutable OwnPtr<Vector<double> > m_keys;

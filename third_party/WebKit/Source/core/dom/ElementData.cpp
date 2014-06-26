@@ -38,9 +38,9 @@
 
 namespace WebCore {
 
-struct SameSizeAsElementData : public RefCounted<SameSizeAsElementData> {
+struct SameSizeAsElementData : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsElementData> {
     unsigned bitfield;
-    void* refPtrs[3];
+    void* pointers[3];
 };
 
 COMPILE_ASSERT(sizeof(ElementData) == sizeof(SameSizeAsElementData), element_attribute_data_should_stay_small);
@@ -80,6 +80,15 @@ ElementData::ElementData(const ElementData& other, bool isUnique)
     // NOTE: The inline style is copied by the subclass copy constructor since we don't know what to do with it here.
 }
 
+#if ENABLE(OILPAN)
+void ElementData::finalizeGarbageCollectedObject()
+{
+    if (m_isUnique)
+        static_cast<UniqueElementData*>(this)->~UniqueElementData();
+    else
+        static_cast<ShareableElementData*>(this)->~ShareableElementData();
+}
+#else
 void ElementData::destroy()
 {
     if (m_isUnique)
@@ -87,12 +96,13 @@ void ElementData::destroy()
     else
         delete static_cast<ShareableElementData*>(this);
 }
+#endif
 
-PassRefPtr<UniqueElementData> ElementData::makeUniqueCopy() const
+PassRefPtrWillBeRawPtr<UniqueElementData> ElementData::makeUniqueCopy() const
 {
     if (isUnique())
-        return adoptRef(new UniqueElementData(static_cast<const UniqueElementData&>(*this)));
-    return adoptRef(new UniqueElementData(static_cast<const ShareableElementData&>(*this)));
+        return adoptRefWillBeNoop(new UniqueElementData(static_cast<const UniqueElementData&>(*this)));
+    return adoptRefWillBeNoop(new UniqueElementData(static_cast<const ShareableElementData&>(*this)));
 }
 
 bool ElementData::isEquivalent(const ElementData* other) const
@@ -149,6 +159,19 @@ size_t ElementData::findAttributeIndexByNameSlowCase(const AtomicString& name, b
     return kNotFound;
 }
 
+void ElementData::trace(Visitor* visitor)
+{
+    if (m_isUnique)
+        static_cast<UniqueElementData*>(this)->traceAfterDispatch(visitor);
+    else
+        static_cast<ShareableElementData*>(this)->traceAfterDispatch(visitor);
+}
+
+void ElementData::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_inlineStyle);
+}
+
 ShareableElementData::ShareableElementData(const Vector<Attribute>& attributes)
     : ElementData(attributes.size())
 {
@@ -175,10 +198,14 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
         new (&m_attributeArray[i]) Attribute(other.m_attributeVector.at(i));
 }
 
-PassRefPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
+PassRefPtrWillBeRawPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
 {
+#if ENABLE(OILPAN)
+    void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
+#else
     void* slot = WTF::fastMalloc(sizeForShareableElementDataWithAttributeCount(attributes.size()));
-    return adoptRef(new (slot) ShareableElementData(attributes));
+#endif
+    return adoptRefWillBeNoop(new (slot) ShareableElementData(attributes));
 }
 
 UniqueElementData::UniqueElementData()
@@ -206,15 +233,19 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
         m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
 }
 
-PassRefPtr<UniqueElementData> UniqueElementData::create()
+PassRefPtrWillBeRawPtr<UniqueElementData> UniqueElementData::create()
 {
-    return adoptRef(new UniqueElementData);
+    return adoptRefWillBeNoop(new UniqueElementData);
 }
 
-PassRefPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
+PassRefPtrWillBeRawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
 {
+#if ENABLE(OILPAN)
+    void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
+#else
     void* slot = WTF::fastMalloc(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
-    return adoptRef(new (slot) ShareableElementData(*this));
+#endif
+    return adoptRefWillBeNoop(new (slot) ShareableElementData(*this));
 }
 
 Attribute* UniqueElementData::findAttributeByName(const QualifiedName& name)
@@ -225,6 +256,12 @@ Attribute* UniqueElementData::findAttributeByName(const QualifiedName& name)
             return &m_attributeVector.at(i);
     }
     return 0;
+}
+
+void UniqueElementData::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_presentationAttributeStyle);
+    ElementData::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore

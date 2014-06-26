@@ -31,6 +31,7 @@
 #ifndef PresentationAttributeStyle_h
 #define PresentationAttributeStyle_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -38,7 +39,7 @@ namespace WebCore {
 class Element;
 class StylePropertySet;
 
-PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
+PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
 
 } // namespace WebCore
 

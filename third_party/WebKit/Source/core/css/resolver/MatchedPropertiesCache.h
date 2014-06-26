@@ -23,9 +23,10 @@
 #ifndef MatchedPropertiesCache_h
 #define MatchedPropertiesCache_h
 
+#include "core/css/StylePropertySet.h"
 #include "core/css/resolver/MatchResult.h"
-
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -35,17 +36,30 @@ namespace WebCore {
 class RenderStyle;
 class StyleResolverState;
 
-struct CachedMatchedProperties {
-    Vector<MatchedProperties> matchedProperties;
+class CachedMatchedProperties FINAL : public NoBaseWillBeGarbageCollectedFinalized<CachedMatchedProperties> {
+
+public:
+    WillBeHeapVector<MatchedProperties> matchedProperties;
     MatchRanges ranges;
     RefPtr<RenderStyle> renderStyle;
     RefPtr<RenderStyle> parentRenderStyle;
 
     void set(const RenderStyle*, const RenderStyle* parentStyle, const MatchResult&);
     void clear();
+    void trace(Visitor* visitor) { visitor->trace(matchedProperties); }
 };
 
+// Specialize the HashTraits for CachedMatchedProperties to check for dead
+// entries in the MatchedPropertiesCache.
+#if ENABLE(OILPAN)
+struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProperties> > {
+    static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
+    static bool traceInCollection(Visitor*, Member<CachedMatchedProperties>&, WTF::ShouldWeakPointersBeMarkedStrongly);
+};
+#endif
+
 class MatchedPropertiesCache {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
 public:
     MatchedPropertiesCache();
@@ -58,7 +72,12 @@ public:
 
     static bool isCacheable(const Element*, const RenderStyle*, const RenderStyle* parentStyle);
 
+    void trace(Visitor*);
+
 private:
+#if ENABLE(OILPAN)
+    typedef HeapHashMap<unsigned, Member<CachedMatchedProperties>, DefaultHash<unsigned>::Hash, HashTraits<unsigned>, CachedMatchedPropertiesHashTraits > Cache;
+#else
     // Every N additions to the matched declaration cache trigger a sweep where entries holding
     // the last reference to a style declaration are garbage collected.
     void sweep(Timer<MatchedPropertiesCache>*);
@@ -66,9 +85,9 @@ private:
     unsigned m_additionsSinceLastSweep;
 
     typedef HashMap<unsigned, OwnPtr<CachedMatchedProperties> > Cache;
-    Cache m_cache;
-
     Timer<MatchedPropertiesCache> m_sweepTimer;
+#endif
+    Cache m_cache;
 };
 
 }

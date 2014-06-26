@@ -25,6 +25,7 @@
 
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -53,10 +54,15 @@ struct MatchRanges {
 };
 
 struct MatchedProperties {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     MatchedProperties();
     ~MatchedProperties();
 
-    RefPtr<StylePropertySet> properties;
+    void trace(Visitor*);
+
+    RefPtrWillBeMember<StylePropertySet> properties;
+
     union {
         struct {
             unsigned linkMatchType : 2;
@@ -67,11 +73,17 @@ struct MatchedProperties {
     };
 };
 
+} // WebCore namespace
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MatchedProperties);
+
+namespace WebCore {
+
 class MatchResult {
     STACK_ALLOCATED();
 public:
     MatchResult() : isCacheable(true) { }
-    Vector<MatchedProperties, 64> matchedProperties;
+    WillBeHeapVector<MatchedProperties, 64> matchedProperties;
     WillBeHeapVector<RawPtrWillBeMember<StyleRule>, 64> matchedRules;
     MatchRanges ranges;
     bool isCacheable;

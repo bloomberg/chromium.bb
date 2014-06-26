@@ -41,7 +41,7 @@ class MutableStylePropertySet;
 class StylePropertyShorthand;
 class StyleSheetContents;
 
-class StylePropertySet : public RefCountedWillBeRefCountedGarbageCollected<StylePropertySet> {
+class StylePropertySet : public RefCountedWillBeGarbageCollectedFinalized<StylePropertySet> {
     friend class PropertyReference;
 public:
 
@@ -107,7 +107,7 @@ public:
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> mutableCopy() const;
-    PassRefPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
+    PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
@@ -154,7 +154,7 @@ protected:
 class ImmutableStylePropertySet : public StylePropertySet {
 public:
     ~ImmutableStylePropertySet();
-    static PassRefPtr<ImmutableStylePropertySet> create(const CSSProperty* properties, unsigned count, CSSParserMode);
+    static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> create(const CSSProperty* properties, unsigned count, CSSParserMode);
 
     unsigned propertyCount() const { return m_arraySize; }
 
@@ -186,11 +186,6 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 }
 
 DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMutable(), !set.isMutable());
-
-inline ImmutableStylePropertySet* toImmutableStylePropertySet(const RefPtr<StylePropertySet>& set)
-{
-    return toImmutableStylePropertySet(set.get());
-}
 
 class MutableStylePropertySet : public StylePropertySet {
 public:
@@ -247,7 +242,17 @@ private:
 
 DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());
 
-inline MutableStylePropertySet* toMutableStylePropertySet(const RefPtr<StylePropertySet>& set)
+inline MutableStylePropertySet* toMutableStylePropertySet(const RefPtrWillBeRawPtr<StylePropertySet>& set)
+{
+    return toMutableStylePropertySet(set.get());
+}
+
+inline MutableStylePropertySet* toMutableStylePropertySet(const Persistent<StylePropertySet>& set)
+{
+    return toMutableStylePropertySet(set.get());
+}
+
+inline MutableStylePropertySet* toMutableStylePropertySet(const Member<StylePropertySet>& set)
 {
     return toMutableStylePropertySet(set.get());
 }

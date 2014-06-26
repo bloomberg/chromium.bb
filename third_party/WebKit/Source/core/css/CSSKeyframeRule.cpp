@@ -96,10 +96,10 @@ MutableStylePropertySet& StyleKeyframe::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return *toMutableStylePropertySet(m_properties);
+    return *toMutableStylePropertySet(m_properties.get());
 }
 
-void StyleKeyframe::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleKeyframe::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     ASSERT(properties);
     m_properties = properties;
@@ -136,6 +136,10 @@ PassOwnPtr<Vector<double> > StyleKeyframe::createKeyList(CSSParserValueList* key
     return keyVector.release();
 }
 
+void StyleKeyframe::trace(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+}
 
 CSSKeyframeRule::CSSKeyframeRule(StyleKeyframe* keyframe, CSSKeyframesRule* parent)
     : CSSRule(0)

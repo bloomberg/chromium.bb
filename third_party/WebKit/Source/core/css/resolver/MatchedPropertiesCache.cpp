@@ -35,6 +35,34 @@
 
 namespace WebCore {
 
+#if ENABLE(OILPAN)
+bool CachedMatchedPropertiesHashTraits::traceInCollection(Visitor* visitor, Member<CachedMatchedProperties>& cachedProperties, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
+{
+    // Only honor the cache's weakness semantics if the collection is traced
+    // with WeakPointersActWeak. Otherwise just trace the cachedProperties
+    // strongly, ie. call trace on it.
+    if (strongify == WTF::WeakPointersActWeak) {
+        // A given cache entry is only kept alive if none of the MatchedProperties
+        // in the CachedMatchedProperties value contain a dead "properties" field.
+        // If there is a dead field the entire cache entry is removed.
+        HeapVector<MatchedProperties>::iterator it = cachedProperties->matchedProperties.begin();
+        HeapVector<MatchedProperties>::iterator end = cachedProperties->matchedProperties.end();
+        for (; it != end; ++it) {
+            if (!visitor->isAlive(it->properties)) {
+                // For now report the cache entry as dead. This might not
+                // be the final result if in a subsequent call for this entry,
+                // the "properties" field has been marked via another path.
+                return true;
+            }
+        }
+    }
+    // At this point none of the entries in the matchedProperties vector
+    // had a dead "properties" field so trace CachedMatchedProperties strongly.
+    visitor->trace(cachedProperties);
+    return false;
+}
+#endif
+
 void CachedMatchedProperties::set(const RenderStyle* style, const RenderStyle* parentStyle, const MatchResult& matchResult)
 {
     matchedProperties.appendVector(matchResult.matchedProperties);
@@ -54,8 +82,10 @@ void CachedMatchedProperties::clear()
 }
 
 MatchedPropertiesCache::MatchedPropertiesCache()
+#if !ENABLE(OILPAN)
     : m_additionsSinceLastSweep(0)
     , m_sweepTimer(this, &MatchedPropertiesCache::sweep)
+#endif
 {
 }
 
@@ -85,17 +115,19 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
 
 void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
 {
+#if !ENABLE(OILPAN)
     static const unsigned maxAdditionsBetweenSweeps = 100;
     if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
         && !m_sweepTimer.isActive()) {
         static const unsigned sweepTimeInSeconds = 60;
         m_sweepTimer.startOneShot(sweepTimeInSeconds, FROM_HERE);
     }
+#endif
 
     ASSERT(hash);
     Cache::AddResult addResult = m_cache.add(hash, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtr(new CachedMatchedProperties);
+        addResult.storedValue->value = adoptPtrWillBeNoop(new CachedMatchedProperties);
 
     CachedMatchedProperties* cacheItem = addResult.storedValue->value.get();
     if (!addResult.isNewEntry)
@@ -120,6 +152,7 @@ void MatchedPropertiesCache::clearViewportDependent()
     m_cache.removeAll(toRemove);
 }
 
+#if !ENABLE(OILPAN)
 void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
 {
     // Look for cache entries containing a style declaration with a single ref and remove them.
@@ -141,6 +174,7 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
     m_cache.removeAll(toRemove);
     m_additionsSinceLastSweep = 0;
 }
+#endif
 
 bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderStyle* style, const RenderStyle* parentStyle)
 {
@@ -164,6 +198,11 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
     if (parentStyle->hasExplicitlyInheritedProperties())
         return false;
     return true;
+}
+
+void MatchedPropertiesCache::trace(Visitor* visitor)
+{
+    visitor->trace(m_cache);
 }
 
 }

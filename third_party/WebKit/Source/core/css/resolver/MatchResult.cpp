@@ -43,6 +43,11 @@ MatchedProperties::~MatchedProperties()
 {
 }
 
+void MatchedProperties::trace(Visitor* visitor)
+{
+    visitor->trace(properties);
+}
+
 void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
 {
     matchedProperties.grow(matchedProperties.size() + 1);

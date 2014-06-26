@@ -34,6 +34,7 @@
 
 #include "core/dom/Attribute.h"
 #include "core/dom/SpaceSplitString.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -64,12 +65,18 @@ private:
 
 // ElementData represents very common, but not necessarily unique to an element,
 // data such as attributes, inline style, and parsed class names and ids.
-class ElementData : public RefCounted<ElementData> {
-    WTF_MAKE_FAST_ALLOCATED;
+class ElementData : public RefCountedWillBeGarbageCollectedFinalized<ElementData> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
+#if ENABLE(OILPAN)
+    // Override GarbageCollectedFinalized's finalizeGarbageCollectedObject to
+    // dispatch to the correct subclass destructor.
+    void finalizeGarbageCollectedObject();
+#else
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
     void deref();
+#endif
 
     void clearClass() const { m_classNames.clear(); }
     void setClass(const AtomicString& className, bool shouldFoldCase) const { m_classNames.set(className, shouldFoldCase); }
@@ -101,6 +108,9 @@ public:
 
     bool isUnique() const { return m_isUnique; }
 
+    void traceAfterDispatch(Visitor*);
+    void trace(Visitor*);
+
 protected:
     ElementData();
     explicit ElementData(unsigned arraySize);
@@ -113,7 +123,7 @@ protected:
     mutable unsigned m_styleAttributeIsDirty : 1;
     mutable unsigned m_animatedSVGAttributesAreDirty : 1;
 
-    mutable RefPtr<StylePropertySet> m_inlineStyle;
+    mutable RefPtrWillBeMember<StylePropertySet> m_inlineStyle;
     mutable SpaceSplitString m_classNames;
     mutable AtomicString m_idForStyleResolution;
 
@@ -123,13 +133,15 @@ private:
     friend class UniqueElementData;
     friend class SVGElement;
 
+#if !ENABLE(OILPAN)
     void destroy();
+#endif
 
     const Attribute* attributeBase() const;
     const Attribute* findAttributeByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
     size_t findAttributeIndexByNameSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
 
-    PassRefPtr<UniqueElementData> makeUniqueCopy() const;
+    PassRefPtrWillBeRawPtr<UniqueElementData> makeUniqueCopy() const;
 };
 
 #if COMPILER(MSVC)
@@ -143,11 +155,23 @@ private:
 // duplicate sets of attributes (ex. the same classes).
 class ShareableElementData FINAL : public ElementData {
 public:
-    static PassRefPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
+    static PassRefPtrWillBeRawPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
 
     explicit ShareableElementData(const Vector<Attribute>&);
     explicit ShareableElementData(const UniqueElementData&);
     ~ShareableElementData();
+
+    void traceAfterDispatch(Visitor* visitor) { ElementData::traceAfterDispatch(visitor); }
+
+    // Add support for placement new as ShareableElementData is not allocated
+    // with a fixed size. Instead the allocated memory size is computed based on
+    // the number of attributes. This requires us to use Heap::allocate directly
+    // with the computed size and subsequently call placement new with the
+    // allocated memory address.
+    void* operator new(std::size_t, void* location)
+    {
+        return location;
+    }
 
     Attribute m_attributeArray[0];
 };
@@ -164,8 +188,8 @@ public:
 // attribute will have the same inline style.
 class UniqueElementData FINAL : public ElementData {
 public:
-    static PassRefPtr<UniqueElementData> create();
-    PassRefPtr<ShareableElementData> makeShareableCopy() const;
+    static PassRefPtrWillBeRawPtr<UniqueElementData> create();
+    PassRefPtrWillBeRawPtr<ShareableElementData> makeShareableCopy() const;
 
     // These functions do no error/duplicate checking.
     void appendAttribute(const QualifiedName&, const AtomicString&);
@@ -178,20 +202,24 @@ public:
     explicit UniqueElementData(const ShareableElementData&);
     explicit UniqueElementData(const UniqueElementData&);
 
+    void traceAfterDispatch(Visitor*);
+
     // FIXME: We might want to support sharing element data for elements with
     // presentation attribute style. Lots of table cells likely have the same
     // attributes. Most modern pages don't use presentation attributes though
     // so this might not make sense.
-    mutable RefPtr<StylePropertySet> m_presentationAttributeStyle;
+    mutable RefPtrWillBeMember<StylePropertySet> m_presentationAttributeStyle;
     Vector<Attribute, 4> m_attributeVector;
 };
 
+#if !ENABLE(OILPAN)
 inline void ElementData::deref()
 {
     if (!derefBase())
         return;
     destroy();
 }
+#endif
 
 inline size_t ElementData::attributeCount() const
 {

@@ -652,7 +652,7 @@ private:
 
     bool isJavaScriptURLAttribute(const Attribute&) const;
 
-    RefPtr<ElementData> m_elementData;
+    RefPtrWillBeMember<ElementData> m_elementData;
 };
 
 DEFINE_NODE_TYPE_CASTS(Element, isElementNode());

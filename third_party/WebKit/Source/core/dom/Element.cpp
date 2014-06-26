@@ -3136,7 +3136,7 @@ CSSStyleDeclaration* Element::style()
 MutableStylePropertySet& Element::ensureMutableInlineStyle()
 {
     ASSERT(isStyledElement());
-    RefPtr<StylePropertySet>& inlineStyle = ensureUniqueElementData().m_inlineStyle;
+    RefPtrWillBeMember<StylePropertySet>& inlineStyle = ensureUniqueElementData().m_inlineStyle;
     if (!inlineStyle) {
         CSSParserMode mode = (!isHTMLElement() || document().inQuirksMode()) ? HTMLQuirksMode : HTMLStandardMode;
         inlineStyle = MutableStylePropertySet::create(mode);
@@ -3156,7 +3156,7 @@ void Element::clearMutableInlineStyleIfEmpty()
 inline void Element::setInlineStyleFromString(const AtomicString& newStyleString)
 {
     ASSERT(isStyledElement());
-    RefPtr<StylePropertySet>& inlineStyle = elementData()->m_inlineStyle;
+    RefPtrWillBeMember<StylePropertySet>& inlineStyle = elementData()->m_inlineStyle;
 
     // Avoid redundant work if we're using shared attribute data with already parsed inline style.
     if (inlineStyle && !elementData()->isUnique())
@@ -3171,7 +3171,7 @@ inline void Element::setInlineStyleFromString(const AtomicString& newStyleString
         inlineStyle = BisonCSSParser::parseInlineStyleDeclaration(newStyleString, this);
     } else {
         ASSERT(inlineStyle->isMutable());
-        static_pointer_cast<MutableStylePropertySet>(inlineStyle)->parseDeclaration(newStyleString, document().elementSheet().contents());
+        static_cast<MutableStylePropertySet*>(inlineStyle.get())->parseDeclaration(newStyleString, document().elementSheet().contents());
     }
 }
 
@@ -3326,7 +3326,7 @@ void Element::trace(Visitor* visitor)
 {
     if (hasRareData())
         visitor->trace(elementRareData());
-
+    visitor->trace(m_elementData);
     ContainerNode::trace(visitor);
 }
 

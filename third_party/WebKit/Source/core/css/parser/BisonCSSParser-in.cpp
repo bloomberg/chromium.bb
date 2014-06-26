@@ -1059,7 +1059,7 @@ void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& select
     m_selectorListForParseSelector = 0;
 }
 
-PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
+PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> BisonCSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
     Document& document = element->document();
     CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), UseCounter::getFrom(&document));
@@ -1067,7 +1067,7 @@ PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseInlineStyleDeclaratio
     return BisonCSSParser(context).parseDeclaration(string, document.elementSheet().contents());
 }
 
-PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
+PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> BisonCSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
 {
     setStyleSheet(contextStyleSheet);
 
@@ -1075,7 +1075,7 @@ PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseDeclaration(const Str
     cssyyparse(this);
     m_rule = nullptr;
 
-    RefPtr<ImmutableStylePropertySet> style = createStylePropertySet();
+    RefPtrWillBeRawPtr<ImmutableStylePropertySet> style = createStylePropertySet();
     clearProperties();
     return style.release();
 }
@@ -1142,7 +1142,7 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
     }
 }
 
-PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::createStylePropertySet()
+PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> BisonCSSParser::createStylePropertySet()
 {
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = m_parsedProperties.size();

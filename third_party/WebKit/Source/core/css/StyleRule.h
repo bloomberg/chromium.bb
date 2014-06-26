@@ -111,19 +111,19 @@ public:
 
     void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRule> copy() const { return adoptRefWillBeNoop(new StyleRule(*this)); }
 
     static unsigned averageSizeInBytes();
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRule();
     StyleRule(const StyleRule&);
 
-    RefPtr<StylePropertySet> m_properties; // Cannot be null.
+    RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
     CSSSelectorList m_selectorList;
 };
 
@@ -136,17 +136,17 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRuleFontFace> copy() const { return adoptRefWillBeNoop(new StyleRuleFontFace(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRuleFontFace();
     StyleRuleFontFace(const StyleRuleFontFace&);
 
-    RefPtr<StylePropertySet> m_properties; // Cannot be null.
+    RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
 };
 
 class StyleRulePage : public StyleRuleBase {
@@ -161,17 +161,17 @@ public:
 
     void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRulePage> copy() const { return adoptRefWillBeNoop(new StyleRulePage(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRulePage();
     StyleRulePage(const StyleRulePage&);
 
-    RefPtr<StylePropertySet> m_properties; // Cannot be null.
+    RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
     CSSSelectorList m_selectorList;
 };
 
@@ -242,17 +242,17 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRuleViewport> copy() const { return adoptRefWillBeNoop(new StyleRuleViewport(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRuleViewport();
     StyleRuleViewport(const StyleRuleViewport&);
 
-    RefPtr<StylePropertySet> m_properties; // Cannot be null
+    RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null
 };
 
 class StyleRuleFilter : public StyleRuleBase {
@@ -266,18 +266,18 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void setProperties(PassRefPtr<StylePropertySet>);
+    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRuleFilter> copy() const { return adoptRefWillBeNoop(new StyleRuleFilter(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRuleFilter(const String&);
     StyleRuleFilter(const StyleRuleFilter&);
 
     String m_filterName;
-    RefPtr<StylePropertySet> m_properties;
+    RefPtrWillBeMember<StylePropertySet> m_properties;
 };
 
 #define DEFINE_STYLE_RULE_TYPE_CASTS(Type) \

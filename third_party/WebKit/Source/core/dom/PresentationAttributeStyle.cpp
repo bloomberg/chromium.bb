@@ -57,18 +57,20 @@ static bool operator!=(const PresentationAttributeCacheKey& a, const Presentatio
     return a.attributesAndValues != b.attributesAndValues;
 }
 
-struct PresentationAttributeCacheEntry {
-    WTF_MAKE_FAST_ALLOCATED;
+struct PresentationAttributeCacheEntry FINAL : public NoBaseWillBeGarbageCollectedFinalized<PresentationAttributeCacheEntry> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
+    void trace(Visitor* visitor) { visitor->trace(value); }
+
     PresentationAttributeCacheKey key;
-    RefPtr<StylePropertySet> value;
+    RefPtrWillBeMember<StylePropertySet> value;
 };
 
-typedef HashMap<unsigned, OwnPtr<PresentationAttributeCacheEntry>, AlreadyHashed> PresentationAttributeCache;
+typedef WillBeHeapHashMap<unsigned, OwnPtrWillBeMember<PresentationAttributeCacheEntry>, AlreadyHashed> PresentationAttributeCache;
 static PresentationAttributeCache& presentationAttributeCache()
 {
-    DEFINE_STATIC_LOCAL(PresentationAttributeCache, cache, ());
-    return cache;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PresentationAttributeCache>, cache, (adoptPtrWillBeNoop(new PresentationAttributeCache())));
+    return *cache;
 }
 
 class PresentationAttributeCacheCleaner {
@@ -153,7 +155,7 @@ static unsigned computePresentationAttributeCacheHash(const PresentationAttribut
     return WTF::pairIntHash(key.tagName->existingHash(), attributeHash);
 }
 
-PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
+PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
 {
     DEFINE_STATIC_LOCAL(PresentationAttributeCacheCleaner, cacheCleaner, ());
 
@@ -173,7 +175,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         cacheValue = 0;
     }
 
-    RefPtr<StylePropertySet> style;
+    RefPtrWillBeRawPtr<StylePropertySet> style = nullptr;
     if (cacheHash && cacheValue->value) {
         style = cacheValue->value->value;
         cacheCleaner.didHitPresentationAttributeCache();
@@ -188,7 +190,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
     if (!cacheHash || cacheValue->value)
         return style.release();
 
-    OwnPtr<PresentationAttributeCacheEntry> newEntry = adoptPtr(new PresentationAttributeCacheEntry);
+    OwnPtrWillBeRawPtr<PresentationAttributeCacheEntry> newEntry = adoptPtrWillBeNoop(new PresentationAttributeCacheEntry);
     newEntry->key = cacheKey;
     newEntry->value = style;
 

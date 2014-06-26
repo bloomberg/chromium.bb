@@ -408,7 +408,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 }
 
-static PassRefPtr<StylePropertySet> createBorderStyle(CSSValueID value)
+static PassRefPtrWillBeRawPtr<StylePropertySet> createBorderStyle(CSSValueID value)
 {
     RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyBorderTopStyle, value);
@@ -427,17 +427,17 @@ const StylePropertySet* HTMLTableElement::additionalPresentationAttributeStyle()
         // Setting the border to 'hidden' allows it to win over any border
         // set on the table's cells during border-conflict resolution.
         if (m_rulesAttr != UnsetRules) {
-            DEFINE_STATIC_REF(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueHidden)));
+            DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueHidden)));
             return solidBorderStyle;
         }
         return 0;
     }
 
     if (m_borderColorAttr) {
-        DEFINE_STATIC_REF(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueSolid)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueSolid)));
         return solidBorderStyle;
     }
-    DEFINE_STATIC_REF(StylePropertySet, outsetBorderStyle, (createBorderStyle(CSSValueOutset)));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, outsetBorderStyle, (createBorderStyle(CSSValueOutset)));
     return outsetBorderStyle;
 }
 
@@ -534,10 +534,10 @@ const StylePropertySet* HTMLTableElement::additionalGroupStyle(bool rows)
         return 0;
 
     if (rows) {
-        DEFINE_STATIC_REF(StylePropertySet, rowBorderStyle, (createGroupBorderStyle(true)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, rowBorderStyle, (createGroupBorderStyle(true)));
         return rowBorderStyle;
     }
-    DEFINE_STATIC_REF(StylePropertySet, columnBorderStyle, (createGroupBorderStyle(false)));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, columnBorderStyle, (createGroupBorderStyle(false)));
     return columnBorderStyle;
 }
 

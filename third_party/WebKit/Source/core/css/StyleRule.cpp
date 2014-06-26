@@ -270,12 +270,18 @@ MutableStylePropertySet& StyleRule::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return *toMutableStylePropertySet(m_properties);
+    return *toMutableStylePropertySet(m_properties.get());
 }
 
-void StyleRule::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleRule::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     m_properties = properties;
+}
+
+void StyleRule::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 StyleRulePage::StyleRulePage()
@@ -298,12 +304,18 @@ MutableStylePropertySet& StyleRulePage::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return *toMutableStylePropertySet(m_properties);
+    return *toMutableStylePropertySet(m_properties.get());
 }
 
-void StyleRulePage::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleRulePage::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     m_properties = properties;
+}
+
+void StyleRulePage::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 StyleRuleFontFace::StyleRuleFontFace()
@@ -328,9 +340,15 @@ MutableStylePropertySet& StyleRuleFontFace::mutableProperties()
     return *toMutableStylePropertySet(m_properties);
 }
 
-void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleRuleFontFace::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     m_properties = properties;
+}
+
+void StyleRuleFontFace::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 StyleRuleGroup::StyleRuleGroup(Type type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRule)
@@ -418,9 +436,15 @@ MutableStylePropertySet& StyleRuleViewport::mutableProperties()
     return *toMutableStylePropertySet(m_properties);
 }
 
-void StyleRuleViewport::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleRuleViewport::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     m_properties = properties;
+}
+
+void StyleRuleViewport::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 StyleRuleFilter::StyleRuleFilter(const String& filterName)
@@ -447,9 +471,15 @@ MutableStylePropertySet& StyleRuleFilter::mutableProperties()
     return *toMutableStylePropertySet(m_properties);
 }
 
-void StyleRuleFilter::setProperties(PassRefPtr<StylePropertySet> properties)
+void StyleRuleFilter::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 {
     m_properties = properties;
+}
+
+void StyleRuleFilter::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_properties);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore
