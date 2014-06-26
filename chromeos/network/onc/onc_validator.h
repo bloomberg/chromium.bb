@@ -161,9 +161,10 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool ValidateEAP(base::DictionaryValue* result);
   bool ValidateCertificate(base::DictionaryValue* result);
 
-  bool FieldExistsAndHasNoValidValue(const base::DictionaryValue& object,
-                                     const std::string &field_name,
-                                     const char** valid_values);
+  bool FieldExistsAndHasNoValidValue(
+      const base::DictionaryValue& object,
+      const std::string& field_name,
+      const std::vector<const char*>& valid_values);
 
   bool FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
                                   const std::string &field_name,
