@@ -634,3 +634,13 @@ name=crbug.com/389191(b)
 *!content::RenderWidgetHostViewAura::Destroy
 *!content::RenderWidgetHostImpl::Shutdown
 *!content::RenderViewHostImpl::Shutdown
+
+# This suppression is deliberately general, as bugs reported in
+# v8 generated code are difficult to track down. Xref Dr. Memory issue
+# https://code.google.com/p/drmemory/issues/detail?id=1582
+UNADDRESSABLE ACCESS
+name=https://code.google.com/p/drmemory/issues/detail?id=1582
+...
+*!v8::internal::Invoke
+*!v8::internal::Execution::Call
+*!v8::Function::Call
