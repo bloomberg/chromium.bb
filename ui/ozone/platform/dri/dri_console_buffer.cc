@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 namespace ui {
 
@@ -26,7 +27,7 @@ DriConsoleBuffer::~DriConsoleBuffer() {
 }
 
 bool DriConsoleBuffer::Initialize() {
-  drmModeFB* fb = dri_->GetFramebuffer(framebuffer_);
+  ScopedDrmFramebufferPtr fb(dri_->GetFramebuffer(framebuffer_));
 
   if (!fb)
     return false;

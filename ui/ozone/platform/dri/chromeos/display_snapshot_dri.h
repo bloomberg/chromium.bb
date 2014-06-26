@@ -6,10 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
 
 #include "ui/display/types/chromeos/display_snapshot.h"
-
-typedef struct _drmModeConnector drmModeConnector;
-typedef struct _drmModeCrtc drmModeCrtc;
-typedef struct _drmModeProperty drmModePropertyRes;
+#include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 namespace ui {
 
@@ -27,7 +24,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
   // configuring this display.
   uint32_t connector() const { return connector_; }
   uint32_t crtc() const { return crtc_; }
-  drmModePropertyRes* dpms_property() const { return dpms_property_; }
+  drmModePropertyRes* dpms_property() const { return dpms_property_.get(); }
 
   // DisplaySnapshot overrides:
   virtual std::string ToString() const OVERRIDE;
@@ -35,7 +32,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
  private:
   uint32_t connector_;
   uint32_t crtc_;
-  drmModePropertyRes* dpms_property_;
+  ScopedDrmPropertyPtr dpms_property_;
   std::string name_;
   bool overscan_flag_;
 

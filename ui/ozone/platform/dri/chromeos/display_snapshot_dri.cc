@@ -42,18 +42,14 @@ DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
 }
 
 bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
-  drmModePropertyRes* property = drm->GetProperty(connector, "scaling mode");
+  ScopedDrmPropertyPtr property(drm->GetProperty(connector, "scaling mode"));
   if (property) {
     for (int j = 0; j < property->count_enums; ++j) {
       if (property->enums[j].value ==
               connector->prop_values[property->prop_id] &&
-          strcmp(property->enums[j].name, "Full aspect") == 0) {
-        drm->FreeProperty(property);
+          strcmp(property->enums[j].name, "Full aspect") == 0)
         return true;
-      }
     }
-
-    drm->FreeProperty(property);
   }
 
   return false;
@@ -80,7 +76,7 @@ DisplaySnapshotDri::DisplaySnapshotDri(
       connector_(connector->connector_id),
       crtc_(crtc->crtc_id),
       dpms_property_(drm->GetProperty(connector, "DPMS")) {
-  drmModePropertyBlobRes* edid_blob = drm->GetPropertyBlob(connector, "EDID");
+  ScopedDrmPropertyBlobPtr edid_blob(drm->GetPropertyBlob(connector, "EDID"));
 
   if (edid_blob) {
     std::vector<uint8_t> edid(
@@ -90,8 +86,6 @@ DisplaySnapshotDri::DisplaySnapshotDri(
     has_proper_display_id_ = GetDisplayIdFromEDID(edid, index, &display_id_);
     ParseOutputDeviceData(edid, NULL, &display_name_);
     ParseOutputOverscanFlag(edid, &overscan_flag_);
-
-    drm->FreePropertyBlob(edid_blob);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << connector->connector_id;
@@ -109,10 +103,7 @@ DisplaySnapshotDri::DisplaySnapshotDri(
   }
 }
 
-DisplaySnapshotDri::~DisplaySnapshotDri() {
-  if (dpms_property_)
-    drmModeFreeProperty(dpms_property_);
-}
+DisplaySnapshotDri::~DisplaySnapshotDri() {}
 
 std::string DisplaySnapshotDri::ToString() const {
   return base::StringPrintf(

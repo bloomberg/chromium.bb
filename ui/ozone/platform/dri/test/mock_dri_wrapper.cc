@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 
+#include <xf86drm.h>
 #include <xf86drmMode.h>
 
 #include "ui/ozone/platform/dri/dri_surface.h"
@@ -11,10 +12,17 @@
 
 namespace ui {
 
+namespace {
+
+template<class Object> Object* DrmAllocator() {
+  return static_cast<Object*>(drmMalloc(sizeof(Object)));
+}
+
+}  // namespace
+
 MockDriWrapper::MockDriWrapper(int fd)
     : DriWrapper(""),
       get_crtc_call_count_(0),
-      free_crtc_call_count_(0),
       restore_crtc_call_count_(0),
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
@@ -29,14 +37,9 @@ MockDriWrapper::~MockDriWrapper() {
   fd_ = -1;
 }
 
-drmModeCrtc* MockDriWrapper::GetCrtc(uint32_t crtc_id) {
+ScopedDrmCrtcPtr MockDriWrapper::GetCrtc(uint32_t crtc_id) {
   get_crtc_call_count_++;
-  return new drmModeCrtc;
-}
-
-void MockDriWrapper::FreeCrtc(drmModeCrtc* crtc) {
-  free_crtc_call_count_++;
-  delete crtc;
+  return ScopedDrmCrtcPtr(DrmAllocator<drmModeCrtc>());
 }
 
 bool MockDriWrapper::SetCrtc(uint32_t crtc_id,
@@ -76,24 +79,21 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
   return page_flip_expectation_;
 }
 
+ScopedDrmPropertyPtr MockDriWrapper::GetProperty(drmModeConnector* connector,
+                                                 const char* name) {
+  return ScopedDrmPropertyPtr(DrmAllocator<drmModePropertyRes>());
+}
+
 bool MockDriWrapper::SetProperty(uint32_t connector_id,
                                  uint32_t property_id,
                                  uint64_t value) {
   return true;
 }
 
-void MockDriWrapper::FreeProperty(drmModePropertyRes* prop) {
-  delete prop;
-}
-
-drmModePropertyBlobRes* MockDriWrapper::GetPropertyBlob(
+ScopedDrmPropertyBlobPtr MockDriWrapper::GetPropertyBlob(
     drmModeConnector* connector,
     const char* name) {
-  return new drmModePropertyBlobRes;
-}
-
-void MockDriWrapper::FreePropertyBlob(drmModePropertyBlobRes* blob) {
-  delete blob;
+  return ScopedDrmPropertyBlobPtr(DrmAllocator<drmModePropertyBlobRes>());
 }
 
 bool MockDriWrapper::SetCursor(uint32_t crtc_id,

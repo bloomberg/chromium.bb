@@ -119,8 +119,8 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
 
   CHECK_NE(0u, displays.size());
 
-  drmModePropertyRes* dpms =
-      dri_->GetProperty(displays[0]->connector(), "DPMS");
+  ScopedDrmPropertyPtr dpms(
+      dri_->GetProperty(displays[0]->connector(), "DPMS"));
   if (dpms)
     dri_->SetProperty(displays[0]->connector()->connector_id,
                       dpms->prop_id,

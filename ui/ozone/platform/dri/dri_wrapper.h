@@ -8,14 +8,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 typedef struct _drmEventContext drmEventContext;
-typedef struct _drmModeConnector drmModeConnector;
-typedef struct _drmModeCrtc drmModeCrtc;
-typedef struct _drmModeFB drmModeFB;
 typedef struct _drmModeModeInfo drmModeModeInfo;
-typedef struct _drmModeProperty drmModePropertyRes;
-typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 
 namespace ui {
 
@@ -30,10 +26,7 @@ class DriWrapper {
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
   // CRTC to it's initial state. Use |SetCrtc| to restore the state.
-  virtual drmModeCrtc* GetCrtc(uint32_t crtc_id);
-
-  // Frees the CRTC mode object.
-  virtual void FreeCrtc(drmModeCrtc* crtc);
+  virtual ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id);
 
   // Used to configure CRTC with ID |crtc_id| to use the connector in
   // |connectors|. The CRTC will be configured with mode |mode| and will display
@@ -65,7 +58,7 @@ class DriWrapper {
   virtual bool RemoveFramebuffer(uint32_t framebuffer);
 
   // Get the DRM details associated with |framebuffer|.
-  virtual drmModeFB* GetFramebuffer(uint32_t framebuffer);
+  virtual ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer);
 
   // Schedules a pageflip for CRTC |crtc_id|. This function will return
   // immediately. Upon completion of the pageflip event, the CRTC will be
@@ -77,8 +70,8 @@ class DriWrapper {
   // Returns the property with name |name| associated with |connector|. Returns
   // NULL if property not found. If the returned value is valid, it must be
   // released using FreeProperty().
-  virtual drmModePropertyRes* GetProperty(drmModeConnector* connector,
-                                          const char* name);
+  virtual ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
+                                           const char* name);
 
   // Sets the value of property with ID |property_id| to |value|. The property
   // is applied to the connector with ID |connector_id|.
@@ -86,20 +79,12 @@ class DriWrapper {
                            uint32_t property_id,
                            uint64_t value);
 
-  // Frees |prop| and any resources it allocated when it was created. |prop|
-  // must be a valid object.
-  virtual void FreeProperty(drmModePropertyRes* prop);
-
   // Return a binary blob associated with |connector|. The binary blob is
   // associated with the property with name |name|. Return NULL if the property
   // could not be found or if the property does not have a binary blob. If valid
   // the returned object must be freed using FreePropertyBlob().
-  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
-                                                  const char* name);
-
-  // Frees |blob| and any resources allocated when it was created. |blob| must
-  // be a valid object.
-  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob);
+  virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
+                                                   const char* name);
 
   // Set the cursor to be displayed in CRTC |crtc_id|. (width, height) is the
   // cursor size pointed by |handle|.

@@ -60,6 +60,8 @@
         'hardware_display_controller.h',
         'ozone_platform_dri.cc',
         'ozone_platform_dri.h',
+        'scoped_drm_types.cc',
+        'scoped_drm_types.h',
         'screen_manager.cc',
         'screen_manager.h',
         'scanout_surface.h',

@@ -7,9 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/ozone/platform/dri/scoped_drm_types.h"
 
-typedef struct _drmModeConnector drmModeConnector;
-typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace ui {
@@ -18,15 +17,16 @@ namespace ui {
 // native display.
 class HardwareDisplayControllerInfo {
  public:
-  HardwareDisplayControllerInfo(drmModeConnector* connector, drmModeCrtc* crtc);
+  HardwareDisplayControllerInfo(ScopedDrmConnectorPtr connector,
+                                ScopedDrmCrtcPtr crtc);
   ~HardwareDisplayControllerInfo();
 
-  drmModeConnector* connector() const { return connector_; }
-  drmModeCrtc* crtc() const { return crtc_; }
+  drmModeConnector* connector() const { return connector_.get(); }
+  drmModeCrtc* crtc() const { return crtc_.get(); }
 
  private:
-  drmModeConnector* connector_;
-  drmModeCrtc* crtc_;
+  ScopedDrmConnectorPtr connector_;
+  ScopedDrmCrtcPtr crtc_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerInfo);
 };

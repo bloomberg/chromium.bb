@@ -16,7 +16,6 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual ~MockDriWrapper();
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
-  int get_free_crtc_call_count() const { return free_crtc_call_count_; }
   int get_restore_crtc_call_count() const { return restore_crtc_call_count_; }
   int get_add_framebuffer_call_count() const {
     return add_framebuffer_call_count_;
@@ -33,8 +32,7 @@ class MockDriWrapper : public ui::DriWrapper {
   }
 
   // DriWrapper:
-  virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE;
-  virtual void FreeCrtc(drmModeCrtc* crtc) OVERRIDE;
+  virtual ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) OVERRIDE;
   virtual bool SetCrtc(uint32_t crtc_id,
                        uint32_t framebuffer,
                        uint32_t* connectors,
@@ -51,13 +49,13 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
                         void* data) OVERRIDE;
+  virtual ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
+                                           const char* name) OVERRIDE;
   virtual bool SetProperty(uint32_t connector_id,
                            uint32_t property_id,
                            uint64_t value) OVERRIDE;
-  virtual void FreeProperty(drmModePropertyRes* prop) OVERRIDE;
-  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
-                                                  const char* name) OVERRIDE;
-  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob) OVERRIDE;
+  virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
+                                                   const char* name) OVERRIDE;
   virtual bool SetCursor(uint32_t crtc_id,
                          uint32_t handle,
                          uint32_t width,
@@ -67,7 +65,6 @@ class MockDriWrapper : public ui::DriWrapper {
 
  private:
   int get_crtc_call_count_;
-  int free_crtc_call_count_;
   int restore_crtc_call_count_;
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;

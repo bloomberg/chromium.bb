@@ -22,13 +22,9 @@ DriWrapper::~DriWrapper() {
     close(fd_);
 }
 
-drmModeCrtc* DriWrapper::GetCrtc(uint32_t crtc_id) {
+ScopedDrmCrtcPtr DriWrapper::GetCrtc(uint32_t crtc_id) {
   CHECK(fd_ >= 0);
-  return drmModeGetCrtc(fd_, crtc_id);
-}
-
-void DriWrapper::FreeCrtc(drmModeCrtc* crtc) {
-  drmModeFreeCrtc(crtc);
+  return ScopedDrmCrtcPtr(drmModeGetCrtc(fd_, crtc_id));
 }
 
 bool DriWrapper::SetCrtc(uint32_t crtc_id,
@@ -90,25 +86,23 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
                           data);
 }
 
-drmModeFB* DriWrapper::GetFramebuffer(uint32_t framebuffer) {
+ScopedDrmFramebufferPtr DriWrapper::GetFramebuffer(uint32_t framebuffer) {
   CHECK(fd_ >= 0);
-  return drmModeGetFB(fd_, framebuffer);
+  return ScopedDrmFramebufferPtr(drmModeGetFB(fd_, framebuffer));
 }
 
-drmModePropertyRes* DriWrapper::GetProperty(drmModeConnector* connector,
-                                            const char* name) {
+ScopedDrmPropertyPtr DriWrapper::GetProperty(drmModeConnector* connector,
+                                             const char* name) {
   for (int i = 0; i < connector->count_props; ++i) {
-    drmModePropertyRes* property = drmModeGetProperty(fd_, connector->props[i]);
+    ScopedDrmPropertyPtr property(drmModeGetProperty(fd_, connector->props[i]));
     if (!property)
       continue;
 
     if (strcmp(property->name, name) == 0)
-      return property;
-
-    drmModeFreeProperty(property);
+      return property.Pass();
   }
 
-  return NULL;
+  return ScopedDrmPropertyPtr();
 }
 
 bool DriWrapper::SetProperty(uint32_t connector_id,
@@ -118,34 +112,21 @@ bool DriWrapper::SetProperty(uint32_t connector_id,
   return !drmModeConnectorSetProperty(fd_, connector_id, property_id, value);
 }
 
-void DriWrapper::FreeProperty(drmModePropertyRes* prop) {
-  drmModeFreeProperty(prop);
-}
-
-drmModePropertyBlobRes* DriWrapper::GetPropertyBlob(drmModeConnector* connector,
-                                                    const char* name) {
+ScopedDrmPropertyBlobPtr DriWrapper::GetPropertyBlob(
+    drmModeConnector* connector, const char* name) {
   CHECK(fd_ >= 0);
   for (int i = 0; i < connector->count_props; ++i) {
-    drmModePropertyRes* property = drmModeGetProperty(fd_, connector->props[i]);
+    ScopedDrmPropertyPtr property(drmModeGetProperty(fd_, connector->props[i]));
     if (!property)
       continue;
 
     if (strcmp(property->name, name) == 0 &&
-        property->flags & DRM_MODE_PROP_BLOB) {
-      drmModePropertyBlobRes* blob =
-          drmModeGetPropertyBlob(fd_, connector->prop_values[i]);
-      drmModeFreeProperty(property);
-      return blob;
-    }
-
-    drmModeFreeProperty(property);
+        property->flags & DRM_MODE_PROP_BLOB)
+      return ScopedDrmPropertyBlobPtr(
+          drmModeGetPropertyBlob(fd_, connector->prop_values[i]));
   }
 
-  return NULL;
-}
-
-void DriWrapper::FreePropertyBlob(drmModePropertyBlobRes* blob) {
-  drmModeFreePropertyBlob(blob);
+  return ScopedDrmPropertyBlobPtr();
 }
 
 bool DriWrapper::SetCursor(uint32_t crtc_id,
