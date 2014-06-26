@@ -105,8 +105,6 @@
 
                     test.expectEvent(mediaElement, "error", "mediaElement error.");
                     test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
-                    test.expectEvent(mediaSource, "sourceclose", "mediaSource closed.");
-
                     mediaSource.endOfStream("decode");
                 });
 
@@ -114,9 +112,7 @@
                 {
                     assert_true(mediaElement.error != null);
                     assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_DECODE);
-
-                    assert_equals(mediaSource.sourceBuffers.length, 0);
-                    assert_equals(mediaSource.readyState, "closed");
+                    assert_equals(mediaSource.readyState, "ended");
                     test.done();
                 });
             }, "Signaling 'decode' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.");
@@ -136,8 +132,6 @@
 
                     test.expectEvent(mediaElement, "error", "mediaElement error.");
                     test.expectEvent(mediaSource, "sourceended", "mediaSource ended.");
-                    test.expectEvent(mediaSource, "sourceclose", "mediaSource closed.");
-
                     mediaSource.endOfStream("network");
                 });
 
@@ -145,9 +139,7 @@
                 {
                     assert_true(mediaElement.error != null);
                     assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_NETWORK);
-
-                    assert_equals(mediaSource.sourceBuffers.length, 0);
-                    assert_equals(mediaSource.readyState, "closed");
+                    assert_equals(mediaSource.readyState, "ended");
                     test.done();
                 });
             }, "Signaling 'network' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.");

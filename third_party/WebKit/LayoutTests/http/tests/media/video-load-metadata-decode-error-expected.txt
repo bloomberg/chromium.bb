@@ -1,0 +1,9 @@
+This test case simulates a decode error after loading meta data of a video.
+
+EVENT(loadedmetadata)
+loaded metadata of media file
+EVENT(error)
+failed to load media file
+EXPECTED (video.networkState == '1') OK
+END OF TEST
+

@@ -1578,6 +1578,7 @@ void HTMLMediaElement::noneSupported()
 
 void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
 {
+    ASSERT(m_readyState >= HAVE_METADATA);
     WTF_LOG(Media, "HTMLMediaElement::mediaEngineError(%d)", static_cast<int>(err->code()));
 
     // 1 - The user agent should cancel the fetching process.
@@ -1591,12 +1592,8 @@ void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(EventTypeNames::error);
 
-    closeMediaSource();
-
-    // 4 - Set the element's networkState attribute to the NETWORK_EMPTY value and queue a
-    // task to fire a simple event called emptied at the element.
-    m_networkState = NETWORK_EMPTY;
-    scheduleEvent(EventTypeNames::emptied);
+    // 4 - Set the element's networkState attribute to the NETWORK_IDLE value.
+    m_networkState = NETWORK_IDLE;
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
