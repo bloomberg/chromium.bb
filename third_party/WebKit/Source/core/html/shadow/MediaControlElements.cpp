@@ -492,10 +492,10 @@ PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscre
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        if (FullscreenElementStack::isActiveFullScreenElement(&mediaElement()))
+        if (FullscreenElementStack::isActiveFullScreenElement(mediaElement()))
             FullscreenElementStack::from(document()).webkitCancelFullScreen();
         else
-            FullscreenElementStack::from(document()).requestFullScreenForElement(&mediaElement(), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+            FullscreenElementStack::from(document()).requestFullScreenForElement(mediaElement(), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
         event->setDefaultHandled();
     }
     HTMLInputElement::defaultEventHandler(event);

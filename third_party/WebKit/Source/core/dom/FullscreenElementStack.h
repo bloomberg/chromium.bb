@@ -56,14 +56,14 @@ public:
     static Element* fullscreenElementFrom(Document&);
     static Element* currentFullScreenElementFrom(Document&);
     static bool isFullScreen(Document&);
-    static bool isActiveFullScreenElement(const Element*);
+    static bool isActiveFullScreenElement(const Element&);
 
     enum FullScreenCheckType {
         EnforceIFrameAllowFullScreenRequirement,
         ExemptIFrameAllowFullScreenRequirement,
     };
 
-    void requestFullScreenForElement(Element*, unsigned short flags, FullScreenCheckType);
+    void requestFullScreenForElement(Element&, unsigned short flags, FullScreenCheckType);
     void webkitCancelFullScreen();
 
     void webkitWillEnterFullScreenForElement(Element*);
@@ -77,10 +77,9 @@ public:
 
     void clearFullscreenElementStack();
     void popFullscreenElementStack();
-    void pushFullscreenElementStack(Element*);
-    void addDocumentToFullScreenChangeEventQueue(Document*);
+    void pushFullscreenElementStack(Element&);
+    void addDocumentToFullScreenChangeEventQueue(Document&);
 
-    bool fullScreenIsAllowedForElement(Element*) const;
     void fullScreenElementRemoved();
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
 
@@ -119,9 +118,9 @@ private:
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 };
 
-inline bool FullscreenElementStack::isActiveFullScreenElement(const Element* element)
+inline bool FullscreenElementStack::isActiveFullScreenElement(const Element& element)
 {
-    FullscreenElementStack* controller = fromIfExists(element->document());
+    FullscreenElementStack* controller = fromIfExists(element.document());
     if (!controller)
         return false;
     return controller->webkitIsFullScreen() && controller->webkitCurrentFullScreenElement() == element;

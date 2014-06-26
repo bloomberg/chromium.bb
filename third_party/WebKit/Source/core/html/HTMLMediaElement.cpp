@@ -3453,14 +3453,14 @@ void HTMLMediaElement::contextDestroyed()
 
 bool HTMLMediaElement::isFullscreen() const
 {
-    return FullscreenElementStack::isActiveFullScreenElement(this);
+    return FullscreenElementStack::isActiveFullScreenElement(*this);
 }
 
 void HTMLMediaElement::enterFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    FullscreenElementStack::from(document()).requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+    FullscreenElementStack::from(document()).requestFullScreenForElement(*this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
 }
 
 void HTMLMediaElement::exitFullscreen()
