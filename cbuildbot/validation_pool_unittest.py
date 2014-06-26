@@ -1137,6 +1137,8 @@ class TestFindSuspects(MoxBase):
     self.secret = 'chromeos/secret'
     self.secret_patch = self.GetPatches(project=self.secret,
                                         remote=constants.INTERNAL_REMOTE)
+    self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout')
+    self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
 
   @staticmethod
   def _GetBuildFailure(pkg):
@@ -1148,7 +1150,8 @@ class TestFindSuspects(MoxBase):
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
-  def _GetFailedMessage(self, exceptions, stage='Build', internal=False):
+  def _GetFailedMessage(self, exceptions, stage='Build', internal=False,
+                        bot='daisy_spring-paladin'):
     """Returns a BuildFailureMessage object."""
     tracebacks = []
     for ex in exceptions:
@@ -1156,7 +1159,7 @@ class TestFindSuspects(MoxBase):
                                                       str(ex)))
     reason = 'failure reason string'
     return failures_lib.BuildFailureMessage(
-        'Stage %s failed' % stage, tracebacks, internal, reason)
+        'Stage %s failed' % stage, tracebacks, internal, reason, bot)
 
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
                       internal=False, infra_fail=False, lab_fail=False):
@@ -1174,7 +1177,8 @@ class TestFindSuspects(MoxBase):
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
     message = self._GetFailedMessage(all_exceptions, internal=internal)
     results = validation_pool.CalculateSuspects.FindSuspects(
-        patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
+        constants.SOURCE_ROOT, patches, [message], lab_fail=lab_fail,
+        infra_fail=infra_fail)
     self.assertEquals(set(suspects), results)
 
   @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
@@ -1287,6 +1291,24 @@ class TestFindSuspects(MoxBase):
     # 'Builders failed to report statuses' belong to infrastructure failures.
     self.assertTrue(
         validation_pool.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
+  def testSkipInnocentOverlayPatches(self):
+    """Test that we don't blame innocent overlay patches."""
+    changes = self.GetPatches(4)
+    overlay_dir = os.path.join(constants.SOURCE_ROOT, 'src/overlays')
+    m = mock.MagicMock()
+    self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout', return_value=m)
+    self.PatchObject(m, 'GetPath', return_value=overlay_dir)
+    self.PatchObject(changes[0], 'GetDiffStatus',
+        return_value={'overlay-x86-generic/make.conf': 'M'})
+    self.PatchObject(changes[1], 'GetDiffStatus',
+        return_value={'make.conf': 'M'})
+    self.PatchObject(changes[2], 'GetDiffStatus',
+        return_value={'overlay-daisy/make.conf': 'M'})
+    self.PatchObject(changes[3], 'GetDiffStatus',
+        return_value={'overlay-daisy_spring/make.conf': 'M'})
+
+    self._AssertSuspects(changes, changes[1:], [self.kernel_pkg])
 
 
 class TestCLStatus(MoxBase):

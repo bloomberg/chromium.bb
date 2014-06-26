@@ -48,8 +48,8 @@ def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
   details.append('in %s' % dashboard_url)
   msg = '%s: %s' % (builder_name, ' '.join(details))
 
-  return failures_lib.BuildFailureMessage(msg, tracebacks, internal,
-                                              reason)
+  return failures_lib.BuildFailureMessage(msg, tracebacks, internal, reason,
+                                          builder_name)
 
 
 class ManifestVersionedSyncCompletionStage(

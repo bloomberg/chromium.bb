@@ -267,7 +267,7 @@ class CrashCollectionFailure(InfrastructureFailure):
 class BuildFailureMessage(object):
   """Message indicating that changes failed to be validated."""
 
-  def __init__(self, message, tracebacks, internal, reason):
+  def __init__(self, message, tracebacks, internal, reason, builder):
     """Create a BuildFailureMessage object.
 
     Args:
@@ -275,6 +275,7 @@ class BuildFailureMessage(object):
       tracebacks: Exceptions received by individual builders, if any.
       internal: Whether this failure occurred on an internal builder.
       reason: A string describing the failure.
+      builder: The builder the failure occurred on.
     """
     # Convert each of the input arguments into simple Python datastructures
     # (i.e. not generators) that can be easily pickled.
@@ -282,6 +283,7 @@ class BuildFailureMessage(object):
     self.tracebacks = tuple(tracebacks)
     self.internal = bool(internal)
     self.reason = str(reason)
+    self.builder = str(builder)
 
   def __str__(self):
     return self.message

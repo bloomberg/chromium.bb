@@ -20,8 +20,10 @@ import time
 import urllib
 from xml.dom import minidom
 
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
@@ -1119,7 +1121,8 @@ class CalculateSuspects(object):
                 messages, failures_lib.InfrastructureFailure, strict=False))
 
   @classmethod
-  def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False):
+  def FindSuspects(cls, build_root, changes, messages, infra_fail=False,
+                   lab_fail=False):
     """Find out what changes probably caused our failure.
 
     In cases where there were no internal failures, we can assume that the
@@ -1128,12 +1131,13 @@ class CalculateSuspects(object):
     If the failures don't match either case, just fail everything.
 
     Args:
-        changes: A list of cros_patch.GerritPatch instances to consider.
-        messages: A list of build failure messages, of type
-          BuildFailureMessage or of type NoneType.
-        infra_fail: The build failed purely due to infrastructure failures.
-        lab_fail: The build failed purely due to test lab infrastructure
-          failures.
+      build_root: Build root directory.
+      changes: A list of cros_patch.GerritPatch instances to consider.
+      messages: A list of build failure messages, of type
+        BuildFailureMessage or of type NoneType.
+      infra_fail: The build failed purely due to infrastructure failures.
+      lab_fail: The build failed purely due to test lab infrastructure
+        failures.
 
     Returns:
        A set of changes as suspects.
@@ -1159,19 +1163,114 @@ class CalculateSuspects(object):
     else:
       candidates = [change for change in changes if not change.internal]
 
+    # Filter out innocent internal overlay changes from our list of candidates.
+    candidates = cls.FilterInnocentOverlayChanges(
+        build_root, candidates, messages)
+
     bad_changes = ValidationPool.GetShouldRejectChanges(candidates)
     if bad_changes:
       # If there are changes that have been set verified=-1 or
       # code-review=-2, these changes are suspects of the failed build.
       suspects.update(bad_changes)
     elif all(message and message.IsPackageBuildFailure()
-           for message in messages):
+             for message in messages):
       # If we are here, there are no None messages.
       suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
     else:
       suspects.update(candidates)
 
     return suspects
+
+  @classmethod
+  def GetResponsibleOverlays(cls, build_root, messages):
+    """Get the set of overlays that could have caused failures.
+
+    This loops through the set of builders that failed in a given run and
+    finds what overlays could have been responsible for the failure.
+
+    Args:
+      build_root: Build root directory.
+      messages: A list of build failure messages from supporting builders.
+        These must be BuildFailureMessage objects or NoneType objects.
+
+    Returns:
+      The set of overlays that could have caused the failures. If we can't
+      determine what overlays are responsible, returns None.
+    """
+    responsible_overlays = set()
+    for message in messages:
+      if message is None:
+        return None
+      bot_id = message.builder
+      config = cbuildbot_config.config.get(bot_id)
+      if not config:
+        return None
+      for board in config.boards:
+        overlays = portage_utilities.FindOverlays(
+            constants.BOTH_OVERLAYS, board, build_root)
+        responsible_overlays.update(overlays)
+    return responsible_overlays
+
+  @classmethod
+  def GetAffectedOverlays(cls, change, manifest, all_overlays):
+    """Get the set of overlays affected by a given change.
+
+    Args:
+      change: The change to look at.
+      manifest: A ManifestCheckout instance representing our build directory.
+      all_overlays: The set of all valid overlays.
+
+    Returns:
+      The set of overlays affected by the specified |change|. If the change
+      affected something other than an overlay, return None.
+    """
+    checkout = change.GetCheckout(manifest, strict=False)
+    if checkout:
+      git_repo = checkout.GetPath(absolute=True)
+
+      # The whole git repo is an overlay. Return it.
+      # Example: src/private-overlays/overlay-x86-zgb-private
+      if git_repo in all_overlays:
+        return set([git_repo])
+
+      # Get the set of immediate subdirs affected by the change.
+      # Example: src/overlays/overlay-x86-zgb
+      subdirs = set([os.path.join(git_repo, path.split(os.path.sep)[0])
+                     for path in change.GetDiffStatus(git_repo)])
+
+      # If all of the subdirs are overlays, return them.
+      if subdirs.issubset(all_overlays):
+        return subdirs
+
+  @classmethod
+  def FilterInnocentOverlayChanges(cls, build_root, changes, messages):
+    """Filter out clearly innocent overlay changes based on failure messages.
+
+    It is not possible to break a x86-generic builder via a change to an
+    unrelated overlay (e.g. amd64-generic). Filter out changes that are
+    known to be innocent.
+
+    Args:
+      build_root: Build root directory.
+      changes: Changes to filter.
+      messages: A list of build failure messages from supporting builders.
+        These must be BuildFailureMessage objects or NoneType objects.
+
+    Returns:
+      The list of changes that are potentially guilty.
+    """
+    responsible_overlays = cls.GetResponsibleOverlays(build_root, messages)
+    if responsible_overlays is None:
+      return changes
+    all_overlays = set(portage_utilities.FindOverlays(
+        constants.BOTH_OVERLAYS, None, build_root))
+    manifest = git.ManifestCheckout.Cached(build_root)
+    candidates = []
+    for change in changes:
+      overlays = cls.GetAffectedOverlays(change, manifest, all_overlays)
+      if overlays is None or overlays.issubset(responsible_overlays):
+        candidates.append(change)
+    return candidates
 
 
 class ValidationPool(object):
@@ -2311,6 +2410,7 @@ class ValidationPool(object):
       change: The change we want to create a message for.
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
+        These must be BuildFailureMessage objects or NoneType objects.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
       infra_fail: The build failed purely due to infrastructure failures.
@@ -2455,7 +2555,8 @@ class ValidationPool(object):
       lab_fail = CalculateSuspects.OnlyLabFailures(messages, no_stat)
       infra_fail = CalculateSuspects.OnlyInfraFailures(messages, no_stat)
       suspects = CalculateSuspects.FindSuspects(
-          candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail)
+          self.build_root, candidates, messages, infra_fail=infra_fail,
+          lab_fail=lab_fail)
     # Send out failure notifications for each change.
     inputs = [[change, messages, suspects, sanity, infra_fail,
                lab_fail, no_stat] for change in candidates]
