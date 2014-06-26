@@ -6,14 +6,16 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 namespace syncer {
 
 sync_pb::AttachmentIdProto CreateAttachmentIdProto() {
-  // Only requirement here is that this id must be globally unique.
   sync_pb::AttachmentIdProto proto;
-  std::string guid = base::GenerateGUID();
+  std::string guid = StringToLowerASCII(base::GenerateGUID());
   DCHECK(!guid.empty());
+  // Requirements are that this id must be a unique RFC4122 UUID, formatted in
+  // lower case.
   proto.set_unique_id(guid);
   return proto;
 }
