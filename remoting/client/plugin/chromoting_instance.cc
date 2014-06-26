@@ -217,6 +217,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       input_handler_(this),
       use_async_pin_dialog_(false),
       use_media_source_rendering_(false),
+      delegate_large_cursors_(false),
       weak_factory_(this) {
 #if defined(OS_NACL)
   // In NaCl global resources need to be initialized differently because they
@@ -371,6 +372,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleEnableMediaSourceRendering();
   } else if (method == "sendMouseInputWhenUnfocused") {
     HandleSendMouseInputWhenUnfocused();
+  } else if (method == "delegateLargeCursors") {
+    HandleDelegateLargeCursors();
   }
 }
 
@@ -581,7 +584,7 @@ void ChromotingInstance::SetCursorShape(
   if (IsVisibleRow(src_row_data, src_row_data_end)) {
     // If the cursor exceeds the size permitted by PPAPI then crop it, keeping
     // the hotspot as close to the center of the new cursor shape as possible.
-    if (height > kMaxCursorHeight) {
+    if (height > kMaxCursorHeight && !delegate_large_cursors_) {
       int y = hotspot_y - (kMaxCursorHeight / 2);
       y = std::max(y, 0);
       y = std::min(y, height - kMaxCursorHeight);
@@ -590,7 +593,7 @@ void ChromotingInstance::SetCursorShape(
       height = kMaxCursorHeight;
       hotspot_y -= y;
     }
-    if (width > kMaxCursorWidth) {
+    if (width > kMaxCursorWidth && !delegate_large_cursors_) {
       int x = hotspot_x - (kMaxCursorWidth / 2);
       x = std::max(x, 0);
       x = std::min(x, height - kMaxCursorWidth);
@@ -613,7 +616,28 @@ void ChromotingInstance::SetCursorShape(
     }
   }
 
-  input_handler_.SetMouseCursor(cursor_image.Pass(), cursor_hotspot);
+  if (height > kMaxCursorHeight || width > kMaxCursorWidth) {
+    DCHECK(delegate_large_cursors_);
+    size_t buffer_size = height * bytes_per_row;
+    pp::VarArrayBuffer array_buffer(buffer_size);
+    void* dst = array_buffer.Map();
+    memcpy(dst, cursor_image->data(), buffer_size);
+    array_buffer.Unmap();
+    pp::VarDictionary dictionary;
+    dictionary.Set(pp::Var("width"), width);
+    dictionary.Set(pp::Var("height"), height);
+    dictionary.Set(pp::Var("hotspotX"), cursor_hotspot.x());
+    dictionary.Set(pp::Var("hotspotY"), cursor_hotspot.y());
+    dictionary.Set(pp::Var("data"), array_buffer);
+    PostChromotingMessage("setCursorShape", dictionary);
+    input_handler_.SetMouseCursor(scoped_ptr<pp::ImageData>(), cursor_hotspot);
+  } else {
+    if (delegate_large_cursors_) {
+      pp::VarDictionary dictionary;
+      PostChromotingMessage("unsetCursorShape", dictionary);
+    }
+    input_handler_.SetMouseCursor(cursor_image.Pass(), cursor_hotspot);
+  }
 }
 
 void ChromotingInstance::OnFirstFrameReceived() {
@@ -994,6 +1018,10 @@ void ChromotingInstance::HandleEnableMediaSourceRendering() {
 
 void ChromotingInstance::HandleSendMouseInputWhenUnfocused() {
   input_handler_.set_send_mouse_input_when_unfocused(true);
+}
+
+void ChromotingInstance::HandleDelegateLargeCursors() {
+  delegate_large_cursors_ = true;
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

@@ -37,7 +37,7 @@
       "js": [ "cs_third_party_auth_trampoline.js" ]
     }
   ],
-  "content_security_policy": "default-src 'self'; script-src 'self' {{ TALK_GADGET_HOST }}; style-src 'self' https://fonts.googleapis.com; img-src 'self' {{ TALK_GADGET_HOST }}; font-src *; connect-src 'self' {{ OAUTH2_ACCOUNTS_HOST }} {{ GOOGLE_API_HOSTS }} {{ TALK_GADGET_HOST }} https://relay.google.com",
+  "content_security_policy": "default-src 'self'; script-src 'self' {{ TALK_GADGET_HOST }}; style-src 'self' https://fonts.googleapis.com; img-src 'self' {{ TALK_GADGET_HOST }} data:; font-src *; connect-src 'self' {{ OAUTH2_ACCOUNTS_HOST }} {{ GOOGLE_API_HOSTS }} {{ TALK_GADGET_HOST }} https://relay.google.com",
 {% endif %}
   "optional_permissions": [
     "<all_urls>"

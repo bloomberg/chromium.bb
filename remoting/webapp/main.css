@@ -779,3 +779,8 @@ html.apps-v2.scrollable {
 #video-container.mediasource-rendering .client-plugin-container {
   opacity: 0;
 }
+
+.mouse-cursor-overlay {
+  position: absolute;
+  pointer-events: none;
+};

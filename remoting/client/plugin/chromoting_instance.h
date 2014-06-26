@@ -211,6 +211,7 @@ class ChromotingInstance :
   void HandleAllowMouseLockMessage();
   void HandleEnableMediaSourceRendering();
   void HandleSendMouseInputWhenUnfocused();
+  void HandleDelegateLargeCursors();
 
   // Helper method called from Connect() to connect with parsed config.
   void ConnectWithConfig(const ClientConfig& config,
@@ -294,6 +295,10 @@ class ChromotingInstance :
   // rendering. In that case all the encoded video will be passed to the
   // webapp for decoding.
   bool use_media_source_rendering_;
+
+  // Set to true if the web-app can handle large cursors. If false, then large
+  // cursors will be cropped to the maximum size supported by Pepper.
+  bool delegate_large_cursors_;
 
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
