@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to a server."""
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 import functools
 import hashlib
@@ -1482,8 +1482,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
   if filepath != native_filepath:
     # Special case './'.
     if filepath != native_filepath + '.' + os.path.sep:
-      # Give up enforcing strict path case on OSX. Really, it's that sad. The
-      # case where it happens is very specific and hard to reproduce:
+      # While it'd be nice to enforce path casing on Windows, it's impractical.
+      # Also give up enforcing strict path case on OSX. Really, it's that sad.
+      # The case where it happens is very specific and hard to reproduce:
       # get_native_path_case(
       #    u'Foo.framework/Versions/A/Resources/Something.nib') will return
       # u'Foo.framework/Versions/A/resources/Something.nib', e.g. lowercase 'r'.
@@ -1496,7 +1497,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       # So *something* is happening under the hood resulting in the command 'ls'
       # and Carbon.File.FSPathMakeRef('path').FSRefMakePath() to disagree.  We
       # have no idea why.
-      if sys.platform != 'darwin':
+      if sys.platform not in ('darwin', 'win32'):
         raise MappingError(
             'File path doesn\'t equal native file path\n%s != %s' %
             (filepath, native_filepath))
