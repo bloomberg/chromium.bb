@@ -1512,6 +1512,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'xcassets':    'folder.assetcatalog',
         'xcconfig':    'text.xcconfig',
         'xcdatamodel': 'wrapper.xcdatamodel',
+        'xcdatamodeld':'wrapper.xcdatamodeld',
         'xib':         'file.xib',
         'y':           'sourcecode.yacc',
       }
