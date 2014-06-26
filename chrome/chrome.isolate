@@ -59,7 +59,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/<(version_full).manifest',
           '<(PRODUCT_DIR)/chrome.dll',
-          '<(PRODUCT_DIR)/chrome_child.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
@@ -69,6 +68,13 @@
           '<(PRODUCT_DIR)/nacl64<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and component=="static_library"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_child.dll',
         ],
       },
     }],
