@@ -27,7 +27,7 @@ bool StructureAt(const uint8* data, size_t data_size, const T** structure) {
 // static
 bool EnumResourcesWorker(
     const base::win::PEImage& image, const uint8* tree_base, DWORD tree_size,
-    DWORD directory_offset, upgrade_test::EntryPath &path,
+    DWORD directory_offset, upgrade_test::EntryPath* path,
     upgrade_test::EnumResource_Fn callback, uintptr_t context) {
   bool success = true;
   const IMAGE_RESOURCE_DIRECTORY* resource_directory;
@@ -69,11 +69,11 @@ bool EnumResourcesWorker(
         success = false;
         break;
       }
-      path.push_back(
+      path->push_back(
           upgrade_test::EntryId(std::wstring(&dir_string->NameString[0],
                                              dir_string->Length)));
     } else {
-      path.push_back(upgrade_test::EntryId(scan->Id));
+      path->push_back(upgrade_test::EntryId(scan->Id));
     }
     if (scan->DataIsDirectory) {
       success = EnumResourcesWorker(image, tree_base, tree_size,
@@ -88,7 +88,7 @@ bool EnumResourcesWorker(
           tree_base + tree_size) {
         // Despite what winnt.h says, OffsetToData is an RVA.
         callback(
-            path,
+            *path,
             reinterpret_cast<uint8*>(image.RVAToAddr(data_entry->OffsetToData)),
             data_entry->Size, data_entry->CodePage, context);
       } else {
@@ -96,7 +96,7 @@ bool EnumResourcesWorker(
         success = false;
       }
     }
-    path.pop_back();
+    path->pop_back();
   }
 
   return success;
@@ -112,11 +112,12 @@ bool EnumResources(const base::win::PEImage& image, EnumResource_Fn callback,
   DWORD resources_size =
       image.GetImageDirectoryEntrySize(IMAGE_DIRECTORY_ENTRY_RESOURCE);
   if (resources_size != 0) {
+    EntryPath path_storage;
     return EnumResourcesWorker(
         image,
         reinterpret_cast<uint8*>(
             image.GetImageDirectoryEntryAddr(IMAGE_DIRECTORY_ENTRY_RESOURCE)),
-        resources_size, 0, EntryPath(), callback, context);
+        resources_size, 0, &path_storage, callback, context);
   }
   return true;
 }
