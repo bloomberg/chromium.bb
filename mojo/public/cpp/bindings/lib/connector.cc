@@ -50,21 +50,6 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   return message_pipe_.Pass();
 }
 
-bool Connector::WaitForIncomingMessage() {
-  if (error_)
-    return false;
-
-  MojoResult rv = Wait(message_pipe_.get(),
-                       MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE);
-  if (rv != MOJO_RESULT_OK) {
-    NotifyError();
-    return false;
-  }
-  mojo_ignore_result(ReadSingleMessage(&rv));
-  return (rv == MOJO_RESULT_OK);
-}
-
 bool Connector::Accept(Message* message) {
   assert(message_pipe_.is_valid());
 
@@ -114,12 +99,17 @@ void Connector::CallOnHandleReady(void* closure, MojoResult result) {
 void Connector::OnHandleReady(MojoResult result) {
   assert(async_wait_id_ != 0);
   async_wait_id_ = 0;
-  if (result != MOJO_RESULT_OK) {
-    NotifyError();
-    return;
+
+  if (result == MOJO_RESULT_OK) {
+    // Return immediately if |this| was destroyed. Do not touch any members!
+    if (!ReadMore())
+      return;
+  } else {
+    error_ = true;
   }
-  ReadAllAvailableMessages();
-  // At this point, this object might have been deleted. Return.
+
+  if (error_ && error_handler_)
+    error_handler_->OnConnectionError();
 }
 
 void Connector::WaitToReadMore() {
@@ -130,56 +120,37 @@ void Connector::WaitToReadMore() {
                                       this);
 }
 
-bool Connector::ReadSingleMessage(MojoResult* read_result) {
-  bool receiver_result = false;
+bool Connector::ReadMore() {
+  while (true) {
+    bool receiver_result = false;
 
-  // Detect if |this| was destroyed during message dispatch. Allow for the
-  // possibility of re-entering ReadMore() through message dispatch.
-  bool was_destroyed_during_dispatch = false;
-  bool* previous_destroyed_flag = destroyed_flag_;
-  destroyed_flag_ = &was_destroyed_during_dispatch;
+    // Detect if |this| was destroyed during message dispatch. Allow for the
+    // possibility of re-entering ReadMore() through message dispatch.
+    bool was_destroyed_during_dispatch = false;
+    bool* previous_destroyed_flag = destroyed_flag_;
+    destroyed_flag_ = &was_destroyed_during_dispatch;
 
-  MojoResult rv = ReadAndDispatchMessage(
-      message_pipe_.get(), incoming_receiver_, &receiver_result);
-  if (read_result)
-    *read_result = rv;
+    MojoResult rv = ReadAndDispatchMessage(
+        message_pipe_.get(), incoming_receiver_, &receiver_result);
 
-  if (was_destroyed_during_dispatch) {
-    if (previous_destroyed_flag)
-      *previous_destroyed_flag = true;  // Propagate flag.
-    return false;
-  }
-  destroyed_flag_ = previous_destroyed_flag;
-
-  if (rv == MOJO_RESULT_SHOULD_WAIT)
-    return true;
-
-  if (rv != MOJO_RESULT_OK ||
-      (enforce_errors_from_incoming_receiver_ && !receiver_result)) {
-    NotifyError();
-  }
-  return true;
-}
-
-void Connector::ReadAllAvailableMessages() {
-  while (!error_) {
-    MojoResult rv;
-
-    // Return immediately if |this| was destroyed. Do not touch any members!
-    if (!ReadSingleMessage(&rv))
-      return;
+    if (was_destroyed_during_dispatch) {
+      if (previous_destroyed_flag)
+        *previous_destroyed_flag = true;  // Propagate flag.
+      return false;
+    }
+    destroyed_flag_ = previous_destroyed_flag;
 
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
     }
+    if (rv != MOJO_RESULT_OK ||
+        (enforce_errors_from_incoming_receiver_ && !receiver_result)) {
+      error_ = true;
+      break;
+    }
   }
-}
-
-void Connector::NotifyError() {
-  error_ = true;
-  if (error_handler_)
-    error_handler_->OnConnectionError();
+  return true;
 }
 
 }  // namespace internal

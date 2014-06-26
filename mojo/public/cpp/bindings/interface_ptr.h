@@ -46,14 +46,6 @@ class InterfacePtr {
     internal_state_.Swap(&doomed);
   }
 
-  // Blocks the current thread for the first incoming method call, i.e., either
-  // a call to a client method or a callback method. Returns |true| if a method
-  // has been called, |false| in case of error. It must only be called on a
-  // bound object.
-  bool WaitForIncomingMethodCall() {
-    return internal_state_.WaitForIncomingMethodCall();
-  }
-
   // This method configures the InterfacePtr<..> to be a proxy to a remote
   // object on the other end of the given pipe.
   //

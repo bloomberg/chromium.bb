@@ -69,11 +69,6 @@ class InterfaceImplState : public ErrorHandler {
     instance()->OnConnectionEstablished();
   }
 
-  bool WaitForIncomingMethodCall() {
-    assert(router_);
-    return router_->WaitForIncomingMessage();
-  }
-
   Router* router() { return router_; }
   Client* client() { return proxy_; }
 
