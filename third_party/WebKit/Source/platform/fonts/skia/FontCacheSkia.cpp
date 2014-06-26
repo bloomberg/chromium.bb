@@ -42,6 +42,8 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "public/platform/Platform.h"
+#include "public/platform/linux/WebSandboxSupport.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
@@ -73,7 +75,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
         return nullptr;
 
     FontFaceCreationParams creationParams;
-    creationParams = FontFaceCreationParams(fallbackFont.fontconfigInterfaceId, fallbackFont.ttcIndex);
+    creationParams = FontFaceCreationParams(fallbackFont.filename, fallbackFont.fontconfigInterfaceId, fallbackFont.ttcIndex);
 
     // Changes weight and/or italic of given FontDescription depends on
     // the result of fontconfig so that keeping the correct font mapping
@@ -132,8 +134,14 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
         // TODO(dro): crbug.com/381620 Use creationParams.ttcIndex() after
         // https://code.google.com/p/skia/issues/detail?id=1186 gets fixed.
-        SkTypeface* typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()));
-        return adoptRef(typeface);
+        SkTypeface* typeface = nullptr;
+        if (blink::Platform::current()->sandboxSupport())
+            typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()));
+        else
+            typeface = SkTypeface::CreateFromFile(creationParams.filename().data());
+
+        if (typeface)
+            return adoptRef(typeface);
     }
 #endif
 

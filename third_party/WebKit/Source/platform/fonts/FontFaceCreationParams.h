@@ -32,7 +32,7 @@
 #define FontFaceCreationParams_h
 
 #include "wtf/Assertions.h"
-#include "wtf/HashFunctions.h"
+#include "wtf/StringHasher.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringHash.h"
 
@@ -46,17 +46,18 @@ enum FontFaceCreationType {
 class FontFaceCreationParams {
     FontFaceCreationType m_creationType;
     AtomicString m_family;
+    CString m_filename;
     int m_fontconfigInterfaceId;
     int m_ttcIndex;
 
 public:
     FontFaceCreationParams()
-        : m_creationType(CreateFontByFamily), m_family(AtomicString()), m_fontconfigInterfaceId(0), m_ttcIndex(0)
+        : m_creationType(CreateFontByFamily), m_family(AtomicString()), m_filename(CString()), m_fontconfigInterfaceId(0), m_ttcIndex(0)
     {
     }
 
     explicit FontFaceCreationParams(AtomicString family)
-        : m_creationType(CreateFontByFamily), m_family(family), m_fontconfigInterfaceId(0), m_ttcIndex(0)
+        : m_creationType(CreateFontByFamily), m_family(family), m_filename(CString()), m_fontconfigInterfaceId(0), m_ttcIndex(0)
     {
 #if OS(WIN) && ENABLE(OPENTYPE_VERTICAL)
     // Leading "@" in the font name enables Windows vertical flow flag for the font.
@@ -67,8 +68,8 @@ public:
 #endif
     }
 
-    FontFaceCreationParams(int fontconfigInterfaceId, int ttcIndex = 0)
-        : m_creationType(CreateFontByFciIdAndTtcIndex), m_fontconfigInterfaceId(fontconfigInterfaceId), m_ttcIndex(ttcIndex)
+    FontFaceCreationParams(CString filename, int fontconfigInterfaceId, int ttcIndex = 0)
+        : m_creationType(CreateFontByFciIdAndTtcIndex), m_filename(filename), m_fontconfigInterfaceId(fontconfigInterfaceId), m_ttcIndex(ttcIndex)
     {
     }
 
@@ -77,6 +78,11 @@ public:
     {
         ASSERT(m_creationType == CreateFontByFamily);
         return m_family;
+    }
+    CString filename() const
+    {
+        ASSERT(m_creationType == CreateFontByFciIdAndTtcIndex);
+        return m_filename;
     }
     int fontconfigInterfaceId() const
     {
@@ -92,7 +98,15 @@ public:
     unsigned hash() const
     {
         if (m_creationType == CreateFontByFciIdAndTtcIndex) {
-            return WTF::IntHash<int>::hash(m_fontconfigInterfaceId);
+            StringHasher hasher;
+            // Hashing the filename and ints in this way is sensitive to character encoding
+            // and endianness. However, since the hash is not transferred over a network
+            // or permanently stored and only used for the runtime of Chromium,
+            // this is not a concern.
+            hasher.addCharacters(reinterpret_cast<const LChar*>(m_filename.data()), m_filename.length());
+            hasher.addCharacters(reinterpret_cast<const LChar*>(&m_ttcIndex), sizeof(m_ttcIndex));
+            hasher.addCharacters(reinterpret_cast<const LChar*>(&m_fontconfigInterfaceId), sizeof(m_fontconfigInterfaceId));
+            return hasher.hash();
         }
         return CaseFoldingHash::hash(m_family.isEmpty() ? "" : m_family);
     }
@@ -101,6 +115,7 @@ public:
     {
         return m_creationType == other.m_creationType
             && equalIgnoringCase(m_family, other.m_family)
+            && m_filename == other.m_filename
             && m_fontconfigInterfaceId == other.m_fontconfigInterfaceId
             && m_ttcIndex == other.m_ttcIndex;
     }
