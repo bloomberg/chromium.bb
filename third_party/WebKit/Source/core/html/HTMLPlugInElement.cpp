@@ -33,6 +33,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLImageLoader.h"
@@ -40,7 +41,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
@@ -201,6 +201,10 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     Widget* plugin = ownedWidget();
     if (plugin && plugin->pluginShouldPersist())
         m_persistedPluginWidget = plugin;
+#if ENABLE(OILPAN)
+    else if (plugin)
+        plugin->detach();
+#endif
     resetInstance();
     // FIXME - is this next line necessary?
     setWidget(nullptr);

@@ -303,6 +303,11 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     if (!needsCompositingUpdate)
         return;
 
+#if ENABLE(OILPAN)
+    if (!m_element)
+        return;
+#endif
+
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
     // on the RenderLayer.
@@ -424,10 +429,10 @@ void WebPluginContainerImpl::allowScriptObjects()
 
 void WebPluginContainerImpl::clearScriptObjects()
 {
-    LocalFrame* frame = m_element->document().frame();
-    if (!frame)
+    if (!frame())
         return;
-    frame->script().cleanupScriptObjectsForPlugin(this);
+
+    frame()->script().cleanupScriptObjectsForPlugin(this);
 }
 
 NPObject* WebPluginContainerImpl::scriptableObjectForElement()
@@ -651,7 +656,8 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : m_element(element)
+    : WebCore::FrameDestructionObserver(element->document().frame())
+    , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)
     , m_touchEventRequestType(TouchEventRequestTypeNone)
@@ -661,8 +667,21 @@ WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* eleme
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
+#if ENABLE(OILPAN)
+    // The element (and its document) are heap allocated and may
+    // have been finalized by now; unsafe to unregister the touch
+    // event handler at this stage.
+    //
+    // This is acceptable, as the widget will unregister itself if it
+    // is cleanly detached. If an explicit detach doesn't happen, this
+    // container is assumed to have died with the plugin element (and
+    // its document), hence no unregistration step is needed.
+    //
+    m_element = 0;
+#else
     if (m_touchEventRequestType != TouchEventRequestTypeNone)
         m_element->document().didRemoveTouchEventHandler(m_element);
+#endif
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
@@ -670,6 +689,16 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
 }
+
+#if ENABLE(OILPAN)
+void WebPluginContainerImpl::detach()
+{
+    if (m_touchEventRequestType != TouchEventRequestTypeNone)
+        m_element->document().didRemoveTouchEventHandler(m_element);
+
+    setWebLayer(0);
+}
+#endif
 
 void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
 {

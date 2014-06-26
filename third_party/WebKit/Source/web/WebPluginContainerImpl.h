@@ -31,6 +31,7 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
+#include "core/frame/FrameDestructionObserver.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Widget.h"
 #include "public/web/WebPluginContainer.h"
@@ -65,7 +66,7 @@ class WebPlugin;
 class WebPluginLoadObserver;
 class WebExternalTextureLayer;
 
-class WebPluginContainerImpl FINAL : public WebCore::PluginView, public WebPluginContainer {
+class WebPluginContainerImpl FINAL : public WebCore::PluginView, public WebPluginContainer, public WebCore::FrameDestructionObserver {
 public:
     static PassRefPtr<WebPluginContainerImpl> create(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
@@ -162,6 +163,10 @@ public:
 
     bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&);
 
+#if ENABLE(OILPAN)
+    virtual void detach() OVERRIDE;
+#endif
+
 private:
     WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin);
     virtual ~WebPluginContainerImpl();
@@ -185,6 +190,9 @@ private:
     void windowCutOutRects(const WebCore::IntRect& frameRect,
                            Vector<WebCore::IntRect>& cutOutRects);
 
+    // FIXME: Oilpan: consider moving Widget to the heap and turn this
+    // into a traced member. For the time being, it is a bare pointer
+    // of its owning PlugInElement and managed as such.
     WebCore::HTMLPlugInElement* m_element;
     WebPlugin* m_webPlugin;
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;

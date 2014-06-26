@@ -133,6 +133,10 @@ public:
     // Notifies this widget that it will no longer be receiving events.
     virtual void eventListenersRemoved() { }
 
+#if ENABLE(OILPAN)
+    virtual void detach() { }
+#endif
+
 private:
     Widget* m_parent;
     IntRect m_frame;
