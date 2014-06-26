@@ -103,3 +103,13 @@ TEST_F(PermissionQueueControllerTests, OneObservationPerInfoBarCancelled) {
   queue_controller.CancelInfoBarRequest(RequestID(0));
   EXPECT_EQ(1, queue_controller.call_count());
 };
+
+TEST_F(PermissionQueueControllerTests, FailOnBadPattern) {
+  ObservationCountingQueueController queue_controller(profile());
+  GURL url("chrome://settings");
+  base::Callback<void(bool)> callback;
+  queue_controller.CreateInfoBarRequest(
+      RequestID(0), url, url, "Accept", callback);
+  queue_controller.CancelInfoBarRequest(RequestID(0));
+  EXPECT_EQ(0, queue_controller.call_count());
+};

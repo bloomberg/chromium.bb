@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
@@ -158,6 +159,10 @@ void PermissionQueueController::CreateInfoBarRequest(
     const std::string& accept_button_label,
     PermissionDecidedCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (requesting_frame.SchemeIs(content::kChromeUIScheme) ||
+      embedder.SchemeIs(content::kChromeUIScheme))
+    return;
 
   pending_infobar_requests_.push_back(PendingInfobarRequest(
       type_, id, requesting_frame, embedder,
