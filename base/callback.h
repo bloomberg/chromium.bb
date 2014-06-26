@@ -143,8 +143,8 @@
 //
 //   base::Bind(&MyClass::Foo, GetWeakPtr());
 //
-//   The callback will not be issued if the object is destroyed at the time
-//   it's issued. DANGER: weak pointers are not threadsafe, so don't use this
+//   The callback will not be run if the object has already been destroyed.
+//   DANGER: weak pointers are not threadsafe, so don't use this
 //   when passing between threads!
 //
 // BINDING A CLASS METHOD WITH MANUAL LIFETIME MANAGEMENT
