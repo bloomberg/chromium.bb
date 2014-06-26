@@ -82,7 +82,7 @@ class TestPackageApk(TestPackage):
 
   #override
   def ClearApplicationState(self, device):
-    device.old_interface.ClearApplicationState(self._package_info.package)
+    device.ClearApplicationState(self._package_info.package)
     # Content shell creates a profile on the sdscard which accumulates cache
     # files over time.
     if self.suite_name == 'content_browsertests':

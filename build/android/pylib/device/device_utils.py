@@ -390,6 +390,51 @@ class DeviceUtils(object):
               for k, v in intent.extras.items() if len(k) > 0]
     self.old_interface.BroadcastIntent(package, old_intent, *args)
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GoHome(self, timeout=None, retries=None):
+    """Return to the home screen.
+
+    Args:
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.GoHome()
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def ForceStop(self, package, timeout=None, retries=None):
+    """Close the application.
+
+    Args:
+      package: A string containing the name of the package to stop.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.CloseApplication(package)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def ClearApplicationState(self, package, timeout=None, retries=None):
+    """Clear all state for the given package.
+
+    Args:
+      package: A string containing the name of the package to stop.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.ClearApplicationState(package)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def SendKeyEvent(self, keycode, timeout=None, retries=None):
+    """Sends a keycode to the device.
+
+    See: http://developer.android.com/reference/android/view/KeyEvent.html
+
+    Args:
+      keycode: A integer keycode to send to the device.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.SendKeyEvent(keycode)
+
   def __str__(self):
     """Returns the device serial."""
     return self.old_interface.GetDevice()

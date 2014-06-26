@@ -682,6 +682,41 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
       self.device.BroadcastIntent(test_intent)
 
+  def testGoHome(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am start "
+            "-W "
+            "-a android.intent.action.MAIN "
+            "-c android.intent.category.HOME'",
+        'Starting: Intent { act=android.intent.action.MAIN }\r\n'):
+      self.device.GoHome()
+
+  def testForceStop(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'am force-stop this.is.a.test.package'",
+        ''):
+      self.device.ForceStop('this.is.a.test.package')
+
+  def testClearApplicationState_packageExists(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'pm path this.package.does.not.exist'",
+        ''):
+      self.device.ClearApplicationState('this.package.does.not.exist')
+
+  def testClearApplicationState_packageDoesntExist(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'pm path this.package.exists'",
+         'package:/data/app/this.package.exists.apk'),
+        ("adb -s 0123456789abcdef shell 'pm clear this.package.exists'",
+         'Success\r\n')]):
+      self.device.ClearApplicationState('this.package.exists')
+
+  def testSendKeyEvent(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell 'input keyevent 66'",
+        ''):
+      self.device.SendKeyEvent(66)
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

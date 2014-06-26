@@ -60,7 +60,7 @@ class TestRunner(instr_test_runner.TestRunner):
 
   #override
   def _RunTest(self, test, timeout):
-    self.device.old_interface.ClearApplicationState(self._package)
+    self.device.ClearApplicationState(self._package)
     if self.flags:
       if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
         self.flags.RemoveFlags(['--disable-fre'])
