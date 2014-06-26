@@ -508,7 +508,7 @@ class Builder(object):
 
     if goma_config:
       goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST')
-      default_threads = 100 if pynacl.platform.IsLinux() else 1
+      default_threads = 100 if pynacl.platform.IsLinux() else 10
       goma_config['threads'] = GetIntegerEnv('NACL_GOMA_THREADS',
                                              default=default_threads)
     return goma_config
