@@ -13,6 +13,7 @@ import os
 import re
 import tempfile
 import time
+import shutil
 import subprocess
 import sys
 import urlparse
@@ -25,6 +26,8 @@ import subcommand
 # Analogous to gc.autopacklimit git config.
 GC_AUTOPACKLIMIT = 50
 
+GIT_CACHE_CORRUPT_MESSAGE = 'WARNING: The Git cache is corrupt.'
+
 try:
   # pylint: disable=E0602
   WinErr = WindowsError
@@ -35,6 +38,8 @@ except NameError:
 class LockError(Exception):
   pass
 
+class RefsHeadsFailedToFetch(Exception):
+  pass
 
 class Lockfile(object):
   """Class to represent a cross-platform process-specific lockfile."""
@@ -248,7 +253,10 @@ class Mirror(object):
       self.RunGit(['config', '--add', 'remote.origin.fetch', refspec], cwd=cwd)
 
   def bootstrap_repo(self, directory):
-    """Bootstrap the repo from Google Stroage if possible."""
+    """Bootstrap the repo from Google Stroage if possible.
+
+    More apt-ly named bootstrap_repo_from_cloud_if_possible_else_do_nothing().
+    """
 
     python_fallback = False
     if sys.platform.startswith('win') and not self.FindExecutable('7z'):
@@ -309,6 +317,70 @@ class Mirror(object):
   def exists(self):
     return os.path.isfile(os.path.join(self.mirror_path, 'config'))
 
+  def _ensure_bootstrapped(self, depth, bootstrap, force=False):
+    tempdir = None
+    config_file = os.path.join(self.mirror_path, 'config')
+    pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
+    pack_files = []
+
+    if os.path.isdir(pack_dir):
+      pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
+
+    should_bootstrap = (force or
+                        not os.path.exists(config_file) or
+                        len(pack_files) > GC_AUTOPACKLIMIT)
+    if should_bootstrap:
+      tempdir = tempfile.mkdtemp(
+          prefix='_cache_tmp', suffix=self.basedir, dir=self.GetCachePath())
+      bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
+      if bootstrapped:
+        # Bootstrap succeeded; delete previous cache, if any.
+        try:
+          # Try to move folder to tempdir if possible.
+          defunct_dir = tempfile.mkdtemp()
+          shutil.move(self.mirror_path, defunct_dir)
+          self.print('Moved defunct directory for repository %s from %s to %s'
+                     % (self.url, self.mirror_path, defunct_dir))
+        except Exception:
+          gclient_utils.rmtree(self.mirror_path)
+      elif not os.path.exists(config_file):
+        # Bootstrap failed, no previous cache; start with a bare git dir.
+        self.RunGit(['init', '--bare'], cwd=tempdir)
+      else:
+        # Bootstrap failed, previous cache exists; warn and continue.
+        logging.warn(
+            'Git cache has a lot of pack files (%d).  Tried to re-bootstrap '
+            'but failed.  Continuing with non-optimized repository.'
+            % len(pack_files))
+        gclient_utils.rmtree(tempdir)
+        tempdir = None
+    else:
+      if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
+        logging.warn(
+            'Shallow fetch requested, but repo cache already exists.')
+    return tempdir
+
+  def _fetch(self, rundir, verbose, depth):
+    self.config(rundir)
+    v = []
+    d = []
+    if verbose:
+      v = ['-v', '--progress']
+    if depth:
+      d = ['--depth', str(depth)]
+    fetch_cmd = ['fetch'] + v + d + ['origin']
+    fetch_specs = subprocess.check_output(
+        [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
+        cwd=rundir).strip().splitlines()
+    for spec in fetch_specs:
+      try:
+        self.print('Fetching %s' % spec)
+        self.RunGit(fetch_cmd + [spec], cwd=rundir, retry=True)
+      except subprocess.CalledProcessError:
+        if spec == '+refs/heads/*:refs/heads/*':
+          raise RefsHeadsFailedToFetch
+        logging.warn('Fetch of %s failed' % spec)
+
   def populate(self, depth=None, shallow=False, bootstrap=False,
                verbose=False, ignore_lock=False):
     assert self.GetCachePath()
@@ -316,68 +388,25 @@ class Mirror(object):
       depth = 10000
     gclient_utils.safe_makedirs(self.GetCachePath())
 
-    v = []
-    if verbose:
-      v = ['-v', '--progress']
-
-    d = []
-    if depth:
-      d = ['--depth', str(depth)]
-
-
     lockfile = Lockfile(self.mirror_path)
     if not ignore_lock:
       lockfile.lock()
 
+    tempdir = None
     try:
-      # Setup from scratch if the repo is new or is in a bad state.
-      tempdir = None
-      config_file = os.path.join(self.mirror_path, 'config')
-      pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
-      pack_files = []
-      if os.path.isdir(pack_dir):
-        pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
-
-      should_bootstrap = (not os.path.exists(config_file) or
-                          len(pack_files) > GC_AUTOPACKLIMIT)
-      if should_bootstrap:
-        tempdir = tempfile.mkdtemp(
-            prefix='_cache_tmp', suffix=self.basedir, dir=self.GetCachePath())
-        bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
-        if bootstrapped:
-          # Bootstrap succeeded; delete previous cache, if any.
-          gclient_utils.rmtree(self.mirror_path)
-        elif not os.path.exists(config_file):
-          # Bootstrap failed, no previous cache; start with a bare git dir.
-          self.RunGit(['init', '--bare'], cwd=tempdir)
-        else:
-          # Bootstrap failed, previous cache exists; warn and continue.
-          logging.warn(
-              'Git cache has a lot of pack files (%d).  Tried to re-bootstrap '
-              'but failed.  Continuing with non-optimized repository.'
-              % len(pack_files))
-          gclient_utils.rmtree(tempdir)
-          tempdir = None
-      else:
-        if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
-          logging.warn(
-              'Shallow fetch requested, but repo cache already exists.')
-        d = []
-
+      tempdir = self._ensure_bootstrapped(depth, bootstrap)
       rundir = tempdir or self.mirror_path
-      self.config(rundir)
-      fetch_cmd = ['fetch'] + v + d + ['origin']
-      fetch_specs = subprocess.check_output(
-          [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
-          cwd=rundir).strip().splitlines()
-      for spec in fetch_specs:
-        try:
-          self.RunGit(fetch_cmd + [spec], cwd=rundir, retry=True)
-        except subprocess.CalledProcessError:
-          logging.warn('Fetch of %s failed' % spec)
+      self._fetch(rundir, verbose, depth)
+    except RefsHeadsFailedToFetch:
+      # This is a major failure, we need to clean and force a bootstrap.
+      gclient_utils.rmtree(rundir)
+      self.print(GIT_CACHE_CORRUPT_MESSAGE)
+      tempdir = self._ensure_bootstrapped(depth, bootstrap, force=True)
+      assert tempdir
+      self._fetch(tempdir or self.mirror_path, verbose, depth)
+    finally:
       if tempdir:
         os.rename(tempdir, self.mirror_path)
-    finally:
       if not ignore_lock:
         lockfile.unlock()
 
