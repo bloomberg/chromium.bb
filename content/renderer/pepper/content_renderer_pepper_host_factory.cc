@@ -16,7 +16,6 @@
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_truetype_font_host.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
@@ -36,7 +35,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 using ppapi::host::ResourceHost;
-using ppapi::proxy::SerializedTrueTypeFontDesc;
 using ppapi::UnpackMessage;
 
 namespace content {
@@ -162,20 +160,6 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FileChooser_Create::ID:
         return scoped_ptr<ResourceHost>(
             new PepperFileChooserHost(host_, instance, params.pp_resource()));
-      case PpapiHostMsg_TrueTypeFont_Create::ID: {
-        SerializedTrueTypeFontDesc desc;
-        if (!UnpackMessage<PpapiHostMsg_TrueTypeFont_Create>(message, &desc)) {
-          NOTREACHED();
-          return scoped_ptr<ResourceHost>();
-        }
-        // Check that the family name is valid UTF-8 before passing it to the
-        // host OS.
-        if (base::IsStringUTF8(desc.family)) {
-          return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
-              host_, instance, params.pp_resource(), desc));
-        }
-        break;  // Drop through and return null host.
-      }
       case PpapiHostMsg_VideoCapture_Create::ID: {
         PepperVideoCaptureHost* host =
             new PepperVideoCaptureHost(host_, instance, params.pp_resource());

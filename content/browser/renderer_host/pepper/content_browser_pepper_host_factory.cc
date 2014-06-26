@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_socket_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_truetype_font_host.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
 #include "content/browser/renderer_host/pepper/pepper_udp_socket_message_filter.h"
 #include "ppapi/host/message_filter_host.h"
@@ -29,6 +30,7 @@
 using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
 using ppapi::host::ResourceMessageFilter;
+using ppapi::proxy::SerializedTrueTypeFontDesc;
 using ppapi::UnpackMessage;
 
 namespace content {
@@ -139,6 +141,20 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
                                    instance,
                                    params.pp_resource(),
                                    manager.Pass()));
+      }
+      case PpapiHostMsg_TrueTypeFont_Create::ID: {
+        SerializedTrueTypeFontDesc desc;
+        if (!UnpackMessage<PpapiHostMsg_TrueTypeFont_Create>(message, &desc)) {
+          NOTREACHED();
+          return scoped_ptr<ResourceHost>();
+        }
+        // Check that the family name is valid UTF-8 before passing it to the
+        // host OS.
+        if (!base::IsStringUTF8(desc.family))
+          return scoped_ptr<ResourceHost>();
+
+        return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
+            host_, instance, params.pp_resource(), desc));
       }
       case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(

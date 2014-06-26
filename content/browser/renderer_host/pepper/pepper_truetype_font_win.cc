@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_truetype_font.h"
+#include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 
 #include <windows.h>
 #include <set>
@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "content/public/renderer/render_thread.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -23,14 +23,11 @@ namespace {
 
 class PepperTrueTypeFontWin : public PepperTrueTypeFont {
  public:
-  explicit PepperTrueTypeFontWin(
-      const ppapi::proxy::SerializedTrueTypeFontDesc& desc);
-  virtual ~PepperTrueTypeFontWin();
+  PepperTrueTypeFontWin();
 
-  // PepperTrueTypeFont overrides.
-  virtual bool IsValid() OVERRIDE;
-  virtual int32_t Describe(ppapi::proxy::SerializedTrueTypeFontDesc* desc)
-      OVERRIDE;
+  // PepperTrueTypeFont implementation.
+  virtual int32_t Initialize(
+      ppapi::proxy::SerializedTrueTypeFontDesc* desc) OVERRIDE;
   virtual int32_t GetTableTags(std::vector<uint32_t>* tags) OVERRIDE;
   virtual int32_t GetTable(uint32_t table_tag,
                            int32_t offset,
@@ -38,21 +35,29 @@ class PepperTrueTypeFontWin : public PepperTrueTypeFont {
                            std::string* data) OVERRIDE;
 
  private:
+  virtual ~PepperTrueTypeFontWin();
+
   DWORD GetFontData(HDC hdc,
                     DWORD table,
                     DWORD offset,
                     LPVOID buffer,
                     DWORD length);
 
-  HFONT font_;
+  base::win::ScopedHFONT font_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTrueTypeFontWin);
 };
 
-PepperTrueTypeFontWin::PepperTrueTypeFontWin(
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
+PepperTrueTypeFontWin::PepperTrueTypeFontWin() {
+}
+
+PepperTrueTypeFontWin::~PepperTrueTypeFontWin() {
+}
+
+int32_t PepperTrueTypeFontWin::Initialize(
+    ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
   DWORD pitch_and_family = DEFAULT_PITCH;
-  switch (desc.generic_family) {
+  switch (desc->generic_family) {
     case PP_TRUETYPEFONTFAMILY_SERIF:
       pitch_and_family |= FF_ROMAN;
       break;
@@ -71,30 +76,25 @@ PepperTrueTypeFontWin::PepperTrueTypeFontWin(
   }
   // TODO(bbudge) support widths (extended, condensed).
 
-  font_ = CreateFont(0 /* height */,
-                     0 /* width */,
-                     0 /* escapement */,
-                     0 /* orientation */,
-                     desc.weight,  // our weight enum matches Windows.
-                     (desc.style & PP_TRUETYPEFONTSTYLE_ITALIC) ? 1 : 0,
-                     0 /* underline */,
-                     0 /* strikeout */,
-                     desc.charset,        // our charset enum matches Windows.
-                     OUT_OUTLINE_PRECIS,  // truetype and other outline fonts
-                     CLIP_DEFAULT_PRECIS,
-                     DEFAULT_QUALITY,
-                     pitch_and_family,
-                     base::UTF8ToUTF16(desc.family).c_str());
-}
+  font_.Set(CreateFont(0 /* height */,
+                       0 /* width */,
+                       0 /* escapement */,
+                       0 /* orientation */,
+                       desc->weight,  // our weight enum matches Windows.
+                       (desc->style & PP_TRUETYPEFONTSTYLE_ITALIC) ? 1 : 0,
+                       0 /* underline */,
+                       0 /* strikeout */,
+                       desc->charset,       // our charset enum matches Windows.
+                       OUT_OUTLINE_PRECIS,  // truetype and other outline fonts
+                       CLIP_DEFAULT_PRECIS,
+                       DEFAULT_QUALITY,
+                       pitch_and_family,
+                       base::UTF8ToUTF16(desc->family).c_str()));
+  if (!font_.Get())
+    return PP_ERROR_FAILED;
 
-PepperTrueTypeFontWin::~PepperTrueTypeFontWin() {}
-
-bool PepperTrueTypeFontWin::IsValid() { return font_ != NULL; }
-
-int32_t PepperTrueTypeFontWin::Describe(
-    ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
   LOGFONT font_desc;
-  if (!::GetObject(font_, sizeof(LOGFONT), &font_desc))
+  if (!::GetObject(font_.Get(), sizeof(LOGFONT), &font_desc))
     return PP_ERROR_FAILED;
 
   switch (font_desc.lfPitchAndFamily & 0xF0) {  // Top 4 bits are family.
@@ -125,46 +125,24 @@ int32_t PepperTrueTypeFontWin::Describe(
   // doesn't fill in the name field of the LOGFONT structure.
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (hdc) {
-    base::win::ScopedSelectObject select_object(hdc, font_);
+    base::win::ScopedSelectObject select_object(hdc, font_.Get());
     WCHAR name[LF_FACESIZE];
     GetTextFace(hdc, LF_FACESIZE, name);
     desc->family = base::UTF16ToUTF8(name);
   }
+
   return PP_OK;
 }
 
-DWORD PepperTrueTypeFontWin::GetFontData(HDC hdc,
-                                         DWORD table,
-                                         DWORD offset,
-                                         void* buffer,
-                                         DWORD length) {
-  // If this is a zero byte read, return a successful result.
-  if (buffer && !length)
-    return 0;
-
-  DWORD result = ::GetFontData(hdc, table, offset, buffer, length);
-  if (result == GDI_ERROR) {
-    // The font may not be cached by the OS, causing an attempt to read it in
-    // the renderer process to fail. Attempt to pre-cache it.
-    LOGFONTW logfont;
-    if (!::GetObject(font_, sizeof(LOGFONTW), &logfont))
-      return GDI_ERROR;
-    RenderThread* render_thread = RenderThread::Get();
-    if (!render_thread)
-      return GDI_ERROR;
-    render_thread->PreCacheFont(logfont);
-
-    result = ::GetFontData(hdc, table, offset, buffer, length);
-  }
-  return result;
-}
-
 int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
+  if (!font_.Get())
+    return PP_ERROR_FAILED;
+
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (!hdc)
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc, font_);
+  base::win::ScopedSelectObject select_object(hdc, font_.Get());
 
   // Get the whole font header.
   static const DWORD kFontHeaderSize = 12;
@@ -203,11 +181,14 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
                                         int32_t offset,
                                         int32_t max_data_length,
                                         std::string* data) {
+  if (!font_.Get())
+    return PP_ERROR_FAILED;
+
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (!hdc)
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc, font_);
+  base::win::ScopedSelectObject select_object(hdc, font_.Get());
 
   // Tags are byte swapped on Windows.
   table_tag = base::ByteSwap(table_tag);
@@ -234,12 +215,23 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
   return static_cast<int32_t>(table_size);
 }
 
+DWORD PepperTrueTypeFontWin::GetFontData(HDC hdc,
+                                         DWORD table,
+                                         DWORD offset,
+                                         void* buffer,
+                                         DWORD length) {
+  // If this is a zero byte read, return a successful result.
+  if (buffer && !length)
+    return 0;
+
+  return ::GetFontData(hdc, table, offset, buffer, length);
+}
+
 }  // namespace
 
 // static
-PepperTrueTypeFont* PepperTrueTypeFont::Create(
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
-  return new PepperTrueTypeFontWin(desc);
+PepperTrueTypeFont* PepperTrueTypeFont::Create() {
+  return new PepperTrueTypeFontWin();
 }
 
 }  // namespace content

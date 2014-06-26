@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_truetype_font.h"
+#include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 
@@ -24,11 +24,10 @@ namespace {
 
 static bool FindFloat(CFDictionaryRef dict, CFStringRef name, float* value) {
   CFNumberRef num;
-  return
-      CFDictionaryGetValueIfPresent(dict, name,
-                                    reinterpret_cast<const void**>(&num)) &&
-      CFNumberIsFloatType(num) &&
-      CFNumberGetValue(num, kCFNumberFloatType, value);
+  return CFDictionaryGetValueIfPresent(
+             dict, name, reinterpret_cast<const void**>(&num)) &&
+         CFNumberIsFloatType(num) &&
+         CFNumberGetValue(num, kCFNumberFloatType, value);
 }
 
 float GetMacWeight(PP_TrueTypeFontWeight_Dev weight) {
@@ -58,7 +57,7 @@ PP_TrueTypeFontWidth_Dev GetPepperWidth(float width) {
   // Perform the inverse mapping of GetMacWeight.
   return static_cast<PP_TrueTypeFontWidth_Dev>(
       width *
-      (PP_TRUETYPEFONTWIDTH_ULTRAEXPANDED - PP_TRUETYPEFONTWIDTH_NORMAL) +
+          (PP_TRUETYPEFONTWIDTH_ULTRAEXPANDED - PP_TRUETYPEFONTWIDTH_NORMAL) +
       PP_TRUETYPEFONTWIDTH_NORMAL);
 }
 
@@ -96,20 +95,20 @@ uint32_t CalculateChecksum(char* table, int32_t table_length) {
 
 class PepperTrueTypeFontMac : public PepperTrueTypeFont {
  public:
-  explicit PepperTrueTypeFontMac(
-      const ppapi::proxy::SerializedTrueTypeFontDesc& desc);
-  virtual ~PepperTrueTypeFontMac() OVERRIDE;
+  PepperTrueTypeFontMac();
 
-  // PepperTrueTypeFont overrides.
-  virtual bool IsValid() OVERRIDE;
-  virtual int32_t Describe(
+  // PepperTrueTypeFont implementation.
+  virtual int32_t Initialize(
       ppapi::proxy::SerializedTrueTypeFontDesc* desc) OVERRIDE;
   virtual int32_t GetTableTags(std::vector<uint32_t>* tags) OVERRIDE;
   virtual int32_t GetTable(uint32_t table_tag,
                            int32_t offset,
                            int32_t max_data_length,
                            std::string* data) OVERRIDE;
+
  private:
+  virtual ~PepperTrueTypeFontMac() OVERRIDE;
+
   virtual int32_t GetEntireFont(int32_t offset,
                                 int32_t max_data_length,
                                 std::string* data);
@@ -119,108 +118,111 @@ class PepperTrueTypeFontMac : public PepperTrueTypeFont {
   DISALLOW_COPY_AND_ASSIGN(PepperTrueTypeFontMac);
 };
 
-PepperTrueTypeFontMac::PepperTrueTypeFontMac(
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
-  // Create attributes and traits dictionaries.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_ref(
-      CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                0,
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> traits_ref(
-      CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                0,
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-  if (!attributes_ref || !traits_ref)
-    return;
-
-  CFDictionaryAddValue(attributes_ref, kCTFontTraitsAttribute, traits_ref);
-
-  // Use symbolic traits to specify traits when possible.
-  CTFontSymbolicTraits symbolic_traits = 0;
-  if (desc.style & PP_TRUETYPEFONTSTYLE_ITALIC)
-    symbolic_traits |= kCTFontItalicTrait;
-  if (desc.weight == PP_TRUETYPEFONTWEIGHT_BOLD)
-    symbolic_traits |= kCTFontBoldTrait;
-  if (desc.width == PP_TRUETYPEFONTWIDTH_CONDENSED)
-    symbolic_traits |= kCTFontCondensedTrait;
-  else if (desc.width == PP_TRUETYPEFONTWIDTH_EXPANDED)
-    symbolic_traits |= kCTFontExpandedTrait;
-
-  base::ScopedCFTypeRef<CFNumberRef> symbolic_traits_ref(CFNumberCreate(
-      kCFAllocatorDefault, kCFNumberSInt32Type, &symbolic_traits));
-  if (!symbolic_traits_ref)
-    return;
-  CFDictionaryAddValue(traits_ref, kCTFontSymbolicTrait, symbolic_traits_ref);
-
-  // Font family matching doesn't work using family classes in symbolic traits.
-  // Instead, map generic_family to font families that are always available.
-  std::string family(desc.family);
-  if (family.empty()) {
-    switch (desc.generic_family) {
-      case PP_TRUETYPEFONTFAMILY_SERIF:
-        family = "Times";
-        break;
-      case PP_TRUETYPEFONTFAMILY_SANSSERIF:
-        family = "Helvetica";
-        break;
-      case PP_TRUETYPEFONTFAMILY_CURSIVE:
-        family = "Apple Chancery";
-        break;
-      case PP_TRUETYPEFONTFAMILY_FANTASY:
-        family = "Papyrus";
-        break;
-      case PP_TRUETYPEFONTFAMILY_MONOSPACE:
-        family = "Courier";
-        break;
-    }
-  }
-
-  base::ScopedCFTypeRef<CFStringRef> name_ref(
-      base::SysUTF8ToCFStringRef(family));
-  if (name_ref)
-    CFDictionaryAddValue(attributes_ref, kCTFontFamilyNameAttribute, name_ref);
-
-  if (desc.weight != PP_TRUETYPEFONTWEIGHT_NORMAL &&
-      desc.weight != PP_TRUETYPEFONTWEIGHT_BOLD) {
-    float weight = GetMacWeight(desc.weight);
-    base::ScopedCFTypeRef<CFNumberRef> weight_trait_ref(
-        CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &weight));
-    if (weight_trait_ref)
-      CFDictionaryAddValue(traits_ref, kCTFontWeightTrait, weight_trait_ref);
-  }
-
-  if (desc.width != PP_TRUETYPEFONTWIDTH_NORMAL &&
-      desc.width != PP_TRUETYPEFONTWIDTH_CONDENSED &&
-      desc.width != PP_TRUETYPEFONTWIDTH_EXPANDED) {
-    float width = GetMacWidth(desc.width);
-    base::ScopedCFTypeRef<CFNumberRef> width_trait_ref(
-        CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &width));
-    if (width_trait_ref)
-      CFDictionaryAddValue(traits_ref, kCTFontWidthTrait, width_trait_ref);
-  }
-
-  base::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
-      CTFontDescriptorCreateWithAttributes(attributes_ref));
-
-  if (desc_ref)
-    font_ref_.reset(CTFontCreateWithFontDescriptor(desc_ref, 0, NULL));
+PepperTrueTypeFontMac::PepperTrueTypeFontMac() {
 }
 
 PepperTrueTypeFontMac::~PepperTrueTypeFontMac() {
 }
 
-bool PepperTrueTypeFontMac::IsValid() {
-  return font_ref_.get() != NULL;
-}
-
-int32_t PepperTrueTypeFontMac::Describe(
+int32_t PepperTrueTypeFontMac::Initialize(
     ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
-  if (!IsValid())
-    return PP_ERROR_FAILED;
+  // Create the font in a nested scope, so we can use the same variable names
+  // when we get the actual font characteristics.
+  {
+    // Create attributes and traits dictionaries.
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_ref(
+        CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                  0,
+                                  &kCFTypeDictionaryKeyCallBacks,
+                                  &kCFTypeDictionaryValueCallBacks));
 
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> traits_ref(
+        CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                  0,
+                                  &kCFTypeDictionaryKeyCallBacks,
+                                  &kCFTypeDictionaryValueCallBacks));
+    if (!attributes_ref || !traits_ref)
+      return PP_ERROR_FAILED;
+
+    CFDictionaryAddValue(attributes_ref, kCTFontTraitsAttribute, traits_ref);
+
+    // Use symbolic traits to specify traits when possible.
+    CTFontSymbolicTraits symbolic_traits = 0;
+    if (desc->style & PP_TRUETYPEFONTSTYLE_ITALIC)
+      symbolic_traits |= kCTFontItalicTrait;
+    if (desc->weight == PP_TRUETYPEFONTWEIGHT_BOLD)
+      symbolic_traits |= kCTFontBoldTrait;
+    if (desc->width == PP_TRUETYPEFONTWIDTH_CONDENSED)
+      symbolic_traits |= kCTFontCondensedTrait;
+    else if (desc->width == PP_TRUETYPEFONTWIDTH_EXPANDED)
+      symbolic_traits |= kCTFontExpandedTrait;
+
+    base::ScopedCFTypeRef<CFNumberRef> symbolic_traits_ref(CFNumberCreate(
+        kCFAllocatorDefault, kCFNumberSInt32Type, &symbolic_traits));
+    if (!symbolic_traits_ref)
+      return PP_ERROR_FAILED;
+    CFDictionaryAddValue(traits_ref, kCTFontSymbolicTrait, symbolic_traits_ref);
+
+    // Font family matching doesn't work using family classes in symbolic
+    // traits. Instead, map generic_family to font families that are always
+    // available.
+    std::string family(desc->family);
+    if (family.empty()) {
+      switch (desc->generic_family) {
+        case PP_TRUETYPEFONTFAMILY_SERIF:
+          family = "Times";
+          break;
+        case PP_TRUETYPEFONTFAMILY_SANSSERIF:
+          family = "Helvetica";
+          break;
+        case PP_TRUETYPEFONTFAMILY_CURSIVE:
+          family = "Apple Chancery";
+          break;
+        case PP_TRUETYPEFONTFAMILY_FANTASY:
+          family = "Papyrus";
+          break;
+        case PP_TRUETYPEFONTFAMILY_MONOSPACE:
+          family = "Courier";
+          break;
+      }
+    }
+
+    base::ScopedCFTypeRef<CFStringRef> name_ref(
+        base::SysUTF8ToCFStringRef(family));
+    if (name_ref)
+      CFDictionaryAddValue(
+          attributes_ref, kCTFontFamilyNameAttribute, name_ref);
+
+    if (desc->weight != PP_TRUETYPEFONTWEIGHT_NORMAL &&
+        desc->weight != PP_TRUETYPEFONTWEIGHT_BOLD) {
+      float weight = GetMacWeight(desc->weight);
+      base::ScopedCFTypeRef<CFNumberRef> weight_trait_ref(
+          CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &weight));
+      if (weight_trait_ref)
+        CFDictionaryAddValue(traits_ref, kCTFontWeightTrait, weight_trait_ref);
+    }
+
+    if (desc->width != PP_TRUETYPEFONTWIDTH_NORMAL &&
+        desc->width != PP_TRUETYPEFONTWIDTH_CONDENSED &&
+        desc->width != PP_TRUETYPEFONTWIDTH_EXPANDED) {
+      float width = GetMacWidth(desc->width);
+      base::ScopedCFTypeRef<CFNumberRef> width_trait_ref(
+          CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &width));
+      if (width_trait_ref)
+        CFDictionaryAddValue(traits_ref, kCTFontWidthTrait, width_trait_ref);
+    }
+
+    base::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
+        CTFontDescriptorCreateWithAttributes(attributes_ref));
+
+    if (desc_ref)
+      font_ref_.reset(CTFontCreateWithFontDescriptor(desc_ref, 0, NULL));
+
+    if (!font_ref_.get())
+      return PP_ERROR_FAILED;
+  }
+
+  // Now query to get the actual font characteristics.
   base::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
       CTFontCopyFontDescriptor(font_ref_));
 
@@ -237,7 +239,7 @@ int32_t PepperTrueTypeFontMac::Describe(
   CTFontSymbolicTraits symbolic_traits(CTFontGetSymbolicTraits(font_ref_));
   if (symbolic_traits & kCTFontItalicTrait)
     desc->style = static_cast<PP_TrueTypeFontStyle_Dev>(
-                      desc->style | PP_TRUETYPEFONTSTYLE_ITALIC);
+        desc->style | PP_TRUETYPEFONTSTYLE_ITALIC);
   if (symbolic_traits & kCTFontBoldTrait) {
     desc->weight = PP_TRUETYPEFONTWEIGHT_BOLD;
   } else {
@@ -261,6 +263,8 @@ int32_t PepperTrueTypeFontMac::Describe(
 }
 
 int32_t PepperTrueTypeFontMac::GetTableTags(std::vector<uint32_t>* tags) {
+  if (!font_ref_.get())
+    return PP_ERROR_FAILED;
   base::ScopedCFTypeRef<CFArrayRef> tag_array(
       CTFontCopyAvailableTables(font_ref_, kCTFontTableOptionNoOptions));
   if (!tag_array)
@@ -281,6 +285,9 @@ int32_t PepperTrueTypeFontMac::GetTable(uint32_t table_tag,
                                         int32_t offset,
                                         int32_t max_data_length,
                                         std::string* data) {
+  if (!font_ref_.get())
+    return PP_ERROR_FAILED;
+
   if (!table_tag)
     return GetEntireFont(offset, max_data_length, data);
 
@@ -294,11 +301,11 @@ int32_t PepperTrueTypeFontMac::GetTable(uint32_t table_tag,
   CFIndex table_size = CFDataGetLength(table_ref);
   CFIndex safe_offset =
       std::min(base::checked_cast<CFIndex>(offset), table_size);
-  CFIndex safe_length =
-      std::min(table_size - safe_offset,
-               base::checked_cast<CFIndex>(max_data_length));
+  CFIndex safe_length = std::min(table_size - safe_offset,
+                                 base::checked_cast<CFIndex>(max_data_length));
   data->resize(safe_length);
-  CFDataGetBytes(table_ref, CFRangeMake(safe_offset, safe_length),
+  CFDataGetBytes(table_ref,
+                 CFRangeMake(safe_offset, safe_length),
                  reinterpret_cast<UInt8*>(&(*data)[0]));
 
   return safe_length;
@@ -314,8 +321,8 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
     return table_count;  // PPAPI error code.
 
   // Allocate enough room for the header and the table directory entries.
-  std::string font(sizeof(FontHeader) +
-                   sizeof(FontDirectoryEntry) * table_count, 0);
+  std::string font(
+      sizeof(FontHeader) + sizeof(FontDirectoryEntry) * table_count, 0);
   // Map the OS X font type value to a TrueType scalar type.
   base::ScopedCFTypeRef<CFNumberRef> font_type_ref(
       base::mac::CFCast<CFNumberRef>(
@@ -344,7 +351,7 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   uint16_t num_tables = base::checked_cast<uint16_t>(table_count);
   uint16_t entry_selector = 0;
   uint16_t search_range = 1;
-  while (search_range < num_tables >> 1) {
+  while (search_range < (num_tables >> 1)) {
     entry_selector++;
     search_range <<= 1;
   }
@@ -362,9 +369,8 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   for (int32_t i = 0; i < table_count; i++) {
     // Get the table data.
     std::string table;
-    int32_t table_size = GetTable(table_tags[i],
-                                  0, std::numeric_limits<int32_t>::max(),
-                                  &table);
+    int32_t table_size =
+        GetTable(table_tags[i], 0, std::numeric_limits<int32_t>::max(), &table);
     if (table_size < 0)
       return table_size;  // PPAPI error code.
 
@@ -378,8 +384,8 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
     FontDirectoryEntry* entry = reinterpret_cast<FontDirectoryEntry*>(
         &font[0] + sizeof(FontHeader) + i * sizeof(FontDirectoryEntry));
     entry->tag = base::HostToNet32(table_tags[i]);
-    entry->checksum = base::HostToNet32(
-                          CalculateChecksum(&font[table_offset], table_size));
+    entry->checksum =
+        base::HostToNet32(CalculateChecksum(&font[table_offset], table_size));
     entry->offset = base::HostToNet32(table_offset);
     entry->logical_length = base::HostToNet32(table_size);
     // TODO(bbudge) set the 'head' table checksumAdjustment.
@@ -400,9 +406,8 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
 }  // namespace
 
 // static
-PepperTrueTypeFont* PepperTrueTypeFont::Create(
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
-  return new PepperTrueTypeFontMac(desc);
+PepperTrueTypeFont* PepperTrueTypeFont::Create() {
+  return new PepperTrueTypeFontMac();
 }
 
 }  // namespace content

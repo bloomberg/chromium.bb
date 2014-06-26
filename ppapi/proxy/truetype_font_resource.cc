@@ -24,14 +24,15 @@ namespace {
 namespace ppapi {
 namespace proxy {
 
-TrueTypeFontResource::TrueTypeFontResource(
-    Connection connection,
-    PP_Instance instance,
-    const PP_TrueTypeFontDesc_Dev& desc)
-    : PluginResource(connection, instance) {
+TrueTypeFontResource::TrueTypeFontResource(Connection connection,
+                                           PP_Instance instance,
+                                           const PP_TrueTypeFontDesc_Dev& desc)
+    : PluginResource(connection, instance),
+      create_result_(PP_OK_COMPLETIONPENDING),
+      describe_desc_(NULL) {
   SerializedTrueTypeFontDesc serialized_desc;
   serialized_desc.SetFromPPTrueTypeFontDesc(desc);
-  SendCreate(RENDERER, PpapiHostMsg_TrueTypeFont_Create(serialized_desc));
+  SendCreate(BROWSER, PpapiHostMsg_TrueTypeFont_Create(serialized_desc));
 }
 
 TrueTypeFontResource::~TrueTypeFontResource() {
@@ -44,20 +45,30 @@ PPB_TrueTypeFont_API* TrueTypeFontResource::AsPPB_TrueTypeFont_API() {
 int32_t TrueTypeFontResource::Describe(
     PP_TrueTypeFontDesc_Dev* desc,
     scoped_refptr<TrackedCallback> callback) {
-  Call<PpapiPluginMsg_TrueTypeFont_DescribeReply>(RENDERER,
-      PpapiHostMsg_TrueTypeFont_Describe(),
-      base::Bind(&TrueTypeFontResource::OnPluginMsgDescribeComplete, this,
-                 callback, desc));
-  return PP_OK_COMPLETIONPENDING;
+  if (describe_callback_)
+    return PP_ERROR_INPROGRESS;
+
+  if (create_result_ == PP_OK) {
+    desc_.CopyToPPTrueTypeFontDesc(desc);
+  } else if (create_result_ == PP_OK_COMPLETIONPENDING) {
+    describe_desc_ = desc;
+    describe_callback_ = callback;
+  }
+
+  return create_result_;
 }
 
 int32_t TrueTypeFontResource::GetTableTags(
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {
-  Call<PpapiPluginMsg_TrueTypeFont_GetTableTagsReply>(RENDERER,
+  Call<PpapiPluginMsg_TrueTypeFont_GetTableTagsReply>(
+      BROWSER,
       PpapiHostMsg_TrueTypeFont_GetTableTags(),
-      base::Bind(&TrueTypeFontResource::OnPluginMsgGetTableTagsComplete, this,
-                 callback, output));
+      base::Bind(&TrueTypeFontResource::OnPluginMsgGetTableTagsComplete,
+                 this,
+                 callback,
+                 output));
+
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -67,23 +78,46 @@ int32_t TrueTypeFontResource::GetTable(
     int32_t max_data_length,
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {
-  Call<PpapiPluginMsg_TrueTypeFont_GetTableReply>(RENDERER,
+  Call<PpapiPluginMsg_TrueTypeFont_GetTableReply>(
+      BROWSER,
       PpapiHostMsg_TrueTypeFont_GetTable(table, offset, max_data_length),
-      base::Bind(&TrueTypeFontResource::OnPluginMsgGetTableComplete, this,
-                 callback, output));
+      base::Bind(&TrueTypeFontResource::OnPluginMsgGetTableComplete,
+                 this,
+                 callback,
+                 output));
+
   return PP_OK_COMPLETIONPENDING;
 }
 
-void TrueTypeFontResource::OnPluginMsgDescribeComplete(
-    scoped_refptr<TrackedCallback> callback,
-    PP_TrueTypeFontDesc_Dev* pp_desc,
+void TrueTypeFontResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
-  int32_t result = params.result();
-  if (result == PP_OK)
-    desc.CopyToPPTrueTypeFontDesc(pp_desc);
+    const IPC::Message& msg) {
+  PPAPI_BEGIN_MESSAGE_MAP(TrueTypeFontResource, msg)
+  PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(PpapiPluginMsg_TrueTypeFont_CreateReply,
+                                      OnPluginMsgCreateComplete)
+  PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
+      PluginResource::OnReplyReceived(params, msg))
+  PPAPI_END_MESSAGE_MAP()
+}
 
-  callback->Run(result);
+void TrueTypeFontResource::OnPluginMsgCreateComplete(
+    const ResourceMessageReplyParams& params,
+    const ppapi::proxy::SerializedTrueTypeFontDesc& desc,
+    int32_t result) {
+  DCHECK(result != PP_OK_COMPLETIONPENDING);
+  DCHECK(create_result_ == PP_OK_COMPLETIONPENDING);
+  create_result_ = result;
+  if (create_result_ == PP_OK)
+    desc_ = desc;
+
+  // Now complete any pending Describe operation.
+  if (TrackedCallback::IsPending(describe_callback_)) {
+    desc_.CopyToPPTrueTypeFontDesc(describe_desc_);
+    describe_desc_ = NULL;
+    scoped_refptr<TrackedCallback> callback;
+    callback.swap(describe_callback_);
+    callback->Run(create_result_ == PP_OK ? PP_OK : PP_ERROR_FAILED);
+  }
 }
 
 void TrueTypeFontResource::OnPluginMsgGetTableTagsComplete(

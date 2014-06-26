@@ -1565,9 +1565,10 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFontSingleton_GetFontsInFamilyReply,
                          /* fonts */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_TrueTypeFont_Create,
                      ppapi::proxy::SerializedTrueTypeFontDesc /* desc */)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFont_Describe)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_DescribeReply,
-                     ppapi::proxy::SerializedTrueTypeFontDesc /* desc */)
+// Unsolicited reply to return the actual font's desc to the plugin.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_TrueTypeFont_CreateReply,
+                     ppapi::proxy::SerializedTrueTypeFontDesc /* desc */,
+                     int32_t /* result */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFont_GetTableTags)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_GetTableTagsReply,
                      std::vector<uint32_t> /* tags */)
