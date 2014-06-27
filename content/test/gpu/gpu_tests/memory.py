@@ -4,7 +4,7 @@
 import memory_expectations
 import page_sets
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.timeline import counter
 from telemetry.timeline import model
@@ -92,7 +92,7 @@ class _MemoryValidator(page_test.PageTest):
     return 'Memory allocation too %s (was %d MB, should be %d MB +/- %d MB)' % (
       low_or_high, mb_used, SINGLE_TAB_LIMIT_MB, WIGGLE_ROOM_MB)
 
-class Memory(test.Test):
+class Memory(benchmark.Benchmark):
   """Tests GPU memory limits"""
   test = _MemoryValidator
   page_set = page_sets.MemoryTestsPageSet

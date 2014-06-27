@@ -12,7 +12,7 @@ The benchmark is kept here for historical purposes but is disabled on the bots.
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -31,8 +31,8 @@ class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score (bigger is better)', result)
 
 
-@test.Disabled
-class Jsgamebench(test.Test):
+@benchmark.Disabled
+class Jsgamebench(benchmark.Benchmark):
   """Counts how many animating sprites can move around on the screen at once."""
   test = _JsgamebenchMeasurement
 

@@ -25,7 +25,7 @@ import os
 from metrics import memory
 from metrics import power
 from metrics import v8_object_stats
-from telemetry import test
+from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
@@ -81,7 +81,7 @@ class _IndexedDbMeasurement(page_measurement.PageMeasurement):
     power.PowerMetric.CustomizeBrowserOptions(options)
     v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
 
-class IndexedDb(test.Test):
+class IndexedDb(benchmark.Benchmark):
   """Chromium's IndexedDB Performance tests."""
   test = _IndexedDbMeasurement
 

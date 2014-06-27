@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import hardware_accelerated_feature_expectations as expectations
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -43,7 +43,7 @@ class ChromeGpuPage(page_module.Page):
     self.feature = feature
     self.script_to_evaluate_on_commit = test_harness_script
 
-class HardwareAcceleratedFeature(test.Test):
+class HardwareAcceleratedFeature(benchmark.Benchmark):
   """Tests GPU acceleration is reported as active for various features"""
   test = _HardwareAcceleratedFeatureValidator
 

@@ -11,7 +11,7 @@ kind of smoke test.
 import os
 import unittest
 
-from telemetry import test
+from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
 from telemetry.page import page_measurement
 from telemetry.unittest import gtest_unittest_results
@@ -19,10 +19,10 @@ from telemetry.unittest import options_for_unittests
 
 
 def SmokeTestGenerator(benchmark):
-  # In general you should @test.Disabled individual benchmarks that fail,
-  # instead of this entire smoke test suite.
+  # In general you should @benchmark_module.Disabled individual benchmarks that
+  # fail, instead of this entire smoke test suite.
   # TODO(achuith): Multiple tests failing on CrOS. crbug.com/351114
-  @test.Disabled('chromeos')
+  @benchmark_module.Disabled('chromeos')
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
@@ -41,12 +41,12 @@ def SmokeTestGenerator(benchmark):
     parser = options.CreateParser()
 
     benchmark.AddCommandLineArgs(parser)
-    test.AddCommandLineArgs(parser)
+    benchmark_module.AddCommandLineArgs(parser)
     benchmark.SetArgumentDefaults(parser)
     options.MergeDefaultValues(parser.get_default_values())
 
     benchmark.ProcessCommandLineArgs(None, options)
-    test.ProcessCommandLineArgs(None, options)
+    benchmark_module.ProcessCommandLineArgs(None, options)
 
     self.assertEqual(0, SinglePageBenchmark().Run(options),
                      msg='Failed: %s' % benchmark)
@@ -65,8 +65,8 @@ def load_tests(_, _2, _3):
       measurements_dir, top_level_dir, page_measurement.PageMeasurement,
       pattern='*.py').values()
   all_benchmarks = discover.DiscoverClasses(
-      benchmarks_dir, top_level_dir, test.Test, pattern='*.py').values()
-
+      benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
+      pattern='*.py').values()
   for benchmark in all_benchmarks:
     if benchmark.PageTestClass() not in all_measurements:
       # If the benchmark is not in measurements, then it is not composable.

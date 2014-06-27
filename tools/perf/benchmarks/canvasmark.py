@@ -11,7 +11,7 @@ fills, shadows and text functions.
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -46,7 +46,7 @@ class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score', total)
 
 
-class CanvasMark(test.Test):
+class CanvasMark(benchmark.Benchmark):
   test = _CanvasMarkMeasurement
 
   def CreatePageSet(self, options):

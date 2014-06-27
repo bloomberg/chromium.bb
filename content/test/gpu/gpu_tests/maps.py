@@ -13,7 +13,7 @@ import os
 import cloud_storage_test_base
 import maps_expectations
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.core import bitmap
 from telemetry.core import util
 from telemetry.page import page

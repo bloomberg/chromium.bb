@@ -8,7 +8,7 @@ import sys
 
 import webgl_conformance_expectations
 
-from telemetry import test as test_module
+from telemetry import benchmark as benchmark_module
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page as page_module
@@ -100,7 +100,7 @@ class WebglConformancePage(page_module.Page):
         'webglTestHarness._finished', timeout_in_seconds=120)
 
 
-class WebglConformance(test_module.Test):
+class WebglConformance(benchmark_module.Benchmark):
   """Conformance with Khronos WebGL Conformance Tests"""
   test = WebglConformanceValidator
 

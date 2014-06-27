@@ -20,7 +20,7 @@ specialized optimization for one benchmark might make another benchmark slower.
 import json
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 from telemetry.util import statistics
@@ -69,8 +69,8 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
         scalar.ScalarValue(None, 'Score', 'score', total))
 
 
-@test.Disabled('android', 'xp')  # crbug.com/381742
-class Jetstream(test.Test):
+@benchmark.Disabled('android', 'xp')  # crbug.com/381742
+class Jetstream(benchmark.Benchmark):
   test = _JetstreamMeasurement
 
   def CreatePageSet(self, options):

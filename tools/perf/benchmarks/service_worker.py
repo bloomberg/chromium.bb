@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import page_sets
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 
 
@@ -20,6 +20,6 @@ class _ServiceWorkerMeasurement(page_measurement.PageMeasurement):
       results.Add(key, value['units'], value['value'])
 
 
-class ServiceWorkerPerfTest(test.Test):
+class ServiceWorkerPerfTest(benchmark.Benchmark):
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet

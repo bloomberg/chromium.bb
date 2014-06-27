@@ -4,10 +4,10 @@
 
 from measurements import webrtc
 import page_sets
-from telemetry import test
+from telemetry import benchmark
 
 
-class WebRTC(test.Test):
+class WebRTC(benchmark.Benchmark):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
   page_set = page_sets.WebrtcCasesPageSet

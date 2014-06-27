@@ -20,7 +20,7 @@ tests are not included in this suite.
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -44,7 +44,7 @@ class _BrowsermarkMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score', result)
 
 
-class Browsermark(test.Test):
+class Browsermark(benchmark.Benchmark):
   """Browsermark suite tests CSS, DOM, resize, page load, WebGL and JS."""
   test = _BrowsermarkMeasurement
   def CreatePageSet(self, options):

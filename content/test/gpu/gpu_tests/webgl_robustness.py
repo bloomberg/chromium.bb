@@ -1,7 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -60,7 +60,7 @@ class WebglRobustnessPage(page.Page):
     action_runner.NavigateToPage(self)
     action_runner.WaitForJavaScriptCondition('webglTestHarness._finished')
 
-class WebglRobustness(test.Test):
+class WebglRobustness(benchmark.Benchmark):
   test = WebglConformanceValidator
 
   def CreatePageSet(self, options):

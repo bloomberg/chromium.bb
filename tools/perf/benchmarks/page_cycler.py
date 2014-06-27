@@ -4,67 +4,67 @@
 
 from measurements import page_cycler
 import page_sets
-from telemetry import test
+from telemetry import benchmark
 
 
-class PageCyclerBloat(test.Test):
+class PageCyclerBloat(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.BloatPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerDhtml(test.Test):
+class PageCyclerDhtml(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.DhtmlPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlArFaHe(test.Test):
+class PageCyclerIntlArFaHe(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlArFaHePageSet
   options = {'pageset_repeat': 10}
 
 
-@test.Disabled('win')  # crbug.com/388337
-class PageCyclerIntlEsFrPtBr(test.Test):
+@benchmark.Disabled('win')  # crbug.com/388337
+class PageCyclerIntlEsFrPtBr(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlEsFrPtBrPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlHiRu(test.Test):
+class PageCyclerIntlHiRu(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlHiRuPageSet
   options = {'pageset_repeat': 10}
 
 
-@test.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
-class PageCyclerIntlJaZh(test.Test):
+@benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
+class PageCyclerIntlJaZh(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlJaZhPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlKoThVi(test.Test):
+class PageCyclerIntlKoThVi(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.IntlKoThViPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerMorejs(test.Test):
+class PageCyclerMorejs(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.MorejsPageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerMoz(test.Test):
+class PageCyclerMoz(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.MozPageSet
   options = {'pageset_repeat': 10}
 
 
-@test.Disabled('linux', 'win')  # crbug.com/353260
-class PageCyclerNetsimTop10(test.Test):
+@benchmark.Disabled('linux', 'win')  # crbug.com/353260
+class PageCyclerNetsimTop10(benchmark.Benchmark):
   """Measures load time of the top 10 sites under simulated cable network."""
   tag = 'netsim'
   test = page_cycler.PageCycler
@@ -85,20 +85,20 @@ class PageCyclerNetsimTop10(test.Test):
     self.test.clear_cache_before_each_run = True
 
 
-class PageCyclerTop10Mobile(test.Test):
+class PageCyclerTop10Mobile(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.Top10MobilePageSet
   options = {'pageset_repeat': 10}
 
 
-class PageCyclerKeyMobileSites(test.Test):
+class PageCyclerKeyMobileSites(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.KeyMobileSitesPageSet
   options = {'pageset_repeat': 10}
 
 
-@test.Disabled('android')  # crbug.com/357326
-class PageCyclerToughLayoutCases(test.Test):
+@benchmark.Disabled('android')  # crbug.com/357326
+class PageCyclerToughLayoutCases(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.ToughLayoutCasesPageSet
   options = {'pageset_repeat': 10}
@@ -106,8 +106,8 @@ class PageCyclerToughLayoutCases(test.Test):
 
 # crbug.com/273986: This test is really flakey on xp.
 # cabug.com/341843: This test is always timing out on Android.
-@test.Disabled('android', 'win')
-class PageCyclerTypical25(test.Test):
+@benchmark.Disabled('android', 'win')
+class PageCyclerTypical25(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 10}

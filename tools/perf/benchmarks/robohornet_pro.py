@@ -7,7 +7,7 @@
 import os
 
 from metrics import power
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -36,7 +36,7 @@ class _RobohornetProMeasurement(page_measurement.PageMeasurement):
     results.Add('Total', 'ms', result)
 
 
-class RobohornetPro(test.Test):
+class RobohornetPro(benchmark.Benchmark):
   test = _RobohornetProMeasurement
 
   def CreatePageSet(self, options):

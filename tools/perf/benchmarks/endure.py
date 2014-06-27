@@ -10,13 +10,13 @@ page sets, and the statistics that are gathered are determined by the Endure
 measurement class.
 """
 
-from telemetry import test
+from telemetry import benchmark
 
 from measurements import endure
 import page_sets
 
 
-class _EndureBenchmark(test.Test):
+class _EndureBenchmark(benchmark.Benchmark):
   """Base class which sets options for endure benchmarks below."""
   test = endure.Endure
   # Default options for endure benchmarks. Could be overridden in subclasses.

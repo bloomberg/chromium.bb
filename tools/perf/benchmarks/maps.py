@@ -8,7 +8,7 @@ Rerforms several common navigation actions on the map (pan, zoom, rotate)"""
 import os
 import re
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page as page_module
@@ -42,8 +42,8 @@ class MapsPage(page_module.Page):
     action_runner.WaitForJavaScriptCondition('window.testDone')
 
 
-@test.Disabled
-class MapsBenchmark(test.Test):
+@benchmark.Disabled
+class MapsBenchmark(benchmark.Benchmark):
   """Basic Google Maps benchmarks."""
   test = _MapsMeasurement
 

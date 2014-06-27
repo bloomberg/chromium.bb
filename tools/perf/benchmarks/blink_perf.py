@@ -4,7 +4,7 @@
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
@@ -93,7 +93,7 @@ class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
     print log
 
 
-class BlinkPerfAll(test.Test):
+class BlinkPerfAll(benchmark.Benchmark):
   tag = 'all'
   test = _BlinkPerfMeasurement
 
@@ -102,7 +102,7 @@ class BlinkPerfAll(test.Test):
         'third_party', 'WebKit', 'PerformanceTests')
     return _CreatePageSetFromPath(path)
 
-class BlinkPerfAnimation(test.Test):
+class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
 

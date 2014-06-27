@@ -14,7 +14,7 @@ second depending on the test. Final Score is computed by calculating geometric
 mean of individual tests scores.
 """
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 from telemetry.util import statistics
@@ -68,7 +68,7 @@ class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
         scalar.ScalarValue(None, 'Total.Score', 'score', total))
 
 
-class PeaceKeeperBenchmark(test.Test):
+class PeaceKeeperBenchmark(benchmark.Benchmark):
   """A base class for Peackeeper benchmarks."""
   test = _PeaceKeeperMeasurement
 

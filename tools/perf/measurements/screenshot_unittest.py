@@ -7,7 +7,7 @@ import shutil
 import tempfile
 
 from measurements import screenshot
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
 from telemetry.unittest import options_for_unittests
@@ -22,7 +22,7 @@ class ScreenshotUnitTest(
   def tearDown(self):
     shutil.rmtree(self._options.png_outdir)
 
-  @test.Disabled('win')  # http://crbug.com/386572
+  @benchmark.Disabled('win')  # http://crbug.com/386572
   def testScreenshot(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = screenshot.Screenshot()

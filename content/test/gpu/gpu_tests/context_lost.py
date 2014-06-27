@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import os
 
-from telemetry import test as test_module
+from telemetry import benchmark as benchmark_module
 from telemetry.core import exceptions
 from telemetry.core import util
 from telemetry.page import page
@@ -174,7 +174,7 @@ class WebGLContextLostFromQuantityPage(page.Page):
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
-class ContextLost(test_module.Test):
+class ContextLost(benchmark_module.Benchmark):
   enabled = True
   test = _ContextLostValidator
   # For the record, this would have been another way to get the pages

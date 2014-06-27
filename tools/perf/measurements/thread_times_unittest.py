@@ -5,11 +5,11 @@
 from measurements import thread_times
 from measurements import smoothness_unittest
 from metrics import timeline
-from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 
 from telemetry.unittest import options_for_unittests
+from telemetry.unittest import test
 
 
 

@@ -6,7 +6,7 @@ import math
 import os
 
 from metrics import power
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -86,7 +86,7 @@ class _DromaeoMeasurement(page_measurement.PageMeasurement):
     for key, value in aggregated.iteritems():
       AddResult(key, math.exp(value['sum'] / value['count']))
 
-class _DromaeoBenchmark(test.Test):
+class _DromaeoBenchmark(benchmark.Benchmark):
   """A base class for Dromaeo benchmarks."""
   test = _DromaeoMeasurement
 
@@ -112,7 +112,7 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
   query_param = 'dom-attr'
 
 
-@test.Disabled('xp')  # crbug.com/323782
+@benchmark.Disabled('xp')  # crbug.com/323782
 class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark."""
   tag = 'domcoremodify'

@@ -10,7 +10,7 @@ represented onscreen when the animation reaches the 30 FPS threshold.
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -50,7 +50,7 @@ class _ScirraMeasurement(page_measurement.PageMeasurement):
     results.Add('Count', 'count', total)
 
 
-class ScirraBenchmark(test.Test):
+class ScirraBenchmark(benchmark.Benchmark):
   """WebGL and Canvas2D rendering benchmark suite."""
   test = _ScirraMeasurement
   def CreatePageSet(self, options):

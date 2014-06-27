@@ -5,10 +5,10 @@
 import logging
 
 from measurements import rasterize_and_record_micro
-from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
+from telemetry.unittest import test
 from telemetry.unittest import options_for_unittests
 
 

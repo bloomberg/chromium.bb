@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import test
+from telemetry import benchmark
 
 from benchmarks import silk_flags
 from measurements import smoothness
 import page_sets
 
 
-class SmoothnessTop25(test.Test):
+class SmoothnessTop25(benchmark.Benchmark):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -17,24 +17,24 @@ class SmoothnessTop25(test.Test):
   page_set = page_sets.Top25PageSet
 
 
-@test.Disabled('mac')  # crbug.com/388877
-class SmoothnessToughCanvasCases(test.Test):
+@benchmark.Disabled('mac')  # crbug.com/388877
+class SmoothnessToughCanvasCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughCanvasCasesPageSet
 
 
-@test.Disabled  # crbug.com/373812
-class SmoothnessToughWebGLCases(test.Test):
+@benchmark.Disabled  # crbug.com/373812
+class SmoothnessToughWebGLCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughWebglCasesPageSet
 
 
-class SmoothnessMaps(test.Test):
+class SmoothnessMaps(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.MapsPageSet
 
 
-class SmoothnessKeyMobileSites(test.Test):
+class SmoothnessKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -42,13 +42,13 @@ class SmoothnessKeyMobileSites(test.Test):
   page_set = page_sets.KeyMobileSitesPageSet
 
 
-@test.Disabled('android')  # crbug.com/350692
-class SmoothnessToughAnimationCases(test.Test):
+@benchmark.Disabled('android')  # crbug.com/350692
+class SmoothnessToughAnimationCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughAnimationCasesPageSet
 
 
-class SmoothnessKeySilkCases(test.Test):
+class SmoothnessKeySilkCases(benchmark.Benchmark):
   """Measures rendering statistics for the key silk cases without GPU
   rasterization
   """
@@ -56,7 +56,7 @@ class SmoothnessKeySilkCases(test.Test):
   page_set = page_sets.KeySilkCasesPageSet
 
 
-class SmoothnessFastPathKeySilkCases(test.Test):
+class SmoothnessFastPathKeySilkCases(benchmark.Benchmark):
   """Measures rendering statistics for the key silk cases without GPU
   rasterization using bleeding edge rendering fast paths.
   """
@@ -67,8 +67,8 @@ class SmoothnessFastPathKeySilkCases(test.Test):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Disabled('android')  # crbug.com/363783
-class SmoothnessGpuRasterizationTop25(test.Test):
+@benchmark.Disabled('android')  # crbug.com/363783
+class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   """Measures rendering statistics for the top 25 with GPU rasterization
   """
   tag = 'gpu_rasterization'
@@ -78,8 +78,8 @@ class SmoothnessGpuRasterizationTop25(test.Test):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-@test.Disabled('android')  # crbug.com/363783
-class SmoothnessGpuRasterizationKeyMobileSites(test.Test):
+@benchmark.Disabled('android')  # crbug.com/363783
+class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization
   """
@@ -90,7 +90,7 @@ class SmoothnessGpuRasterizationKeyMobileSites(test.Test):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-class SmoothnessGpuRasterizationKeySilkCases(test.Test):
+class SmoothnessGpuRasterizationKeySilkCases(benchmark.Benchmark):
   """Measures rendering statistics for the key silk cases with GPU rasterization
   """
   tag = 'gpu_rasterization'
@@ -114,8 +114,8 @@ class SmoothnessFastPathGpuRasterizationKeySilkCases(
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Enabled('android')
-class SmoothnessToughPinchZoomCases(test.Test):
+@benchmark.Enabled('android')
+class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases
   """
@@ -123,16 +123,16 @@ class SmoothnessToughPinchZoomCases(test.Test):
   page_set = page_sets.ToughPinchZoomCasesPageSet
 
 
-@test.Disabled  # crbug.com/370725
-class SmoothnessPolymer(test.Test):
+@benchmark.Disabled  # crbug.com/370725
+class SmoothnessPolymer(benchmark.Benchmark):
   """Measures rendering statistics for Polymer cases.
   """
   test = smoothness.Smoothness
   page_set = page_sets.PolymerPageSet
 
 
-@test.Disabled  # crbug.com/370725
-class SmoothnessFastPathPolymer(test.Test):
+@benchmark.Disabled  # crbug.com/370725
+class SmoothnessFastPathPolymer(benchmark.Benchmark):
   """Measures rendering statistics for the Polymer cases without GPU
   rasterization using bleeding edge rendering fast paths.
   """
@@ -143,8 +143,8 @@ class SmoothnessFastPathPolymer(test.Test):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Disabled  # crbug.com/370725
-class SmoothnessGpuRasterizationPolymer(test.Test):
+@benchmark.Disabled  # crbug.com/370725
+class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   """Measures rendering statistics for the Polymer cases with GPU rasterization
   """
   tag = 'gpu_rasterization'
@@ -154,7 +154,7 @@ class SmoothnessGpuRasterizationPolymer(test.Test):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-@test.Disabled  # crbug.com/370725
+@benchmark.Disabled  # crbug.com/370725
 class SmoothnessFastPathGpuRasterizationPolymer(
     SmoothnessGpuRasterizationPolymer):
   """Measures rendering statistics for the Polymer cases with GPU rasterization

@@ -18,7 +18,7 @@ engine, CSS style resolution, layout, and other technologies.
 
 import os
 
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -34,8 +34,8 @@ class SpeedometerMeasurement(page_measurement.PageMeasurement):
         'Total', 'ms', tab.EvaluateJavaScript('benchmarkClient._timeValues'))
 
 
-@test.Disabled('android')  # Times out
-class Speedometer(test.Test):
+@benchmark.Disabled('android')  # Times out
+class Speedometer(benchmark.Benchmark):
   test = SpeedometerMeasurement
 
   def CreatePageSet(self, options):

@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import test
+from telemetry import benchmark
 from measurements import smoothness
 import page_sets
 
 
-class SchedulerToughSchedulingCases(test.Test):
+class SchedulerToughSchedulingCases(benchmark.Benchmark):
   """Measures rendering statistics while interacting with pages that have
   challenging scheduling properties.
 
@@ -18,8 +18,8 @@ class SchedulerToughSchedulingCases(test.Test):
 
 
 # Pepper plugin is not supported on android.
-@test.Disabled('android', 'win')  # crbug.com/384733
-class SchedulerToughPepperCases(test.Test):
+@benchmark.Disabled('android', 'win')  # crbug.com/384733
+class SchedulerToughPepperCases(benchmark.Benchmark):
   """Measures rendering statistics while interacting with pages that have
   pepper plugins"""
   test = smoothness.Smoothness

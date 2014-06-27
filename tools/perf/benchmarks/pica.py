@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import page_sets
-from telemetry import test
+from telemetry import benchmark
 from telemetry.page import page_measurement
 
 class _PicaMeasurement(page_measurement.PageMeasurement):
@@ -17,6 +17,6 @@ class _PicaMeasurement(page_measurement.PageMeasurement):
     results.Add('Total', 'ms', result)
 
 
-class Pica(test.Test):
+class Pica(benchmark.Benchmark):
   test = _PicaMeasurement
   page_set = page_sets.PicaPageSet
