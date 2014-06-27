@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta name="viewport" content="width=800">
 <style>
 html { font-size: 16px; }
 body { width: 800px; margin: 0; overflow-y: hidden; }
+/* crbug.com/339157: bullet margins are not correctly inflated. */
+ul { list-style: none; padding-left: 0; }
 </style>
-
 <script src="resources/autosizingTest.js"></script>
-
 </head>
 <body>
-
 <ul style="width: 400px">
 	<li style="width: 600px">
 		This element is only autosized to 20px computed font size (16 * 400/320), since we don't want list items to be autosized differently from each other, and the width of UL tag is used for autosizing.<br>
