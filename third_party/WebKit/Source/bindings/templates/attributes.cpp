@@ -62,7 +62,6 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         return;
     {% endif %}
     {% if attribute.is_check_security_for_node %}
-    {# FIXME: use a local variable to not call getter twice #}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), {{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
