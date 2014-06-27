@@ -214,7 +214,8 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinderTest);
 };
 
-TEST_F(X11TopmostWindowFinderTest, Basic) {
+// Flaky on Linux.  http://crbug.com/388241
+TEST_F(X11TopmostWindowFinderTest, DISABLED_Basic) {
   // Avoid positioning test windows at 0x0 because window managers often have a
   // panel/launcher along one of the screen edges and do not allow windows to
   // position themselves to overlap the panel/launcher.
@@ -268,7 +269,8 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
 }
 
 // Test that the minimized state is properly handled.
-TEST_F(X11TopmostWindowFinderTest, Minimized) {
+// Flaky on Linux.  http://crbug.com/388241
+TEST_F(X11TopmostWindowFinderTest, DISABLED_Minimized) {
   scoped_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
@@ -304,7 +306,8 @@ TEST_F(X11TopmostWindowFinderTest, Minimized) {
 }
 
 // Test that non-rectangular windows are properly handled.
-TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
+// Flaky on Linux.  http://crbug.com/388241
+TEST_F(X11TopmostWindowFinderTest, DISABLED_NonRectangular) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
@@ -346,7 +349,8 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
 
 // Test that the TopmostWindowFinder finds windows which belong to menus
 // (which may or may not belong to Chrome).
-TEST_F(X11TopmostWindowFinderTest, Menu) {
+// Flaky on Linux.  http://crbug.com/388241
+TEST_F(X11TopmostWindowFinderTest, DISABLED_Menu) {
   XID xid = CreateAndShowXWindow(gfx::Rect(100, 100, 100, 100));
 
   XID root = DefaultRootWindow(xdisplay());
