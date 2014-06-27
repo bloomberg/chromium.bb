@@ -72,6 +72,13 @@ config("nacl_defines") {
   include_dirs = ["//."]
 }
 
+config("nexe_defines") {
+  defines = [
+    "DYNAMIC_ANNOTATIONS_ENABLED=1",
+    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_"
+  ]
+}
+
 config("debug") {
   defines = [
     "_DEBUG",

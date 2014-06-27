@@ -155,6 +155,7 @@ if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
 #
 nacl_compiler_configs = [
   "//native_client/build/config:nacl_defines",
+  "//native_client/build/config:nexe_defines"
 ]
 
 # Holds all configs used for making native executables and libraries, to avoid

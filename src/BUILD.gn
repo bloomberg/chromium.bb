@@ -12,6 +12,11 @@ group("trusted_targets") {
 
 group("untrusted_targets") {
   deps = [
-  "//native_client/tests/hello_world:hello_world",
+    "//native_client/tests/hello_world:hello_world",
+    "//native_client/src/shared/gio:gio",
+    "//native_client/src/shared/platform:platform",
+    "//native_client/src/shared/srpc:srpc",
+    "//native_client/src/untrusted/nacl:imc_syscalls",
+    "//native_client/src/untrusted/irt:irt_core_raw",
   ]
 }

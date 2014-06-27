@@ -95,7 +95,25 @@ class Environment(object):
   def DualObject(self, name, **kwargs):
     return name
 
-  def ComponentObject(self, name, source):
+  def Alias(self, *args, **kwargs):
+    return None
+
+  def ComponentProgramAlias(self, *args, **kwargs):
+    return None
+
+  def SDKInstallBin(self, *args, **kwargs):
+    return None
+
+  def ApplyTLSEdit(self, nexe_name, raw_nexe):
+    self.tracker.AddObject('ApplyTLS %s %s' % (raw_nexe,nexe_name), 'note')
+    return nexe_name
+
+  def Install(self, dst, src):
+    self.tracker.AddObject('Copy %s to %s' % (src, dst), 'note')
+    return src
+
+  def ComponentObject(self, name, source=None):
+    source = source or name
     self.AddObject(name, [source], 'source_set')
     return name
 
