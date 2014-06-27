@@ -31,7 +31,6 @@ var kCommitLogLength = 50;
 
 model.state = {};
 model.state.failureAnalysisByTest = {};
-model.state.rebaselineQueue = [];
 model.state.expectationsUpdateQueue = [];
 
 function findAndMarkRevertedRevisions(commitDataList)
@@ -72,18 +71,6 @@ function heuristicallyNarrowRegressionRange(failureAnalysis)
         }
     }
 }
-
-model.queueForRebaseline = function(failureInfo)
-{
-    model.state.rebaselineQueue.push(failureInfo);
-};
-
-model.takeRebaselineQueue = function()
-{
-    var queue = model.state.rebaselineQueue;
-    model.state.rebaselineQueue = [];
-    return queue;
-};
 
 model.queueForExpectationUpdate = function(failureInfo)
 {

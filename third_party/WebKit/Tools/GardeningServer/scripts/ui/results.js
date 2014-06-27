@@ -322,15 +322,7 @@ ui.results.View = base.extends('div', {
     },
     contentForTest: function(testName)
     {
-        var rebaselineAction;
-        if (isAnyReftest(testName, this._resultsByTest))
-            rebaselineAction = $('<div class="non-action-button">Reftests cannot be rebaselined. Email webkit-gardening@chromium.org if unsure how to fix this.</div>');
-        else
-            rebaselineAction = new ui.actions.List([new ui.actions.Rebaseline().makeDefault()]);
-        $(rebaselineAction).addClass('rebaseline-action');
-
         var builderSelector = new ui.results.BuilderSelector(this, testName, this._resultsByTest[testName]);
-        $(builderSelector).append(rebaselineAction).append($('<br style="clear:both">'));
         $(builderSelector).bind('tabsselect', function(event, ui) {
             // We will probably have pre-fetched the tab already, but we need to make sure.
             ui.panel.show();

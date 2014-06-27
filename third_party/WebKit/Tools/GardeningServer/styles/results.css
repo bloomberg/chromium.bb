@@ -34,14 +34,6 @@
     padding: 5px;
 }
 
-.results-view ul.actions.rebaseline-action {
-    float: none;
-    position: absolute;
-    right: 4px;
-    top: 7px;
-    padding: 0;
-}
-
 .results-view ul.actions li, .ui-dialog ul.actions li {
     display: inline-block;
 }

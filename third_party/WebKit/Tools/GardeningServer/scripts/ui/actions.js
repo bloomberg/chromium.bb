@@ -68,13 +68,6 @@ ui.actions.Examine = base.extends(Action, {
     }
 });
 
-ui.actions.Rebaseline = base.extends(Action, {
-    init: function() {
-        this.textContent = 'Rebaseline';
-        this._eventName = 'rebaseline';
-    }
-});
-
 ui.actions.ExpectFailure = base.extends(Action, {
     init: function() {
         this.textContent = 'Expect Failure';

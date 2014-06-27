@@ -188,7 +188,7 @@ test('View with reftests', 2, function() {
     view.setResultsByTest(kExampleReftestResults);
     view.firstResult();
 
-    equals($('.non-action-button', view).length, 1);
+    equals($('.non-action-button', view).length, 0);
     equals($('.action', view).length, 0);
 });
 

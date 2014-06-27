@@ -93,7 +93,6 @@ test('FailingTestsSummary', 10, function() {
                 '<ul class="effects"></ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +
@@ -113,7 +112,6 @@ test('FailingTestsSummary', 10, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +
@@ -135,7 +133,6 @@ test('FailingTestsSummary', 10, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +
@@ -158,7 +155,6 @@ test('FailingTestsSummary', 10, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes">' +
@@ -198,7 +194,6 @@ test('FailingTestsSummary', 10, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes">' +
@@ -242,7 +237,6 @@ test('FailingTestsSummary', 10, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes">' +
@@ -282,7 +276,6 @@ test('FailingTestsSummary (grouping)', 1, function() {
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
-                    '<li><button class="action">Rebaseline</button></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +

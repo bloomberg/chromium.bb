@@ -29,55 +29,6 @@ var controllers = controllers || {};
 
 var kCheckoutUnavailableMessage = 'Failed! Garden-o-matic needs a local server to modify your working copy. Please run "webkit-patch garden-o-matic" start the local server.';
 
-// FIXME: Where should this function go?
-function rebaselineWithStatusUpdates(failureInfoList, resultsByTest)
-{
-    var statusView = new ui.StatusArea('Rebaseline');
-    var id = statusView.newId();
-
-    var failuresToRebaseline = [];
-    var testNamesLogged = [];
-    failureInfoList.forEach(function(failureInfo) {
-        if (isAnyReftest(failureInfo.testName, resultsByTest)) {
-            if (testNamesLogged.indexOf(failureInfo.testName) == -1) {
-                statusView.addMessage(id, failureInfo.testName + ' is a ref test, skipping');
-                testNamesLogged.push(failureInfo.testName);
-            }
-        } else {
-            failuresToRebaseline.push(failureInfo);
-            if (testNamesLogged.indexOf(failureInfo.testName) == -1) {
-                statusView.addMessage(id, 'Rebaselining ' + failureInfo.testName + '...');
-                testNamesLogged.push(failureInfo.testName);
-            }
-        }
-    });
-
-    if (failuresToRebaseline.length) {
-        // FIXME: checkout.rebaseline() accepts only 3 arguments, we pass 5.
-        checkout.rebaseline(failuresToRebaseline, function(response) {
-            try {
-                var json = JSON.parse(response);
-                if (!json.result_code) {
-                    statusView.addFinalMessage(id, 'Rebaseline done! Please commit locally and land with "git cl dcommit".');
-                } else {
-                    statusView.addMessage(id, 'Rebaseline failed (code=' + json.result_code + ')!');
-                    statusView.addFinalMessage(id, json.output);
-                }
-            } catch (e) {
-                statusView.addFinalMessage(id, 'Invalid response received: "' + response + '"');
-            }
-        }, function(failureInfo) {
-            statusView.addMessage(id, failureInfo.testName + ' on ' + ui.displayNameForBuilder(failureInfo.builderName));
-        }, function() {
-            statusView.addFinalMessage(id, kCheckoutUnavailableMessage);
-        }, function(failureInfo) {
-            statusView.addMessage(id, 'Skipping rebaseline for ' + failureInfo.testName + ' on ' + ui.displayNameForBuilder(failureInfo.builderName) + ' because we only rebaseline from release bots.');
-        });
-    } else {
-        statusView.addFinalMessage(id, 'No non-reftests left to rebaseline!')
-    }
-}
-
 // FIXME: This is duplicated from ui/results.js :(.
 function isAnyReftest(testName, resultsByTest)
 {
@@ -116,7 +67,6 @@ controllers.ResultsDetails = base.extends(Object, {
 
         $(this._view).bind('next', this.onNext.bind(this));
         $(this._view).bind('previous', this.onPrevious.bind(this));
-        $(this._view).bind('rebaseline', this.onRebaseline.bind(this));
         $(this._view).bind('expectfailure', this.onUpdateExpectations.bind(this));
     },
     onNext: function()
@@ -133,11 +83,6 @@ controllers.ResultsDetails = base.extends(Object, {
         return Object.keys(this._resultsByTest[testName]).map(function(builderName) {
             return results.failureInfoForTestAndBuilder(this._resultsByTest, testName, builderName);
         }.bind(this));
-    },
-    onRebaseline: function()
-    {
-        rebaselineWithStatusUpdates(this._failureInfoList(), this._resultsByTest);
-        this._view.nextTest();
     },
     onUpdateExpectations: function()
     {
@@ -203,9 +148,6 @@ var FailureStreamController = base.extends(Object, {
             $(failure).bind('examine', function() {
                 this.onExamine(failure);
             }.bind(this));
-            $(failure).bind('rebaseline', function() {
-                this.onRebaseline(failure);
-            }.bind(this));
             $(failure).bind('expectfailure', function() {
                 this.onUpdateExpectations(failure);
             }.bind(this));
@@ -241,17 +183,6 @@ var FailureStreamController = base.extends(Object, {
     _toFailureInfoList: function(failures)
     {
         return base.flattenArray(failures.testNameList().map(model.unexpectedFailureInfoForTestName));
-    },
-    onRebaseline: function(failures)
-    {
-        var testNameList = failures.testNameList();
-        var failuresByTest = base.filterDictionary(
-            this._resultsFilter(this._model.resultsByBuilder),
-            function(key) {
-                return testNameList.indexOf(key) != -1;
-            });
-
-        rebaselineWithStatusUpdates(this._toFailureInfoList(failures), failuresByTest);
     },
     onUpdateExpectations: function(failures)
     {

@@ -153,8 +153,7 @@ ui.notifications.FailingTests = base.extends(ui.notifications.Failure, {
     init: function() {
         // FIXME: Convert actions to a link from test!
         this._problem.appendChild(new ui.actions.List([
-            new ui.actions.Examine().makeDefault(),
-            new ui.actions.Rebaseline(),
+            new ui.actions.Examine().makeDefault()
         ]));
         this._testNameList = [];
     },
