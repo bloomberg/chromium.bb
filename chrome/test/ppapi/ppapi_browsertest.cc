@@ -997,7 +997,14 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket2) {
+
+// Repeatedly flaky on Win7 Tests(1): http://crbug.com/389084
+#if defined(OS_WIN)
+#define MAYBE_WebSocket2 DISABLED_WebSocket2
+#else
+#define MAYBE_WebSocket2 WebSocket2
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
