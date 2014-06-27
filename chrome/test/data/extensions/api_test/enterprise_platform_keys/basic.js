@@ -303,53 +303,30 @@ function checkKeyPairCommonFormat(keyPair) {
   checkAlgorithmIsCopiedOnRead(publicKey);
 }
 
-function runTests(userToken) {
-  chrome.test.runTests([
-    function hasSubtleCryptoMethods() {
-      assertTrue(!!userToken.subtleCrypto.generateKey,
-                 "user token has no generateKey method");
-      assertTrue(!!userToken.subtleCrypto.sign,
-                 "user token has no sign method");
-      assertTrue(!!userToken.subtleCrypto.exportKey,
-                 "user token has no exportKey method");
-      succeed();
-    },
-    function initiallyNoCerts() { assertCertsStored(userToken, []); },
+// Generates a key with the |algorithm| parameters. Signs |data| using the new
+// key and verifies the signature using WebCrypto. Returns the generated key to
+// |callback| for further operations.
+// Also freezes |algorithm|.
+function generateKeyAndVerify(token, algorithm, data, callback) {
+  // Ensure that this algorithm object is not modified, so that later
+  // comparisons really do the right thing.
+  Object.freeze(algorithm.hash);
+  Object.freeze(algorithm);
 
-    // Generates a key and sign some data with it. Verifies the signature using
-    // WebCrypto.
-    function generateKeyAndSign() {
-      var algorithm = {
-        name: "RSASSA-PKCS1-v1_5",
-        // RsaHashedKeyGenParams
-        modulusLength: 512,
-        // Equivalent to 65537
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: {
-          name: "SHA-1",
-        }
-      };
-      // Ensure that this algorithm object is not modified, so that later
-      // comparisons really do the right thing.
-      Object.freeze(algorithm.hash);
-      Object.freeze(algorithm);
-
-      var signParams = {name: 'RSASSA-PKCS1-v1_5'};
-
-      // Some random data to sign.
-      var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
-      var cachedKeyPair;
-      var cachedSpki;
-      var cachedSignature;
-      userToken.subtleCrypto.generateKey(algorithm, false, ["sign"])
-          .then(callbackPass(function(keyPair) {
+  var cachedSignature;
+  var cachedKeyPair;
+  var cachedSpki;
+  token.subtleCrypto.generateKey(algorithm, false, ["sign"])
+      .then(callbackPass(
+                function(keyPair) {
                   assertTrue(!!keyPair, "No key pair.");
                   cachedKeyPair = keyPair;
-                  return userToken.subtleCrypto.exportKey('spki',
-                                                          keyPair.publicKey);
+                  return token.subtleCrypto.exportKey('spki',
+                                                      keyPair.publicKey);
                 }),
-                function(error) { fail("GenerateKey failed: " + error); })
-          .then(callbackPass(function(publicKeySpki) {
+            function(error) { fail("GenerateKey failed: " + error); })
+      .then(callbackPass(
+                function(publicKeySpki) {
                   // Ensure that the returned key pair has the expected format.
                   // Some parameter independent checks:
                   checkKeyPairCommonFormat(cachedKeyPair);
@@ -364,16 +341,17 @@ function runTests(userToken) {
                   assertEq(algorithm, publicKey.algorithm);
 
                   cachedSpki = publicKeySpki;
-                  return userToken.subtleCrypto.sign(
-                      signParams, privateKey, data);
+                  var signParams = {name: 'RSASSA-PKCS1-v1_5'};
+                  return token.subtleCrypto.sign(signParams, privateKey, data);
                 }),
-                function(error) { fail("Export failed: " + error); })
-          .then(callbackPass(function(signature) {
+            function(error) { fail("Export failed: " + error); })
+      .then(callbackPass(
+                function(signature) {
                   var importParams = {
                     name: algorithm.name,
                     // RsaHashedImportParams
                     hash: {
-                      name: "SHA-1",
+                      name: algorithm.hash.name,
                     }
                   };
                   assertTrue(!!signature, "No signature.");
@@ -382,8 +360,9 @@ function runTests(userToken) {
                   return window.crypto.subtle.importKey(
                       "spki", cachedSpki, importParams, false, ["verify"]);
                 }),
-                function(error) { fail("Sign failed: " + error); })
-          .then(callbackPass(function(webCryptoPublicKey) {
+            function(error) { fail("Sign failed: " + error); })
+      .then(callbackPass(
+                function(webCryptoPublicKey) {
                   assertTrue(!!webCryptoPublicKey);
                   assertEq(algorithm.modulusLength,
                            webCryptoPublicKey.algorithm.modulusLength);
@@ -392,23 +371,78 @@ function runTests(userToken) {
                   return window.crypto.subtle.verify(
                       algorithm, webCryptoPublicKey, cachedSignature, data);
                 }),
-                function(error) { fail("Import failed: " + error); })
-          .then(callbackPass(function(success) {
-                  assertEq(true, success, "Signature invalid.");
-                  // Try to sign data with the same key a second time, which
-                  // must fail.
-                  return userToken.subtleCrypto.sign(
-                      signParams, cachedKeyPair.privateKey, data);
-                }),
-                function(error) { fail("Verification failed: " + error); })
-          .then(function(signature) {
-                  fail("Second sign call was expected to fail.");
-                }, callbackPass(function(error) {
-                  assertTrue(error instanceof Error);
-                  assertEq(
-                      'The operation failed for an operation-specific reason',
-                      error.message);
-          }));
+            function(error) { fail("Import failed: " + error); })
+      .then(callbackPass(function(success) {
+    assertEq(true, success, "Signature invalid.");
+    callback(cachedKeyPair);
+  }), function(error) { fail("Verification failed: " + error); });
+}
+
+function runTests(userToken) {
+  chrome.test.runTests([
+    function hasSubtleCryptoMethods() {
+      assertTrue(!!userToken.subtleCrypto.generateKey,
+                 "user token has no generateKey method");
+      assertTrue(!!userToken.subtleCrypto.sign,
+                 "user token has no sign method");
+      assertTrue(!!userToken.subtleCrypto.exportKey,
+                 "user token has no exportKey method");
+      succeed();
+    },
+    function initiallyNoCerts() { assertCertsStored(userToken, []); },
+
+    // Generates a key and signs some data with it. Verifies the signature using
+    // WebCrypto. Verifies also that a second sign operation fails.
+    function generateKeyAndSign() {
+      var algorithm = {
+        name: "RSASSA-PKCS1-v1_5",
+        // RsaHashedKeyGenParams
+        modulusLength: 512,
+        // Equivalent to 65537
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: {
+          name: "SHA-1",
+        }
+      };
+
+      // Some random data to sign.
+      var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
+      generateKeyAndVerify(userToken,
+                           algorithm,
+                           data,
+                           callbackPass(function(keyPair) {
+        // Try to sign data with the same key a second time, which
+        // must fail.
+        var signParams = {name: 'RSASSA-PKCS1-v1_5'};
+        userToken.subtleCrypto.sign(signParams, keyPair.privateKey, data).then(
+            function(signature) {
+              fail("Second sign call was expected to fail.");
+            },
+            callbackPass(function(error) {
+          assertTrue(error instanceof Error);
+          assertEq('The operation failed for an operation-specific reason',
+                   error.message);
+        }));
+      }));
+    },
+
+    // Generates a key and signs some data with other parameters. Verifies the
+    // signature using WebCrypto.
+    function generateKeyAndSignOtherParameters() {
+      var algorithm = {
+        name: "RSASSA-PKCS1-v1_5",
+        // RsaHashedKeyGenParams
+        modulusLength: 1024,
+        // Equivalent to 65537
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: {
+          name: "SHA-512",
+        }
+      };
+
+      // Some random data to sign.
+      var data = new Uint8Array([5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 0, 0, 254]);
+      generateKeyAndVerify(userToken, algorithm, data, callbackPass());
     },
 
     // Imports and removes certificates for privateKeyPkcs8, which was imported
