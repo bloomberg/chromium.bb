@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderReplaced.h"
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"

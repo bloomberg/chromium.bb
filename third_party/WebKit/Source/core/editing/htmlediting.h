@@ -40,6 +40,7 @@ class ExceptionState;
 class HTMLElement;
 class Node;
 class Position;
+class PositionWithAffinity;
 class Range;
 class VisiblePosition;
 class VisibleSelection;

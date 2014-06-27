@@ -310,33 +310,6 @@ inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
     return offset < currentOffset;
 }
 
-class PositionWithAffinity {
-    DISALLOW_ALLOCATION();
-public:
-    PositionWithAffinity()
-        : m_affinity(DOWNSTREAM)
-    {
-    }
-
-    PositionWithAffinity(const Position& position, EAffinity affinity = DOWNSTREAM)
-        : m_position(position)
-        , m_affinity(affinity)
-    {
-    }
-
-    EAffinity affinity() const { return m_affinity; }
-    const Position& position() const { return m_position; }
-
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_position);
-    }
-
-private:
-    Position m_position;
-    EAffinity m_affinity;
-};
-
 } // namespace WebCore
 
 #ifndef NDEBUG

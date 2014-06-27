@@ -1019,6 +1019,8 @@
             'editing/MoveSelectionCommand.cpp',
             'editing/PlainTextRange.cpp',
             'editing/PlainTextRange.h',
+            'editing/PositionWithAffinity.cpp',
+            'editing/PositionWithAffinity.h',
             'editing/RemoveCSSPropertyCommand.cpp',
             'editing/RemoveCSSPropertyCommand.h',
             'editing/RemoveFormatCommand.cpp',

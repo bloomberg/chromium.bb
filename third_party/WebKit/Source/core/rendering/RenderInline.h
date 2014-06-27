@@ -23,6 +23,7 @@
 #ifndef RenderInline_h
 #define RenderInline_h
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"

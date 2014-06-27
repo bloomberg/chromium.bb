@@ -28,8 +28,8 @@
 
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
-#include "core/dom/Position.h"
 #include "core/dom/StyleEngine.h"
+#include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PaintPhase.h"
@@ -55,6 +55,7 @@ class HitTestResult;
 class InlineBox;
 class InlineFlowBox;
 class Position;
+class PositionWithAffinity;
 class PseudoStyleRequest;
 class RenderBoxModelObject;
 class RenderBlock;

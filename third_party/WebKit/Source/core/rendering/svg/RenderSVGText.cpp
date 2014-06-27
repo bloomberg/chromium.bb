@@ -28,6 +28,7 @@
 
 #include "core/rendering/svg/RenderSVGText.h"
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
