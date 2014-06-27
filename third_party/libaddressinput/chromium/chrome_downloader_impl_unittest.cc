@@ -32,8 +32,9 @@ class ChromeDownloaderImplTest : public testing::Test {
 
   // Kicks off the download.
   void Download() {
-    net::TestURLRequestContextGetter* getter =
-        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+    scoped_refptr<net::TestURLRequestContextGetter> getter(
+        new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current()));
     ChromeDownloaderImpl impl(getter);
     impl.Download(url_.spec(), BuildCallback());
     base::MessageLoop::current()->RunUntilIdle();
