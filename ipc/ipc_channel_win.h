@@ -92,6 +92,9 @@ class ChannelWin : public Channel,
   // Determines if we should validate a client's secret on connection.
   bool validate_client_;
 
+  // Tracks the lifetime of this object, for debugging purposes.
+  int32 debug_flags_;
+
   // This is a unique per-channel value used to authenticate the client end of
   // a connection. If the value is non-zero, the client passes it in the hello
   // and the host validates. (We don't send the zero value fto preserve IPC
