@@ -659,6 +659,7 @@
         'renderer/compositor_bindings/web_animation_unittest.cc',
         'renderer/compositor_bindings/web_float_animation_curve_unittest.cc',
         'renderer/compositor_bindings/web_layer_impl_fixed_bounds_unittest.cc',
+        'renderer/device_sensors/device_light_event_pump_unittest.cc',
         'renderer/device_sensors/device_motion_event_pump_unittest.cc',
         'renderer/device_sensors/device_orientation_event_pump_unittest.cc',
         'renderer/disambiguation_popup_helper_unittest.cc',

@@ -39,6 +39,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/battery_status/battery_status_dispatcher.h"
 #include "content/renderer/battery_status/fake_battery_status_dispatcher.h"
+#include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -63,6 +64,7 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
+#include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationListener.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
@@ -139,7 +141,8 @@ namespace content {
 
 namespace {
 
-static bool g_sandbox_enabled = true;
+bool g_sandbox_enabled = true;
+double g_test_device_light_data = -1;
 base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
@@ -1014,6 +1017,32 @@ blink::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
     const blink::WebString& host,
     const blink::WebString& languages) {
   return net::IDNToUnicode(host.utf8(), languages.utf8());
+}
+
+//------------------------------------------------------------------------------
+
+void RendererWebKitPlatformSupportImpl::setDeviceLightListener(
+    blink::WebDeviceLightListener* listener) {
+  if (g_test_device_light_data < 0) {
+    if (!device_light_event_pump_) {
+      device_light_event_pump_.reset(new DeviceLightEventPump);
+      device_light_event_pump_->Attach(RenderThreadImpl::current());
+    }
+    device_light_event_pump_->SetListener(listener);
+  } else if (listener) {
+    // Testing mode: just echo the test data to the listener.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&blink::WebDeviceLightListener::didChangeDeviceLight,
+                   base::Unretained(listener),
+                   g_test_device_light_data));
+  }
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::SetMockDeviceLightDataForTesting(
+    double data) {
+  g_test_device_light_data = data;
 }
 
 //------------------------------------------------------------------------------

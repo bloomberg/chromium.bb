@@ -163,6 +163,8 @@
       'renderer/cursor_utils.h',
       'renderer/date_time_suggestion_builder.cc',
       'renderer/date_time_suggestion_builder.h',
+      'renderer/device_sensors/device_light_event_pump.cc',
+      'renderer/device_sensors/device_light_event_pump.h',
       'renderer/device_sensors/device_motion_event_pump.cc',
       'renderer/device_sensors/device_motion_event_pump.h',
       'renderer/device_sensors/device_orientation_event_pump.cc',

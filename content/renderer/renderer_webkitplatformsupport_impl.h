@@ -36,6 +36,7 @@ class WebGraphicsContext3DProvider;
 
 namespace content {
 class BatteryStatusDispatcher;
+class DeviceLightEventPump;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
 class QuotaMessageFilter;
@@ -136,6 +137,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual blink::WebCompositorSupport* compositorSupport();
   virtual blink::WebString convertIDNToUnicode(
       const blink::WebString& host, const blink::WebString& languages);
+  virtual void setDeviceLightListener(blink::WebDeviceLightListener* listener);
   virtual void setDeviceMotionListener(
       blink::WebDeviceMotionListener* listener);
   virtual void setDeviceOrientationListener(
@@ -162,6 +164,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
 
+  //  Set a double to return when setDeviceLightListener is invoked.
+  static void SetMockDeviceLightDataForTesting(double data);
   // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
   static void SetMockDeviceMotionDataForTesting(
       const blink::WebDeviceMotionData& data);
@@ -208,6 +212,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   WebPublicSuffixListImpl public_suffix_list_;
 
+  scoped_ptr<DeviceLightEventPump> device_light_event_pump_;
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
   scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
 
