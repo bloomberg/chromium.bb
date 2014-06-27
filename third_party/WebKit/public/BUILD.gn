@@ -38,6 +38,8 @@ group("all_blink") {
   deps = [
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
+    "//third_party/WebKit/Source/platform:heap_unittests",
+    "//third_party/WebKit/Source/platform:platform_unittests",
     "//third_party/WebKit/Source/web",
     "//third_party/WebKit/Source/wtf:wtf_unittests",
   ]

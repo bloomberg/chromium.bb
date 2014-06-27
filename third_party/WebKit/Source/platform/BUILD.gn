@@ -9,19 +9,14 @@ import("//third_party/WebKit/Source/platform/platform.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 import("//third_party/yasm/yasm_assemble.gni")
 
-# TODO(GYP) Remove when test targets link (depends on ffmpeg)
-enable_blink_platform_test_targets = false
-
 # Most targets in this file are private actions so use that as the default.
 visibility = ":*"
 
-if (enable_blink_platform_test_targets) {
-  heap_gypi = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("heap/blink_heap.gypi") ],
-      "scope",
-      [ "heap/blink_heap.gypi" ])
-}
+heap_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("heap/blink_heap.gypi") ],
+    "scope",
+    [ "heap/blink_heap.gypi" ])
 
 blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
@@ -330,8 +325,7 @@ component("platform") {
 
   if (use_webaudio_ffmpeg) {
     include_dirs += [ "//third_party/ffmpeg" ]
-    # TODO(GYP)
-    #deps += [ "//third_party/ffmpeg" ]
+    deps += [ "//third_party/ffmpeg" ]
   }
   if (use_openmax_dl_fft) {
     include_dirs += [ "//third_party/openmax_dl" ]
@@ -389,28 +383,26 @@ source_set("heap_run_all_tests") {
   ]
 }
 
-if (enable_blink_platform_test_targets) {
-  test("heap_unittests") {
-    visibility = "//third_party/WebKit/*"
-    output_name = "blink_heap_unittests"
-  
-    sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
-  
-    configs += [
-      "//third_party/WebKit/Source:config",
-    ]
-  
-    deps = [
-      ":heap_run_all_tests",
-      ":platform",
-      "//base",
-      "//base/allocator",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/Source/wtf",
-      "//third_party/WebKit/Source/wtf:unittest_helpers",
-    ]
-  }
+test("heap_unittests") {
+  visibility = "//third_party/WebKit/*"
+  output_name = "blink_heap_unittests"
+
+  sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":heap_run_all_tests",
+    ":platform",
+    "//base",
+    "//base/allocator",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:unittest_helpers",
+  ]
 }
 
 source_set("platform_run_all_tests") {
@@ -432,40 +424,39 @@ source_set("platform_run_all_tests") {
   ]
 }
 
-if (enable_blink_platform_test_targets) {
-  test("platform_unittests") {
-    visibility = "//third_party/WebKit/*"
-    output_name = "blink_platform_unittests"
-  
-    sources = platform_test_files
-  
-    configs += [
-      "//third_party/WebKit/Source:config",
-    ]
-  
-    deps = [
-      ":blink_common",
-      ":platform_run_all_tests",
-      ":platform",
-      "//base",
-      "//base/allocator",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/Source/wtf",
-      "//third_party/WebKit/Source/wtf:unittest_helpers",
-      "//url",
-    ]
-  
-    defines = [
-      "INSIDE_BLINK",
-    ]
-  
-    include_dirs = [
-      "$root_gen_dir/blink",
-    ]
-  }
+test("platform_unittests") {
+  visibility = "//third_party/WebKit/*"
+  output_name = "blink_platform_unittests"
+
+  sources = platform_test_files
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":blink_common",
+    ":platform_run_all_tests",
+    ":platform",
+    "//base",
+    "//base/allocator",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:unittest_helpers",
+    "//url",
+  ]
+
+  defines = [
+    "INSIDE_BLINK",
+  ]
+
+  include_dirs = [
+    "$root_gen_dir/blink",
+  ]
 }
+
 
 if (cpu_arch == "arm") {
   source_set("blink_arm_neon") {
