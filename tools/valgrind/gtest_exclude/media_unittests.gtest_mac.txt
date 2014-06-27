@@ -1,3 +1,6 @@
 # Crashes under Valgrind on Mac, http://crbug.com/247601
 VideoCaptureDeviceTest.FakeCapture
 VideoCaptureDeviceTest.FakeCaptureVariableResolution
+
+# Crashes on assertion, http://crbug.com/389104
+PipelineIntegrationTest.ChunkDemuxerAbortRead_AudioOnly
