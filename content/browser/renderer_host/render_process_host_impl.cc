@@ -1255,6 +1255,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDirectWrite,
     switches::kEnableHighResolutionTime,
 #endif
+#if defined(OS_CHROMEOS)
+    switches::kEnableVaapiAcceleratedVideoEncode,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

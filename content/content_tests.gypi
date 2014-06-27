@@ -1468,7 +1468,7 @@
           },
         ]
     }],
-    ['chromeos==1 and target_arch == "arm"', {
+    ['chromeos==1 and (target_arch == "arm" or use_x11 == 1)', {
       'targets': [
         {
           'target_name': 'video_encode_accelerator_unittest',
@@ -1487,6 +1487,17 @@
           'sources': [
             'common/gpu/media/video_accelerator_unittest_helpers.h',
             'common/gpu/media/video_encode_accelerator_unittest.cc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/libva',
+            '<(DEPTH)/third_party/libyuv',
+          ],
+          'conditions': [
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
           ],
         },
       ]

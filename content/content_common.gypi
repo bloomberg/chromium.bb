@@ -723,6 +723,10 @@
       ],
     }],
     ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
+      'dependencies': [
+        '../media/media.gyp:media',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
+      ],
       'sources': [
         'common/gpu/media/h264_dpb.cc',
         'common/gpu/media/h264_dpb.h',
@@ -731,6 +735,8 @@
         'common/gpu/media/vaapi_h264_decoder.h',
         'common/gpu/media/vaapi_video_decode_accelerator.cc',
         'common/gpu/media/vaapi_video_decode_accelerator.h',
+        'common/gpu/media/vaapi_video_encode_accelerator.cc',
+        'common/gpu/media/vaapi_video_encode_accelerator.h',
         'common/gpu/media/vaapi_wrapper.cc',
         'common/gpu/media/vaapi_wrapper.h',
       ],
@@ -746,6 +752,7 @@
       },
       'include_dirs': [
         '<(DEPTH)/third_party/libva',
+        '<(DEPTH)/third_party/libyuv',
         '<(output_root)',
       ],
       'actions': [

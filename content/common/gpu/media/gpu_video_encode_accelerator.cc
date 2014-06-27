@@ -5,18 +5,27 @@
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+
+#if defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
+#elif defined(ARCH_CPU_X86_FAMILY)
+#include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
+#include "ui/gfx/x/x11_types.h"
+#endif
+
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 #include "content/common/gpu/media/android_video_encode_accelerator.h"
 #endif
@@ -158,8 +167,12 @@ std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 GpuVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(ARCH_CPU_ARMEL)
   profiles = V4L2VideoEncodeAccelerator::GetSupportedProfiles();
+#elif defined(ARCH_CPU_X86_FAMILY)
+  profiles = VaapiVideoEncodeAccelerator::GetSupportedProfiles();
+#endif
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   profiles = AndroidVideoEncodeAccelerator::GetSupportedProfiles();
 #endif
@@ -170,12 +183,18 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
 
 void GpuVideoEncodeAccelerator::CreateEncoder() {
   DCHECK(!encoder_);
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(ARCH_CPU_ARMEL)
   scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (!device.get())
     return;
 
   encoder_.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
+#elif defined(ARCH_CPU_X86_FAMILY)
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableVaapiAcceleratedVideoEncode))
+    encoder_.reset(new VaapiVideoEncodeAccelerator(gfx::GetXDisplay()));
+#endif
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   encoder_.reset(new AndroidVideoEncodeAccelerator());
 #endif
