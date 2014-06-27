@@ -322,7 +322,7 @@ function test()
                 }
 
                 var allNodeIndexes = [];
-                for (var i = 0; i < snapshot._nodes.length; i += snapshot._nodeFieldCount)
+                for (var i = 0; i < snapshot.nodes.length; i += snapshot._nodeFieldCount)
                     allNodeIndexes.push(i);
                 var provider = new WebInspector.HeapSnapshotNodesProvider(snapshot, nodeFilter, allNodeIndexes);
                 // Sort by names in reverse order.
@@ -371,8 +371,8 @@ function test()
                     loader.write(sourceStringified.slice(i, i + partSize));
                 loader.close();
                 var result = loader.buildSnapshot(false);
-                result._nodes = new Uint32Array(result._nodes);
-                result._containmentEdges = new Uint32Array(result._containmentEdges);
+                result.nodes = new Uint32Array(result.nodes);
+                result.containmentEdges = new Uint32Array(result.containmentEdges);
                 function assertSnapshotEquals(reference, actual)
                 {
                     InspectorTest.assertEquals(JSON.stringify(reference), JSON.stringify(actual));
