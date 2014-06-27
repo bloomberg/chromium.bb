@@ -14,10 +14,17 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
+
+DialogDelegate::DialogDelegate() : supports_new_style_(true) {
+}
 
 DialogDelegate::~DialogDelegate() {
 }
@@ -30,6 +37,17 @@ Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
   views::Widget::InitParams params;
   params.delegate = delegate;
   DialogDelegate* dialog = delegate->AsDialogDelegate();
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The new style doesn't support unparented dialogs on Linux desktop.
+  if (dialog)
+    dialog->supports_new_style_ &= parent != NULL;
+#elif defined(OS_WIN)
+  // The new style doesn't support unparented dialogs on Windows Classic themes.
+  if (dialog && !ui::win::IsAeroGlassEnabled())
+    dialog->supports_new_style_ &= parent != NULL;
+#endif
+
   if (!dialog || dialog->UseNewStyleForThisDialog()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
@@ -170,7 +188,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
 }
 
 bool DialogDelegate::UseNewStyleForThisDialog() const {
-  return true;
+  return supports_new_style_;
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {
