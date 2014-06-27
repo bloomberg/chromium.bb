@@ -111,14 +111,16 @@ bool FileSystemURLParser::Parse() {
     if (!file_system)
       continue;
 
-    // Strip the mount point name from the virtual path, to extract the file
-    // path within the provided file system.
+    // Strip the mount path name from the local path, to extract the file path
+    // within the provided file system.
     file_system_ = file_system;
     std::vector<base::FilePath::StringType> components;
-    url_.virtual_path().GetComponents(&components);
-    DCHECK_LT(0u, components.size());
+    url_.path().GetComponents(&components);
+    if (components.size() < 3)
+      return false;
+
     file_path_ = base::FilePath::FromUTF8Unsafe("/");
-    for (size_t i = 1; i < components.size(); ++i) {
+    for (size_t i = 3; i < components.size(); ++i) {
       // TODO(mtomasz): This could be optimized, to avoid unnecessary copies.
       file_path_ = file_path_.Append(components[i]);
     }

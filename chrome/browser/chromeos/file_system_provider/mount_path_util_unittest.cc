@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -177,15 +178,61 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
       kFileSystemName,
       GetMountPath(profile_, kExtensionId, kFileSystemId));
 
-  const base::FilePath file_path = base::FilePath::FromUTF8Unsafe("/hello");
+  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
   const fileapi::FileSystemURL url =
-      CreateFileSystemURL(profile_, file_system_info, file_path);
+      CreateFileSystemURL(profile_, file_system_info, kFilePath);
   // It is impossible to create a cracked URL for a mount point which doesn't
   // exist, therefore is will always be invalid, and empty.
   EXPECT_FALSE(url.is_valid());
 
   FileSystemURLParser parser(url);
   EXPECT_FALSE(parser.Parse());
+}
+
+TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  ASSERT_TRUE(result);
+  const ProvidedFileSystemInfo file_system_info =
+      file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
+                                                           kFileSystemId)
+          ->GetFileSystemInfo();
+
+  const base::FilePath kFilePath =
+      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+  const fileapi::FileSystemURL url =
+      CreateFileSystemURL(profile_, file_system_info, kFilePath);
+  EXPECT_TRUE(url.is_valid());
+
+  // Create an isolated URL for the original one.
+  fileapi::IsolatedContext* const isolated_context =
+      fileapi::IsolatedContext::GetInstance();
+  const std::string isolated_file_system_id =
+      isolated_context->RegisterFileSystemForPath(
+          fileapi::kFileSystemTypeProvided,
+          url.filesystem_id(),
+          url.path(),
+          NULL);
+
+  const base::FilePath isolated_virtual_path =
+      isolated_context->CreateVirtualRootPath(isolated_file_system_id)
+          .Append(kFilePath.BaseName().value());
+
+  const fileapi::FileSystemURL isolated_url =
+      isolated_context->CreateCrackedFileSystemURL(
+          url.origin(),
+          fileapi::kFileSystemTypeIsolated,
+          isolated_virtual_path);
+
+  EXPECT_TRUE(isolated_url.is_valid());
+
+  FileSystemURLParser parser(isolated_url);
+  EXPECT_TRUE(parser.Parse());
+
+  ProvidedFileSystemInterface* file_system = parser.file_system();
+  ASSERT_TRUE(file_system);
+  EXPECT_EQ(kFileSystemId, file_system->GetFileSystemInfo().file_system_id());
+  EXPECT_EQ(kFilePath.AsUTF8Unsafe(), parser.file_path().AsUTF8Unsafe());
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser) {
