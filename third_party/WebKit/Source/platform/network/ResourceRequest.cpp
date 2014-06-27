@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -190,6 +191,32 @@ void ResourceRequest::clearHTTPReferrer()
 void ResourceRequest::clearHTTPOrigin()
 {
     m_httpHeaderFields.remove("Origin");
+}
+
+void ResourceRequest::addHTTPOriginIfNeeded(const AtomicString& origin)
+{
+    if (!httpOrigin().isEmpty())
+        return; // Request already has an Origin header.
+
+    // Don't send an Origin header for GET or HEAD to avoid privacy issues.
+    // For example, if an intranet page has a hyperlink to an external web
+    // site, we don't want to include the Origin of the request because it
+    // will leak the internal host name. Similar privacy concerns have lead
+    // to the widespread suppression of the Referer header at the network
+    // layer.
+    if (httpMethod() == "GET" || httpMethod() == "HEAD")
+        return;
+
+    // For non-GET and non-HEAD methods, always send an Origin header so the
+    // server knows we support this feature.
+
+    if (origin.isEmpty()) {
+        // If we don't know what origin header to attach, we attach the value
+        // for an empty origin.
+        setHTTPOrigin(SecurityOrigin::createUnique()->toAtomicString());
+        return;
+    }
+    setHTTPOrigin(origin);
 }
 
 void ResourceRequest::clearHTTPUserAgent()

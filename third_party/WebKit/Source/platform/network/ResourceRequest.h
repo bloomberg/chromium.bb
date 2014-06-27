@@ -146,6 +146,7 @@ public:
     const AtomicString& httpOrigin() const { return httpHeaderField("Origin"); }
     void setHTTPOrigin(const AtomicString& httpOrigin) { setHTTPHeaderField("Origin", httpOrigin); }
     void clearHTTPOrigin();
+    void addHTTPOriginIfNeeded(const AtomicString& origin);
 
     const AtomicString& httpUserAgent() const { return httpHeaderField("User-Agent"); }
     void setHTTPUserAgent(const AtomicString& httpUserAgent) { setHTTPHeaderField("User-Agent", httpUserAgent); }

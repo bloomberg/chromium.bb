@@ -131,8 +131,6 @@ public:
 
     void checkLoadComplete();
 
-    static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
-
     FrameLoaderClient* client() const;
 
     void setDefersLoading(bool);

@@ -238,6 +238,11 @@ WebReferrerPolicy WebURLRequest::referrerPolicy() const
     return static_cast<WebReferrerPolicy>(m_private->m_resourceRequest->referrerPolicy());
 }
 
+void WebURLRequest::addHTTPOriginIfNeeded(const WebString& origin)
+{
+    m_private->m_resourceRequest->addHTTPOriginIfNeeded(origin);
+}
+
 bool WebURLRequest::hasUserGesture() const
 {
     return m_private->m_resourceRequest->hasUserGesture();

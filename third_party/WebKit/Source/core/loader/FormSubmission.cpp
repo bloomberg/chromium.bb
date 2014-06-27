@@ -281,7 +281,7 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     }
 
     frameRequest.resourceRequest().setURL(requestURL());
-    FrameLoader::addHTTPOriginIfNeeded(frameRequest.resourceRequest(), AtomicString(m_origin));
+    frameRequest.resourceRequest().addHTTPOriginIfNeeded(AtomicString(m_origin));
 }
 
 }

@@ -637,7 +637,7 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
 
     request.setHTTPReferrer(Referrer(referrer, originDocument->referrerPolicy()));
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
-    addHTTPOriginIfNeeded(request, referrerOrigin->toAtomicString());
+    request.addHTTPOriginIfNeeded(referrerOrigin->toAtomicString());
 }
 
 bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest& request) const
@@ -780,7 +780,7 @@ static ResourceRequest requestFromHistoryItem(HistoryItem* item, ResourceRequest
         request.setHTTPBody(formData);
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
-        FrameLoader::addHTTPOriginIfNeeded(request, securityOrigin->toAtomicString());
+        request.addHTTPOriginIfNeeded(securityOrigin->toAtomicString());
     }
     return request;
 }
@@ -1163,33 +1163,6 @@ void FrameLoader::detachClient()
         client()->detachedFromParent();
         m_frame->clearClient();
     }
-}
-
-void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicString& origin)
-{
-    if (!request.httpOrigin().isEmpty())
-        return;  // Request already has an Origin header.
-
-    // Don't send an Origin header for GET or HEAD to avoid privacy issues.
-    // For example, if an intranet page has a hyperlink to an external web
-    // site, we don't want to include the Origin of the request because it
-    // will leak the internal host name. Similar privacy concerns have lead
-    // to the widespread suppression of the Referer header at the network
-    // layer.
-    if (request.httpMethod() == "GET" || request.httpMethod() == "HEAD")
-        return;
-
-    // For non-GET and non-HEAD methods, always send an Origin header so the
-    // server knows we support this feature.
-
-    if (origin.isEmpty()) {
-        // If we don't know what origin header to attach, we attach the value
-        // for an empty origin.
-        request.setHTTPOrigin(SecurityOrigin::createUnique()->toAtomicString());
-        return;
-    }
-
-    request.setHTTPOrigin(origin);
 }
 
 void FrameLoader::receivedMainResourceError(const ResourceError& error)

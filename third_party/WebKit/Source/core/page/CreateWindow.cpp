@@ -131,7 +131,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     Referrer referrer(SecurityPolicy::generateReferrerHeader(firstFrame.document()->referrerPolicy(), completedURL, firstFrame.document()->outgoingReferrer()), firstFrame.document()->referrerPolicy());
 
     ResourceRequest request(completedURL, referrer);
-    FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(firstFrame.document()->outgoingOrigin()));
+    request.addHTTPOriginIfNeeded(AtomicString(firstFrame.document()->outgoingOrigin()));
     FrameLoadRequest frameRequest(callingWindow.document(), request, frameName);
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from

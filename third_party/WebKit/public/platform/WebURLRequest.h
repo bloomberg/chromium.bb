@@ -159,6 +159,10 @@ public:
 
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
+    // Adds an HTTP origin header if it is empty and the HTTP method of the
+    // request requires it.
+    BLINK_PLATFORM_EXPORT void addHTTPOriginIfNeeded(const WebString& origin);
+
     // True if the request was user initiated.
     BLINK_PLATFORM_EXPORT bool hasUserGesture() const;
     BLINK_PLATFORM_EXPORT void setHasUserGesture(bool);
