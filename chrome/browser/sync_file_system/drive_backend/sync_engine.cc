@@ -447,6 +447,11 @@ void SyncEngine::UninstallOrigin(
 }
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
+    callback.Run(SYNC_STATUS_SYNC_DISABLED, fileapi::FileSystemURL());
+    return;
+  }
+
   base::Closure abort_closure =
       base::Bind(callback, SYNC_STATUS_ABORT, fileapi::FileSystemURL());
 
@@ -491,6 +496,8 @@ LocalChangeProcessor* SyncEngine::GetLocalChangeProcessor() {
 }
 
 RemoteServiceState SyncEngine::GetCurrentState() const {
+  if (!sync_enabled_)
+    return REMOTE_SERVICE_DISABLED;
   return service_state_;
 }
 
@@ -586,6 +593,11 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
+    callback.Run(SYNC_STATUS_SYNC_DISABLED);
+    return;
+  }
+
   if (!sync_worker_) {
     callback.Run(SYNC_STATUS_ABORT);
     return;
