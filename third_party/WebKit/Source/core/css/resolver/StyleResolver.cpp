@@ -1049,8 +1049,6 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolations)
 {
-    ASSERT(pass != AnimationProperties);
-
     for (WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >::const_iterator iter = activeInterpolations.begin(); iter != activeInterpolations.end(); ++iter) {
         CSSPropertyID property = iter->key;
         if (!isPropertyForPass<pass>(property))
@@ -1231,25 +1229,6 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
 
 // FIXME: Consider refactoring to create a new class which owns the following
 // first/last/range properties.
-// This method returns the first CSSPropertyId of properties which generate
-// animations. All animation properties are obtained by using
-// firstCSSPropertyId<AnimationProperties> and
-// lastCSSPropertyId<AnimationProperties>.
-// c.f. //src/third_party/WebKit/Source/core/css/CSSPropertyNames.in.
-template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::AnimationProperties>()
-{
-    COMPILE_ASSERT(firstCSSProperty == CSSPropertyDisplay, CSS_first_animation_property_should_be_first_property);
-    return CSSPropertyDisplay;
-}
-
-// This method returns the first CSSPropertyId of properties which generate
-// animations.
-template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::AnimationProperties>()
-{
-    COMPILE_ASSERT(CSSPropertyTransitionTimingFunction == CSSPropertyColor - 1, CSS_transition_timing_is_last_animation_property);
-    return CSSPropertyTransitionTimingFunction;
-}
-
 // This method returns the first CSSPropertyId of high priority properties.
 // Other properties can depend on high priority properties. For example,
 // border-color property with currentColor value depends on color property.
@@ -1258,7 +1237,7 @@ template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::Animati
 // lastCSSPropertyId<HighPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyTransitionTimingFunction + 1 == CSSPropertyColor, CSS_color_is_first_high_priority_property);
+    COMPILE_ASSERT(CSSPropertyColor == firstCSSProperty, CSS_color_is_first_high_priority_property);
     return CSSPropertyColor;
 }
 
@@ -1294,12 +1273,8 @@ bool StyleResolver::isPropertyForPass(CSSPropertyID property)
     return firstCSSPropertyId<pass>() <= property && property <= lastCSSPropertyId<pass>();
 }
 
-// This method expands all shorthand property to longhand properties
-// considering StyleApplicationPass, and apply each expanded longhand property.
-// For example, if StyleApplicationPass is AnimationProperties, all shorthand
-// is expaneded to display, -webkit-animation, -webkit-animation-delay, ...,
-// transition-timing-function. So each property's value will be applied
-// according to all's value (initial, inherit or unset).
+// This method expands the 'all' shorthand property to longhand properties
+// and applies the expanded longhand properties.
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue)
 {
@@ -1449,12 +1424,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         }
         applyInheritedOnly = true;
     }
-
-    // Apply animation properties in order to apply animation results and trigger transitions below.
-    applyMatchedProperties<AnimationProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply
     // high-priority properties first, i.e., those properties that other properties depend on.
