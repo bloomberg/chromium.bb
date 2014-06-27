@@ -230,7 +230,7 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
   // If the previous press was discarded, we need to also handle its release.
   if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
     if (current_touch_ids_.size() == 0) {
-      state_ = NO_FINGERS_DOWN;
+      ResetToNoFingersDown();
     }
     return ui::EVENT_REWRITE_DISCARD;
   }
