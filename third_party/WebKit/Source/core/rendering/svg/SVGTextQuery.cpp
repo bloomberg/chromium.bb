@@ -104,8 +104,6 @@ void SVGTextQuery::collectTextBoxesInFlowBox(InlineFlowBox* flowBox)
 
 bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fragmentCallback) const
 {
-    ASSERT(!m_textBoxes.isEmpty());
-
     unsigned processedCharacters = 0;
     unsigned textBoxCount = m_textBoxes.size();
 
@@ -240,9 +238,6 @@ bool SVGTextQuery::numberOfCharactersCallback(Data*, const SVGTextFragment&) con
 
 unsigned SVGTextQuery::numberOfCharacters() const
 {
-    if (m_textBoxes.isEmpty())
-        return 0;
-
     Data data;
     executeQuery(&data, &SVGTextQuery::numberOfCharactersCallback);
     return data.processedCharacters;
@@ -267,9 +262,6 @@ bool SVGTextQuery::textLengthCallback(Data* queryData, const SVGTextFragment& fr
 
 float SVGTextQuery::textLength() const
 {
-    if (m_textBoxes.isEmpty())
-        return 0;
-
     TextLengthData data;
     executeQuery(&data, &SVGTextQuery::textLengthCallback);
     return data.textLength;
@@ -306,9 +298,6 @@ bool SVGTextQuery::subStringLengthCallback(Data* queryData, const SVGTextFragmen
 
 float SVGTextQuery::subStringLength(unsigned startPosition, unsigned length) const
 {
-    if (m_textBoxes.isEmpty())
-        return 0;
-
     SubStringLengthData data(startPosition, length);
     executeQuery(&data, &SVGTextQuery::subStringLengthCallback);
     return data.subStringLength;
@@ -355,9 +344,6 @@ bool SVGTextQuery::startPositionOfCharacterCallback(Data* queryData, const SVGTe
 
 FloatPoint SVGTextQuery::startPositionOfCharacter(unsigned position) const
 {
-    if (m_textBoxes.isEmpty())
-        return FloatPoint();
-
     StartPositionOfCharacterData data(position);
     executeQuery(&data, &SVGTextQuery::startPositionOfCharacterCallback);
     return data.startPosition;
@@ -402,9 +388,6 @@ bool SVGTextQuery::endPositionOfCharacterCallback(Data* queryData, const SVGText
 
 FloatPoint SVGTextQuery::endPositionOfCharacter(unsigned position) const
 {
-    if (m_textBoxes.isEmpty())
-        return FloatPoint();
-
     EndPositionOfCharacterData data(position);
     executeQuery(&data, &SVGTextQuery::endPositionOfCharacterCallback);
     return data.endPosition;
@@ -445,9 +428,6 @@ bool SVGTextQuery::rotationOfCharacterCallback(Data* queryData, const SVGTextFra
 
 float SVGTextQuery::rotationOfCharacter(unsigned position) const
 {
-    if (m_textBoxes.isEmpty())
-        return 0;
-
     RotationOfCharacterData data(position);
     executeQuery(&data, &SVGTextQuery::rotationOfCharacterCallback);
     return data.rotation;
@@ -503,9 +483,6 @@ bool SVGTextQuery::extentOfCharacterCallback(Data* queryData, const SVGTextFragm
 
 FloatRect SVGTextQuery::extentOfCharacter(unsigned position) const
 {
-    if (m_textBoxes.isEmpty())
-        return FloatRect();
-
     ExtentOfCharacterData data(position);
     executeQuery(&data, &SVGTextQuery::extentOfCharacterCallback);
     return data.extent;
@@ -548,9 +525,6 @@ bool SVGTextQuery::characterNumberAtPositionCallback(Data* queryData, const SVGT
 
 int SVGTextQuery::characterNumberAtPosition(const FloatPoint& position) const
 {
-    if (m_textBoxes.isEmpty())
-        return -1;
-
     CharacterNumberAtPositionData data(position);
     if (!executeQuery(&data, &SVGTextQuery::characterNumberAtPositionCallback))
         return -1;
