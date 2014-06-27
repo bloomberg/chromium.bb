@@ -11,6 +11,9 @@ if (window.testRunner) {
     // Disallow insecure WebSockets.
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", false);
 }
+if (window.internals)
+    internals.settings.setLaxMixedContentCheckingEnabled(false);
+
 
 var test = async_test("Test that when a HTTPS window that creates an insecure WebSocket connection is opened, the mixed content callback is triggered because the main frame in the window is HTTPS but is trying connecting to an insecure WebSocket server.");
 test.step(function ()

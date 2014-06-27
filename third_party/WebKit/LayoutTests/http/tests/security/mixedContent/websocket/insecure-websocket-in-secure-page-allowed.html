@@ -11,6 +11,9 @@ if (window.testRunner) {
     // Allow insecure WebSockets.
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
 }
+if (window.internals)
+    internals.settings.setLaxMixedContentCheckingEnabled(false);
+
 
 var test = async_test("Test that an insecure WebSocket connection is blocked when created in an HTTPS resource.");
 test.step(function ()

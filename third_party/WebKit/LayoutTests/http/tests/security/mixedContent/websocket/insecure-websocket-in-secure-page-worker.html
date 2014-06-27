@@ -10,6 +10,9 @@ if (window.testRunner) {
     testRunner.setCloseRemainingWindowsWhenComplete(true);
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", false);
 }
+if (window.internals)
+    internals.settings.setLaxMixedContentCheckingEnabled(false);
+
 
 var test = async_test("Test that an insecure WebSocket connection is blocked when created in a worker created from HTTPS resource.");
 test.step(function ()

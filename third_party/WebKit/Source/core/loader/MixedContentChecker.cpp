@@ -34,6 +34,7 @@
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -88,6 +89,13 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
         client()->didRunInsecureContent(securityOrigin, url);
 
     return allowed;
+}
+
+bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
+{
+    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
+        return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
+    return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
 }
 
 void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const

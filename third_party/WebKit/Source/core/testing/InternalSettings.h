@@ -58,6 +58,7 @@ public:
         bool m_originalCSSExclusionsEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalCSP;
+        bool m_originalLaxMixedContentCheckingEnabled;
         bool m_originalOverlayScrollbarsEnabled;
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
@@ -116,6 +117,7 @@ public:
     void setOverlayScrollbarsEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
+    void setLaxMixedContentCheckingEnabled(bool);
 
     virtual void trace(Visitor*) OVERRIDE;
 

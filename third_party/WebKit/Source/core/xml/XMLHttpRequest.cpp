@@ -861,7 +861,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
     resourceLoaderOptions.allowCredentials = (m_sameOriginRequest || m_includeCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     resourceLoaderOptions.credentialsRequested = m_includeCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     resourceLoaderOptions.securityOrigin = securityOrigin();
-    resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
+    resourceLoaderOptions.mixedContentBlockingTreatment = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? TreatAsPassiveContent : TreatAsActiveContent;
 
     // When responseType is set to "blob", we redirect the downloaded data to a
     // file-handle directly.

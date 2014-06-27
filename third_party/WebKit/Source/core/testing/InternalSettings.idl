@@ -57,5 +57,6 @@
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
     void setOverlayScrollbarsEnabled(boolean enabled);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
+    void setLaxMixedContentCheckingEnabled(boolean enabled);
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(boolean enabled);
 };

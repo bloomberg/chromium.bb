@@ -11,9 +11,6 @@ if (window.testRunner) {
     // Disallow insecure WebSockets.
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", false);
 }
-if (window.internals)
-    internals.settings.setLaxMixedContentCheckingEnabled(false);
-
 
 var test = async_test("Test that when a HTTPS window that creates an insecure WebSocket connection is opened, the mixed content callback is triggered because the main frame in the window is HTTPS but is trying connecting to an insecure WebSocket server.");
 test.step(function ()
@@ -23,7 +20,7 @@ test.step(function ()
         test.done();
     }), false);
 
-    window.open("https://127.0.0.1:8443/security/mixedContent/websocket/resources/sandboxed-expect-throw-on-construction.html");
+    window.open("https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-throw-on-construction.html");
 });
 
 </script>

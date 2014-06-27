@@ -1,0 +1,7 @@
+CONSOLE WARNING: The page at 'https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-successful-construction-worker.html' was loaded over HTTPS, but ran insecure content from 'ws://127.0.0.1:8880/echo': this content should also be loaded over HTTPS.
+
+CONSOLE WARNING: Connecting to a non-secure WebSocket server from a secure origin is deprecated.
+This is a testharness.js-based test.
+PASS Test that an insecure WebSocket connection is not blocked when created in a worker created from HTTPS resource. 
+Harness: the test ran to completion.
+

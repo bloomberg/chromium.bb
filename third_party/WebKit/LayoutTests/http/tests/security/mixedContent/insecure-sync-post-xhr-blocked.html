@@ -8,6 +8,9 @@ if (window.testRunner) {
     testRunner.setCloseRemainingWindowsWhenComplete(true);
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", false);
 }
+if (window.internals)
+    internals.settings.setLaxMixedContentCheckingEnabled(false);
+
 
 window.addEventListener("message", function (e) {
     if (window.testRunner)
