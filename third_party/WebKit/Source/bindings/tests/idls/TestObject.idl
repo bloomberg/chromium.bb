@@ -512,6 +512,7 @@ interface TestObject {
     [TreatReturnedNullStringAs=Null] ScalarValueString treatReturnedNullStringAsNullScalarValueStringMethod();
     [TreatReturnedNullStringAs=Undefined] ScalarValueString treatReturnedNullStringAsUndefinedScalarValueStringMethod();
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+    [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
     [TypeChecking=Nullable] void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     [TypeChecking=Interface|Nullable] void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     [TypeChecking=Unrestricted] void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg(float floatArg, double doubleArg);

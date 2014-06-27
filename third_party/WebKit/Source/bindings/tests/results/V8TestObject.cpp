@@ -9505,6 +9505,29 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback(c
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyArg;
+    {
+        for (int i = 0; i < info.Length(); ++i) {
+            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+                throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                return;
+            }
+            testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[i])));
+        }
+    }
+    impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
+}
+
+static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -10059,6 +10082,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"treatReturnedNullStringAsNullScalarValueStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringMethodMethodCallback, 0, 0},
     {"treatReturnedNullStringAsUndefinedScalarValueStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringMethodMethodCallback, 0, 0},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
+    {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0},
     {"typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1},
     {"typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1},
     {"typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", TestObjectV8Internal::typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethodCallback, 0, 2},
