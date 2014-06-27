@@ -27,9 +27,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/webdata/common/web_database.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -428,40 +425,34 @@ TEST_F(TemplateURLServiceTest, AddExtensionKeyword) {
   TemplateURL* original2 = AddKeywordWithDate(
       "nonreplaceable", "keyword2", "http://test2", std::string(),
       std::string(), std::string(), false, "UTF-8", Time(), Time());
-  TemplateURL* original3 = AddKeywordWithDate(
-      "extension", "keyword3",
-      std::string(extensions::kExtensionScheme) + "://test3", std::string(),
-      std::string(), std::string(), false, "UTF-8", Time(), Time());
+  model()->RegisterOmniboxKeyword("test3", "extension", "keyword3",
+                                  "http://test3");
+  TemplateURL* original3 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3"));
+  ASSERT_TRUE(original3);
 
   // Add an extension keyword that conflicts with each of the above three
   // keywords.
-  TemplateURLData data;
-  data.short_name = ASCIIToUTF16("test");
-  data.SetKeyword(ASCIIToUTF16("keyword1"));
-  data.SetURL(std::string(extensions::kExtensionScheme) + "://test4");
-  data.safe_for_autoreplace = false;
-
   // Both replaceable and non-replaceable keywords should be uniquified.
-  TemplateURL* extension1 = new TemplateURL(data);
-  model()->Add(extension1);
-  ASSERT_EQ(extension1,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
+  model()->RegisterOmniboxKeyword("test4", "test", "keyword1", "http://test4");
+  TemplateURL* extension1 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1"));
+  ASSERT_TRUE(extension1);
   EXPECT_EQ(original1,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("test1")));
-  data.SetKeyword(ASCIIToUTF16("keyword2"));
-  TemplateURL* extension2 = new TemplateURL(data);
-  model()->Add(extension2);
-  ASSERT_EQ(extension2,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2")));
+
+  model()->RegisterOmniboxKeyword("test5", "test", "keyword2", "http://test5");
+  TemplateURL* extension2 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
+  ASSERT_TRUE(extension2);
   EXPECT_EQ(original2,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("test2")));
 
   // They should override extension keywords added earlier.
-  data.SetKeyword(ASCIIToUTF16("keyword3"));
-  TemplateURL* extension3 = new TemplateURL(data);
-  model()->Add(extension3);
-  ASSERT_EQ(extension3,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3")));
+  model()->RegisterOmniboxKeyword("test6", "test", "keyword3", "http://test6");
+  TemplateURL* extension3 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3"));
+  ASSERT_TRUE(extension3);
   EXPECT_EQ(original3,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3_")));
 }
@@ -472,10 +463,11 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   // Similar to the AddSameKeyword test, but with an extension keyword masking a
   // replaceable TemplateURL.  We should still do correct conflict resolution
   // between the non-template URLs.
-  TemplateURL* extension = AddKeywordWithDate(
-      "extension", "keyword",
-      std::string(extensions::kExtensionScheme) + "://test2", std::string(),
-      std::string(), std::string(), false, "UTF-8", Time(), Time());
+  model()->RegisterOmniboxKeyword("test2", "extension", "keyword",
+                                  "http://test2");
+  TemplateURL* extension =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
+  ASSERT_TRUE(extension);
   // Adding a keyword that matches the extension should cause the extension
   // to uniquify.
   AddKeywordWithDate(
@@ -816,7 +808,8 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
 
   // Register an extension with bing keyword.
-  model()->RegisterOmniboxKeyword("abcdefg", "extension_name", "bing.com");
+  model()->RegisterOmniboxKeyword("abcdefg", "extension_name", "bing.com",
+                                  "http://abcdefg");
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
 
   model()->RepairPrepopulatedSearchEngines();
@@ -1414,14 +1407,15 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
       model(), "ext", "ext", "http://www.search.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, true, "UTF-8", Time(), Time());
-  scoped_ptr<AssociatedExtensionInfo> extension_info(
-      new AssociatedExtensionInfo);
+  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+      new TemplateURL::AssociatedExtensionInfo(
+          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext"));
   extension_info->wants_to_be_default_engine = true;
-  extension_info->extension_id = "ext";
   model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
   EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
 
-  model()->RemoveExtensionControlledTURL("ext");
+  model()->RemoveExtensionControlledTURL(
+      "ext", TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
   ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
 }
 
@@ -1439,10 +1433,10 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, false, "UTF-8", Time(), Time());
-  scoped_ptr<AssociatedExtensionInfo> extension_info(
-      new AssociatedExtensionInfo);
+  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+      new TemplateURL::AssociatedExtensionInfo(
+          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
   extension_info->wants_to_be_default_engine = false;
-  extension_info->extension_id = "ext1";
   model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
@@ -1450,9 +1444,9 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
       model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, true, "UTF-8", Time(), Time());
-  extension_info.reset(new AssociatedExtensionInfo);
+  extension_info.reset(new TemplateURL::AssociatedExtensionInfo(
+      TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext2"));
   extension_info->wants_to_be_default_engine = true;
-  extension_info->extension_id = "ext2";
   model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
   EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
 
@@ -1496,10 +1490,10 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, true, "UTF-8", Time(), Time());
-  scoped_ptr<AssociatedExtensionInfo> extension_info(
-      new AssociatedExtensionInfo);
+  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+      new TemplateURL::AssociatedExtensionInfo(
+          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
   extension_info->wants_to_be_default_engine = true;
-  extension_info->extension_id = "ext1";
   model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
   EXPECT_EQ(ext_dse, model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));
   EXPECT_TRUE(model()->is_default_search_managed());

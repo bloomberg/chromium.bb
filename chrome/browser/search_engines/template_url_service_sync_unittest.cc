@@ -17,7 +17,6 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory.h"
@@ -167,7 +166,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
   scoped_ptr<syncer::SyncChangeProcessor> PassProcessor();
   scoped_ptr<syncer::SyncErrorFactory> CreateAndPassSyncErrorFactory();
 
-  // Create a TemplateURL with some test values. The caller owns the returned
+  // Creates a TemplateURL with some test values. The caller owns the returned
   // TemplateURL*.
   TemplateURL* CreateTestTemplateURL(const base::string16& keyword,
                                      const std::string& url,
@@ -394,8 +393,8 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataBasic) {
 TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
-  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key3"),
-      std::string(extensions::kExtensionScheme) + "://blahblahblah"));
+  model()->RegisterOmniboxKeyword("blahblahblah", "unittest", "key3",
+                                  "http://blahblahblah");
   syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncer::SEARCH_ENGINES);
 
@@ -1060,13 +1059,18 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
                                     CreateAndPassSyncErrorFactory());
 
   // Add some extension keywords locally.
-  TemplateURL* extension1 = CreateTestTemplateURL(ASCIIToUTF16("keyword1"),
-      std::string(extensions::kExtensionScheme) + "://extension1");
-  model()->Add(extension1);
+  model()->RegisterOmniboxKeyword("extension1", "unittest", "keyword1",
+                                  "http://extension1");
+  TemplateURL* extension1 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1"));
+  ASSERT_TRUE(extension1);
   EXPECT_EQ(1U, processor()->change_list_size());
-  TemplateURL* extension2 = CreateTestTemplateURL(ASCIIToUTF16("keyword2"),
-      std::string(extensions::kExtensionScheme) + "://extension2");
-  model()->Add(extension2);
+
+  model()->RegisterOmniboxKeyword("extension2", "unittest", "keyword2",
+                                  "http://extension2");
+  TemplateURL* extension2 =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
+  ASSERT_TRUE(extension2);
   EXPECT_EQ(1U, processor()->change_list_size());
 
   // Create some sync changes that will conflict with the extension keywords.

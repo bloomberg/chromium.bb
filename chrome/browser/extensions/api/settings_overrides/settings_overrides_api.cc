@@ -233,10 +233,12 @@ void SettingsOverridesAPI::OnExtensionUnloaded(
     }
     if (settings->search_engine) {
       DCHECK(url_service_);
-      if (url_service_->loaded())
-        url_service_->RemoveExtensionControlledTURL(extension->id());
-      else
+      if (url_service_->loaded()) {
+        url_service_->RemoveExtensionControlledTURL(
+            extension->id(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+      } else {
         pending_extensions_.erase(extension);
+      }
     }
   }
 }
@@ -262,8 +264,9 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   const SettingsOverrides* settings = SettingsOverrides::Get(extension);
   DCHECK(settings);
   DCHECK(settings->search_engine);
-  scoped_ptr<AssociatedExtensionInfo> info(new AssociatedExtensionInfo);
-  info->extension_id = extension->id();
+  scoped_ptr<TemplateURL::AssociatedExtensionInfo> info(
+      new TemplateURL::AssociatedExtensionInfo(
+          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, extension->id()));
   info->wants_to_be_default_engine = settings->search_engine->is_default;
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   info->install_time = prefs->GetInstallTime(extension->id());

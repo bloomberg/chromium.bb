@@ -87,6 +87,13 @@ bool SetOmniboxDefaultSuggestion(
   return true;
 }
 
+// Returns a string used as a template URL string of the extension.
+std::string GetTemplateURLStringForExtension(const std::string& extension_id) {
+  // This URL is not actually used for navigation. It holds the extension's ID.
+  return std::string(extensions::kExtensionScheme) + "://" +
+      extension_id + "/?q={searchTerms}";
+}
+
 }  // namespace
 
 // static
@@ -218,7 +225,8 @@ void OmniboxAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
       url_service_->Load();
       if (url_service_->loaded()) {
         url_service_->RegisterOmniboxKeyword(
-            extension->id(), extension->name(), keyword);
+            extension->id(), extension->name(), keyword,
+            GetTemplateURLStringForExtension(extension->id()));
       } else {
         pending_extensions_.insert(extension);
       }
@@ -230,10 +238,12 @@ void OmniboxAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                      const Extension* extension,
                                      UnloadedExtensionInfo::Reason reason) {
   if (!OmniboxInfo::GetKeyword(extension).empty() && url_service_) {
-    if (url_service_->loaded())
-      url_service_->UnregisterOmniboxKeyword(extension->id());
-    else
+    if (url_service_->loaded()) {
+      url_service_->RemoveExtensionControlledTURL(
+          extension->id(), TemplateURL::OMNIBOX_API_EXTENSION);
+    } else {
       pending_extensions_.erase(extension);
+    }
   }
 }
 
@@ -252,9 +262,9 @@ void OmniboxAPI::OnTemplateURLsLoaded() {
   template_url_sub_.reset();
   for (PendingExtensions::const_iterator i(pending_extensions_.begin());
        i != pending_extensions_.end(); ++i) {
-    url_service_->RegisterOmniboxKeyword((*i)->id(),
-                                         (*i)->name(),
-                                         OmniboxInfo::GetKeyword(*i));
+    url_service_->RegisterOmniboxKeyword(
+        (*i)->id(), (*i)->name(), OmniboxInfo::GetKeyword(*i),
+        GetTemplateURLStringForExtension((*i)->id()));
   }
   pending_extensions_.clear();
 }

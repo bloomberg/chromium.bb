@@ -1,3 +1,7 @@
+include_rules = [
+  "-extensions",
+]
+
 specific_include_rules = {
   "search_host_to_urls_map(_unittest)?\.": [
     "-chrome",

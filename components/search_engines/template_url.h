@@ -441,22 +441,6 @@ class TemplateURLRef {
 };
 
 
-// AssociatedExtensionInfo ----------------------------------------------------
-
-// An AssociatedExtensionInfo represents information about the extension that
-// added the search engine using the Override Settings API.
-struct AssociatedExtensionInfo {
-  std::string extension_id;
-
-  // Whether the search engine is supposed to be default.
-  bool wants_to_be_default_engine;
-
-  // Used to resolve conflicts when there are multiple extensions specifying the
-  // default search engine. The most recently-installed wins.
-  base::Time install_time;
-};
-
-
 // TemplateURL ----------------------------------------------------------------
 
 // A TemplateURL represents a single "search engine", defined primarily as a
@@ -479,6 +463,25 @@ class TemplateURL {
     // The keyword associated with an extension that uses the Omnibox API.
     OMNIBOX_API_EXTENSION,
   };
+
+  // An AssociatedExtensionInfo represents information about the extension that
+  // added the search engine.
+  struct AssociatedExtensionInfo {
+    AssociatedExtensionInfo(Type type, const std::string& extension_id);
+    ~AssociatedExtensionInfo();
+
+    Type type;
+
+    std::string extension_id;
+
+    // Whether the search engine is supposed to be default.
+    bool wants_to_be_default_engine;
+
+    // Used to resolve conflicts when there are multiple extensions specifying
+    // the default search engine. The most recently-installed wins.
+    base::Time install_time;
+  };
+
   explicit TemplateURL(const TemplateURLData& data);
   ~TemplateURL();
 

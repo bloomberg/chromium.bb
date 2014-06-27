@@ -31,11 +31,6 @@
 
 namespace {
 
-// This constant is defined here as a workaround while we cannot depend on
-// src/extensions.
-// TODO(hashimoto): Remove this. crbug.com/388040
-const char kExtensionScheme[] = "chrome-extension";
-
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
 // brace is a ?, it indicates the term is optional and can be replaced with
@@ -1129,6 +1124,18 @@ std::string TemplateURLRef::HandleReplacements(
 
 // TemplateURL ----------------------------------------------------------------
 
+TemplateURL::AssociatedExtensionInfo::AssociatedExtensionInfo(
+    Type type,
+    const std::string& extension_id)
+    : type(type),
+      extension_id(extension_id),
+      wants_to_be_default_engine(false) {
+  DCHECK_NE(NORMAL, type);
+}
+
+TemplateURL::AssociatedExtensionInfo::~AssociatedExtensionInfo() {
+}
+
 TemplateURL::TemplateURL(const TemplateURLData& data)
     : data_(data),
       url_ref_(this, TemplateURLRef::SEARCH),
@@ -1250,16 +1257,12 @@ bool TemplateURL::HasSameKeywordAs(
 }
 
 TemplateURL::Type TemplateURL::GetType() const {
-  if (extension_info_)
-    return NORMAL_CONTROLLED_BY_EXTENSION;
-  return GURL(data_.url()).SchemeIs(kExtensionScheme) ?
-      OMNIBOX_API_EXTENSION : NORMAL;
+  return extension_info_ ? extension_info_->type : NORMAL;
 }
 
 std::string TemplateURL::GetExtensionId() const {
-  DCHECK_NE(NORMAL, GetType());
-  return extension_info_ ?
-      extension_info_->extension_id : GURL(data_.url()).host();
+  DCHECK(extension_info_);
+  return extension_info_->extension_id;
 }
 
 size_t TemplateURL::URLCount() const {

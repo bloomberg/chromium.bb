@@ -85,18 +85,6 @@ class TemplateURLService : public WebDataServiceConsumer,
     const char* const content;
   };
 
-  // Struct describes a search engine added by an extension.
-  struct ExtensionKeyword {
-    ExtensionKeyword(const std::string& id,
-                     const std::string& name,
-                     const std::string& keyword);
-    ~ExtensionKeyword();
-
-    std::string extension_id;
-    std::string extension_name;
-    std::string extension_keyword;
-  };
-
   explicit TemplateURLService(Profile* profile);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
@@ -167,18 +155,20 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const base::string16& keyword,
                         const std::string& url);
 
-  // Add the search engine of type NORMAL_CONTROLLED_BY_EXTENSION.
-  void AddExtensionControlledTURL(TemplateURL* template_url,
-                                  scoped_ptr<AssociatedExtensionInfo> info);
+  // Adds a search engine with the specified info.
+  void AddExtensionControlledTURL(
+      TemplateURL* template_url,
+      scoped_ptr<TemplateURL::AssociatedExtensionInfo> info);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
   void Remove(TemplateURL* template_url);
 
-  // Removes any TemplateURL of type NORMAL_CONTROLLED_BY_EXTENSION associated
-  // with |extension_id|. Unlike with Remove(), this can be called when the
+  // Removes any TemplateURL of the specified |type| associated with
+  // |extension_id|. Unlike with Remove(), this can be called when the
   // TemplateURL in question is the current default search provider.
-  void RemoveExtensionControlledTURL(const std::string& extension_id);
+  void RemoveExtensionControlledTURL(const std::string& extension_id,
+                                     TemplateURL::Type type);
 
   // Removes all auto-generated keywords that were created on or after the
   // date passed in.
@@ -201,11 +191,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // already exists for this extension, does nothing.
   void RegisterOmniboxKeyword(const std::string& extension_id,
                               const std::string& extension_name,
-                              const std::string& keyword);
-
-  // Removes the TemplateURL containing the keyword for the extension with the
-  // given ID, if any.
-  void UnregisterOmniboxKeyword(const std::string& extension_id);
+                              const std::string& keyword,
+                              const std::string& template_url_string);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.
@@ -646,10 +633,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // elements after calling; to reinforce this, this function clears
   // |template_urls| on exit.
   void AddTemplateURLs(TemplateURLVector* template_urls);
-
-  // Returns a new TemplateURL for the given extension.
-  TemplateURL* CreateTemplateURLForExtension(
-      const ExtensionKeyword& extension_keyword);
 
   // Returns the TemplateURL corresponding to |prepopulated_id|, if any.
   TemplateURL* FindPrepopulatedTemplateURL(int prepopulated_id);
