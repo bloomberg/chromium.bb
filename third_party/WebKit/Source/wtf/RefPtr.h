@@ -44,6 +44,11 @@ namespace WTF {
         ALWAYS_INLINE RefPtr(const RefPtr& o) : m_ptr(o.m_ptr) { refIfNotNull(m_ptr); }
         template<typename U> RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.get()) { refIfNotNull(m_ptr); }
 
+#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
+        RefPtr(RefPtr&& o) : m_ptr(o.m_ptr) { o.m_ptr = 0; }
+        RefPtr& operator=(RefPtr&&);
+#endif
+
         // See comments in PassRefPtr.h for an explanation of why this takes a const reference.
         template<typename U> RefPtr(const PassRefPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
@@ -102,6 +107,14 @@ namespace WTF {
         swap(ptr);
         return *this;
     }
+
+#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
+    template<typename T> inline RefPtr<T>& RefPtr<T>::operator=(RefPtr&& o)
+    {
+        swap(o);
+        return *this;
+    }
+#endif
 
     template<typename T> template<typename U> inline RefPtr<T>& RefPtr<T>::operator=(const RefPtr<U>& o)
     {
