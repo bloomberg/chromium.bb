@@ -154,6 +154,7 @@ class User : public ash::UserInfo {
   }
 
  protected:
+  friend class SessionManager;
   friend class SupervisedUserManagerImpl;
   friend class UserManagerImpl;
   friend class UserImageManagerImpl;

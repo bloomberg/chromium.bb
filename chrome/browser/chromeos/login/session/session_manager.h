@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
@@ -85,6 +86,14 @@ class SessionManager :
   // Invoked when the user is logging in for the first time, or is logging in as
   // a guest user.
   static void SetFirstLoginPrefs(PrefService* prefs);
+
+  // Changes browser locale (selects best suitable locale from different
+  // user settings). Returns true if callback will be called.
+  // Returns true if callback will be called.
+  bool RespectLocalePreference(
+      Profile* profile,
+      const User* user,
+      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const;
 
  private:
   friend struct DefaultSingletonTraits<SessionManager>;

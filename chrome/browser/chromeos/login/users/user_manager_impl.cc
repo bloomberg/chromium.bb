@@ -31,7 +31,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -832,78 +831,6 @@ void UserManagerImpl::UpdateUserAccountData(
   }
 
   UpdateUserAccountLocale(user_id, account_data.locale());
-}
-
-// TODO(alemate): http://crbug.com/288941 : Respect preferred language list in
-// the Google user profile.
-//
-// Returns true if callback will be called.
-bool UserManagerImpl::RespectLocalePreference(
-    Profile* profile,
-    const User* user,
-    scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
-  if (g_browser_process == NULL)
-    return false;
-  if ((user == NULL) || (user != GetPrimaryUser()) ||
-      (!user->is_profile_created()))
-    return false;
-
-  // In case of Multi Profile mode we don't apply profile locale because it is
-  // unsafe.
-  if (GetLoggedInUsers().size() != 1)
-    return false;
-  const PrefService* prefs = profile->GetPrefs();
-  if (prefs == NULL)
-    return false;
-
-  std::string pref_locale;
-  const std::string pref_app_locale =
-      prefs->GetString(prefs::kApplicationLocale);
-  const std::string pref_bkup_locale =
-      prefs->GetString(prefs::kApplicationLocaleBackup);
-
-  pref_locale = pref_app_locale;
-  if (pref_locale.empty())
-    pref_locale = pref_bkup_locale;
-
-  const std::string* account_locale = NULL;
-  if (pref_locale.empty() && user->has_gaia_account()) {
-    if (user->GetAccountLocale() == NULL)
-      return false;  // wait until Account profile is loaded.
-    account_locale = user->GetAccountLocale();
-    pref_locale = *account_locale;
-  }
-  const std::string global_app_locale =
-      g_browser_process->GetApplicationLocale();
-  if (pref_locale.empty())
-    pref_locale = global_app_locale;
-  DCHECK(!pref_locale.empty());
-  LOG(WARNING) << "RespectLocalePreference: "
-               << "app_locale='" << pref_app_locale << "', "
-               << "bkup_locale='" << pref_bkup_locale << "', "
-               << (account_locale != NULL
-                       ? (std::string("account_locale='") + (*account_locale) +
-                          "'. ")
-                       : (std::string("account_locale - unused. ")))
-               << " Selected '" << pref_locale << "'";
-  profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
-
-  // Here we don't enable keyboard layouts for normal users. Input methods
-  // are set up when the user first logs in. Then the user may customize the
-  // input methods.  Hence changing input methods here, just because the user's
-  // UI language is different from the login screen UI language, is not
-  // desirable. Note that input method preferences are synced, so users can use
-  // their farovite input methods as soon as the preferences are synced.
-  //
-  // For Guest mode, user locale preferences will never get initialized.
-  // So input methods should be enabled somewhere.
-  const bool enable_layouts = UserManager::Get()->IsLoggedInAsGuest();
-  locale_util::SwitchLanguage(pref_locale,
-                              enable_layouts,
-                              false /* login_layouts_only */,
-                              callback.Pass());
-
-  return true;
 }
 
 void UserManagerImpl::StopPolicyObserverForTesting() {

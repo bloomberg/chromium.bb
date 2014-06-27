@@ -126,10 +126,6 @@ class FakeUserManager : public UserManager {
   virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
   virtual base::FilePath GetUserProfileDir(const std::string& email) const
       OVERRIDE;
-  virtual bool RespectLocalePreference(
-      Profile* profile,
-      const User* user,
-      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const OVERRIDE;
 
   void set_owner_email(const std::string& owner_email) {
     owner_email_ = owner_email;

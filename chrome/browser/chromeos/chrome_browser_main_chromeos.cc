@@ -599,14 +599,15 @@ void GuestLanguageSetCallbackData::Callback(
   ime_manager->ChangeInputMethod(login_input_methods[0]);
 }
 
-void SetGuestLocale(UserManager* const usermanager, Profile* const profile) {
+void SetGuestLocale(UserManager* const user_manager, Profile* const profile) {
   scoped_ptr<GuestLanguageSetCallbackData> data(
       new GuestLanguageSetCallbackData(profile));
   scoped_ptr<locale_util::SwitchLanguageCallback> callback(
       new locale_util::SwitchLanguageCallback(base::Bind(
           &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
-  User* const user = usermanager->GetUserByProfile(profile);
-  usermanager->RespectLocalePreference(profile, user, callback.Pass());
+  User* const user = user_manager->GetUserByProfile(profile);
+  SessionManager::GetInstance()->RespectLocalePreference(
+      profile, user, callback.Pass());
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {
@@ -679,9 +680,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Guest user profile is never initialized with locale settings,
   // so we need special handling for Guest session.
-  UserManager* const usermanager = UserManager::Get();
-  if (usermanager->IsLoggedInAsGuest())
-    SetGuestLocale(usermanager, profile());
+  UserManager* const user_manager = UserManager::Get();
+  if (user_manager->IsLoggedInAsGuest())
+    SetGuestLocale(user_manager, profile());
 
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.

@@ -314,8 +314,8 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
       new locale_util::SwitchLanguageCallback(
           base::Bind(&LoginUtilsImpl::DoBrowserLaunchOnLocaleLoaded,
                      base::Passed(data.Pass()))));
-  if (!UserManager::Get()->
-      RespectLocalePreference(profile, user, callback.Pass())) {
+  if (!SessionManager::GetInstance()->
+          RespectLocalePreference(profile, user, callback.Pass())) {
     DoBrowserLaunchOnLocaleLoadedImpl(profile, login_host);
   }
 }

@@ -105,10 +105,6 @@ class MockUserManager : public UserManager {
 
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string&) const OVERRIDE;
-  virtual bool RespectLocalePreference(
-      Profile* profile,
-      const User* user,
-      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const OVERRIDE;
 
   // Sets a new User instance. Users previously created by this MockUserManager
   // become invalid.
