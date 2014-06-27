@@ -11,7 +11,6 @@ function populateConsoleWithMessages(count)
 
 function test()
 {
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
     var consoleView = WebInspector.ConsolePanel._view();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;

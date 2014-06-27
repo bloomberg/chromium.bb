@@ -148,69 +148,65 @@ CONSOLE MESSAGE: line 9: Message #146
 CONSOLE MESSAGE: line 9: Message #147
 CONSOLE MESSAGE: line 9: Message #148
 CONSOLE MESSAGE: line 9: Message #149
-Tests that console viewport handles selection properly.
+CONSOLE MESSAGE: line 9: Message #150
+CONSOLE MESSAGE: line 9: Message #151
+CONSOLE MESSAGE: line 9: Message #152
+CONSOLE MESSAGE: line 9: Message #153
+CONSOLE MESSAGE: line 9: Message #154
+CONSOLE MESSAGE: line 9: Message #155
+CONSOLE MESSAGE: line 9: Message #156
+CONSOLE MESSAGE: line 9: Message #157
+CONSOLE MESSAGE: line 9: Message #158
+CONSOLE MESSAGE: line 9: Message #159
+CONSOLE MESSAGE: line 9: Message #160
+CONSOLE MESSAGE: line 9: Message #161
+CONSOLE MESSAGE: line 9: Message #162
+CONSOLE MESSAGE: line 9: Message #163
+CONSOLE MESSAGE: line 9: Message #164
+CONSOLE MESSAGE: line 9: Message #165
+CONSOLE MESSAGE: line 9: Message #166
+CONSOLE MESSAGE: line 9: Message #167
+CONSOLE MESSAGE: line 9: Message #168
+CONSOLE MESSAGE: line 9: Message #169
+CONSOLE MESSAGE: line 9: Message #170
+CONSOLE MESSAGE: line 9: Message #171
+CONSOLE MESSAGE: line 9: Message #172
+CONSOLE MESSAGE: line 9: Message #173
+CONSOLE MESSAGE: line 9: Message #174
+CONSOLE MESSAGE: line 9: Message #175
+CONSOLE MESSAGE: line 9: Message #176
+CONSOLE MESSAGE: line 9: Message #177
+CONSOLE MESSAGE: line 9: Message #178
+CONSOLE MESSAGE: line 9: Message #179
+CONSOLE MESSAGE: line 9: Message #180
+CONSOLE MESSAGE: line 9: Message #181
+CONSOLE MESSAGE: line 9: Message #182
+CONSOLE MESSAGE: line 9: Message #183
+CONSOLE MESSAGE: line 9: Message #184
+CONSOLE MESSAGE: line 9: Message #185
+CONSOLE MESSAGE: line 9: Message #186
+CONSOLE MESSAGE: line 9: Message #187
+CONSOLE MESSAGE: line 9: Message #188
+CONSOLE MESSAGE: line 9: Message #189
+CONSOLE MESSAGE: line 9: Message #190
+CONSOLE MESSAGE: line 9: Message #191
+CONSOLE MESSAGE: line 9: Message #192
+CONSOLE MESSAGE: line 9: Message #193
+CONSOLE MESSAGE: line 9: Message #194
+CONSOLE MESSAGE: line 9: Message #195
+CONSOLE MESSAGE: line 9: Message #196
+CONSOLE MESSAGE: line 9: Message #197
+CONSOLE MESSAGE: line 9: Message #198
+CONSOLE MESSAGE: line 9: Message #199
+CONSOLE MESSAGE: line 10: LAST MESSAGE
+Tests that console viewport reveals messages on searching.
 
 
 Running: verifyViewportIsTallEnough
 
-Running: testSelectionSingleLineText
-Selected text:<<<EOL
-ssage
-EOL
-
-Running: testReversedSelectionSingleLineText
-Selected text:<<<EOL
-ssage
-EOL
-
-Running: testSelectionMultiLineText
-Selected text:<<<EOL
-age #73 console-viewport-selection.html:9
-Message #74 console-viewport-selection.html:9
-Message
-EOL
-
-Running: testSimpleVisibleSelection
-anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-last visible message index: 77
-
-Running: testHalfScrollSelectionUp
-anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 74
-
-Running: testHalfScrollSelectionDown
-anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-last visible message index: 75
-
-Running: testScrollSelectionAwayUp
-anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
+Running: scrollConsoleToTop
 first visible message index: 0
 
-Running: testScrollSelectionAwayDown
-anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-last visible message index: 149
-
-Running: testShiftClickSelectionOver
-anchor = {item: 72, offset: 6}, head = {item: 10, offset: 0}
-last visible message index: 37
-
-Running: testShiftClickSelectionBelow
-anchor = {item: 72, offset: 6}, head = {item: 140, offset: 0}
-last visible message index: 149
-
-Running: testRemoveSelection
-anchor = null, head = null
-last visible message index: 149
-
-Running: testReversedVisibleSelection
-anchor = {item: 76, offset: 6}, head = {item: 71, offset: 6}
-last visible message index: 76
-
-Running: testShiftClickReversedSelectionOver
-anchor = {item: 76, offset: 6}, head = {item: 10, offset: 0}
-last visible message index: 37
-
-Running: testShiftClickReversedSelectionBelow
-anchor = {item: 76, offset: 6}, head = {item: 140, offset: 0}
-last visible message index: 149
+Running: testFindLastMessage
+last visible message index: 200
 
