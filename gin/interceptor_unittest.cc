@@ -13,6 +13,7 @@
 #include "gin/try_catch.h"
 #include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8-util.h"
 
 namespace gin {
 
@@ -36,9 +37,7 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
     if (property == "value") {
       return ConvertToV8(isolate, value_);
     } else if (property == "func") {
-      return CreateFunctionTemplate(isolate,
-                                    base::Bind(&MyInterceptor::Call),
-                                    HolderIsFirstArgument)->GetFunction();
+      return GetFunctionTemplate(isolate, "func")->GetFunction();
     } else {
       return v8::Local<v8::Value>();
     }
@@ -83,7 +82,8 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
   explicit MyInterceptor(v8::Isolate* isolate)
       : NamedPropertyInterceptor(isolate, this),
         IndexedPropertyInterceptor(isolate, this),
-        value_(0) {}
+        value_(0),
+        template_cache_(isolate) {}
   virtual ~MyInterceptor() {}
 
   // gin::Wrappable
@@ -100,7 +100,23 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
     return tmp;
   }
 
+  v8::Local<v8::FunctionTemplate> GetFunctionTemplate(v8::Isolate* isolate,
+                                                      const std::string& name) {
+    v8::Local<v8::FunctionTemplate> function_template =
+        template_cache_.Get(name);
+    if (!function_template.IsEmpty())
+      return function_template;
+    function_template = CreateFunctionTemplate(
+        isolate, base::Bind(&MyInterceptor::Call), HolderIsFirstArgument);
+    template_cache_.Set(name, function_template);
+    return function_template;
+  }
+
   int value_;
+
+  v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(MyInterceptor);
 };
 
 WrapperInfo MyInterceptor::kWrapperInfo = {kEmbedderNativeGin};
