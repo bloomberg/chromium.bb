@@ -102,7 +102,7 @@ source_set("child") {
     sources -= [ "npapi/webplugin_delegate_impl_mac.mm" ]
   }
 
-  if (is_win) {
+  if (is_win || !use_aura) {
     sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
   }
 

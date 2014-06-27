@@ -165,11 +165,15 @@ source_set("browser") {
       sources += [
         "media/capture/desktop_capture_device.cc",
         "media/capture/desktop_capture_device.h",
-        "media/capture/desktop_capture_device_aura.cc",
-        "media/capture/desktop_capture_device_aura.h",
         "media/capture/desktop_capture_device_uma_types.cc",
         "media/capture/desktop_capture_device_uma_types.h",
       ]
+      if (use_aura) {
+        sources += [
+          "media/capture/desktop_capture_device_aura.cc",
+          "media/capture/desktop_capture_device_aura.h",
+        ]
+      }
       defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
       # TODO(GYP)
       #deps += [ "//third_party/webrtc/modules:desktop_capture" ]
@@ -239,6 +243,9 @@ source_set("browser") {
     ]
     if (!use_ozone || use_pango) {
       sources -= [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
+    }
+    if (!use_pango) {
+      sources -= [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
     }
   }
 
@@ -332,12 +339,29 @@ source_set("browser") {
     ]
   } else {  # Not aura.
     sources -= [
+      "renderer_host/input/synthetic_gesture_target_aura.cc",
+      "renderer_host/input/synthetic_gesture_target_aura.h",
+      "renderer_host/native_web_keyboard_event_aura.cc",
       "renderer_host/render_widget_host_view_aura.cc",
       "renderer_host/render_widget_host_view_aura.h",
-      "web_contents/touch_editable_impl_aura.cc",
-      "web_contents/touch_editable_impl_aura.h",
       "renderer_host/ui_events_helper.cc",
       "renderer_host/ui_events_helper.h",
+      "renderer_host/web_input_event_aura.cc",
+      "renderer_host/web_input_event_aura.h",
+      "web_contents/aura/gesture_nav_simple.cc",
+      "web_contents/aura/gesture_nav_simple.h",
+      "web_contents/aura/image_window_delegate.cc",
+      "web_contents/aura/image_window_delegate.h",
+      "web_contents/aura/overscroll_navigation_overlay.cc",
+      "web_contents/aura/overscroll_navigation_overlay.h",
+      "web_contents/aura/shadow_layer_delegate.cc",
+      "web_contents/aura/shadow_layer_delegate.h",
+      "web_contents/aura/window_slider.cc",
+      "web_contents/aura/window_slider.h",
+      "web_contents/touch_editable_impl_aura.cc",
+      "web_contents/touch_editable_impl_aura.h",
+      "web_contents/web_contents_view_aura.cc",
+      "web_contents/web_contents_view_aura.h",
     ]
   }
 
