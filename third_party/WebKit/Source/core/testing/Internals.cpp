@@ -1304,9 +1304,9 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
 {
     *layerOffset = IntSize();
     if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer()) {
-        CompositedLayerMappingPtr compositedLayerMapping = searchRoot->compositedLayerMapping();
-        LayoutSize offset = compositedLayerMapping->contentOffsetInCompositingLayer();
-        *layerOffset = IntSize(offset.width(), offset.height());
+        LayoutRect rect;
+        RenderLayer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+        *layerOffset = IntSize(rect.x(), rect.y());
         return searchRoot;
     }
 
@@ -1320,7 +1320,9 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
         GraphicsLayer* squashingLayer = searchRoot->groupedMapping()->squashingLayer();
         if (graphicsLayer == squashingLayer) {
             *layerType ="squashing";
-            *layerOffset = -searchRoot->offsetFromSquashingLayerOrigin();
+            LayoutRect rect;
+            RenderLayer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+            *layerOffset = IntSize(rect.x(), rect.y());
             return searchRoot;
         }
     }

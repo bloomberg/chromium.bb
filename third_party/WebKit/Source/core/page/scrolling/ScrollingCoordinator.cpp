@@ -419,7 +419,7 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     }
 }
 
-// Return the enclosingCompositedLayerForRepaint for the given RenderLayer
+// Return the enclosingCompositedLayerForPaintInvalidation for the given RenderLayer
 // including crossing frame boundaries.
 static const RenderLayer* enclosingCompositedLayer(const RenderLayer* layer)
 {
@@ -457,21 +457,11 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
 
         // Find the appropriate GraphicsLayer for the composited RenderLayer.
         GraphicsLayer* graphicsLayer;
-        LayoutSize extraOffset;
         if (compositedLayer->compositingState() == PaintsIntoGroupedBacking) {
             graphicsLayer = compositedLayer->groupedMapping()->squashingLayer();
-            extraOffset = -compositedLayer->offsetFromSquashingLayerOrigin();
         } else {
             ASSERT(compositedLayer->hasCompositedLayerMapping());
             CompositedLayerMappingPtr compositedLayerMapping = compositedLayer->compositedLayerMapping();
-            // The origin for the graphics layer does not have to be the same
-            // as the composited layer (e.g. when a child layer has negative
-            // offset and paints into this layer), so when projecting rects to
-            // graphics layer space they have to be offset by the origin for
-            // the composited layer.
-            extraOffset = compositedLayerMapping->contentOffsetInCompositingLayer();
-            // If the layer is using composited scrolling, then it's the contents that these
-            // rects apply to.
             graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
             if (!graphicsLayer)
                 graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
@@ -483,6 +473,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
             glRects = &graphicsRects.add(graphicsLayer, Vector<LayoutRect>()).storedValue->value;
         else
             glRects = &glIter->value;
+
         // Transform each rect to the co-ordinate space of the graphicsLayer.
         for (size_t i = 0; i < layerIter->value.size(); ++i) {
             LayoutRect rect = layerIter->value[i];
@@ -495,7 +486,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
                 if (compositedLayer->renderer()->hasOverflowClip())
                     rect.move(compositedLayer->renderBox()->scrolledContentOffset());
             }
-            rect.move(extraOffset);
+            RenderLayer::mapRectToPaintBackingCoordinates(compositedLayer->renderer(), rect);
             glRects->append(rect);
         }
     }

@@ -604,10 +604,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         layers[i].offsetFromRendererSet = true;
 
         layers[i].renderLayer->setSubpixelAccumulation(subpixelAccumulation);
-
-        // FIXME: find a better design to avoid this redundant value - most likely it will make
-        // sense to move the paint task info into RenderLayer's m_compositingProperties.
-        layers[i].renderLayer->setOffsetFromSquashingLayerOrigin(layers[i].offsetFromRenderer);
     }
 
     squashingLayer->setPosition(squashLayerBounds.location());

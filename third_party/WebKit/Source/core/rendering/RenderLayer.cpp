@@ -613,14 +613,16 @@ LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObje
     return point;
 }
 
-void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
+void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
-    if (!paintInvalidationContainer->layer()->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+
+    RenderLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    if (!paintInvalidationLayer->groupedMapping()) {
+        rect.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
     }
 
-    RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
+    RenderLayerModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
         return;
 
@@ -630,17 +632,27 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
     // we need to disable LayoutState for squashed layers.
     ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
 
+    // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
+    // transformed ancestor.
+    rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
+
+    rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+}
+
+void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
+{
+    if (!paintInvalidationContainer->layer()->groupedMapping()) {
+        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+        return;
+    }
+
     // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
     renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
 
-    // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
-    // transformed ancestor.
-    rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
-
-    rect.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
 LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer)

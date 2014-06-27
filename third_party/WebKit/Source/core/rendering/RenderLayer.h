@@ -341,6 +341,8 @@ public:
     // This will allow us to clean up this static method messiness.
     static LayoutPoint positionFromPaintInvalidationContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer);
 
+    static void mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&);
+
     // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
     static void mapRectToPaintInvalidationBacking(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&);
 
@@ -431,9 +433,6 @@ public:
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     RenderLayerBlendInfo& blendInfo() { return m_blendInfo; }
-
-    void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_offsetFromSquashingLayerOrigin = offset; }
-    IntSize offsetFromSquashingLayerOrigin() const { ASSERT(isAllowedToQueryCompositingState()); return m_offsetFromSquashingLayerOrigin; }
 
     bool scrollsOverflow() const;
 
@@ -702,9 +701,6 @@ private:
 
     // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
     CompositingReasons m_compositingReasons;
-
-    // Used for invalidating this layer's contents on the squashing GraphicsLayer.
-    IntSize m_offsetFromSquashingLayerOrigin;
 
     CompositingInputs m_compositingInputs;
 
