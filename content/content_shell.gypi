@@ -210,6 +210,8 @@
         'shell/renderer/test_runner/mock_constraints.h',
         'shell/renderer/test_runner/mock_grammar_check.cc',
         'shell/renderer/test_runner/mock_grammar_check.h',
+        'shell/renderer/test_runner/mock_screen_orientation_client.cc',
+        'shell/renderer/test_runner/mock_screen_orientation_client.h',
         'shell/renderer/test_runner/mock_web_audio_device.cc',
         'shell/renderer/test_runner/mock_web_audio_device.h',
         'shell/renderer/test_runner/mock_web_push_client.cc',

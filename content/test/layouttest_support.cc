@@ -95,18 +95,6 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
       SetMockDeviceOrientationDataForTesting(data);
 }
 
-void SetMockScreenOrientation(
-    RenderView* render_view,
-    const blink::WebScreenOrientationType& orientation) {
-  RendererWebKitPlatformSupportImpl::
-      SetMockScreenOrientationForTesting(render_view, orientation);
-}
-
-void ResetMockScreenOrientation()
-{
-  RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting();
-}
-
 void MockBatteryStatusChanged(const WebBatteryStatus& status) {
   RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(status);
 }

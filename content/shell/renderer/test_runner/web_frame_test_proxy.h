@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/test/test_media_stream_renderer_factory.h"
@@ -32,6 +33,10 @@ class WebFrameTestProxy : public Base {
     blink::WebPlugin* plugin = base_proxy_->CreatePlugin(frame, params);
     if (plugin) return plugin;
     return Base::createPlugin(frame, params);
+  }
+
+  virtual blink::WebScreenOrientationClient* webScreenOrientationClient() {
+    return base_proxy_->GetScreenOrientationClientMock();
   }
 
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,

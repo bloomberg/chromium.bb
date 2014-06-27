@@ -169,12 +169,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // is invoked.
   static void SetMockDeviceOrientationDataForTesting(
       const blink::WebDeviceOrientationData& data);
-  // Forces the screen orientation for testing purposes.
-  static void SetMockScreenOrientationForTesting(
-      RenderView* render_view,
-      blink::WebScreenOrientationType);
-  // Resets the mock screen orientation data used for testing.
-  static void ResetMockScreenOrientationForTesting();
 
   // Notifies blink::WebBatteryStatusListener that battery status has changed.
   static void MockBatteryStatusChangedForTesting(

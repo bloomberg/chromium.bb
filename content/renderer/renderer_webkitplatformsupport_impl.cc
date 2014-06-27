@@ -51,7 +51,6 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
-#include "content/renderer/screen_orientation/mock_screen_orientation_controller.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -145,8 +144,6 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<MockScreenOrientationController>::Leaky
-    g_test_screen_orientation_controller = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<FakeBatteryStatusDispatcher>::Leaky
     g_test_battery_status_dispatcher = LAZY_INSTANCE_INITIALIZER;
 
@@ -1045,13 +1042,6 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
   g_test_device_motion_data.Get() = data;
 }
 
-// static
-void RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting()
-{
-  if (!(g_test_screen_orientation_controller == 0))
-    g_test_screen_orientation_controller.Get().ResetData();
-}
-
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
@@ -1088,16 +1078,6 @@ void RendererWebKitPlatformSupportImpl::vibrate(unsigned int milliseconds) {
 
 void RendererWebKitPlatformSupportImpl::cancelVibration() {
   RenderThread::Get()->Send(new ViewHostMsg_CancelVibration());
-}
-
-//------------------------------------------------------------------------------
-
-// static
-void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(
-    RenderView* render_view,
-    blink::WebScreenOrientationType orientation) {
-  g_test_screen_orientation_controller.Get()
-      .UpdateDeviceOrientation(render_view, orientation);
 }
 
 //------------------------------------------------------------------------------

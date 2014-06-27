@@ -19,6 +19,7 @@
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
+#include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
@@ -526,6 +527,25 @@ void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
   CHECK(web_widget_->isAcceleratedCompositingActive());
   CapturePixelsAsync(base::Bind(
       &WebTestProxyBase::DidDisplayAsync, base::Unretained(this), callback));
+}
+
+void WebTestProxyBase::GetScreenOrientationForTesting(
+    blink::WebScreenInfo& screen_info) {
+  if (!screen_orientation_client_)
+    return;
+  // Override screen orientation information with mock data.
+  screen_info.orientationType =
+      screen_orientation_client_->CurrentOrientationType();
+  screen_info.orientationAngle =
+      screen_orientation_client_->CurrentOrientationAngle();
+}
+
+MockScreenOrientationClient*
+WebTestProxyBase::GetScreenOrientationClientMock() {
+  if (!screen_orientation_client_.get()) {
+    screen_orientation_client_.reset(new MockScreenOrientationClient);
+  }
+  return screen_orientation_client_.get();
 }
 
 blink::WebMIDIClientMock* WebTestProxyBase::GetMIDIClientMock() {

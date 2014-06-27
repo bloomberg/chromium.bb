@@ -56,14 +56,6 @@ void SetMockDeviceMotionData(const blink::WebDeviceMotionData& data);
 // a listener through WebKitPlatformSupport::setDeviceOrientationListener().
 void SetMockDeviceOrientationData(const blink::WebDeviceOrientationData& data);
 
-// Sets WebScreenOrientationType that should be used as a mock orientation.
-void SetMockScreenOrientation(
-    RenderView* render_view,
-    const blink::WebScreenOrientationType& orientation);
-
-// Resets the mock screen orientation data.
-void ResetMockScreenOrientation();
-
 // Notifies blink that battery status has changed.
 void MockBatteryStatusChanged(const blink::WebBatteryStatus& status);
 
