@@ -50,6 +50,7 @@ class TracedDictionary : public TracedValueBase {
 public:
     OwnerType& endDictionary()
     {
+        ASSERT(m_stack.size() == nestingLevel);
         endCurrentDictionary();
         return *reinterpret_cast<OwnerType*>(this);
     }
@@ -85,6 +86,8 @@ public:
         return *this;
     }
 
+    static const size_t nestingLevel = OwnerType::nestingLevel + 1;
+
 private:
     TracedDictionary();
     ~TracedDictionary();
@@ -106,6 +109,7 @@ public:
     }
     OwnerType& endArray()
     {
+        ASSERT(m_stack.size() == nestingLevel);
         endCurrentArray();
         return *reinterpret_cast<OwnerType*>(this);
     }
@@ -130,6 +134,8 @@ public:
         TracedValueBase::pushString(value);
         return *this;
     }
+
+    static const size_t nestingLevel = OwnerType::nestingLevel + 1;
 
 private:
     TracedArray();
@@ -165,6 +171,8 @@ public:
         return *this;
     }
     PassRefPtr<TraceEvent::ConvertableToTraceFormat> finish();
+
+    static const size_t nestingLevel = 1;
 };
 
 } // namespace WebCore
