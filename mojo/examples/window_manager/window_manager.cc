@@ -363,8 +363,8 @@ class WindowManager : public ApplicationDelegate,
   }
 
   bool IsDescendantOfKeyboard(View* target) {
-    return !keyboard_manager_.get() ||
-        !keyboard_manager_->node()->Contains(target->node());
+    return keyboard_manager_.get() &&
+        keyboard_manager_->node()->Contains(target->node());
   }
 
   void CreateControlPanel(view_manager::Node* root) {
