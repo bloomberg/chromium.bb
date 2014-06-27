@@ -244,6 +244,8 @@
             'host/usage_stats_consent_win.cc',
             'host/username.cc',
             'host/username.h',
+            'host/video_frame_recorder.cc',
+            'host/video_frame_recorder.h',
             'host/video_scheduler.cc',
             'host/video_scheduler.h',
             'host/win/com_imported_mstscax.tlh',
