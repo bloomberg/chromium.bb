@@ -138,7 +138,13 @@ class WebIDBCursorImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImplTest);
 };
 
-TEST_F(WebIDBCursorImplTest, PrefetchTest) {
+// Fails under Linux ASAN: crbug.com/389647
+#if defined(OS_LINUX)
+#define MAYBE_PrefetchTest DISABLED_PrefetchTest
+#else
+#define MAYBE_PrefetchTest PrefetchTest
+#endif
+TEST_F(WebIDBCursorImplTest, MAYBE_PrefetchTest) {
   const int64 transaction_id = 1;
   {
     WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
@@ -208,7 +214,13 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
             WebIDBCursorImpl::kInvalidCursorId);
 }
 
-TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
+// Fails under Linux ASAN: crbug.com/389647
+#if defined(OS_LINUX)
+#define MAYBE_AdvancePrefetchTest DISABLED_AdvancePrefetchTest
+#else
+#define MAYBE_AdvancePrefetchTest AdvancePrefetchTest
+#endif
+TEST_F(WebIDBCursorImplTest, MAYBE_AdvancePrefetchTest) {
   const int64 transaction_id = 1;
   WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
                           transaction_id,
