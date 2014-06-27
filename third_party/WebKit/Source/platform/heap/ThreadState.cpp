@@ -198,7 +198,6 @@ public:
             if (locker)
                 locker->reset();
             pushAllRegisters(this, state, parkAfterPushRegisters);
-            state->performPendingSweep();
         }
     }
 
@@ -758,6 +757,7 @@ void ThreadState::safePoint(StackState stackState)
     s_safePointBarrier->checkAndPark(this);
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
+    performPendingSweep();
 }
 
 #ifdef ADDRESS_SANITIZER
