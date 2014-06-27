@@ -205,7 +205,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
       "      }\n"
       "    }\n"
       "  ],\n"
-      "  false\n"  // has_more
+      "  false,\n"  // has_more
+      "  0\n"       // execution_time
       "]\n";
 
   int json_error_code;

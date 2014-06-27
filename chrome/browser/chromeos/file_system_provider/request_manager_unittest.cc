@@ -267,12 +267,15 @@ class RequestObserver : public RequestManager::Observer {
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestFulfilled(int request_id, bool has_more) OVERRIDE {
+  virtual void OnRequestFulfilled(int request_id,
+                                  const RequestValue& result,
+                                  bool has_more) OVERRIDE {
     fulfilled_.push_back(FulfilledEvent(request_id, has_more));
   }
 
   // RequestManager::Observer overrides.
   virtual void OnRequestRejected(int request_id,
+                                 const RequestValue& result,
                                  base::File::Error error) OVERRIDE {
     rejected_.push_back(RejectedEvent(request_id, error));
   }
@@ -385,9 +388,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
   {
-    scoped_ptr<RequestValue> response;
-    bool retry =
-        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
+    bool retry = request_manager_->FulfillRequest(
+        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(1u, observer.fulfilled().size());
   }
@@ -430,18 +432,17 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
-  scoped_ptr<RequestValue> response;
   const bool has_more = true;
 
-  bool result =
-      request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
+  bool result = request_manager_->FulfillRequest(
+      request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
   ASSERT_EQ(1u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
   EventLogger::SuccessEvent* event = logger.success_events()[0];
-  EXPECT_FALSE(event->result());
+  EXPECT_TRUE(event->result());
   EXPECT_TRUE(event->has_more());
 
   ASSERT_EQ(1u, observer.fulfilled().size());
@@ -453,7 +454,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   {
     bool new_has_more = false;
     bool retry = request_manager_->FulfillRequest(
-        request_id, response.Pass(), new_has_more);
+        request_id, scoped_ptr<RequestValue>(new RequestValue), new_has_more);
     EXPECT_TRUE(retry);
 
     ASSERT_EQ(2u, observer.fulfilled().size());
@@ -466,7 +467,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   {
     bool new_has_more = false;
     bool retry = request_manager_->FulfillRequest(
-        request_id, response.Pass(), new_has_more);
+        request_id, scoped_ptr<RequestValue>(new RequestValue), new_has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(0u, observer.rejected().size());
   }
@@ -517,10 +518,9 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
   {
-    scoped_ptr<RequestValue> response;
     bool has_more = false;
-    bool retry =
-        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
+    bool retry = request_manager_->FulfillRequest(
+        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(0u, observer.fulfilled().size());
   }
@@ -562,11 +562,10 @@ TEST_F(FileSystemProviderRequestManagerTest,
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
-  scoped_ptr<RequestValue> response;
   const bool has_more = true;
 
   const bool result = request_manager_->FulfillRequest(
-      request_id + 1, response.Pass(), has_more);
+      request_id + 1, scoped_ptr<RequestValue>(new RequestValue), has_more);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
@@ -578,8 +577,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   // Confirm, that the request hasn't been removed, by fulfilling it correctly.
   {
-    const bool retry =
-        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
+    const bool retry = request_manager_->FulfillRequest(
+        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_TRUE(retry);
     EXPECT_EQ(1u, observer.fulfilled().size());
   }

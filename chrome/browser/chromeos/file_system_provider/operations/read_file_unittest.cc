@@ -206,6 +206,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
 
   const std::string data = "ABCDE";
   const bool has_more = false;
+  const int execution_time = 0;
 
   base::ListValue value_as_list;
   value_as_list.Set(0, new base::StringValue(kFileSystemId));
@@ -213,6 +214,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   value_as_list.Set(
       2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
   value_as_list.Set(3, new base::FundamentalValue(has_more));
+  value_as_list.Set(4, new base::FundamentalValue(execution_time));
 
   scoped_ptr<Params> params(Params::Create(value_as_list));
   ASSERT_TRUE(params.get());

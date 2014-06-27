@@ -80,10 +80,14 @@ class RequestManager {
     virtual void OnRequestExecuted(int request_id) = 0;
 
     // Called when the request is fulfilled with a success.
-    virtual void OnRequestFulfilled(int request_id, bool has_more) = 0;
+    virtual void OnRequestFulfilled(int request_id,
+                                    const RequestValue& result,
+                                    bool has_more) = 0;
 
     // Called when the request is rejected with an error.
-    virtual void OnRequestRejected(int request_id, base::File::Error error) = 0;
+    virtual void OnRequestRejected(int request_id,
+                                   const RequestValue& result,
+                                   base::File::Error error) = 0;
 
     // Called when the request is timeouted.
     virtual void OnRequestTimeouted(int request_id) = 0;
@@ -99,13 +103,13 @@ class RequestManager {
 
   // Handles successful response for the |request_id|. If |has_more| is false,
   // then the request is disposed, after handling the |response|. On error,
-  // returns false, and the request is disposed.
+  // returns false, and the request is disposed. |response| must not be NULL.
   bool FulfillRequest(int request_id,
                       scoped_ptr<RequestValue> response,
                       bool has_more);
 
   // Handles error response for the |request_id|. If handling the error fails,
-  // returns false. Always disposes the request.
+  // returns false. Always disposes the request. |response| must not be NULL.
   bool RejectRequest(int request_id,
                      scoped_ptr<RequestValue> response,
                      base::File::Error error);

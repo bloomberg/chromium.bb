@@ -5,6 +5,19 @@
 <include src="../../../../third_party/polymer/platform/platform.js">
 <include src="../../../../third_party/polymer/polymer/polymer.js">
 
+/**
+ * Formats size to a human readable form.
+ * @param {number} size Size in bytes.
+ * @return {string} Output string in a human-readable format.
+ */
+function formatSizeCommon(size) {
+  if (size < 1024)
+    return size + ' B';
+  if (size < 1024 * 1024)
+    return Math.round(size / 1024) + ' KB';
+  return Math.round(size / 1024 / 1024) + ' MB';
+}
+
 // Defines the file-systems element.
 Polymer('file-systems', {
   /**
@@ -60,6 +73,15 @@ Polymer('request-events', {
   },
 
   /**
+   * Formats size to a human readable form.
+   * @param {number} size Size in bytes.
+   * @return {string} Output string in a human-readable format.
+   */
+  formatSize: function(size) {
+    return formatSizeCommon(size);
+  },
+
+  /**
    * Formats a boolean value to human-readable form.
    * @param {boolean=} opt_hasMore Input value.
    * @return {string} Output string in a human-readable format.
@@ -112,6 +134,15 @@ Polymer('request-timeline', {
       requestAnimationFrame(activeUpdateAnimation);
     }.bind(this);
     activeUpdateAnimation();
+  },
+
+  /**
+   * Formats size to a human readable form.
+   * @param {number} size Size in bytes.
+   * @return {string} Output string in a human-readable format.
+   */
+  formatSize: function(size) {
+    return formatSizeCommon(size);
   },
 
   /**
@@ -194,6 +225,8 @@ Polymer('request-timeline', {
                 index: this.chart.length,
                 id: event.id,
                 time: event.time,
+                executionTime: 0,
+                length: 0,
                 requestType: event.requestType,
                 left: event.time - this.timeStart - this.idleTotal,
                 row: rowIndex,
@@ -220,6 +253,8 @@ Polymer('request-timeline', {
             return;
           var chartIndex = this.active[event.id];
           this.chart[chartIndex].state = event.eventType;
+          this.chart[chartIndex].executionTime = event.executionTime;
+          this.chart[chartIndex].valueSize = event.valueSize;
           this.chart[chartIndex].modelIndexes.push(i);
           break;
 
@@ -319,6 +354,13 @@ function onRequestEvent(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  var context = document.getCSSCanvasContext('2d', 'dashedPattern', 4, 4);
+  context.beginPath();
+  context.strokeStyle = '#ffffff';
+  context.moveTo(0, 0);
+  context.lineTo(4, 4);
+  context.stroke();
+
   chrome.send('updateFileSystems');
 
   // Refresh periodically.

@@ -196,7 +196,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
       "      \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
       "    },\n"
       "    \"mimeType\": \"text/plain\"\n"  // kMimeType
-      "  }\n"
+      "  },\n"
+      "  0\n"  // execution_time
       "]\n";
 
   int json_error_code;

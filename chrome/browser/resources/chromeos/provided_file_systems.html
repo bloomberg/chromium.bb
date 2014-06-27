@@ -68,6 +68,16 @@
                     style="-webkit-margin-start: {{request.left * scale}}px;
                         top: {{request.row * ROW_HEIGHT}}px;
                         width: {{request.length * scale}}px">
+                  <div class="request-timeline-request-overhead"
+                      style="width: 
+                      {{(request.length - request.executionTime) * scale}}px">
+                  </div>
+                  <template
+                      if="{{request.valueSize && request.length * scale > 50}}">
+                    <div class="request-timeline-request-value-size">
+                      {{request.valueSize | formatSize}}
+                    </div>
+                  </template>
                 </div>
               </template>
             </div>
@@ -87,6 +97,7 @@
                 <th>Time</th>
                 <th>Request ID</th>
                 <th>Request Type</th>
+                <th>Size</th>
                 <th>Event Type</th>
                 <th>Error</th>
                 <th>Has Next</th>
@@ -102,6 +113,11 @@
                   <td>{{item.id}}</td>
                   <td data-request-type="{{item.requestType}}">
                     <span>{{item.requestType}}</span>
+                  </td>
+                  <td>
+                    <template if={{item.valueSize}}>
+                      {{item.valueSize | formatSize}}
+                    </template>
                   </td>
                   <td>{{item.eventType}}</td>
                   <td data-error="{{item.error}}">

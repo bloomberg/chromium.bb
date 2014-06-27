@@ -37,6 +37,8 @@ const char kKeyRequestType[] = "requestType";
 const char kKeyTime[] = "time";
 const char kKeyHasMore[] = "hasMore";
 const char kKeyError[] = "error";
+const char kKeyExecutionTime[] = "executionTime";
+const char kKeyValueSize[] = "valueSize";
 
 const char kKeyName[] = "name";
 const char kKeyExtensionId[] = "extensionId";
@@ -64,6 +66,67 @@ scoped_ptr<base::DictionaryValue> CreateRequestEvent(const std::string& type,
   return event.Pass();
 }
 
+// Gets execution time from a RequestValue instance. If the |response| doesn't
+// have execution time, then returns 0.
+int GetExecutionTime(const file_system_provider::RequestValue& response) {
+  {
+    const extensions::api::file_system_provider_internal::
+        UnmountRequestedSuccess::Params* value =
+            response.unmount_success_params();
+    if (value)
+      return value->execution_time;
+  }
+  {
+    const extensions::api::file_system_provider_internal::
+        GetMetadataRequestedSuccess::Params* value =
+            response.get_metadata_success_params();
+    if (value)
+      return value->execution_time;
+  }
+  {
+    const extensions::api::file_system_provider_internal::
+        ReadDirectoryRequestedSuccess::Params* value =
+            response.read_directory_success_params();
+    if (value)
+      return value->execution_time;
+  }
+  {
+    const extensions::api::file_system_provider_internal::
+        ReadFileRequestedSuccess::Params* value =
+            response.read_file_success_params();
+    if (value)
+      return value->execution_time;
+  }
+  {
+    const extensions::api::file_system_provider_internal::
+        OperationRequestedSuccess::Params* value =
+            response.operation_success_params();
+    if (value)
+      return value->execution_time;
+  }
+  {
+    const extensions::api::file_system_provider_internal::
+        OperationRequestedError::Params* value =
+            response.operation_error_params();
+    if (value)
+      return value->execution_time;
+  }
+
+  return 0;
+}
+
+// Gets value size in bytes from a RequestValue instance. If not available,
+// then returns 0.
+int GetValueSize(const file_system_provider::RequestValue& response) {
+  const extensions::api::file_system_provider_internal::
+      ReadFileRequestedSuccess::Params* value =
+          response.read_file_success_params();
+  if (value)
+    return value->data.size();
+
+  return 0;
+}
+
 // Class to handle messages from chrome://provided-file-systems.
 class ProvidedFileSystemsWebUIHandler
     : public content::WebUIMessageHandler,
@@ -79,9 +142,14 @@ class ProvidedFileSystemsWebUIHandler
       file_system_provider::RequestType type) OVERRIDE;
   virtual void OnRequestDestroyed(int request_id) OVERRIDE;
   virtual void OnRequestExecuted(int request_id) OVERRIDE;
-  virtual void OnRequestFulfilled(int request_id, bool has_more) OVERRIDE;
-  virtual void OnRequestRejected(int request_id,
-                                 base::File::Error error) OVERRIDE;
+  virtual void OnRequestFulfilled(
+      int request_id,
+      const file_system_provider::RequestValue& result,
+      bool has_more) OVERRIDE;
+  virtual void OnRequestRejected(
+      int request_id,
+      const file_system_provider::RequestValue& result,
+      base::File::Error error) OVERRIDE;
   virtual void OnRequestTimeouted(int request_id) OVERRIDE;
 
  private:
@@ -145,20 +213,27 @@ void ProvidedFileSystemsWebUIHandler::OnRequestExecuted(int request_id) {
   web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
 }
 
-void ProvidedFileSystemsWebUIHandler::OnRequestFulfilled(int request_id,
-                                                         bool has_more) {
+void ProvidedFileSystemsWebUIHandler::OnRequestFulfilled(
+    int request_id,
+    const file_system_provider::RequestValue& result,
+    bool has_more) {
   scoped_ptr<base::DictionaryValue> const event =
       CreateRequestEvent(kRequestFulfilled, request_id);
   event->SetBoolean(kKeyHasMore, has_more);
+  event->SetInteger(kKeyExecutionTime, GetExecutionTime(result));
+  event->SetInteger(kKeyValueSize, GetValueSize(result));
   web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
 }
 
 void ProvidedFileSystemsWebUIHandler::OnRequestRejected(
     int request_id,
+    const file_system_provider::RequestValue& result,
     base::File::Error error) {
   scoped_ptr<base::DictionaryValue> const event =
       CreateRequestEvent(kRequestRejected, request_id);
   event->SetString(kKeyError, base::File::ErrorToString(error));
+  event->SetInteger(kKeyExecutionTime, GetExecutionTime(result));
+  event->SetInteger(kKeyValueSize, GetValueSize(result));
   web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
 }
 

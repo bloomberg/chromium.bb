@@ -10,15 +10,18 @@ namespace fileSystemProviderInternal {
   interface Functions {
     // Internal. Success callback of the <code>onUnmountRequested</code>
     // event. Must be called when unmounting is completed.
-    static void unmountRequestedSuccess(DOMString fileSystemId,
-                                        long requestId);
+    static void unmountRequestedSuccess(
+        DOMString fileSystemId,
+        long requestId,
+        long executionTime);
 
     // Internal. Success callback of the <code>onGetMetadataRequested</code>
     // event. Must be called if metadata is available.
     static void getMetadataRequestedSuccess(
         DOMString fileSystemId,
         long requestId,
-        fileSystemProvider.EntryMetadata metadata);
+        fileSystemProvider.EntryMetadata metadata,
+        long executionTime);
 
     // Internal. Success callback of the <code>onReadDirectoryRequested</code>
     // event. Can be called multiple times per request.
@@ -26,7 +29,8 @@ namespace fileSystemProviderInternal {
         DOMString fileSystemId,
         long requestId,
         fileSystemProvider.EntryMetadata[] entries,
-        boolean hasMore);
+        boolean hasMore,
+        long executionTime);
 
     // Internal. Success callback of the <code>onReadFileRequested</code>
     // event. Can be called multiple times per request.
@@ -34,21 +38,23 @@ namespace fileSystemProviderInternal {
         DOMString fileSystemId,
         long requestId,
         ArrayBuffer data,
-        boolean hasMore);
+        boolean hasMore,
+        long executionTime);
 
     // Internal. Success callback of all of the operation requests, which do not
     // return any value. Must be called in case of a success.
     static void operationRequestedSuccess(
         DOMString fileSystemId,
-        long requestId);
+        long requestId,
+        long executionTime);
 
     // Internal. Error callback of all of the operation requests. Must be called
     // if an operation fails.
     static void operationRequestedError(
         DOMString fileSystemId,
         long requestId,
-        fileSystemProvider.ProviderError error);
-
+        fileSystemProvider.ProviderError error,
+        long executionTime);
   };
 };
 

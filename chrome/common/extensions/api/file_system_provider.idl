@@ -115,14 +115,14 @@ namespace fileSystemProvider {
   // Callback to receive the result of unmount() function.
   callback UnmountCallback = void([nodoc, instanceOf=DOMError] object error);
 
+  // Callback to handle an error raised from the browser.
+  [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
+
   // Callback to be called by the providing extension in case of a success.
   callback ProviderSuccessCallback = void();
 
   // Callback to be called by the providing extension in case of an error.
   callback ProviderErrorCallback = void(ProviderError error);
-
-  // Callback to handle an error raised from the browser.
-  [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
 
   // Success callback for the <code>onGetMetadataRequested</code> event.
   callback MetadataCallback = void(EntryMetadata metadata);
