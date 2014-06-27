@@ -1007,6 +1007,11 @@ crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.h
 
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
+crbug.com/379147 svg/W3C-SVG-1.1/filters-color-01-b.svg [ NeedsRebaseline ]
+crbug.com/379147 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ NeedsRebaseline ]
+crbug.com/379147 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
+crbug.com/379147 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
+crbug.com/379147 svg/filters/feLighting-crash.svg [ NeedsRebaseline ]
 
 crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
 
