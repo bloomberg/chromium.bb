@@ -1425,8 +1425,12 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
 {
     if (!pushDocumentUponHandlelessOperation(errorString))
         return;
-
-    Node* node = hoveredNodeForPoint(m_document->frame(), IntPoint(x, y), false);
+    HitTestRequest request(HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
+    HitTestResult result(IntPoint(x, y));
+    m_document->frame()->contentRenderer()->hitTest(request, result);
+    Node* node = result.innerPossiblyPseudoNode();
+    while (node && node->nodeType() == Node::TEXT_NODE)
+        node = node->parentNode();
     if (!node) {
         *errorString = "No node found at given location";
         return;
