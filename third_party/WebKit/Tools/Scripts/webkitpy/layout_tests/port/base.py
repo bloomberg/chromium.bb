@@ -1127,7 +1127,7 @@ class Port(object):
 
     def http_server_supports_ipv6(self):
         # Apache < 2.4 on win32 does not support IPv6, nor does cygwin apache.
-        if self.host.platform.is_cygwin() or self.get_option('use_apache') and self.host.platform.is_win():
+        if self.host.platform.is_cygwin() or (self.uses_apache() and self.host.platform.is_win()):
             return False
         return True
 
