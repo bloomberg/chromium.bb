@@ -332,6 +332,9 @@
         'services/public/cpp/view_manager/view_manager_delegate.h',
         'services/public/cpp/view_manager/view_observer.h',
       ],
+      'export_dependent_settings': [
+        'mojo_view_manager_bindings',
+      ],
     },
     {
       'target_name': 'mojo_view_manager_lib_unittests',
