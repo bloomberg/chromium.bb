@@ -422,7 +422,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   FUNCTION_DVLOG(2) << ": " << status << ", "
-                    << buffer->AsHumanReadableString();
+                    << (buffer ? buffer->AsHumanReadableString() : "NULL");
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR ||
