@@ -427,13 +427,12 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       // asynchronously.
       setTimeout(function() {
         var webViewInternal = privates(webview).internal;
+        // Update the partition.
         if (event.storagePartitionId) {
           webViewInternal.onAttach(event.storagePartitionId);
         }
 
-        var attached =
-            webViewInternal.attachWindowAndSetUpEvents(
-                event.windowId, undefined, event.storagePartitionId);
+        var attached = webViewInternal.attachWindow(event.windowId, true);
 
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);

@@ -340,6 +340,58 @@ function testChromeExtensionRelativePath() {
   document.body.appendChild(webview);
 }
 
+// Tests that a <webview> that starts with "display: none" style loads
+// properly.
+function testDisplayNoneWebviewLoad() {
+  var webview = document.createElement('webview');
+  var visible = false;
+  webview.style.display = 'none';
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertTrue(visible);
+    embedder.test.succeed();
+  });
+  // Set the .src while we are "display: none".
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+
+  setTimeout(function() {
+    visible = true;
+    // This should trigger loadstop.
+    webview.style.display = '';
+  }, 0);
+}
+
+function testDisplayNoneWebviewRemoveChild() {
+  var webview = document.createElement('webview');
+  var visibleAndInDOM = false;
+  webview.style.display = 'none';
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertTrue(visibleAndInDOM);
+    embedder.test.succeed();
+  });
+  // Set the .src while we are "display: none".
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+
+  setTimeout(function() {
+    webview.parentNode.removeChild(webview);
+    webview.style.display = '';
+    visibleAndInDOM = true;
+    // This should trigger loadstop.
+    document.body.appendChild(webview);
+  }, 0);
+}
+
 // Makes sure inline scripts works inside guest that was loaded from
 // accessible_resources.
 function testInlineScriptFromAccessibleResources() {
@@ -1685,6 +1737,8 @@ embedder.test.testList = {
   'testAPIMethodExistence': testAPIMethodExistence,
   'testChromeExtensionURL': testChromeExtensionURL,
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
+  'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,
+  'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
   'testInlineScriptFromAccessibleResources':
       testInlineScriptFromAccessibleResources,
   'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,

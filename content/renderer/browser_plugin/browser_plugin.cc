@@ -532,6 +532,10 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   bindings_.reset(new BrowserPluginBindings(this));
   container_ = container;
   container_->setWantsWheelEvents(true);
+  // This is a way to notify observers of our attributes that we have the
+  // bindings ready. This also means that this plugin is available in render
+  // tree.
+  UpdateDOMAttribute("internalbindings", "true");
   return true;
 }
 

@@ -21,6 +21,8 @@ var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
 var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
 var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 
+var PLUGIN_METHOD_ATTACH = '-internal-attach';
+
 var ERROR_MSG_ALREADY_NAVIGATED =
     'The object has already navigated, so its partition cannot be changed.';
 var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
@@ -89,6 +91,11 @@ function WebViewInternal(webviewNode) {
 
   this.beforeFirstNavigation = true;
   this.validPartitionId = true;
+  // Used to save some state upon deferred attachment.
+  // If <object> bindings is not available, we defer attachment.
+  // This state contains whether or not the attachment request was for
+  // newwindow.
+  this.deferredAttachState = null;
 
   // on* Event handlers.
   this.on = {};
@@ -503,7 +510,25 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
  * @private
  */
 WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
-    function(name, newValue) {
+    function(name, oldValue, newValue) {
+  if (name == 'internalbindings' && !oldValue && newValue) {
+    this.browserPluginNode.removeAttribute('internalbindings');
+
+    if (this.deferredAttachState) {
+      var self = this;
+      // A setTimeout is necessary for the binding to be initialized properly.
+      window.setTimeout(function() {
+        if (self.hasBindings()) {
+          var params = self.buildAttachParams(
+              self.deferredAttachState.isNewWindow);
+          self.browserPluginNode[PLUGIN_METHOD_ATTACH](self.instanceId, params);
+          self.deferredAttachState = null;
+        }
+      }, 0);
+    }
+    return;
+  }
+
   // This observer monitors mutations to attributes of the BrowserPlugin and
   // updates the <webview> attributes accordingly.
   // |newValue| is null if the attribute |name| has been removed.
@@ -579,6 +604,12 @@ WebViewInternal.prototype.onSizeChanged = function(newWidth, newHeight) {
   }
 };
 
+// Returns true if Browser Plugin bindings is available.
+// Bindings are unavailable if <object> is not in the render tree.
+WebViewInternal.prototype.hasBindings = function() {
+  return 'function' == typeof this.browserPluginNode[PLUGIN_METHOD_ATTACH];
+};
+
 WebViewInternal.prototype.hasNavigated = function() {
   return !this.beforeFirstNavigation;
 };
@@ -632,10 +663,9 @@ WebViewInternal.prototype.allocateInstanceId = function() {
       'webview',
       params,
       function(instanceId) {
-        self.instanceId = instanceId;
         // TODO(lazyboy): Make sure this.autoNavigate_ stuff correctly updated
         // |self.src| at this point.
-        self.attachWindowAndSetUpEvents(self.instanceId, self.src);
+        self.attachWindow(instanceId, false);
       });
 };
 
@@ -720,25 +750,34 @@ WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
   WebView.overrideUserAgent(this.instanceId, userAgentOverride);
 };
 
-/** @private */
-WebViewInternal.prototype.attachWindowAndSetUpEvents = function(
-    instanceId, opt_src, opt_partitionId) {
-  this.instanceId = instanceId;
-  // If we have a partition from the opener, use that instead.
-  var storagePartitionId =
-      opt_partitionId ||
-      this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
-      this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
+WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
     'api': 'webview',
     'instanceId': this.viewInstanceId,
     'name': this.name,
-    'src': opt_src,
-    'storagePartitionId': storagePartitionId,
+    // We don't need to navigate new window from here.
+    'src': isNewWindow ? undefined : this.src,
+    // If we have a partition from the opener, that will also be already
+    // set via this.onAttach().
+    'storagePartitionId': this.partition.toAttribute(),
     'userAgentOverride': this.userAgentOverride
   };
+  return params;
+};
 
-  return this.browserPluginNode['-internal-attach'](this.instanceId, params);
+WebViewInternal.prototype.attachWindow = function(instanceId, isNewWindow) {
+  this.instanceId = instanceId;
+  var params = this.buildAttachParams(isNewWindow);
+
+  if (!this.hasBindings()) {
+    // No bindings means that the plugin isn't there (display: none), we defer
+    // attachWindow in this case.
+    this.deferredAttachState = {isNewWindow: isNewWindow};
+    return false;
+  }
+
+  this.deferredAttachState = null;
+  return this.browserPluginNode[PLUGIN_METHOD_ATTACH](this.instanceId, params);
 };
 
 // Registers browser plugin <object> custom element.
@@ -757,7 +796,7 @@ function registerBrowserPluginElement() {
     if (!internal) {
       return;
     }
-    internal.handleBrowserPluginAttributeMutation(name, newValue);
+    internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
   };
 
   proto.attachedCallback = function() {
