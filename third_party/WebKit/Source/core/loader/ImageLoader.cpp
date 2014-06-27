@@ -64,17 +64,17 @@ class ImageLoader::Task : public blink::WebThread::Task {
 public:
     Task(ImageLoader* loader)
         : m_loader(loader)
-        , m_shouldBypassMainWorldContentSecurityPolicy(false)
+        , m_shouldBypassMainWorldCSP(false)
         , m_weakFactory(this)
     {
         LocalFrame* frame = loader->m_element->document().frame();
-        m_shouldBypassMainWorldContentSecurityPolicy = frame->script().shouldBypassMainWorldContentSecurityPolicy();
+        m_shouldBypassMainWorldCSP = frame->script().shouldBypassMainWorldCSP();
     }
 
     virtual void run() OVERRIDE
     {
         if (m_loader) {
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldContentSecurityPolicy);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP);
         }
     }
 
@@ -90,7 +90,7 @@ public:
 
 private:
     ImageLoader* m_loader;
-    bool m_shouldBypassMainWorldContentSecurityPolicy;
+    bool m_shouldBypassMainWorldCSP;
     WeakPtrFactory<Task> m_weakFactory;
 };
 

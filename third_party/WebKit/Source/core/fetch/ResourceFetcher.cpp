@@ -497,9 +497,6 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         return 0;
     }
 
-    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldContentSecurityPolicy = (frame() && frame()->script().shouldBypassMainWorldContentSecurityPolicy()) || (options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy);
-
     // Some types of resources can be loaded only from the same origin. Other
     // types of resources, like Images, Scripts, and CSS, can be loaded from
     // any URL.
@@ -532,19 +529,30 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         break;
     }
 
+    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+    bool shouldBypassMainWorldCSP = (frame() && frame()->script().shouldBypassMainWorldCSP()) || (options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy);
+
     // Don't send CSP messages for preloads, we might never actually display those items.
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
 
+    // m_document can be null, but not in any of the cases where csp is actually used below.
+    // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
+    // I believe it's the Resource::Raw case.
+    const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
+
+    // FIXME: This would be cleaner if moved this switch into an allowFromSource()
+    // helper on this object which took a Resource::Type, then this block would
+    // collapse to about 10 lines for handling Raw and Script special cases.
     switch (type) {
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
             return false;
         break;
     case Resource::Script:
     case Resource::ImportResource:
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
             return false;
 
         if (frame()) {
@@ -556,16 +564,16 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         }
         break;
     case Resource::CSSStyleSheet:
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowStyleFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, cspReporting))
             return false;
         break;
     case Resource::SVGDocument:
     case Resource::Image:
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowImageFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, cspReporting))
             return false;
         break;
     case Resource::Font: {
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowFontFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, cspReporting))
             return false;
         break;
     }
@@ -576,7 +584,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         break;
     case Resource::Media:
     case Resource::TextTrack:
-        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, cspReporting))
             return false;
 
         if (frame()) {

@@ -233,7 +233,7 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld& world)
     return shell;
 }
 
-bool ScriptController::shouldBypassMainWorldContentSecurityPolicy()
+bool ScriptController::shouldBypassMainWorldCSP()
 {
     v8::Handle<v8::Context> context = m_isolate->GetCurrentContext();
     if (context.IsEmpty() || !toDOMWindow(context))

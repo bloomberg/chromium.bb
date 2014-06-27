@@ -262,8 +262,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
             request.setCrossOriginAccessControl(elementDocument->securityOrigin(), crossOriginMode);
         request.setCharset(scriptCharset());
 
-        bool isValidScriptNonce = elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
-        if (isValidScriptNonce)
+        bool scriptPassesCSP = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+        if (scriptPassesCSP)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
         m_resource = elementDocument->fetcher()->fetchScript(request);
@@ -303,9 +303,12 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 
     LocalFrame* frame = contextDocument->frame();
 
-    bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script().shouldBypassMainWorldContentSecurityPolicy()) || elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr)) || elementDocument->contentSecurityPolicy()->allowScriptHash(sourceCode.source());
+    const ContentSecurityPolicy* csp = elementDocument->contentSecurityPolicy();
+    bool shouldBypassMainWorldCSP = (frame && frame->script().shouldBypassMainWorldCSP())
+        || csp->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr))
+        || csp->allowScriptWithHash(sourceCode.source());
 
-    if (!m_isExternalScript && (!shouldBypassMainWorldContentSecurityPolicy && !elementDocument->contentSecurityPolicy()->allowInlineScript(elementDocument->url(), m_startLineNumber)))
+    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber)))
         return;
 
     if (m_isExternalScript) {
@@ -316,28 +319,31 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         }
     }
 
-    if (frame) {
-        const bool isImportedScript = contextDocument != elementDocument;
-        // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
-        // with additional support for HTML imports.
-        IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument.get() : 0);
+    // FIXME: Can this be moved earlier in the function?
+    // Why are we ever attempting to execute scripts without a frame?
+    if (!frame)
+        return;
 
-        if (isHTMLScriptLoader(m_element))
-            contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
+    const bool isImportedScript = contextDocument != elementDocument;
+    // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
+    // with additional support for HTML imports.
+    IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument.get() : 0);
 
-        AccessControlStatus corsCheck = NotSharableCrossOrigin;
-        if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
-            corsCheck = SharableCrossOrigin;
+    if (isHTMLScriptLoader(m_element))
+        contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
-        // Create a script from the script element node, using the script
-        // block's source and the script block's type.
-        // Note: This is where the script is compiled and actually executed.
-        frame->script().executeScriptInMainWorld(sourceCode, corsCheck);
+    AccessControlStatus corsCheck = NotSharableCrossOrigin;
+    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
+        corsCheck = SharableCrossOrigin;
 
-        if (isHTMLScriptLoader(m_element)) {
-            ASSERT(contextDocument->currentScript() == m_element);
-            contextDocument->popCurrentScript();
-        }
+    // Create a script from the script element node, using the script
+    // block's source and the script block's type.
+    // Note: This is where the script is compiled and actually executed.
+    frame->script().executeScriptInMainWorld(sourceCode, corsCheck);
+
+    if (isHTMLScriptLoader(m_element)) {
+        ASSERT(contextDocument->currentScript() == m_element);
+        contextDocument->popCurrentScript();
     }
 }
 

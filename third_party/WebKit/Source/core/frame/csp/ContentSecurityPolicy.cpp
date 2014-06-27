@@ -391,22 +391,22 @@ bool ContentSecurityPolicy::allowScriptFromSource(const KURL& url, ContentSecuri
     return isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowScriptNonce(const String& nonce) const
+bool ContentSecurityPolicy::allowScriptWithNonce(const String& nonce) const
 {
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowScriptNonce>(m_policies, nonce);
 }
 
-bool ContentSecurityPolicy::allowStyleNonce(const String& nonce) const
+bool ContentSecurityPolicy::allowStyleWithNonce(const String& nonce) const
 {
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
 }
 
-bool ContentSecurityPolicy::allowScriptHash(const String& source) const
+bool ContentSecurityPolicy::allowScriptWithHash(const String& source) const
 {
     return checkDigest<&CSPDirectiveList::allowScriptHash>(source, m_scriptHashAlgorithmsUsed, m_policies);
 }
 
-bool ContentSecurityPolicy::allowStyleHash(const String& source) const
+bool ContentSecurityPolicy::allowStyleWithHash(const String& source) const
 {
     return checkDigest<&CSPDirectiveList::allowStyleHash>(source, m_styleHashAlgorithmsUsed, m_policies);
 }
@@ -771,7 +771,7 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(ExecutionContext* context)
     if (context && context->isDocument()) {
         Document* document = toDocument(context);
         if (document->frame())
-            return document->frame()->script().shouldBypassMainWorldContentSecurityPolicy();
+            return document->frame()->script().shouldBypassMainWorldCSP();
     }
     return false;
 }

@@ -152,11 +152,16 @@ void StyleElement::createSheet(Element* e, const String& text)
     // Inline style added from an isolated world should bypass the main world's
     // CSP just as an inline script would.
     LocalFrame* frame = document.frame();
-    bool shouldBypassMainWorldContentSecurityPolicy = frame && frame->script().shouldBypassMainWorldContentSecurityPolicy();
+    bool shouldBypassMainWorldCSP = frame && frame->script().shouldBypassMainWorldCSP();
+
+    const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
+    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP
+        || csp->allowStyleWithHash(text)
+        || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
+        || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line);
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
-    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldContentSecurityPolicy || document.contentSecurityPolicy()->allowStyleHash(text) || document.contentSecurityPolicy()->allowStyleNonce(e->fastGetAttribute(HTMLNames::nonceAttr)) || document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line);
     if (isCSS(e, type) && passesContentSecurityPolicyChecks) {
         RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 

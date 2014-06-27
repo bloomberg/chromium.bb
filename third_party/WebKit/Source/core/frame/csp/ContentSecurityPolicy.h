@@ -126,10 +126,14 @@ public:
 
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.
-    bool allowScriptNonce(const String& nonce) const;
-    bool allowStyleNonce(const String& nonce) const;
-    bool allowScriptHash(const String& source) const;
-    bool allowStyleHash(const String& source) const;
+    // Nonce/Hash functions check all policies relating to use of a script/style
+    // with the given nonce/hash and return true all CSP policies allow it.
+    // If these return true, callers can then process the content or
+    // issue a load and be safe disabling any further CSP checks.
+    bool allowScriptWithNonce(const String& nonce) const;
+    bool allowStyleWithNonce(const String& nonce) const;
+    bool allowScriptWithHash(const String& source) const;
+    bool allowStyleWithHash(const String& source) const;
 
     void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
     void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
