@@ -63,6 +63,7 @@ void ImageQualityController::remove(RenderObject* renderer)
 InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, RenderObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
 {
     if (object->style()->imageRendering() == ImageRenderingPixelated
+        && image
         && (layoutSize.width() > image->width() || layoutSize.height() > image->height())) {
         return InterpolationNone;
     }
