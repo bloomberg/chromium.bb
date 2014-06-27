@@ -196,6 +196,8 @@ crbug.com/380217 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
+crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
+
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]
