@@ -18,7 +18,7 @@ class TestRepaintPage(page_module.Page):
                                           page_set, base_dir)
 
   def RunRepaint(self, action_runner):
-    action_runner.RunAction(RepaintContinuouslyAction({'seconds': 2}))
+    action_runner.RepaintContinuously(seconds=2)
 
 
 class RepaintUnitTest(

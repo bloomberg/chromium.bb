@@ -31,10 +31,7 @@ class Top25Page(page_module.Page):
     interaction.End()
 
   def RunRepaint(self, action_runner):
-    action_runner.RunAction(RepaintContinuouslyAction(
-      {
-        'seconds': 5
-      }))
+    action_runner.RepaintContinuously(seconds=5)
 
 
 class GoogleWebSearchPage(Top25Page):

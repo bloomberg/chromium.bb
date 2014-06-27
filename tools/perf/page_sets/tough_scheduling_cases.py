@@ -336,7 +336,10 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
   def RunSmoothness(self, action_runner):
     if self.bounce:
-      action_runner.RunAction(ScrollBounceAction())
+      interaction = action_runner.BeginGestureInteraction(
+          'ScrollBounceAction', is_smooth=True)
+      action_runner.ScrollBouncePage()
+      interaction.End()
     else:
       interaction = action_runner.BeginGestureInteraction(
           'ScrollAction', is_smooth=True)

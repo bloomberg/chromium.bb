@@ -22,7 +22,7 @@ class GmailRefreshPage(page_module.Page):
     self.archive_data_file = 'data/gmail_refresh.json'
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ReloadAction({'seconds': 2}))
+    action_runner.ReloadPage()
 
 
 class GmailRefreshPageSet(page_set_module.PageSet):

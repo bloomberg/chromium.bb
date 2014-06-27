@@ -30,7 +30,7 @@ class GmailPage(MobileMemoryPage):
     self.credentials = 'google'
 
   def ReloadAndGc(self, action_runner):
-    action_runner.RunAction(ReloadAction())
+    action_runner.ReloadPage()
     action_runner.Wait(15)
     action_runner.ForceGarbageCollection()
 

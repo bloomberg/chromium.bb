@@ -16,7 +16,7 @@ class Top2012Q3Page(page.Page):
     self.archive_data_file = 'data/2012Q3.json'
 
   def ReloadAndGc(self, action_runner):
-    action_runner.RunAction(ReloadAction())
+    action_runner.ReloadPage()
     action_runner.Wait(1)
     action_runner.ForceGarbageCollection()
 

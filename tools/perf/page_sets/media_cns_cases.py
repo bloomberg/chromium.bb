@@ -14,37 +14,22 @@ class BasicPlayPage(page_module.Page):
     self.add_browser_metrics = True
 
   def PlayAction(self, action_runner):
-    action_runner.RunAction(PlayAction(
-      {
-        'wait_for_playing': True,
-        'wait_for_ended': True
-      }))
+    action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
+                            ended_event_timeout_in_seconds=60)
 
   def RunMediaMetrics(self, action_runner):
     self.PlayAction(action_runner)
 
   def SeekBeforeAndAfterPlayhead(self, action_runner):
-    action_runner.RunAction(PlayAction(
-      {
-        'wait_for_playing': True,
-        'wait_for_ended': False
-      }))
+    action_runner.PlayMedia(playing_event_timeout_in_seconds=60)
     # Wait for 1 second so that we know the play-head is at ~1s.
     action_runner.Wait(1)
     # Seek to before the play-head location.
-    action_runner.RunAction(SeekAction(
-      {
-        'seek_time': '0.5',
-        'wait_for_seeked': True,
-        'seek_label': 'seek_warm'
-      }))
+    action_runner.SeekMedia(seconds=0.5, timeout_in_seconds=60,
+                            label='seek_warm')
     # Seek to after the play-head location.
-    action_runner.RunAction(SeekAction(
-      {
-        'seek_time': 15,
-        'wait_for_seeked': True,
-        'seek_label': 'seek_cold'
-      }))
+    action_runner.SeekMedia(seconds=15, timeout_in_seconds=60,
+                            label='seek_cold')
 
 class SeekBeforeAndAfterPlayheadPage(BasicPlayPage):
 
