@@ -8,5 +8,4 @@ per-file *_message*.h=jln@chromium.org
 per-file *_message*.h=jschuh@chromium.org
 per-file *_message*.h=kenrb@chromium.org
 per-file *_message*.h=nasko@chromium.org
-per-file *_message*.h=palmer@chromium.org
 per-file *_message*.h=tsepez@chromium.org
