@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import math
 import os
 
 from metrics import power
 from telemetry import test
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -24,28 +24,67 @@ class _DromaeoMeasurement(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
-        'window.document.cookie.indexOf("__done=1") >= 0', 600)
+        'window.document.getElementById("pause").value == "Run"', 60)
+
+    # Start spying on POST request that will report benchmark results, and
+    # intercept result data.
+    tab.ExecuteJavaScript('(function() {' +
+                          '  var real_jquery_ajax_ = window.jQuery;' +
+                          '  window.results_ = "";' +
+                          '  window.jQuery.ajax = function(request) {' +
+                          '    if (request.url == "store.php") {' +
+                          '      window.results_ =' +
+                          '          decodeURIComponent(request.data);' +
+                          '      window.results_ = window.results_.substring(' +
+                          '          window.results_.indexOf("=") + 1, ' +
+                          '          window.results_.lastIndexOf("&"));' +
+                          '      real_jquery_ajax_(request);' +
+                          '    }' +
+                          '  };' +
+                          '})();')
+    # Starts benchmark.
+    tab.ExecuteJavaScript('window.document.getElementById("pause").click();')
+
+    tab.WaitForJavaScriptExpression('!!window.results_', 600)
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
 
-    js_get_results = 'JSON.stringify(window.automation.GetResults())'
-    print js_get_results
-    score = eval(tab.EvaluateJavaScript(js_get_results))
+    score = eval(tab.EvaluateJavaScript('window.results_ || "[]"'))
 
     def Escape(k):
-      chars = [' ', '-', '/', '(', ')', '*']
+      chars = [' ', '.', '-', '/', '(', ')', '*']
       for c in chars:
         k = k.replace(c, '_')
       return k
 
-    suffix = page.url[page.url.index('?') + 1 : page.url.index('&')]
-    for k, v in score.iteritems():
-      data_type = 'unimportant'
-      if k == suffix:
-        data_type = 'default'
-      results.Add(Escape(k), 'runs/s', float(v), data_type=data_type)
+    def AggregateData(container, key, value):
+      if key not in container:
+        container[key] = {'count': 0, 'sum': 0}
+      container[key]['count'] += 1
+      container[key]['sum'] += math.log(value)
 
+    suffix = page.url[page.url.index('?') + 1 :]
+    def AddResult(name, value):
+      data_type = 'unimportant'
+      if name == suffix:
+        data_type = 'default'
+
+      results.Add(Escape(name), 'run/s', value, data_type=data_type)
+
+    aggregated = {}
+    for data in score:
+      AddResult('%s/%s' % (data['collection'], data['name']),
+                data['mean'])
+
+      escaped_top_name = data['collection'].split('-', 1)[0]
+      AggregateData(aggregated, escaped_top_name, data['mean'])
+
+      escaped_collection = data['collection']
+      AggregateData(aggregated, escaped_collection, data['mean'])
+
+    for key, value in aggregated.iteritems():
+      AddResult(key, math.exp(value['sum'] / value['count']))
 
 class _DromaeoBenchmark(test.Test):
   """A base class for Dromaeo benchmarks."""
@@ -53,13 +92,16 @@ class _DromaeoBenchmark(test.Test):
 
   def CreatePageSet(self, options):
     """Makes a PageSet for Dromaeo benchmarks."""
-    # Subclasses are expected to define a class member called query_param.
-    if not hasattr(self, 'query_param'):
-      raise NotImplementedError('query_param not in Dromaeo benchmark.')
-    url = 'file://index.html?%s&automated' % self.query_param
-    dromaeo_dir = os.path.join(util.GetChromiumSrcDir(),
-                               'chrome', 'test', 'data', 'dromaeo')
-    ps = page_set.PageSet(file_path=dromaeo_dir)
+    # Subclasses are expected to define class members called query_param and
+    # tag.
+    if not hasattr(self, 'query_param') or not hasattr(self, 'tag'):
+      raise NotImplementedError('query_param or tag not in Dromaeo benchmark.')
+    archive_data_file = '../page_sets/data/dromaeo.%s.json' % self.tag
+    ps = page_set.PageSet(
+        make_javascript_deterministic=False,
+        archive_data_file=archive_data_file,
+        file_path=os.path.abspath(__file__))
+    url = 'http://dromaeo.com?%s' % self.query_param
     ps.AddPageWithDefaultRunNavigate(url)
     return ps
 
