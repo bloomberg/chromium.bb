@@ -31,7 +31,7 @@ ui.actions = ui.actions || {};
 var Action = base.extends('button', {
     init: function() {
         this._eventName = null;
-        $(this).addClass('action');
+        this.classList.add('action');
         this.addEventListener('click', function(event) {
             if (this._eventName) {
                 $(this).trigger(this._eventName);
@@ -40,7 +40,7 @@ var Action = base.extends('button', {
         }.bind(this));
     },
     makeDefault: function() {
-        $(this).addClass('default');
+        this.classList.add('default');
         return this;
     }
 });
@@ -57,7 +57,7 @@ ui.actions.Next = base.extends(Action, {
     init: function() {
         this.innerHTML = '&#9654;';
         this._eventName = 'next';
-        $(this).addClass('next');
+        this.classList.add('next');
     }
 });
 
@@ -65,7 +65,7 @@ ui.actions.Previous = base.extends(Action, {
     init: function() {
         this.innerHTML = '&#9664;';
         this._eventName = 'previous';
-        $(this).addClass('previous');
+        this.classList.add('previous');
     }
 });
 
@@ -80,7 +80,7 @@ ui.actions.List = base.extends('ul', {
     {
         var item = document.createElement('li');
         item.appendChild(action);
-        $(this).append(item);
+        this.appendChild(item);
     }
 });
 
