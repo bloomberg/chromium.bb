@@ -66,7 +66,9 @@ public:
 private:
     explicit SVGLengthList(SVGLengthMode);
 
-    bool adjustFromToListValues(PassRefPtr<SVGLengthList> fromList, PassRefPtr<SVGLengthList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
+    // Create SVGLength items used to adjust the list length
+    // when animation from/to lists are longer than this list.
+    virtual PassRefPtr<SVGLength> createPaddingItem() const OVERRIDE;
 
     template <typename CharType>
     void parseInternal(const CharType*& ptr, const CharType* end, ExceptionState&);

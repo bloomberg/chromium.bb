@@ -64,8 +64,6 @@ public:
 private:
     SVGPointList();
 
-    bool adjustFromToListValues(PassRefPtr<SVGPointList> fromList, PassRefPtr<SVGPointList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
-
     template <typename CharType>
     bool parse(const CharType*& ptr, const CharType* end);
 };

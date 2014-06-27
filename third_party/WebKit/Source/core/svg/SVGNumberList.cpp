@@ -113,39 +113,6 @@ void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElemen
         at(i)->setValue(at(i)->value() + otherList->at(i)->value());
 }
 
-bool SVGNumberList::adjustFromToListValues(PassRefPtr<SVGNumberList> passFromList, PassRefPtr<SVGNumberList> passToList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded)
-{
-    RefPtr<SVGNumberList> fromList = passFromList;
-    RefPtr<SVGNumberList> toList = passToList;
-
-    // If no 'to' value is given, nothing to animate.
-    size_t toListSize = toList->length();
-    if (!toListSize)
-        return false;
-
-    // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
-    size_t fromListSize = fromList->length();
-    if (fromListSize != toListSize && fromListSize) {
-        if (percentage < 0.5) {
-            if (!isToAnimation)
-                deepCopy(fromList);
-        } else {
-            deepCopy(toList);
-        }
-
-        return false;
-    }
-
-    ASSERT(!fromListSize || fromListSize == toListSize);
-    if (resizeAnimatedListIfNeeded && length() < toListSize) {
-        size_t paddingCount = toListSize - length();
-        for (size_t i = 0; i < paddingCount; ++i)
-            append(SVGNumber::create());
-    }
-
-    return true;
-}
-
 void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     RefPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
@@ -156,7 +123,7 @@ void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement
     size_t toListSize = toList->length();
     size_t toAtEndOfDurationListSize = toAtEndOfDurationList->length();
 
-    if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode() == ToAnimation, true))
+    if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode()))
         return;
 
     for (size_t i = 0; i < toListSize; ++i) {

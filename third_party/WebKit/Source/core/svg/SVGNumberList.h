@@ -66,8 +66,6 @@ public:
 private:
     SVGNumberList();
 
-    bool adjustFromToListValues(PassRefPtr<SVGNumberList> fromList, PassRefPtr<SVGNumberList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
-
     template <typename CharType>
     bool parse(const CharType*& ptr, const CharType* end);
 };

@@ -123,6 +123,7 @@ public:
         m_contextElement = contextElement;
     }
 
+    static PassRefPtr<SVGPathSeg> create() { ASSERT_NOT_REACHED(); return nullptr; }
     PassRefPtr<SVGPathSeg> clone() { ASSERT_NOT_REACHED(); return nullptr; }
 
 protected:
