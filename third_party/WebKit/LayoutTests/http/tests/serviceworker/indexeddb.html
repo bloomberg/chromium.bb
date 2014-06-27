@@ -8,7 +8,7 @@ var test = async_test('Verify Indexed DB operation in a Service Worker');
 test.step(function() {
     var scope = 'resources/blank.html';
     service_worker_unregister_and_register(
-        test, 'resources/indexeddb-worker.js', scope, onRegister);
+        test, 'resources/indexeddb-worker.js', scope).then(test.step_func(onRegister));
 
     function onRegister(worker) {
         var messageChannel = new MessageChannel();

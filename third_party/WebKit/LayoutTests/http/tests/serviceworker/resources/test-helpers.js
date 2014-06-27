@@ -4,7 +4,7 @@ function service_worker_test(url, description) {
     var t = async_test(description);
     t.step(function() {
         var scope = 'nonexistent';
-        service_worker_unregister_and_register(t, url, scope, onRegistered);
+        service_worker_unregister_and_register(t, url, scope).then(t.step_func(onRegistered));
 
         function onRegistered(worker) {
             var messageChannel = new MessageChannel();
@@ -19,16 +19,16 @@ function service_worker_test(url, description) {
     });
 }
 
-function service_worker_unregister_and_register(test, url, scope, onregister) {
+function service_worker_unregister_and_register(test, url, scope) {
     var options = scope ? { scope: scope } : {};
     return navigator.serviceWorker.unregister(scope).then(
-        // FIXME: Wrap this with test.step_func once testharness.js is updated.
-        function() {
+        test.step_func(function() {
             return navigator.serviceWorker.register(url, options);
-        },
+        }),
         unreached_rejection(test, 'Unregister should not fail')
-    ).then(
-        test.step_func(onregister),
+    ).then(test.step_func(function(worker) {
+          return Promise.resolve(worker);
+        }),
         unreached_rejection(test, 'Registration should not fail')
     );
 }

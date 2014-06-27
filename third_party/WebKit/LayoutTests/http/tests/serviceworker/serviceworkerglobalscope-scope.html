@@ -17,8 +17,9 @@ function scope_test(name, scope) {
         }
 
         service_worker_unregister_and_register(
-            t, 'resources/serviceworkerglobalscope-scope-worker.js', scope,
-            function(worker) {
+            t, 'resources/serviceworkerglobalscope-scope-worker.js', scope
+        ).then(
+            t.step_func(function(worker) {
                 var messageChannel = new MessageChannel();
                 messageChannel.port1.onmessage = t.step_func(function(e) {
                     message = e.data;
@@ -27,7 +28,8 @@ function scope_test(name, scope) {
                     service_worker_unregister_and_done(t, scope);
                 });
                 worker.postMessage('', [messageChannel.port2]);
-            });
+            })
+        );
     });
 }
 

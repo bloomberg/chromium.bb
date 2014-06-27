@@ -9,7 +9,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker responds to fetch event with blob body');
     var scope = 'helloworld';
-    service_worker_unregister_and_register(t, worker, scope, onRegister);
+    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));
@@ -29,7 +29,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker does not respond to fetch event');
     var scope = 'resources/simple.html?ignore';
-    service_worker_unregister_and_register(t, worker, scope, onRegister);
+    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));
@@ -49,7 +49,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker responds to fetch event with null response body');
     var scope = 'resources/simple.html?null';
-    service_worker_unregister_and_register(t, worker, scope, onRegister);
+    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));
@@ -69,7 +69,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker rejects fetch event');
     var scope = 'resources/simple.html?reject';
-    service_worker_unregister_and_register(t, worker, scope, onRegister);
+    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));
@@ -89,7 +89,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker fetches other file in fetch event');
     var scope = 'resources/simple.html?fetch';
-    service_worker_unregister_and_register(t, worker, scope, onRegister);
+    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));

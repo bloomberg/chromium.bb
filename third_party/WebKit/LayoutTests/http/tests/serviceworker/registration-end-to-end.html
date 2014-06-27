@@ -22,7 +22,7 @@ t.step(function() {
     };
 
     service_worker_unregister_and_register(
-        t, 'resources/end-to-end-worker.js', scope, onRegister);
+        t, 'resources/end-to-end-worker.js', scope).then(t.step_func(onRegister));
 
     function sendMessagePort(worker, from) {
         var messageChannel = new MessageChannel();
