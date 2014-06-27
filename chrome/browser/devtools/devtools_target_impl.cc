@@ -88,11 +88,12 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab)
   set_last_activity_time(web_contents->GetLastActiveTime());
 
   GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
-  if (guest) {
+  WebContents* guest_contents = guest ? guest->embedder_web_contents() : NULL;
+  RenderViewHost* guest_parent_rvh =
+      guest_contents ? guest_contents->GetRenderViewHost() : NULL;
+  if (guest_parent_rvh) {
     set_type(kTargetTypeWebView);
-    RenderViewHost* parent_rvh =
-        guest->embedder_web_contents()->GetRenderViewHost();
-    set_parent_id(DevToolsAgentHost::GetOrCreateFor(parent_rvh)->GetId());
+    set_parent_id(DevToolsAgentHost::GetOrCreateFor(guest_parent_rvh)->GetId());
     return;
   }
 
