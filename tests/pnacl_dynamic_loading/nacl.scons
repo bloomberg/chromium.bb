@@ -1,0 +1,48 @@
+# -*- python -*-
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if not env.Bit('bitcode'):
+  Return()
+if env['TOOLCHAIN_FEATURE_VERSION'] < 6:
+  Return()
+# The x86-64 instruction sequence that PNaCl generates for function calls,
+# which hides the sandbox base address, isn't compatible with PIC code
+# generation yet.
+# TODO(mseaborn): Generate a PIC-friendly instruction sequence for calls.
+if env.Bit('target_x86_64'):
+  Return()
+# The sandboxed translator does not support translating PSOs yet.
+if env.Bit('use_sandboxed_translator'):
+  Return()
+
+
+def MakeAndTranslatePso(dest, bitcode_file):
+  # Run opt to apply PNaCl ABI simplifications to the IR and to run the
+  # PNaCl ABI checker.  We are bypassing pnacl-ld for now because its
+  # invocation of Gold internalizes __pnacl_pso_root, which we want to keep
+  # externally-visible.
+  opt_result = env.Command(
+      dest + '.nonfinal.pso', [bitcode_file],
+      '${PNACLOPT} -pnacl-abi-simplify-preopt -pnacl-abi-simplify-postopt '
+      '-verify-pnaclabi-module -verify-pnaclabi-functions '
+      '-pnaclabi-allow-debug-metadata '
+      '${SOURCES} -o ${TARGET}')
+  # Finalize to strip debugging info and to emit PNaCl bitcode.
+  finalized_result = env.Command(
+      dest + '.final.pso', [opt_result],
+      '${PNACLFINALIZE} ${SOURCES} -o ${TARGET}')
+  # Translate to an ELF loadable object.
+  translated_dso = env.Command(dest + '.so', [finalized_result],
+                               '${TRANSLATE} -pso ${SOURCES} -o ${TARGET}')
+  return translated_dso
+
+
+# TODO(mseaborn): Add an ELF dynamic loader for PNaCl and test that the DSO
+# we produce is loadable.
+node = MakeAndTranslatePso('test_pso', [env.ComponentObject('test_pso.c')])
+env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests'],
+                       'run_pnacl_dynamic_loading_test')

@@ -3253,6 +3253,7 @@ irt_variant_tests = [
     'tests/pagesize/nacl.scons',
     'tests/performance/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
+    'tests/pnacl_dynamic_loading/nacl.scons',
     'tests/pnacl_native_objects/nacl.scons',
     'tests/process_create/nacl.scons',
     'tests/random/nacl.scons',

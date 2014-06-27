@@ -22,7 +22,8 @@ from driver_temps import TempFiles
 import subprocess
 
 EXTRA_ENV = {
-  'PIC': '${NONSFI_NACL}',
+  'TRANSLATE_PSO': '0',
+  'PIC': '${NONSFI_NACL || TRANSLATE_PSO ? 1 : 0}',
 
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
@@ -69,9 +70,11 @@ EXTRA_ENV = {
   # the pexe, however for the IRT it comes from irt_entry.c and when linking it
   # using native object files, this reference is required to make sure it gets
   # pulled in from the archive.
-  'LD_ARGS_ENTRY': '${NONSFI_NACL && !USE_IRT '
-                   '  ? --entry=__pnacl_start_linux : --entry=__pnacl_start} '
-                   '--undefined=_start',
+  'LD_ARGS_ENTRY':
+      '${TRANSLATE_PSO ? --entry=__pnacl_pso_root : '
+      '  ${NONSFI_NACL && !USE_IRT '
+      '    ? --entry=__pnacl_start_linux : --entry=__pnacl_start} '
+      '  --undefined=_start}',
 
   'CRTBEGIN': '${ALLOW_ZEROCOST_CXX_EH ? -l:crtbegin_for_eh.o : -l:crtbegin.o}',
   'CRTEND': '-l:crtend.o',
@@ -80,7 +83,8 @@ EXTRA_ENV = {
 
   # These are just the dependencies in the native link.
   'LD_ARGS_normal':
-    '${CRTBEGIN} ${ld_inputs} ' +
+    '${!TRANSLATE_PSO ? ${CRTBEGIN}} ' +
+    '${ld_inputs} ' +
     '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM} : ${LD_ARGS_IRT_SHIM_DUMMY}} ' +
     '--start-group ' +
     '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
@@ -144,6 +148,8 @@ EXTRA_ENV = {
 TranslatorPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
+
+  ( '-pso',            "env.set('TRANSLATE_PSO', '1')"),
 
   ( '-S',              "env.set('OUTPUT_TYPE', 's')"), # Stop at .s
   ( '-c',              "env.set('OUTPUT_TYPE', 'o')"), # Stop at .o
@@ -260,6 +266,13 @@ def SetUpArch():
 
 
 def SetUpLinkOptions():
+  if env.getbool('TRANSLATE_PSO'):
+    # Using "-pie" rather than "-shared" has the effect of suppressing the
+    # creation of a PLT and R_*_JUMP_SLOT relocations, which come from the
+    # external symbol references that multi-threaded translation produces.
+    env.append('LD_FLAGS', '-pie')
+    return
+
   if env.getbool('NONSFI_NACL'):
     # "_begin" allows a PIE to find its load address in order to apply
     # dynamic relocations.

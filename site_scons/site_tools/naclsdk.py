@@ -200,6 +200,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_ld = binprefix + 'ld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_finalize = binprefix + 'finalize' + binext
+  pnacl_opt = binprefix + 'opt' + binext
   pnacl_strip = binprefix + 'strip' + binext
 
   # NOTE: XXX_flags start with space for easy concatenation
@@ -259,6 +260,7 @@ def _SetEnvForPnacl(env, root):
               STRIP=pnacl_strip,
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               PNACLFINALIZE=pnacl_finalize,
+              PNACLOPT=pnacl_opt,
               )
 
   if env.Bit('built_elsewhere'):
