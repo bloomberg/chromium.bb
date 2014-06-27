@@ -164,6 +164,8 @@ source_set("aura_test_support") {
     "test/test_window_delegate.cc",
     "test/test_window_delegate.h",
     "test/ui_controls_factory_aura.h",
+    "test/window_event_dispatcher_test_api.cc",
+    "test/window_event_dispatcher_test_api.h",
     "test/window_test_api.cc",
     "test/window_test_api.h",
   ]

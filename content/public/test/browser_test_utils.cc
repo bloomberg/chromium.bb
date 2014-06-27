@@ -35,8 +35,16 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/test/window_event_dispatcher_test_api.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
+#endif  // USE_AURA
 
 namespace content {
 namespace {
@@ -203,14 +211,14 @@ GURL GetFileUrlWithQuery(const base::FilePath& path,
 }
 
 void WaitForLoadStop(WebContents* web_contents) {
-    WindowedNotificationObserver load_stop_observer(
-    NOTIFICATION_LOAD_STOP,
-    Source<NavigationController>(&web_contents->GetController()));
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
-  if (!web_contents->IsLoading())
-    return;
-  load_stop_observer.Wait();
+  if (web_contents->IsLoading()) {
+    WindowedNotificationObserver load_stop_observer(
+        NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&web_contents->GetController()));
+    load_stop_observer.Wait();
+  }
 }
 
 void CrashTab(WebContents* web_contents) {
@@ -220,6 +228,32 @@ void CrashTab(WebContents* web_contents) {
   base::KillProcess(rph->GetHandle(), 0, false);
   watcher.Wait();
 }
+
+#if defined(USE_AURA)
+bool IsResizeComplete(aura::test::WindowEventDispatcherTestApi* dispatcher_test,
+                      RenderWidgetHostImpl* widget_host) {
+  return !dispatcher_test->HoldingPointerMoves() &&
+      !widget_host->resize_ack_pending_for_testing();
+}
+
+void WaitForResizeComplete(WebContents* web_contents) {
+  aura::Window* content = web_contents->GetContentNativeView();
+  if (!content)
+    return;
+
+  aura::WindowTreeHost* window_host = content->GetHost();
+  aura::WindowEventDispatcher* dispatcher = window_host->dispatcher();
+  aura::test::WindowEventDispatcherTestApi dispatcher_test(dispatcher);
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  if (!IsResizeComplete(&dispatcher_test, widget_host)) {
+    WindowedNotificationObserver resize_observer(
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        base::Bind(IsResizeComplete, &dispatcher_test, widget_host));
+    resize_observer.Wait();
+  }
+}
+#endif  // USE_AURA
 
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,

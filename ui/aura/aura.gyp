@@ -182,6 +182,8 @@
         'test/ui_controls_factory_aura.h',
         'test/ui_controls_factory_aurawin.cc',
         'test/ui_controls_factory_aurax11.cc',
+        'test/window_event_dispatcher_test_api.cc',
+        'test/window_event_dispatcher_test_api.h',
         'test/window_test_api.cc',
         'test/window_test_api.h',
       ],

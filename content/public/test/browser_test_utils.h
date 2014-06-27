@@ -57,6 +57,14 @@ GURL GetFileUrlWithQuery(const base::FilePath& path,
 // tab is currently web_contents.  Otherwise returns immediately.
 void WaitForLoadStop(WebContents* web_contents);
 
+#if defined(USE_AURA)
+// If WebContent's view is currently being resized, this will wait for the ack
+// from the renderer that the resize is complete and for the
+// WindowEventDispatcher to release the pointer moves. If there's no resize in
+// progress, the method will return right away.
+void WaitForResizeComplete(WebContents* web_contents);
+#endif  // USE_AURA
+
 // Causes the specified web_contents to crash. Blocks until it is crashed.
 void CrashTab(WebContents* web_contents);
 

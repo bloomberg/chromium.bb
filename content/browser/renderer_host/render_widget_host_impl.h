@@ -261,6 +261,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Whether pausing may be useful.
   bool CanPauseForPendingResizeOrRepaints();
 
+  bool resize_ack_pending_for_testing() { return resize_ack_pending_; }
+
   // Wait for a surface matching the size of the widget's view, possibly
   // blocking until the renderer sends a new frame.
   void WaitForSurface();

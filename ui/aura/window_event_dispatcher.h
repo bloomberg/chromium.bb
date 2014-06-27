@@ -46,6 +46,10 @@ class TestScreen;
 class WindowTargeter;
 class WindowTreeHost;
 
+namespace test {
+class WindowEventDispatcherTestApi;
+}
+
 // WindowEventDispatcher orchestrates event dispatch within a window tree
 // owned by WindowTreeHost. WTH also owns the WED.
 // TODO(beng): In progress, remove functionality not directly related to
@@ -119,6 +123,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   FRIEND_TEST_ALL_PREFIXES(WindowEventDispatcherTest,
                            KeepTranslatedEventInRoot);
 
+  friend class test::WindowEventDispatcherTestApi;
   friend class Window;
   friend class TestScreen;
 
