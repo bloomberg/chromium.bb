@@ -74,21 +74,19 @@ bool WebMVideoClient::InitializeConfig(
   gfx::Rect visible_rect(crop_top_, crop_left_,
                          pixel_width_ - (crop_left_ + crop_right_),
                          pixel_height_ - (crop_top_ + crop_bottom_));
-  gfx::Size natural_size = coded_size;
   if (display_unit_ == 0) {
     if (display_width_ <= 0)
-      display_width_ = pixel_width_;
+      display_width_ = visible_rect.width();
     if (display_height_ <= 0)
-      display_height_ = pixel_height_;
-    natural_size = gfx::Size(display_width_, display_height_);
+      display_height_ = visible_rect.height();
   } else if (display_unit_ == 3) {
     if (display_width_ <= 0 || display_height_ <= 0)
       return false;
-    natural_size = gfx::Size(display_width_, display_height_);
   } else {
     MEDIA_LOG(log_cb_) << "Unsupported display unit type " << display_unit_;
     return false;
   }
+  gfx::Size natural_size = gfx::Size(display_width_, display_height_);
   const uint8* extra_data = NULL;
   size_t extra_data_size = 0;
   if (codec_private.size() > 0) {
