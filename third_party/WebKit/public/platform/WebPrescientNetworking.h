@@ -38,17 +38,6 @@ namespace blink {
 
 class WebURL;
 
-// FIXME: Passing preconnect motivation to the platform is layering vioration.
-// However, this is done temporarily to perform a Finch field trial to enable
-// preconnect in different triggers one at a time. This enum can be safely
-// removed after the field trial is done.
-enum WebPreconnectMotivation {
-    WebPreconnectMotivationLinkMouseDown,
-    WebPreconnectMotivationLinkMouseOver,
-    WebPreconnectMotivationLinkTapUnconfirmed,
-    WebPreconnectMotivationLinkTapDown,
-};
-
 class WebPrescientNetworking {
 public:
     virtual ~WebPrescientNetworking() { }
@@ -56,10 +45,6 @@ public:
     // When a page navigation is speculated, DNS prefetch is triggered to hide
     // the host resolution latency.
     virtual void prefetchDNS(const WebString& hostname) { }
-
-    // When a page navigation is speculated, preconnect is triggered to hide
-    // session initialization latency to the server providing the page resource.
-    virtual void preconnect(const WebURL&, WebPreconnectMotivation) { }
 };
 
 } // namespace blink
