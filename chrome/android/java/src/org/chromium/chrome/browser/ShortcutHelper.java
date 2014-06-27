@@ -68,10 +68,13 @@ public class ShortcutHelper {
         Intent shortcutIntent;
         if (isWebappCapable) {
             // Encode the favicon as a base64 string (Launcher drops Bitmaps in the Intent).
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            favicon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String encodedIcon = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            String encodedIcon = "";
+            if (favicon != null) {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                favicon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                encodedIcon = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            }
 
             // Add the shortcut as a launcher icon for a full-screen Activity.
             shortcutIntent = new Intent();
