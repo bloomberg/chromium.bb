@@ -111,12 +111,12 @@ OpenManifestEntryResource::~OpenManifestEntryResource() {
 
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
-    Plugin* plugin,
+    PP_Instance pp_instance,
     ServiceRuntime* service_runtime,
     pp::CompletionCallback init_done_cb,
     pp::CompletionCallback crash_cb)
       : anchor_(anchor),
-        plugin_(plugin),
+        pp_instance_(pp_instance),
         service_runtime_(service_runtime),
         shutting_down_(false),
         init_done_cb_(init_done_cb),
@@ -140,7 +140,7 @@ void PluginReverseInterface::ShutDown() {
 
 void PluginReverseInterface::DoPostMessage(nacl::string message) {
   std::string full_message = std::string("DEBUG_POSTMESSAGE:") + message;
-  GetNaClInterface()->PostMessageToJavaScript(plugin_->pp_instance(),
+  GetNaClInterface()->PostMessageToJavaScript(pp_instance_,
                                               full_message.c_str());
 }
 
@@ -243,7 +243,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       open_cont);
 
   GetNaClInterface()->OpenManifestEntry(
-      plugin_->pp_instance(),
+      pp_instance_,
       PP_FromBool(!service_runtime_->main_service_runtime()),
       p->url.c_str(),
       &open_cont->pp_file_info,
@@ -302,16 +302,18 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
+                               PP_Instance pp_instance,
                                bool main_service_runtime,
                                bool uses_nonsfi_mode,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
+      pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
-      rev_interface_(new PluginReverseInterface(anchor_, plugin, this,
+      rev_interface_(new PluginReverseInterface(anchor_, pp_instance, this,
                                                 init_done_cb, crash_cb)),
       start_sel_ldr_done_(false),
       start_nexe_done_(false),
@@ -331,12 +333,10 @@ bool ServiceRuntime::SetupCommandChannel() {
   }
 
   if (!subprocess_->SetupCommand(&command_channel_)) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                           "ServiceRuntime: command channel creation failed");
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                         "ServiceRuntime: command channel creation failed");
+    ReportLoadError(error_info);
     return false;
   }
   return true;
@@ -357,12 +357,10 @@ bool ServiceRuntime::InitReverseService() {
                                 &out_conn_cap);
 
   if (NACL_SRPC_RESULT_OK != rpc_result) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
-                           "ServiceRuntime: reverse setup rpc failed");
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
+                         "ServiceRuntime: reverse setup rpc failed");
+    ReportLoadError(error_info);
     return false;
   }
   //  Get connection capability to service runtime where the IMC
@@ -372,24 +370,20 @@ bool ServiceRuntime::InitReverseService() {
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);
   if (conn_cap == NULL) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
-                           "ServiceRuntime: wrapper allocation failure");
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
+                         "ServiceRuntime: wrapper allocation failure");
+    ReportLoadError(error_info);
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
   NaClLog(4, "ServiceRuntime::InitReverseService: starting reverse service\n");
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
-                           "ServiceRuntime: starting reverse services failed");
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
+                         "ServiceRuntime: starting reverse services failed");
+    ReportLoadError(error_info);
     return false;
   }
   return true;
@@ -411,12 +405,10 @@ bool ServiceRuntime::StartModule() {
                                   &load_status);
 
     if (NACL_SRPC_RESULT_OK != rpc_result) {
-      if (main_service_runtime_) {
-        ErrorInfo error_info;
-        error_info.SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
-                             "ServiceRuntime: could not start nacl module");
-        plugin_->ReportLoadError(error_info);
-      }
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
+                           "ServiceRuntime: could not start nacl module");
+      ReportLoadError(error_info);
       return false;
     }
   }
@@ -425,19 +417,17 @@ bool ServiceRuntime::StartModule() {
   if (main_service_runtime_) {
     if (load_status < 0 || load_status > NACL_ERROR_CODE_MAX)
       load_status = LOAD_STATUS_UNKNOWN;
-    GetNaClInterface()->ReportSelLdrStatus(plugin_->pp_instance(),
+    GetNaClInterface()->ReportSelLdrStatus(pp_instance_,
                                            load_status,
                                            NACL_ERROR_CODE_MAX);
   }
 
   if (LOAD_OK != load_status) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(
-          PP_NACL_ERROR_SEL_LDR_START_STATUS,
-          NaClErrorString(static_cast<NaClErrorCode>(load_status)));
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(
+        PP_NACL_ERROR_SEL_LDR_START_STATUS,
+        NaClErrorString(static_cast<NaClErrorCode>(load_status)));
+    ReportLoadError(error_info);
     return false;
   }
   return true;
@@ -451,13 +441,11 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       tmp_subprocess(new SelLdrLauncherChrome());
   if (NULL == tmp_subprocess.get()) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (subprocess create failed)\n");
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(
-          PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER,
-          "ServiceRuntime: failed to create sel_ldr launcher");
-      plugin_->ReportLoadError(error_info);
-    }
+    ErrorInfo error_info;
+    error_info.SetReport(
+        PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER,
+        "ServiceRuntime: failed to create sel_ldr launcher");
+    ReportLoadError(error_info);
     pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
     return;
   }
@@ -465,9 +453,9 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
   ManifestService* manifest_service =
       new ManifestService(anchor_->Ref(), rev_interface_);
   bool enable_dev_interfaces =
-      GetNaClInterface()->DevInterfacesEnabled(plugin_->pp_instance());
+      GetNaClInterface()->DevInterfacesEnabled(pp_instance_);
 
-  tmp_subprocess->Start(plugin_->pp_instance(),
+  tmp_subprocess->Start(pp_instance_,
                         main_service_runtime_,
                         params.url.c_str(),
                         &params.file_info,
@@ -560,7 +548,7 @@ bool ServiceRuntime::LoadNexeAndStartInternal(
     ErrorInfo error_info;
     error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                          "ServiceRuntime: load module failed");
-    plugin_->ReportLoadError(error_info);
+    ReportLoadError(error_info);
     return false;
   }
   if (!StartModule()) {
@@ -609,6 +597,12 @@ void ServiceRuntime::ReapLogs() {
     NaClLog(LOG_ERROR, "should fire soon\n");
   } else {
     NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
+  }
+}
+
+void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
+  if (main_service_runtime_) {
+    plugin_->ReportLoadError(error_info);
   }
 }
 

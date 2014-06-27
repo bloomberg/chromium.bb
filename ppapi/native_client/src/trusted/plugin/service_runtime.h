@@ -34,6 +34,7 @@ class DescWrapper;
 
 namespace plugin {
 
+class ErrorInfo;
 class Plugin;
 class SrpcClient;
 class ServiceRuntime;
@@ -92,7 +93,7 @@ struct OpenManifestEntryResource {
 class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
-                         Plugin* plugin,
+                         PP_Instance pp_instance,
                          ServiceRuntime* service_runtime,
                          pp::CompletionCallback init_done_cb,
                          pp::CompletionCallback crash_cb);
@@ -129,8 +130,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
  private:
   nacl::WeakRefAnchor* anchor_;  // holds a ref
-  Plugin* plugin_;  // value may be copied, but should be used only in
-                    // main thread in WeakRef-protected callbacks.
+  // Should be used only in main thread in WeakRef-protected callbacks.
+  PP_Instance pp_instance_;
   ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
@@ -146,6 +147,7 @@ class ServiceRuntime {
   // TODO(sehr): This class should also implement factory methods, using the
   // Start method below.
   ServiceRuntime(Plugin* plugin,
+                 PP_Instance pp_instance,
                  bool main_service_runtime,
                  bool uses_nonsfi_mode,
                  pp::CompletionCallback init_done_cb,
@@ -209,8 +211,11 @@ class ServiceRuntime {
   bool StartModule();
   void ReapLogs();
 
+  void ReportLoadError(const ErrorInfo& error_info);
+
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
+  PP_Instance pp_instance_;
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
   nacl::ReverseService* reverse_service_;

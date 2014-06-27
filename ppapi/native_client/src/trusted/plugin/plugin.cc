@@ -78,6 +78,7 @@ bool Plugin::LoadHelperNaClModule(PP_FileHandle file_handle,
   CHECK(!pp::Module::Get()->core()->IsMainThread());
   ServiceRuntime* service_runtime =
       new ServiceRuntime(this,
+                         pp_instance(),
                          false,  // No main_service_runtime.
                          false,  // No non-SFI mode (i.e. in SFI-mode).
                          pp::BlockUntilComplete(), pp::BlockUntilComplete());
@@ -183,7 +184,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                            enable_crash_throttling);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime = new ServiceRuntime(
-      this, true, uses_nonsfi_mode, init_done_cb, crash_cb);
+      this, pp_instance(), true, uses_nonsfi_mode, init_done_cb, crash_cb);
   main_subprocess_.set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime)));
