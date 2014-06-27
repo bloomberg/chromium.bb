@@ -66,8 +66,7 @@ void JsMutationEventObserver::OnChangesApplied(
   } else {
     changes_value =
         new base::StringValue(
-            base::Uint64ToString(static_cast<uint64>(changes_size)) +
-            " changes");
+            base::SizeTToString(changes_size) + " changes");
   }
   details.Set("changes", changes_value);
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));

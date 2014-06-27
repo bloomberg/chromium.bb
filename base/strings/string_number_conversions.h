@@ -41,6 +41,9 @@ BASE_EXPORT string16 Int64ToString16(int64 value);
 BASE_EXPORT std::string Uint64ToString(uint64 value);
 BASE_EXPORT string16 Uint64ToString16(uint64 value);
 
+BASE_EXPORT std::string SizeTToString(size_t value);
+BASE_EXPORT string16 SizeTToString16(size_t value);
+
 // DoubleToString converts the double to a string format that ignores the
 // locale. If you want to use locale specific formatting, use ICU.
 BASE_EXPORT std::string DoubleToString(double value);

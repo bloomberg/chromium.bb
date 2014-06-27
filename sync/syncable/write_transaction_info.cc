@@ -37,8 +37,7 @@ base::DictionaryValue* WriteTransactionInfo::ToValue(
   } else {
     mutations_value =
         new base::StringValue(
-            base::Uint64ToString(static_cast<uint64>(mutations_size)) +
-            " mutations");
+            base::SizeTToString(mutations_size) + " mutations");
   }
   dict->Set("mutations", mutations_value);
   return dict;

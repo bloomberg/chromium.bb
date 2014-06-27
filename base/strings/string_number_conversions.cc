@@ -388,8 +388,7 @@ string16 UintToString16(unsigned int value) {
 }
 
 std::string Int64ToString(int64 value) {
-  return IntToStringT<std::string, int64, uint64, true>::
-      IntToString(value);
+  return IntToStringT<std::string, int64, uint64, true>::IntToString(value);
 }
 
 string16 Int64ToString16(int64 value) {
@@ -397,13 +396,19 @@ string16 Int64ToString16(int64 value) {
 }
 
 std::string Uint64ToString(uint64 value) {
-  return IntToStringT<std::string, uint64, uint64, false>::
-      IntToString(value);
+  return IntToStringT<std::string, uint64, uint64, false>::IntToString(value);
 }
 
 string16 Uint64ToString16(uint64 value) {
-  return IntToStringT<string16, uint64, uint64, false>::
-      IntToString(value);
+  return IntToStringT<string16, uint64, uint64, false>::IntToString(value);
+}
+
+std::string SizeTToString(size_t value) {
+  return IntToStringT<std::string, size_t, size_t, false>::IntToString(value);
+}
+
+string16 SizeTToString16(size_t value) {
+  return IntToStringT<string16, size_t, size_t, false>::IntToString(value);
 }
 
 std::string DoubleToString(double value) {
