@@ -425,7 +425,6 @@ InspectorTest.startProfilerTest = function(callback)
     WebInspector.HeapSnapshotContainmentDataGrid.prototype.defaultPopulateCount = function() { return 10; };
     WebInspector.HeapSnapshotConstructorsDataGrid.prototype.defaultPopulateCount = function() { return 10; };
     WebInspector.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 5; };
-    WebInspector.HeapSnapshotDominatorsDataGrid.prototype.defaultPopulateCount = function() { return 3; }
     InspectorTest.addResult("Detailed heap profiles were enabled.");
     InspectorTest.safeWrap(callback)();
 };
