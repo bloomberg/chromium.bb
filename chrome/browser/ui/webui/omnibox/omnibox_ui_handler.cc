@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -173,7 +174,8 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
       GURL(),
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
-      prevent_inline_autocomplete, prefer_keyword, true, true, profile_);
+      prevent_inline_autocomplete, prefer_keyword, true, true,
+      ChromeAutocompleteSchemeClassifier(profile_));
   controller_->Start(input_);
 }
 

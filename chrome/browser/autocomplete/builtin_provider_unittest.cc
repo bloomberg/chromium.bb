@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +40,8 @@ class BuiltinProviderTest : public testing::Test {
       const AutocompleteInput input(cases[i].input, base::string16::npos,
                                     base::string16(), GURL(),
                                     metrics::OmniboxEventProto::INVALID_SPEC,
-                                    true, false, true, true, NULL);
+                                    true, false, true, true,
+                                    ChromeAutocompleteSchemeClassifier(NULL));
       provider_->Start(input, false);
       EXPECT_TRUE(provider_->done());
       matches = provider_->matches();

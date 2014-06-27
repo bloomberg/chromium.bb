@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -122,7 +123,7 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
                           net::UnescapeRule::NORMAL, NULL, prefix_end, NULL),
-      profile);
+      ChromeAutocompleteSchemeClassifier(profile));
 }
 
 base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {

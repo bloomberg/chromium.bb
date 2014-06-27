@@ -14,8 +14,25 @@
         '..',
       ],
       'sources': [
+        'autocomplete/autocomplete_scheme_classifier.h',
         'autocomplete/url_prefix.cc',
         'autocomplete/url_prefix.h',
+      ],
+    },
+    {
+      'target_name': 'autocomplete_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'autocomplete',
+        'component_metrics_proto',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'autocomplete/test_scheme_classifier.cc',
+        'autocomplete/test_scheme_classifier.h',
       ],
     },
   ],

@@ -22,6 +22,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -303,7 +304,8 @@ void SearchProviderTest::RunTest(TestData* cases,
     AutocompleteInput input(cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            prefer_keyword, true, true, &profile_);
+                            prefer_keyword, true, true,
+                            ChromeAutocompleteSchemeClassifier(&profile_));
     provider_->Start(input, false);
     matches = provider_->matches();
     base::string16 diagnostic_details =
@@ -350,7 +352,7 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
-                          true, &profile_);
+                          true, ChromeAutocompleteSchemeClassifier(&profile_));
   provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
@@ -899,7 +901,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, base::string16(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
-      &profile_));
+      ChromeAutocompleteSchemeClassifier(&profile_)));
   const AutocompleteResult& result = controller.result();
 
   // There should be three matches, one for the keyword history, one for

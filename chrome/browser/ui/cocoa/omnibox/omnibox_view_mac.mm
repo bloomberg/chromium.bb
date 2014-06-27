@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
@@ -496,7 +497,8 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
 
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
-      display_text, profile(), &scheme, &host);
+      display_text, ChromeAutocompleteSchemeClassifier(profile()),
+      &scheme, &host);
   bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   if (model()->CurrentTextIsURL() &&

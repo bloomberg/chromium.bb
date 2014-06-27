@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -180,7 +181,9 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
-                          true, test_util_.profile());
+                          true,
+                          ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
 
   ACMatches last_matches;
   PopulateAutocompleteMatches(last, last_size, &last_matches);
@@ -216,7 +219,8 @@ TEST_F(AutocompleteResultTest, Swap) {
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
-                          true, test_util_.profile());
+                          true, ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
   matches.push_back(match);
   r1.AppendMatches(matches);
   r1.SortAndCull(input, test_util_.profile());
@@ -299,7 +303,9 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
-                          true, test_util_.profile());
+                          true,
+                          ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
   result.SortAndCull(input, test_util_.profile());
 
   // Of the two results with the same non-empty destination URL, the
@@ -345,7 +351,9 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
-                          true, test_util_.profile());
+                          true,
+                          ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
   result.SortAndCull(input, test_util_.profile());
 
   // We expect the 3rd and 4th results to be removed.
@@ -397,7 +405,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
-                          true, test_util_.profile());
+                          true,
+                          ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
   result.SortAndCull(input, test_util_.profile());
 
   // Expect 3 unique results after SortAndCull().
@@ -451,7 +461,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::HOME_PAGE, false, false, false,
-                          true, test_util_.profile());
+                          true,
+                          ChromeAutocompleteSchemeClassifier(
+                              test_util_.profile()));
   result.SortAndCull(input, test_util_.profile());
 
   // Check the new ordering.  The history-title results should be omitted.
@@ -496,7 +508,8 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
     AutocompleteInput input(
         base::string16(), base::string16::npos, base::string16(), GURL(),
         OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
-        false, false, true, test_util_.profile());
+        false, false, true,
+        ChromeAutocompleteSchemeClassifier(test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
 
     // The NAVSUGGEST dup-url stay above search-url since the navsuggest
@@ -534,7 +547,9 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
   }
@@ -550,7 +565,9 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://c/", result.match_at(0)->destination_url.spec());
@@ -581,7 +598,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
   }
@@ -606,7 +625,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://b/", result.match_at(0)->destination_url.spec());
@@ -627,7 +648,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
   }
@@ -643,7 +666,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://c/", result.match_at(0)->destination_url.spec());
@@ -663,7 +688,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://c/", result.match_at(0)->destination_url.spec());
@@ -688,7 +715,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
   }
@@ -709,7 +738,9 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
-                            true, test_util_.profile());
+                            true,
+                            ChromeAutocompleteSchemeClassifier(
+                                test_util_.profile()));
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://b/", result.match_at(0)->destination_url.spec());

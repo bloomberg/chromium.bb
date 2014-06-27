@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -246,7 +247,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
           info.url(),
           net::FormatUrl(info.url(), languages_, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL, NULL),
-          profile_);
+          ChromeAutocompleteSchemeClassifier(profile_));
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches());
   base::OffsetAdjuster::Adjustments adjustments;

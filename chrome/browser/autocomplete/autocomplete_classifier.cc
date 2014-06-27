@@ -23,10 +23,11 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
     AutocompleteProvider::TYPE_SHORTCUTS |
     AutocompleteProvider::TYPE_ZERO_SUGGEST;
 
-AutocompleteClassifier::AutocompleteClassifier(Profile* profile)
-    : profile_(profile),
-      controller_(new AutocompleteController(profile, NULL,
-                                             kDefaultOmniboxProviders)),
+AutocompleteClassifier::AutocompleteClassifier(
+    scoped_ptr<AutocompleteController> controller,
+    scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier)
+    : controller_(controller.Pass()),
+      scheme_classifier_(scheme_classifier.Pass()),
       inside_classify_(false) {
 }
 
@@ -47,7 +48,7 @@ void AutocompleteClassifier::Classify(
   controller_->Start(AutocompleteInput(
       text, base::string16::npos, base::string16(), GURL(),
       page_classification, true, prefer_keyword,
-      allow_exact_keyword_match, false, profile_));
+      allow_exact_keyword_match, false, *scheme_classifier_));
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {

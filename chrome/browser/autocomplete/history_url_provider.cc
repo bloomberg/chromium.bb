@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -624,9 +625,10 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
         StringForURLDisplay(destination_url, false, false));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
-        AutocompleteInput::FormattedStringWithEquivalentMeaning(destination_url,
-                                                                display_string,
-                                                                profile_);
+        AutocompleteInput::FormattedStringWithEquivalentMeaning(
+            destination_url,
+            display_string,
+            ChromeAutocompleteSchemeClassifier(profile_));
     match.allowed_to_be_default_match = true;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
@@ -1169,7 +1171,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           net::FormatUrl(info.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset),
-          profile_);
+          ChromeAutocompleteSchemeClassifier(profile_));
   if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != base::string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());

@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -265,7 +266,7 @@ void HistoryQuickProviderTest::RunTest(const base::string16 text,
   AutocompleteInput input(text, base::string16::npos, base::string16(),
                           GURL(), metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
-                          profile_.get());
+                          ChromeAutocompleteSchemeClassifier(profile_.get()));
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 

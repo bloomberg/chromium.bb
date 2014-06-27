@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/history/history_types.h"
@@ -209,7 +210,7 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
   return AutocompleteInput(
       base::string16(), base::string16::npos, base::string16(),
       GURL(current_query_), current_page_classification_, true, false, false,
-      true, profile_);
+      true, ChromeAutocompleteSchemeClassifier(profile_));
 }
 
 BaseSearchProvider::Results* ZeroSuggestProvider::GetResultsToFill(
@@ -291,7 +292,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
       net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
-          match.contents, profile_);
+          match.contents, ChromeAutocompleteSchemeClassifier(profile_));
 
   AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,

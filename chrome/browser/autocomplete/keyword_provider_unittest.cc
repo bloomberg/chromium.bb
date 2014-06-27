@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -83,7 +84,8 @@ void KeywordProviderTest::RunTest(
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, NULL);
+                            false, true, true,
+                            ChromeAutocompleteSchemeClassifier(NULL));
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
@@ -325,7 +327,8 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     AutocompleteInput input(
         ASCIIToUTF16(cases[i].text), cases[i].cursor_position, base::string16(),
         GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
-        cases[i].allow_exact_keyword_match, true, NULL);
+        cases[i].allow_exact_keyword_match, true,
+        ChromeAutocompleteSchemeClassifier(NULL));
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
                                                             &input);

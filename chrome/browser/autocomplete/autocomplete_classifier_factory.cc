@@ -5,6 +5,8 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,8 +29,13 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 
 // static
 KeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
-    content::BrowserContext* profile) {
-  return new AutocompleteClassifier(static_cast<Profile*>(profile));
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new AutocompleteClassifier(
+      make_scoped_ptr(new AutocompleteController(
+          profile, NULL, AutocompleteClassifier::kDefaultOmniboxProviders)),
+      scoped_ptr<AutocompleteSchemeClassifier>(
+          new ChromeAutocompleteSchemeClassifier(profile)));
 }
 
 AutocompleteClassifierFactory::AutocompleteClassifierFactory()

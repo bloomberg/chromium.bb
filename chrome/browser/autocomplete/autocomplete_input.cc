@@ -6,9 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/profiles/profile_io_data.h"
+#include "components/autocomplete/autocomplete_scheme_classifier.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
@@ -51,7 +49,7 @@ AutocompleteInput::AutocompleteInput(
     bool prefer_keyword,
     bool allow_exact_keyword_match,
     bool want_asynchronous_matches,
-    Profile* profile)
+    const AutocompleteSchemeClassifier& scheme_classifier)
     : cursor_position_(cursor_position),
       current_url_(current_url),
       current_page_classification_(current_page_classification),
@@ -70,8 +68,8 @@ AutocompleteInput::AutocompleteInput(
                                     &cursor_position_);
 
   GURL canonicalized_url;
-  type_ =
-      Parse(text_, desired_tld, profile, &parts_, &scheme_, &canonicalized_url);
+  type_ = Parse(text_, desired_tld, scheme_classifier, &parts_, &scheme_,
+                &canonicalized_url);
 
   if (type_ == metrics::OmniboxInputType::INVALID)
     return;
@@ -132,7 +130,7 @@ std::string AutocompleteInput::TypeToString(
 metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     const base::string16& text,
     const base::string16& desired_tld,
-    Profile* profile,
+    const AutocompleteSchemeClassifier& scheme_classifier,
     url::Parsed* parts,
     base::string16* scheme,
     GURL* canonicalized_url) {
@@ -185,100 +183,60 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   if (parts->scheme.is_nonempty() &&
       !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
       !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
-    // See if we know how to handle the URL internally, i.e. it's a scheme built
-    // into Chrome itself.  Most of these are known to ProfileIOData.  There are
-    // also some schemes that we convert to other things before they reach the
-    // renderer or else the renderer handles internally without reaching the
-    // net::URLRequest logic.  They thus won't be listed as "handled protocols",
-    // but we should still claim to handle them.
-    if (base::IsStringASCII(parsed_scheme_utf8) &&
-        (ProfileIOData::IsHandledProtocol(parsed_scheme_utf8) ||
-         LowerCaseEqualsASCII(parsed_scheme_utf8, content::kViewSourceScheme) ||
-         LowerCaseEqualsASCII(parsed_scheme_utf8, url::kJavaScriptScheme) ||
-         LowerCaseEqualsASCII(parsed_scheme_utf8, url::kDataScheme)))
-      return metrics::OmniboxInputType::URL;
+    metrics::OmniboxInputType::Type type =
+        scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
+    if (type != metrics::OmniboxInputType::INVALID)
+      return type;
 
-    // Also check for schemes registered via registerProtocolHandler(), which
-    // can be handled by web pages/apps.
-    ProtocolHandlerRegistry* registry = profile ?
-        ProtocolHandlerRegistryFactory::GetForProfile(profile) : NULL;
-    if (registry && registry->IsHandledProtocol(parsed_scheme_utf8))
-      return metrics::OmniboxInputType::URL;
+    // We don't know about this scheme.  It might be that the user typed a
+    // URL of the form "username:password@foo.com".
+    const base::string16 http_scheme_prefix =
+        base::ASCIIToUTF16(std::string(url::kHttpScheme) +
+                           url::kStandardSchemeSeparator);
+    url::Parsed http_parts;
+    base::string16 http_scheme;
+    GURL http_canonicalized_url;
+    metrics::OmniboxInputType::Type http_type =
+        Parse(http_scheme_prefix + text, desired_tld, scheme_classifier,
+              &http_parts, &http_scheme, &http_canonicalized_url);
+    DCHECK_EQ(std::string(url::kHttpScheme),
+              base::UTF16ToUTF8(http_scheme));
 
-    // Not an internal protocol; check if it's an external protocol, i.e. one
-    // that's registered on the user's OS and will shell out to another program.
-    //
-    // We need to do this after the checks above because some internally
-    // handlable schemes (e.g. "javascript") may be treated as "blocked" by the
-    // external protocol handler because we don't want pages to open them, but
-    // users still can.
-    //
-    // Note that the protocol handler needs to be informed that omnibox input
-    // should always be considered "user gesture-triggered", lest it always
-    // return BLOCK.
-    const ExternalProtocolHandler::BlockState block_state =
-        ExternalProtocolHandler::GetBlockState(parsed_scheme_utf8, true);
-    switch (block_state) {
-      case ExternalProtocolHandler::DONT_BLOCK:
-        return metrics::OmniboxInputType::URL;
-
-      case ExternalProtocolHandler::BLOCK:
-        // If we don't want the user to open the URL, don't let it be navigated
-        // to at all.
-        return metrics::OmniboxInputType::QUERY;
-
-      default: {
-        // We don't know about this scheme.  It might be that the user typed a
-        // URL of the form "username:password@foo.com".
-        const base::string16 http_scheme_prefix =
-            base::ASCIIToUTF16(std::string(url::kHttpScheme) +
-                               url::kStandardSchemeSeparator);
-        url::Parsed http_parts;
-        base::string16 http_scheme;
-        GURL http_canonicalized_url;
-        metrics::OmniboxInputType::Type http_type =
-            Parse(http_scheme_prefix + text, desired_tld, profile, &http_parts,
-                  &http_scheme, &http_canonicalized_url);
-        DCHECK_EQ(std::string(url::kHttpScheme),
-                  base::UTF16ToUTF8(http_scheme));
-
-        if ((http_type == metrics::OmniboxInputType::URL) &&
-            http_parts.username.is_nonempty() &&
-            http_parts.password.is_nonempty()) {
-          // Manually re-jigger the parsed parts to match |text| (without the
-          // http scheme added).
-          http_parts.scheme.reset();
-          url::Component* components[] = {
-            &http_parts.username,
-            &http_parts.password,
-            &http_parts.host,
-            &http_parts.port,
-            &http_parts.path,
-            &http_parts.query,
-            &http_parts.ref,
-          };
-          for (size_t i = 0; i < arraysize(components); ++i) {
-            url_fixer::OffsetComponent(
-                -static_cast<int>(http_scheme_prefix.length()), components[i]);
-          }
-
-          *parts = http_parts;
-          if (scheme)
-            scheme->clear();
-          *canonicalized_url = http_canonicalized_url;
-
-          return metrics::OmniboxInputType::URL;
-        }
-
-        // We don't know about this scheme and it doesn't look like the user
-        // typed a username and password.  It's likely to be a search operator
-        // like "site:" or "link:".  We classify it as UNKNOWN so the user has
-        // the option of treating it as a URL if we're wrong.
-        // Note that SegmentURL() is smart so we aren't tricked by "c:\foo" or
-        // "www.example.com:81" in this case.
-        return metrics::OmniboxInputType::UNKNOWN;
+    if ((http_type == metrics::OmniboxInputType::URL) &&
+        http_parts.username.is_nonempty() &&
+        http_parts.password.is_nonempty()) {
+      // Manually re-jigger the parsed parts to match |text| (without the
+      // http scheme added).
+      http_parts.scheme.reset();
+      url::Component* components[] = {
+        &http_parts.username,
+        &http_parts.password,
+        &http_parts.host,
+        &http_parts.port,
+        &http_parts.path,
+        &http_parts.query,
+        &http_parts.ref,
+      };
+      for (size_t i = 0; i < arraysize(components); ++i) {
+        url_fixer::OffsetComponent(
+            -static_cast<int>(http_scheme_prefix.length()), components[i]);
       }
+
+      *parts = http_parts;
+      if (scheme)
+        scheme->clear();
+      *canonicalized_url = http_canonicalized_url;
+
+      return metrics::OmniboxInputType::URL;
     }
+
+    // We don't know about this scheme and it doesn't look like the user
+    // typed a username and password.  It's likely to be a search operator
+    // like "site:" or "link:".  We classify it as UNKNOWN so the user has
+    // the option of treating it as a URL if we're wrong.
+    // Note that SegmentURL() is smart so we aren't tricked by "c:\foo" or
+    // "www.example.com:81" in this case.
+    return metrics::OmniboxInputType::UNKNOWN;
   }
 
   // Either the user didn't type a scheme, in which case we need to distinguish
@@ -447,13 +405,14 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
 }
 
 // static
-void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
-                                                    Profile* profile,
-                                                    url::Component* scheme,
-                                                    url::Component* host) {
+void AutocompleteInput::ParseForEmphasizeComponents(
+    const base::string16& text,
+    const AutocompleteSchemeClassifier& scheme_classifier,
+    url::Component* scheme,
+    url::Component* host) {
   url::Parsed parts;
   base::string16 scheme_str;
-  Parse(text, base::string16(), profile, &parts, &scheme_str, NULL);
+  Parse(text, base::string16(), scheme_classifier, &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -466,8 +425,8 @@ void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
     // Obtain the URL prefixed by view-source and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, base::string16(), profile, &real_parts,
-                             NULL, NULL);
+    AutocompleteInput::Parse(real_url, base::string16(), scheme_classifier,
+                             &real_parts, NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url::Component(
@@ -493,14 +452,14 @@ void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
 base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url,
-    Profile* profile) {
+    const AutocompleteSchemeClassifier& scheme_classifier) {
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
-  return (AutocompleteInput::Parse(formatted_url, base::string16(), profile,
-                                   NULL, NULL, NULL) ==
-          AutocompleteInput::Parse(url_with_path, base::string16(), profile,
-                                   NULL, NULL, NULL)) ?
+  return (AutocompleteInput::Parse(formatted_url, base::string16(),
+                                   scheme_classifier, NULL, NULL, NULL) ==
+          AutocompleteInput::Parse(url_with_path, base::string16(),
+                                   scheme_classifier, NULL, NULL, NULL)) ?
       formatted_url : url_with_path;
 }
 

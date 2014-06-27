@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -147,7 +148,7 @@ void OmniboxProvider::Start(const base::string16& query) {
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, base::string16(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
-      profile_));
+      ChromeAutocompleteSchemeClassifier(profile_)));
 }
 
 void OmniboxProvider::Stop() {

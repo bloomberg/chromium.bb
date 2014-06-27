@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -127,7 +128,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           base::string16(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, &profile_);
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
 
   provider_->Start(input, false);
 
@@ -156,7 +158,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           base::string16(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, &profile_);
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -202,7 +205,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           base::string16(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, &profile_);
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"

@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -587,7 +588,7 @@ void OmniboxEditModel::StartAutocomplete(
           (has_selected_text && inline_autocomplete_text_.empty()) ||
           (paste_state_ != NONE),
       keyword_is_selected, keyword_is_selected || allow_exact_keyword_match_,
-      true, profile_);
+      true, ChromeAutocompleteSchemeClassifier(profile_));
 
   omnibox_controller_->StartAutocomplete(input_);
 }
@@ -650,7 +651,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
       input_.current_page_classification(),
       input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
       input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
-      profile_);
+      ChromeAutocompleteSchemeClassifier(profile_));
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
             input_.text(), input_.canonicalized_url(), false));
@@ -944,7 +945,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
         permanent_text_, base::string16::npos, base::string16(),
         delegate_->GetURL(), ClassifyPage(), false, false, true, true,
-        profile_));
+        ChromeAutocompleteSchemeClassifier(profile_)));
   }
 
   if (user_input_in_progress_ || !in_revert_)

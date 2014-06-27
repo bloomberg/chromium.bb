@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -406,7 +407,7 @@ void AutocompleteProviderTest::RunQuery(const base::string16 query) {
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, base::string16(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
-      &profile_));
+      ChromeAutocompleteSchemeClassifier(&profile_)));
 
   if (!controller_->done())
     // The message loop will terminate when all autocomplete input has been
@@ -425,7 +426,8 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   controller_->Start(AutocompleteInput(
       base::ASCIIToUTF16("k test"), base::string16::npos, base::string16(),
       GURL(), metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-      allow_exact_keyword_match, false, &profile_));
+      allow_exact_keyword_match, false,
+      ChromeAutocompleteSchemeClassifier(&profile_)));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());

@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -238,7 +239,7 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
   autocomplete_controller_->Start(AutocompleteInput(
       input, base::string16::npos, base::string16(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true,
-      Profile::FromWebUI(web_ui())));
+      ChromeAutocompleteSchemeClassifier(Profile::FromWebUI(web_ui()))));
 }
 
 void StartupPagesHandler::OnResultChanged(bool default_match_changed) {

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_io_thread_state.h"
+#include "components/autocomplete/test_scheme_classifier.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -30,7 +32,11 @@ KeyedService* CreateTemplateURLService(content::BrowserContext* profile) {
 }
 
 KeyedService* CreateAutocompleteClassifier(content::BrowserContext* profile) {
-  return new AutocompleteClassifier(static_cast<Profile*>(profile));
+  return new AutocompleteClassifier(
+      make_scoped_ptr(new AutocompleteController(
+          static_cast<Profile*>(profile), NULL,
+          AutocompleteClassifier::kDefaultOmniboxProviders)),
+      scoped_ptr<AutocompleteSchemeClassifier>(new TestSchemeClassifier()));
 }
 
 }  // namespace

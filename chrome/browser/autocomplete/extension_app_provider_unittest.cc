@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -92,7 +93,8 @@ void ExtensionAppProviderTest::RunTest(
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, profile_.get());
+                            false, true, true,
+                            ChromeAutocompleteSchemeClassifier(profile_.get()));
     app_provider_->Start(input, false);
     EXPECT_TRUE(app_provider_->done());
     matches = app_provider_->matches();
@@ -143,7 +145,8 @@ TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
   AutocompleteInput input(ASCIIToUTF16("Test"), base::string16::npos,
                           base::string16(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, true,
-                          true, false, profile_.get());
+                          true, false,
+                          ChromeAutocompleteSchemeClassifier(profile_.get()));
   base::string16 url(ASCIIToUTF16("http://example.com"));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     ExtensionAppProvider::ExtensionApp extension_app =

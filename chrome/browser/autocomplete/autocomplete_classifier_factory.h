@@ -21,7 +21,7 @@ class AutocompleteClassifierFactory : public BrowserContextKeyedServiceFactory {
 
   static AutocompleteClassifierFactory* GetInstance();
 
-  static KeyedService* BuildInstanceFor(content::BrowserContext* profile);
+  static KeyedService* BuildInstanceFor(content::BrowserContext* context);
 
  private:
   friend struct DefaultSingletonTraits<AutocompleteClassifierFactory>;

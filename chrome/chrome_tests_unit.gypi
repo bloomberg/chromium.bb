@@ -18,6 +18,7 @@
         'common',
         '../base/base.gyp:base_prefs_test_support',
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:autocomplete_test_support',
         '../components/components.gyp:bookmarks_test_support',
         '../components/components.gyp:gcm_driver_test_support',
         '../components/components.gyp:history_core_test_support',

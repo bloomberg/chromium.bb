@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
-class Profile;
+class AutocompleteSchemeClassifier;
 
 // The user input for an autocomplete query.  Allows copying.
 class AutocompleteInput {
@@ -61,8 +61,8 @@ class AutocompleteInput {
   // to only return matches which are synchronously available, which should mean
   // that all providers will be done immediately.
   //
-  // |profile| is passed to Parse() to help determine the type of input this is;
-  // see comments there.
+  // |scheme_classifier| is passed to Parse() to help determine the type of
+  // input this is; see comments there.
   AutocompleteInput(const base::string16& text,
                     size_t cursor_position,
                     const base::string16& desired_tld,
@@ -73,7 +73,7 @@ class AutocompleteInput {
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
                     bool want_asynchronous_matches,
-                    Profile* profile);
+                    const AutocompleteSchemeClassifier& scheme_classifier);
   ~AutocompleteInput();
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
@@ -86,9 +86,8 @@ class AutocompleteInput {
   static std::string TypeToString(metrics::OmniboxInputType::Type type);
 
   // Parses |text| (including an optional |desired_tld|) and returns the type of
-  // input this will be interpreted as.  |profile| is used to check whether
-  // |text| uses any protocols registered via navigator.registerProtocolHandler;
-  // these profile-specific schemes mean the input should be treated as a URL.
+  // input this will be interpreted as.  |scheme_classifier| is used to check
+  // the scheme in |text| is known and registered in the current environment.
   // The components of the input are stored in the output parameter |parts|, if
   // it is non-NULL. The scheme is stored in |scheme| if it is non-NULL. The
   // canonicalized URL is stored in |canonicalized_url|; however, this URL is
@@ -96,7 +95,7 @@ class AutocompleteInput {
   static metrics::OmniboxInputType::Type Parse(
       const base::string16& text,
       const base::string16& desired_tld,
-      Profile* profile,
+      const AutocompleteSchemeClassifier& scheme_classifier,
       url::Parsed* parts,
       base::string16* scheme,
       GURL* canonicalized_url);
@@ -105,10 +104,11 @@ class AutocompleteInput {
   // The results are almost as same as the result of Parse(), but if the scheme
   // is view-source, this function returns the positions of scheme and host
   // in the URL qualified by "view-source:" prefix.
-  static void ParseForEmphasizeComponents(const base::string16& text,
-                                          Profile* profile,
-                                          url::Component* scheme,
-                                          url::Component* host);
+  static void ParseForEmphasizeComponents(
+      const base::string16& text,
+      const AutocompleteSchemeClassifier& scheme_classifier,
+      url::Component* scheme,
+      url::Component* host);
 
   // Code that wants to format URLs with a format flag including
   // net::kFormatUrlOmitTrailingSlashOnBareHostname risk changing the meaning if
@@ -117,11 +117,11 @@ class AutocompleteInput {
   // formatted string with the same meaning as the original URL (i.e. it will
   // re-append a slash if necessary).  Because this uses Parse() under the hood
   // to determine the meaning of the different strings, callers need to supply a
-  // |profile| to pass to Parse().
+  // |scheme_classifier| to pass to Parse().
   static base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
       const base::string16& formatted_url,
-      Profile* profile);
+      const AutocompleteSchemeClassifier& scheme_classifier);
 
   // Returns the number of non-empty components in |parts| besides the host.
   static int NumNonHostComponents(const url::Parsed& parts);

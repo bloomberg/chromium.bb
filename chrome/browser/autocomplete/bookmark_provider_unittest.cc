@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -263,7 +264,8 @@ TEST_F(BookmarkProviderTest, Positions) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            false, false, true, profile_.get());
+                            false, false, true,
+                            ChromeAutocompleteSchemeClassifier(profile_.get()));
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     // Validate number of results is as expected.
@@ -340,7 +342,8 @@ TEST_F(BookmarkProviderTest, Rankings) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            false, false, true, profile_.get());
+                            false, false, true,
+                            ChromeAutocompleteSchemeClassifier(profile_.get()));
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     // Validate number and content of results is as expected.
@@ -396,7 +399,8 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            false, false, true, profile_.get());
+                            false, false, true,
+                            ChromeAutocompleteSchemeClassifier(profile_.get()));
     const base::string16 fixed_up_input(
         provider_->FixupUserInput(input).second);
     BookmarkNode node(GURL(query_data[i].url));
@@ -442,7 +446,8 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            false, false, true, profile_.get());
+                            false, false, true,
+                            ChromeAutocompleteSchemeClassifier(profile_.get()));
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     ASSERT_EQ(1U, matches.size()) << description;

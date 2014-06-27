@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autocomplete/test_scheme_classifier.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,7 +145,7 @@ TEST(AutocompleteInputTest, InputType) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true, NULL);
+                            true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -174,7 +175,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             ASCIIToUTF16("com"), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true, NULL);
+                            true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == metrics::OmniboxInputType::URL)
       EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
@@ -187,7 +188,7 @@ TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, NULL);
+                          true, true, TestSchemeClassifier());
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -225,13 +226,14 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     Component scheme, host;
-    AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input, NULL,
+    AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
+                                                   TestSchemeClassifier(),
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, NULL);
+                            false, true, true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
     EXPECT_EQ(input_cases[i].host.begin, host.begin);
@@ -270,7 +272,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
                             input_cases[i].cursor_position,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC,
-                            true, false, true, true, NULL);
+                            true, false, true, true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());
