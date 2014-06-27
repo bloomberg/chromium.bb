@@ -497,9 +497,8 @@ IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest, StartPaused_ThenResume) {
   ASSERT_EQ(EmbeddedWorkerInstance::RUNNING, last_worker_status_);
 }
 
-// TODO(michaeln): Enable after the blink side is fixed.
 IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest,
-                       DISABLED_StartPaused_ThenStop) {
+                       StartPaused_ThenStop) {
   pause_mode_ = PAUSE_THEN_STOP;
   base::RunLoop start_run_loop;
   done_closure_ = start_run_loop.QuitClosure();
