@@ -29,6 +29,10 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
     // [read-only]
     dbus::Property<dbus::ObjectPath> service;
 
+    // Whether or not this characteristic is currently sending ValueUpdated
+    // signals.
+    dbus::Property<bool> notifying;
+
     // List of flags representing the GATT "Characteristic Properties bit field"
     // and properties read from the GATT "Characteristic Extended Properties"
     // descriptor bit field. [read-only, optional]
@@ -100,6 +104,20 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
   // |error_callback| on failure.
   virtual void WriteValue(const dbus::ObjectPath& object_path,
                           const std::vector<uint8>& value,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
+
+  // Starts a notification session from this characteristic with object path
+  // |object_path| if it supports value notifications or indications. Invokes
+  // |callback| on success and |error_callback| on failure.
+  virtual void StartNotify(const dbus::ObjectPath& object_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
+
+  // Cancels any previous StartNotify transaction for characteristic with
+  // object path |object_path|. Invokes |callback| on success and
+  // |error_callback| on failure.
+  virtual void StopNotify(const dbus::ObjectPath& object_path,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 

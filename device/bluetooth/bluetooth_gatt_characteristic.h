@@ -10,12 +10,14 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
 class BluetoothGattDescriptor;
 class BluetoothGattService;
+class BluetoothGattNotifySession;
 
 // BluetoothGattCharacteristic represents a local or remote GATT characteristic.
 // A GATT characteristic is a basic data element used to construct a GATT
@@ -82,6 +84,11 @@ class BluetoothGattCharacteristic {
   // upon a read request.
   typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
 
+  // The NotifySessionCallback is used to return sessions after they have
+  // been successfully started.
+  typedef base::Callback<void(scoped_ptr<BluetoothGattNotifySession>)>
+      NotifySessionCallback;
+
   // Constructs a BluetoothGattCharacteristic that can be associated with a
   // local GATT service when the adapter is in the peripheral role. To
   // associate the returned characteristic with a service, add it to a local
@@ -133,6 +140,10 @@ class BluetoothGattCharacteristic {
   // Returns the bitmask of characteristic attribute permissions.
   virtual Permissions GetPermissions() const = 0;
 
+  // Returns whether or not this characteristic is currently sending value
+  // updates in the form of a notification or indication.
+  virtual bool IsNotifying() const = 0;
+
   // Returns the list of GATT characteristic descriptors that provide more
   // information about this characteristic.
   virtual std::vector<BluetoothGattDescriptor*>
@@ -161,6 +172,13 @@ class BluetoothGattCharacteristic {
   // This method only makes sense for local characteristics and does nothing and
   // returns false if this instance represents a remote characteristic.
   virtual bool UpdateValue(const std::vector<uint8>& value) = 0;
+
+  // Starts a notify session for the remote characteristic, if it supports
+  // notifications/indications. On success, the characteristic starts sending
+  // value notifications and |callback| is called with a session object whose
+  // ownership belongs to the caller. |error_callback| is called on errors.
+  virtual void StartNotifySession(const NotifySessionCallback& callback,
+                                  const ErrorCallback& error_callback) = 0;
 
   // Sends a read request to a remote characteristic to read its value.
   // |callback| is called to return the read value on success and

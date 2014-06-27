@@ -6,7 +6,9 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_
 
 #include <map>
+#include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -44,6 +46,7 @@ class BluetoothRemoteGattCharacteristicChromeOS
   virtual device::BluetoothGattService* GetService() const OVERRIDE;
   virtual Properties GetProperties() const OVERRIDE;
   virtual Permissions GetPermissions() const OVERRIDE;
+  virtual bool IsNotifying() const OVERRIDE;
   virtual std::vector<device::BluetoothGattDescriptor*>
       GetDescriptors() const OVERRIDE;
   virtual device::BluetoothGattDescriptor* GetDescriptor(
@@ -58,6 +61,14 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const std::vector<uint8>& new_value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartNotifySession(const NotifySessionCallback& callback,
+                                  const ErrorCallback& error_callback) OVERRIDE;
+
+  // Removes one value update session and invokes |callback| on completion. This
+  // decrements the session reference count by 1 and if the number reaches 0,
+  // makes a call to the subsystem to stop notifications from this
+  // characteristic.
+  void RemoveNotifySession(const base::Closure& callback);
 
   // Object path of the underlying D-Bus characteristic.
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -92,6 +103,29 @@ class BluetoothRemoteGattCharacteristicChromeOS
                const std::string& error_name,
                const std::string& error_message);
 
+  // Called by dbus:: on successful completion of a request to start
+  // notifications.
+  void OnStartNotifySuccess(const NotifySessionCallback& callback);
+
+  // Called by dbus:: on unsuccessful completion of a request to start
+  // notifications.
+  void OnStartNotifyError(const ErrorCallback& error_callback,
+                          const std::string& error_name,
+                          const std::string& error_message);
+
+  // Called by dbus:: on successful completion of a request to stop
+  // notifications.
+  void OnStopNotifySuccess(const base::Closure& callback);
+
+  // Called by dbus:: on unsuccessful completion of a request to stop
+  // notifications.
+  void OnStopNotifyError(const base::Closure& callback,
+                         const std::string& error_name,
+                         const std::string& error_message);
+
+  // Calls StartNotifySession for each queued request.
+  void ProcessStartNotifyQueue();
+
   // Object path of the D-Bus characteristic object.
   dbus::ObjectPath object_path_;
 
@@ -101,6 +135,18 @@ class BluetoothRemoteGattCharacteristicChromeOS
   // The cached characteristic value based on the most recent read or
   // notification.
   std::vector<uint8> cached_value_;
+
+  // The total number of currently active value update sessions.
+  size_t num_notify_sessions_;
+
+  // Calls to StartNotifySession that are pending. This can happen during the
+  // first remote call to start notifications.
+  typedef std::pair<NotifySessionCallback, ErrorCallback>
+      PendingStartNotifyCall;
+  std::queue<PendingStartNotifyCall> pending_start_notify_calls_;
+
+  // True, if a Start or Stop notify call to bluetoothd is currently pending.
+  bool notify_call_pending_;
 
   // Mapping from GATT descriptor object paths to descriptor objects owned by
   // this characteristic. Since the Chrome OS implementation uses object paths

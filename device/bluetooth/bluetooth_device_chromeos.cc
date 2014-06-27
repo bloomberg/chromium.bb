@@ -509,7 +509,8 @@ void BluetoothDeviceChromeOS::GattServiceAdded(
   VLOG(1) << "Adding new remote GATT service for device: " << GetAddress();
 
   BluetoothRemoteGattServiceChromeOS* service =
-      new BluetoothRemoteGattServiceChromeOS(this, object_path);
+      new BluetoothRemoteGattServiceChromeOS(adapter_, this, object_path);
+
   gatt_services_[service->GetIdentifier()] = service;
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());

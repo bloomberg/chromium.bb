@@ -13,6 +13,15 @@
 
 namespace chromeos {
 
+namespace {
+
+// TODO(armansito): Move these to service_constants.h later.
+const char kNotifyingProperty[] = "Notifying";
+const char kStartNotify[] = "StartNotify";
+const char kStopNotify[] = "StopNotify";
+
+}  // namespace
+
 // static
 const char BluetoothGattCharacteristicClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
@@ -27,6 +36,7 @@ BluetoothGattCharacteristicClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_characteristic::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_characteristic::kServiceProperty, &service);
+  RegisterProperty(kNotifyingProperty, &notifying);
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
 }
 
@@ -123,6 +133,58 @@ class BluetoothGattCharacteristicClientImpl
         bluetooth_gatt_characteristic::kWriteValue);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(value.data(), value.size());
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback),
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
+  // BluetoothGattCharacteristicClient override.
+  virtual void StartNotify(const dbus::ObjectPath& object_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownCharacteristicError, "");
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        kStartNotify);
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback),
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
+  // BluetoothGattCharacteristicClient override.
+  virtual void StopNotify(const dbus::ObjectPath& object_path,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownCharacteristicError, "");
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        kStopNotify);
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call,

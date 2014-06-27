@@ -37,11 +37,14 @@ class MockBluetoothGattCharacteristic : public BluetoothGattCharacteristic {
   MOCK_CONST_METHOD0(GetService, BluetoothGattService*());
   MOCK_CONST_METHOD0(GetProperties, Properties());
   MOCK_CONST_METHOD0(GetPermissions, Permissions());
+  MOCK_CONST_METHOD0(IsNotifying, bool());
   MOCK_CONST_METHOD0(GetDescriptors, std::vector<BluetoothGattDescriptor*>());
   MOCK_CONST_METHOD1(GetDescriptor,
                      BluetoothGattDescriptor*(const std::string&));
   MOCK_METHOD1(AddDescriptor, bool(BluetoothGattDescriptor*));
   MOCK_METHOD1(UpdateValue, bool(const std::vector<uint8>&));
+  MOCK_METHOD2(StartNotifySession,
+               void(const NotifySessionCallback&, const ErrorCallback&));
   MOCK_METHOD2(ReadRemoteCharacteristic,
                void(const ValueCallback&, const ErrorCallback&));
   MOCK_METHOD3(WriteRemoteCharacteristic,

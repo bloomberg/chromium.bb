@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
@@ -19,6 +20,7 @@
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +31,7 @@ using device::BluetoothGattCharacteristic;
 using device::BluetoothGattConnection;
 using device::BluetoothGattDescriptor;
 using device::BluetoothGattService;
+using device::BluetoothGattNotifySession;
 using device::BluetoothUUID;
 
 namespace chromeos {
@@ -343,6 +346,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
 
   virtual void TearDown() {
     adapter_ = NULL;
+    update_sessions_.clear();
     gatt_conn_.reset();
     DBusThreadManager::Shutdown();
   }
@@ -374,7 +378,18 @@ class BluetoothGattChromeOSTest : public testing::Test {
     gatt_conn_ = conn.Pass();
   }
 
+  void NotifySessionCallback(scoped_ptr<BluetoothGattNotifySession> session) {
+    ++success_callback_count_;
+    update_sessions_.push_back(session.release());
+    QuitMessageLoop();
+  }
+
   void ErrorCallback() {
+    ++error_callback_count_;
+  }
+
+  void DBusErrorCallback(const std::string& error_name,
+                         const std::string& error_message) {
     ++error_callback_count_;
   }
 
@@ -383,6 +398,12 @@ class BluetoothGattChromeOSTest : public testing::Test {
   }
 
  protected:
+  void QuitMessageLoop() {
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
+  }
+
   base::MessageLoop message_loop_;
 
   FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
@@ -391,6 +412,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
       fake_bluetooth_gatt_characteristic_client_;
   FakeBluetoothGattDescriptorClient* fake_bluetooth_gatt_descriptor_client_;
   scoped_ptr<device::BluetoothGattConnection> gatt_conn_;
+  ScopedVector<BluetoothGattNotifySession> update_sessions_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   int success_callback_count_;
@@ -600,7 +622,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_removed_count_);
-  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_EQ(3U, service->GetCharacteristics().size());
 
   // Hide the characteristics. 3 removed signals should be received.
@@ -608,7 +630,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   EXPECT_EQ(8, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_removed_count_);
-  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Re-expose the heart rate characteristics.
@@ -617,7 +639,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   EXPECT_EQ(12, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_removed_count_);
-  EXPECT_EQ(2, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_EQ(3U, service->GetCharacteristics().size());
 
   // Hide the service. All characteristics should disappear.
@@ -625,7 +647,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   EXPECT_EQ(16, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_removed_count_);
-  EXPECT_EQ(2, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
 }
 
 TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
@@ -726,7 +748,7 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed.
   adapter_ = NULL;
-  EXPECT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
+  ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
   fake_bluetooth_device_client_->CreateDevice(
@@ -823,31 +845,6 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   // Run the message loop so that the characteristics appear.
   base::MessageLoop::current()->Run();
 
-  // We should get an initial value changed signal from the Heart Rate
-  // Measurement characteristic when it getsadded.
-  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
-
-  // The Heart Rate Measurement characteristic should send regular
-  // notifications.
-  base::MessageLoop::current()->Run();
-  EXPECT_EQ(2, service_observer.gatt_characteristic_value_changed_count_);
-  EXPECT_EQ(kHeartRateMeasurementUUID,
-            service_observer.last_gatt_characteristic_uuid_);
-  EXPECT_EQ(fake_bluetooth_gatt_characteristic_client_->
-                GetHeartRateMeasurementPath().value(),
-            service_observer.last_gatt_characteristic_id_);
-
-  // Receive another notification.
-  service_observer.last_gatt_characteristic_id_.clear();
-  service_observer.last_gatt_characteristic_uuid_ = BluetoothUUID();
-  base::MessageLoop::current()->Run();
-  EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
-  EXPECT_EQ(kHeartRateMeasurementUUID,
-            service_observer.last_gatt_characteristic_uuid_);
-  EXPECT_EQ(fake_bluetooth_gatt_characteristic_client_->
-                GetHeartRateMeasurementPath().value(),
-            service_observer.last_gatt_characteristic_id_);
-
   // Issue write request to non-writeable characteristics.
   service_observer.last_gatt_characteristic_id_.clear();
   service_observer.last_gatt_characteristic_uuid_ = BluetoothUUID();
@@ -858,6 +855,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
       service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateMeasurementPath().value());
   ASSERT_TRUE(characteristic);
+  EXPECT_FALSE(characteristic->IsNotifying());
   EXPECT_EQ(fake_bluetooth_gatt_characteristic_client_->
                 GetHeartRateMeasurementPath().value(),
             characteristic->GetIdentifier());
@@ -872,7 +870,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_FALSE(service_observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
-  EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
 
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
@@ -892,7 +890,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_FALSE(service_observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
 
   // Issue write request to writeable characteristic. The "Body Sensor Location"
   // characteristic does not send notifications and WriteValue does not result
@@ -916,7 +914,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_FALSE(service_observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
 
   // Issue a read request. A successful read results in a
   // CharacteristicValueChanged notification.
@@ -935,17 +933,8 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(4, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(ValuesEqual(characteristic->GetValue(), last_read_value_));
-
-  // One last value changed notification.
-  base::MessageLoop::current()->Run();
-  EXPECT_EQ(5, service_observer.gatt_characteristic_value_changed_count_);
-  EXPECT_EQ(kHeartRateMeasurementUUID,
-            service_observer.last_gatt_characteristic_uuid_);
-  EXPECT_EQ(fake_bluetooth_gatt_characteristic_client_->
-                GetHeartRateMeasurementPath().value(),
-            service_observer.last_gatt_characteristic_id_);
 }
 
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
@@ -1084,6 +1073,274 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(2, service_observer.gatt_descriptor_value_changed_count_);
+}
+
+TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestDeviceObserver observer(adapter_, device);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count_);
+
+  BluetoothGattService* service =
+      device->GetGattService(observer.last_gatt_service_id_);
+
+  TestGattServiceObserver service_observer(adapter_, device, service);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
+
+  // Run the message loop so that the characteristics appear.
+  base::MessageLoop::current()->Run();
+
+  BluetoothGattCharacteristic* characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath()
+          .value());
+  ASSERT_TRUE(characteristic);
+  EXPECT_FALSE(characteristic->IsNotifying());
+  EXPECT_TRUE(update_sessions_.empty());
+
+  // Request to start notifications.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  // The operation still hasn't completed but we should have received the first
+  // notification.
+  EXPECT_EQ(0, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(update_sessions_.empty());
+
+  // Send a two more requests, which should get queued.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(0, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(update_sessions_.empty());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Run the main loop. The initial call should complete. The queued call should
+  // succeed immediately.
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(3U, update_sessions_.size());
+
+  // Notifications should be getting sent regularly now.
+  base::MessageLoop::current()->Run();
+  EXPECT_GT(service_observer.gatt_characteristic_value_changed_count_, 1);
+
+  // Stop one of the sessions. The session should become inactive but the
+  // characteristic should still be notifying.
+  BluetoothGattNotifySession* session = update_sessions_[0];
+  EXPECT_TRUE(session->IsActive());
+  session->Stop(base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                           base::Unretained(this)));
+  EXPECT_EQ(4, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_FALSE(session->IsActive());
+  EXPECT_EQ(characteristic->GetIdentifier(),
+            session->GetCharacteristicIdentifier());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Delete another session. Characteristic should still be notifying.
+  update_sessions_.pop_back();
+  EXPECT_EQ(2U, update_sessions_.size());
+  EXPECT_TRUE(characteristic->IsNotifying());
+  EXPECT_FALSE(update_sessions_[0]->IsActive());
+  EXPECT_TRUE(update_sessions_[1]->IsActive());
+
+  // Clear the last session.
+  update_sessions_.clear();
+  EXPECT_TRUE(update_sessions_.empty());
+  EXPECT_FALSE(characteristic->IsNotifying());
+
+  success_callback_count_ = 0;
+  service_observer.gatt_characteristic_value_changed_count_ = 0;
+
+  // Enable notifications again.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(0, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(update_sessions_.empty());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Run the message loop. Notifications should begin.
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(1U, update_sessions_.size());
+  EXPECT_TRUE(update_sessions_[0]->IsActive());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Check that notifications are happening.
+  base::MessageLoop::current()->Run();
+  EXPECT_GT(service_observer.gatt_characteristic_value_changed_count_, 1);
+
+  // Request another session. This should return immediately.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(2U, update_sessions_.size());
+  EXPECT_TRUE(update_sessions_[0]->IsActive());
+  EXPECT_TRUE(update_sessions_[1]->IsActive());
+  EXPECT_TRUE(characteristic->IsNotifying());
+
+  // Hide the characteristic. The sessions should become inactive.
+  fake_bluetooth_gatt_characteristic_client_->HideHeartRateCharacteristics();
+  EXPECT_EQ(2U, update_sessions_.size());
+  EXPECT_FALSE(update_sessions_[0]->IsActive());
+  EXPECT_FALSE(update_sessions_[1]->IsActive());
+}
+
+TEST_F(BluetoothGattChromeOSTest, NotifySessionsMadeInactive) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestDeviceObserver observer(adapter_, device);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count_);
+
+  BluetoothGattService* service =
+      device->GetGattService(observer.last_gatt_service_id_);
+
+  TestGattServiceObserver service_observer(adapter_, device, service);
+  EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
+
+  // Run the message loop so that the characteristics appear.
+  base::MessageLoop::current()->Run();
+
+  BluetoothGattCharacteristic* characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath()
+          .value());
+  ASSERT_TRUE(characteristic);
+  EXPECT_FALSE(characteristic->IsNotifying());
+  EXPECT_TRUE(update_sessions_.empty());
+
+  // Send several requests to start notifications.
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  // The operation still hasn't completed but we should have received the first
+  // notification.
+  EXPECT_EQ(0, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(characteristic->IsNotifying());
+  EXPECT_TRUE(update_sessions_.empty());
+
+  // Run the main loop. The initial call should complete. The queued calls
+  // should succeed immediately.
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(4, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(characteristic->IsNotifying());
+  EXPECT_EQ(4U, update_sessions_.size());
+
+  for (int i = 0; i < 4; i++)
+    EXPECT_TRUE(update_sessions_[0]->IsActive());
+
+  // Stop notifications directly through the client. The sessions should get
+  // marked as inactive.
+  fake_bluetooth_gatt_characteristic_client_->StopNotify(
+      fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath(),
+      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(5, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_FALSE(characteristic->IsNotifying());
+  EXPECT_EQ(4U, update_sessions_.size());
+
+  for (int i = 0; i < 4; i++)
+    EXPECT_FALSE(update_sessions_[0]->IsActive());
+
+  // It should be possible to restart notifications and the call should reset
+  // the session count and make a request through the client.
+  update_sessions_.clear();
+  success_callback_count_ = 0;
+  service_observer.gatt_characteristic_value_changed_count_ = 0;
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(0, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(characteristic->IsNotifying());
+  EXPECT_TRUE(update_sessions_.empty());
+
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(characteristic->IsNotifying());
+  EXPECT_EQ(1U, update_sessions_.size());
+  EXPECT_TRUE(update_sessions_[0]->IsActive());
 }
 
 }  // namespace chromeos

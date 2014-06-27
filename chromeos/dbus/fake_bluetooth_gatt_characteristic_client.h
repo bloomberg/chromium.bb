@@ -56,6 +56,12 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
                           const std::vector<uint8>& value,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartNotify(const dbus::ObjectPath& object_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StopNotify(const dbus::ObjectPath& object_path,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE;
 
   // Makes the group of characteristics belonging to a particular GATT based
   // profile available under the GATT service with object path |service_path|.

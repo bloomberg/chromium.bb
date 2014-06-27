@@ -16,6 +16,7 @@ namespace chromeos {
 
 namespace {
 
+const int kStartNotifyResponseIntervalMs = 200;
 const int kHeartRateMeasurementNotificationIntervalMs = 2000;
 
 }  // namespace
@@ -170,6 +171,62 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   callback.Run();
 }
 
+void FakeBluetoothGattCharacteristicClient::StartNotify(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (!IsHeartRateVisible()) {
+    error_callback.Run(kUnknownCharacteristicError, "");
+    return;
+  }
+
+  if (object_path.value() != heart_rate_measurement_path_) {
+    error_callback.Run("org.bluez.Error.NotSupported",
+                       "This characteristic does not support notifications");
+    return;
+  }
+
+  if (heart_rate_measurement_properties_->notifying.value()) {
+    error_callback.Run("org.bluez.Error.Busy",
+                       "Characteristic already notifying");
+    return;
+  }
+
+  heart_rate_measurement_properties_->notifying.ReplaceValue(true);
+  ScheduleHeartRateMeasurementValueChange();
+
+  // Respond asynchronously.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      callback,
+      base::TimeDelta::FromMilliseconds(kStartNotifyResponseIntervalMs));
+}
+
+void FakeBluetoothGattCharacteristicClient::StopNotify(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (!IsHeartRateVisible()) {
+    error_callback.Run(kUnknownCharacteristicError, "");
+    return;
+  }
+
+  if (object_path.value() != heart_rate_measurement_path_) {
+    error_callback.Run("org.bluez.Error.NotSupported",
+                       "This characteristic does not support notifications");
+    return;
+  }
+
+  if (!heart_rate_measurement_properties_->notifying.value()) {
+    error_callback.Run("org.bluez.Error.Failed", "Not notifying");
+    return;
+  }
+
+  heart_rate_measurement_properties_->notifying.ReplaceValue(false);
+
+  callback.Run();
+}
+
 void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
     const dbus::ObjectPath& service_path) {
   if (IsHeartRateVisible()) {
@@ -226,12 +283,6 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   NotifyCharacteristicAdded(dbus::ObjectPath(heart_rate_measurement_path_));
   NotifyCharacteristicAdded(dbus::ObjectPath(body_sensor_location_path_));
   NotifyCharacteristicAdded(dbus::ObjectPath(heart_rate_control_point_path_));
-
-  // Set up notifications for heart rate measurement.
-  // TODO(armansito): Do this based on the value of the "client characteristic
-  // configuration" descriptor. Since it's still unclear how descriptors will
-  // be handled by BlueZ, automatically set up notifications for now.
-  ScheduleHeartRateMeasurementValueChange();
 
   // Expose CCC descriptor for Heart Rate Measurement characteristic.
   FakeBluetoothGattDescriptorClient* descriptor_client =
@@ -315,6 +366,11 @@ void FakeBluetoothGattCharacteristicClient::
     ScheduleHeartRateMeasurementValueChange() {
   if (!IsHeartRateVisible())
     return;
+
+  // Don't send updates if the characteristic is not notifying.
+  if (!heart_rate_measurement_properties_->notifying.value())
+    return;
+
   VLOG(2) << "Updating heart rate value.";
   std::vector<uint8> measurement = GetHeartRateMeasurementValue();
 

@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
@@ -15,13 +16,17 @@
 namespace chromeos {
 
 BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
+    BluetoothAdapterChromeOS* adapter,
     BluetoothDeviceChromeOS* device,
     const dbus::ObjectPath& object_path)
     : object_path_(object_path),
+      adapter_(adapter),
       device_(device),
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating remote GATT service with identifier: "
           << object_path.value() << ", UUID: " << GetUUID().canonical_value();
+  DCHECK(adapter_);
+
   DBusThreadManager::Get()->GetBluetoothGattServiceClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
       AddObserver(this);
@@ -144,6 +149,11 @@ void BluetoothRemoteGattServiceChromeOS::Unregister(
     const ErrorCallback& error_callback) {
   VLOG(1) << "A remote GATT service cannot be unregistered.";
   error_callback.Run();
+}
+
+scoped_refptr<device::BluetoothAdapter>
+BluetoothRemoteGattServiceChromeOS::GetAdapter() const {
+  return adapter_;
 }
 
 void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
