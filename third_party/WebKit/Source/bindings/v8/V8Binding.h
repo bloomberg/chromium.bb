@@ -268,6 +268,14 @@ struct V8ValueTraits<WTF::Vector<T, inlineCapacity, Allocator> > {
     }
 };
 
+template <typename T, size_t inlineCapacity>
+struct V8ValueTraits<HeapVector<T, inlineCapacity> > {
+    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return v8ArrayNoInline(value, creationContext, isolate);
+    }
+};
+
 template<>
 struct V8ValueTraits<String> {
     static inline v8::Handle<v8::Value> toV8Value(const String& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
