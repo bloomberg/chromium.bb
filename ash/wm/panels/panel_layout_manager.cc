@@ -910,17 +910,27 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
        iter != panel_windows_.end();
        ++iter) {
     aura::Window* panel = iter->window;
-    gfx::Rect panel_bounds = ScreenUtil::ConvertRectToScreen(
-        panel->parent(), panel->GetTargetBounds());
-    int delta = panel_bounds.height() - available_space;
-    // Ensure panels are not pushed above the parent boundaries, shrink any
-    // panels that violate this constraint.
-    if (delta > 0) {
-      SetChildBounds(panel,
-                     gfx::Rect(panel_bounds.x(),
-                               panel_bounds.y() + delta,
-                               panel_bounds.width(),
-                               panel_bounds.height() - delta));
+    wm::WindowState* panel_state = wm::GetWindowState(panel);
+    if (keyboard_bounds.height() > 0) {
+      // Save existing bounds, so that we can restore them when the keyboard
+      // hides.
+      panel_state->SaveCurrentBoundsForRestore();
+
+      gfx::Rect panel_bounds = ScreenUtil::ConvertRectToScreen(
+          panel->parent(), panel->GetTargetBounds());
+      int delta = panel_bounds.height() - available_space;
+      // Ensure panels are not pushed above the parent boundaries, shrink any
+      // panels that violate this constraint.
+      if (delta > 0) {
+        SetChildBounds(panel,
+                       gfx::Rect(panel_bounds.x(),
+                                 panel_bounds.y() + delta,
+                                 panel_bounds.width(),
+                                 panel_bounds.height() - delta));
+      }
+    } else if (panel_state->HasRestoreBounds()) {
+      // Keyboard hidden, restore original bounds if they exist.
+      SetChildBounds(panel, panel_state->GetRestoreBoundsInScreen());
     }
   }
   // This bounds change will have caused a change to the Shelf which does not
