@@ -145,7 +145,7 @@ void FullscreenElementStack::documentWasDisposed()
 }
 #endif
 
-void FullscreenElementStack::requestFullScreenForElement(Element& element, unsigned short flags, FullScreenCheckType checkType)
+void FullscreenElementStack::requestFullScreenForElement(Element& element, RequestType requestType)
 {
     // Ignore this request if the document is not in a live frame.
     if (!document()->isActive())
@@ -153,7 +153,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, unsig
 
     // The Mozilla Full Screen API <https://wiki.mozilla.org/Gecko:FullScreenAPI> has different requirements
     // for full screen mode, and do not have the concept of a full screen element stack.
-    bool inLegacyMozillaMode = (flags & Element::LEGACY_MOZILLA_REQUEST);
+    bool inLegacyMozillaMode = requestType == PrefixedMozillaRequest || requestType == PrefixedMozillaAllowKeyboardInputRequest;
 
     do {
         // 1. If any of the following conditions are true, terminate these steps and queue a task to fire
@@ -166,7 +166,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, unsig
 
         // The context object's node document, or an ancestor browsing context's document does not have
         // the fullscreen enabled flag set.
-        if (checkType == EnforceIFrameAllowFullScreenRequirement && !fullscreenIsAllowedForAllOwners(element.document()))
+        if (requestType != PrefixedVideoRequest && !fullscreenIsAllowedForAllOwners(element.document()))
             break;
 
         // The context object's node document fullscreen element stack is not empty and its top element
@@ -249,7 +249,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, unsig
 
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
-        m_areKeysEnabledInFullScreen = flags & Element::ALLOW_KEYBOARD_INPUT;
+        m_areKeysEnabledInFullScreen = requestType != PrefixedMozillaRequest && requestType != PrefixedVideoRequest;
         document()->frameHost()->chrome().client().enterFullScreenForElement(&element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.

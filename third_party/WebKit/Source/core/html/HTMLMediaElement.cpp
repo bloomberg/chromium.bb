@@ -3457,7 +3457,7 @@ void HTMLMediaElement::enterFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    FullscreenElementStack::from(document()).requestFullScreenForElement(*this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+    FullscreenElementStack::from(document()).requestFullScreenForElement(*this, FullscreenElementStack::PrefixedVideoRequest);
 }
 
 void HTMLMediaElement::exitFullscreen()

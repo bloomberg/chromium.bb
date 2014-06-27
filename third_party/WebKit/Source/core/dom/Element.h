@@ -466,18 +466,16 @@ public:
     void setCustomElementDefinition(PassRefPtr<CustomElementDefinition>);
     CustomElementDefinition* customElementDefinition() const;
 
-    enum {
-        ALLOW_KEYBOARD_INPUT = 1 << 0,
-        LEGACY_MOZILLA_REQUEST = 1 << 1,
-    };
-
+    // Mozilla version
+    static const unsigned short ALLOW_KEYBOARD_INPUT = 1;
     void webkitRequestFullScreen(unsigned short flags);
+
+    // W3C version
+    void webkitRequestFullscreen();
+
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }
     void setContainsFullScreenElement(bool);
     void setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
-
-    // W3C API
-    void webkitRequestFullscreen();
 
     bool isInTopLayer() const { return hasElementFlag(IsInTopLayer); }
     void setIsInTopLayer(bool);

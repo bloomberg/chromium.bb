@@ -58,12 +58,14 @@ public:
     static bool isFullScreen(Document&);
     static bool isActiveFullScreenElement(const Element&);
 
-    enum FullScreenCheckType {
-        EnforceIFrameAllowFullScreenRequirement,
-        ExemptIFrameAllowFullScreenRequirement,
+    enum RequestType {
+        PrefixedRequest, // Element.webkitRequestFullscreen()
+        PrefixedMozillaRequest, // Element.webkitRequestFullScreen()
+        PrefixedMozillaAllowKeyboardInputRequest, // Element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
+        PrefixedVideoRequest, // HTMLVideoElement.webkitEnterFullscreen() and webkitEnterFullScreen()
     };
 
-    void requestFullScreenForElement(Element&, unsigned short flags, FullScreenCheckType);
+    void requestFullScreenForElement(Element&, RequestType);
     void webkitCancelFullScreen();
 
     void webkitWillEnterFullScreenForElement(Element*);
