@@ -1934,6 +1934,22 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       } else {
         event.data.tap.tapCount = 1;
       }
+      if (!args->PeekNext().IsEmpty()) {
+        float width;
+        if (!args->GetNext(&width)) {
+          args->ThrowError();
+          return;
+        }
+        event.data.tap.width = width;
+      }
+      if (!args->PeekNext().IsEmpty()) {
+        float height;
+        if (!args->GetNext(&height)) {
+          args->ThrowError();
+          return;
+        }
+        event.data.tap.height = height;
+      }
 
       event.x = point.x;
       event.y = point.y;
