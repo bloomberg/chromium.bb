@@ -358,14 +358,14 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale)
     // Image is at top left quandrant, so should not hit it.
     WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
     ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
-    EXPECT_FALSE(negativeResult.node().to<WebElement>().hasTagName("img"));
+    EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult.reset();
 
     // Scale page up 2x so image should occupy the whole viewport.
     webView->setPageScaleFactor(2.0f);
     WebHitTestResult positiveResult = webView->hitTestResultAt(hitPoint);
     ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
-    EXPECT_TRUE(positiveResult.node().to<WebElement>().hasTagName("img"));
+    EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 }
 
