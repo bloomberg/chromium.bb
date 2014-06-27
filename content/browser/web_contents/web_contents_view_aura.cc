@@ -99,17 +99,6 @@ bool ShouldNavigateBack(const NavigationController& controller,
          controller.CanGoBack();
 }
 
-// Update the |web contents| to be |visible|.
-void UpdateWebContentsVisibility(WebContentsImpl* web_contents, bool visible) {
-  if (visible) {
-    if (!web_contents->should_normally_be_visible())
-      web_contents->WasShown();
-  } else {
-    if (web_contents->should_normally_be_visible())
-      web_contents->WasHidden();
-  }
-}
-
 RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
   if (!view || RenderViewHostFactory::has_factory())
@@ -734,7 +723,8 @@ WebContentsViewAura::WebContentsViewAura(
       overscroll_change_brightness_(false),
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
-      touch_editable_(TouchEditableImplAura::Create()) {
+      touch_editable_(TouchEditableImplAura::Create()),
+      is_or_was_visible_(false) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1573,11 +1563,15 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 void WebContentsViewAura::OnWindowParentChanged(aura::Window* window,
                                                 aura::Window* parent) {
+  // Ignore any visibility changes in the hierarchy below.
+  if (window != window_.get() && window_->Contains(window))
+    return;
+
   // On Windows we will get called with a parent of NULL as part of the shut
   // down process. As such we do only change the visibility when a parent gets
   // set.
   if (parent)
-    UpdateWebContentsVisibility(web_contents_, window->IsVisible());
+    UpdateWebContentsVisibility(window->IsVisible());
 }
 
 void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
@@ -1586,7 +1580,30 @@ void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
   if (window != window_.get() && window_->Contains(window))
     return;
 
-  UpdateWebContentsVisibility(web_contents_, visible);
+  UpdateWebContentsVisibility(visible);
+}
+
+void WebContentsViewAura::UpdateWebContentsVisibility(bool visible) {
+  if (!is_or_was_visible_) {
+    // We should not hide the web contents before it was shown the first time,
+    // since resources would immediately be destroyed and only re-created after
+    // content got loaded. In this state the window content is undefined and can
+    // show garbage.
+    // However - the page load mechanism requires an activation call through a
+    // visibility call to (re)load.
+    if (visible) {
+      is_or_was_visible_ = true;
+      web_contents_->WasShown();
+    }
+    return;
+  }
+  if (visible) {
+    if (!web_contents_->should_normally_be_visible())
+      web_contents_->WasShown();
+  } else {
+    if (web_contents_->should_normally_be_visible())
+      web_contents_->WasHidden();
+  }
 }
 
 }  // namespace content
