@@ -41,7 +41,6 @@ PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
 PASS childWindow.navigator.connection.ontypechange is null
-PASS childWindow.navigator.connection.type is window.navigator.connection.type
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.hardwareConcurrency is window.navigator.hardwareConcurrency

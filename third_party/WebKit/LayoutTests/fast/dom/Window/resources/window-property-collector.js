@@ -43,6 +43,11 @@ function emitExpectedResult(path, expected)
 
     // Various special cases for legacy reasons. Please do not add entries to this list.
     var propertyPath = path.join('.');
+
+    // Connection type depends on the host, skip.
+    if (propertyPath == 'navigator.connection.type')
+      return;
+
     switch (propertyPath) {
     case "location.href":
         expected = "'about:blank'";
@@ -65,7 +70,6 @@ function emitExpectedResult(path, expected)
     case "navigator.product":
     case "navigator.productSub":
     case "navigator.vendor":
-    case "navigator.connection.type":
         expected = "window." + propertyPath;
         break;
     case "screen.orientation":
