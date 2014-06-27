@@ -599,8 +599,10 @@ void UserManagerScreenHandler::SendUserList() {
         kKeyUsername, info_cache.GetUserNameOfProfileAtIndex(i));
     profile_value->SetString(
         kKeyEmailAddress, info_cache.GetUserNameOfProfileAtIndex(i));
+    // The profiles displayed in the User Manager are never guest profiles.
     profile_value->SetString(
-        kKeyDisplayName, info_cache.GetNameOfProfileAtIndex(i));
+        kKeyDisplayName,
+        profiles::GetAvatarNameForProfile(profile_path));
     profile_value->SetString(kKeyProfilePath, profile_path.MaybeAsASCII());
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(

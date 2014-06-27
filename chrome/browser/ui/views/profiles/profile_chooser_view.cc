@@ -1090,8 +1090,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   // Profile name, centered.
   bool editing_allowed = !is_guest && !browser_->profile()->IsSupervised();
   current_profile_name_ = new EditableProfileName(
-      this, profiles::GetAvatarNameForProfile(browser_->profile()),
-                                              editing_allowed);
+      this,
+      profiles::GetAvatarNameForProfile(browser_->profile()->GetPath()),
+      editing_allowed);
   layout->StartRow(1, 0);
   layout->AddView(current_profile_name_);
 
@@ -1204,7 +1205,8 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
   base::string16 text = browser_->profile()->IsGuestSession() ?
       l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
       l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU_BUTTON,
-          profiles::GetAvatarNameForProfile(browser_->profile()));
+          profiles::GetAvatarNameForProfile(
+              browser_->profile()->GetPath()));
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   users_button_ = new BackgroundColorHoverButton(
       this,

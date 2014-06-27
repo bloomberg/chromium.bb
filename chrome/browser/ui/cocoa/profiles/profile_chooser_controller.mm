@@ -1282,12 +1282,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                         !browser_->profile()->IsSupervised();
   base::scoped_nsobject<EditableProfileNameButton> profileName(
       [[EditableProfileNameButton alloc]
-          initWithFrame:NSMakeRect(xOffset, yOffset,
+          initWithFrame:NSMakeRect(xOffset,
+                                   yOffset,
                                    availableTextWidth,
                                    kProfileButtonHeight)
                 profile:browser_->profile()
             profileName:base::SysUTF16ToNSString(
-                profiles::GetAvatarNameForProfile(browser_->profile()))
+                            profiles::GetAvatarNameForProfile(
+                                browser_->profile()->GetPath()))
          editingAllowed:editingAllowed
          withController:self]);
 
@@ -1469,7 +1471,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSString* text = isGuestSession_ ?
       l10n_util::GetNSString(IDS_PROFILES_EXIT_GUEST) :
       l10n_util::GetNSStringF(IDS_PROFILES_NOT_YOU_BUTTON,
-          profiles::GetAvatarNameForProfile(browser_->profile()));
+          profiles::GetAvatarNameForProfile(
+              browser_->profile()->GetPath()));
   NSButton* notYouButton =
       [self hoverButtonWithRect:viewRect
                            text:text

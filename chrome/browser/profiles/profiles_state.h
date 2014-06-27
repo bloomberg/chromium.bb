@@ -26,11 +26,13 @@ base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir);
 // Register multi-profile related preferences in Local State.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
-// Returns the display name of the active on-the-record profile (or guest)
-// used in the avatar button. If there is only one local profile present, it
-// will return IDS_SINGLE_PROFILE_DISPLAY_NAME, unless the profile has a
-// user entered custom name.
-base::string16 GetAvatarNameForProfile(Profile* profile);
+// Returns the display name of the specified on-the-record profile (or guest),
+// specified by |profile_path|, used in the avatar button or user manager. If
+// |profile_path| is the guest path, it will return IDS_GUEST_PROFILE_NAME. If
+// there is only one local profile present, it will return
+// IDS_SINGLE_PROFILE_DISPLAY_NAME, unless the profile has a user entered
+// custom name.
+base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path);
 
 // Update the name of |profile| to |new_profile_name|. This updates the
 // profile preferences, which triggers an update in the ProfileInfoCache.

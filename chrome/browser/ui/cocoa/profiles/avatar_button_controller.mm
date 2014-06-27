@@ -222,7 +222,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }
 
 - (base::string16)getElidedAvatarName {
-  base::string16 name = profiles::GetAvatarNameForProfile(browser_->profile());
+  base::string16 name = profiles::GetAvatarNameForProfile(
+      browser_->profile()->GetPath());
   int maxTextWidth = kMaxButtonContentWidth - [[button_ image] size].width;
   return gfx::ElideText(name, gfx::FontList(gfx::Font([button_ font])),
                         maxTextWidth, gfx::ELIDE_TAIL);

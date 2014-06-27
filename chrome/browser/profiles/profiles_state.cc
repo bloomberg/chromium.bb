@@ -49,15 +49,15 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kProfilesLastActive);
 }
 
-base::string16 GetAvatarNameForProfile(Profile* profile) {
+base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
   base::string16 display_name;
 
-  if (profile->IsGuestSession()) {
+  if (profile_path == ProfileManager::GetGuestProfilePath()) {
     display_name = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
   } else {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+    size_t index = cache.GetIndexOfProfileWithPath(profile_path);
 
     if (index == std::string::npos)
       return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
