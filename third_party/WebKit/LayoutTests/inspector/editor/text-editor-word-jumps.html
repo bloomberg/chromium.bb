@@ -12,6 +12,14 @@ function testFunction(foo, bar)
     return a === 1 ? true : false;
 }
 
+function testMyCamelMove(foo, bar)
+{
+    /* HelloWorld.TestSTRIng */
+    
+    var a = e === 2;    
+{}
+}
+
     var textEditor = InspectorTest.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
@@ -20,6 +28,7 @@ function testFunction(foo, bar)
 
     InspectorTest.addResult(textEditor.text());
     const wordJumpModifier = WebInspector.isMac() ? "altKey" : "ctrlKey";
+    const camelJumpModifier = WebInspector.isMac() ? "ctrlKey" : "altKey";
 
     function dumpEditorSelection()
     {
@@ -106,6 +115,36 @@ function testFunction(foo, bar)
                     next();
             }
             InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+        },
+
+        function testAltRight(next)
+        {
+            InspectorTest.addResult("====== CAMEL CASE MOVEMENTS ======");
+            textEditor.setText(testMyCamelMove.toString());
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier], next);
+        },
+
+        function testAltLeft(next)
+        {
+            setCursorAtEnd();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier], next);
+        },
+
+        function testAltShiftRight(next)
+        {
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier, "shiftKey"], next);
+        },
+
+        function testAltShiftLeft(next)
+        {
+            setCursorAtEnd();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier, "shiftKey"], next);
         }
     ]);
 
@@ -116,7 +155,7 @@ function testFunction(foo, bar)
 
 <body onload="runTest();">
 <p>
-This test checks how text editor handles different ctrl-based movements, i.e. ctrl-left, ctrl-right, ctrl-shift-left, ctrl-backspace.
+This test checks how text editor handles different movements: ctrl-left, ctrl-right, ctrl-shift-left, ctrl-backspace, alt-left, alt-right, alt-shift-left, alt-shift-right.
 </p>
 
 </body>
