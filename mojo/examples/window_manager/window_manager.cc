@@ -211,6 +211,11 @@ class WindowManager : public ApplicationDelegate,
   }
 
   // Overridden from DebugPanel::Delegate:
+  virtual void CloseTopWindow() OVERRIDE {
+    if (!windows_.empty())
+      CloseWindow(windows_.back()->id());
+  }
+
   virtual void RequestNavigate(
     uint32 source_node_id,
     navigation::Target target,

@@ -37,7 +37,9 @@ DebugPanel::DebugPanel(Delegate* delegate, view_manager::Node* node)
           base::ASCIIToUTF16("Default"), kNavigationTargetGroupId)),
       next_color_(0),
       colored_square_(new views::BlueButton(
-          this, base::ASCIIToUTF16("Local nav test"))) {
+          this, base::ASCIIToUTF16("Local nav test"))),
+      close_last_(new views::BlueButton(
+          this, base::ASCIIToUTF16("Close last window"))) {
   navigation_target_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   navigation_target_default_->SetChecked(true);
 
@@ -49,6 +51,7 @@ DebugPanel::DebugPanel(Delegate* delegate, view_manager::Node* node)
   widget_delegate->GetContentsView()->AddChildView(navigation_target_new_);
   widget_delegate->GetContentsView()->AddChildView(navigation_target_source_);
   widget_delegate->GetContentsView()->AddChildView(colored_square_);
+  widget_delegate->GetContentsView()->AddChildView(close_last_);
   widget_delegate->GetContentsView()->SetLayoutManager(this);
 
   views::Widget* widget = new views::Widget();
@@ -97,25 +100,30 @@ void DebugPanel::Layout(views::View* view) {
   }
 
   y += kControlBorderInset;
-  colored_square_->SetBounds(kControlBorderInset, y, w,
-                             colored_square_->GetPreferredSize().height());
-  y += colored_square_->height();
+  views::Button* buttons[] = {
+    colored_square_,
+    close_last_,
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(buttons); ++i) {
+    buttons[i]->SetBounds(kControlBorderInset, y, w,
+                          buttons[i]->GetPreferredSize().height());
+    y += buttons[i]->height();
+  }
 }
 
 void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  std::string url;
   if (sender == colored_square_) {
-      url = base::StringPrintf(
+      navigation::NavigationDetailsPtr details(
+          navigation::NavigationDetails::New());
+      details->url = base::StringPrintf(
           "mojo://mojo_embedded_app/%x",
           kColors[next_color_ % arraysize(kColors)]);
       next_color_++;
+      delegate_->RequestNavigate(node_->id(), navigation::NEW_NODE,
+                                 details.Pass());
+  } else if (sender == close_last_) {
+    delegate_->CloseTopWindow();
   }
-
-  DCHECK(!url.empty());
-  navigation::NavigationDetailsPtr details(
-      navigation::NavigationDetails::New());
-  details->url = url;
-  delegate_->RequestNavigate(node_->id(), navigation::NEW_NODE, details.Pass());
 }
 
 }  // namespace examples

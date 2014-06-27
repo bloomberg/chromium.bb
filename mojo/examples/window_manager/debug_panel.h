@@ -39,6 +39,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
  public:
   class Delegate {
    public:
+    virtual void CloseTopWindow() = 0;
     virtual void RequestNavigate(
         uint32 source_node_id, navigation::Target target,
         navigation::NavigationDetailsPtr nav_details) = 0;
@@ -68,6 +69,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
 
   size_t next_color_;
   views::Button* colored_square_;
+  views::Button* close_last_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugPanel);
 };
