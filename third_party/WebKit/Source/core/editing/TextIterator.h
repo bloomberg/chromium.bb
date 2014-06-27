@@ -84,6 +84,7 @@ public:
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
+    bool isInsideReplacedElement() const;
 
     int length() const { return m_textLength; }
     UChar characterAt(unsigned index) const;

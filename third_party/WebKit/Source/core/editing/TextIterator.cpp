@@ -356,6 +356,15 @@ TextIterator::~TextIterator()
 {
 }
 
+bool TextIterator::isInsideReplacedElement() const
+{
+    if (atEnd() || length() != 1 || !m_node)
+        return false;
+
+    RenderObject* renderer = m_node->renderer();
+    return renderer && renderer->isReplaced();
+}
+
 void TextIterator::advance()
 {
     if (m_shouldStop)
