@@ -13,10 +13,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace component_updater {
 
@@ -178,11 +180,7 @@ std::string PingSender::BuildUpdateCompleteEventElement(
   return ping_event;
 }
 
-PingManager::PingManager(
-    const GURL& ping_url,
-    net::URLRequestContextGetter* url_request_context_getter)
-    : ping_url_(ping_url),
-      url_request_context_getter_(url_request_context_getter) {
+PingManager::PingManager(const Configurator& config) : config_(config) {
 }
 
 PingManager::~PingManager() {
@@ -192,7 +190,7 @@ PingManager::~PingManager() {
 // sender object self-deletes after sending the ping.
 void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
   PingSender* ping_sender(new PingSender);
-  ping_sender->SendPing(ping_url_, url_request_context_getter_, item);
+  ping_sender->SendPing(config_.PingUrl(), config_.RequestContext(), item);
 }
 
 }  // namespace component_updater

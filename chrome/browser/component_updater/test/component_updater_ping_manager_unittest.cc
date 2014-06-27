@@ -21,7 +21,7 @@ namespace component_updater {
 class ComponentUpdaterPingManagerTest : public testing::Test {
  public:
   ComponentUpdaterPingManagerTest();
-  virtual ~ComponentUpdaterPingManagerTest();
+  virtual ~ComponentUpdaterPingManagerTest() {}
 
   void RunThreadsUntilIdle();
 
@@ -30,30 +30,25 @@ class ComponentUpdaterPingManagerTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
+  scoped_ptr<TestConfigurator> config_;
   scoped_ptr<PingManager> ping_manager_;
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest()
-    : context_(new net::TestURLRequestContextGetter(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+    : config_(new TestConfigurator),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
 }
 
-ComponentUpdaterPingManagerTest::~ComponentUpdaterPingManagerTest() {
-  context_ = NULL;
-}
-
 void ComponentUpdaterPingManagerTest::SetUp() {
-  ping_manager_.reset(
-      new PingManager(GURL("http://localhost2/update2"), context_));
+  ping_manager_.reset(new PingManager(*config_));
 }
 
 void ComponentUpdaterPingManagerTest::TearDown() {
   ping_manager_.reset();
+  config_.reset();
 }
 
 void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {

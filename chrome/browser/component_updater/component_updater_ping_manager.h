@@ -6,31 +6,23 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_PING_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "url/gurl.h"
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace component_updater {
 
+class Configurator;
 struct CrxUpdateItem;
 
 // Provides an event sink for completion events from ComponentUpdateService
 // and sends fire-and-forget pings when handling these events.
 class PingManager {
  public:
-  PingManager(const GURL& ping_url,
-              net::URLRequestContextGetter* url_request_context_getter);
+  explicit PingManager(const Configurator& config);
   ~PingManager();
 
   void OnUpdateComplete(const CrxUpdateItem* item);
 
  private:
-  const GURL ping_url_;
-
-  // This member is not owned by this class.
-  net::URLRequestContextGetter* url_request_context_getter_;
+  const Configurator& config_;
 
   DISALLOW_COPY_AND_ASSIGN(PingManager);
 };

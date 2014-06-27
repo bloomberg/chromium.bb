@@ -21,6 +21,7 @@ class URLRequestContextGetter;
 
 namespace component_updater {
 
+class Configurator;
 struct CrxUpdateItem;
 
 class UpdateChecker {
@@ -40,8 +41,7 @@ class UpdateChecker {
       const std::string& additional_attributes) = 0;
 
   static scoped_ptr<UpdateChecker> Create(
-      const GURL& url,
-      net::URLRequestContextGetter* url_request_context_getter,
+      const Configurator& config,
       const UpdateCheckCallback& update_check_callback);
 
  protected:

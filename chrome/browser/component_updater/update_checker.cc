@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,8 +64,7 @@ std::string BuildUpdateCheckRequest(const std::vector<CrxUpdateItem*>& items,
 
 class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
  public:
-  UpdateCheckerImpl(const GURL& url,
-                    net::URLRequestContextGetter* url_request_context_getter,
+  UpdateCheckerImpl(const Configurator& config,
                     const UpdateCheckCallback& update_check_callback);
   virtual ~UpdateCheckerImpl();
 
@@ -77,8 +77,7 @@ class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
-  const GURL url_;
-  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
+  const Configurator& config_;
   const UpdateCheckCallback update_check_callback_;
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -87,21 +86,17 @@ class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
 };
 
 scoped_ptr<UpdateChecker> UpdateChecker::Create(
-    const GURL& url,
-    net::URLRequestContextGetter* url_request_context_getter,
+    const Configurator& config,
     const UpdateCheckCallback& update_check_callback) {
-  scoped_ptr<UpdateCheckerImpl> update_checker(new UpdateCheckerImpl(
-      url, url_request_context_getter, update_check_callback));
+  scoped_ptr<UpdateCheckerImpl> update_checker(
+      new UpdateCheckerImpl(config, update_check_callback));
   return update_checker.PassAs<UpdateChecker>();
 }
 
 UpdateCheckerImpl::UpdateCheckerImpl(
-    const GURL& url,
-    net::URLRequestContextGetter* url_request_context_getter,
+    const Configurator& config,
     const UpdateCheckCallback& update_check_callback)
-    : url_(url),
-      url_request_context_getter_(url_request_context_getter),
-      update_check_callback_(update_check_callback) {
+    : config_(config), update_check_callback_(update_check_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -118,10 +113,10 @@ bool UpdateCheckerImpl::CheckForUpdates(
     return false;  // Another fetch is in progress.
 
   url_fetcher_.reset(SendProtocolRequest(
-      url_,
+      config_.UpdateUrl(),
       BuildUpdateCheckRequest(items_to_check, additional_attributes),
       this,
-      url_request_context_getter_));
+      config_.RequestContext()));
 
   return true;
 }

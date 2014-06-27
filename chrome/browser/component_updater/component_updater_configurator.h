@@ -53,7 +53,9 @@ class Configurator {
   // pings are disabled.
   virtual GURL PingUrl() const = 0;
 
-  // Parameters added to each url request. It can be null if none are needed.
+  // Parameters added to each url request. It can be empty if none are needed.
+  // The return string must be safe for insertion as an attribute in an
+  // XML element.
   virtual std::string ExtraRequestParams() const = 0;
 
   // How big each update request can be. Don't go above 2000.

@@ -276,8 +276,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
 CrxUpdateService::CrxUpdateService(Configurator* config)
     : config_(config),
-      ping_manager_(
-          new PingManager(config->PingUrl(), config->RequestContext())),
+      ping_manager_(new PingManager(*config)),
       blocking_task_runner_(
           BrowserThread::GetBlockingPool()->
               GetSequencedTaskRunnerWithShutdownBehavior(
@@ -629,8 +628,7 @@ bool CrxUpdateService::CheckForUpdates() {
     return false;
 
   update_checker_ =
-      UpdateChecker::Create(config_->UpdateUrl(),
-                            config_->RequestContext(),
+      UpdateChecker::Create(*config_,
                             base::Bind(&CrxUpdateService::UpdateCheckComplete,
                                        base::Unretained(this))).Pass();
   return update_checker_->CheckForUpdates(items_to_check,

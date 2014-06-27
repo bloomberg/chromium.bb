@@ -48,14 +48,14 @@ class UpdateCheckerTest : public testing::Test {
                            const std::string& error_message,
                            const UpdateResponse::Results& results);
 
-  net::URLRequestContextGetter* context() { return context_.get(); }
-
  protected:
   void Quit();
   void RunThreads();
   void RunThreadsUntilIdle();
 
   CrxUpdateItem BuildCrxUpdateItem();
+
+  scoped_ptr<TestConfigurator> config_;
 
   scoped_ptr<UpdateChecker> update_checker_;
 
@@ -67,7 +67,6 @@ class UpdateCheckerTest : public testing::Test {
   UpdateResponse::Results results_;
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::FilePath test_data_dir_;
   base::Closure quit_closure_;
@@ -76,9 +75,8 @@ class UpdateCheckerTest : public testing::Test {
 };
 
 UpdateCheckerTest::UpdateCheckerTest()
-    : error_(0),
-      context_(new net::TestURLRequestContextGetter(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+    : config_(new TestConfigurator),
+      error_(0),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   // The test directory is chrome/test/data/components.
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
@@ -89,7 +87,6 @@ UpdateCheckerTest::UpdateCheckerTest()
 
 UpdateCheckerTest::~UpdateCheckerTest() {
   net::URLFetcher::SetEnableInterceptionForTests(false);
-  context_ = NULL;
 }
 
 void UpdateCheckerTest::SetUp() {
@@ -109,6 +106,8 @@ void UpdateCheckerTest::TearDown() {
 
   post_interceptor_ = NULL;
   interceptor_factory_.reset();
+
+  config_.reset();
 }
 
 void UpdateCheckerTest::RunThreads() {
@@ -163,8 +162,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   update_checker_ =
-      UpdateChecker::Create(GURL("https://localhost2/update2"),
-                            context(),
+      UpdateChecker::Create(*config_,
                             base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                                        base::Unretained(this))).Pass();
 
@@ -213,8 +211,7 @@ TEST_F(UpdateCheckerTest, UpdateNetworkError) {
                                                 test_file("no such file")));
 
   update_checker_ =
-      UpdateChecker::Create(GURL("https://localhost2/update2"),
-                            context(),
+      UpdateChecker::Create(*config_,
                             base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                                        base::Unretained(this))).Pass();
 
