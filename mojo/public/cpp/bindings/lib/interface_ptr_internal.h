@@ -56,6 +56,11 @@ class InterfacePtrState {
     proxy_ = proxy;
   }
 
+  bool WaitForIncomingMethodCall() {
+    assert(router_);
+    return router_->WaitForIncomingMessage();
+  }
+
   void set_client(typename Interface::Client* client) {
     assert(proxy_);
     proxy_->stub.set_sink(client);

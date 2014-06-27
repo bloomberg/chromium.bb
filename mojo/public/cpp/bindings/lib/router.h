@@ -51,6 +51,12 @@ class Router : public MessageReceiverWithResponder {
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
       MOJO_OVERRIDE;
 
+  // Blocks the current thread for the first incoming method call, i.e., either
+  // a call to a client method or a callback method.
+  bool WaitForIncomingMessage() {
+    return connector_.WaitForIncomingMessage();
+  }
+
   // Sets this object to testing mode.
   // In testing mode:
   // - the object is more tolerant of unrecognized response messages;
