@@ -20,6 +20,8 @@ class GoogleSearchCounterAndroid : content::NotificationObserver {
   virtual ~GoogleSearchCounterAndroid();
 
  private:
+  friend class GoogleSearchCounterAndroidTest;
+
   void ProcessCommittedEntry(const content::NotificationSource& source,
                              const content::NotificationDetails& details);
 

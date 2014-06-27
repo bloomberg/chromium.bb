@@ -43,6 +43,7 @@ class GoogleSearchCounter : content::NotificationObserver {
  private:
   friend struct DefaultSingletonTraits<GoogleSearchCounter>;
   friend class GoogleSearchCounterTest;
+  friend class GoogleSearchCounterAndroidTest;
 
   GoogleSearchCounter();
   virtual ~GoogleSearchCounter();

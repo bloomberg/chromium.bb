@@ -37,10 +37,12 @@ void GoogleSearchCounterAndroid::ProcessCommittedEntry(
       *content::Details<content::LoadCommittedDetails>(details)->entry;
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
-  DCHECK(prerender_manager);
+  // |prerender_manager| is NULL when prerendering is disabled.
+  bool prerender_enabled =
+      prerender_manager ? prerender_manager->IsEnabled() : false;
   counter->search_metrics()->RecordAndroidGoogleSearch(
       counter->GetGoogleSearchAccessPointForSearchNavEntry(entry),
-      prerender_manager->IsEnabled());
+      prerender_enabled);
 }
 
 void GoogleSearchCounterAndroid::Observe(
