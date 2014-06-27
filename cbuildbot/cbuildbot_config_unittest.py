@@ -293,12 +293,11 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     for build_name, config in cbuildbot_config.config.iteritems():
       if config.build_packages_in_background:
         # It is unsupported to use the build_packages_in_background flags with
-        # the afdo_generate or afdo_use config options.
+        # the afdo_generate or afdo_generate_min config options.
         msg = 'Config %s uses build_packages_in_background with afdo_%s'
         self.assertFalse(config.afdo_generate, msg % (build_name, 'generate'))
         self.assertFalse(config.afdo_generate_min, msg % (build_name,
-                                                          'generate'))
-        self.assertFalse(config.afdo_use, msg % (build_name, 'use'))
+                                                          'generate_min'))
 
   def testReleaseGroupInBackground(self):
     """Verify build_packages_in_background settings for release groups.
@@ -323,6 +322,22 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         for child_config in config.child_configs[1:]:
           self.assertTrue(child_config.build_packages_in_background,
               msg % (child_config.name, build_name))
+
+  def testAFDOSameInChildConfigs(self):
+    """Verify that 'afdo_use' is the same for all children in a group."""
+    msg = ('Child config %s for %s should have same value for afdo_use '
+           'as other children')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if build_name.endswith('-group'):
+        prev_value = None
+        self.assertTrue(config.child_configs,
+            'Config %s should have child configs' % build_name)
+        for child_config in config.child_configs:
+          if prev_value is None:
+            prev_value = child_config.afdo_use
+          else:
+            self.assertEqual(child_config.afdo_use, prev_value,
+                msg % (child_config.name, build_name))
 
   def testNoGrandChildConfigs(self):
     """Verify that no child configs have a child config."""

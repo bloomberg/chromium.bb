@@ -497,7 +497,7 @@ class SimpleBuilder(Builder):
 
     if config.build_packages_in_background:
       self._RunStage(build_stages.BuildPackagesStage, board,
-                     builder_run=builder_run)
+                     builder_run=builder_run, afdo_use=config.afdo_use)
 
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       self._RunStage(test_stages.UnitTestStage, board,

@@ -420,7 +420,8 @@ _settings = dict(
 # build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
   build_tests=True,
 
-# afdo_generate -- Generates AFDO data.
+# afdo_generate -- Generates AFDO data. Will capture a profile of chrome
+#                  using a hwtest to run a predetermined set of benchmarks.
   afdo_generate=False,
 
 # afdo_generate_min -- Generates AFDO data, builds the minimum amount
@@ -431,7 +432,8 @@ _settings = dict(
 # afdo_update_ebuild -- Update the Chrome ebuild with the AFDO profile info.
   afdo_update_ebuild=False,
 
-# afdo_use -- Uses AFDO data.
+# afdo_use -- Uses AFDO data. The Chrome build will be optimized using the
+#             AFDO profile information found in the chrome ebuild file.
   afdo_use=False,
 
 # vm_tests -- A list of vm tests to run.
@@ -2009,9 +2011,11 @@ _config.add_group('x86-zgb-release-group',
 _config.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
+    afdo_use=True,
   ),
   _grouped_variant_release.add_config('parrot_ivb-release',
     boards=['parrot_ivb'],
+    afdo_use=True,
   )
 )
 
@@ -2119,6 +2123,25 @@ _release.add_config('link_freon-release',
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   critical_for_chrome=True,
+  afdo_use=True,
+)
+
+# Add specific release configs for these sandybrige/ivybridge boards to
+# enable AFDO. We should remove these once AFDO is enabled everywhere.
+# parrot is added in parrot-release-group above.
+_release.add_config('stumpy-release',
+  boards=['stumpy'],
+  afdo_use=True,
+)
+
+_release.add_config('butterfly-release',
+  boards=['butterfly'],
+  afdo_use=True,
+)
+
+_release.add_config('stout-release',
+  boards=['stout'],
+  afdo_use=True,
 )
 
 ### Arm release configs.
@@ -2233,7 +2256,8 @@ _release.add_config('stumpy_moblab-release',
 
 ### Per-chipset release groups
 
-def _AddGroupConfig(name, base_board, group_boards=(), group_variant_boards=()):
+def _AddGroupConfig(name, base_board, group_boards=(),
+                    group_variant_boards=(), **kwargs):
   """Generate full & release group configs."""
   for group in ('release', 'full'):
     configs = []
@@ -2251,7 +2275,7 @@ def _AddGroupConfig(name, base_board, group_boards=(), group_variant_boards=()):
       else:
         subconfig = {}
       board_config = '%s-%s' % (board, group)
-      configs.append(config[board_config].derive(subconfig))
+      configs.append(config[board_config].derive(subconfig, **kwargs))
 
     config_name = '%s-%s-group' % (name, group)
     _config.add_group(config_name, *configs, description=desc)
@@ -2270,12 +2294,12 @@ _AddGroupConfig('sandybridge', 'lumpy', (
     'butterfly',
     'parrot',
     'stumpy',
-))
+), afdo_use=True)
 
 # ivybridge chipset boards
 _AddGroupConfig('ivybridge', 'stout', (), (
     'parrot_ivb',
-))
+), afdo_use=True)
 
 # sandybridge / ivybridge chipset boards
 # TODO(davidjames): Remove this once we've transitioned to separate builders for
@@ -2287,7 +2311,7 @@ _AddGroupConfig('sandybridge-ivybridge', 'lumpy', (
     'stumpy',
 ), (
     'parrot_ivb',
-))
+), afdo_use=True)
 
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
