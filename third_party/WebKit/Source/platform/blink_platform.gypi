@@ -895,6 +895,7 @@
       'fonts/FontCacheTest.cpp',
       'fonts/FontDescriptionTest.cpp',
       'fonts/FontTest.cpp',
+      'fonts/GlyphBufferTest.cpp',
       'fonts/GlyphPageTreeNodeTest.cpp',
       'fonts/android/FontCacheAndroidTest.cpp',
       'geometry/FloatBoxTest.cpp',
