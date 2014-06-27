@@ -64,6 +64,9 @@ class DevToolsProtocol {
     // Creates error response.
     scoped_refptr<Response> NoSuchMethodErrorResponse();
 
+    // Creates error response.
+    scoped_refptr<Response> ServerErrorResponse(const std::string& message);
+
     // Creates async response promise.
     scoped_refptr<Response> AsyncResponsePromise();
 

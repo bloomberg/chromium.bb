@@ -5,10 +5,12 @@
 #include "content/browser/devtools/devtools_browser_target.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/server/http_server.h"
@@ -42,6 +44,9 @@ void DevToolsBrowserTarget::RegisterDomainHandler(
   }
 }
 
+typedef std::map<std::string, DevToolsBrowserTarget*> DomainMap;
+base::LazyInstance<DomainMap>::Leaky g_used_domains = LAZY_INSTANCE_INITIALIZER;
+
 void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
   DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
   std::string error_response;
@@ -57,9 +62,21 @@ void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
     Respond(command->NoSuchMethodErrorResponse()->Serialize());
     return;
   }
+  DomainMap& used_domains(g_used_domains.Get());
+  std::string domain = command->domain();
+  DomainMap::iterator jt = used_domains.find(domain);
+  if (jt == used_domains.end()) {
+    used_domains[domain] = this;
+  } else if (jt->second != this) {
+    std::string message =
+        base::StringPrintf("'%s' is held by another connection",
+                           domain.c_str());
+    Respond(command->ServerErrorResponse(message)->Serialize());
+    return;
+  }
 
   DevToolsProtocol::Handler* handler = it->second;
-  bool handle_directly = handle_on_ui_thread_.find(command->domain()) ==
+  bool handle_directly = handle_on_ui_thread_.find(domain) ==
       handle_on_ui_thread_.end();
   if (handle_directly) {
     scoped_refptr<DevToolsProtocol::Response> response =
@@ -87,6 +104,18 @@ void DevToolsBrowserTarget::Detach() {
   DCHECK(http_server_);
 
   http_server_ = NULL;
+
+  DomainMap& used_domains(g_used_domains.Get());
+  for (DomainMap::iterator it = used_domains.begin();
+       it != used_domains.end();) {
+    if (it->second == this) {
+      DomainMap::iterator to_erase = it;
+      ++it;
+      used_domains.erase(to_erase);
+    } else {
+      ++it;
+    }
+  }
 
   std::vector<DevToolsProtocol::Handler*> ui_handlers;
   for (std::set<std::string>::iterator domain_it = handle_on_ui_thread_.begin();

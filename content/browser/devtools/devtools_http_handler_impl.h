@@ -125,7 +125,8 @@ class DevToolsHttpHandlerImpl
   base::FilePath active_port_output_directory_;
   typedef std::map<std::string, DevToolsTarget*> TargetMap;
   TargetMap target_map_;
-  scoped_refptr<DevToolsBrowserTarget> browser_target_;
+  typedef std::map<int, scoped_refptr<DevToolsBrowserTarget> > BrowserTargets;
+  BrowserTargets browser_targets_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 

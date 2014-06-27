@@ -27,7 +27,8 @@ enum Error {
   kErrorInvalidRequest = -32600,
   kErrorNoSuchMethod = -32601,
   kErrorInvalidParams = -32602,
-  kErrorInternalError = -32603
+  kErrorInternalError = -32603,
+  kErrorServerError = -32000
 };
 
 }  // namespace
@@ -81,6 +82,11 @@ DevToolsProtocol::Command::InvalidParamResponse(const std::string& param) {
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsProtocol::Command::NoSuchMethodErrorResponse() {
   return new Response(id_, kErrorNoSuchMethod, "No such method");
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsProtocol::Command::ServerErrorResponse(const std::string& message) {
+  return new Response(id_, kErrorServerError, message);
 }
 
 scoped_refptr<DevToolsProtocol::Response>
