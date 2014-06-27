@@ -248,8 +248,6 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
         case Resource::Script:
             *result = toScriptResource(cachedResource)->script();
             return true;
-        case Resource::MainResource:
-            return false;
         case Resource::Raw: {
             SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
