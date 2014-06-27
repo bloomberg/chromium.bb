@@ -9,9 +9,9 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "mojo/examples/html_viewer/webmimeregistry_impl.h"
+#include "mojo/examples/html_viewer/webthemeengine_impl.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -68,7 +68,7 @@ class BlinkPlatformImpl : public blink::Platform {
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  blink::WebThemeEngine dummy_theme_engine_;
+  WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
 };
 

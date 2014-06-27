@@ -64,7 +64,7 @@ blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {
 }
 
 blink::WebThemeEngine* BlinkPlatformImpl::themeEngine() {
-  return &dummy_theme_engine_;
+  return &theme_engine_;
 }
 
 blink::WebString BlinkPlatformImpl::defaultLocale() {
