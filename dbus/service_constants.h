@@ -279,6 +279,10 @@ enum UserActivityType {
   USER_ACTIVITY_VOLUME_DOWN_KEY_PRESS = 4,
   USER_ACTIVITY_VOLUME_MUTE_KEY_PRESS = 5,
 };
+enum RequestRestartReason {
+  REQUEST_RESTART_FOR_USER = 0,
+  REQUEST_RESTART_FOR_UPDATE = 1,
+};
 }  // namespace power_manager
 
 namespace chromeos {
