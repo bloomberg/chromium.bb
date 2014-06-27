@@ -7,6 +7,7 @@
 #include "apps/shell/browser/default_shell_app_window_controller.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/common/switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -21,10 +22,9 @@ DefaultShellBrowserMainDelegate::~DefaultShellBrowserMainDelegate() {
 
 void DefaultShellBrowserMainDelegate::Start(
     content::BrowserContext* browser_context) {
-  const std::string kAppSwitch = "app";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kAppSwitch)) {
-    base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
+  if (command_line->HasSwitch(switches::kApp)) {
+    base::FilePath app_dir(command_line->GetSwitchValueNative(switches::kApp));
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
 
     extensions::ShellExtensionSystem* extension_system =
@@ -34,7 +34,7 @@ void DefaultShellBrowserMainDelegate::Start(
       return;
     extension_system->LaunchApp();
   } else {
-    LOG(ERROR) << "--" << kAppSwitch << " unset; boredom is in your future";
+    LOG(ERROR) << "--" << switches::kApp << " unset; boredom is in your future";
   }
 }
 

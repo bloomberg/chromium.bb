@@ -6,6 +6,7 @@
 #include "apps/shell/browser/shell_browser_main_delegate.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/common/switches.h"
 #include "apps/shell/renderer/shell_renderer_main_delegate.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
@@ -26,7 +27,6 @@
 #include "ui/wm/core/visibility_controller.h"
 
 namespace {
-const char kAppSwitch[] = "app";
 
 // We want to load the sample calculator app by default, for a while. Expecting
 // to run athena_main at src/
@@ -43,8 +43,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
-        command_line->HasSwitch(kAppSwitch) ?
-        command_line->GetSwitchValueNative(kAppSwitch) :
+        command_line->HasSwitch(apps::switches::kApp) ?
+        command_line->GetSwitchValueNative(apps::switches::kApp) :
         kDefaultAppPath);
 
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);

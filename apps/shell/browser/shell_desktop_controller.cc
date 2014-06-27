@@ -5,6 +5,8 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 
 #include "apps/shell/browser/shell_app_window_controller.h"
+#include "apps/shell/common/switches.h"
+#include "base/command_line.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -225,7 +227,17 @@ void ShellDesktopController::OnHostCloseRequested(
 
 void ShellDesktopController::CreateRootWindow() {
   // Set up basic pieces of ui::wm.
-  gfx::Size size = GetPrimaryDisplaySize();
+  gfx::Size size;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kHostWindowBounds)) {
+    const std::string size_str =
+        command_line->GetSwitchValueASCII(switches::kHostWindowBounds);
+    int width, height;
+    CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
+    size = gfx::Size(width, height);
+  } else {
+    size = GetPrimaryDisplaySize();
+  }
   if (size.IsEmpty())
     size = gfx::Size(1280, 720);
 

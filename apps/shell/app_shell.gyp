@@ -138,6 +138,8 @@
         'common/shell_content_client.h',
         'common/shell_extensions_client.cc',
         'common/shell_extensions_client.h',
+        'common/switches.h',
+        'common/switches.cc',
         'renderer/shell_content_renderer_client.cc',
         'renderer/shell_content_renderer_client.h',
         'renderer/shell_custom_bindings.cc',
