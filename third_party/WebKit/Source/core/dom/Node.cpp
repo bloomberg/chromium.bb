@@ -696,24 +696,24 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
 
 namespace {
 
-PassRefPtr<JSONArray> jsStackAsJSONArray()
+void addJsStack(TracedArray<TracedValue>& stackFrames)
 {
-    RefPtr<JSONArray> jsonArray = JSONArray::create();
     RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(10);
     if (!stack)
-        return jsonArray.release();
+        return;
     for (size_t i = 0; i < stack->size(); i++)
-        jsonArray->pushString(stack->at(i).functionName());
-    return jsonArray.release();
+        stackFrames.pushString(stack->at(i).functionName());
 }
 
-PassRefPtr<JSONObject> jsonObjectForStyleInvalidation(unsigned nodeCount, const Node* rootNode)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForStyleInvalidation(unsigned nodeCount, const Node* rootNode)
 {
-    RefPtr<JSONObject> jsonObject = JSONObject::create();
-    jsonObject->setNumber("node_count", nodeCount);
-    jsonObject->setString("root_node", rootNode->debugName());
-    jsonObject->setArray("js_stack", jsStackAsJSONArray());
-    return jsonObject.release();
+    TracedValue value;
+    value.setInteger("node_count", nodeCount);
+    value.setString("root_node", rootNode->debugName());
+    TracedArray<TracedValue>& array = value.beginArray("js_stack");
+    addJsStack(array);
+    array.endArray();
+    return value.finish();
 }
 
 } // anonymous namespace'd functions supporting traceStyleChange
@@ -741,7 +741,7 @@ void Node::traceStyleChange(StyleChangeType changeType)
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("style.debug"),
         "Node::setNeedsStyleRecalc",
-        "data", TracedValue::fromJSONValue(jsonObjectForStyleInvalidation(nodeCount, this))
+        "data", jsonObjectForStyleInvalidation(nodeCount, this)
     );
 }
 

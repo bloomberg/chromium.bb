@@ -1441,22 +1441,22 @@ bool RenderObject::isPaintInvalidationContainer() const
     return hasLayer() && toRenderLayerModelObject(this)->layer()->isPaintInvalidationContainer();
 }
 
-template<typename T> PassRefPtr<JSONValue> jsonObjectForRect(const T& rect)
+template<typename T> void addJsonObjectForRect(TracedValue& value, const char* name, const T& rect)
 {
-    RefPtr<JSONObject> object = JSONObject::create();
-    object->setNumber("x", rect.x());
-    object->setNumber("y", rect.y());
-    object->setNumber("width", rect.width());
-    object->setNumber("height", rect.height());
-    return object.release();
+    value.beginDictionary(name)
+        .setDouble("x", rect.x())
+        .setDouble("y", rect.y())
+        .setDouble("width", rect.width())
+        .setDouble("height", rect.height())
+        .endDictionary();
 }
 
-static PassRefPtr<JSONValue> jsonObjectForPaintInvalidationInfo(const IntRect& rect, const String& invalidationReason)
+static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvalidationInfo(const IntRect& rect, const String& invalidationReason)
 {
-    RefPtr<JSONObject> object = JSONObject::create();
-    object->setValue("rect", jsonObjectForRect(rect));
-    object->setString("invalidation_reason", invalidationReason);
-    return object.release();
+    TracedValue value;
+    addJsonObjectForRect(value, "rect", rect);
+    value.setString("invalidation_reason", invalidationReason);
+    return value.finish();
 }
 
 LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObject* paintInvalidationContainer) const
@@ -1476,7 +1476,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),
-        "info", TracedValue::fromJSONValue(jsonObjectForPaintInvalidationInfo(r, invalidationReasonToString(invalidationReason))));
+        "info", jsonObjectForPaintInvalidationInfo(r, invalidationReasonToString(invalidationReason)));
 
     // For querying RenderLayer::compositingState()
     DisableCompositingQueryAsserts disabler;
@@ -1596,13 +1596,12 @@ void RenderObject::invalidateTreeAfterLayout(const RenderLayerModelObject& paint
     }
 }
 
-static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
+static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
 {
-    RefPtr<JSONObject> object = JSONObject::create();
-
-    object->setValue("old", jsonObjectForRect(oldRect));
-    object->setValue("new", jsonObjectForRect(newRect));
-    return object.release();
+    TracedValue value;
+    addJsonObjectForRect(value, "old", oldRect);
+    addJsonObjectForRect(value, "new", newRect);
+    return value.finish();
 }
 
 bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation)
@@ -1619,7 +1618,7 @@ bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject* paintIn
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
-        "info", TracedValue::fromJSONValue(jsonObjectForOldAndNewRects(oldBounds, newBounds)));
+        "info", jsonObjectForOldAndNewRects(oldBounds, newBounds));
 
     InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 

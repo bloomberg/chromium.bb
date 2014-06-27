@@ -32,16 +32,18 @@ namespace {
 
 class JSCallStack : public TraceEvent::ConvertableToTraceFormat  {
 public:
-    explicit JSCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callstack) : m_callstack(callstack) { }
+    explicit JSCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callstack)
+    {
+        m_serialized = callstack ? callstack->buildInspectorArray()->toJSONString() : "null";
+        ASSERT(m_serialized.isSafeToSendToAnotherThread());
+    }
     virtual String asTraceFormat() const
     {
-        if (!m_callstack)
-            return "null";
-        return m_callstack->buildInspectorArray()->toJSONString();
+        return m_serialized;
     }
 
 private:
-    RefPtrWillBePersistent<ScriptCallStack> m_callstack;
+    String m_serialized;
 };
 
 String toHexString(void* p)
@@ -59,26 +61,26 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData
     LocalFrame& frame = frameView->frame();
     frame.countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
 
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("dirtyObjects", needsLayoutObjects);
-    data->setNumber("totalObjects", totalObjects);
-    data->setBoolean("partialLayout", isPartial);
-    data->setString("frame", toHexString(&frame));
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    return value.setInteger("dirtyObjects", needsLayoutObjects)
+        .setInteger("totalObjects", totalObjects)
+        .setBoolean("partialLayout", isPartial)
+        .setString("frame", toHexString(&frame))
+        .finish();
 }
 
-static PassRefPtr<JSONArray> createQuad(const FloatQuad& quad)
+static void createQuad(TracedValue& value, const char* name, const FloatQuad& quad)
 {
-    RefPtr<JSONArray> array = JSONArray::create();
-    array->pushNumber(quad.p1().x());
-    array->pushNumber(quad.p1().y());
-    array->pushNumber(quad.p2().x());
-    array->pushNumber(quad.p2().y());
-    array->pushNumber(quad.p3().x());
-    array->pushNumber(quad.p3().y());
-    array->pushNumber(quad.p4().x());
-    array->pushNumber(quad.p4().y());
-    return array.release();
+    value.beginArray(name)
+        .pushDouble(quad.p1().x())
+        .pushDouble(quad.p1().y())
+        .pushDouble(quad.p2().x())
+        .pushDouble(quad.p2().y())
+        .pushDouble(quad.p3().x())
+        .pushDouble(quad.p3().y())
+        .pushDouble(quad.p4().x())
+        .pushDouble(quad.p4().y())
+        .endArray();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(RenderObject* rootForThisLayout)
@@ -86,62 +88,62 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     Vector<FloatQuad> quads;
     rootForThisLayout->absoluteQuads(quads);
 
-    RefPtr<JSONObject> data = JSONObject::create();
+    TracedValue value;
     if (quads.size() >= 1) {
-        data->setArray("root", createQuad(quads[0]));
+        createQuad(value, "root", quads[0]);
         int rootNodeId = InspectorNodeIds::idForNode(rootForThisLayout->generatingNode());
-        data->setNumber("rootNode", rootNodeId);
+        value.setInteger("rootNode", rootNodeId);
     } else {
         ASSERT_NOT_REACHED();
     }
-    return TracedValue::fromJSONValue(data);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("requestId", requestId);
-    data->setString("frame", toHexString(frame));
-    data->setString("url", request.url().string());
-    data->setString("requestMethod", request.httpMethod());
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    return value.setString("requestId", requestId)
+        .setString("frame", toHexString(frame))
+        .setString("url", request.url().string())
+        .setString("requestMethod", request.httpMethod())
+        .finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveResponseEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceResponse& response)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("requestId", requestId);
-    data->setString("frame", toHexString(frame));
-    data->setNumber("statusCode", response.httpStatusCode());
-    data->setString("mimeType", response.mimeType().string().isolatedCopy());
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    return value.setString("requestId", requestId)
+        .setString("frame", toHexString(frame))
+        .setInteger("statusCode", response.httpStatusCode())
+        .setString("mimeType", response.mimeType().string().isolatedCopy())
+        .finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveDataEvent::data(unsigned long identifier, LocalFrame* frame, int encodedDataLength)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("requestId", requestId);
-    data->setString("frame", toHexString(frame));
-    data->setNumber("encodedDataLength", encodedDataLength);
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    return value.setString("requestId", requestId)
+        .setString("frame", toHexString(frame))
+        .setInteger("encodedDataLength", encodedDataLength)
+        .finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorResourceFinishEvent::data(unsigned long identifier, double finishTime, bool didFail)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("requestId", requestId);
-    data->setBoolean("didFail", didFail);
+    TracedValue value;
+    value.setString("requestId", requestId);
+    value.setBoolean("didFail", didFail);
     if (finishTime)
-        data->setNumber("networkTime", finishTime);
-    return TracedValue::fromJSONValue(data);
+        value.setDouble("networkTime", finishTime);
+    return value.finish();
 }
 
 static LocalFrame* frameForExecutionContext(ExecutionContext* context)
@@ -152,85 +154,85 @@ static LocalFrame* frameForExecutionContext(ExecutionContext* context)
     return frame;
 }
 
-static PassRefPtr<JSONObject> genericTimerData(ExecutionContext* context, int timerId)
+static PassOwnPtr<TracedValue> genericTimerData(ExecutionContext* context, int timerId)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("timerId", timerId);
+    OwnPtr<TracedValue> value = adoptPtr(new TracedValue());
+    value->setInteger("timerId", timerId);
     if (LocalFrame* frame = frameForExecutionContext(context))
-        data->setString("frame", toHexString(frame));
-    return data.release();
+        value->setString("frame", toHexString(frame));
+    return value.release();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerInstallEvent::data(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    RefPtr<JSONObject> data = genericTimerData(context, timerId);
-    data->setNumber("timeout", timeout);
-    data->setBoolean("singleShot", singleShot);
-    return TracedValue::fromJSONValue(data);
+    OwnPtr<TracedValue> value = genericTimerData(context, timerId);
+    value->setInteger("timeout", timeout);
+    value->setBoolean("singleShot", singleShot);
+    return value->finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerRemoveEvent::data(ExecutionContext* context, int timerId)
 {
-    return TracedValue::fromJSONValue(genericTimerData(context, timerId));
+    return genericTimerData(context, timerId)->finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)
 {
-    return TracedValue::fromJSONValue(genericTimerData(context, timerId));
+    return genericTimerData(context, timerId)->finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::data(Document* document, int callbackId)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("id", callbackId);
-    data->setString("frame", toHexString(document->frame()));
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    return value.setInteger("id", callbackId)
+        .setString("frame", toHexString(document->frame()))
+        .finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("identifier", identifier);
-    data->setString("url", url.string());
-    data->setString("frame", toHexString(document->frame()));
+    TracedValue value;
+    value.setInteger("identifier", identifier);
+    value.setString("url", url.string());
+    value.setString("frame", toHexString(document->frame()));
     if (!protocol.isNull())
-        data->setString("webSocketProtocol", protocol);
-    return TracedValue::fromJSONValue(data);
+        value.setString("webSocketProtocol", protocol);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("identifier", identifier);
-    data->setString("frame", toHexString(document->frame()));
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    value.setInteger("identifier", identifier);
+    value.setString("frame", toHexString(document->frame()));
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginData(Document* document, unsigned startLine)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("startLine", startLine);
-    data->setString("frame", toHexString(document->frame()));
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    value.setInteger("startLine", startLine);
+    value.setString("frame", toHexString(document->frame()));
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrReadyStateChangeEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("url", request->url().string());
-    data->setNumber("readyState", request->readyState());
+    TracedValue value;
+    value.setString("url", request->url().string());
+    value.setInteger("readyState", request->readyState());
     if (LocalFrame* frame = frameForExecutionContext(context))
-        data->setString("frame", toHexString(frame));
-    return TracedValue::fromJSONValue(data);
+        value.setString("frame", toHexString(frame));
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrLoadEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("url", request->url().string());
+    TracedValue value;
+    value.setString("url", request->url().string());
     if (LocalFrame* frame = frameForExecutionContext(context))
-        data->setString("frame", toHexString(frame));
-    return TracedValue::fromJSONValue(data);
+        value.setString("frame", toHexString(frame));
+    return value.finish();
 }
 
 static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect, FloatQuad* quad)
@@ -246,65 +248,63 @@ static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(RenderObject* renderer, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("frame", toHexString(renderer->frame()));
+    TracedValue value;
+    value.setString("frame", toHexString(renderer->frame()));
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
-    data->setArray("clip", createQuad(quad));
+    createQuad(value, "clip", quad);
     int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
-    data->setNumber("nodeId", nodeId);
+    value.setInteger("nodeId", nodeId);
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
-    data->setNumber("layerId", graphicsLayerId);
-    return TracedValue::fromJSONValue(data);
+    value.setInteger("layerId", graphicsLayerId);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorMarkLoadEvent::data(LocalFrame* frame)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("frame", toHexString(frame));
+    TracedValue value;
+    value.setString("frame", toHexString(frame));
     bool isMainFrame = frame && frame->page()->mainFrame() == frame;
-    data->setBoolean("isMainFrame", isMainFrame);
-    return TracedValue::fromJSONValue(data);
+    value.setBoolean("isMainFrame", isMainFrame);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data(RenderObject* renderer)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("frame", toHexString(renderer->frame()));
+    TracedValue value;
+    value.setString("frame", toHexString(renderer->frame()));
     int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
-    data->setNumber("nodeId", nodeId);
-    return TracedValue::fromJSONValue(data);
+    value.setInteger("nodeId", nodeId);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, int lineNumber)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("frame", toHexString(frame));
-    data->setString("url", url);
-    data->setNumber("lineNumber", lineNumber);
-    return TracedValue::fromJSONValue(data);
+    TracedValue value;
+    value.setString("frame", toHexString(frame));
+    value.setString("url", url);
+    value.setInteger("lineNumber", lineNumber);
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("scriptId", String::number(scriptId));
-    data->setString("scriptName", scriptName);
-    data->setNumber("scriptLine", scriptLine);
+    TracedValue value;
+    value.setString("scriptId", String::number(scriptId));
+    value.setString("scriptName", scriptName);
+    value.setInteger("scriptLine", scriptLine);
     if (LocalFrame* frame = frameForExecutionContext(context))
-        data->setString("frame", toHexString(frame));
-    return TracedValue::fromJSONValue(data);
+        value.setString("frame", toHexString(frame));
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderImage& renderImage)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("nodeId", InspectorNodeIds::idForNode(renderImage.generatingNode()));
-
+    TracedValue value;
+    value.setInteger("nodeId", InspectorNodeIds::idForNode(renderImage.generatingNode()));
     if (const ImageResource* resource = renderImage.cachedImage())
-        data->setString("url", resource->url().string());
-
-    return TracedValue::fromJSONValue(data);
+        value.setString("url", resource->url().string());
+    return value.finish();
 }
 
 static size_t usedHeapSize()
@@ -316,14 +316,14 @@ static size_t usedHeapSize()
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::data()
 {
-    RefPtr<JSONObject> data = JSONObject::create();
+    TracedValue value;
     if (isMainThread()) {
-        data->setNumber("documents", InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
-        data->setNumber("nodes", InspectorCounters::counterValue(InspectorCounters::NodeCounter));
-        data->setNumber("jsEventListeners", InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
+        value.setInteger("documents", InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
+        value.setInteger("nodes", InspectorCounters::counterValue(InspectorCounters::NodeCounter));
+        value.setInteger("jsEventListeners", InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
     }
-    data->setNumber("jsHeapSizeUsed", static_cast<double>(usedHeapSize()));
-    return TracedValue::fromJSONValue(data);
+    value.setDouble("jsHeapSizeUsed", static_cast<double>(usedHeapSize()));
+    return value.finish();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorCallStackEvent::currentCallStack()
