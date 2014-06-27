@@ -173,7 +173,7 @@ public:
     void removeSlowRepaintObject();
     bool hasSlowRepaintObjects() const { return m_slowRepaintObjectCount; }
 
-    // Includes fixed- and sticky-position objects.
+    // Fixed-position objects.
     typedef HashSet<RenderObject*> ViewportConstrainedObjectSet;
     void addViewportConstrainedObject(RenderObject*);
     void removeViewportConstrainedObject(RenderObject*);

@@ -52,10 +52,6 @@ webkit.org/b/94003 [ Win ] fast/css/word-spacing-characters-complex-text.html [ 
 
 webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ WontFix ]
 
-# Failing due to sub-pixel layout.
-webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-lr.html [ WontFix ]
-webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-rl.html [ WontFix ]
-
 webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ WontFix ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ WontFix ]
 webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ WontFix ]

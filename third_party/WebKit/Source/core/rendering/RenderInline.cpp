@@ -135,7 +135,7 @@ void RenderInline::updateFromStyle()
 static RenderObject* inFlowPositionedInlineAncestor(RenderObject* p)
 {
     while (p && p->isRenderInline()) {
-        if (p->isInFlowPositioned())
+        if (p->isRelPositioned())
             return p;
         p = p->parent();
     }
@@ -738,8 +738,6 @@ const char* RenderInline::renderName() const
 {
     if (isRelPositioned())
         return "RenderInline (relative positioned)";
-    if (isStickyPositioned())
-        return "RenderInline (sticky positioned)";
     // FIXME: Temporary hack while the new generated content system is being implemented.
     if (isPseudoElement())
         return "RenderInline (generated)";
@@ -797,7 +795,7 @@ bool RenderInline::hitTestCulledInline(const HitTestRequest& request, HitTestRes
 
 PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
 {
-    // FIXME: Does not deal with relative or sticky positioned inlines (should it?)
+    // FIXME: Does not deal with relative positioned inlines (should it?)
     RenderBlock* cb = containingBlock();
     if (firstLineBox()) {
         // This inline actually has a line box.  We must have clicked in the border/padding of one of these boxes.  We
@@ -1088,7 +1086,7 @@ void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
     if (style()->hasInFlowPosition() && layer()) {
         // Apply the in-flow position offset when invalidating a rectangle. The layer
         // is translated, but the render box isn't, so we need to do this to get the
-        // right dirty rect. Since this is called from RenderObject::setStyle, the relative or sticky position
+        // right dirty rect. Since this is called from RenderObject::setStyle, the relative position
         // flag on the RenderObject has been cleared, so use the one on the style().
         topLeft += layer()->offsetForInFlowPosition();
     }
@@ -1118,7 +1116,7 @@ LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, cons
     ASSERT(container == this->container());
 
     LayoutSize offset;
-    if (isInFlowPositioned())
+    if (isRelPositioned())
         offset += offsetForInFlowPosition();
 
     offset += container->columnOffset(point);
@@ -1300,8 +1298,8 @@ LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox& child)
 {
     // FIXME: This function isn't right with mixed writing modes.
 
-    ASSERT(isInFlowPositioned());
-    if (!isInFlowPositioned())
+    ASSERT(isRelPositioned());
+    if (!isRelPositioned())
         return LayoutSize();
 
     // When we have an enclosing relpositioned inline, we need to add in the offset of the first line

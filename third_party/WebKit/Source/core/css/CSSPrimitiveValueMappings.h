@@ -2103,9 +2103,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPosition e)
     case FixedPosition:
         m_value.valueID = CSSValueFixed;
         break;
-    case StickyPosition:
-        m_value.valueID = CSSValueSticky;
-        break;
     }
 }
 
@@ -2121,8 +2118,6 @@ template<> inline CSSPrimitiveValue::operator EPosition() const
         return AbsolutePosition;
     case CSSValueFixed:
         return FixedPosition;
-    case CSSValueSticky:
-        return StickyPosition;
     default:
         break;
     }

@@ -65,14 +65,14 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
 
     if (renderer.isOutOfFlowPositioned() && !fixed) {
         if (RenderObject* container = renderer.container()) {
-            if (container->isInFlowPositioned() && container->isRenderInline())
+            if (container->isRelPositioned() && container->isRenderInline())
                 m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
         }
     }
 
     m_layoutOffset = m_paintOffset;
 
-    if (renderer.isInFlowPositioned() && renderer.hasLayer())
+    if (renderer.isRelPositioned() && renderer.hasLayer())
         m_paintOffset += renderer.layer()->offsetForInFlowPosition();
 
     m_clipped = !fixed && m_next->m_clipped;

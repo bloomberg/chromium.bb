@@ -138,7 +138,7 @@ private:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual LayerType layerTypeRequired() const OVERRIDE { return isInFlowPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() ? NormalLayer : NoLayer; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return isRelPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() ? NormalLayer : NoLayer; }
 
     virtual LayoutUnit offsetLeft() const OVERRIDE FINAL;
     virtual LayoutUnit offsetTop() const OVERRIDE FINAL;
@@ -152,8 +152,6 @@ private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
-
-    virtual LayoutRect frameRectForStickyPositioning() const OVERRIDE FINAL { return linesBoundingBox(); }
 
     virtual IntRect borderBoundingBox() const OVERRIDE FINAL
     {

@@ -257,11 +257,9 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
             referencePoint.setY(startRegion->offsetTop() + topRelativeToRegion);
 
             // Since the top has been overriden, check if the
-            // relative/sticky positioning must be reconsidered.
+            // relative positioning must be reconsidered.
             if (boxModelObject.isRelPositioned())
                 referencePoint.move(0, boxModelObject.relativePositionOffset().height());
-            else if (boxModelObject.isStickyPositioned())
-                referencePoint.move(0, boxModelObject.stickyPositionOffset().height());
         }
 
         // Since we're looking for the offset relative to the body, we must also

@@ -40,8 +40,6 @@ void CompositingReasonFinder::updateTriggers()
     if (settings.acceleratedCompositingForOverflowScrollEnabled() || settings.compositorDrivenAcceleratedScrollingEnabled())
         m_compositingTriggers |= OverflowScrollTrigger;
 
-    // FIXME: acceleratedCompositingForFixedPositionEnabled should be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
-    // Or the sticky and fixed position elements should be behind different flags.
     if (settings.acceleratedCompositingForFixedPositionEnabled())
         m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
 }

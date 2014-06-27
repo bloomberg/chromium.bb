@@ -471,8 +471,8 @@ public:
 
     EPosition position() const { return static_cast<EPosition>(noninherited_flags._position); }
     bool hasOutOfFlowPosition() const { return position() == AbsolutePosition || position() == FixedPosition; }
-    bool hasInFlowPosition() const { return position() == RelativePosition || position() == StickyPosition; }
-    bool hasViewportConstrainedPosition() const { return position() == FixedPosition || position() == StickyPosition; }
+    bool hasInFlowPosition() const { return position() == RelativePosition; }
+    bool hasViewportConstrainedPosition() const { return position() == FixedPosition; }
     EFloat floating() const { return static_cast<EFloat>(noninherited_flags._floating); }
 
     const Length& width() const { return m_box->width(); }

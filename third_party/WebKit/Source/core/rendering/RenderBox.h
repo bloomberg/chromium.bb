@@ -705,8 +705,6 @@ private:
     // These include tables, positioned objects, floats and flexible boxes.
     virtual void computePreferredLogicalWidths() { clearPreferredLogicalWidthsDirty(); }
 
-    virtual LayoutRect frameRectForStickyPositioning() const OVERRIDE FINAL { return frameRect(); }
-
     RenderBoxRareData& ensureRareData()
     {
         if (!m_rareData)

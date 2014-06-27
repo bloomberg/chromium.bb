@@ -31,12 +31,12 @@
 namespace WebCore {
 
 // ViewportConstraints classes encapsulate data and logic required to reposition elements whose layout
-// depends on the viewport rect (positions fixed and sticky), when scrolling and zooming.
+// depends on the viewport rect (i.e., position fixed), when scrolling and zooming.
 class ViewportConstraints {
 public:
+    // FIXME: Simplify this code now that position: sticky doesn't exist.
     enum ConstraintType {
         FixedPositionConstaint,
-        StickyPositionConstraint
     };
 
     enum AnchorEdgeFlags {
@@ -107,80 +107,6 @@ private:
     virtual ConstraintType constraintType() const OVERRIDE { return FixedPositionConstaint; }
 
     FloatRect m_viewportRectAtLastLayout;
-    FloatPoint m_layerPositionAtLastLayout;
-};
-
-class StickyPositionViewportConstraints FINAL : public ViewportConstraints {
-public:
-    StickyPositionViewportConstraints()
-        : m_leftOffset(0)
-        , m_rightOffset(0)
-        , m_topOffset(0)
-        , m_bottomOffset(0)
-    { }
-
-    StickyPositionViewportConstraints(const StickyPositionViewportConstraints& other)
-        : ViewportConstraints(other)
-        , m_leftOffset(other.m_leftOffset)
-        , m_rightOffset(other.m_rightOffset)
-        , m_topOffset(other.m_topOffset)
-        , m_bottomOffset(other.m_bottomOffset)
-        , m_absoluteContainingBlockRect(other.m_absoluteContainingBlockRect)
-        , m_absoluteStickyBoxRect(other.m_absoluteStickyBoxRect)
-        , m_stickyOffsetAtLastLayout(other.m_stickyOffsetAtLastLayout)
-        , m_layerPositionAtLastLayout(other.m_layerPositionAtLastLayout)
-    { }
-
-    FloatSize computeStickyOffset(const FloatRect& viewportRect) const;
-
-    const FloatSize stickyOffsetAtLastLayout() const { return m_stickyOffsetAtLastLayout; }
-    void setStickyOffsetAtLastLayout(const FloatSize& offset) { m_stickyOffsetAtLastLayout = offset; }
-
-    FloatPoint layerPositionForViewportRect(const FloatRect& viewportRect) const;
-
-    const FloatPoint& layerPositionAtLastLayout() const { return m_layerPositionAtLastLayout; }
-    void setLayerPositionAtLastLayout(const FloatPoint& point) { m_layerPositionAtLastLayout = point; }
-
-    float leftOffset() const { return m_leftOffset; }
-    float rightOffset() const { return m_rightOffset; }
-    float topOffset() const { return m_topOffset; }
-    float bottomOffset() const { return m_bottomOffset; }
-
-    void setLeftOffset(float offset) { m_leftOffset = offset; }
-    void setRightOffset(float offset) { m_rightOffset = offset; }
-    void setTopOffset(float offset) { m_topOffset = offset; }
-    void setBottomOffset(float offset) { m_bottomOffset = offset; }
-
-    FloatRect absoluteContainingBlockRect() const { return m_absoluteContainingBlockRect; }
-    void setAbsoluteContainingBlockRect(const FloatRect& rect) { m_absoluteContainingBlockRect = rect; }
-
-    FloatRect absoluteStickyBoxRect() const { return m_absoluteStickyBoxRect; }
-    void setAbsoluteStickyBoxRect(const FloatRect& rect) { m_absoluteStickyBoxRect = rect; }
-
-    bool operator==(const StickyPositionViewportConstraints& other) const
-    {
-        return m_leftOffset == other.m_leftOffset
-            && m_rightOffset == other.m_rightOffset
-            && m_topOffset == other.m_topOffset
-            && m_bottomOffset == other.m_bottomOffset
-            && m_absoluteContainingBlockRect == other.m_absoluteContainingBlockRect
-            && m_absoluteStickyBoxRect == other.m_absoluteStickyBoxRect
-            && m_stickyOffsetAtLastLayout == other.m_stickyOffsetAtLastLayout
-            && m_layerPositionAtLastLayout == other.m_layerPositionAtLastLayout;
-    }
-
-    bool operator!=(const StickyPositionViewportConstraints& other) const { return !(*this == other); }
-
-private:
-    virtual ConstraintType constraintType() const OVERRIDE { return StickyPositionConstraint; }
-
-    float m_leftOffset;
-    float m_rightOffset;
-    float m_topOffset;
-    float m_bottomOffset;
-    FloatRect m_absoluteContainingBlockRect;
-    FloatRect m_absoluteStickyBoxRect;
-    FloatSize m_stickyOffsetAtLastLayout;
     FloatPoint m_layerPositionAtLastLayout;
 };
 

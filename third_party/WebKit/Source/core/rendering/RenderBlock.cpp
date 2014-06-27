@@ -385,7 +385,7 @@ void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invali
             // the inline elements position in LayoutState.
             if (box->style()->position() == AbsolutePosition) {
                 RenderObject* container = box->container(&repaintContainerForChild, 0);
-                if (container->isInFlowPositioned() && container->isRenderInline()) {
+                if (container->isRelPositioned() && container->isRenderInline()) {
                     // FIXME: We should be able to use layout-state for this.
                     // Currently, we will place absolutly positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
@@ -2362,7 +2362,7 @@ GapRects RenderBlock::blockSelectionGaps(RenderBlock* rootBlock, const LayoutPoi
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue; // We must be a normal flow object in order to even be considered.
 
-        if (curr->isInFlowPositioned() && curr->hasLayer()) {
+        if (curr->isRelPositioned() && curr->hasLayer()) {
             // If the relposition offset is anything other than 0, then treat this just like an absolute positioned element.
             // Just disregard it completely.
             LayoutSize relOffset = curr->layer()->offsetForInFlowPosition();
@@ -3013,7 +3013,7 @@ static inline bool isEditingBoundary(RenderObject* ancestor, RenderObject* child
 static PositionWithAffinity positionForPointRespectingEditingBoundaries(RenderBlock* parent, RenderBox* child, const LayoutPoint& pointInParentCoordinates)
 {
     LayoutPoint childLocation = child->location();
-    if (child->isInFlowPositioned())
+    if (child->isRelPositioned())
         childLocation += child->offsetForInFlowPosition();
 
     // FIXME: This is wrong if the child's writing-mode is different from the parent's.
@@ -4889,8 +4889,6 @@ const char* RenderBlock::renderName() const
         return "RenderBlock (generated)";
     if (isRelPositioned())
         return "RenderBlock (relative positioned)";
-    if (isStickyPositioned())
-        return "RenderBlock (sticky positioned)";
     return "RenderBlock";
 }
 

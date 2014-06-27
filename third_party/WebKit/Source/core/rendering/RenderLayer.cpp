@@ -888,7 +888,7 @@ bool RenderLayer::updateLayerPosition()
             localPoint -= offset;
         }
 
-        if (renderer()->isOutOfFlowPositioned() && positionedParent->renderer()->isInFlowPositioned() && positionedParent->renderer()->isRenderInline()) {
+        if (renderer()->isOutOfFlowPositioned() && positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isRenderInline()) {
             LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toRenderBox(renderer()));
             localPoint += offset;
         }
@@ -909,7 +909,7 @@ bool RenderLayer::updateLayerPosition()
     }
 
     bool positionOrOffsetChanged = false;
-    if (renderer()->isInFlowPositioned()) {
+    if (renderer()->isRelPositioned()) {
         LayoutSize newOffset = toRenderBoxModelObject(renderer())->offsetForInFlowPosition();
         positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
         m_offsetForInFlowPosition = newOffset;

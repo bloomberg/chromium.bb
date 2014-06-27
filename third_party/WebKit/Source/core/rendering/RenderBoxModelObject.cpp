@@ -147,12 +147,12 @@ void RenderBoxModelObject::updateFromStyle()
 
 static LayoutSize accumulateInFlowPositionOffsets(const RenderObject* child)
 {
-    if (!child->isAnonymousBlock() || !child->isInFlowPositioned())
+    if (!child->isAnonymousBlock() || !child->isRelPositioned())
         return LayoutSize();
     LayoutSize offset;
     RenderObject* p = toRenderBlock(child)->inlineElementContinuation();
     while (p && p->isRenderInline()) {
-        if (p->isInFlowPositioned()) {
+        if (p->isRelPositioned()) {
             RenderInline* renderInline = toRenderInline(p);
             offset += renderInline->offsetForInFlowPosition();
         }
@@ -260,8 +260,6 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
         if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
             if (isRelPositioned())
                 referencePoint.move(relativePositionOffset());
-            else if (isStickyPositioned())
-                referencePoint.move(stickyPositionOffset());
 
             RenderObject* current;
             for (current = parent(); current != offsetParent && current->parent(); current = current->parent()) {
@@ -281,120 +279,9 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     return referencePoint;
 }
 
-void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewportConstraints& constraints, const FloatRect& constrainingRect) const
-{
-    RenderBlock* containingBlock = this->containingBlock();
-
-    LayoutRect containerContentRect = containingBlock->contentBoxRect();
-    LayoutUnit maxWidth = containingBlock->availableLogicalWidth();
-
-    // Sticky positioned element ignore any override logical width on the containing block (as they don't call
-    // containingBlockLogicalWidthForContent). It's unclear whether this is totally fine.
-    LayoutBoxExtent minMargin(minimumValueForLength(style()->marginTop(), maxWidth),
-        minimumValueForLength(style()->marginRight(), maxWidth),
-        minimumValueForLength(style()->marginBottom(), maxWidth),
-        minimumValueForLength(style()->marginLeft(), maxWidth));
-
-    // Compute the container-relative area within which the sticky element is allowed to move.
-    containerContentRect.contract(minMargin);
-    // Map to the view to avoid including page scale factor.
-    constraints.setAbsoluteContainingBlockRect(containingBlock->localToContainerQuad(FloatRect(containerContentRect), view()).boundingBox());
-
-    LayoutRect stickyBoxRect = frameRectForStickyPositioning();
-    LayoutRect flippedStickyBoxRect = stickyBoxRect;
-    containingBlock->flipForWritingMode(flippedStickyBoxRect);
-    LayoutPoint stickyLocation = flippedStickyBoxRect.location();
-
-    // FIXME: sucks to call localToAbsolute again, but we can't just offset from the previously computed rect if there are transforms.
-    // Map to the view to avoid including page scale factor.
-    FloatRect absContainerFrame = containingBlock->localToContainerQuad(FloatRect(FloatPoint(), containingBlock->size()), view()).boundingBox();
-
-    if (containingBlock->hasOverflowClip()) {
-        IntSize scrollOffset = containingBlock->layer()->scrollableArea()->adjustedScrollOffset();
-        stickyLocation -= scrollOffset;
-    }
-
-    // We can't call localToAbsolute on |this| because that will recur. FIXME: For now, assume that |this| is not transformed.
-    FloatRect absoluteStickyBoxRect(absContainerFrame.location() + stickyLocation, flippedStickyBoxRect.size());
-    constraints.setAbsoluteStickyBoxRect(absoluteStickyBoxRect);
-
-    float horizontalOffsets = constraints.rightOffset() + constraints.leftOffset();
-    bool skipRight = false;
-    bool skipLeft = false;
-    if (!style()->left().isAuto() && !style()->right().isAuto()) {
-        if (horizontalOffsets > containerContentRect.width().toFloat()
-            || horizontalOffsets + containerContentRect.width().toFloat() > constrainingRect.width()) {
-            skipRight = style()->isLeftToRightDirection();
-            skipLeft = !skipRight;
-        }
-    }
-
-    if (!style()->left().isAuto() && !skipLeft) {
-        constraints.setLeftOffset(floatValueForLength(style()->left(), constrainingRect.width()));
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
-    }
-
-    if (!style()->right().isAuto() && !skipRight) {
-        constraints.setRightOffset(floatValueForLength(style()->right(), constrainingRect.width()));
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeRight);
-    }
-
-    bool skipBottom = false;
-    // FIXME(ostap): Exclude top or bottom edge offset depending on the writing mode when related
-    // sections are fixed in spec: http://lists.w3.org/Archives/Public/www-style/2014May/0286.html
-    float verticalOffsets = constraints.topOffset() + constraints.bottomOffset();
-    if (!style()->top().isAuto() && !style()->bottom().isAuto()) {
-        if (verticalOffsets > containerContentRect.height().toFloat()
-            || verticalOffsets + containerContentRect.height().toFloat() > constrainingRect.height()) {
-            skipBottom = true;
-        }
-    }
-
-    if (!style()->top().isAuto()) {
-        constraints.setTopOffset(floatValueForLength(style()->top(), constrainingRect.height()));
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
-    }
-
-    if (!style()->bottom().isAuto() && !skipBottom) {
-        constraints.setBottomOffset(floatValueForLength(style()->bottom(), constrainingRect.height()));
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeBottom);
-    }
-}
-
-LayoutSize RenderBoxModelObject::stickyPositionOffset() const
-{
-    FloatRect constrainingRect;
-
-    ASSERT(hasLayer());
-    RenderLayer* enclosingClippingLayer = layer()->enclosingOverflowClipLayer(ExcludeSelf);
-    if (enclosingClippingLayer) {
-        RenderBox* enclosingClippingBox = toRenderBox(enclosingClippingLayer->renderer());
-        LayoutRect clipRect = enclosingClippingBox->overflowClipRect(LayoutPoint());
-        clipRect.move(enclosingClippingBox->paddingLeft(), enclosingClippingBox->paddingTop());
-        clipRect.contract(LayoutSize(enclosingClippingBox->paddingLeft() + enclosingClippingBox->paddingRight(),
-            enclosingClippingBox->paddingTop() + enclosingClippingBox->paddingBottom()));
-        constrainingRect = enclosingClippingBox->localToContainerQuad(FloatRect(clipRect), view()).boundingBox();
-    } else {
-        LayoutRect viewportRect = view()->frameView()->viewportConstrainedVisibleContentRect();
-        constrainingRect = viewportRect;
-    }
-
-    StickyPositionViewportConstraints constraints;
-    computeStickyPositionConstraints(constraints, constrainingRect);
-
-    // The sticky offset is physical, so we can just return the delta computed in absolute coords (though it may be wrong with transforms).
-    return LayoutSize(constraints.computeStickyOffset(constrainingRect));
-}
-
 LayoutSize RenderBoxModelObject::offsetForInFlowPosition() const
 {
-    if (isRelPositioned())
-        return relativePositionOffset();
-
-    if (isStickyPositioned())
-        return stickyPositionOffset();
-
-    return LayoutSize();
+    return isRelPositioned() ? relativePositionOffset() : LayoutSize();
 }
 
 LayoutUnit RenderBoxModelObject::offsetLeft() const

@@ -2229,9 +2229,9 @@ void RenderObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
                 newStyle->setColumnSpan(ColumnSpanAll);
         }
 
-        // Preserve the position style of anonymous block continuations as they can have relative or sticky position when
-        // they contain block descendants of relative or sticky positioned inlines.
-        if (child->isInFlowPositioned() && toRenderBlock(child)->isAnonymousBlockContinuation())
+        // Preserve the position style of anonymous block continuations as they can have relative position when
+        // they contain block descendants of relative positioned inlines.
+        if (child->isRelPositioned() && toRenderBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
         child->setStyle(newStyle.release());

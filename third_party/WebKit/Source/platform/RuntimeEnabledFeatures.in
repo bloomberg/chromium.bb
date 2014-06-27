@@ -41,7 +41,6 @@ CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
 CSSShapes status=stable
-CSSStickyPosition status=test
 CSSTouchAction status=stable
 CSSTouchActionDelay status=test
 CSSTransformsUnprefixed status=stable

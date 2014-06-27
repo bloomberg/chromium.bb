@@ -49,7 +49,6 @@ enum ContentChangeType {
 };
 
 class RenderTextFragment;
-class StickyPositionViewportConstraints;
 
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html
@@ -61,10 +60,6 @@ public:
 
     LayoutSize relativePositionOffset() const;
     LayoutSize relativePositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? relativePositionOffset() : relativePositionOffset().transposedSize(); }
-
-    void computeStickyPositionConstraints(StickyPositionViewportConstraints&, const FloatRect& constrainingRect) const;
-    LayoutSize stickyPositionOffset() const;
-    LayoutSize stickyPositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? stickyPositionOffset() : stickyPositionOffset().transposedSize(); }
 
     LayoutSize offsetForInFlowPosition() const;
 
@@ -304,8 +299,6 @@ public:
 private:
     LayoutUnit computedCSSPadding(const Length&) const;
     virtual bool isBoxModelObject() const OVERRIDE FINAL { return true; }
-
-    virtual LayoutRect frameRectForStickyPositioning() const = 0;
 
     IntSize calculateFillTileSize(const FillLayer*, const IntSize& scaledPositioningAreaSize) const;
 

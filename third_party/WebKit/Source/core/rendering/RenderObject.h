@@ -499,9 +499,7 @@ public:
     bool isFloating() const { return m_bitfields.floating(); }
 
     bool isOutOfFlowPositioned() const { return m_bitfields.isOutOfFlowPositioned(); } // absolute or fixed positioning
-    bool isInFlowPositioned() const { return m_bitfields.isRelPositioned() || m_bitfields.isStickyPositioned(); } // relative or sticky positioning
     bool isRelPositioned() const { return m_bitfields.isRelPositioned(); } // relative positioning
-    bool isStickyPositioned() const { return m_bitfields.isStickyPositioned(); }
     bool isPositioned() const { return m_bitfields.isPositioned(); }
 
     bool isText() const  { return m_bitfields.isText(); }
@@ -1128,7 +1126,6 @@ private:
             IsStaticallyPositioned = 0,
             IsRelativelyPositioned = 1,
             IsOutOfFlowPositioned = 2,
-            IsStickyPositioned = 3
         };
 
     public:
@@ -1229,7 +1226,6 @@ private:
 
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }
         bool isRelPositioned() const { return m_positionedState == IsRelativelyPositioned; }
-        bool isStickyPositioned() const { return m_positionedState == IsStickyPositioned; }
         bool isPositioned() const { return m_positionedState != IsStaticallyPositioned; }
 
         void setPositionedState(int positionState)
