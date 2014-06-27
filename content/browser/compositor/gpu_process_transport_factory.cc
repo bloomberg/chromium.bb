@@ -188,8 +188,9 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
           "Offscreen-Compositor");
     }
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
-        new SurfaceDisplayOutputSurface(
-            display_client->display(), manager, offscreen_context_provider));
+        new SurfaceDisplayOutputSurface(manager, offscreen_context_provider));
+    display_client->CreateDisplay(output_surface->factory());
+    output_surface->set_display(display_client->display());
     data->display_client = display_client.Pass();
     return output_surface.PassAs<cc::OutputSurface>();
   }

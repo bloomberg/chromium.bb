@@ -4,48 +4,40 @@
 
 #include "cc/surfaces/display.h"
 
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_aggregator.h"
+#include "cc/surfaces/surface_factory.h"
 
 namespace cc {
 
-static ResourceProvider::ResourceId ResourceRemapHelper(
-    bool* invalid_frame,
-    const ResourceProvider::ResourceIdMap& child_to_parent_map,
-    ResourceProvider::ResourceIdArray* resources_in_frame,
-    ResourceProvider::ResourceId id) {
-  ResourceProvider::ResourceIdMap::const_iterator it =
-      child_to_parent_map.find(id);
-  if (it == child_to_parent_map.end()) {
-    *invalid_frame = true;
-    return 0;
-  }
-
-  DCHECK_EQ(it->first, id);
-  ResourceProvider::ResourceId remapped_id = it->second;
-  resources_in_frame->push_back(id);
-  return remapped_id;
-}
-
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
+                 SurfaceFactory* factory,
                  SharedBitmapManager* bitmap_manager)
     : client_(client),
       manager_(manager),
-      aggregator_(manager),
-      bitmap_manager_(bitmap_manager) {
+      bitmap_manager_(bitmap_manager),
+      factory_(factory) {
 }
 
 Display::~Display() {
 }
 
 void Display::Resize(const gfx::Size& size) {
-  current_surface_.reset(new Surface(manager_, this, size));
+  if (size == current_surface_size_)
+    return;
+  if (!current_surface_id_.is_null())
+    factory_->Destroy(current_surface_id_);
+  current_surface_id_ = factory_->Create(size);
+  current_surface_size_ = size;
 }
 
 void Display::InitializeOutputSurface() {
@@ -91,55 +83,27 @@ void Display::InitializeOutputSurface() {
 
   output_surface_ = output_surface.Pass();
   resource_provider_ = resource_provider.Pass();
-  child_id_ = resource_provider_->CreateChild(
-      base::Bind(&Display::ReturnResources, base::Unretained(this)));
+  aggregator_.reset(new SurfaceAggregator(manager_, resource_provider_.get()));
 }
 
 bool Display::Draw() {
-  if (!current_surface_)
+  if (current_surface_id_.is_null())
     return false;
 
   InitializeOutputSurface();
   if (!output_surface_)
     return false;
 
-  // TODO(jamesr): Use the surface aggregator instead.
-  scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-  CompositorFrame* current_frame = current_surface_->GetEligibleFrame();
-  frame_data->resource_list =
-      current_frame->delegated_frame_data->resource_list;
-  RenderPass::CopyAll(current_frame->delegated_frame_data->render_pass_list,
-                      &frame_data->render_pass_list);
-
-  if (frame_data->render_pass_list.empty())
+  scoped_ptr<CompositorFrame> frame =
+      aggregator_->Aggregate(current_surface_id_);
+  if (!frame)
     return false;
 
-  const ResourceProvider::ResourceIdMap& resource_map =
-      resource_provider_->GetChildToParentMap(child_id_);
-  resource_provider_->ReceiveFromChild(child_id_, frame_data->resource_list);
-
-  bool invalid_frame = false;
-  ResourceProvider::ResourceIdArray resources_in_frame;
-  DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
-      base::Bind(&ResourceRemapHelper,
-                 &invalid_frame,
-                 resource_map,
-                 &resources_in_frame);
-  for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
-    RenderPass* pass = frame_data->render_pass_list[i];
-    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
-      DrawQuad* quad = pass->quad_list[j];
-      quad->IterateResources(remap_resources_to_parent_callback);
-    }
-  }
-
-  if (invalid_frame)
-    return false;
-  resource_provider_->DeclareUsedResourcesFromChild(child_id_,
-                                                    resources_in_frame);
+  TRACE_EVENT0("cc", "Display::Draw");
+  DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
   float device_scale_factor = 1.0f;
-  gfx::Rect device_viewport_rect = gfx::Rect(current_surface_->size());
+  gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
   gfx::Rect device_clip_rect = device_viewport_rect;
   bool disable_picture_quad_image_filtering = false;
 
@@ -154,10 +118,7 @@ bool Display::Draw() {
 }
 
 SurfaceId Display::CurrentSurfaceId() {
-  return current_surface_ ? current_surface_->surface_id() : SurfaceId();
-}
-
-void Display::ReturnResources(const ReturnedResourceArray& resources) {
+  return current_surface_id_;
 }
 
 }  // namespace cc

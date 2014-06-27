@@ -13,20 +13,20 @@
 namespace cc {
 class CompositorFrame;
 class Surface;
-class SurfaceClient;
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
   SurfaceManager();
   ~SurfaceManager();
 
-  SurfaceId RegisterAndAllocateIdForSurface(Surface* surface);
+  SurfaceId AllocateId();
+  void RegisterSurface(Surface* surface);
   void DeregisterSurface(SurfaceId surface_id);
 
   Surface* GetSurfaceForId(SurfaceId surface_id);
 
  private:
-  typedef base::hash_map<int, Surface*> SurfaceMap;
+  typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;
 
   int next_surface_id_;

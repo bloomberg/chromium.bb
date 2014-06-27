@@ -6,11 +6,10 @@
 #define CC_SURFACES_DISPLAY_H_
 
 #include "base/memory/scoped_ptr.h"
-
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_aggregator.h"
-#include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -26,14 +25,21 @@ class OutputSurface;
 class ResourceProvider;
 class SharedBitmapManager;
 class Surface;
+class SurfaceAggregator;
+class SurfaceFactory;
 class SurfaceManager;
 
-class CC_SURFACES_EXPORT Display : public SurfaceClient,
-                                   public OutputSurfaceClient,
+// A Display produces a surface that can be used to draw to a physical display
+// (OutputSurface). Since a surface is a fixed size and displays can resize, a
+// Display may create/destroy surfaces over its lifetime. Frames submitted to a
+// display's surface will have their resources returned through the factory's
+// client.
+class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
                                    public RendererClient {
  public:
   Display(DisplayClient* client,
           SurfaceManager* manager,
+          SurfaceFactory* factory,
           SharedBitmapManager* bitmap_manager);
   virtual ~Display();
 
@@ -66,22 +72,20 @@ class CC_SURFACES_EXPORT Display : public SurfaceClient,
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 
-  // SurfaceClient implementation.
-  virtual void ReturnResources(const ReturnedResourceArray& resources) OVERRIDE;
-
  private:
   void InitializeOutputSurface();
 
   DisplayClient* client_;
   SurfaceManager* manager_;
-  SurfaceAggregator aggregator_;
   SharedBitmapManager* bitmap_manager_;
+  SurfaceFactory* factory_;
+  SurfaceId current_surface_id_;
+  gfx::Size current_surface_size_;
   LayerTreeSettings settings_;
-  scoped_ptr<Surface> current_surface_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;
-  int child_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

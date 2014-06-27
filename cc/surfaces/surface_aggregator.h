@@ -7,9 +7,11 @@
 
 #include <set>
 
+#include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
+#include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -17,20 +19,21 @@ namespace cc {
 
 class CompositorFrame;
 class DelegatedFrameData;
+class ResourceProvider;
+class Surface;
 class SurfaceDrawQuad;
 class SurfaceManager;
 
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
-  explicit SurfaceAggregator(SurfaceManager* manager);
+  SurfaceAggregator(SurfaceManager* manager, ResourceProvider* provider);
   ~SurfaceAggregator();
 
   scoped_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
 
  private:
-  DelegatedFrameData* GetReferencedDataForSurfaceId(SurfaceId surface_id);
   RenderPass::Id RemapPassId(RenderPass::Id surface_local_pass_id,
-                             int surface_id);
+                             SurfaceId surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          RenderPass* dest_pass);
@@ -41,15 +44,22 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                        const SharedQuadStateList& source_shared_quad_state_list,
                        const gfx::Transform& content_to_target_transform,
                        RenderPass* dest_pass,
-                       int surface_id);
-  void CopyPasses(const RenderPassList& source_pass_list, int surface_id);
+                       SurfaceId surface_id);
+  void CopyPasses(const RenderPassList& source_pass_list, SurfaceId surface_id);
+
+  bool TakeResources(Surface* surface, DelegatedFrameData* frame_data);
+  int ChildIdForSurface(Surface* surface);
 
   SurfaceManager* manager_;
+  ResourceProvider* provider_;
 
   class RenderPassIdAllocator;
-  typedef base::ScopedPtrHashMap<int, RenderPassIdAllocator>
+  typedef base::ScopedPtrHashMap<SurfaceId, RenderPassIdAllocator>
       RenderPassIdAllocatorMap;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
+
+  typedef base::hash_map<SurfaceId, int> SurfaceToResourceChildIdMap;
+  SurfaceToResourceChildIdMap surface_id_to_resource_child_id_;
 
   // The following state is only valid for the duration of one Aggregate call
   // and is only stored on the class to avoid having to pass through every
@@ -57,10 +67,14 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of surfaces referenced in the aggregation so far, used to
   // detect cycles.
-  std::set<int> referenced_surfaces_;
+  typedef std::set<SurfaceId> SurfaceSet;
+  SurfaceSet referenced_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;
+
+  // Resource list for the aggregated frame.
+  TransferableResourceArray* dest_resource_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceAggregator);
 };
