@@ -88,6 +88,10 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
           MENU_NEW_INCOGNITO_WINDOW,
           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
+    if (controller_->CanDoShowAppInfoFlow()) {
+      menu_model_->AddItemWithStringId(SHOW_APP_INFO,
+                                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
+    }
   } else {
     extension_menu_items_.reset(new extensions::ContextMenuMatcher(
         profile_, this, menu_model_.get(),

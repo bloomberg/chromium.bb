@@ -64,6 +64,11 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   dialog_footer_ = new AppInfoFooterPanel(parent_window, profile, app);
   dialog_footer_->SetBorder(views::Border::CreateSolidSidedBorder(
       kHorizontalSeparatorHeight, 0, 0, 0, app_list::kDialogSeparatorColor));
+  if (!dialog_footer_->has_children()) {
+    // If there are no controls in the footer, don't add it to the dialog.
+    delete dialog_footer_;
+    dialog_footer_ = NULL;
+  }
 
   // Make a vertically stacked view of all the panels we want to display in the
   // dialog.
@@ -92,8 +97,10 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   layout->StartRow(1, kColumnSetId);
   layout->AddView(dialog_body_);
 
-  layout->StartRow(0, kColumnSetId);
-  layout->AddView(dialog_footer_);
+  if (dialog_footer_) {
+    layout->StartRow(0, kColumnSetId);
+    layout->AddView(dialog_footer_);
+  }
 }
 
 AppInfoDialog::~AppInfoDialog() {

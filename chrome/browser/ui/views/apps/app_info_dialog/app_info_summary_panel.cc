@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -212,6 +213,6 @@ void AppInfoSummaryPanel::SetLaunchType(
 }
 
 bool AppInfoSummaryPanel::CanSetLaunchType() const {
-  // V2 apps don't have a launch type.
-  return !app_->is_platform_app();
+  // V2 apps don't have a launch type, and neither does the Chrome app.
+  return app_->id() != extension_misc::kChromeAppId && !app_->is_platform_app();
 }
