@@ -1675,10 +1675,8 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     // layout.
     if (!m_nestedLayoutCount) {
         updateWidgetPositions();
-        if (RenderView* renderView = this->renderView()) {
-            renderView->layer()->updateLayerPositionsAfterDocumentScroll();
+        if (RenderView* renderView = this->renderView())
             renderView->layer()->setNeedsCompositingInputsUpdate();
-        }
     }
 }
 

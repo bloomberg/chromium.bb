@@ -251,6 +251,8 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
 
+    m_clipper.clearClipRectsIncludingDescendants();
+
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
@@ -264,9 +266,6 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
 
     if (flags & ForceMayNeedPaintInvalidation)
         m_renderer->setMayNeedPaintInvalidation(true);
-
-    // Clear our cached clip rect information.
-    m_clipper.clearClipRects();
 
     if (hasOverflowControls()) {
         // FIXME: We should figure out the right time to position the overflow controls.
@@ -345,54 +344,22 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     return compositingInputs().ancestorScrollingLayer != other->compositingInputs().ancestorScrollingLayer;
 }
 
-void RenderLayer::updateLayerPositionsAfterDocumentScroll()
-{
-    ASSERT(this == renderer()->view()->layer());
-    updateLayerPositionsAfterScroll();
-}
-
 void RenderLayer::updateLayerPositionsAfterOverflowScroll()
 {
-    // FIXME: why is it OK to not check the ancestors of this layer in order to
-    // initialize the HasSeenViewportConstrainedAncestor and HasSeenAncestorWithOverflowClip flags?
-    updateLayerPositionsAfterScroll(IsOverflowScroll);
+    m_clipper.clearClipRectsIncludingDescendants();
+    updateLayerPositionsAfterScrollRecursive();
 }
 
-void RenderLayer::updateLayerPositionsAfterScroll(UpdateLayerPositionsAfterScrollFlags flags)
+void RenderLayer::updateLayerPositionsAfterScrollRecursive()
 {
-    // FIXME: This shouldn't be needed, but there are some corner cases where
-    // these flags are still dirty. Update so that the check below is valid.
-    updateDescendantDependentFlags();
+    updateLayerPosition();
 
-    // If we have no visible content and no visible descendants, there is no point recomputing
-    // our rectangles as they will be empty. If our visibility changes, we are expected to
-    // recompute all our positions anyway.
-    if (subtreeIsInvisible())
-        return;
-
-    if (updateLayerPosition())
-        flags |= HasChangedAncestor;
-
-    if ((flags & HasChangedAncestor) || (flags & HasSeenViewportConstrainedAncestor) || (flags & IsOverflowScroll))
-        m_clipper.clearClipRects();
-
-    if (renderer()->style()->hasViewportConstrainedPosition())
-        flags |= HasSeenViewportConstrainedAncestor;
-
-    if (renderer()->hasOverflowClip())
-        flags |= HasSeenAncestorWithOverflowClip;
-
-    if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !renderer()->isTableCell()) {
-        // FIXME: We could track the repaint container as we walk down the tree.
+    // FIXME: We could track the repaint container as we walk down the tree.
+    if (!renderer()->isTableCell())
         m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
-    }
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositionsAfterScroll(flags);
-
-    // We don't update our reflection as scrolling is a translation which does not change the size()
-    // of an object, thus RenderReplica will still repaint itself properly as the layer position was
-    // updated above.
+        child->updateLayerPositionsAfterScrollRecursive();
 }
 
 void RenderLayer::updateTransformationMatrix()

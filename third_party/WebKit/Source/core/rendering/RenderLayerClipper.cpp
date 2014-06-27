@@ -128,11 +128,6 @@ void RenderLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot c
         layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
 }
 
-void RenderLayerClipper::clearClipRects()
-{
-    m_cache = nullptr;
-}
-
 LayoutRect RenderLayerClipper::childrenClipRect() const
 {
     // FIXME: border-radius not accounted for.
