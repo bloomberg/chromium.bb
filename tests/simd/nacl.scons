@@ -60,10 +60,6 @@ AddTest(ref_env, 'simd.cc', test_suffix='_ref')
 # GCC 4.4 doesn't support all features of the vector extensions in C.
 # TODO(jfb) Re-enable testing when we migrate to a newer GCC.
 if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
-  # The Windows VMs used for our build slaves run on hardware which does not
-  # Support SSSE3, but the default CPU for x86-64 is core2 which includes SSSE3.
-  if env.Bit('host_windows'):
-    native_env.Append(TRANSLATEFLAGS='-mattr=-ssse3')
   AddTest(native_env, 'vector_align.cc',
           golden_file=native_env.File('vector_align.stdout'),
           EXTRA_LIBS=['${PTHREAD_LIBS}'])
