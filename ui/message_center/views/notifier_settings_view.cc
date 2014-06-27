@@ -25,10 +25,8 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -70,14 +68,8 @@ const int kTitleMargin = 10;
 
 namespace {
 
-// The amount of built-in padding for the notifier group switcher.
-const int kButtonPainterInsets = 5;
-
 // Menu button metrics to make the text line up.
 const int kMenuButtonInnateMargin = 2;
-const int kMenuButtonLeftPadding = 12;
-const int kMenuButtonRightPadding = 13;
-const int kMenuButtonVerticalPadding = 9;
 
 // Used to place the context menu correctly.
 const int kMenuWhitespaceOffset = 2;
@@ -119,7 +111,7 @@ const int kComputedTitleTopMargin =
 // The switcher has a lot of blank space built in so we should include that when
 // spacing the title area vertically.
 const int kComputedTitleElementSpacing =
-    settings::kDescriptionToSwitcherSpace - kButtonPainterInsets - 1;
+    settings::kDescriptionToSwitcherSpace - 6;
 
 // A function to create a focus border.
 scoped_ptr<views::Painter> CreateFocusPainter() {
@@ -583,22 +575,8 @@ void NotifierSettingsView::UpdateContentsView(
         active_group.name : active_group.login_info;
     notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);
-    scoped_ptr<views::TextButtonDefaultBorder> selector_border(
-        new views::TextButtonDefaultBorder());
-    ui::ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
-    gfx::Insets painter_insets(kButtonPainterInsets, kButtonPainterInsets,
-                               kButtonPainterInsets, kButtonPainterInsets);
-    selector_border->set_normal_painter(views::Painter::CreateImagePainter(
-        *rb->GetImageSkiaNamed(IDR_BUTTON_NORMAL), painter_insets));
-    selector_border->set_hot_painter(views::Painter::CreateImagePainter(
-        *rb->GetImageSkiaNamed(IDR_BUTTON_HOVER), painter_insets));
-    selector_border->set_pushed_painter(views::Painter::CreateImagePainter(
-        *rb->GetImageSkiaNamed(IDR_BUTTON_PRESSED), painter_insets));
-    selector_border->SetInsets(gfx::Insets(
-        kMenuButtonVerticalPadding, kMenuButtonLeftPadding,
-        kMenuButtonVerticalPadding, kMenuButtonRightPadding));
-    notifier_group_selector_->SetBorder(
-        selector_border.PassAs<views::Border>());
+    notifier_group_selector_->SetBorder(scoped_ptr<views::Border>(
+        new views::LabelButtonBorder(views::Button::STYLE_BUTTON)).Pass());
     notifier_group_selector_->SetFocusPainter(scoped_ptr<views::Painter>());
     notifier_group_selector_->set_animate_on_state_change(false);
     notifier_group_selector_->SetFocusable(true);
