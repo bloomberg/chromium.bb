@@ -649,11 +649,6 @@ private:
 
     unsigned m_containsDirtyOverlayScrollbars : 1;
 
-    // This is an optimization added for <table>.
-    // Currently cells do not need to update their repaint rectangles when scrolling. This also
-    // saves a lot of time when scrolling on a table.
-    const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
-
     unsigned m_hasFilterInfo : 1;
     unsigned m_needsCompositingInputsUpdate : 1;
     unsigned m_childNeedsCompositingInputsUpdate : 1;
