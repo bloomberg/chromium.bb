@@ -39,7 +39,7 @@ function test()
             break;
         }
 
-        var resource = new WebInspector.Resource(null, url, documentURL, frameId, loaderId, type, mimeType);
+        var resource = new WebInspector.Resource(WebInspector.resourceTreeModel.target(), null, url, documentURL, frameId, loaderId, type, mimeType);
         mockContentsMap[url] = content;
         WebInspector.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
 
@@ -66,6 +66,10 @@ function test()
         InspectorTest.createWorkspace();
         var target = WebInspector.targetManager.activeTarget();
         target.resourceTreeModel = new WebInspector.Object();
+        target.resourceTreeModel.target = function()
+        {
+            return target;
+        }
         target.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
         target.debuggerModel = new WebInspector.Object();
         target.debuggerModel._registerScript = function(){};

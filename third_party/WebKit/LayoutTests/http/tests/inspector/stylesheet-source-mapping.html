@@ -51,7 +51,7 @@ function test()
     {
         const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
         const frame = WebInspector.resourceTreeModel.mainFrame;
-        var resource = new WebInspector.Resource(null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
+        var resource = new WebInspector.Resource(WebInspector.resourceTreeModel.target(), null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
         resource.requestContent = function(callback)
         {
             callback(content, false, mimeType);
