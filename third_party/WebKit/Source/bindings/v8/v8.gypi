@@ -4,12 +4,15 @@
 
 {
     'includes': [
-        'custom/custom.gypi',
+        # FIXME: should move bindings_v8_files to bindings/core/v8 or
+        # bindings/modules/v8.
+        '../core/v8/custom/custom.gypi',
+        '../modules/v8/generated.gypi',
     ],
     'variables': {
         'bindings_v8_dir': '.',
         'bindings_v8_files': [
-            '<@(bindings_v8_custom_files)',
+            '<@(bindings_core_v8_custom_files)',
             'ActiveDOMCallback.cpp',
             'ActiveDOMCallback.h',
             'ArrayValue.cpp',

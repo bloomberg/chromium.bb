@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,30 +29,23 @@
  */
 
 #include "config.h"
-#include "public/web/WebArrayBufferConverter.h"
+#include "bindings/core/v8/V8FileReader.h"
 
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExecutionContext.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace blink {
-
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void V8FileReader::resultAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!buffer)
-        return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
+    v8::Handle<v8::Object> holder = info.Holder();
+    FileReader* impl = V8FileReader::toNative(holder);
+    if (impl->readType() == FileReaderLoader::ReadAsArrayBuffer) {
+        v8SetReturnValueFast(info, impl->arrayBufferResult(), impl);
+        return;
+    }
+    v8SetReturnValueStringOrNull(info, impl->stringResult(), info.GetIsolate());
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
-    return new WebArrayBuffer(buffer);
-}
-
-} // namespace blink
-
+} // namespace WebCore

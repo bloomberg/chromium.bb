@@ -5,6 +5,7 @@
 {
   'includes': [
     'v8/generated.gypi',
+    'v8/v8.gypi',
   ],
 
   'variables': {

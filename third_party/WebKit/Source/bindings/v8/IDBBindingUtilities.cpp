@@ -27,6 +27,8 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 
 #include "bindings/core/v8/V8DOMStringList.h"
+#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
+#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"
 #include "bindings/modules/v8/V8IDBDatabase.h"
@@ -38,8 +40,6 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
-#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
-#include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"

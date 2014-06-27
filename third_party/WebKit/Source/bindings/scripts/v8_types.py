@@ -332,7 +332,7 @@ def includes_for_type(idl_type):
     if idl_type.is_basic_type:
         return set()
     if idl_type.is_typed_array_type:
-        return set(['bindings/v8/custom/V8%sCustom.h' % base_idl_type])
+        return set(['bindings/core/v8/custom/V8%sCustom.h' % base_idl_type])
     if base_idl_type.endswith('ConstructorConstructor'):
         # FIXME: rename to NamedConstructor
         # FIXME: replace with a [NamedConstructorAttribute] extended attribute

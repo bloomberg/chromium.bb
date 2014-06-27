@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,30 +29,18 @@
  */
 
 #include "config.h"
-#include "public/web/WebArrayBufferConverter.h"
+#include "bindings/core/v8/V8Location.h"
 
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+namespace WebCore {
 
-using namespace WebCore;
-
-namespace blink {
-
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void V8Location::valueOfMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!buffer)
-        return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
+    // Just return the this object the way the normal valueOf function
+    // on the Object prototype would. The valueOf function is only
+    // added to make sure that it cannot be overwritten on location
+    // objects, since that would provide a hook to change the string
+    // conversion behavior of location objects.
+    v8SetReturnValue(info, info.This());
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
-    return new WebArrayBuffer(buffer);
-}
-
-} // namespace blink
-
+} // namespace WebCore

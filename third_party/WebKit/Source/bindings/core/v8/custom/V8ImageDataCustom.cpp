@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,30 +29,27 @@
  */
 
 #include "config.h"
-#include "public/web/WebArrayBufferConverter.h"
+#include "bindings/core/v8/V8ImageData.h"
 
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+#include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace blink {
-
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrap(ImageData* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (!buffer)
-        return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
+    ASSERT(impl);
+    v8::Handle<v8::Object> wrapper = V8ImageData::createWrapper(impl, creationContext, isolate);
+    if (!wrapper.IsEmpty()) {
+        // Create a V8 Uint8ClampedArray object.
+        v8::Handle<v8::Value> pixelArray = toV8(impl->data(), creationContext, isolate);
+        // Set the "data" property of the ImageData object to
+        // the created v8 object, eliminating the C++ callback
+        // when accessing the "data" property.
+        if (!pixelArray.IsEmpty())
+            wrapper->Set(v8AtomicString(isolate, "data"), pixelArray, v8::ReadOnly);
+    }
+
+    return wrapper;
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
-    return new WebArrayBuffer(buffer);
-}
-
-} // namespace blink
-
+} // namespace WebCore

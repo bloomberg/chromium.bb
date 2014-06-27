@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2009, 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,31 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/web/WebArrayBufferConverter.h"
+#ifndef V8ArrayBufferViewCustom_h
+#define V8ArrayBufferViewCustom_h
 
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/ArrayBufferView.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace blink {
 
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!buffer)
-        return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
-}
+class V8ArrayBufferView {
+public:
+    static bool hasInstance(v8::Handle<v8::Value> value, v8::Isolate*)
+    {
+        return value->IsArrayBufferView();
+    }
+    static ArrayBufferView* toNative(v8::Handle<v8::Object>);
+    static ArrayBufferView* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
-    return new WebArrayBuffer(buffer);
-}
+    static inline void* toInternalPointer(ArrayBufferView* impl)
+    {
+        return impl;
+    }
+};
 
-} // namespace blink
 
+} // namespace WebCore
+#endif // V8ArrayBufferViewCustom_h

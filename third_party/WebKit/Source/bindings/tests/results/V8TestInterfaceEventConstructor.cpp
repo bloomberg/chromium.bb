@@ -7,6 +7,7 @@
 #include "config.h"
 #include "V8TestInterfaceEventConstructor.h"
 
+#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
@@ -15,7 +16,6 @@
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
-#include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"

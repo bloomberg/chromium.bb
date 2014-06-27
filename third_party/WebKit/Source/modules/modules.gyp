@@ -51,6 +51,7 @@
     ],
     'sources': [
       '<@(modules_files)',
+      '<@(bindings_modules_v8_files)',
       '<@(bindings_modules_v8_generated_aggregate_files)',
     ],
     'actions': [

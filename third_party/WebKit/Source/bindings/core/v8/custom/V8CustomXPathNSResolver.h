@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,31 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/web/WebArrayBufferConverter.h"
 
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+#ifndef V8CustomXPathNSResolver_h
+#define V8CustomXPathNSResolver_h
 
-using namespace WebCore;
+#include "core/xml/XPathNSResolver.h"
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
+#include <v8.h>
 
-namespace blink {
+namespace WebCore {
 
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!buffer)
-        return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
-}
+// V8CustomXPathNSResolver does not create a persistent handle to the
+// given resolver object. So the lifetime of V8CustomXPathNSResolver
+// must not exceed the lifetime of the passed handle.
+class V8CustomXPathNSResolver FINAL : public XPathNSResolver {
+public:
+    static PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> create(v8::Handle<v8::Object> resolver, v8::Isolate*);
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
-    return new WebArrayBuffer(buffer);
-}
+    virtual ~V8CustomXPathNSResolver();
+    virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
 
-} // namespace blink
+    virtual void trace(Visitor*) OVERRIDE;
 
+private:
+    V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver, v8::Isolate*);
+
+    v8::Handle<v8::Object> m_resolver; // Handle to resolver object.
+    v8::Isolate* m_isolate;
+};
+
+} // namespace WebCore
+
+#endif // V8CustomXPathNSResolver_h
