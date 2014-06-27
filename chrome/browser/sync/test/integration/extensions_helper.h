@@ -72,6 +72,10 @@ std::string CreateFakeExtensionName(int index);
 // Returns true if successful, false on failure.
 bool ExtensionNameToIndex(const std::string& name, int* index);
 
+// Runs the message loop until AllProfilesHaveSameExtensionsAsVerifier()
+// is true.  Returns false on timeout.
+bool AwaitAllProfilesHaveSameExtensionsAsVerifier();
+
 }  // namespace extensions_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_EXTENSIONS_HELPER_H_

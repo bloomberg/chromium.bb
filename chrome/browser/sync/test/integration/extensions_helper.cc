@@ -10,8 +10,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/sync/test/integration/sync_extension_installer.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
@@ -127,6 +131,142 @@ bool ExtensionNameToIndex(const std::string& name, int* index) {
     return false;
   }
   return true;
+}
+
+namespace {
+
+// A helper class to implement waiting for a set of profiles to have matching
+// extensions lists.
+class ExtensionsMatchChecker : public StatusChangeChecker,
+                               public extensions::ExtensionRegistryObserver {
+ public:
+  explicit ExtensionsMatchChecker(const std::vector<Profile*>& profiles);
+  virtual ~ExtensionsMatchChecker();
+
+  // StatusChangeChecker implementation.
+  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+
+  // extensions::ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* context,
+      const extensions::Extension* extenion,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+
+  void Wait();
+
+ private:
+  std::vector<Profile*> profiles_;
+  ScopedVector<SyncedExtensionInstaller> synced_extension_installers_;
+  bool observing_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsMatchChecker);
+};
+
+ExtensionsMatchChecker::ExtensionsMatchChecker(
+    const std::vector<Profile*>& profiles)
+    : profiles_(profiles), observing_(false) {
+  DCHECK_GE(profiles_.size(), 2U);
+}
+
+ExtensionsMatchChecker::~ExtensionsMatchChecker() {
+  if (observing_) {
+    for (std::vector<Profile*>::iterator it = profiles_.begin();
+         it != profiles_.end();
+         ++it) {
+      extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(*it);
+      registry->RemoveObserver(this);
+    }
+  }
+}
+
+std::string ExtensionsMatchChecker::GetDebugMessage() const {
+  return "Waiting for extensions to match";
+}
+
+bool ExtensionsMatchChecker::IsExitConditionSatisfied() {
+  std::vector<Profile*>::iterator it = profiles_.begin();
+  Profile* profile0 = *it;
+  ++it;
+  for (; it != profiles_.end(); ++it) {
+    if (!SyncExtensionHelper::GetInstance()->ExtensionStatesMatch(profile0,
+                                                                  *it)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void ExtensionsMatchChecker::OnExtensionLoaded(
+    content::BrowserContext* context,
+    const extensions::Extension* extension) {
+  CheckExitCondition();
+}
+
+void ExtensionsMatchChecker::OnExtensionUnloaded(
+    content::BrowserContext* context,
+    const extensions::Extension* extenion,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  CheckExitCondition();
+}
+
+void ExtensionsMatchChecker::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  CheckExitCondition();
+}
+
+void ExtensionsMatchChecker::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  CheckExitCondition();
+}
+
+void ExtensionsMatchChecker::Wait() {
+  for (std::vector<Profile*>::iterator it = profiles_.begin();
+       it != profiles_.end();
+       ++it) {
+    // Begin mocking the installation of synced extensions from the web store.
+    synced_extension_installers_.push_back(new SyncedExtensionInstaller(*it));
+
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(*it);
+    registry->AddObserver(this);
+  }
+
+  observing_ = true;
+
+  if (IsExitConditionSatisfied()) {
+    VLOG(1) << "Extensions matched without waiting";
+    return;
+  }
+
+  VLOG(1) << "Starting Wait: " << GetDebugMessage();
+  StartBlockingWait();
+}
+
+}  // namespace
+
+bool AwaitAllProfilesHaveSameExtensionsAsVerifier() {
+  std::vector<Profile*> profiles;
+  profiles.push_back(test()->verifier());
+  for (int i = 0; i < test()->num_clients(); ++i) {
+    profiles.push_back(test()->GetProfile(i));
+  }
+
+  ExtensionsMatchChecker checker(profiles);
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 }  // namespace extensions_helper

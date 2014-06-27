@@ -67,8 +67,7 @@ class SyncExtensionHelper {
   bool IsExtensionPendingInstallForSync(
       Profile* profile, const std::string& id) const;
 
-  // Installs all extensions pending sync in |profile| of the given
-  // type.
+  // Installs all extensions pending sync in |profile|.
   void InstallExtensionsPendingForSync(Profile* profile);
 
   // Returns true iff |profile1| and |profile2| have the same extensions and

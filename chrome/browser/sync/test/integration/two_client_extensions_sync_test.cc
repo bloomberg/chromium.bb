@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+using extensions_helper::AwaitAllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::DisableExtension;
 using extensions_helper::EnableExtension;
@@ -15,34 +16,22 @@ using extensions_helper::HasSameExtensionsAsVerifier;
 using extensions_helper::IncognitoDisableExtension;
 using extensions_helper::IncognitoEnableExtension;
 using extensions_helper::InstallExtension;
-using extensions_helper::InstallExtensionsPendingForSync;
 using extensions_helper::UninstallExtension;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class TwoClientExtensionsSyncTest : public SyncTest {
  public:
   TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   virtual ~TwoClientExtensionsSyncTest() {}
+  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionsSyncTest);
 };
 
-class LegacyTwoClientExtensionsSyncTest : public SyncTest {
- public:
-  LegacyTwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
-
-  virtual ~LegacyTwoClientExtensionsSyncTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientExtensionsSyncTest);
-};
-
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithSameExtensions) {
@@ -56,10 +45,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithSameExtensions) {
   }
 
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AwaitQuiescence());
-
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
@@ -88,13 +74,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   }
 
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AwaitQuiescence());
-
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
@@ -111,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   }
 
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   const int kNumProfile0Extensions = 10;
   for (int j = 0; j < kNumProfile0Extensions; ++i, ++j) {
@@ -126,12 +105,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
     InstallExtension(verifier(), i);
   }
 
-  ASSERT_TRUE(AwaitQuiescence());
-
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // TCM ID - 3637311.
@@ -141,11 +115,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Add) {
 
   InstallExtension(GetProfile(0), 0);
   InstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
 
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // TCM ID - 3724281.
@@ -155,42 +126,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Uninstall) {
 
   InstallExtension(GetProfile(0), 0);
   InstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   UninstallExtension(GetProfile(0), 0);
   UninstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-}
-
-// TCM ID - 3635304.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Merge) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  InstallExtension(GetProfile(0), 0);
-  InstallExtension(GetProfile(1), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-
-  UninstallExtension(GetProfile(0), 0);
-  InstallExtension(GetProfile(0), 1);
-  InstallExtension(verifier(), 1);
-
-  InstallExtension(GetProfile(0), 2);
-  InstallExtension(GetProfile(1), 2);
-  InstallExtension(verifier(), 2);
-
-  InstallExtension(GetProfile(1), 3);
-  InstallExtension(verifier(), 3);
-
-  ASSERT_TRUE(AwaitQuiescence());
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // TCM ID - 3605300.
@@ -200,26 +140,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
   InstallExtension(GetProfile(0), 0);
-  InstallExtension(GetProfile(1), 0);
   InstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   DisableExtension(GetProfile(0), 0);
   DisableExtension(verifier(), 0);
   ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   EnableExtension(GetProfile(1), 0);
   EnableExtension(verifier(), 0);
   ASSERT_TRUE(HasSameExtensionsAsVerifier(1));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(0));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // TCM ID - 3728322.
@@ -229,67 +165,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
   InstallExtension(GetProfile(0), 0);
-  InstallExtension(GetProfile(1), 0);
   InstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   IncognitoEnableExtension(GetProfile(0), 0);
   IncognitoEnableExtension(verifier(), 0);
   ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   IncognitoDisableExtension(GetProfile(1), 0);
   IncognitoDisableExtension(verifier(), 0);
   ASSERT_TRUE(HasSameExtensionsAsVerifier(1));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(0));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-}
-
-// TCM ID - 3732278.
-IN_PROC_BROWSER_TEST_F(LegacyTwoClientExtensionsSyncTest, DisableExtensions) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::EXTENSIONS));
-  InstallExtension(GetProfile(0), 1);
-  InstallExtension(verifier(), 1);
-  ASSERT_TRUE(
-      AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_FALSE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::EXTENSIONS));
-  ASSERT_TRUE(AwaitQuiescence());
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  InstallExtensionsPendingForSync(verifier());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-}
-
-// TCM ID - 3606290.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableSync) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
-  InstallExtension(GetProfile(0), 0);
-  InstallExtension(verifier(), 0);
-  ASSERT_TRUE(
-      AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
-  ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
-
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
-  ASSERT_TRUE(AwaitQuiescence());
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  InstallExtensionsPendingForSync(verifier());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // Regression test for bug 104399: ensure that an extension installed prior to
@@ -304,16 +195,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 
   ASSERT_TRUE(SetupSync());
 
-  InstallExtensionsPendingForSync(GetProfile(0));
-  InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 
   UninstallExtension(GetProfile(0), 0);
   UninstallExtension(verifier(), 0);
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesHaveSameExtensionsAsVerifier());
 }
 
 // TODO(akalin): Add tests exercising:
