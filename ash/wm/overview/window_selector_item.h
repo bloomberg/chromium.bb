@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/button.h"
 
@@ -15,6 +16,7 @@ class Window;
 }
 
 namespace views {
+class Label;
 class Widget;
 }
 
@@ -24,7 +26,8 @@ class TransparentActivateWindowButton;
 // This class represents an item in overview mode. An item can have one or more
 // windows, of which only one can be activated by keyboard (i.e. alt+tab) but
 // any can be selected with a pointer (touch or mouse).
-class WindowSelectorItem : public views::ButtonListener {
+class WindowSelectorItem : public views::ButtonListener,
+                           public aura::WindowObserver {
  public:
   WindowSelectorItem();
   virtual ~WindowSelectorItem();
@@ -83,6 +86,9 @@ class WindowSelectorItem : public views::ButtonListener {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // aura::WindowObserver:
+  virtual void OnWindowTitleChanged(aura::Window* window) OVERRIDE;
+
  protected:
   // Sets the bounds of this selector's items to |target_bounds| in
   // |root_window|. If |animate| the windows are animated from their current
@@ -106,6 +112,9 @@ class WindowSelectorItem : public views::ButtonListener {
                           aura::Window* root_window,
                           bool animate);
 
+  // Initializes window_label_.
+  void CreateWindowLabel(const base::string16& title);
+
   // The root window this item is being displayed on.
   aura::Window* root_window_;
 
@@ -123,6 +132,9 @@ class WindowSelectorItem : public views::ButtonListener {
 
   // Label under the window displaying its active tab name.
   scoped_ptr<views::Widget> window_label_;
+
+  // View for the label under the window.
+  views::Label* window_label_view_;
 
   // An easy to access close button for the window in this item.
   scoped_ptr<views::Widget> close_button_;
