@@ -70,36 +70,36 @@ const uint32 kAutoScrollTimeoutMs = 50;
 const double kAutoScrollFactor = 0.2;
 
 // Javascript methods.
-const char* kJSAccessibility = "accessibility";
-const char* kJSDocumentLoadComplete = "documentLoadComplete";
-const char* kJSGetHeight = "getHeight";
-const char* kJSGetHorizontalScrollbarThickness =
+const char kJSAccessibility[] = "accessibility";
+const char kJSDocumentLoadComplete[] = "documentLoadComplete";
+const char kJSGetHeight[] = "getHeight";
+const char kJSGetHorizontalScrollbarThickness[] =
     "getHorizontalScrollbarThickness";
-const char* kJSGetPageLocationNormalized = "getPageLocationNormalized";
-const char* kJSGetVerticalScrollbarThickness = "getVerticalScrollbarThickness";
-const char* kJSGetWidth = "getWidth";
-const char* kJSGetZoomLevel = "getZoomLevel";
-const char* kJSGoToPage = "goToPage";
-const char* kJSGrayscale = "grayscale";
-const char* kJSLoadPreviewPage = "loadPreviewPage";
-const char* kJSOnLoad = "onload";
-const char* kJSOnPluginSizeChanged = "onPluginSizeChanged";
-const char* kJSOnScroll = "onScroll";
-const char* kJSPageXOffset = "pageXOffset";
-const char* kJSPageYOffset = "pageYOffset";
-const char* kJSPrintPreviewPageCount = "printPreviewPageCount";
-const char* kJSReload = "reload";
-const char* kJSRemovePrintButton = "removePrintButton";
-const char* kJSResetPrintPreviewUrl = "resetPrintPreviewUrl";
-const char* kJSSendKeyEvent = "sendKeyEvent";
-const char* kJSSetPageNumbers = "setPageNumbers";
-const char* kJSSetPageXOffset = "setPageXOffset";
-const char* kJSSetPageYOffset = "setPageYOffset";
-const char* kJSSetZoomLevel = "setZoomLevel";
-const char* kJSZoomFitToHeight = "fitToHeight";
-const char* kJSZoomFitToWidth = "fitToWidth";
-const char* kJSZoomIn = "zoomIn";
-const char* kJSZoomOut = "zoomOut";
+const char kJSGetPageLocationNormalized[] = "getPageLocationNormalized";
+const char kJSGetVerticalScrollbarThickness[] = "getVerticalScrollbarThickness";
+const char kJSGetWidth[] = "getWidth";
+const char kJSGetZoomLevel[] = "getZoomLevel";
+const char kJSGoToPage[] = "goToPage";
+const char kJSGrayscale[] = "grayscale";
+const char kJSLoadPreviewPage[] = "loadPreviewPage";
+const char kJSOnLoad[] = "onload";
+const char kJSOnPluginSizeChanged[] = "onPluginSizeChanged";
+const char kJSOnScroll[] = "onScroll";
+const char kJSPageXOffset[] = "pageXOffset";
+const char kJSPageYOffset[] = "pageYOffset";
+const char kJSPrintPreviewPageCount[] = "printPreviewPageCount";
+const char kJSReload[] = "reload";
+const char kJSRemovePrintButton[] = "removePrintButton";
+const char kJSResetPrintPreviewUrl[] = "resetPrintPreviewUrl";
+const char kJSSendKeyEvent[] = "sendKeyEvent";
+const char kJSSetPageNumbers[] = "setPageNumbers";
+const char kJSSetPageXOffset[] = "setPageXOffset";
+const char kJSSetPageYOffset[] = "setPageYOffset";
+const char kJSSetZoomLevel[] = "setZoomLevel";
+const char kJSZoomFitToHeight[] = "fitToHeight";
+const char kJSZoomFitToWidth[] = "fitToWidth";
+const char kJSZoomIn[] = "zoomIn";
+const char kJSZoomOut[] = "zoomOut";
 
 // URL reference parameters.
 // For more possible parameters, see RFC 3778 and the "PDF Open Parameters"

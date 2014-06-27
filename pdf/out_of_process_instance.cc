@@ -65,73 +65,73 @@ const char kAccessibleLoaded[] = "loaded";
 const char kAccessibleCopyable[] = "copyable";
 
 // Constants used in handling postMessage() messages.
-const char* kType = "type";
+const char kType[] = "type";
 // Viewport message arguments. (Page -> Plugin).
-const char* kJSViewportType = "viewport";
-const char* kJSXOffset = "xOffset";
-const char* kJSYOffset = "yOffset";
-const char* kJSZoom = "zoom";
+const char kJSViewportType[] = "viewport";
+const char kJSXOffset[] = "xOffset";
+const char kJSYOffset[] = "yOffset";
+const char kJSZoom[] = "zoom";
 // Stop scrolling message (Page -> Plugin)
-const char* kJSStopScrollingType = "stopScrolling";
+const char kJSStopScrollingType[] = "stopScrolling";
 // Document dimension arguments (Plugin -> Page).
-const char* kJSDocumentDimensionsType = "documentDimensions";
-const char* kJSDocumentWidth = "width";
-const char* kJSDocumentHeight = "height";
-const char* kJSPageDimensions = "pageDimensions";
-const char* kJSPageX = "x";
-const char* kJSPageY = "y";
-const char* kJSPageWidth = "width";
-const char* kJSPageHeight = "height";
+const char kJSDocumentDimensionsType[] = "documentDimensions";
+const char kJSDocumentWidth[] = "width";
+const char kJSDocumentHeight[] = "height";
+const char kJSPageDimensions[] = "pageDimensions";
+const char kJSPageX[] = "x";
+const char kJSPageY[] = "y";
+const char kJSPageWidth[] = "width";
+const char kJSPageHeight[] = "height";
 // Document load progress arguments (Plugin -> Page)
-const char* kJSLoadProgressType = "loadProgress";
-const char* kJSProgressPercentage = "progress";
+const char kJSLoadProgressType[] = "loadProgress";
+const char kJSProgressPercentage[] = "progress";
 // Get password arguments (Plugin -> Page)
-const char* kJSGetPasswordType = "getPassword";
+const char kJSGetPasswordType[] = "getPassword";
 // Get password complete arguments (Page -> Plugin)
-const char* kJSGetPasswordCompleteType = "getPasswordComplete";
-const char* kJSPassword = "password";
+const char kJSGetPasswordCompleteType[] = "getPasswordComplete";
+const char kJSPassword[] = "password";
 // Print (Page -> Plugin)
-const char* kJSPrintType = "print";
+const char kJSPrintType[] = "print";
 // Go to page (Plugin -> Page)
-const char* kJSGoToPageType = "goToPage";
-const char* kJSPageNumber = "page";
+const char kJSGoToPageType[] = "goToPage";
+const char kJSPageNumber[] = "page";
 // Reset print preview mode (Page -> Plugin)
-const char* kJSResetPrintPreviewModeType = "resetPrintPreviewMode";
-const char* kJSPrintPreviewUrl = "url";
-const char* kJSPrintPreviewGrayscale = "grayscale";
-const char* kJSPrintPreviewPageCount = "pageCount";
+const char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
+const char kJSPrintPreviewUrl[] = "url";
+const char kJSPrintPreviewGrayscale[] = "grayscale";
+const char kJSPrintPreviewPageCount[] = "pageCount";
 // Load preview page (Page -> Plugin)
-const char* kJSLoadPreviewPageType = "loadPreviewPage";
-const char* kJSPreviewPageUrl = "url";
-const char* kJSPreviewPageIndex = "index";
+const char kJSLoadPreviewPageType[] = "loadPreviewPage";
+const char kJSPreviewPageUrl[] = "url";
+const char kJSPreviewPageIndex[] = "index";
 // Set scroll position (Plugin -> Page)
-const char* kJSSetScrollPositionType = "setScrollPosition";
-const char* kJSPositionX = "x";
-const char* kJSPositionY = "y";
+const char kJSSetScrollPositionType[] = "setScrollPosition";
+const char kJSPositionX[] = "x";
+const char kJSPositionY[] = "y";
 // Set translated strings (Plugin -> Page)
-const char* kJSSetTranslatedStringsType = "setTranslatedStrings";
-const char* kJSGetPasswordString = "getPasswordString";
-const char* kJSLoadingString = "loadingString";
-const char* kJSLoadFailedString = "loadFailedString";
+const char kJSSetTranslatedStringsType[] = "setTranslatedStrings";
+const char kJSGetPasswordString[] = "getPasswordString";
+const char kJSLoadingString[] = "loadingString";
+const char kJSLoadFailedString[] = "loadFailedString";
 // Request accessibility JSON data (Page -> Plugin)
-const char* kJSGetAccessibilityJSONType = "getAccessibilityJSON";
-const char* kJSAccessibilityPageNumber = "page";
+const char kJSGetAccessibilityJSONType[] = "getAccessibilityJSON";
+const char kJSAccessibilityPageNumber[] = "page";
 // Reply with accessibility JSON data (Plugin -> Page)
-const char* kJSGetAccessibilityJSONReplyType = "getAccessibilityJSONReply";
-const char* kJSAccessibilityJSON = "json";
+const char kJSGetAccessibilityJSONReplyType[] = "getAccessibilityJSONReply";
+const char kJSAccessibilityJSON[] = "json";
 // Cancel the stream URL request (Plugin -> Page)
-const char* kJSCancelStreamUrlType = "cancelStreamUrl";
+const char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
-const char* kJSNavigateType = "navigate";
-const char* kJSNavigateUrl = "url";
-const char* kJSNavigateNewTab = "newTab";
+const char kJSNavigateType[] = "navigate";
+const char kJSNavigateUrl[] = "url";
+const char kJSNavigateNewTab[] = "newTab";
 // Open the email editor with the given parameters (Plugin -> Page)
-const char* kJSEmailType = "email";
-const char* kJSEmailTo = "to";
-const char* kJSEmailCc = "cc";
-const char* kJSEmailBcc = "bcc";
-const char* kJSEmailSubject = "subject";
-const char* kJSEmailBody = "body";
+const char kJSEmailType[] = "email";
+const char kJSEmailTo[] = "to";
+const char kJSEmailCc[] = "cc";
+const char kJSEmailBcc[] = "bcc";
+const char kJSEmailSubject[] = "subject";
+const char kJSEmailBody[] = "body";
 
 const int kFindResultCooldownMs = 100;
 
