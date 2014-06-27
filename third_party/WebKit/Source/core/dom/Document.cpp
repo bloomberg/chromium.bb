@@ -942,11 +942,6 @@ PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, ExceptionS
 
 PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
-    if (!importedNode) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-
     switch (importedNode->nodeType()) {
     case TEXT_NODE:
         return createTextNode(importedNode->nodeValue());
@@ -1009,11 +1004,6 @@ PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep,
 
 PassRefPtrWillBeRawPtr<Node> Document::adoptNode(PassRefPtrWillBeRawPtr<Node> source, ExceptionState& exceptionState)
 {
-    if (!source) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
-
     EventQueueScope scope;
 
     switch (source->nodeType()) {
@@ -1544,11 +1534,6 @@ PassRefPtrWillBeRawPtr<Range> Document::createRange()
 
 PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
-    // FIXME: Probably this should be handled within the bindings layer and Type Error should be thrown.
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
     // NodeFilter.
     return NodeIterator::create(root, whatToShow, filter);
@@ -1556,11 +1541,6 @@ PassRefPtrWillBeRawPtr<NodeIterator> Document::createNodeIterator(Node* root, un
 
 PassRefPtrWillBeRawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
-    // FIXME: Probably this should be handled within the bindings layer and Type Error should be thrown.
-    if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return nullptr;
-    }
     return TreeWalker::create(root, whatToShow, filter);
 }
 

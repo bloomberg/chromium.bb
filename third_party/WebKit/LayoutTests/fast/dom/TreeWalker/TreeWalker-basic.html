@@ -59,10 +59,10 @@ test(function ()
 test(function ()
 {
     assert_throws(new TypeError(), function () { document.createTreeWalker(); });
-    assert_throws('NOT_SUPPORTED_ERR', function () { document.createTreeWalker(null); });
-    assert_throws('NOT_SUPPORTED_ERR', function () { document.createTreeWalker(undefined); });
-    assert_throws('NOT_SUPPORTED_ERR', function () { document.createTreeWalker(new Object()); });
-    assert_throws('NOT_SUPPORTED_ERR', function () { document.createTreeWalker(1); });
+    assert_throws(new TypeError(), function () { document.createTreeWalker(null); });
+    assert_throws(new TypeError(), function () { document.createTreeWalker(undefined); });
+    assert_throws(new TypeError(), function () { document.createTreeWalker(new Object()); });
+    assert_throws(new TypeError(), function () { document.createTreeWalker(1); });
 }, 'Give an invalid root node to document.createTreeWalker().');
 
 // |expected| should be an object indicating the expected type of node.

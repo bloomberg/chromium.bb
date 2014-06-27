@@ -42,7 +42,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks, RaisesException] Node importNode(Node node, optional boolean deep);
+    [CustomElementCallbacks, RaisesException, TypeChecking=Interface] Node importNode(Node node, optional boolean deep);
     [CustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName);
     [RaisesException, DeprecateAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
@@ -57,7 +57,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
-    [RaisesException, CustomElementCallbacks] Node adoptNode(Node node);
+    [RaisesException, CustomElementCallbacks, TypeChecking=Interface] Node adoptNode(Node node);
 
     [TreatReturnedNullStringAs=Null, ImplementedAs=url] readonly attribute DOMString documentURI;
 
@@ -71,12 +71,12 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 2 Traversal and Range (DocumentTraversal interface)
 
-    [RaisesException] NodeIterator createNodeIterator(Node root,
-                                                      optional unsigned long whatToShow = 0xFFFFFFFF,
-                                                      optional NodeFilter? filter = null);
-    [RaisesException] TreeWalker createTreeWalker(Node root,
-                                                  optional unsigned long whatToShow = 0xFFFFFFFF,
-                                                  optional NodeFilter? filter = null);
+    [RaisesException, TypeChecking=Interface] NodeIterator createNodeIterator(Node root,
+                                                                              optional unsigned long whatToShow = 0xFFFFFFFF,
+                                                                              optional NodeFilter? filter = null);
+    [RaisesException, TypeChecking=Interface] TreeWalker createTreeWalker(Node root,
+                                                                          optional unsigned long whatToShow = 0xFFFFFFFF,
+                                                                          optional NodeFilter? filter = null);
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 
@@ -88,8 +88,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 2 Style (DocumentCSS interface)
 
-     CSSStyleDeclaration getOverrideStyle([Default=Undefined] optional Element element,
-                                                        [Default=Undefined] optional DOMString pseudoElement);
+    CSSStyleDeclaration getOverrideStyle([Default=Undefined] optional Element element,
+                                         [Default=Undefined] optional DOMString pseudoElement);
 
     // DOM 4
     readonly attribute DOMString contentType;
@@ -192,16 +192,16 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
-                                               [Default=Undefined] optional EventTarget target,
-                                               [Default=Undefined] optional long identifier,
-                                               [Default=Undefined] optional double pageX,
-                                               [Default=Undefined] optional double pageY,
-                                               [Default=Undefined] optional double screenX,
-                                               [Default=Undefined] optional double screenY,
-                                               [Default=Undefined] optional double webkitRadiusX,
-                                               [Default=Undefined] optional double webkitRadiusY,
-                                               [Default=Undefined] optional float webkitRotationAngle,
-                                               [Default=Undefined] optional float webkitForce);
+                                             [Default=Undefined] optional EventTarget target,
+                                             [Default=Undefined] optional long identifier,
+                                             [Default=Undefined] optional double pageX,
+                                             [Default=Undefined] optional double pageY,
+                                             [Default=Undefined] optional double screenX,
+                                             [Default=Undefined] optional double screenY,
+                                             [Default=Undefined] optional double webkitRadiusX,
+                                             [Default=Undefined] optional double webkitRadiusY,
+                                             [Default=Undefined] optional float webkitRotationAngle,
+                                             [Default=Undefined] optional float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);

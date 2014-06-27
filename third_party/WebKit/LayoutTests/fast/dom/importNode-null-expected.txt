@@ -1,5 +1,4 @@
-CONSOLE WARNING: The behavior of importNode() with no boolean argument is about to change from doing a deep clone to doing a shallow clone.  Make sure to pass an explicit boolean argument to keep your current behavior.
 This page tests calling document.importNode(null). If it passes, you'll see a "PASS" message below.
 
-caught exception: NotSupportedError: Failed to execute 'importNode' on 'Document': The 1st argument provided is either null, or an invalid Node object.
+caught exception: TypeError: Failed to execute 'importNode' on 'Document': parameter 1 is not of type 'Node'.
 PASS: importNode(null) didn't crash
