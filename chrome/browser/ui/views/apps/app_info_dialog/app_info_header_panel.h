@@ -47,6 +47,9 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   // Called when the app's icon is loaded.
   void OnAppImageLoaded(const gfx::Image& image);
 
+  // Returns true if the app has a version number that makes sense to display.
+  bool HasVersion() const;
+
   // Opens the app in the web store. Must only be called if
   // CanShowAppInWebStore() returns true.
   void ShowAppInWebStore() const;

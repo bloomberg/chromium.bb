@@ -82,8 +82,7 @@ void AppInfoHeaderPanel::CreateControls() {
                            ui::ResourceBundle::MediumFont));
   app_name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // The version number doesn't make sense for bookmarked apps.
-  if (!app_->from_bookmark()) {
+  if (HasVersion()) {
     app_version_label_ =
         new views::Label(base::UTF8ToUTF16(app_->VersionString()),
                          ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -218,6 +217,12 @@ void AppInfoHeaderPanel::OnAppImageLoaded(const gfx::Image& image) {
   }
 
   app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+}
+
+bool AppInfoHeaderPanel::HasVersion() const {
+  // The version number doesn't make sense for bookmark or component apps.
+  return !app_->from_bookmark() &&
+         app_->location() != extensions::Manifest::COMPONENT;
 }
 
 void AppInfoHeaderPanel::ShowAppInWebStore() const {
