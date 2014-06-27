@@ -111,10 +111,16 @@ void PicturePileBase::SetTilingRect(const gfx::Rect& new_tiling_rect) {
 
   // Find all tiles that contain any pixels outside the new rect.
   std::vector<PictureMapKey> to_erase;
-  int min_toss_x = tiling_.FirstBorderTileXIndexFromSrcCoord(
-      std::min(old_tiling_rect.right(), new_tiling_rect.right()));
-  int min_toss_y = tiling_.FirstBorderTileYIndexFromSrcCoord(
-      std::min(old_tiling_rect.bottom(), new_tiling_rect.bottom()));
+  int min_toss_x = tiling_.num_tiles_x();
+  if (new_tiling_rect.right() > old_tiling_rect.right()) {
+    min_toss_x =
+        tiling_.FirstBorderTileXIndexFromSrcCoord(old_tiling_rect.right());
+  }
+  int min_toss_y = tiling_.num_tiles_y();
+  if (new_tiling_rect.bottom() > old_tiling_rect.bottom()) {
+    min_toss_y =
+        tiling_.FirstBorderTileYIndexFromSrcCoord(old_tiling_rect.bottom());
+  }
   for (PictureMap::const_iterator it = picture_map_.begin();
        it != picture_map_.end();
        ++it) {

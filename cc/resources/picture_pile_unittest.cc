@@ -381,5 +381,233 @@ TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
   EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
 }
 
+TEST_F(PicturePileTest, ResizePile) {
+  gfx::Size tile_size(100, 100);
+  gfx::Rect base_tiling_rect(5 * 100, 5 * 100);
+  gfx::Rect grow_down_tiling_rect(5 * 100, 7 * 100);
+  gfx::Rect grow_right_tiling_rect(7 * 100, 5 * 100);
+  gfx::Rect grow_both_tiling_rect(7 * 100, 7 * 100);
+
+  pile_->tiling().SetMaxTextureSize(tile_size);
+  pile_->SetTilingRect(base_tiling_rect);
+  UpdateWholePile();
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_down_tiling_rect);
+
+  // We should have lost the recordings in the bottom row.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(8, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(j < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(j < 6, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_right_tiling_rect);
+
+  // We should have lost the recordings in the right column.
+  EXPECT_EQ(8, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 6, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_both_tiling_rect);
+
+  // We should have lost the recordings in the right column and bottom row.
+  EXPECT_EQ(8, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(8, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 5 && j < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 6 && j < 6, it != map.end() && it->second.GetPicture());
+    }
+  }
+}
+
+TEST_F(PicturePileTest, SmallResizePile) {
+  gfx::Size tile_size(100, 100);
+  gfx::Rect base_tiling_rect(5 * 100, 5 * 100);
+  gfx::Rect grow_down_tiling_rect(5 * 100, 5 * 100 + 5);
+  gfx::Rect grow_right_tiling_rect(5 * 100 + 5, 5 * 100);
+  gfx::Rect grow_both_tiling_rect(5 * 100 + 5, 5 * 100 + 5);
+
+  pile_->tiling().SetMaxTextureSize(tile_size);
+  pile_->SetTilingRect(base_tiling_rect);
+  UpdateWholePile();
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_down_tiling_rect);
+
+  // We should have lost the recordings in the bottom row.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(j < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost nothing.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_right_tiling_rect);
+
+  // We should have lost the recordings in the right column.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost nothing.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(grow_both_tiling_rect);
+
+  // We should have lost the recordings in the right column and bottom row.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_EQ(i < 5 && j < 5, it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateWholePile();
+  pile_->SetTilingRect(base_tiling_rect);
+
+  // We should have lost nothing.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+}
+
 }  // namespace
 }  // namespace cc
