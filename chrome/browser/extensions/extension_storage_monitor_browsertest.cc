@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -332,11 +334,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UninstallExtension) {
       ExtensionStorageMonitor::BUTTON_UNINSTALL);
 
   // Also fake accepting the uninstall.
-  content::WindowedNotificationObserver uninstalled_signal(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-      content::Source<Profile>(profile()));
+  TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
+                                         extension->id());
   SimulateUninstallDialogAccept();
-  uninstalled_signal.Wait();
+  observer.WaitForExtensionUninstalled();
 }
 
 }  // namespace extensions

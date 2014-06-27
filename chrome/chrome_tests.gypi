@@ -856,6 +856,8 @@
         '../apps/load_and_launch_browsertest.cc',
         '../extensions/browser/api/usb/usb_apitest.cc',
         '../extensions/browser/api/usb/usb_manual_apitest.cc',
+        '../extensions/browser/test_extension_registry_observer.h',
+        '../extensions/browser/test_extension_registry_observer.cc',
         '../extensions/renderer/script_context_browsertest.cc',
         # TODO(blundell): Bring up a components_browsertests target and move
         # this test to be in that target. crbug.com/283846

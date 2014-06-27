@@ -15,6 +15,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 
 namespace {
 
@@ -122,11 +124,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
 
   // Uninstalling and installing the extension (without running the test that
   // calls the extension API) should clear the settings.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(profile_), last_loaded_extension_id());
   UninstallExtension(last_loaded_extension_id());
-  observer.Wait();
+  observer.WaitForExtensionUninstalled();
   CheckPreferencesCleared();
 
   LoadExtension(test_data_dir_.AppendASCII(kExtensionPath));

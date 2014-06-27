@@ -1,6 +1,7 @@
 include_rules = [
   "+components/url_matcher",
   "+content/public/common",
+  "+content/public/test",
   "+crypto",
   "+grit/extensions_renderer_resources.h",
   "+grit/extensions_resources.h",
