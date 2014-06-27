@@ -40,6 +40,23 @@ DONE_MESSAGE_GOOD_MIN = 'You are probably looking for a change made after %s ' \
 DONE_MESSAGE_GOOD_MAX = 'You are probably looking for a change made after %s ' \
                         '(known bad), but no later than %s (first known good).'
 
+CHROMIUM_GITHASH_TO_SVN_URL = (
+    'https://chromium.googlesource.com/chromium/src/+/%s?format=json')
+BLINK_GITHASH_TO_SVN_URL = (
+    'https://chromium.googlesource.com/chromium/blink/+/%s?format=json')
+GITHASH_TO_SVN_URL = { 'chromium': CHROMIUM_GITHASH_TO_SVN_URL,
+                       'blink': BLINK_GITHASH_TO_SVN_URL }
+# Search pattern to be matched in the json output from
+# CHROMIUM_GITHASH_TO_SVN_URL to get the chromium revision (svn revision).
+CHROMIUM_SEARCH_PATTERN = (
+    r'.*git-svn-id: svn://svn.chromium.org/chrome/trunk/src@(\d+) ')
+# Search pattern to be matched in the json output from
+# BLINK_GITHASH_TO_SVN_URL to get the blink revision (svn revision).
+BLINK_SEARCH_PATTERN = (
+    r'.*git-svn-id: svn://svn.chromium.org/blink/trunk@(\d+) ')
+SEARCH_PATTERN = { 'chromium': CHROMIUM_SEARCH_PATTERN,
+                   'blink': BLINK_SEARCH_PATTERN }
+
 ###############################################################################
 
 import json
@@ -72,6 +89,11 @@ class PathContext(object):
     self.is_official = is_official
     self.is_aura = is_aura
     self.flash_path = flash_path
+    # Dictionary which stores svn revision number as key and it's
+    # corresponding git hash as value. This data is populated in
+    # _FetchAndParse and used later in GetDownloadURL while downloading
+    # the build.
+    self.githash_svn_dict = {}
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -140,6 +162,8 @@ class PathContext(object):
           OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
           self.archive_name)
     else:
+      if str(revision) in self.githash_svn_dict:
+        revision = self.githash_svn_dict[str(revision)]
       return "%s/%s%s/%s" % (self.base_url, self._listing_platform_dir,
                              revision, self.archive_name)
 
@@ -169,6 +193,14 @@ class PathContext(object):
       next-marker is not None, then the listing is a partial listing and another
       fetch should be performed with next-marker being the marker= GET
       parameter."""
+      def _GetDepotName():
+        if self.base_url == CHROMIUM_BASE_URL:
+          return 'chromium'
+        elif self.base_url == WEBKIT_BASE_URL:
+          return 'blink'
+        else:
+          return 'chromium'
+
       handle = urllib.urlopen(url)
       document = ElementTree.parse(handle)
 
@@ -187,7 +219,6 @@ class PathContext(object):
       is_truncated = document.find(namespace + 'IsTruncated')
       if is_truncated is not None and is_truncated.text.lower() == 'true':
         next_marker = document.find(namespace + 'NextMarker').text
-
       # Get a list of all the revisions.
       all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
                                       namespace + 'Prefix')
@@ -195,25 +226,50 @@ class PathContext(object):
       # |_listing_platform_dir/revision/|. Strip off the platform dir and the
       # trailing slash to just have a number.
       revisions = []
+      githash_svn_dict = {}
       for prefix in all_prefixes:
         revnum = prefix.text[prefix_len:-1]
         try:
-          revnum = int(revnum)
-          revisions.append(revnum)
+          if not revnum.isdigit():
+            git_hash = revnum
+            revnum = self.GetSVNRevisionFromGitHash(git_hash, _GetDepotName())
+            githash_svn_dict[revnum] = git_hash
+          if revnum is not None:
+            revnum = int(revnum)
+            revisions.append(revnum)
         except ValueError:
           pass
-      return (revisions, next_marker)
+      return (revisions, next_marker, githash_svn_dict)
 
     # Fetch the first list of revisions.
-    (revisions, next_marker) = _FetchAndParse(self.GetListingURL())
-
+    (revisions, next_marker, self.githash_svn_dict) =\
+        _FetchAndParse(self.GetListingURL())
     # If the result list was truncated, refetch with the next marker. Do this
     # until an entire directory listing is done.
     while next_marker:
       next_url = self.GetListingURL(next_marker)
-      (new_revisions, next_marker) = _FetchAndParse(next_url)
+      (new_revisions, next_marker, new_dict) = _FetchAndParse(next_url)
       revisions.extend(new_revisions)
+      self.githash_svn_dict.update(new_dict)
     return revisions
+
+  def GetSVNRevisionFromGitHash(self, git_sha1, depot='chromium'):
+    json_url = GITHASH_TO_SVN_URL[depot] % git_sha1
+    try:
+      response = urllib.urlopen(json_url)
+    except urllib.HTTPError as error:
+      msg = 'HTTP Error %d for %s' % (error.getcode(), git_sha1)
+      return None
+    data = json.loads(response.read()[4:])
+    if 'message' in data:
+      message = data['message'].split('\n')
+      message = [line for line in message if line.strip()]
+      search_pattern = re.compile(SEARCH_PATTERN[depot])
+      result = search_pattern.search(message[len(message)-1])
+      if result:
+        return result.group(1)
+    print 'Failed to get svn revision number for %s' % git_sha1
+    return None
 
   def GetRevList(self):
     """Gets the list of revision numbers between self.good_revision and
@@ -672,13 +728,23 @@ def GetBlinkDEPSRevisionForChromiumRevision(rev):
 def GetBlinkRevisionForChromiumRevision(self, rev):
   """Returns the blink revision that was in REVISIONS file at
   chromium revision |rev|."""
-  file_url = "%s/%s%d/REVISIONS" % (self.base_url,
+  def _IsRevisionNumber(revision):
+    if isinstance(revision, int):
+      return True
+    else:
+      return revision.isdigit()
+  if str(rev) in self.githash_svn_dict:
+    rev = self.githash_svn_dict[str(rev)]
+  file_url = "%s/%s%s/REVISIONS" % (self.base_url,
                                     self._listing_platform_dir, rev)
   url = urllib.urlopen(file_url)
   data = json.loads(url.read())
   url.close()
   if 'webkit_revision' in data:
-    return data['webkit_revision']
+    blink_rev = data['webkit_revision']
+    if not _IsRevisionNumber(blink_rev):
+      blink_rev = self.GetSVNRevisionFromGitHash(blink_rev, 'blink')
+    return blink_rev
   else:
     raise Exception('Could not get blink revision for cr rev %d' % rev)
 
@@ -688,7 +754,6 @@ def FixChromiumRevForBlink(revisions_final, revisions, self, rev):
   blink snapshots point to tip of tree blink.
   Note: The revisions_final variable might get modified to include
   additional revisions."""
-
   blink_deps_rev = GetBlinkDEPSRevisionForChromiumRevision(rev)
 
   while (GetBlinkRevisionForChromiumRevision(self, rev) > blink_deps_rev):
