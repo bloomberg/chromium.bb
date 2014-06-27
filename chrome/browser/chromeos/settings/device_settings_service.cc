@@ -25,7 +25,7 @@ namespace {
 
 // Delay between load retries when there was a validation error.
 // NOTE: This code is here to mitigate clock loss on some devices where policy
-// loads will fail with a validation error caused by RTC clock bing reset when
+// loads will fail with a validation error caused by RTC clock being reset when
 // the battery is drained.
 int kLoadRetryDelayMs = 1000 * 5;
 // Maximal number of retries before we give up. Calculated to allow for 10 min
