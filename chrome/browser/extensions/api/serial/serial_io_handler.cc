@@ -5,39 +5,96 @@
 #include "chrome/browser/extensions/api/serial/serial_io_handler.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
-
-namespace {
-#if defined(OS_WIN)
-const base::PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
-const base::PlatformFile kInvalidPlatformFileValue = -1;
-#endif
-}  // namespace
+#include "base/strings/string_util.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
 SerialIoHandler::SerialIoHandler()
-    : file_(kInvalidPlatformFileValue),
-      pending_read_buffer_len_(0),
-      pending_write_buffer_len_(0) {
+    : pending_read_buffer_len_(0), pending_write_buffer_len_(0) {
 }
 
 SerialIoHandler::~SerialIoHandler() {
   DCHECK(CalledOnValidThread());
+  Close();
 }
 
-void SerialIoHandler::Initialize(base::PlatformFile file,
-                                 const ReadCompleteCallback& read_callback,
+void SerialIoHandler::Initialize(const ReadCompleteCallback& read_callback,
                                  const WriteCompleteCallback& write_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(file_, kInvalidPlatformFileValue);
-
-  file_ = file;
   read_complete_ = read_callback;
   write_complete_ = write_callback;
+}
 
-  InitializeImpl();
+void SerialIoHandler::Open(const std::string& port,
+                           const OpenCompleteCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(open_complete_.is_null());
+  open_complete_ = callback;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&SerialIoHandler::StartOpen, this, port));
+}
+
+void SerialIoHandler::StartOpen(const std::string& port) {
+  DCHECK(!open_complete_.is_null());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK(!file_.IsValid());
+  // It's the responsibility of the API wrapper around SerialIoHandler to
+  // validate the supplied path against the set of valid port names, and
+  // it is a reasonable assumption that serial port names are ASCII.
+  DCHECK(base::IsStringASCII(port));
+  base::FilePath path(base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port)));
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+              base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
+              base::File::FLAG_TERMINAL_DEVICE;
+  base::File file(path, flags);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SerialIoHandler::FinishOpen, this, Passed(file.Pass())));
+}
+
+void SerialIoHandler::FinishOpen(base::File file) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!open_complete_.is_null());
+  OpenCompleteCallback callback = open_complete_;
+  open_complete_.Reset();
+
+  if (!file.IsValid()) {
+    callback.Run(false);
+    return;
+  }
+
+  file_ = file.Pass();
+
+  bool success = PostOpen();
+  if (!success)
+    Close();
+  callback.Run(success);
+}
+
+bool SerialIoHandler::PostOpen() {
+  return true;
+}
+
+void SerialIoHandler::Close() {
+  if (file_.IsValid()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&SerialIoHandler::DoClose, Passed(file_.Pass())));
+  }
+}
+
+// static
+void SerialIoHandler::DoClose(base::File port) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  // port closed by destructor.
 }
 
 void SerialIoHandler::Read(int max_bytes) {

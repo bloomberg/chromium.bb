@@ -52,48 +52,46 @@ class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
   virtual ~FakeSerialGetDevicesFunction() {}
 };
 
-class FakeEchoSerialConnection : public SerialConnection {
+class FakeEchoSerialIoHandler : public SerialIoHandler {
  public:
-  explicit FakeEchoSerialConnection(
-      const std::string& port,
-      const std::string& owner_extension_id)
-      : SerialConnection(port, owner_extension_id),
-        opened_(false) {
-  }
+  explicit FakeEchoSerialIoHandler() : opened_(false) {}
 
-  virtual ~FakeEchoSerialConnection() {
-  }
-
-  virtual void Open(const OpenCompleteCallback& callback) {
+  virtual void Open(const std::string& port,
+                    const OpenCompleteCallback& callback) OVERRIDE {
     DCHECK(!opened_);
     opened_ = true;
     callback.Run(true);
   }
 
-  virtual bool Configure(const api::serial::ConnectionOptions& options) {
+  virtual bool ConfigurePort(
+      const api::serial::ConnectionOptions& options) OVERRIDE {
     return true;
   }
 
-  virtual void Close() {
-    DCHECK(opened_);
+  virtual void ReadImpl() OVERRIDE {}
+
+  virtual void CancelReadImpl() OVERRIDE {
+    QueueReadCompleted(0, read_cancel_reason());
   }
 
-  virtual bool Receive(const ReceiveCompleteCallback& callback) {
-    read_callback_ = callback;
-    return true;
+  virtual void WriteImpl() OVERRIDE {
+    DCHECK(pending_read_buffer());
+    DCHECK_LE(pending_write_buffer_len(), pending_read_buffer_len());
+    memcpy(pending_read_buffer()->data(),
+           pending_write_buffer()->data(),
+           pending_write_buffer_len());
+    QueueReadCompleted(pending_write_buffer_len(),
+                       api::serial::RECEIVE_ERROR_NONE);
+    QueueWriteCompleted(pending_write_buffer_len(),
+                        api::serial::SEND_ERROR_NONE);
   }
 
-  virtual bool Send(const std::string& data,
-                    const SendCompleteCallback& callback) {
-    callback.Run(data.length(), api::serial::SEND_ERROR_NONE);
-    if (!read_callback_.is_null()) {
-      read_callback_.Run(data, api::serial::RECEIVE_ERROR_NONE);
-    }
-    return true;
+  virtual void CancelWriteImpl() OVERRIDE {
+    QueueWriteCompleted(0, write_cancel_reason());
   }
 
-  virtual bool GetControlSignals(api::serial::DeviceControlSignals* signals)
-      const {
+  virtual bool GetControlSignals(
+      api::serial::DeviceControlSignals* signals) const OVERRIDE {
     signals->dcd = true;
     signals->cts = true;
     signals->ri = true;
@@ -101,12 +99,7 @@ class FakeEchoSerialConnection : public SerialConnection {
     return true;
   }
 
-  virtual bool GetInfo(api::serial::ConnectionInfo* info) const {
-    info->paused = false;
-    info->persistent = false;
-    info->buffer_size = 4096;
-    info->receive_timeout = 0;
-    info->send_timeout = 0;
+  virtual bool GetPortInfo(api::serial::ConnectionInfo* info) const OVERRIDE {
     info->bitrate.reset(new int(9600));
     info->data_bits = api::serial::DATA_BITS_EIGHT;
     info->parity_bit = api::serial::PARITY_BIT_NO;
@@ -115,13 +108,17 @@ class FakeEchoSerialConnection : public SerialConnection {
     return true;
   }
 
+  virtual bool Flush() const OVERRIDE { return true; }
+
   MOCK_METHOD1(SetControlSignals, bool(const api::serial::HostControlSignals&));
+
+ protected:
+  virtual ~FakeEchoSerialIoHandler() {}
 
  private:
   bool opened_;
-  ReceiveCompleteCallback read_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialConnection);
+  DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialIoHandler);
 };
 
 class FakeSerialConnectFunction : public api::SerialConnectFunction {
@@ -129,10 +126,13 @@ class FakeSerialConnectFunction : public api::SerialConnectFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       const std::string& owner_extension_id) const OVERRIDE {
-    FakeEchoSerialConnection* serial_connection =
-        new FakeEchoSerialConnection(port, owner_extension_id);
-    EXPECT_CALL(*serial_connection, SetControlSignals(_)).
-        Times(1).WillOnce(Return(true));
+    scoped_refptr<FakeEchoSerialIoHandler> io_handler =
+        new FakeEchoSerialIoHandler;
+    EXPECT_CALL(*io_handler, SetControlSignals(_)).Times(1).WillOnce(
+        Return(true));
+    SerialConnection* serial_connection =
+        new SerialConnection(port, owner_extension_id);
+    serial_connection->SetIoHandlerForTest(io_handler);
     return serial_connection;
   }
 

@@ -136,7 +136,6 @@ void SerialConnectFunction::OnConnected(bool success) {
 
   if (success) {
     if (!connection_->Configure(*params_->options.get())) {
-      connection_->Close();
       delete connection_;
       connection_ = NULL;
     }
@@ -162,7 +161,6 @@ void SerialConnectFunction::FinishConnect() {
       serial_event_dispatcher_->PollConnection(extension_->id(), id);
       results_ = serial::Connect::Results::Create(info);
     } else {
-      connection_->Close();
       RemoveSerialConnection(id);
       error_ = kErrorConnectFailed;
     }
@@ -213,7 +211,6 @@ void SerialDisconnectFunction::Work() {
     error_ = kErrorSerialConnectionNotFound;
     return;
   }
-  connection->Close();
   RemoveSerialConnection(params_->connection_id);
   results_ = serial::Disconnect::Results::Create(true);
 }

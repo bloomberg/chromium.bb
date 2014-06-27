@@ -24,6 +24,8 @@ class SerialIoHandler : public base::NonThreadSafe,
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create();
 
+  typedef base::Callback<void(bool success)> OpenCompleteCallback;
+
   // Called with a string of bytes read, and a result code. Note that an error
   // result does not necessarily imply 0 bytes read.
   typedef base::Callback<void(const std::string& data,
@@ -37,9 +39,12 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Initializes the handler on the current message loop. Must be called exactly
   // once before performing any I/O through the handler.
-  void Initialize(base::PlatformFile file,
-                  const ReadCompleteCallback& read_callback,
-                  const WriteCompleteCallback& write_callback);
+  virtual void Initialize(const ReadCompleteCallback& read_callback,
+                          const WriteCompleteCallback& write_callback);
+
+  // Initiates an asynchronous Open of the device.
+  virtual void Open(const std::string& port,
+                    const OpenCompleteCallback& callback);
 
   // Performs an async Read operation. Behavior is undefined if this is called
   // while a Read is already pending. Otherwise, the ReadCompleteCallback
@@ -63,13 +68,33 @@ class SerialIoHandler : public base::NonThreadSafe,
   // Attempts to cancel a pending write operation.
   void CancelWrite(api::serial::SendError reason);
 
+  // Flushes input and output buffers.
+  virtual bool Flush() const = 0;
+
+  // Reads current control signals (DCD, CTS, etc.) into an existing
+  // DeviceControlSignals structure. Returns |true| iff the signals were
+  // successfully read.
+  virtual bool GetControlSignals(
+      api::serial::DeviceControlSignals* control_signals) const = 0;
+
+  // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
+  // the signals were successfully set. Unininitialized flags in the
+  // HostControlSignals structure are left unchanged.
+  virtual bool SetControlSignals(
+      const api::serial::HostControlSignals& control_signals) = 0;
+
+  // Performs platform-specific port configuration. Returns |true| iff
+  // configuration was successful.
+  virtual bool ConfigurePort(const api::serial::ConnectionOptions& options) = 0;
+
+  // Performs a platform-specific port configuration query. Fills values in an
+  // existing ConnectionInfo. Returns |true| iff port configuration was
+  // successfully retrieved.
+  virtual bool GetPortInfo(api::serial::ConnectionInfo* info) const = 0;
+
  protected:
   SerialIoHandler();
   virtual ~SerialIoHandler();
-
-  // Performs platform-specific initialization. |file_|, |read_complete_| and
-  // |write_complete_| all hold initialized values before this is called.
-  virtual void InitializeImpl() {}
 
   // Performs a platform-specific read operation. This must guarantee that
   // ReadCompleted is called when the underlying async operation is completed
@@ -91,6 +116,9 @@ class SerialIoHandler : public base::NonThreadSafe,
   // Platform-specific write cancelation.
   virtual void CancelWriteImpl() = 0;
 
+  // Performs platform-specific, one-time port configuration on open.
+  virtual bool PostOpen();
+
   // Called by the implementation to signal that the active read has completed.
   // WARNING: Calling this method can destroy the SerialIoHandler instance
   // if the associated I/O operation was the only thing keeping it alive.
@@ -111,9 +139,7 @@ class SerialIoHandler : public base::NonThreadSafe,
   // without being reentrant.
   void QueueWriteCompleted(int bytes_written, api::serial::SendError error);
 
-  base::PlatformFile file() const {
-    return file_;
-  }
+  const base::File& file() const { return file_; }
 
   net::IOBuffer* pending_read_buffer() const {
     return pending_read_buffer_.get();
@@ -147,10 +173,26 @@ class SerialIoHandler : public base::NonThreadSafe,
     return write_canceled_;
   }
 
+  // Possibly fixes up a serial port path name in a platform-specific manner.
+  static std::string MaybeFixUpPortName(const std::string& port_name);
+
  private:
   friend class base::RefCounted<SerialIoHandler>;
 
-  base::PlatformFile file_;
+  // Continues an Open operation on the FILE thread.
+  void StartOpen(const std::string& port);
+
+  // Finalizes an Open operation (continued from StartOpen) on the IO thread.
+  void FinishOpen(base::File file);
+
+  void Close();
+
+  // Continues a Close operation on the FILE thread.
+  static void DoClose(base::File port);
+
+  // File for the opened serial device. This value is only modified from the IO
+  // thread.
+  base::File file_;
 
   scoped_refptr<net::IOBuffer> pending_read_buffer_;
   int pending_read_buffer_len_;
@@ -164,6 +206,9 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   ReadCompleteCallback read_complete_;
   WriteCompleteCallback write_complete_;
+
+  // Callback to handle the completion of a pending Open() request.
+  OpenCompleteCallback open_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandler);
 };

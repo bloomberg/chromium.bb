@@ -504,8 +504,6 @@
         'browser/extensions/api/serial/serial_api.h',
         'browser/extensions/api/serial/serial_connection.cc',
         'browser/extensions/api/serial/serial_connection.h',
-        'browser/extensions/api/serial/serial_connection_posix.cc',
-        'browser/extensions/api/serial/serial_connection_win.cc',
         'browser/extensions/api/serial/serial_event_dispatcher.cc',
         'browser/extensions/api/serial/serial_event_dispatcher.h',
         'browser/extensions/api/serial/serial_io_handler.cc',

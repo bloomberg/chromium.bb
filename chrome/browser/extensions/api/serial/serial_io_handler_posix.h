@@ -18,6 +18,15 @@ class SerialIoHandlerPosix : public SerialIoHandler,
   virtual void WriteImpl() OVERRIDE;
   virtual void CancelReadImpl() OVERRIDE;
   virtual void CancelWriteImpl() OVERRIDE;
+  virtual bool Flush() const OVERRIDE;
+  virtual bool GetControlSignals(
+      api::serial::DeviceControlSignals* control_signals) const OVERRIDE;
+  virtual bool SetControlSignals(
+      const api::serial::HostControlSignals& control_signals) OVERRIDE;
+  virtual bool ConfigurePort(
+      const api::serial::ConnectionOptions& options) OVERRIDE;
+  virtual bool GetPortInfo(api::serial::ConnectionInfo* info) const OVERRIDE;
+  virtual bool PostOpen() OVERRIDE;
 
  private:
   friend class SerialIoHandler;
@@ -45,4 +54,3 @@ class SerialIoHandlerPosix : public SerialIoHandler,
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
-

@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/strings/string_util.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "extensions/browser/api/api_resource_manager.h"
 
@@ -41,13 +40,14 @@ SerialConnection::SerialConnection(const std::string& port,
       paused_(false),
       io_handler_(SerialIoHandler::Create()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  io_handler_->Initialize(
+      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
+      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 SerialConnection::~SerialConnection() {
-  DCHECK(open_complete_.is_null());
   io_handler_->CancelRead(api::serial::RECEIVE_ERROR_DISCONNECTED);
   io_handler_->CancelWrite(api::serial::SEND_ERROR_DISCONNECTED);
-  Close();
 }
 
 bool SerialConnection::IsPersistent() const { return persistent(); }
@@ -73,23 +73,7 @@ void SerialConnection::set_paused(bool paused) {
 
 void SerialConnection::Open(const OpenCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(open_complete_.is_null());
-  open_complete_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&SerialConnection::StartOpen, base::Unretained(this)));
-}
-
-void SerialConnection::Close() {
-  DCHECK(open_complete_.is_null());
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (file_.IsValid()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&SerialConnection::DoClose, Passed(file_.Pass())));
-  }
+  io_handler_->Open(port_, callback);
 }
 
 bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
@@ -136,7 +120,7 @@ bool SerialConnection::Configure(
     set_receive_timeout(*options.receive_timeout);
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
-  bool success = ConfigurePort(options);
+  bool success = io_handler_->ConfigurePort(options);
   io_handler_->CancelRead(api::serial::RECEIVE_ERROR_NONE);
   return success;
 }
@@ -144,6 +128,9 @@ bool SerialConnection::Configure(
 void SerialConnection::SetIoHandlerForTest(
     scoped_refptr<SerialIoHandler> handler) {
   io_handler_ = handler;
+  io_handler_->Initialize(
+      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
+      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 bool SerialConnection::GetInfo(api::serial::ConnectionInfo* info) const {
@@ -154,63 +141,21 @@ bool SerialConnection::GetInfo(api::serial::ConnectionInfo* info) const {
   info->buffer_size = buffer_size_;
   info->receive_timeout = receive_timeout_;
   info->send_timeout = send_timeout_;
-  return GetPortInfo(info);
+  return io_handler_->GetPortInfo(info);
 }
 
-void SerialConnection::StartOpen() {
-  DCHECK(!open_complete_.is_null());
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(!file_.IsValid());
-  // It's the responsibility of the API wrapper around SerialConnection to
-  // validate the supplied path against the set of valid port names, and
-  // it is a reasonable assumption that serial port names are ASCII.
-  DCHECK(base::IsStringASCII(port_));
-  base::FilePath path(
-      base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_WRITE |
-              base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
-              base::File::FLAG_TERMINAL_DEVICE;
-  base::File file(path, flags);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SerialConnection::FinishOpen, base::Unretained(this),
-                 Passed(file.Pass())));
+bool SerialConnection::Flush() const {
+  return io_handler_->Flush();
 }
 
-void SerialConnection::FinishOpen(base::File file) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!open_complete_.is_null());
-  DCHECK(!file_.IsValid());
-  OpenCompleteCallback callback = open_complete_;
-  open_complete_.Reset();
-
-  if (!file.IsValid()) {
-    callback.Run(false);
-    return;
-  }
-
-  // TODO(rvargas): crbug.com/351073. This is wrong. io_handler_ keeps a copy of
-  // the handler that is not in sync with this one.
-  file_ = file.Pass();
-  io_handler_->Initialize(
-      file_.GetPlatformFile(),
-      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
-
-  bool success = PostOpen();
-  if (!success) {
-    Close();
-  }
-
-  callback.Run(success);
+bool SerialConnection::GetControlSignals(
+    api::serial::DeviceControlSignals* control_signals) const {
+  return io_handler_->GetControlSignals(control_signals);
 }
 
-// static
-void SerialConnection::DoClose(base::File port) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  // port closed by destructor.
+bool SerialConnection::SetControlSignals(
+    const api::serial::HostControlSignals& control_signals) {
+  return io_handler_->SetControlSignals(control_signals);
 }
 
 void SerialConnection::OnReceiveTimeout() {

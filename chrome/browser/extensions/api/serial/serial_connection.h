@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -19,21 +18,19 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "net/base/file_stream.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-// Encapsulates an open serial port. Platform-specific implementations are in
-// _win and _posix versions of the the .cc file.
+// Encapsulates an open serial port.
 // NOTE: Instances of this object should only be constructed on the IO thread,
 // and all methods should only be called on the IO thread unless otherwise
 // noted.
 class SerialConnection : public ApiResource,
                          public base::SupportsWeakPtr<SerialConnection> {
  public:
-  typedef base::Callback<void(bool success)> OpenCompleteCallback;
+  typedef SerialIoHandler::OpenCompleteCallback OpenCompleteCallback;
 
   // This is the callback type expected by Receive. Note that an error result
   // does not necessarily imply an empty |data| string, since a receive may
@@ -76,69 +73,47 @@ class SerialConnection : public ApiResource,
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive
   // until |callback| is run.
-  virtual void Open(const OpenCompleteCallback& callback);
-
-  // Initiate a Close of the device. The SerialConnection instance will
-  // have its internal state reset synchronously upon calling this, but
-  // the underlying OS handle will be closed asynchronously.
-  virtual void Close();
+  void Open(const OpenCompleteCallback& callback);
 
   // Begins an asynchronous receive operation. Calling this while a Receive
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Receive(const ReceiveCompleteCallback& callback);
+  bool Receive(const ReceiveCompleteCallback& callback);
 
   // Begins an asynchronous send operation. Calling this while a Send
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Send(const std::string& data,
-                    const SendCompleteCallback& callback);
+  bool Send(const std::string& data, const SendCompleteCallback& callback);
 
   // Flushes input and output buffers.
-  virtual bool Flush() const;
+  bool Flush() const;
 
   // Configures some subset of port options for this connection.
   // Omitted options are unchanged. Returns |true| iff the configuration
   // changes were successful.
-  virtual bool Configure(const api::serial::ConnectionOptions& options);
+  bool Configure(const api::serial::ConnectionOptions& options);
 
   // Connection configuration query. Fills values in an existing
   // ConnectionInfo. Returns |true| iff the connection's information
   // was successfully retrieved.
-  virtual bool GetInfo(api::serial::ConnectionInfo* info) const;
+  bool GetInfo(api::serial::ConnectionInfo* info) const;
 
   // Reads current control signals (DCD, CTS, etc.) into an existing
   // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
-  virtual bool GetControlSignals(
+  bool GetControlSignals(
       api::serial::DeviceControlSignals* control_signals) const;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the
   // HostControlSignals structure are left unchanged.
-  virtual bool SetControlSignals(
+  bool SetControlSignals(
       const api::serial::HostControlSignals& control_signals);
 
-  static const BrowserThread::ID kThreadId = BrowserThread::IO;
-
- protected:
   // Overrides |io_handler_| for testing.
-  virtual void SetIoHandlerForTest(scoped_refptr<SerialIoHandler> handler);
+  void SetIoHandlerForTest(scoped_refptr<SerialIoHandler> handler);
 
-  // Performs platform-specific, one-time port configuration on open.
-  bool PostOpen();
-
-  // Performs platform-specific port configuration. Returns |true| iff
-  // configuration was successful.
-  bool ConfigurePort(const api::serial::ConnectionOptions& options);
-
-  // Performs a platform-specific port configuration query. Fills values in an
-  // existing ConnectionInfo. Returns |true| iff port configuration was
-  // successfully retrieved.
-  bool GetPortInfo(api::serial::ConnectionInfo* info) const;
-
-  // Possibly fixes up a serial port path name in a platform-specific manner.
-  static std::string MaybeFixUpPortName(const std::string& port_name);
+  static const BrowserThread::ID kThreadId = BrowserThread::IO;
 
  private:
   friend class ApiResourceManager<SerialConnection>;
@@ -160,15 +135,6 @@ class SerialConnection : public ApiResource,
     base::TimeDelta delay_;
   };
 
-  // Continues an Open operation on the FILE thread.
-  void StartOpen();
-
-  // Finalizes an Open operation (continued from StartOpen) on the IO thread.
-  void FinishOpen(base::File file);
-
-  // Continues a Close operation on the FILE thread.
-  static void DoClose(base::File port);
-
   // Handles a receive timeout.
   void OnReceiveTimeout();
 
@@ -184,10 +150,6 @@ class SerialConnection : public ApiResource,
 
   // The pathname of the serial device.
   std::string port_;
-
-  // File for the opened serial device. This value is only modified from the IO
-  // thread.
-  base::File file_;
 
   // Flag indicating whether or not the connection should persist when
   // its host app is suspended.
@@ -210,9 +172,6 @@ class SerialConnection : public ApiResource,
   // Flag indicating that the connection is paused. A paused connection will not
   // raise new onReceive events.
   bool paused_;
-
-  // Callback to handle the completion of a pending Open() request.
-  OpenCompleteCallback open_complete_;
 
   // Callback to handle the completion of a pending Receive() request.
   ReceiveCompleteCallback receive_complete_;
