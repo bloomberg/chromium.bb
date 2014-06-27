@@ -438,8 +438,6 @@ void PictureLayerImpl::UpdateTiles(
   was_screen_space_transform_animating_ =
       draw_properties().screen_space_transform_is_animating;
 
-  // TODO(sohanjg): Avoid needlessly update priorities when syncing to a
-  // non-updated tree which will then be updated immediately afterwards.
   should_update_tile_priorities_ = true;
 
   UpdateTilePriorities(occlusion_tracker);
@@ -486,11 +484,9 @@ void PictureLayerImpl::UpdateTilePriorities(
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    // TODO(sohanjg): Passing MaximumContentsScale as layer contents scale
-    // in UpdateTilePriorities is wrong and should be ideal contents scale.
     tilings_->tiling_at(i)->UpdateTilePriorities(tree,
                                                  visible_layer_rect,
-                                                 MaximumTilingContentsScale(),
+                                                 ideal_contents_scale_,
                                                  current_frame_time_in_seconds,
                                                  occlusion_tracker,
                                                  render_target(),
