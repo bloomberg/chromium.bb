@@ -65,14 +65,13 @@ public:
     // Evaluator  returns true for acceptedMediaType and returns value of \mediafeatureResult
     // for any media features
 
-    MediaQueryEvaluator(const String& acceptedMediaType, bool mediaFeatureResult = false);
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
     // Creates evaluator which evaluates full media queries
-    MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame*);
+    MediaQueryEvaluator(LocalFrame*);
 
     // Creates evaluator which evaluates in a thread-safe manner a subset of media values
-    MediaQueryEvaluator(const String& acceptedMediaType, const MediaValues&);
+    MediaQueryEvaluator(const MediaValues&);
 
     ~MediaQueryEvaluator();
 
@@ -86,6 +85,8 @@ public:
     bool eval(const MediaQueryExp*) const;
 
 private:
+    const String mediaType() const;
+
     String m_mediaType;
     bool m_expectedResult;
     RefPtr<MediaValues> m_mediaValues;

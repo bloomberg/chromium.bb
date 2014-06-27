@@ -96,23 +96,10 @@ int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const
     return frame->host()->settings().defaultFontSize();
 }
 
-bool MediaValues::calculateScanMediaType(LocalFrame* frame) const
+const String MediaValues::calculateMediaType(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view());
-    // Scan only applies to 'tv' media.
-    return equalIgnoringCase(frame->view()->mediaType(), "tv");
-}
-
-bool MediaValues::calculateScreenMediaType(LocalFrame* frame) const
-{
-    ASSERT(frame && frame->view());
-    return equalIgnoringCase(frame->view()->mediaType(), "screen");
-}
-
-bool MediaValues::calculatePrintMediaType(LocalFrame* frame) const
-{
-    ASSERT(frame && frame->view());
-    return equalIgnoringCase(frame->view()->mediaType(), "print");
+    return frame->view()->mediaType();
 }
 
 bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const

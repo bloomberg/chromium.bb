@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/SizesAttributeParser.h"
 
+#include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
 
 #include <gtest/gtest.h>
@@ -67,9 +68,7 @@ TEST(SizesAttributeParserTest, Basic)
     data.pointer = MediaValues::MousePointer;
     data.defaultFontSize = 16;
     data.threeDEnabled = true;
-    data.scanMediaType = false;
-    data.screenMediaType = true;
-    data.printMediaType = false;
+    data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 

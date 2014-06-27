@@ -98,19 +98,9 @@ bool MediaValuesDynamic::threeDEnabled() const
     return calculateThreeDEnabled(m_frame);
 }
 
-bool MediaValuesDynamic::scanMediaType() const
+const String MediaValuesDynamic::mediaType() const
 {
-    return calculateScanMediaType(m_frame);
-}
-
-bool MediaValuesDynamic::screenMediaType() const
-{
-    return calculateScreenMediaType(m_frame);
-}
-
-bool MediaValuesDynamic::printMediaType() const
-{
-    return calculatePrintMediaType(m_frame);
+    return calculateMediaType(m_frame);
 }
 
 bool MediaValuesDynamic::strictMode() const

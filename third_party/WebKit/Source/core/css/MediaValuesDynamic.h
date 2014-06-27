@@ -28,10 +28,8 @@ public:
     virtual int monochromeBitsPerComponent() const OVERRIDE;
     virtual PointerDeviceType pointer() const OVERRIDE;
     virtual bool threeDEnabled() const OVERRIDE;
-    virtual bool scanMediaType() const OVERRIDE;
-    virtual bool screenMediaType() const OVERRIDE;
-    virtual bool printMediaType() const OVERRIDE;
     virtual bool strictMode() const OVERRIDE;
+    virtual const String mediaType() const OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual bool hasValues() const OVERRIDE;
 

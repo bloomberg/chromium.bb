@@ -57,8 +57,6 @@ public:
 private:
     explicit MediaQueryMatcher(Document&);
 
-    AtomicString mediaType() const;
-
     PassOwnPtr<MediaQueryEvaluator> createEvaluator() const;
 
     RawPtrWillBeMember<Document> m_document;

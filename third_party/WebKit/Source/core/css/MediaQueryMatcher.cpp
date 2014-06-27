@@ -52,20 +52,12 @@ void MediaQueryMatcher::documentDetached()
         lists[i]->documentDetached();
 }
 
-AtomicString MediaQueryMatcher::mediaType() const
-{
-    if (!m_document || !m_document->frame() || !m_document->frame()->view())
-        return nullAtom;
-
-    return m_document->frame()->view()->mediaType();
-}
-
 PassOwnPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
 {
     if (!m_document || !m_document->frame())
         return nullptr;
 
-    return adoptPtr(new MediaQueryEvaluator(mediaType(), m_document->frame()));
+    return adoptPtr(new MediaQueryEvaluator(m_document->frame()));
 }
 
 bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)

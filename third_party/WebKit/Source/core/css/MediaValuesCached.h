@@ -23,10 +23,8 @@ public:
         PointerDeviceType pointer;
         int defaultFontSize;
         bool threeDEnabled;
-        bool scanMediaType;
-        bool screenMediaType;
-        bool printMediaType;
         bool strictMode;
+        String mediaType;
 
         MediaValuesCachedData()
             : viewportWidth(0)
@@ -39,9 +37,6 @@ public:
             , pointer(UnknownPointer)
             , defaultFontSize(16)
             , threeDEnabled(false)
-            , scanMediaType(false)
-            , screenMediaType(true)
-            , printMediaType(false)
             , strictMode(true)
         {
         }
@@ -65,12 +60,10 @@ public:
     virtual int monochromeBitsPerComponent() const OVERRIDE;
     virtual PointerDeviceType pointer() const OVERRIDE;
     virtual bool threeDEnabled() const OVERRIDE;
-    virtual bool scanMediaType() const OVERRIDE;
-    virtual bool screenMediaType() const OVERRIDE;
-    virtual bool printMediaType() const OVERRIDE;
     virtual bool strictMode() const OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual bool hasValues() const OVERRIDE;
+    virtual const String mediaType() const OVERRIDE;
 
 protected:
     MediaValuesCached();

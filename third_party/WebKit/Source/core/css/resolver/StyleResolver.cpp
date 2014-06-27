@@ -139,7 +139,7 @@ StyleResolver::StyleResolver(Document& document)
 {
     FrameView* view = document.view();
     if (view)
-        m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType(), &view->frame()));
+        m_medium = adoptPtr(new MediaQueryEvaluator(&view->frame()));
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
 
