@@ -25,7 +25,7 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGAnimatedInteger {
     [RaisesException=Setter] attribute long baseVal;
     readonly attribute long animVal;

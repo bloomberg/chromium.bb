@@ -31,7 +31,7 @@
 // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-URL
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] partial interface URL {
     [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource source);
 };

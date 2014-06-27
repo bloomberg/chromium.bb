@@ -21,7 +21,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
     ImplementedAs=SVGMatrixTearOff,
     SetWrapperReferenceTo(SVGTransform contextTransform)
 ] interface SVGMatrix {

@@ -27,7 +27,7 @@
 
 [
     DoNotCheckConstants,
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface WebGLRenderingContext { };
 WebGLRenderingContext implements WebGLRenderingContextBase;

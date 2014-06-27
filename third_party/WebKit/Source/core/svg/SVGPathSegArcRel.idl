@@ -25,7 +25,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGPathSegArcRel : SVGPathSeg {
     attribute float x;
     attribute float y;

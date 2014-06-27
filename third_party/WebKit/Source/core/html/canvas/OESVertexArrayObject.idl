@@ -26,7 +26,7 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface OESVertexArrayObject {
     const unsigned long VERTEX_ARRAY_BINDING_OES = 0x85B5;
 

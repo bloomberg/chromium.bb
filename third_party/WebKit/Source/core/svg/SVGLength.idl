@@ -23,7 +23,7 @@
 [
     ImplementedAs=SVGLengthTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGLength {
     // Length Unit Types
     const unsigned short SVG_LENGTHTYPE_UNKNOWN    = 0;

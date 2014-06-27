@@ -39,7 +39,7 @@ enum AppendMode {
     ActiveDOMObject,
     NoInterfaceObject,
     RuntimeEnabled=MediaSource,
-    TypeChecking=Interface|Nullable|Unrestricted,
+    TypeChecking=Interface|Unrestricted,
 ] interface SourceBuffer : EventTarget {
 
     // Gets or sets the AppendMode.

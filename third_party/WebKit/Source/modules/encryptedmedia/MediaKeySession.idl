@@ -27,7 +27,7 @@
     ActiveDOMObject,
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
-    TypeChecking=Interface|Nullable
+    TypeChecking=Interface
 ] interface MediaKeySession : EventTarget {
     // error state
     readonly attribute MediaKeyError error;

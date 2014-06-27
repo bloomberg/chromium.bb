@@ -25,7 +25,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGPathSegCurvetoQuadraticAbs : SVGPathSeg {
     attribute float x;
     attribute float y;

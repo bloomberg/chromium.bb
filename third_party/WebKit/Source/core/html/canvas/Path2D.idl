@@ -35,7 +35,7 @@
     RuntimeEnabled=Path2D,
 ] interface Path2D {
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void addPath(Path2D path, optional SVGMatrix? transform);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface] void addPath(Path2D path, optional SVGMatrix? transform);
 };
 
 Path2D implements CanvasPathMethods;

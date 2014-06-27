@@ -46,7 +46,7 @@ typedef (// HTMLImageElement or
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
     RuntimeEnabled=ExperimentalCanvasFeatures,
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface ImageBitmapFactories {
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob);
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);

@@ -24,7 +24,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGTextContentElement : SVGGraphicsElement {
     // lengthAdjust Types
     const unsigned short LENGTHADJUST_UNKNOWN          = 0;

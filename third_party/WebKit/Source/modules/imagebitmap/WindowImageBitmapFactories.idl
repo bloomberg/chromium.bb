@@ -31,7 +31,7 @@
 [
     ImplementedAs=ImageBitmapFactories,
     RuntimeEnabled=ExperimentalCanvasFeatures,
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] partial interface Window {
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(HTMLImageElement image);
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);

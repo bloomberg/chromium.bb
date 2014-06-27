@@ -25,7 +25,7 @@
 // TODO: no css::ViewCSS available!
 // TODO: no events::DocumentEvent available!
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGSVGElement : SVGGraphicsElement {
 
     readonly attribute SVGAnimatedLength x;

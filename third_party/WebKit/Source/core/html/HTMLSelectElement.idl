@@ -42,7 +42,7 @@ interface HTMLSelectElement : HTMLElement {
     [ImplementedAs=addBeforeOptionAtIndex, RaisesException, TypeChecking=Interface] void add(HTMLElement element, long before);
     [RaisesException] void remove(); // ChildNode overload
     void remove(long index);
-    [RaisesException, TypeChecking=Interface|Nullable] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
+    [RaisesException, TypeChecking=Interface] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
 
     readonly attribute HTMLCollection selectedOptions;
              attribute long selectedIndex;

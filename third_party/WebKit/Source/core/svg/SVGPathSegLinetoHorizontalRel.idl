@@ -25,7 +25,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface SVGPathSegLinetoHorizontalRel : SVGPathSeg {
     attribute float x;
 };

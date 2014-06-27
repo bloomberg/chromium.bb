@@ -21,7 +21,7 @@
     // FIXME: If the user calls animation.specified.duration = "" (empty string) then duration
     // gets set to 0 (This is correct behavior for IDL). Correct result is for duration to
     // be set to 'auto'.
-    [TypeChecking=Interface|Nullable, ImplementedAs=setDuration] setter double (DOMString name, double duration);
+    [TypeChecking=Interface, ImplementedAs=setDuration] setter double (DOMString name, double duration);
 
     attribute double playbackRate;
     attribute DOMString direction;

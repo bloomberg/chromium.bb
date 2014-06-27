@@ -31,7 +31,7 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    TypeChecking=Interface|Nullable,
+    TypeChecking=Interface,
 ] interface ANGLEInstancedArrays {
     const unsigned long VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE = 0x88FE;
 
