@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -28,6 +29,10 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/genius_app/app_id.h"
+#endif
 
 using syncer::SyncChange;
 
@@ -96,6 +101,17 @@ syncer::SyncData GetSyncDataFromSyncItem(
 bool AppIsDefault(ExtensionService* service, const std::string& id) {
   return service && extensions::ExtensionPrefs::Get(service->profile())
                         ->WasInstalledByDefault(id);
+}
+
+bool IsUnRemovableDefaultApp(const std::string& id) {
+  if (id == extension_misc::kChromeAppId ||
+      id == extension_misc::kWebStoreAppId)
+    return true;
+#if defined(OS_CHROMEOS)
+  if (id == genius_app::kGeniusAppId)
+    return true;
+#endif
+  return false;
 }
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {
@@ -192,7 +208,8 @@ AppListSyncableService::AppListSyncableService(
     extensions::ExtensionSystem* extension_system)
     : profile_(profile),
       extension_system_(extension_system),
-      model_(new AppListModel) {
+      model_(new AppListModel),
+      first_app_list_sync_(false) {
   if (!extension_system) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
@@ -286,14 +303,15 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
   std::string folder_id;
   if (app_list::switches::IsFolderUIEnabled()) {
     if (AppIsOem(app_item->id())) {
-      folder_id = FindOrCreateOemFolder();
-      VLOG(2) << this << ": AddItem to OEM folder: " << sync_item->ToString();
+      folder_id = FindOrCreateOemFolder(app_item->id());
+      VLOG_IF(2, !folder_id.empty())
+          << this << ": AddItem to OEM folder: " << sync_item->ToString();
     } else {
       folder_id = sync_item->parent_id;
     }
   }
   VLOG(2) << this << ": AddItem: " << sync_item->ToString()
-          << "Folder: '" << folder_id << "'";
+          << " Folder: '" << folder_id << "'";
   model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
 
@@ -441,7 +459,7 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   DeleteSyncItem(sync_item);
 }
 
-void AppListSyncableService::ResolveFolderPositions(bool move_oem_to_end) {
+void AppListSyncableService::ResolveFolderPositions() {
   if (!app_list::switches::IsFolderUIEnabled())
     return;
 
@@ -453,11 +471,22 @@ void AppListSyncableService::ResolveFolderPositions(bool move_oem_to_end) {
     AppListItem* app_item = model_->FindItem(sync_item->item_id);
     if (!app_item)
       continue;
-    if (move_oem_to_end && app_item->id() == kOemFolderId) {
-      // Move the OEM folder to the end.
-      model_->SetItemPosition(app_item, syncer::StringOrdinal());
-    }
     UpdateAppItemFromSyncItem(sync_item, app_item);
+  }
+
+  // Create the OEM folder if necessary.
+  if (oem_folder_item_ids_.empty())
+    return;
+  std::string oem_folder_id = FindOrCreateOemFolder("");
+  DCHECK(!oem_folder_id.empty());
+  for (std::vector<std::string>::iterator iter = oem_folder_item_ids_.begin();
+       iter != oem_folder_item_ids_.end(); ++iter) {
+    AppListItem* app_item = model_->FindItem(*iter);
+    if (!app_item)
+      continue;
+    VLOG(2) << this << ": MoveItem to OEM folder: "
+            << app_item->ToDebugString();
+    model_->MoveItemToFolder(app_item, oem_folder_id);
   }
 }
 
@@ -508,9 +537,10 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     unsynced_items.insert(iter->first);
   }
 
+  first_app_list_sync_ = initial_sync_data.empty();
+
   // Create SyncItem entries for initial_sync_data.
   size_t new_items = 0, updated_items = 0;
-  bool oem_folder_is_synced = false;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& data = *iter;
@@ -523,8 +553,6 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     else
       ++updated_items;
     unsynced_items.erase(item_id);
-    if (item_id == kOemFolderId)
-      oem_folder_is_synced = true;
   }
 
   result.set_num_items_after_association(sync_items_.size());
@@ -545,9 +573,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   // Adding items may have created folders without setting their positions
   // since we haven't started observing the item list yet. Resolve those.
-  // Also ensure the OEM folder is at the end if its position hasn't been set.
-  bool move_oem_to_end = !oem_folder_is_synced;
-  ResolveFolderPositions(move_oem_to_end);
+  ResolveFolderPositions();
 
   // Start observing app list model changes.
   model_observer_.reset(new ModelObserver(this));
@@ -710,7 +736,7 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
 void AppListSyncableService::UpdateAppItemFromSyncItem(
     const AppListSyncableService::SyncItem* sync_item,
     AppListItem* app_item) {
-  VLOG(2) << this << "UpdateAppItemFromSyncItem: " << sync_item->ToString();
+  VLOG(2) << this << " UpdateAppItemFromSyncItem: " << sync_item->ToString();
   if (!app_item->position().Equals(sync_item->item_ordinal))
     model_->SetItemPosition(app_item, sync_item->item_ordinal);
   // Only update the item name if it is a Folder or the name is empty.
@@ -791,16 +817,76 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
     model_->DeleteItem(item_id);
 }
 
-std::string AppListSyncableService::FindOrCreateOemFolder() {
+std::string AppListSyncableService::FindOrCreateOemFolder(
+    const std::string& item_id) {
   AppListFolderItem* oem_folder = model_->FindFolderItem(kOemFolderId);
   if (!oem_folder) {
+    if (!SyncStarted()) {
+      // We need sync to have started to know where to place the OEM folder.
+      // If sync is not started, add |item_id| (which should never be empty
+      // when called before sync is started) to oem_folder_item_ids_.
+      DCHECK(!item_id.empty());
+      oem_folder_item_ids_.push_back(item_id);
+      return "";
+    }
     scoped_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
         kOemFolderId, AppListFolderItem::FOLDER_TYPE_OEM));
     oem_folder = static_cast<AppListFolderItem*>(
         model_->AddItem(new_folder.PassAs<app_list::AppListItem>()));
+    SyncItem* oem_sync_item = FindSyncItem(kOemFolderId);
+    if (oem_sync_item) {
+      DVLOG(1) << "Creating OEM folder from existing sync item: "
+               << oem_sync_item->item_ordinal.ToDebugString();
+      model_->SetItemPosition(oem_folder, oem_sync_item->item_ordinal);
+    } else {
+      model_->SetItemPosition(oem_folder, GetOemFolderPos());
+      DVLOG(1) << "Creating new OEM folder sync item: "
+               << oem_folder->position().ToDebugString();
+      CreateSyncItemFromAppItem(oem_folder);
+    }
   }
   model_->SetItemName(oem_folder, oem_folder_name_);
   return oem_folder->id();
+}
+
+syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
+  if (!first_app_list_sync_) {
+    DVLOG(1) << "Sync items exist, placing OEM folder at end.";
+    syncer::StringOrdinal last;
+    for (SyncItemMap::iterator iter = sync_items_.begin();
+         iter != sync_items_.end(); ++iter) {
+      SyncItem* sync_item = iter->second;
+      if (!last.IsValid() || sync_item->item_ordinal.GreaterThan(last))
+        last = sync_item->item_ordinal;
+    }
+    return last.CreateAfter();
+  }
+
+  // Place the OEM folder just before the last unremovable default item.
+  // Since positions are relative, anywhere else is unstable. TODO(stevenjb):
+  // consider explicitly setting the OEM folder location along with the name in
+  // ServicesCustomizationDocument::SetOemFolderName().
+  AppListItemList* item_list = model_->top_level_item_list();
+  size_t oem_index = 0;
+  for (int i = static_cast<int>(item_list->item_count()) - 1; i >= 0; --i) {
+    AppListItem* cur_item = item_list->item_at(i);
+    const std::string& id = cur_item->id();
+    if (IsUnRemovableDefaultApp(id)) {
+      oem_index = i;
+      break;
+    }
+  }
+  syncer::StringOrdinal oem_ordinal;
+  AppListItem* next = item_list->item_at(oem_index);
+  if (oem_index > 0) {
+    AppListItem* prev = item_list->item_at(oem_index - 1);
+    oem_ordinal = prev->position().CreateBetween(next->position());
+  } else {
+    oem_ordinal = next->position().CreateBefore();
+  }
+  DVLOG(1) << "Placing OEM Folder at: " << oem_index
+           << " position: " << oem_ordinal.ToDebugString();
+  return oem_ordinal;
 }
 
 bool AppListSyncableService::AppIsOem(const std::string& id) {

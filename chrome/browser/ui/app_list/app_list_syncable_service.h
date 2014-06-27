@@ -142,9 +142,8 @@ class AppListSyncableService : public syncer::SyncableService,
   // Removes sync item matching |id|.
   void RemoveSyncItem(const std::string& id);
 
-  // Updates folder items that may get created during initial sync. If
-  // oem_at_end is true then move any OEM folder to the end of the list.
-  void ResolveFolderPositions(bool move_oem_to_end);
+  // Updates folder items that may get created during initial sync.
+  void ResolveFolderPositions();
 
   // Removes any empty SyncItem folders and deletes them from sync. Called
   // after a sync item is removed (which may result in an empty folder).
@@ -181,8 +180,14 @@ class AppListSyncableService : public syncer::SyncableService,
   void DeleteSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
   // Creates the OEM folder and sets its name if necessary. Returns the OEM
-  // folder id.
-  std::string FindOrCreateOemFolder();
+  // folder id or an empty string if the folder can not be created. |item_id|
+  // is the item that needs to be placed in the folder, used only for tracking
+  // if the folder can not be created.
+  std::string FindOrCreateOemFolder(const std::string& item_id);
+
+  // Gets the location for the OEM folder. Called when the folder is first
+  // created.
+  syncer::StringOrdinal GetOemFolderPos();
 
   // Returns true if an extension matching |id| exists and was installed by
   // an OEM (extension->was_installed_by_oem() is true).
@@ -198,7 +203,9 @@ class AppListSyncableService : public syncer::SyncableService,
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
   syncer::SyncableService::StartSyncFlare flare_;
+  bool first_app_list_sync_;
   std::string oem_folder_name_;
+  std::vector<std::string> oem_folder_item_ids_;
 
   // Provides integration with Drive apps.
   scoped_ptr<DriveAppProvider> drive_app_provider_;
