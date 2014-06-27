@@ -77,12 +77,6 @@ public:
     RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
     void fullScreenRendererDestroyed();
 
-    void clearFullscreenElementStack();
-    void popFullscreenElementStack();
-    void pushFullscreenElementStack(Element&);
-    void addDocumentToFullScreenChangeEventQueue(Document&);
-
-    void fullScreenElementRemoved();
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
 
     // W3C API
@@ -107,7 +101,14 @@ private:
     explicit FullscreenElementStack(Document&);
 
     Document* document();
+
+    void clearFullscreenElementStack();
+    void popFullscreenElementStack();
+    void pushFullscreenElementStack(Element&);
+    void addDocumentToFullScreenChangeEventQueue(Document&);
     void fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*);
+
+    void fullScreenElementRemoved();
 
     bool m_areKeysEnabledInFullScreen;
     RefPtrWillBeMember<Element> m_fullScreenElement;
