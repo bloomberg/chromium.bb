@@ -129,7 +129,7 @@ gfx::Size NativeThemeGtk2::GetPartSize(Part part,
   if (part == kComboboxArrow)
     return gfx::Size(12, 12);
 
-  return gfx::Size();
+  return ui::NativeThemeBase::GetPartSize(part, state, extra);
 }
 
 void NativeThemeGtk2::Paint(SkCanvas* canvas,
