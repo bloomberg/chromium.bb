@@ -41,8 +41,7 @@ class SYNC_EXPORT AttachmentDownloader {
                                   const DownloadCallback& callback) = 0;
 
   // Create instance of AttachmentDownloaderImpl.
-  // |url_prefix| is the URL prefix (including trailing slash) to be used when
-  // downloading attachments.
+  // |sync_service_url| is the URL of the sync service.
   //
   // |url_request_context_getter| provides a URLRequestContext.
   //
@@ -52,7 +51,7 @@ class SYNC_EXPORT AttachmentDownloader {
   //
   // |token_service_provider| provides an OAuth2 token service.
   static scoped_ptr<AttachmentDownloader> Create(
-      const std::string& url_prefix,
+      const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       const std::string& account_id,

@@ -187,7 +187,7 @@ void AttachmentDownloaderImplTest::SetUp() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   attachment_downloader_ =
-      AttachmentDownloader::Create(kAttachmentServerUrl,
+      AttachmentDownloader::Create(GURL(kAttachmentServerUrl),
                                    url_request_context_getter_,
                                    kAccountId,
                                    scopes,

@@ -14,11 +14,11 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
-#include "url/gurl.h"
 
 namespace {
 
 const char kContentType[] = "application/octet-stream";
+const char kAttachments[] = "attachments/";
 
 }  // namespace
 
@@ -209,14 +209,14 @@ void AttachmentUploaderImpl::UploadState::ReportResult(
 }
 
 AttachmentUploaderImpl::AttachmentUploaderImpl(
-    const std::string& url_prefix,
+    const GURL& sync_service_url,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider)
-    : url_prefix_(url_prefix),
+    : sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       scopes_(scopes),
@@ -237,7 +237,7 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
   DCHECK(!unique_id.empty());
   StateMap::iterator iter = state_map_.find(unique_id);
   if (iter == state_map_.end()) {
-    const GURL url = GetUploadURLForAttachmentId(attachment_id);
+    const GURL url = GetURLForAttachmentId(sync_service_url_, attachment_id);
     scoped_ptr<UploadState> upload_state(
         new UploadState(url,
                         url_request_context_getter_,
@@ -256,9 +256,19 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
   }
 }
 
-GURL AttachmentUploaderImpl::GetUploadURLForAttachmentId(
-    const AttachmentId& attachment_id) const {
-  return GURL(url_prefix_ + attachment_id.GetProto().unique_id());
+// Static.
+GURL AttachmentUploaderImpl::GetURLForAttachmentId(
+    const GURL& sync_service_url,
+    const AttachmentId& attachment_id) {
+  std::string path = sync_service_url.path();
+  if (path.empty() || *path.rbegin() != '/') {
+    path += '/';
+  }
+  path += kAttachments;
+  path += attachment_id.GetProto().unique_id();
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  return sync_service_url.ReplaceComponents(replacements);
 }
 
 void AttachmentUploaderImpl::DeleteUploadStateFor(const UniqueId& unique_id) {

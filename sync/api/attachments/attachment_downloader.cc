@@ -15,7 +15,7 @@ AttachmentDownloader::~AttachmentDownloader() {
 // It is introduced to avoid SYNC_EXPORT-ing AttachmentDownloaderImpl since it
 // inherits from OAuth2TokenService::Consumer which is not exported.
 scoped_ptr<AttachmentDownloader> AttachmentDownloader::Create(
-    const std::string& url_prefix,
+    const GURL& sync_service_url,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     const std::string& account_id,
@@ -23,7 +23,7 @@ scoped_ptr<AttachmentDownloader> AttachmentDownloader::Create(
     scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider) {
   return scoped_ptr<AttachmentDownloader>(
-      new AttachmentDownloaderImpl(url_prefix,
+      new AttachmentDownloaderImpl(sync_service_url,
                                    url_request_context_getter,
                                    account_id,
                                    scopes,

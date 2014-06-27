@@ -11,6 +11,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/attachments/attachment_downloader.h"
+#include "url/gurl.h"
 
 namespace syncer {
 
@@ -20,8 +21,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
                                  public net::URLFetcherDelegate,
                                  public base::NonThreadSafe {
  public:
-  // |url_prefix| is the URL prefix (including trailing slash) to be used when
-  // downloading attachments.
+  // |sync_service_url| is the URL of the sync service.
   //
   // |url_request_context_getter| provides a URLRequestContext.
   //
@@ -31,7 +31,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   //
   // |token_service_provider| provides an OAuth2 token service.
   AttachmentDownloaderImpl(
-      const std::string& url_prefix,
+      const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       const std::string& account_id,
@@ -60,7 +60,6 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   typedef base::ScopedPtrHashMap<AttachmentUrl, DownloadState> StateMap;
   typedef std::vector<DownloadState*> StateList;
 
-  AttachmentUrl GetAttachmentUrl(const AttachmentId& attachment_id);
   scoped_ptr<net::URLFetcher> CreateFetcher(const AttachmentUrl& url,
                                             const std::string& access_token);
   void RequestAccessToken(DownloadState* download_state);
@@ -69,7 +68,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
       const DownloadResult& result,
       const scoped_refptr<base::RefCountedString>& attachment_data);
 
-  std::string url_prefix_;
+  GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   std::string account_id_;

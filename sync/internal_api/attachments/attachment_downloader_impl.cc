@@ -9,6 +9,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 
@@ -35,7 +36,7 @@ AttachmentDownloaderImpl::DownloadState::DownloadState(
 }
 
 AttachmentDownloaderImpl::AttachmentDownloaderImpl(
-    const std::string& url_prefix,
+    const GURL& sync_service_url,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     const std::string& account_id,
@@ -43,14 +44,13 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
     scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider)
     : OAuth2TokenService::Consumer("attachment-downloader-impl"),
-      url_prefix_(url_prefix),
+      sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       oauth2_scopes_(scopes),
       token_service_provider_(token_service_provider.Pass()) {
   DCHECK(token_service_provider_);
   DCHECK(url_request_context_getter_);
-  DCHECK(!url_prefix_.empty());
 }
 
 AttachmentDownloaderImpl::~AttachmentDownloaderImpl() {
@@ -61,7 +61,8 @@ void AttachmentDownloaderImpl::DownloadAttachment(
     const DownloadCallback& callback) {
   DCHECK(CalledOnValidThread());
 
-  AttachmentUrl url = GetAttachmentUrl(attachment_id);
+  AttachmentUrl url = AttachmentUploaderImpl::GetURLForAttachmentId(
+                          sync_service_url_, attachment_id).spec();
 
   StateMap::iterator iter = state_map_.find(url);
   if (iter == state_map_.end()) {
@@ -149,11 +150,6 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
   }
   ReportResult(download_state, result, attachment_data);
   state_map_.erase(iter);
-}
-
-AttachmentDownloaderImpl::AttachmentUrl
-AttachmentDownloaderImpl::GetAttachmentUrl(const AttachmentId& attachment_id) {
-  return url_prefix_ + attachment_id.GetProto().unique_id();
 }
 
 scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
