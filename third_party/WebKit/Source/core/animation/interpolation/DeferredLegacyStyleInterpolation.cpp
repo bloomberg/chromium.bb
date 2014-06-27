@@ -21,8 +21,8 @@ namespace WebCore {
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
     RefPtrWillBeRawPtr<LegacyStyleInterpolation> innerInterpolation = LegacyStyleInterpolation::create(
-        StyleResolver::createAnimatableValueSnapshot(*state.element(), m_id, *m_startCSSValue, *state.style()),
-        StyleResolver::createAnimatableValueSnapshot(*state.element(), m_id, *m_endCSSValue, *state.style()),
+        StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_startCSSValue),
+        StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_endCSSValue),
         m_id);
     innerInterpolation->interpolate(m_cachedIteration, m_cachedFraction);
     innerInterpolation->apply(state);

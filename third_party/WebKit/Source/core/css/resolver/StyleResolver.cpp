@@ -751,16 +751,16 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
         style = RenderStyle::clone(element.renderStyle());
     else
         style = RenderStyle::create();
-    return createAnimatableValueSnapshot(element, property, value, *style);
+    StyleResolverState state(element.document(), &element);
+    state.setStyle(style);
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
+    return createAnimatableValueSnapshot(state, property, value);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value, RenderStyle& style)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue& value)
 {
-    StyleResolverState state(element.document(), &element);
-    state.setStyle(&style);
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
     StyleBuilder::applyProperty(property, state, &value);
-    return CSSAnimatableValueFactory::create(property, style);
+    return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
