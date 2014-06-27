@@ -309,6 +309,14 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   request_scheduler_->Start();
 }
 
+void VariationsService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void VariationsService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 // TODO(rkaplow): Handle this and the similar event in metrics_service by
 // observing an 'OnAppEnterForeground' event in RequestScheduler instead of
 // requiring the frontend code to notify each service individually. Since the
@@ -316,6 +324,16 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 // know details of this anymore.
 void VariationsService::OnAppEnterForeground() {
   request_scheduler_->OnAppEnterForeground();
+}
+
+#if defined(OS_WIN)
+void VariationsService::StartGoogleUpdateRegistrySync() {
+  registry_syncer_.RequestRegistrySync();
+}
+#endif
+
+void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
+  create_trials_from_seed_called_ = called;
 }
 
 // static
@@ -340,16 +358,6 @@ GURL VariationsService::GetVariationsServerURL(
 
   DCHECK(server_url.is_valid());
   return server_url;
-}
-
-#if defined(OS_WIN)
-void VariationsService::StartGoogleUpdateRegistrySync() {
-  registry_syncer_.RequestRegistrySync();
-}
-#endif
-
-void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
-  create_trials_from_seed_called_ = called;
 }
 
 // static
@@ -457,6 +465,17 @@ void VariationsService::FetchVariationsSeed() {
   }
 
   DoActualFetch();
+}
+
+void VariationsService::NotifyObservers(
+    const VariationsSeedSimulator::Result& result) {
+  if (result.kill_critical_group_change_count > 0) {
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnExperimentChangesDetected(Observer::CRITICAL));
+  } else if (result.kill_best_effort_group_change_count > 0) {
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnExperimentChangesDetected(Observer::BEST_EFFORT));
+  }
 }
 
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -569,6 +588,8 @@ void VariationsService::PerformSimulationWithVersion(
                            result.kill_critical_group_change_count);
 
   UMA_HISTOGRAM_TIMES("Variations.SimulateSeed.Duration", timer.Elapsed());
+
+  NotifyObservers(result);
 }
 
 void VariationsService::RecordLastFetchTime() {
