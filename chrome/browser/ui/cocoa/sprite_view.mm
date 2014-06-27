@@ -16,8 +16,16 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
 
 - (instancetype)initWithFrame:(NSRect)frame {
   if (self = [super initWithFrame:frame]) {
-    // A layer-hosting view.
+    // A layer-hosting view. It will clip its sublayers,
+    // if they exceed the boundary.
     CALayer* layer = [CALayer layer];
+    layer.masksToBounds = YES;
+
+    imageLayer_ = [CALayer layer];
+    imageLayer_.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
+
+    [layer addSublayer:imageLayer_];
+    imageLayer_.frame = layer.bounds;
     [layer setDelegate:self];
     [self setLayer:layer];
     [self setWantsLayer:YES];
@@ -65,27 +73,25 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
     // Only animate the sprites if we are attached to a window, and that window
     // is not currently minimized or in the middle of a minimize animation.
     // http://crbug.com/350329
-    CALayer* layer = [self layer];
     if ([self window] && ![[self window] isMiniaturized]) {
-      if ([layer animationForKey:[spriteAnimation_ keyPath]] == nil)
-        [layer addAnimation:spriteAnimation_.get()
+      if ([imageLayer_ animationForKey:[spriteAnimation_ keyPath]] == nil)
+        [imageLayer_ addAnimation:spriteAnimation_.get()
                      forKey:[spriteAnimation_ keyPath]];
     } else {
-      [layer removeAnimationForKey:[spriteAnimation_ keyPath]];
+      [imageLayer_ removeAnimationForKey:[spriteAnimation_ keyPath]];
     }
   }
 }
 
 - (void)setImage:(NSImage*)image {
   ScopedCAActionDisabler disabler;
-  CALayer* layer = [self layer];
 
   if (spriteAnimation_.get()) {
-    [layer removeAnimationForKey:[spriteAnimation_ keyPath]];
+    [imageLayer_ removeAnimationForKey:[spriteAnimation_ keyPath]];
     spriteAnimation_.reset();
   }
 
-  [layer setContents:image];
+  [imageLayer_ setContents:image];
 
   if (image != nil) {
     NSSize imageSize = [image size];
@@ -96,7 +102,7 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
     const CGFloat unitWidth = 1.0 / spriteCount;
 
     // Show the first (leftmost) sprite.
-    [layer setContentsRect:CGRectMake(0, 0, unitWidth, 1.0)];
+    [imageLayer_ setContentsRect:CGRectMake(0, 0, unitWidth, 1.0)];
 
     if (spriteCount > 1) {
       // Animate the sprite offsets, we use a keyframe animation with discrete
@@ -119,14 +125,13 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
 }
 
 - (void)setImage:(NSImage*)image withToastAnimation:(BOOL)animate {
-  CALayer* layer = [self layer];
-  if (!animate || [layer contents] == nil) {
+  if (!animate || [imageLayer_ contents] == nil) {
     [self setImage:image];
   } else {
     // Animate away the icon.
     CABasicAnimation* animation =
         [CABasicAnimation animationWithKeyPath:@"position.y"];
-    CGFloat height = CGRectGetHeight([layer bounds]);
+    CGFloat height = CGRectGetHeight([imageLayer_ bounds]);
     [animation setToValue:@(-height)];
     [animation setDuration:kFrameDuration * height];
 
@@ -148,9 +153,9 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
         [reverseAnimation setFromValue:[animation toValue]];
         [reverseAnimation setToValue:[animation fromValue]];
         [reverseAnimation setDuration:[animation duration]];
-        [layer addAnimation:reverseAnimation forKey:@"position"];
+        [imageLayer_ addAnimation:reverseAnimation forKey:@"position"];
     }];
-    [layer addAnimation:animation forKey:@"position"];
+    [imageLayer_ addAnimation:animation forKey:@"position"];
     [CATransaction commit];
   }
 }

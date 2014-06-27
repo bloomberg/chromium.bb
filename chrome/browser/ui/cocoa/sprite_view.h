@@ -16,6 +16,7 @@
 @interface SpriteView : NSView {
  @private
   base::scoped_nsobject<CAKeyframeAnimation> spriteAnimation_;
+  CALayer* imageLayer_;
 }
 
 // |image| contains square sprites in a horizontal strip.
