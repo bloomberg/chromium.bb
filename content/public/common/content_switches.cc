@@ -817,6 +817,8 @@ const char kTraceStartupDuration[]          = "trace-startup-duration";
 // all events since startup.
 const char kTraceStartupFile[]              = "trace-startup-file";
 
+// Sets the target URL for uploading tracing data.
+const char kTraceUploadURL[]                = "trace-upload-url";
 
 
 // Prioritizes the UI's command stream in the GPU process

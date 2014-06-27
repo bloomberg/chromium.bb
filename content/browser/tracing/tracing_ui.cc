@@ -4,33 +4,44 @@
 
 #include "content/browser/tracing/tracing_ui.h"
 
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/tracing/grit/tracing_resources.h"
+#include "content/browser/tracing/trace_uploader.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
 namespace content {
 namespace {
 
+const char kUploadURL[] = "https://clients2.google.com/cr/staging_report";
+
 void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
                      const std::set<std::string>& categorySet) {
-
   scoped_ptr<base::ListValue> category_list(new base::ListValue());
   for (std::set<std::string>::const_iterator it = categorySet.begin();
        it != categorySet.end(); it++) {
@@ -265,7 +276,13 @@ bool OnTracingRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TracingUI::TracingUI(WebUI* web_ui) : WebUIController(web_ui) {
+TracingUI::TracingUI(WebUI* web_ui)
+    : WebUIController(web_ui),
+      weak_factory_(this) {
+  web_ui->RegisterMessageCallback(
+        "doUpload",
+        base::Bind(&TracingUI::DoUpload, base::Unretained(this)));
+
   // Set up the chrome://tracing/ source.
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
@@ -286,6 +303,100 @@ TracingUI::~TracingUI() {
 void TracingUI::OnMonitoringStateChanged(bool is_monitoring) {
   web_ui()->CallJavascriptFunction(
       "onMonitoringStateChanged", base::FundamentalValue(is_monitoring));
+}
+
+void TracingUI::DoUpload(const base::ListValue* args) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string upload_url = kUploadURL;
+  if (command_line.HasSwitch(switches::kTraceUploadURL)) {
+    upload_url =
+        command_line.GetSwitchValueASCII(switches::kTraceUploadURL);
+  }
+  if (!GURL(upload_url).is_valid()) {
+    upload_url.clear();
+  }
+
+  if (upload_url.empty()) {
+    web_ui()->CallJavascriptFunction("onUploadError",
+        base::StringValue("Upload URL empty or invalid"));
+    return;
+  }
+
+  std::string file_contents;
+  if (!args || args->empty() || !args->GetString(0, &file_contents)) {
+    web_ui()->CallJavascriptFunction("onUploadError",
+                                     base::StringValue("Missing data"));
+    return;
+  }
+
+  TraceUploader::UploadProgressCallback progress_callback =
+      base::Bind(&TracingUI::OnTraceUploadProgress,
+      weak_factory_.GetWeakPtr());
+  TraceUploader::UploadDoneCallback done_callback =
+      base::Bind(&TracingUI::OnTraceUploadComplete,
+      weak_factory_.GetWeakPtr());
+
+#if defined(OS_WIN)
+  const char product[] = "Chrome";
+#elif defined(OS_MACOSX)
+  const char product[] = "Chrome_Mac";
+#elif defined(OS_LINUX)
+  const char product[] = "Chrome_Linux";
+#elif defined(OS_ANDROID)
+  const char product[] = "Chrome_Android";
+#elif defined(OS_CHROMEOS)
+  const char product[] = "Chrome_ChromeOS";
+#else
+#error Platform not supported.
+#endif
+
+  // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
+  // the part before the "/".
+  std::vector<std::string> product_components;
+  base::SplitString(content::GetContentClient()->GetProduct(), '/',
+                    &product_components);
+  DCHECK_EQ(2U, product_components.size());
+  std::string version;
+  if (product_components.size() == 2U) {
+    version = product_components[1];
+  } else {
+    version = "unknown";
+  }
+
+  BrowserContext* browser_context =
+      web_ui()->GetWebContents()->GetBrowserContext();
+  TraceUploader* uploader = new TraceUploader(
+      product, version, upload_url, browser_context->GetRequestContext());
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+     &TraceUploader::DoUpload,
+     base::Unretained(uploader),
+     file_contents,
+     progress_callback,
+     done_callback));
+  // TODO(mmandlis): Add support for stopping the upload in progress.
+}
+
+void TracingUI::OnTraceUploadProgress(int64 current, int64 total) {
+  DCHECK(current <= total);
+  int percent = (current / total) * 100;
+  web_ui()->CallJavascriptFunction(
+        "onUploadProgress",
+        base::FundamentalValue(percent),
+        base::StringValue(base::StringPrintf("%" PRId64, current)),
+        base::StringValue(base::StringPrintf("%" PRId64, total)));
+}
+
+void TracingUI::OnTraceUploadComplete(bool success,
+                                      const std::string& report_id,
+                                      const std::string& error_message) {
+  if (success) {
+    web_ui()->CallJavascriptFunction("onUploadComplete",
+                                     base::StringValue(report_id));
+  } else {
+    web_ui()->CallJavascriptFunction("onUploadError",
+                                     base::StringValue(error_message));
+  }
 }
 
 }  // namespace content
