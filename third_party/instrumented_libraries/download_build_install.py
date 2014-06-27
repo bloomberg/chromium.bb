@@ -107,17 +107,6 @@ def destdir_configure_make_install(parsed_arguments, environment,
                      parsed_arguments.verbose, environment)
 
 
-def prefix_configure_make_install(parsed_arguments, environment,
-                                  install_prefix):
-  configure_command = './configure %s --prefix=%s' % (
-      parsed_arguments.extra_configure_flags, install_prefix)
-  shell_call(configure_command, parsed_arguments.verbose, environment)
-  shell_call('make -j%s' % parsed_arguments.jobs,
-             parsed_arguments.verbose, environment)
-  shell_call('make -j%s install' % parsed_arguments.jobs,
-             parsed_arguments.verbose, environment)
-
-
 def nss_make_and_copy(parsed_arguments, environment, install_prefix):
   # NSS uses a build system that's different from configure/make/install. All
   # flags must be passed as arguments to make.
@@ -210,18 +199,10 @@ def build_and_install(parsed_arguments, environment, install_prefix):
   if parsed_arguments.build_method == 'destdir':
     destdir_configure_make_install(
         parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'prefix':
-    prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_nss':
     nss_make_and_copy(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libcap':
     libcap2_make_install(parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'custom_pango':
-    parsed_arguments.extra_configure_flags += \
-      ' --x-libraries=%s/lib' % install_prefix
-    parsed_arguments.extra_configure_flags += \
-      ' --x-includes=%s/include' % install_prefix
-    prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libpci3':
     libpci3_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libappindicator1':

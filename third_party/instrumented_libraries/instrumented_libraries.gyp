@@ -440,8 +440,12 @@
       'extra_configure_flags': [
         # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
         '--enable-introspection=no',
+        # Pango is normally used with dynamically loaded modules. However,
+        # ensuring pango is able to find instrumented versions of those modules
+        # is a huge pain in the neck. Let's link them statically instead, and
+        # hope for the best.
+        '--with-included-modules=yes'
       ],
-      'build_method': 'custom_pango',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
