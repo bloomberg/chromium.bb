@@ -133,24 +133,4 @@ ui.failures.FailureGrid = base.extends('table', {
     }
 });
 
-ui.failures.ListItem = base.extends('li', {
-    init: function(groupName, failingTestsList)
-    {
-        this._failingTestsList = failingTestsList;
-        this.appendChild(new ui.actions.List([
-            new ui.actions.Examine().makeDefault(),
-        ]));
-        var label = this.appendChild(document.createElement('label'))
-        label.textContent = failingTestsList.length == 1 ? failingTestsList[0] : groupName;
-    },
-});
-
-ui.failures.List = base.extends('ul', {
-    init: function()
-    {
-        this.className = 'failures';
-        this.textContent = 'Loading...';
-    }
-});
-
 })();

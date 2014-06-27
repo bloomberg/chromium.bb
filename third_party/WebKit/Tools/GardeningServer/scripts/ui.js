@@ -109,22 +109,19 @@ ui.onebar = base.extends('div', {
         this.innerHTML =
             '<ul>' +
                 '<li><a href="#unexpected">Unexpected Failures</a></li>' +
-                '<li><a href="#expected">Expected Failures</a></li>' +
                 '<li><a href="#results">Results</a></li>' +
             '</ul>' +
             '<div id="link-handling"><input type="checkbox" id="new-window-for-links"><label for="new-window-for-links">Open links in new window</label></div>' +
             '<div id="unexpected"></div>' +
-            '<div id="expected"></div>' +
             '<div id="results"></div>';
         this._tabNames = [
             'unexpected',
-            'expected',
             'results',
         ]
 
         this._tabIndexToSavedScrollOffset = {};
         this._tabs = $(this).tabs({
-            disabled: [2],
+            disabled: [this._tabNames.indexOf('results')],
             show: function(event, ui) { this._restoreScrollOffset(ui.index); },
             select: function(event, ui) {
                 this._saveScrollOffset();
@@ -189,10 +186,6 @@ ui.onebar = base.extends('div', {
     unexpected: function()
     {
         return this.tabNamed('unexpected');
-    },
-    expected: function()
-    {
-        return this.tabNamed('expected');
     },
     results: function()
     {

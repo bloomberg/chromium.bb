@@ -32,7 +32,6 @@ var g_updateTimerId = 0;
 var g_buildersFailing = null;
 
 var g_unexpectedFailuresController = null;
-var g_failuresController = null;
 
 var g_nonLayoutTestFailureBuilders = null;
 
@@ -80,9 +79,6 @@ function update()
     });
 
     Promise.all([model.updateRecentCommits(), model.updateResultsByBuilder()]).then(function() {
-        if (g_failuresController)
-            g_failuresController.update();
-
         updating.update('Analyzing test failures ...');
 
         model.analyzeUnexpectedFailures(function(failureAnalysis, total) {
@@ -153,13 +149,6 @@ $(document).ready(function() {
 
     unexpected.appendChild(g_info);
     unexpected.appendChild(unexpectedFailuresView);
-
-    var expected = onebar.expected();
-    if (expected) {
-        var failuresView = new ui.failures.List();
-        g_failuresController = new controllers.ExpectedFailures(model.state, failuresView, onebarController);
-        expected.appendChild(failuresView);
-    }
 
     update();
 });

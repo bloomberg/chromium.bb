@@ -195,21 +195,4 @@ model.unexpectedFailureInfoForTestName = function(testName)
     });
 };
 
-// failureCallback is called multiple times: once for each failure
-model.analyzeexpectedFailures = function(failureCallback)
-{
-    var expectedFailures = results.expectedFailuresByTest(model.state.resultsByBuilder);
-    $.each(expectedFailures, function(testName, resultNodesByBuilder) {
-        var failureAnalysis = {
-            'testName': testName,
-            'resultNodesByBuilder': resultNodesByBuilder,
-        };
-
-        // FIXME: Consider looking at the history to see how long this test
-        // has been failing.
-
-        failureCallback(failureAnalysis);
-    });
-};
-
 })();

@@ -82,42 +82,6 @@ controllers.ResultsDetails = base.extends(Object, {
     }
 });
 
-controllers.ExpectedFailures = base.extends(Object, {
-    init: function(model, view, delegate)
-    {
-        this._model = model;
-        this._view = view;
-        this._delegate = delegate;
-    },
-    update: function()
-    {
-        var expectedFailures = results.expectedFailuresByTest(this._model.resultsByBuilder);
-        var failingTestsList = Object.keys(expectedFailures);
-
-        $(this._view).empty();
-        base.forEachDirectory(failingTestsList, function(label, testsFailingInDirectory) {
-            var listItem = new ui.failures.ListItem(label, testsFailingInDirectory);
-            this._view.appendChild(listItem);
-            $(listItem).bind('examine', function() {
-                this.onExamine(testsFailingInDirectory);
-            }.bind(this));
-        }.bind(this));
-    },
-    onExamine: function(failingTestsList)
-    {
-        var resultsView = new ui.results.View({
-            fetchResultsURLs: results.fetchResultsURLs
-        });
-        var failuresByTest = base.filterDictionary(
-            results.expectedFailuresByTest(this._model.resultsByBuilder),
-            function(key) {
-                return failingTestsList.indexOf(key) != -1;
-            });
-        var controller = new controllers.ResultsDetails(resultsView, failuresByTest);
-        this._delegate.showResults(resultsView);
-    }
-});
-
 var FailureStreamController = base.extends(Object, {
     _resultsFilter: null,
     _keyFor: function(failureAnalysis) { throw "Not implemented!"; },
