@@ -606,9 +606,16 @@ std::string EventTypesToString(const EventFilterRecorder::Events& events) {
 
 }  // namespace
 
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 // Verifies a repost mouse event targets the window with capture (if there is
 // one).
-TEST_F(WindowEventDispatcherTest, RepostTargetsCaptureWindow) {
+// Flaky on 32-bit Windows bots.  http://crbug.com/388290
+TEST_F(WindowEventDispatcherTest, MAYBE(RepostTargetsCaptureWindow)) {
   // Set capture on |window| generate a mouse event (that is reposted) and not
   // over |window| and verify |window| gets it (|window| gets it because it has
   // capture).
