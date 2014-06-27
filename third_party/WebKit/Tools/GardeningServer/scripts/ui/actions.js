@@ -45,25 +45,11 @@ var Action = base.extends('button', {
     }
 });
 
-ui.actions.Close = base.extends(Action, {
-    init: function() {
-        this.textContent = 'Close';
-        this._eventName = 'close';
-    }
-});
-
 ui.actions.Examine = base.extends(Action, {
     init: function() {
         this.textContent = 'Examine';
         this._eventName = 'examine';
         this.title = 'Examine these failures in detail.'
-    }
-});
-
-ui.actions.ExpectFailure = base.extends(Action, {
-    init: function() {
-        this.textContent = 'Expect Failure';
-        this._eventName = 'expectfailure';
     }
 });
 

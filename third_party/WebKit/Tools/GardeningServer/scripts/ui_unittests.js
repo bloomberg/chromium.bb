@@ -103,68 +103,6 @@ test("results.ResultsGrid (empty)", 1, function() {
     equal(grid.innerHTML, 'No results to display.');
 });
 
-test("StatusArea", 3, function() {
-    var statusArea = new ui.StatusArea();
-    var id = statusArea.newId();
-    statusArea.addMessage(id, 'First Message');
-    statusArea.addMessage(id, 'Second Message');
-    equal(statusArea.outerHTML,
-        '<div class="status processing" style="visibility: visible;">' +
-            '<div class="dragger"></div>' +
-            '<div class="contents">' +
-                '<div id="status-content-1" class="status-content">' +
-                    '<div class="message">First Message</div>' +
-                    '<div class="message">Second Message</div>' +
-                '</div>' +
-            '</div>' +
-            '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
-            '<progress class="process-text">Processing...</progress>' +
-        '</div>');
-
-    var secondStatusArea = new ui.StatusArea();
-    var secondId = secondStatusArea.newId();
-    secondStatusArea.addMessage(secondId, 'First Message second id');
-
-    equal(statusArea.outerHTML,
-        '<div class="status processing" style="visibility: visible;">' +
-            '<div class="dragger"></div>' +
-            '<div class="contents">' +
-                '<div id="status-content-1" class="status-content">' +
-                    '<div class="message">First Message</div>' +
-                    '<div class="message">Second Message</div>' +
-                '</div>' +
-                '<div id="status-content-2" class="status-content">' +
-                    '<div class="message">First Message second id</div>' +
-                '</div>' +
-            '</div>' +
-            '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
-            '<progress class="process-text">Processing...</progress>' +
-        '</div>');
-
-    statusArea.addFinalMessage(id, 'Final Message 1');
-    statusArea.addFinalMessage(secondId, 'Final Message 2');
-
-    equal(statusArea.outerHTML,
-        '<div class="status" style="visibility: visible;">' +
-            '<div class="dragger"></div>' +
-            '<div class="contents">' +
-                '<div id="status-content-1" class="status-content">' +
-                    '<div class="message">First Message</div>' +
-                    '<div class="message">Second Message</div>' +
-                    '<div class="message">Final Message 1</div>' +
-                '</div>' +
-                '<div id="status-content-2" class="status-content">' +
-                    '<div class="message">First Message second id</div>' +
-                    '<div class="message">Final Message 2</div>' +
-                '</div>' +
-            '</div>' +
-            '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
-            '<progress class="process-text">Processing...</progress>' +
-        '</div>');
-
-    statusArea.close();
-});
-
 var openTreeJson = {
     "username": "erg@chromium.org",
     "date": "2013-10-14 20:22:00.887390",

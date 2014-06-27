@@ -37,17 +37,6 @@ function isAnyReftest(testName, resultsByTest)
     });
 }
 
-// FIXME: Where should this function go?
-function updateExpectationsWithStatusUpdates(failureInfoList)
-{
-    var statusView = new ui.StatusArea('Expectations Update');
-    var id = statusView.newId();
-
-    var testNames = base.uniquifyArray(failureInfoList.map(function(failureInfo) { return failureInfo.testName; }));
-    var testName = testNames.length == 1 ? testNames[0] : testNames.length + ' tests';
-    statusView.addMessage(id, 'Updating expectations of ' + testName + '...');
-}
-
 controllers.ResultsDetails = base.extends(Object, {
     init: function(view, resultsByTest)
     {
@@ -59,7 +48,6 @@ controllers.ResultsDetails = base.extends(Object, {
 
         $(this._view).bind('next', this.onNext.bind(this));
         $(this._view).bind('previous', this.onPrevious.bind(this));
-        $(this._view).bind('expectfailure', this.onUpdateExpectations.bind(this));
     },
     onNext: function()
     {
@@ -76,10 +64,6 @@ controllers.ResultsDetails = base.extends(Object, {
             return results.failureInfoForTestAndBuilder(this._resultsByTest, testName, builderName);
         }.bind(this));
     },
-    onUpdateExpectations: function()
-    {
-        updateExpectationsWithStatusUpdates(this._failureInfoList());
-    }
 });
 
 var FailureStreamController = base.extends(Object, {
@@ -103,9 +87,6 @@ var FailureStreamController = base.extends(Object, {
             this._view.add(failure);
             $(failure).bind('examine', function() {
                 this.onExamine(failure);
-            }.bind(this));
-            $(failure).bind('expectfailure', function() {
-                this.onUpdateExpectations(failure);
             }.bind(this));
         }
         failure.addFailureAnalysis(failureAnalysis);
@@ -140,10 +121,6 @@ var FailureStreamController = base.extends(Object, {
     {
         return base.flattenArray(failures.testNameList().map(model.unexpectedFailureInfoForTestName));
     },
-    onUpdateExpectations: function(failures)
-    {
-        updateExpectationsWithStatusUpdates(this._toFailureInfoList(failures));
-    }
 });
 
 controllers.UnexpectedFailures = base.extends(FailureStreamController, {
