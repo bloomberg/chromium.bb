@@ -26,6 +26,8 @@
 #     items
 #   'string-enum' - the user can select a string value from a collection of
 #     items
+#   'string-enum-list' - the user can select a set of string values from a
+#     collection of items
 #   'main' - a boolean value
 #   'list' - a list of string values
 #   'dict' - a dictionary value, containing other values indexed by strings
@@ -6492,27 +6494,39 @@
     },
     {
       'name': 'EnableDeprecatedWebPlatformFeatures',
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
-        'items': { 'type': 'string' },
+        'items': {
+          'type': 'string',
+          'enum': [
+            'ShowModalDialog_EffectiveUntil20150430'
+          ],
+        },
       },
+      'items': [
+        {
+          'name': 'ShowModalDialog',
+          'value': 'ShowModalDialog_EffectiveUntil20150430',
+          'caption': '''Enable ShowModalDialog API through 2015.04.30''',
+        }
+      ],
       'supported_on': ['chrome.*:37-', 'chrome_os:37-', 'android:37-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': [],
+      'example_value': ['ShowModalDialog_EffectiveUntil20150430'],
       'id': 270,
-      'caption': '''Enable deprecated web platform features''',
-      'desc': '''Specify a list of deprecated web platform features to re-enable.
+      'caption': '''Enable deprecated web platform features for a limited time''',
+      'desc': '''Specify a list of deprecated web platform features to re-enable temporarily.
 
       This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will get re-enabled.
 
-      The following tags are currently defined:
-      - ShowModalDialog_EffectiveUntil20150430
+      If this policy is left not set, or the list is empty or does not match one of the supported string tags, all deprecated web platform features will remain disabled.
 
-      If this policy is left not set or the list is empty, all deprecated web platform features will remain disabled.''',
+      While the policy itself is supported on the above platforms, the feature it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at http://bit.ly/blinkintents.
+      ''',
     },
   ],
   'messages': {

@@ -30,6 +30,7 @@ TYPE_TO_SCHEMA = {
   'string': [ 'string' ],
   'int-enum': [ 'integer' ],
   'string-enum': [ 'string' ],
+  'string-enum-list': [ 'array' ],
   'external': [ 'object' ],
 }
 
@@ -122,7 +123,7 @@ class PolicyTemplateChecker(object):
     value = container[key]
     value_types = value_type if isinstance(value_type, list) else [ value_type ]
     if not any(isinstance(value, type) for type in value_types):
-      self._Error('Value of "%s" must one of [ %s ].' %
+      self._Error('Value of "%s" must be one of [ %s ].' %
                   (key, ', '.join([type.__name__ for type in value_types])),
                   container_name, identifier, value)
     if str in value_types and regexp_check and not regexp_check.match(value):
@@ -193,7 +194,7 @@ class PolicyTemplateChecker(object):
 
     # Each policy must have a type.
     policy_types = ('group', 'main', 'string', 'int', 'list', 'int-enum',
-                    'string-enum', 'dict', 'external')
+                    'string-enum', 'string-enum-list', 'dict', 'external')
     policy_type = self._CheckContains(policy, 'type', str)
     if policy_type not in policy_types:
       self._Error('Policy type must be one of: ' + ', '.join(policy_types),
@@ -280,17 +281,18 @@ class PolicyTemplateChecker(object):
 
       # Each policy must have an 'example_value' of appropriate type.
       if policy_type == 'main':
-        value_type = bool
+        value_type = item_type = bool
       elif policy_type in ('string', 'string-enum'):
-        value_type = str
+        value_type = item_type = str
       elif policy_type in ('int', 'int-enum'):
-        value_type = int
-      elif policy_type == 'list':
+        value_type = item_type = int
+      elif policy_type in ('list', 'string-enum-list'):
         value_type = list
+        item_type = str
       elif policy_type == 'external':
-        value_type = dict
+        value_type = item_type = dict
       elif policy_type == 'dict':
-        value_type = [ dict, list ]
+        value_type = item_type = [ dict, list ]
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
       self._CheckContains(policy, 'example_value', value_type)
@@ -300,7 +302,7 @@ class PolicyTemplateChecker(object):
       if is_in_group:
         self.num_policies_in_groups += 1
 
-    if policy_type in ('int-enum', 'string-enum'):
+    if policy_type in ('int-enum', 'string-enum', 'string-enum-list'):
       # Enums must contain a list of items.
       items = self._CheckContains(policy, 'items', list)
       if items is not None:
@@ -316,7 +318,7 @@ class PolicyTemplateChecker(object):
                               regexp_check=NO_WHITESPACE)
 
           # Each item must have a value of the correct type.
-          self._CheckContains(item, 'value', value_type, container_name='item',
+          self._CheckContains(item, 'value', item_type, container_name='item',
                               identifier=policy.get('name'))
 
           # Each item must have a caption.
