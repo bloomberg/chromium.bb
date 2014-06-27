@@ -127,7 +127,7 @@ bool RetrieveMetaTagContent(const WebFrame* main_frame,
       if (!child.isElementNode())
         continue;
       WebElement elem = child.to<WebElement>();
-      if (elem.hasTagName("meta")) {
+      if (elem.hasHTMLTagName("meta")) {
         if (elem.hasAttribute("name") && elem.hasAttribute("content")) {
           std::string name = elem.getAttribute("name").utf8();
           if (name == meta_tag_name) {
