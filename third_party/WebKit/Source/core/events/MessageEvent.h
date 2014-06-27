@@ -86,7 +86,6 @@ public:
     const String& origin() const { return m_origin; }
     const String& lastEventId() const { return m_lastEventId; }
     EventTarget* source() const { return m_source.get(); }
-    EventTarget* source(bool& isNull) const { isNull = !m_source; return m_source.get(); }
     MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
     MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
 

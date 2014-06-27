@@ -102,7 +102,6 @@ public:
 
     const AnimationPlayer* player() const { return m_player; }
     AnimationPlayer* player() { return m_player; }
-    AnimationPlayer* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specifiedTiming() const { return m_timing; }
     PassRefPtrWillBeRawPtr<AnimationNodeTiming> timing();
     void updateSpecifiedTiming(const Timing&);

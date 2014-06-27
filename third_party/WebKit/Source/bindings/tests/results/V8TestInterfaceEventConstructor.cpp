@@ -179,9 +179,8 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
-    bool isNull = false;
-    RefPtr<TestInterfaceEmpty> cppValue(impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute(isNull));
-    if (isNull) {
+    RefPtr<TestInterfaceEmpty> cppValue(impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }

@@ -65,7 +65,6 @@ public:
     Uint8Array* message() const { return m_message.get(); }
     String defaultURL() const { return m_defaultURL; }
     MediaKeyError* errorCode() const { return m_errorCode.get(); }
-    MediaKeyError* errorCode(bool& isNull) const { isNull = !m_errorCode; return m_errorCode.get(); }
     unsigned short systemCode() const { return m_systemCode; }
 
     virtual void trace(Visitor*) OVERRIDE;

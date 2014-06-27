@@ -57,7 +57,6 @@ public:
     }
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    EventTarget* relatedTarget(bool& isNull) const { isNull = !m_relatedTarget; return m_relatedTarget.get(); }
     void setRelatedTarget(EventTarget* relatedTarget) { m_relatedTarget = relatedTarget; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

@@ -246,10 +246,9 @@ interface TestObject {
     [TreatReturnedNullStringAs=Undefined] attribute ByteString treatReturnedNullStringAsUndefinedByteStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute ScalarValueString treatReturnedNullStringAsNullScalarValueStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute ScalarValueString treatReturnedNullStringAsUndefinedScalarValueStringAttribute;
-    [TypeChecking=Interface|Nullable] attribute float typeCheckingInterfaceNullableStringFloatAttribute; // nop for non-interface types
+    [TypeChecking=Interface] attribute float typeCheckingInterfaceFloatAttribute; // nop for non-interface types
     [TypeChecking=Interface] attribute TestInterface typeCheckingInterfaceTestInterfaceAttribute;
-    [TypeChecking=Nullable] attribute TestInterface? typeCheckingNullableTestInterfaceOrNullAttribute;
-    [TypeChecking=Interface|Nullable] attribute TestInterface? typeCheckingInterfaceNullableTestInterfaceOrNullAttribute;
+    [TypeChecking=Interface] attribute TestInterface? typeCheckingInterfaceTestInterfaceOrNullAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
@@ -513,8 +512,6 @@ interface TestObject {
     [TreatReturnedNullStringAs=Undefined] ScalarValueString treatReturnedNullStringAsUndefinedScalarValueStringMethod();
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
-    [TypeChecking=Nullable] void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
-    [TypeChecking=Interface|Nullable] void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     [TypeChecking=Unrestricted] void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg(float floatArg, double doubleArg);
     [Unforgeable] void unforgeableVoidMethod();
     void voidMethodTestInterfaceGarbageCollectedSequenceArg(sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceArg);

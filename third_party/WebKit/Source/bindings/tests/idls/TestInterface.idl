@@ -39,7 +39,7 @@
     ImplementedAs=TestInterfaceImplementation,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
-    TypeChecking=Interface|Nullable|Unrestricted,
+    TypeChecking=Interface|Unrestricted,
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
     // configuration and method configuration, and [TypeChecking]

@@ -67,10 +67,6 @@ def attribute_context(interface, attribute):
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
     # [TypeChecking]
-    has_type_checking_nullable = (
-        (has_extended_attribute_value(interface, 'TypeChecking', 'Nullable') or
-         has_extended_attribute_value(attribute, 'TypeChecking', 'Nullable')) and
-         idl_type.is_wrapper_type)
     has_type_checking_unrestricted = (
         (has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
          has_extended_attribute_value(attribute, 'TypeChecking', 'Unrestricted')) and
@@ -98,7 +94,6 @@ def attribute_context(interface, attribute):
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_type_checking_nullable': has_type_checking_nullable,
         'has_type_checking_unrestricted': has_type_checking_unrestricted,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
@@ -112,7 +107,8 @@ def attribute_context(interface, attribute):
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
-        'is_nullable': attribute.idl_type.is_nullable,
+        'is_nullable': idl_type.is_nullable,
+        'is_nullable_simple': idl_type.is_nullable and idl_type.is_wrapper_type,  # null value maps to C++ null pointer
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
@@ -207,7 +203,7 @@ def getter_expression(interface, attribute, context):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
-    if attribute.idl_type.is_nullable and not context['has_type_checking_nullable']:
+    if attribute.idl_type.is_nullable and not context['is_nullable_simple']:
         arguments.append('isNull')
     if context['is_getter_raises_exception']:
         arguments.append('exceptionState')
@@ -299,7 +295,6 @@ def setter_context(interface, attribute, context):
     context.update({
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
-            context['has_type_checking_nullable'] or
             context['has_type_checking_unrestricted'] or
             idl_type.may_raise_exception_on_conversion,
         'has_type_checking_interface': has_type_checking_interface,

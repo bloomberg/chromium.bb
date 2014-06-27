@@ -1372,9 +1372,8 @@ static void readonlyEventTargetOrNullAttributeAttributeGetter(const v8::Property
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    bool isNull = false;
-    RefPtrWillBeRawPtr<EventTarget> cppValue(impl->readonlyEventTargetOrNullAttribute(isNull));
-    if (isNull) {
+    RefPtrWillBeRawPtr<EventTarget> cppValue(impl->readonlyEventTargetOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
@@ -1592,9 +1591,8 @@ static void testInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallba
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    bool isNull = false;
-    RefPtr<TestInterfaceImplementation> cppValue(impl->testInterfaceOrNullAttribute(isNull));
-    if (isNull) {
+    RefPtr<TestInterfaceImplementation> cppValue(impl->testInterfaceOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
@@ -4376,32 +4374,32 @@ static void treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttribut
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceNullableStringFloatAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void typeCheckingInterfaceFloatAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    v8SetReturnValue(info, impl->typeCheckingInterfaceNullableStringFloatAttribute());
+    v8SetReturnValue(info, impl->typeCheckingInterfaceFloatAttribute());
 }
 
-static void typeCheckingInterfaceNullableStringFloatAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void typeCheckingInterfaceFloatAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingInterfaceNullableStringFloatAttributeAttributeGetter(info);
+    TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceNullableStringFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void typeCheckingInterfaceFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(float, cppValue, static_cast<float>(v8Value->NumberValue()));
-    impl->setTypeCheckingInterfaceNullableStringFloatAttribute(cppValue);
+    impl->setTypeCheckingInterfaceFloatAttribute(cppValue);
 }
 
-static void typeCheckingInterfaceNullableStringFloatAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void typeCheckingInterfaceFloatAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingInterfaceNullableStringFloatAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -4440,11 +4438,11 @@ static void typeCheckingInterfaceTestInterfaceAttributeAttributeSetterCallback(v
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingNullableTestInterfaceOrNullAttribute());
+    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingInterfaceTestInterfaceOrNullAttribute());
     if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
@@ -4452,52 +4450,17 @@ static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetter(cons
     v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
-static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetter(info);
+    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingNullableTestInterfaceOrNullAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
-    impl->setTypeCheckingNullableTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
-}
-
-static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingNullableTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingInterfaceNullableTestInterfaceOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
-}
-
-static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceNullableTestInterfaceOrNullAttribute", "TestObject", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceTestInterfaceOrNullAttribute", "TestObject", holder, info.GetIsolate());
     if (!isUndefinedOrNull(v8Value) && !V8TestInterface::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
         exceptionState.throwIfNeeded();
@@ -4505,13 +4468,13 @@ static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeSe
     }
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
-    impl->setTypeCheckingInterfaceNullableTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
+    impl->setTypeCheckingInterfaceTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
 }
 
-static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -4748,9 +4711,8 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(const v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    bool isNull = false;
-    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->testInterfaceGarbageCollectedOrNullAttribute(isNull));
-    if (isNull) {
+    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->testInterfaceGarbageCollectedOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
@@ -4812,9 +4774,8 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetter(co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    bool isNull = false;
-    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute(isNull));
-    if (isNull) {
+    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
@@ -9528,56 +9489,6 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCa
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForMethod("typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
-    {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    }
-    impl->typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(testInterfaceEmptyOrNullArg);
-}
-
-static void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForMethod("typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
-    {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
-            throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-            return;
-        }
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    }
-    impl->typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(testInterfaceEmptyOrNullArg);
-}
-
-static void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
@@ -9875,10 +9786,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"treatReturnedNullStringAsUndefinedByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullScalarValueStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsUndefinedScalarValueStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"typeCheckingInterfaceNullableStringFloatAttribute", TestObjectV8Internal::typeCheckingInterfaceNullableStringFloatAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceNullableStringFloatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"typeCheckingInterfaceFloatAttribute", TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"typeCheckingInterfaceTestInterfaceAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"typeCheckingNullableTestInterfaceOrNullAttribute", TestObjectV8Internal::typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingNullableTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"typeCheckingInterfaceNullableTestInterfaceOrNullAttribute", TestObjectV8Internal::typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"typeCheckingInterfaceTestInterfaceOrNullAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::PROHIBITS_OVERWRITING), static_cast<v8::PropertyAttribute>(v8::DontDelete), 0 /* on instance */},
@@ -10083,8 +9993,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"treatReturnedNullStringAsUndefinedScalarValueStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringMethodMethodCallback, 0, 0},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0},
-    {"typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1},
-    {"typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1},
     {"typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", TestObjectV8Internal::typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethodCallback, 0, 2},
     {"voidMethodTestInterfaceGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 0, 1},

@@ -103,7 +103,6 @@ public:
 
     const AnimationNode* source() const { return m_content.get(); }
     AnimationNode* source() { return m_content.get(); }
-    AnimationNode* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
     void setSource(AnimationNode*);
 
     double timeLag() { return timeLagInternal() * 1000; }

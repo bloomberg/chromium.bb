@@ -5,8 +5,8 @@
 [
     OverrideBuiltins,
 ] interface TestSpecialOperations {
-    // [ImplementedAs], [TypeChecking=Interface|Nullable], union return, nullability
+    // [ImplementedAs], [TypeChecking=Interface], union return, nullability
     // [OverrideBuiltins] affects named property operations
     [ImplementedAs=getItem] getter (Node or NodeList) namedItem(DOMString name);
-    [TypeChecking=Interface|Nullable] setter Node (DOMString name, Node? value);
+    [TypeChecking=Interface] setter Node (DOMString name, Node? value);
 };

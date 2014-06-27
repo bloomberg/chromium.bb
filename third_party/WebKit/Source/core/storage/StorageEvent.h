@@ -56,7 +56,6 @@ public:
     const String& newValue() const { return m_newValue; }
     const String& url() const { return m_url; }
     Storage* storageArea() const { return m_storageArea.get(); }
-    Storage* storageArea(bool& isNull) const { isNull = !m_storageArea; return m_storageArea.get(); }
 
     void initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
 
