@@ -67,7 +67,7 @@ struct DescriptorToken {
     template<typename CharType>
     int toInt(const CharType* attribute, bool& isValid)
     {
-        return charactersToInt(attribute + start, length - 1, &isValid);
+        return charactersToIntStrict(attribute + start, length - 1, &isValid);
     }
 
     template<typename CharType>
