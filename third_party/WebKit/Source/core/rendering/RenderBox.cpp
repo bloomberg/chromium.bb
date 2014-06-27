@@ -2684,6 +2684,9 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
 
     availableHeight -= rootMarginBorderPaddingHeight;
 
+    if (isTable() && isOutOfFlowPositioned())
+        availableHeight += cb->paddingLogicalHeight();
+
     LayoutUnit result = valueForLength(height, availableHeight);
     if (includeBorderPadding) {
         // FIXME: Table cells should default to box-sizing: border-box so we can avoid this hack.
