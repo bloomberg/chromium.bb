@@ -598,8 +598,6 @@
         ['exclude', '.*'],
         ['include', 'rendering/'],
 
-        # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
         # Previous rule excludes things like ChromiumFooWin, include those.
         ['include', 'rendering/.*Chromium.*\\.(cpp|mm?)$'],
@@ -675,8 +673,6 @@
       'sources/': [
         ['exclude', 'rendering/'],
 
-        # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
       ],
       'conditions': [
