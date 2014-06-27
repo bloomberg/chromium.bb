@@ -11,6 +11,9 @@
 namespace mojo {
 namespace {
 
+// Used for scrolling. This matches Firefox behavior.
+const int kPixelsPerTick = 53;
+
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
 
@@ -150,6 +153,31 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
     web_event->unmodifiedText[0] = event->key_data->key_code;
 
     web_event->setKeyIdentifierFromWindowsKeyCode();
+    return web_event.PassAs<blink::WebInputEvent>();
+  } else if (event->action == ui::ET_MOUSEWHEEL) {
+    scoped_ptr<blink::WebMouseWheelEvent> web_event(
+        new blink::WebMouseWheelEvent);
+    web_event->type = blink::WebInputEvent::MouseWheel;
+    web_event->button = blink::WebMouseEvent::ButtonNone;
+    web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
+    web_event->timeStampSeconds =
+        base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+
+    web_event->x = event->location->x;
+    web_event->y = event->location->y;
+
+    if ((event->flags & ui::EF_SHIFT_DOWN) != 0 &&
+        event->wheel_data->x_offset == 0) {
+      web_event->deltaX = event->wheel_data->y_offset;
+      web_event->deltaY = 0;
+    } else {
+      web_event->deltaX = event->wheel_data->x_offset;
+      web_event->deltaY = event->wheel_data->y_offset;
+    }
+
+    web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
+    web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
+
     return web_event.PassAs<blink::WebInputEvent>();
   }
 

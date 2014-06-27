@@ -15,6 +15,11 @@ struct TouchData {
   int32 pointer_id;
 };
 
+struct MouseWheelData {
+  int32 x_offset;
+  int32 y_offset;
+};
+
 struct Event {
   int32 action;
   int32 flags;
@@ -22,6 +27,7 @@ struct Event {
   Point location;
   KeyData key_data;
   TouchData touch_data;
+  MouseWheelData wheel_data;
 };
 
 }

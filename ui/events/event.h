@@ -420,6 +420,13 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
         offset_(model.x_offset(), model.y_offset()) {
   }
 
+  // Used for synthetic events in testing and by the gesture recognizer.
+  MouseWheelEvent(const gfx::Vector2d& offset,
+                  const gfx::PointF& location,
+                  const gfx::PointF& root_location,
+                  int flags,
+                  int changed_button_flags);
+
   // The amount to scroll. This is in multiples of kWheelDelta.
   // Note: x_offset() > 0/y_offset() > 0 means scroll left/up.
   int x_offset() const { return offset_.x(); }

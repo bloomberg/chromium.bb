@@ -37,6 +37,13 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
     key_data->key_code = key_event->key_code();
     key_data->is_char = key_event->is_char();
     event->key_data = key_data.Pass();
+  } else if (input.IsMouseWheelEvent()) {
+    const ui::MouseWheelEvent* wheel_event =
+        static_cast<const ui::MouseWheelEvent*>(&input);
+    MouseWheelDataPtr wheel_data(MouseWheelData::New());
+    wheel_data->x_offset = wheel_event->x_offset();
+    wheel_data->y_offset = wheel_event->y_offset();
+    event->wheel_data = wheel_data.Pass();
   }
   return event.Pass();
 }
@@ -77,6 +84,18 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
                          location,
                          input->flags,
                          input->flags));
+      break;
+    }
+    case ui::ET_MOUSEWHEEL: {
+      const gfx::PointF location(TypeConverter<PointPtr, gfx::Point>::ConvertTo(
+                                     input->location));
+      const gfx::Vector2d offset(input->wheel_data->x_offset,
+                                 input->wheel_data->y_offset);
+      ui_event.reset(new ui::MouseWheelEvent(offset,
+                                             location,
+                                             location,
+                                             input->flags,
+                                             input->flags));
       break;
     }
     default:

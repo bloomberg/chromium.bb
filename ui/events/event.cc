@@ -376,6 +376,16 @@ MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
   DCHECK(type() == ET_MOUSEWHEEL);
 }
 
+MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
+                                 const gfx::PointF& location,
+                                 const gfx::PointF& root_location,
+                                 int flags,
+                                 int changed_button_flags)
+    : MouseEvent(ui::ET_MOUSEWHEEL, location, root_location, flags,
+                 changed_button_flags),
+      offset_(offset) {
+}
+
 #if defined(OS_WIN)
 // This value matches windows WHEEL_DELTA.
 // static

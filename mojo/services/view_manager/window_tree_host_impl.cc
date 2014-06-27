@@ -158,6 +158,14 @@ void WindowTreeHostImpl::OnEvent(EventPtr event,
       SendEventToProcessor(&ev);
       break;
     }
+    case ui::ET_MOUSEWHEEL: {
+      gfx::Vector2d offset(event->wheel_data->x_offset,
+                           event->wheel_data->y_offset);
+      gfx::Point location(event->location->x, event->location->y);
+      ui::MouseWheelEvent ev(offset, location, location, event->flags, 0);
+      SendEventToProcessor(&ev);
+      break;
+    }
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED: {
       ui::KeyEvent ev(

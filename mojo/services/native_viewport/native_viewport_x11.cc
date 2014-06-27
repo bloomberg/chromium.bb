@@ -9,6 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -150,8 +151,14 @@ class NativeViewportX11 : public NativeViewport,
       delegate_->OnEvent(&key_event);
     } else if (event->type == ButtonPress || event->type == ButtonRelease ||
                event->type == MotionNotify) {
-      ui::MouseEvent mouse_event(event);
-      delegate_->OnEvent(&mouse_event);
+      ui::EventType event_type = ui::EventTypeFromNative(event);
+      if (event_type == ui::ET_MOUSEWHEEL) {
+        ui::MouseWheelEvent mouse_event(event);
+        delegate_->OnEvent(&mouse_event);
+      } else {
+        ui::MouseEvent mouse_event(event);
+        delegate_->OnEvent(&mouse_event);
+      }
     }
     return ui::POST_DISPATCH_NONE;
   }
