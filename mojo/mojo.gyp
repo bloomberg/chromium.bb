@@ -592,6 +592,13 @@
         'mojo_shell_lib',
         'mojo_system_impl',
       ],
+      'conditions': [
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
+      ],
       'sources': [
         'shell/desktop/mojo_main.cc',
       ],

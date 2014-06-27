@@ -5,4 +5,5 @@ include_rules = [
   "+mojo/services/gles2",
   "+ui/events",
   "+ui/gfx",
+  "+ui/ozone/public",
 ]

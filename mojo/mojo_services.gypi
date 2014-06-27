@@ -163,6 +163,7 @@
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_mac.mm',
+        'services/native_viewport/native_viewport_ozone.cc',
         'services/native_viewport/native_viewport_service.cc',
         'services/native_viewport/native_viewport_service.h',
         'services/native_viewport/native_viewport_stub.cc',
