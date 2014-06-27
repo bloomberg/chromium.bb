@@ -199,7 +199,8 @@ std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
 // that are non-NULL will be set. If there is no port, port will be 0.
 // If the return value is false, the state of the out params is undefined.
 bool ExtractSignonRealmComponents(const std::string& signon_realm,
-                                  std::string* server, int* port,
+                                  std::string* server,
+                                  UInt32* port,
                                   bool* is_secure,
                                   std::string* security_domain);
 

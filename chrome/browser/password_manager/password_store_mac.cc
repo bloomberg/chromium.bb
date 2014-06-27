@@ -42,10 +42,14 @@ class KeychainSearch {
   //
   // IMPORTANT: Any paramaters passed in *must* remain valid for as long as the
   // KeychainSearch object, since the search uses them by reference.
-  void Init(const char* server, const UInt32& port,
-            const SecProtocolType& protocol,
-            const SecAuthenticationType& auth_type, const char* security_domain,
-            const char* path, const char* username, OSType creator);
+  void Init(const char* server,
+            const UInt32* port,
+            const SecProtocolType* protocol,
+            const SecAuthenticationType* auth_type,
+            const char* security_domain,
+            const char* path,
+            const char* username,
+            const OSType* creator);
 
   // Fills |items| with all Keychain items that match the Init'd search.
   // If the search fails for any reason, |items| will be unchanged.
@@ -69,11 +73,14 @@ KeychainSearch::~KeychainSearch() {
   }
 }
 
-void KeychainSearch::Init(const char* server, const UInt32& port,
-                          const SecProtocolType& protocol,
-                          const SecAuthenticationType& auth_type,
-                          const char* security_domain, const char* path,
-                          const char* username, OSType creator) {
+void KeychainSearch::Init(const char* server,
+                          const UInt32* port,
+                          const SecProtocolType* protocol,
+                          const SecAuthenticationType* auth_type,
+                          const char* security_domain,
+                          const char* path,
+                          const char* username,
+                          const OSType* creator) {
   // Allocate enough to hold everything we might use.
   const unsigned int kMaxEntryCount = 8;
   search_attributes_.attr =
@@ -88,31 +95,31 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     search_attributes_.attr[entries].tag = kSecServerItemAttr;
     search_attributes_.attr[entries].length = strlen(server);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(server));
+        const_cast<void*>(static_cast<const void*>(server));
     ++entries;
   }
-  if (port != kAnyPort) {
+  if (port != NULL && *port != kAnyPort) {
     DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecPortItemAttr;
-    search_attributes_.attr[entries].length = sizeof(port);
+    search_attributes_.attr[entries].length = sizeof(*port);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(&port));
+        const_cast<void*>(static_cast<const void*>(port));
     ++entries;
   }
-  if (protocol != kSecProtocolTypeAny) {
+  if (protocol != NULL && *protocol != kSecProtocolTypeAny) {
     DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecProtocolItemAttr;
-    search_attributes_.attr[entries].length = sizeof(protocol);
+    search_attributes_.attr[entries].length = sizeof(*protocol);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(&protocol));
+        const_cast<void*>(static_cast<const void*>(protocol));
     ++entries;
   }
-  if (auth_type != kSecAuthenticationTypeAny) {
+  if (auth_type != NULL && *auth_type != kSecAuthenticationTypeAny) {
     DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecAuthenticationTypeItemAttr;
-    search_attributes_.attr[entries].length = sizeof(auth_type);
+    search_attributes_.attr[entries].length = sizeof(*auth_type);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(&auth_type));
+        const_cast<void*>(static_cast<const void*>(auth_type));
     ++entries;
   }
   if (security_domain != NULL && strlen(security_domain) > 0) {
@@ -120,7 +127,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     search_attributes_.attr[entries].tag = kSecSecurityDomainItemAttr;
     search_attributes_.attr[entries].length = strlen(security_domain);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(security_domain));
+        const_cast<void*>(static_cast<const void*>(security_domain));
     ++entries;
   }
   if (path != NULL && strlen(path) > 0 && strcmp(path, "/") != 0) {
@@ -128,7 +135,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     search_attributes_.attr[entries].tag = kSecPathItemAttr;
     search_attributes_.attr[entries].length = strlen(path);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(path));
+        const_cast<void*>(static_cast<const void*>(path));
     ++entries;
   }
   if (username != NULL) {
@@ -136,15 +143,15 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     search_attributes_.attr[entries].tag = kSecAccountItemAttr;
     search_attributes_.attr[entries].length = strlen(username);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(username));
+        const_cast<void*>(static_cast<const void*>(username));
     ++entries;
   }
-  if (creator != 0) {
+  if (creator != NULL) {
     DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecCreatorItemAttr;
-    search_attributes_.attr[entries].length = sizeof(creator);
+    search_attributes_.attr[entries].length = sizeof(*creator);
     search_attributes_.attr[entries].data =
-        const_cast<void*>(reinterpret_cast<const void*>(&creator));
+        const_cast<void*>(static_cast<const void*>(creator));
     ++entries;
   }
   search_attributes_.count = entries;
@@ -526,9 +533,11 @@ std::vector<PasswordForm*> GetPasswordsForForms(
 }
 
 // TODO(stuartmorgan): signon_realm for proxies is not yet supported.
-bool ExtractSignonRealmComponents(
-    const std::string& signon_realm, std::string* server, int* port,
-    bool* is_secure, std::string* security_domain) {
+bool ExtractSignonRealmComponents(const std::string& signon_realm,
+                                  std::string* server,
+                                  UInt32* port,
+                                  bool* is_secure,
+                                  std::string* security_domain) {
   // The signon_realm will be the Origin portion of a URL for an HTML form,
   // and the same but with the security domain as a path for HTTP auth.
   GURL realm_as_url(signon_realm);
@@ -556,7 +565,7 @@ bool FormIsValidAndMatchesOtherForm(const PasswordForm& query_form,
                                     const PasswordForm& other_form) {
   std::string server;
   std::string security_domain;
-  int port;
+  UInt32 port;
   bool is_secure;
   if (!ExtractSignonRealmComponents(query_form.signon_realm, &server, &port,
                                     &is_secure, &security_domain)) {
@@ -648,8 +657,15 @@ std::vector<SecKeychainItemRef>
   std::vector<SecKeychainItemRef> matches;
   for (unsigned int i = 0; i < arraysize(supported_auth_types); ++i) {
     KeychainSearch keychain_search(*keychain_);
-    keychain_search.Init(NULL, 0, kSecProtocolTypeAny, supported_auth_types[i],
-                         NULL, NULL, NULL, CreatorCodeForSearch());
+    OSType creator = CreatorCodeForSearch();
+    keychain_search.Init(NULL,
+                         NULL,
+                         NULL,
+                         &supported_auth_types[i],
+                         NULL,
+                         NULL,
+                         NULL,
+                         creator ? &creator : NULL);
     keychain_search.FindMatchingItems(&matches);
   }
   return matches;
@@ -667,7 +683,7 @@ bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
 
   std::string server;
   std::string security_domain;
-  int port;
+  UInt32 port;
   bool is_secure;
   if (!internal_keychain_helpers::ExtractSignonRealmComponents(
            form.signon_realm, &server, &port, &is_secure, &security_domain)) {
@@ -769,7 +785,7 @@ std::vector<SecKeychainItemRef>
 
   std::string server;
   std::string security_domain;
-  int port;
+  UInt32 port;
   bool is_secure;
   if (!internal_keychain_helpers::ExtractSignonRealmComponents(
            signon_realm, &server, &port, &is_secure, &security_domain)) {
@@ -783,9 +799,16 @@ std::vector<SecKeychainItemRef>
   SecAuthenticationType auth_type = AuthTypeForScheme(scheme);
   const char* auth_domain = (scheme == PasswordForm::SCHEME_HTML) ?
       NULL : security_domain.c_str();
+  OSType creator = CreatorCodeForSearch();
   KeychainSearch keychain_search(*keychain_);
-  keychain_search.Init(server.c_str(), port, protocol, auth_type,
-                       auth_domain, path, username, CreatorCodeForSearch());
+  keychain_search.Init(server.c_str(),
+                       &port,
+                       &protocol,
+                       &auth_type,
+                       auth_domain,
+                       path,
+                       username,
+                       creator ? &creator : NULL);
   keychain_search.FindMatchingItems(&matches);
   return matches;
 }
