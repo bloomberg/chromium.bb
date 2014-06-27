@@ -68,6 +68,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    host_resolver_.reset();
     network_state_handler_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
