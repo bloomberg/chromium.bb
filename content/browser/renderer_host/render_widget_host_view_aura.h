@@ -323,6 +323,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Updates the cursor clip region. Used for mouse locking.
   void UpdateMouseLockRegion();
+
+  // Notification that the LegacyRenderWidgetHostHWND was destroyed.
+  void OnLegacyWindowDestroyed();
 #endif
 
   // Method to indicate if this instance is shutting down or closing.
@@ -561,6 +564,22 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // over this view changes, we need this information in order to create a new
   // region for the HWND.
   PluginWindowMoves plugin_window_moves_;
+
+  // The LegacyRenderWidgetHostHWND class provides a dummy HWND which is used
+  // for accessibility, as the container for windowless plugins like
+  // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,
+  // etc.
+  // The LegacyRenderWidgetHostHWND instance is created during the first call
+  // to RenderWidgetHostViewAura::InternalSetBounds. The instance is destroyed
+  // when the LegacyRenderWidgetHostHWND hwnd is destroyed.
+  content::LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
+
+  // Set to true if the legacy_render_widget_host_HWND_ instance was destroyed
+  // by Windows. This could happen if the browser window was destroyed by
+  // DestroyWindow for e.g. This flag helps ensure that we don't try to create
+  // the LegacyRenderWidgetHostHWND instance again as that would be a futile
+  // exercise.
+  bool legacy_window_destroyed_;
 #endif
 
   TouchEditingClient* touch_editing_client_;
@@ -575,16 +594,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
-#if defined(OS_WIN)
-  // The LegacyRenderWidgetHostHWND class provides a dummy HWND which is used
-  // for accessibility, as the container for windowless plugins like
-  // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,
-  // etc.
-  // The LegacyRenderWidgetHostHWND instance is created during the first call
-  // to RenderWidgetHostViewAura::InternalSetBounds. The instance is destroyed
-  // when the LegacyRenderWidgetHostHWND hwnd is destroyed.
-  content::LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
-#endif
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 

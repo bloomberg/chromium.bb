@@ -614,16 +614,6 @@ name=http://crbug.com/313788
 *!ChromeBrowserMainParts::PreMainMessageLoopRunImpl
 *!ChromeBrowserMainParts::PreMainMessageLoopRun
 
-UNADDRESSABLE ACCESS
-name=crbug.com/389191(a)
-*!content::LegacyRenderWidgetHostHWND::*
-*!content::RenderWidgetHostViewAura::*
-
-UNADDRESSABLE ACCESS
-name=crbug.com/389191(b)
-*!content::LegacyRenderWidgetHostHWND::Hide
-*!content::WebContentsImpl::WasHidden
-
 # This suppression is deliberately general, as bugs reported in
 # v8 generated code are difficult to track down. Xref Dr. Memory issue
 # https://code.google.com/p/drmemory/issues/detail?id=1582

@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_enabled.h"
@@ -90,12 +91,17 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
   if (manager_)
     manager_->OnAccessibleHwndDeleted();
+  if (host_) {
+    host_->OnLegacyWindowDestroyed();
+    host_ = NULL;
+  }
   delete this;
 }
 
 LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
     : manager_(NULL),
-      mouse_tracking_enabled_(false) {
+      mouse_tracking_enabled_(false),
+      host_(NULL) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
                WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,

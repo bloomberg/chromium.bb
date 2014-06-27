@@ -21,6 +21,7 @@ class WindowEventTarget;
 
 namespace content {
 class BrowserAccessibilityManagerWin;
+class RenderWidgetHostViewAura;
 
 // Reasons for the existence of this class outlined below:-
 // 1. Some screen readers expect every tab / every unique web content container
@@ -108,6 +109,12 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // Resizes the window to the bounds passed in.
   void SetBounds(const gfx::Rect& bounds);
 
+  // The pointer to the containing RenderWidgetHostViewAura instance is passed
+  // here.
+  void set_host(RenderWidgetHostViewAura* host) {
+    host_ = host;
+  }
+
  protected:
   virtual void OnFinalMessage(HWND hwnd) OVERRIDE;
 
@@ -144,6 +151,8 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
   // Set to true if we turned on mouse tracking.
   bool mouse_tracking_enabled_;
+
+  RenderWidgetHostViewAura* host_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };

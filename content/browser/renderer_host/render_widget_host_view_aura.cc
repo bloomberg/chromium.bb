@@ -442,6 +442,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
+#if defined(OS_WIN)
+      legacy_render_widget_host_HWND_(NULL),
+      legacy_window_destroyed_(false),
+#endif
       touch_editing_client_(NULL),
       weak_ptr_factory_(this) {
   host_->SetView(this);
@@ -456,9 +460,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
   SetOverscrollControllerEnabled(overscroll_enabled);
-#if defined(OS_WIN)
-  legacy_render_widget_host_HWND_ = NULL;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1010,12 +1011,13 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // coordinate translations done by these plugins to break.
   // Additonally the legacy dummy window is needed for accessibility and for
   // scrolling to work in legacy drivers for trackpoints/trackpads, etc.
-  if (GetNativeViewId()) {
+  if (!legacy_window_destroyed_ && GetNativeViewId()) {
     if (!legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(
           reinterpret_cast<HWND>(GetNativeViewId()));
     }
     if (legacy_render_widget_host_HWND_) {
+      legacy_render_widget_host_HWND_->set_host(this);
       legacy_render_widget_host_HWND_->SetBounds(
           window_->GetBoundsInRootWindow());
       // There are cases where the parent window is created, made visible and
@@ -1070,6 +1072,11 @@ void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
     RECT window_rect = window_->GetBoundsInScreen().ToRECT();
     ::ClipCursor(&window_rect);
   }
+}
+
+void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
+  legacy_render_widget_host_HWND_ = NULL;
+  legacy_window_destroyed_ = true;
 }
 #endif
 
