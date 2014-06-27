@@ -100,7 +100,9 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
     m_timing->cancelWake();
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
+
     WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer> > players;
+    players.reserveInitialCapacity(m_playersNeedingUpdate.size());
     for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
         players.append(it->get());
 
