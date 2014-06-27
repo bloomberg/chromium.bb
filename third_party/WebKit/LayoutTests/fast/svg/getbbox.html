@@ -21,7 +21,7 @@
     <path id="p2" fill="none" stroke="red" />
     <rect id="r6" x="50" y="50" width="50" height="50" fill="green" />
     <!-- The following path should be included in the bbox. -->
-    <path d=""
+    <path d=""/>
 </g>
 <g id="g4">
     <polyline id="p3" fill="none" stroke="red" />
@@ -38,6 +38,10 @@
 <g id="g7">
     <polyline id="p6" points="47" fill="none" stroke="red" />
     <rect id="r10" x="50" y="50" width="50" height="50" fill="green" />
+</g>
+<g id="g8">
+    <path id="p7" d="M40 20h0" fill="none" stroke="red" />
+    <rect id="r11" x="50" y="50" width="50" height="50" fill="green" />
 </g>
 </svg>
 </div>
@@ -91,5 +95,11 @@ test(function() {
 test(function() {
 	assert_rect_approx_equals(document.getElementById("g7").getBBox(), document.getElementById("r10").getBBox(), EPSILON);
 }, "polyline with no valid points doesn't contribute to parent bbox");
+test(function() {
+	assert_rect_approx_equals(document.getElementById("p7").getBBox(), {"x":40, "y":20, "width":0, "height":0 }, EPSILON);
+}, "getBBox on path with no height");
+test(function() {
+	assert_rect_approx_equals(document.getElementById("g8").getBBox(), {"x":40, "y":20, "width":60, "height":80 }, EPSILON);
+}, "path with no height should contribute to parent bbox");
 
 </script>
