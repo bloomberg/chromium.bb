@@ -77,7 +77,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
   EXPECT_FALSE(util::IsIncognitoEnabled(last_loaded_extension_id(), profile()));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
+// Failing on XP: http://crbug.com/389545
+#if defined(OS_WIN)
+#define MAYBE_TestSetExtensionsState DISABLED_TestSetExtensionsState
+#else
+#define MAYBE_TestSetExtensionsState TestSetExtensionsState
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, MAYBE_TestSetExtensionsState) {
   InstallExtensionSilently(GetExtensionService(), "google_talk.crx");
 
   // Disable the extension and verify.
