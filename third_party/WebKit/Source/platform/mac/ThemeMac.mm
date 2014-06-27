@@ -472,7 +472,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
-    if (states & FocusState)
+    if (states & FocusControlState)
         [buttonCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
 #endif
     [buttonCell setControlView:nil];
