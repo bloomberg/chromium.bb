@@ -27,12 +27,8 @@
 
 module('ui.actions');
 
-test('Buttons', 4, function() {
+test('Buttons', 2, function() {
     var buttonInfos = [{
-        view: new ui.actions.Rollout(),
-        text: 'Roll out',
-        event: 'rollout'
-    }, {
         view: new ui.actions.Examine(),
         text: 'Examine',
         event: 'examine'

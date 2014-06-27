@@ -311,8 +311,8 @@ asyncTest("RevisionDetailsMediumRoll", 2, function() {
                     '</table>' +
                 '</details>' +
                 ', trunk is at <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=555">555</a>' +
-                '<br>' +
-                'Last roll is to <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=500">500</a><span class="warning">(55 revisions behind)</span>, current autoroll <a href="https://codereview.chromium.org/1000">500:550</a>');
+                '<br>';
+                // 'Last roll is to <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=500">500</a><span class="warning">(55 revisions behind)</span>, current autoroll <a href="https://codereview.chromium.org/1000">500:550</a>');
         start();
     });
 });

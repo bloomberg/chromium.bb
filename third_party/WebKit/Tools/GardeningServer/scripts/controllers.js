@@ -27,8 +27,6 @@ var controllers = controllers || {};
 
 (function(){
 
-var kCheckoutUnavailableMessage = 'Failed! Garden-o-matic needs a local server to modify your working copy. Please run "webkit-patch garden-o-matic" start the local server.';
-
 // FIXME: This is duplicated from ui/results.js :(.
 function isAnyReftest(testName, resultsByTest)
 {
@@ -48,12 +46,6 @@ function updateExpectationsWithStatusUpdates(failureInfoList)
     var testNames = base.uniquifyArray(failureInfoList.map(function(failureInfo) { return failureInfo.testName; }));
     var testName = testNames.length == 1 ? testNames[0] : testNames.length + ' tests';
     statusView.addMessage(id, 'Updating expectations of ' + testName + '...');
-
-    checkout.updateExpectations(failureInfoList, function() {
-        statusView.addFinalMessage(id, 'Expectations update done! Please commit them locally and land with "git cl dcommit".');
-    }, function() {
-        statusView.addFinalMessage(id, kCheckoutUnavailableMessage);
-    });
 }
 
 controllers.ResultsDetails = base.extends(Object, {
@@ -222,13 +214,6 @@ controllers.UnexpectedFailures = base.extends(FailureStreamController, {
     {
         return this._testFailures.length();
     },
-    onRollout: function(revision, testNameList)
-    {
-        checkout.rollout(revision, ui.rolloutReasonForTestNameList(testNameList)).then($.noop, function() {
-            // FIXME: We should have a better error UI.
-            alert(kCheckoutUnavailableMessage);
-        });
-    }
 });
 
 controllers.FailingBuilders = base.extends(Object, {

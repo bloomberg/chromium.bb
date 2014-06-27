@@ -410,11 +410,12 @@ ui.revisionDetails = base.extends('span', {
         theSpan.appendChild(document.createTextNode(', trunk is at '));
         theSpan.appendChild(ui.createLinkNode(trac.changesetURL(totRevision), totRevision));
 
-        Promise.all([checkout.lastBlinkRollRevision(), rollbot.fetchCurrentRoll()]).then(function(results) {
-            theSpan.lastRolledRevision = results[0];
-            theSpan.roll = results[1];
-            theSpan.updateUI(totRevision);
-        });
+        // We want this feature, but need to fetch the lastBlinkRollRevision via the interwebs.
+        // Promise.all([checkout.lastBlinkRollRevision(), rollbot.fetchCurrentRoll()]).then(function(results) {
+        //     theSpan.lastRolledRevision = results[0];
+        //     theSpan.roll = results[1];
+        //     theSpan.updateUI(totRevision);
+        // });
     }
 });
 
