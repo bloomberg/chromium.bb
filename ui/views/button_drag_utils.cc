@@ -12,8 +12,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace button_drag_utils {
@@ -39,15 +40,24 @@ void SetDragImage(const GURL& url,
                   ui::OSExchangeData* data,
                   views::Widget* widget) {
   // Create a button to render the drag image for us.
-  views::TextButton button(NULL,
-                           title.empty() ? base::UTF8ToUTF16(url.spec())
-                                         : title);
-  button.set_max_width(kLinkDragImageMaxWidth);
+  views::LabelButton button(NULL,
+                            title.empty() ? base::UTF8ToUTF16(url.spec())
+                                          : title);
+  button.SetTextSubpixelRenderingEnabled(false);
+  const ui::NativeTheme* theme =
+      widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
+  button.SetTextColor(views::Button::STATE_NORMAL,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor));
+  gfx::ShadowValues shadows(10, gfx::ShadowValue(gfx::Point(0,0), 1.0f,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBackgroundColor)));
+  button.SetTextShadows(shadows);
+  button.set_max_size(gfx::Size(kLinkDragImageMaxWidth, 0));
   if (icon.isNull()) {
-    button.SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                   IDR_DEFAULT_FAVICON).ToImageSkia());
+    button.SetImage(views::Button::STATE_NORMAL,
+                    *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                        IDR_DEFAULT_FAVICON).ToImageSkia());
   } else {
-    button.SetIcon(icon);
+    button.SetImage(views::Button::STATE_NORMAL, icon);
   }
   gfx::Size prefsize = button.GetPreferredSize();
   button.SetBounds(0, 0, prefsize.width(), prefsize.height());
@@ -61,7 +71,7 @@ void SetDragImage(const GURL& url,
   // Render the image.
   scoped_ptr<gfx::Canvas> canvas(
       views::GetCanvasForDragImage(widget, prefsize));
-  button.PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
+  button.Paint(canvas.get(), views::CullSet());
   drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);
 }
 
