@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /*
  * Technical note:
  *
@@ -369,6 +371,16 @@ public class Linker {
             // system does not support RELRO sharing safely.
             return sRelroSharingSupported;
         }
+    }
+
+    /**
+     * Call this method to determine if the chromium project must load
+     * the library directly from the zip file.
+     */
+    public static boolean isInZipFile() {
+        // TODO(anton) - this is the hook to enable loading from the zip
+        // file, once tool support for building APKs has landed.
+        return false;
     }
 
     /**
@@ -754,12 +766,28 @@ public class Linker {
 
     /**
      * Load a native shared library with the Chromium linker.
-     * If neither initSharedRelro() or readFromBundle() were called
-     * previously, this uses the standard linker (i.e. System.loadLibrary()).
+     * The shared library is uncompressed and page aligned inside the zipfile.
+     * Note the crazy linker treats libraries and files as equivalent,
+     * so you can only open one library in a given zip file.
+     *
+     * @param zipfile The filename of the zipfile contain the library.
+     * @param library The library's base name.
+     */
+    public static void loadLibraryInZipFile(String zipfile, String library) {
+        loadLibraryMaybeInZipFile(zipfile, library);
+    }
+
+    /**
+     * Load a native shared library with the Chromium linker.
      *
      * @param library The library's base name.
      */
     public static void loadLibrary(String library) {
+        loadLibraryMaybeInZipFile(null, library);
+    }
+
+    private static void loadLibraryMaybeInZipFile(
+            @Nullable String zipFile, String library) {
         if (DEBUG) Log.i(TAG, "loadLibrary: " + library);
 
         // Don't self-load the linker. This is because the build system is
@@ -797,10 +825,23 @@ public class Linker {
                 loadAddress = sCurrentLoadAddress;
             }
 
-            if (!nativeLoadLibrary(libName, loadAddress, libInfo)) {
-                String errorMessage = "Unable to load library: " + libName;
-                Log.e(TAG, errorMessage);
-                throw new UnsatisfiedLinkError(errorMessage);
+            String sharedRelRoName = libName;
+            if (zipFile != null) {
+                if (!nativeLoadLibraryInZipFile(
+                        zipFile, libName, loadAddress, libInfo)) {
+                    String errorMessage =
+                            "Unable to load library: " + libName + " in: " +
+                            zipFile;
+                    Log.e(TAG, errorMessage);
+                    throw new UnsatisfiedLinkError(errorMessage);
+                }
+                sharedRelRoName = zipFile;
+            } else {
+                if (!nativeLoadLibrary(libName, loadAddress, libInfo)) {
+                    String errorMessage = "Unable to load library: " + libName;
+                    Log.e(TAG, errorMessage);
+                    throw new UnsatisfiedLinkError(errorMessage);
+                }
             }
             // Keep track whether the library has been loaded at the expected load address.
             if (loadAddress != 0 && loadAddress != libInfo.mLoadAddress)
@@ -823,7 +864,7 @@ public class Linker {
 
             if (sInBrowserProcess) {
                 // Create a new shared RELRO section at the 'current' fixed load address.
-                if (!nativeCreateSharedRelro(libName, sCurrentLoadAddress, libInfo)) {
+                if (!nativeCreateSharedRelro(sharedRelRoName, sCurrentLoadAddress, libInfo)) {
                     Log.w(TAG, String.format(Locale.US,
                             "Could not create shared RELRO for %s at %x", libName,
                             sCurrentLoadAddress));
@@ -832,7 +873,7 @@ public class Linker {
                         String.format(
                             Locale.US,
                             "Created shared RELRO for %s at %x: %s",
-                            libName,
+                            sharedRelRoName,
                             sCurrentLoadAddress,
                             libInfo.toString()));
                 }
@@ -885,6 +926,21 @@ public class Linker {
     private static native boolean nativeLoadLibrary(String library,
                                                     long loadAddress,
                                                     LibInfo libInfo);
+
+    /**
+     * Native method used to load a library which is inside a zipfile.
+     * @param zipfileName Filename of the zip file containing the library.
+     * @param library Platform specific library name (e.g. libfoo.so)
+     * @param loadAddress Explicit load address, or 0 for randomized one.
+     * @param libInfo If not null, the mLoadAddress and mLoadSize fields
+     * of this LibInfo instance will set on success.
+     * @return true for success, false otherwise.
+     */
+    private static native boolean nativeLoadLibraryInZipFile(
+        String zipfileName,
+        String libraryName,
+        long loadAddress,
+        LibInfo libInfo);
 
     /**
      * Native method used to create a shared RELRO section.

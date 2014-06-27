@@ -153,9 +153,15 @@ public class LibraryLoader {
                 if (useChromiumLinker) Linker.prepareLibraryLoad();
 
                 for (String library : NativeLibraries.LIBRARIES) {
-                    Log.i(TAG, "Loading: " + library);
                     if (useChromiumLinker) {
-                        Linker.loadLibrary(library);
+                        if (Linker.isInZipFile()) {
+                            String zipfile = context.getApplicationInfo().sourceDir;
+                            Log.i(TAG, "Loading " + library + " from within " + zipfile);
+                            Linker.loadLibraryInZipFile(zipfile, library);
+                        } else {
+                            Log.i(TAG, "Loading: " + library);
+                            Linker.loadLibrary(library);
+                        }
                     } else {
                         try {
                             System.loadLibrary(library);

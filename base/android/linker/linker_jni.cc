@@ -70,14 +70,6 @@ String::String(JNIEnv* env, jstring str) {
   env->ReleaseStringUTFChars(str, bytes);
 }
 
-// Return a pointer to the base name from an input |path| string.
-const char* GetBaseNamePtr(const char* path) {
-  const char* p = strrchr(path, '/');
-  if (p)
-    return p + 1;
-  return path;
-}
-
 // Return true iff |address| is a valid address for the target CPU.
 bool IsValidAddress(jlong address) {
   return static_cast<jlong>(static_cast<size_t>(address)) == address;
@@ -239,6 +231,97 @@ class ScopedLibrary {
   crazy_library_t* lib_;
 };
 
+namespace {
+
+template <class LibraryOpener>
+bool GenericLoadLibrary(
+    JNIEnv* env,
+    const char* library_name, jlong load_address, jobject lib_info_obj,
+    const LibraryOpener& opener) {
+  crazy_context_t* context = GetCrazyContext();
+
+  if (!IsValidAddress(load_address)) {
+    LOG_ERROR("%s: Invalid address 0x%llx", __FUNCTION__, load_address);
+    return false;
+  }
+
+  // Set the desired load address (0 means randomize it).
+  crazy_context_set_load_address(context, static_cast<size_t>(load_address));
+
+  ScopedLibrary library;
+  if (!opener.Open(library.GetPtr(), library_name, context)) {
+    return false;
+  }
+
+  crazy_library_info_t info;
+  if (!crazy_library_get_info(library.Get(), context, &info)) {
+    LOG_ERROR("%s: Could not get library information for %s: %s",
+              __FUNCTION__,
+              library_name,
+              crazy_context_get_error(context));
+    return false;
+  }
+
+  // Release library object to keep it alive after the function returns.
+  library.Release();
+
+  s_lib_info_fields.SetLoadInfo(
+      env, lib_info_obj, info.load_address, info.load_size);
+  LOG_INFO("%s: Success loading library %s", __FUNCTION__, lib_basename);
+  return true;
+}
+
+// Used for opening the library in a regular file.
+class FileLibraryOpener {
+ public:
+  bool Open(
+      crazy_library_t** library,
+      const char* library_name,
+      crazy_context_t* context) const;
+};
+
+bool FileLibraryOpener::Open(
+    crazy_library_t** library,
+    const char* library_name,
+    crazy_context_t* context) const {
+  if (!crazy_library_open(library, library_name, context)) {
+    LOG_ERROR("%s: Could not open %s: %s",
+              __FUNCTION__,
+              library_name,
+              crazy_context_get_error(context));
+    return false;
+  }
+  return true;
+}
+
+// Used for opening the library in a zip file.
+class ZipLibraryOpener {
+ public:
+  ZipLibraryOpener(const char* zip_file) : zip_file_(zip_file) {}
+  bool Open(
+      crazy_library_t** library,
+      const char* library_name,
+      crazy_context_t* context) const;
+ private:
+  const char* zip_file_;
+};
+
+bool ZipLibraryOpener::Open(
+    crazy_library_t** library,
+    const char* library_name,
+    crazy_context_t* context) const {
+ if (!crazy_library_open_in_zip_file(
+         library, zip_file_, library_name, context)) {
+    LOG_ERROR("%s: Could not open %s in zip file %s: %s",
+              __FUNCTION__, library_name, zip_file_,
+              crazy_context_get_error(context));
+    return false;
+ }
+ return true;
+}
+
+}  // unnamed namespace
+
 // Load a library with the chromium linker. This will also call its
 // JNI_OnLoad() method, which shall register its methods. Note that
 // lazy native method resolution will _not_ work after this, because
@@ -258,46 +341,46 @@ jboolean LoadLibrary(JNIEnv* env,
                      jlong load_address,
                      jobject lib_info_obj) {
   String lib_name(env, library_name);
-  const char* UNUSED lib_basename = GetBaseNamePtr(lib_name.c_str());
+  FileLibraryOpener opener;
+  return GenericLoadLibrary(
+      env, lib_name.c_str(),
+      static_cast<size_t>(load_address), lib_info_obj, opener);
+}
 
-  crazy_context_t* context = GetCrazyContext();
-
-  if (!IsValidAddress(load_address)) {
-    LOG_ERROR("%s: Invalid address 0x%llx", __FUNCTION__, load_address);
-    return false;
-  }
-
-  // Set the desired load address (0 means randomize it).
-  crazy_context_set_load_address(context, static_cast<size_t>(load_address));
-
-  // Open the library now.
-  LOG_INFO("%s: Opening shared library: %s", __FUNCTION__, lib_name.c_str());
-
-  ScopedLibrary library;
-  if (!crazy_library_open(library.GetPtr(), lib_name.c_str(), context)) {
-    LOG_ERROR("%s: Could not open %s: %s",
-              __FUNCTION__,
-              lib_basename,
-              crazy_context_get_error(context));
-    return false;
-  }
-
-  crazy_library_info_t info;
-  if (!crazy_library_get_info(library.Get(), context, &info)) {
-    LOG_ERROR("%s: Could not get library information for %s: %s",
-              __FUNCTION__,
-              lib_basename,
-              crazy_context_get_error(context));
-    return false;
-  }
-
-  // Release library object to keep it alive after the function returns.
-  library.Release();
-
-  s_lib_info_fields.SetLoadInfo(
-      env, lib_info_obj, info.load_address, info.load_size);
-  LOG_INFO("%s: Success loading library %s", __FUNCTION__, lib_basename);
-  return true;
+// Load a library from a zipfile with the chromium linker. The
+// library in the zipfile must be uncompressed and page aligned.
+// The basename of the library is given. The library is expected
+// to be lib/<abi_tag>/crazy.<basename>. The <abi_tag> used will be the
+// same as the abi for this linker. The "crazy." prefix is included
+// so that the Android Package Manager doesn't extract the library into
+// /data/app-lib.
+//
+// Loading the library will also call its JNI_OnLoad() method, which
+// shall register its methods. Note that lazy native method resolution
+// will _not_ work after this, because Dalvik uses the system's dlsym()
+// which won't see the new library, so explicit registration is mandatory.
+//
+// |env| is the current JNI environment handle.
+// |clazz| is the static class handle for org.chromium.base.Linker,
+// and is ignored here.
+// |zipfile_name| is the filename of the zipfile containing the library.
+// |library_name| is the library base name (e.g. libfoo.so).
+// |load_address| is an explicit load address.
+// |library_info| is a LibInfo handle used to communicate information
+// with the Java side.
+// Returns true on success.
+jboolean LoadLibraryInZipFile(JNIEnv* env,
+                              jclass clazz,
+                              jstring zipfile_name,
+                              jstring library_name,
+                              jlong load_address,
+                              jobject lib_info_obj) {
+  String zipfile_name_str(env, zipfile_name);
+  String lib_name(env, library_name);
+  ZipLibraryOpener opener(zipfile_name_str.c_str());
+  return GenericLoadLibrary(
+      env, lib_name.c_str(),
+      static_cast<size_t>(load_address), lib_info_obj, opener);
 }
 
 // Class holding the Java class and method ID for the Java side Linker
@@ -492,6 +575,15 @@ const JNINativeMethod kNativeMethods[] = {
      ")"
      "Z",
      reinterpret_cast<void*>(&LoadLibrary)},
+    {"nativeLoadLibraryInZipFile",
+     "("
+     "Ljava/lang/String;"
+     "Ljava/lang/String;"
+     "J"
+     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
+     ")"
+     "Z",
+     reinterpret_cast<void*>(&LoadLibraryInZipFile)},
     {"nativeRunCallbackOnUiThread",
      "("
      "J"
