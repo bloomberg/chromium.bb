@@ -106,8 +106,10 @@
           ],
           'conditions': [
             ['OS=="linux"', {
-              'dependencies': ['../../build/linux/system.gyp:gtk'],
               'conditions': [
+                [ 'chromeos==0', {
+                  'dependencies': ['../../build/linux/system.gyp:gtk']
+                }],
                 [ 'clang==1', {
                   'cflags': [
                     '-Wno-array-bounds',
@@ -234,7 +236,6 @@
             'gles2_conform_test_embedded_data',
             '<(DEPTH)/base/base.gyp:*',
             '<(DEPTH)/third_party/expat/expat.gyp:expat',
-            '../../build/linux/system.gyp:gtk',
             '<(DEPTH)/gpu/gles2_conform_support/gles2_conform_support.gyp:egl_main_native',
           ],
           'libraries': [
