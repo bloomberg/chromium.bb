@@ -15,7 +15,8 @@ TEST(SysUtils, AmountOfPhysicalMemory) {
   // computed by base::SysInfo::AmountOfPhysicalMemory().
   size_t sys_ram_size =
       static_cast<size_t>(sysconf(_SC_PHYS_PAGES) * PAGE_SIZE);
-  EXPECT_EQ(sys_ram_size, SysInfo::AmountOfPhysicalMemory());
+  EXPECT_EQ(sys_ram_size,
+            static_cast<size_t>(SysInfo::AmountOfPhysicalMemory()));
 }
 
 }  // namespace android
