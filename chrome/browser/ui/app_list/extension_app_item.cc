@@ -272,6 +272,10 @@ void ExtensionAppItem::Launch(int event_flags) {
   if (!extension)
     return;
 
+  // Don't auto-enable apps that cannot be launched.
+  if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
+    return;
+
   if (RunExtensionEnableFlow())
     return;
 
@@ -306,6 +310,10 @@ void ExtensionAppItem::Activate(int event_flags) {
   // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtension();
   if (!extension)
+    return;
+
+  // Don't auto-enable apps that cannot be launched.
+  if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
     return;
 
   if (RunExtensionEnableFlow())

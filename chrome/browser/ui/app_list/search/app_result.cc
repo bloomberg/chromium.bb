@@ -80,6 +80,10 @@ void AppResult::Open(int event_flags) {
   if (!extension)
     return;
 
+  // Don't auto-enable apps that cannot be launched.
+  if (!extensions::util::IsAppLaunchable(app_id_, profile_))
+    return;
+
   // Check if enable flow is already running or should be started
   if (RunExtensionEnableFlow())
     return;

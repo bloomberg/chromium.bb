@@ -191,8 +191,9 @@ void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
 
 bool IsAppLaunchable(const std::string& extension_id,
                      content::BrowserContext* context) {
-  return !(ExtensionPrefs::Get(context)->GetDisableReasons(extension_id) &
-           Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
+  int reason = ExtensionPrefs::Get(context)->GetDisableReasons(extension_id);
+  return !((reason & Extension::DISABLE_UNSUPPORTED_REQUIREMENT) ||
+           (reason & Extension::DISABLE_CORRUPTED));
 }
 
 bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
