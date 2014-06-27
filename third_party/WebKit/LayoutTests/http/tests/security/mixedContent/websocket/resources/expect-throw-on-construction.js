@@ -1,6 +1,8 @@
 function reportResult(msg) {
-    if ("opener" in self)
+    if (self.opener)
         self.opener.postMessage(msg, "*");
+    else if (self.top)
+        self.top.postMessage(msg, "*");
     else
         postMessage(msg);
 }

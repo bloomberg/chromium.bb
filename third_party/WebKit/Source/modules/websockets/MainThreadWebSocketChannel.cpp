@@ -97,6 +97,9 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
 
     if (m_document->frame() && !m_document->frame()->loader().mixedContentChecker()->canConnectInsecureWebSocket(m_document->securityOrigin(), url))
         return false;
+    Frame* top = m_document->frame()->tree().top();
+    if (top != m_document->frame() && !toLocalFrame(top)->loader().mixedContentChecker()->canConnectInsecureWebSocket(toLocalFrame(top)->document()->securityOrigin(), url))
+        return false;
     if (MixedContentChecker::isMixedContent(m_document->securityOrigin(), url)) {
         String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
         m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
