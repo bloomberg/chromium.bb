@@ -183,7 +183,7 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
 
     if (!object->node() || !object->node()->isSVGElement())
         return;
-    SVGElementSet* dependencies = object->document().accessSVGExtensions().setOfElementsReferencingTarget(toSVGElement(object->node()));
+    SVGElementSet* dependencies = toSVGElement(object->node())->setOfIncomingReferences();
     if (!dependencies)
         return;
 

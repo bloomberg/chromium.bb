@@ -210,7 +210,7 @@ SVGSMILElement::~SVGSMILElement()
 
 void SVGSMILElement::clearResourceAndEventBaseReferences()
 {
-    document().accessSVGExtensions().removeAllTargetReferencesForElement(this);
+    removeAllOutgoingReferences();
 }
 
 void SVGSMILElement::clearConditions()
@@ -257,7 +257,7 @@ void SVGSMILElement::buildPendingResource()
     } else {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document().accessSVGExtensions().addElementReferencingTarget(this, svgTarget);
+        addReferenceTo(svgTarget);
     }
     connectEventBaseConditions();
 }
@@ -640,7 +640,7 @@ void SVGSMILElement::connectEventBaseConditions()
             ASSERT(!condition->eventListener());
             condition->setEventListener(ConditionEventListener::create(this, condition));
             eventBase->addEventListener(AtomicString(condition->name()), condition->eventListener(), false);
-            document().accessSVGExtensions().addElementReferencingTarget(this, eventBase);
+            addReferenceTo(eventBase);
         }
     }
 }

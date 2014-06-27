@@ -236,7 +236,7 @@ void SVGPathElement::invalidateMPathDependencies()
 {
     // <mpath> can only reference <path> but this dependency is not handled in
     // markForLayoutAndParentResourceInvalidation so we update any mpath dependencies manually.
-    if (SVGElementSet* dependencies = document().accessSVGExtensions().setOfElementsReferencingTarget(this)) {
+    if (SVGElementSet* dependencies = setOfIncomingReferences()) {
         SVGElementSet::iterator end = dependencies->end();
         for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
             if (isSVGMPathElement(**it))

@@ -65,7 +65,7 @@ void SVGMPathElement::buildPendingResource()
     } else if (target->isSVGElement()) {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document().accessSVGExtensions().addElementReferencingTarget(this, toSVGElement(target));
+        addReferenceTo(toSVGElement(target));
     }
 
     targetPathChanged();
@@ -73,7 +73,7 @@ void SVGMPathElement::buildPendingResource()
 
 void SVGMPathElement::clearResourceReferences()
 {
-    document().accessSVGExtensions().removeAllTargetReferencesForElement(this);
+    removeAllOutgoingReferences();
 }
 
 Node::InsertionNotificationRequest SVGMPathElement::insertedInto(ContainerNode* rootParent)

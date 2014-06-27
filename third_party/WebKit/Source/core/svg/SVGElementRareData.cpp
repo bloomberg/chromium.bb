@@ -33,8 +33,8 @@ RenderStyle* SVGElementRareData::overrideComputedStyle(Element* element, RenderS
 void SVGElementRareData::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_referencingElements);
-    visitor->trace(m_referencedElements);
+    visitor->trace(m_outgoingReferences);
+    visitor->trace(m_incomingReferences);
     visitor->trace(m_animatedSMILStyleProperties);
     visitor->trace(m_elementInstances);
     visitor->trace(m_correspondingElement);

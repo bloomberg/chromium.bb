@@ -50,10 +50,10 @@ public:
     {
     }
 
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencingElements() { return m_referencingElements; }
-    const WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencingElements() const { return m_referencingElements; }
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencedElements() { return m_referencedElements; }
-    const WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> >& referencedElements() const { return m_referencedElements; }
+    SVGElementSet& outgoingReferences() { return m_outgoingReferences; }
+    const SVGElementSet& outgoingReferences() const { return m_outgoingReferences; }
+    SVGElementSet& incomingReferences() { return m_incomingReferences; }
+    const SVGElementSet& incomingReferences() const { return m_incomingReferences; }
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
@@ -86,8 +86,8 @@ private:
 #if ENABLE(OILPAN)
     Member<SVGElement> m_owner;
 #endif
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > m_referencingElements;
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > m_referencedElements;
+    SVGElementSet m_outgoingReferences;
+    SVGElementSet m_incomingReferences;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;

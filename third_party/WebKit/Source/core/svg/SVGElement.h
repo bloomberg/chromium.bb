@@ -40,11 +40,14 @@ class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGCursorElement;
 class SVGDocumentExtensions;
+class SVGElement;
 class SVGElementRareData;
 class SVGFitToViewBox;
 class SVGSVGElement;
 
 void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
+
+typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
 
 class SVGElement : public Element {
 public:
@@ -159,6 +162,12 @@ public:
 
     bool inUseShadowTree() const;
 
+    SVGElementSet* setOfIncomingReferences() const;
+    void addReferenceTo(SVGElement*);
+    void rebuildAllIncomingReferences();
+    void removeAllIncomingReferences();
+    void removeAllOutgoingReferences();
+
     class InvalidationGuard {
         STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(InvalidationGuard);
@@ -207,8 +216,6 @@ protected:
 
     virtual bool selfHasRelativeLengths() const { return false; }
 
-    // FIXME: This "friend" is temporary to keep the current |SVGDocumentExtensions::*ReferencesFor*| methods. This will be removed after they are moved to SVGElement.
-    friend class SVGDocumentExtensions;
     SVGElementRareData* ensureSVGRareData();
     inline bool hasSVGRareData() const { return m_SVGRareData; }
     inline SVGElementRareData* svgRareData() const

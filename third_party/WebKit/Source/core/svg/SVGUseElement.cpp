@@ -309,7 +309,7 @@ void SVGUseElement::clearResourceReferences()
     m_needsShadowTreeRecreation = false;
     document().unscheduleUseShadowTreeUpdate(*this);
 
-    document().accessSVGExtensions().removeAllTargetReferencesForElement(this);
+    removeAllOutgoingReferences();
 }
 
 void SVGUseElement::buildPendingResource()
@@ -477,7 +477,7 @@ bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
         // We only need to track first degree <use> dependencies. Indirect references are handled
         // as the invalidation bubbles up the dependency chain.
         if (!foundUse && !isStructurallyExternal()) {
-            document().accessSVGExtensions().addElementReferencingTarget(this, target);
+            addReferenceTo(target);
             foundUse = true;
         }
     } else if (isDisallowedElement(target)) {

@@ -98,8 +98,8 @@ SVGElement::~SVGElement()
 
         // With Oilpan, either removedFrom has been called or the document is dead
         // as well and there is no reason to clear out the references.
-        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
-        document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
+        rebuildAllIncomingReferences();
+        removeAllIncomingReferences();
     }
 #endif
 }
@@ -317,8 +317,8 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
     Element::removedFrom(rootParent);
 
     if (wasInDocument) {
-        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
-        document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
+        rebuildAllIncomingReferences();
+        removeAllIncomingReferences();
     }
 
     invalidateInstances();
@@ -897,7 +897,7 @@ void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString&
     Element::attributeChanged(name, newValue);
 
     if (isIdAttributeName(name))
-        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
+        rebuildAllIncomingReferences();
 
     // Changes to the style attribute are processed lazily (see Element::getAttribute() and related methods),
     // so we don't want changes to the style attribute to result in extra work here.
@@ -1151,6 +1151,70 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
     return animatableAttributes.contains(name);
 }
 #endif
+
+SVGElementSet* SVGElement::setOfIncomingReferences() const
+{
+    if (!hasSVGRareData())
+        return 0;
+    return &svgRareData()->incomingReferences();
+}
+
+void SVGElement::addReferenceTo(SVGElement* targetElement)
+{
+    ASSERT(targetElement);
+
+    ensureSVGRareData()->outgoingReferences().add(targetElement);
+    targetElement->ensureSVGRareData()->incomingReferences().add(this);
+}
+
+void SVGElement::rebuildAllIncomingReferences()
+{
+    if (!hasSVGRareData())
+        return;
+
+    const SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
+
+    // Iterate on a snapshot as |incomingReferences| may be altered inside loop.
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > incomingReferencesSnapshot;
+    copyToVector(incomingReferences, incomingReferencesSnapshot);
+
+    // Force rebuilding the |sourceElement| so it knows about this change.
+    for (WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::iterator it = incomingReferencesSnapshot.begin(), itEnd = incomingReferencesSnapshot.end(); it != itEnd; ++it) {
+        SVGElement* sourceElement = *it;
+
+        // Before rebuilding |sourceElement| ensure it was not removed from under us.
+        if (incomingReferences.contains(sourceElement))
+            sourceElement->svgAttributeChanged(XLinkNames::hrefAttr);
+    }
+}
+
+void SVGElement::removeAllIncomingReferences()
+{
+    if (!hasSVGRareData())
+        return;
+
+    SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
+    for (SVGElementSet::iterator it = incomingReferences.begin(), itEnd = incomingReferences.end(); it != itEnd; ++it) {
+        SVGElement* sourceElement = *it;
+        ASSERT(sourceElement->hasSVGRareData());
+        sourceElement->ensureSVGRareData()->outgoingReferences().remove(this);
+    }
+    incomingReferences.clear();
+}
+
+void SVGElement::removeAllOutgoingReferences()
+{
+    if (!hasSVGRareData())
+        return;
+
+    SVGElementSet& outgoingReferences = svgRareData()->outgoingReferences();
+    for (SVGElementSet::iterator it = outgoingReferences.begin(), itEnd = outgoingReferences.end(); it != itEnd; ++it) {
+        SVGElement* targetElement = *it;
+        ASSERT(targetElement->hasSVGRareData());
+        targetElement->ensureSVGRareData()->incomingReferences().remove(this);
+    }
+    outgoingReferences.clear();
+}
 
 void SVGElement::trace(Visitor* visitor)
 {

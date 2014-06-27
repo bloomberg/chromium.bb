@@ -41,8 +41,6 @@ class SVGResourcesCache;
 class SVGSVGElement;
 class Element;
 
-typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
-
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
     WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -67,12 +65,6 @@ public:
     void reportError(const String&);
 
     SVGResourcesCache* resourcesCache() const { return m_resourcesCache.get(); }
-
-    SVGElementSet* setOfElementsReferencingTarget(SVGElement* referencedElement) const;
-    void addElementReferencingTarget(SVGElement* referencingElement, SVGElement* referencedElement);
-    void removeAllTargetReferencesForElement(SVGElement*);
-    void rebuildAllElementReferencesForTarget(SVGElement*);
-    void removeAllElementReferencesForTarget(SVGElement*);
 
     void addSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
     void removeSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
