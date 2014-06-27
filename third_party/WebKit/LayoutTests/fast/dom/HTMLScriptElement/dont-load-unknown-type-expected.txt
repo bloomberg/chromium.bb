@@ -1,2 +1,1 @@
-shouldnotexecute.js has MIME type application/javascript
-Unknown script types should not be loaded nor executed. If this test fails, an more than one line will appear in the output with the script's MIME type. One line is OK, as it's from the prelaoder (which has no concept of invalid script types and will happily issue a preload).
+Unknown script types should not be loaded nor executed. If this test fails, an extra line will appear in the output with the script's MIME type.
