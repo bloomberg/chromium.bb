@@ -856,14 +856,23 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     switch (host_impl->active_tree()->source_frame_number()) {
-      case 2: {
+      case 0: {
+        // The activate for the 1st mailbox should have happened before now.
+        EXPECT_EQ(1, activate_count_);
+        break;
+      }
+      case 1: {
         // The activate for the 2nd mailbox should have happened before now.
         EXPECT_EQ(2, activate_count_);
         break;
       }
-      case 3: {
+      case 2: {
         // The activate to remove the layer should have happened before now.
         EXPECT_EQ(3, activate_count_);
+        break;
+      }
+      case 3: {
+        NOTREACHED();
         break;
       }
     }
