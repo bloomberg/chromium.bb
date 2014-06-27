@@ -41,11 +41,23 @@ public class NativeLibraries {
      * how the component build is supported on Android without modifying
      * the sources of each and every Chromium-based target.
      */
+
+#if defined(ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE) && \
+    !defined(ENABLE_CHROMIUM_LINKER)
+#error "Must have ENABLE_CHROMIUM_LINKER to enable library in zip file"
+#endif
+
     // Set to true to enable the use of the Chromium Linker.
 #if defined(ENABLE_CHROMIUM_LINKER)
     public static boolean USE_LINKER = true;
 #else
     public static boolean USE_LINKER = false;
+#endif
+
+#if defined(ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE)
+    public static boolean USE_LIBRARY_IN_ZIP_FILE = true;
+#else
+    public static boolean USE_LIBRARY_IN_ZIP_FILE = false;
 #endif
 
 #if defined(ENABLE_CHROMIUM_LINKER_TESTS)

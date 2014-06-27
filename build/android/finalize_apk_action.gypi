@@ -23,11 +23,13 @@
     'keystore_name%': 'chromiumdebugkey',
     'keystore_password%': 'chromium',
     'conditions': [
-        # Webview doesn't use zipalign.
+        # Webview doesn't use zipalign or rezip.
         ['android_webview_build==0', {
           'zipalign_path%': ['<!@(find <(android_sdk_root) -name zipalign)'],
+          'rezip_path%': '<(PRODUCT_DIR)/rezip',
         }, {
           'zipalign_path%': "",
+          'rezip_path%': "",
         }],
     ],
   },
@@ -48,5 +50,7 @@
     '--key-path=<(keystore_path)',
     '--key-name=<(keystore_name)',
     '--key-passwd=<(keystore_password)',
+    '--load-library-from-zip-file=<(load_library_from_zip_file)',
+    '--rezip-path=<(rezip_path)',
   ],
 }

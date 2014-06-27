@@ -46,6 +46,8 @@
 #    By default, the package given in AndroidManifest.xml will be used.
 #  use_chromium_linker - Enable the content dynamic linker that allows sharing the
 #    RELRO section of the native libraries between the different processes.
+#  load_library_from_zip_file - When using the dynamic linker, load the library
+#    directly out of the zip file.
 #  enable_chromium_linker_tests - Enable the content dynamic linker test support
 #    code. This allows a test APK to inject a Linker.TestRunner instance at
 #    runtime. Should only be used by the chromium_linker_test_apk target!!
@@ -124,6 +126,7 @@
         'native_lib_target%': '',
         'native_lib_version_name%': '',
         'use_chromium_linker%' : 0,
+        'load_library_from_zip_file%' : 0,
         'enable_chromium_linker_tests%': 0,
         'is_test_apk%': 0,
       },
@@ -149,6 +152,7 @@
     'native_lib_version_name%': '',
     'use_chromium_linker%' : 0,
     'enable_chromium_linker_tests%': 0,
+    'load_library_from_zip_file%' : 0,
     'emma_instrument%': '<(emma_instrument)',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
@@ -275,6 +279,17 @@
                   'linker_gcc_preprocess_defines': [],
                 },
               }],
+              ['load_library_from_zip_file == 1', {
+                'variables': {
+                  'linker_load_from_zip_file_preprocess_defines': [
+                    '--defines', 'ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE',
+                  ],
+                }
+              }, {
+                'variables': {
+                  'linker_load_from_zip_file_preprocess_defines': [],
+                },
+              }],
               ['enable_chromium_linker_tests == 1', {
                 'variables': {
                   'linker_tests_gcc_preprocess_defines': [
@@ -288,6 +303,7 @@
               }],
             ],
             'gcc_preprocess_defines': [
+              '<@(linker_load_from_zip_file_preprocess_defines)',
               '<@(linker_gcc_preprocess_defines)',
               '<@(linker_tests_gcc_preprocess_defines)',
             ],
@@ -406,6 +422,9 @@
           'includes': [ 'android/finalize_apk_action.gypi']
         },
       ],
+      'dependencies': [
+        '<(DEPTH)/build/android/rezip.gyp:rezip#host',
+      ],
     }],
     ['gyp_managed_install == 1', {
       'actions': [
@@ -437,6 +456,9 @@
             '--configuration-name=<(CONFIGURATION_NAME)',
           ],
         },
+      ],
+      'dependencies': [
+        '<(DEPTH)/build/android/rezip.gyp:rezip#host',
       ],
     }],
     ['is_test_apk == 1', {
