@@ -18499,6 +18499,68 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.InputType" enum="OmniboxInputType">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The kind of input the user provided when using the omnibox to go somewhere.
+    The type can be misleading.  For example if the user typed 'http:/', it gets
+    marked as a query because it cannot be opened as a URL even though the user
+    probably wanted and selected a URL from the list of suggestions.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.IsPasteAndGo" enum="Boolean">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Whether an omnibox interaction is a paste-and-search/paste-and-go action.
+    (This histogram records both of these in the &quot;True&quot; bucket for
+    this histogram because both of these are referred to as paste-and-go in the
+    code.)  These typically involve right-clicking in the omnibox and selecting
+    that option from the dropdown.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.IsPopupOpen" enum="Boolean">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Whether the omnibox popup (a.k.a. dropdown) is open at the time the user
+    used the omnibox to go somewhere.  It can be closed if, for instance, the
+    user clicked in the omnibox and hit return to reload the same page.  Also,
+    because paste-and-search/paste-and-go actions ignore the current content of
+    the omnibox dropdown (if it is open) when they happen, we pretend the
+    dropdown is closed when logging these.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.JustDeletedText" enum="Boolean">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Whether the user deleted text immediately before selecting an omnibox
+    suggestion.  This is usually the result of pressing backspace or delete.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.NumEvents">
+  <owner>mpearson@chromium.org</owner>
+  <summary>The number of times users used the omnibox to go somewhere.</summary>
+</histogram>
+
+<histogram name="Omnibox.NumTypedTerms" units="terms">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The number of terms in the text the user entered in the omnibox when he/she
+    used the omnibox to go somewhere.  Terms are defined by splitting on
+    whitespace.  All values larger than 6 are recorded in bucket 6.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.PageContext" enum="OmniboxPageContext">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    What the user was viewing when the user used the omnibox to go somewhere.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.Paste" units="count">
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -18515,7 +18577,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.ProviderTime" units="ms">
+<histogram name="Omnibox.ProviderTime" units="milliseconds">
   <owner>mpearson@chromium.org</owner>
   <summary>
     The length of time taken by the named provider&quot;s synchronous pass.
@@ -18577,6 +18639,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SelectedPosition" units="position">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The index of the item that the user selected in the omnibox popup (a.k.a.
+    dropdown) list.  0 means the inline suggestion shown within the omnibox.
+    This is also the same suggestion shown as the top item in the dropdown.  The
+    second item in the dropdown will be recorded as bucket 1. The selected
+    position is always set to 0 when the popup is closed at the time of
+    navigation or if the user did a paste-and-search or paste-and-go action.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.Provider" enum="OmniboxProviderType">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The provider of the suggestion the user selected when the user used the
+    omnibox to go somewhere.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.ProviderAndResultType"
+    enum="OmniboxProviderAndResultType">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The provider and result type of the suggestion the user selected when the
+    user used the omnibox to go somewhere.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime"
     units="milliseconds">
   <owner>mpearson@chromium.org</owner>
@@ -18602,6 +18693,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Counts about the number of suggest requests the omnibox sent, invalidated,
     and replies received.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.TypedLength" units="characters">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The length of the text the user entered in the omnibox when he/she used the
+    omnibox to go somewhere.  All values larger than 500 are recorded in bucket
+    500.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.TypingDuration" units="milliseconds">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The amount of time, in milliseconds, since the user first began modifying
+    the text in the omnibox until the user used the omnibox to go somewhere. If
+    at some point after modifying the text, the user reverted the modifications
+    (thus seeing the current web page's URL again), then wrote in the omnibox
+    again, this duration starts from the time of the second series of
+    modification.
   </summary>
 </histogram>
 
@@ -42513,6 +42625,74 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="via tab"/>
   <int value="1" label="via space at end"/>
   <int value="2" label="via space in middle"/>
+</enum>
+
+<enum name="OmniboxInputType" type="int">
+  <int value="0" label="invalid"/>
+  <int value="1" label="unknown"/>
+  <int value="2" label="deprecated: requested url"/>
+  <int value="3" label="url"/>
+  <int value="4" label="query"/>
+  <int value="5" label="forced query"/>
+</enum>
+
+<enum name="OmniboxPageContext" type="int">
+  <int value="0" label="invalid spec; shouldn't happen"/>
+  <int value="1"
+      label="extension-replaced new tab page OR obsolete new tab page"/>
+  <int value="2" label="about:blank"/>
+  <int value="3" label="the user's home page"/>
+  <int value="4" label="other (typically an arbitrary URL)"/>
+  <int value="5" label="obsolete: instant new tab page"/>
+  <int value="6" label="search results page with search term replacement"/>
+  <int value="7" label="new tab page with omnibox as starting focus"/>
+  <int value="8" label="new tab page with fakebox as starting focus"/>
+  <int value="9" label="search results page without search term replacement"/>
+</enum>
+
+<enum name="OmniboxProviderAndResultType" type="int">
+  <int value="101" label="URL_WHAT_YOU_TYPED via HistoryURL provider"/>
+  <int value="102" label="HISTORY_URL via HistoryURL provider"/>
+  <int value="302" label="HISTORY_URL via HistoryQuick provider"/>
+  <int value="303" label="HISTORY_TITLE via HistoryQuick provider"/>
+  <int value="406" label="NAVSUGGEST via SearchProvider"/>
+  <int value="407" label="SEARCH_WHAT_YOU_TYPED via SearchProvider"/>
+  <int value="408" label="SEARCH_HISTORY via SearchProvider"/>
+  <int value="409" label="SEARCH_SUGGEST via SearchProvider"/>
+  <int value="410" label="SEARCH_OTHER_ENGINE via SearchProvider"/>
+  <int value="416" label="SEARCH_SUGGEST_PERSONALIZED via SearchProvider"/>
+  <int value="505" label="HISTORY_KEYWORD via KeywordProvider"/>
+  <int value="510" label="SEARCH_OTHER_ENGINE via KeywordProvider"/>
+  <int value="606" label="NAVSUGGEST via BuiltinProvider"/>
+  <int value="700" label="UNKNOWN_RESULT_TYPE via Shortcuts provider"/>
+  <int value="701" label="URL_WHAT_YOU_TYPED via Shortcuts provider"/>
+  <int value="702" label="HISTORY_URL via Shortcuts provider"/>
+  <int value="703" label="HISTORY_TITLE via Shortcuts provider"/>
+  <int value="705" label="HISTORY_KEYWORD via Shortcuts provider"/>
+  <int value="708" label="SEARCH_HISTORY via Shortcuts provider"/>
+  <int value="710" label="SEARCH_OTHER_ENGINE via Shortcuts provider"/>
+  <int value="713" label="BOOKMARK_TITLE via Shortcuts provider"/>
+  <int value="716" label="SEARCH_SUGGEST_PERSONALIZED via Shortcuts provider"/>
+  <int value="717" label="SEARCH_SUGGEST_PROFILE via Shortcuts provider"/>
+  <int value="1013" label="BOOKMARK_TITLE via BookmarkProvider"/>
+  <int value="1106" label="NAVSUGGEST via ZeroSuggest"/>
+  <int value="1109" label="SEARCH_SUGGEST via ZeroSuggest"/>
+  <int value="1116" label="SEARCH_SUGGEST_PERSONALIZED via ZeroSuggest"/>
+</enum>
+
+<enum name="OmniboxProviderType" type="int">
+  <int value="1" label="HistoryURL"/>
+  <int value="2" label="deprecated: HistoryContents"/>
+  <int value="3" label="HistoryQuick"/>
+  <int value="4" label="SearchProvider"/>
+  <int value="5" label="KeywordProvider"/>
+  <int value="6" label="BuiltinProvider"/>
+  <int value="7" label="ShortcutsProvider"/>
+  <int value="8" label="deprecated: ExtensionAppProvider"/>
+  <int value="9" label="deprecated: ContactsProvider"/>
+  <int value="10" label="BookmarkProvider"/>
+  <int value="11" label="ZeroSuggest"/>
+  <int value="12" label="on device (only used by Android GSA)"/>
 </enum>
 
 <enum name="OmniboxSearchEngine" type="int">
