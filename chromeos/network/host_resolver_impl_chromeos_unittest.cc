@@ -156,6 +156,7 @@ TEST_F(HostResolverImplChromeOSTest, Resolve) {
   net::HostResolver::RequestInfo info(
       net::HostPortPair(net::GetHostName(), 80));
   info.set_address_family(net::ADDRESS_FAMILY_IPV4);
+  info.set_is_my_ip_address(true);
   EXPECT_EQ(net::OK, CallResolve(info));
   ASSERT_EQ(1u, addresses_.size());
   std::string expected = base::StringPrintf("%s:%d", kTestIPv4Address, 0);

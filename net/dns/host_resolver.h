@@ -88,6 +88,9 @@ class NET_EXPORT HostResolver {
     bool is_speculative() const { return is_speculative_; }
     void set_is_speculative(bool b) { is_speculative_ = b; }
 
+    bool is_my_ip_address() const { return is_my_ip_address_; }
+    void set_is_my_ip_address(bool b) { is_my_ip_address_ = b; }
+
    private:
     // The hostname to resolve, and the port to use in resulting sockaddrs.
     HostPortPair host_port_pair_;
@@ -103,6 +106,10 @@ class NET_EXPORT HostResolver {
 
     // Whether this request was started by the DNS prefetcher.
     bool is_speculative_;
+
+    // Indicates a request for myIpAddress (to differentiate from other requests
+    // for localhost, currently used by Chrome OS).
+    bool is_my_ip_address_;
   };
 
   // Opaque type used to cancel a request.

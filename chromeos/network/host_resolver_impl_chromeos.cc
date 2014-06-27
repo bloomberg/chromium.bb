@@ -162,7 +162,7 @@ bool HostResolverImplChromeOS::ResolveLocalIPAddress(
     const RequestInfo& info,
     net::AddressList* addresses) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (info.hostname() != net::GetHostName() || ipv4_address_.empty())
+  if (!info.is_my_ip_address() || ipv4_address_.empty())
     return false;
 
   // Use IPConfig data for localhost address lookup.
