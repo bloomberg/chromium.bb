@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content_public.browser.WebContents;
 
@@ -12,16 +11,16 @@ import org.chromium.content_public.browser.WebContents;
  * Tab helper to toggle media autoplay for voice URL searches.
  */
 public class VoiceSearchTabHelper extends WebContentsObserverAndroid {
-    private WebContents mWebContents;
+    private final WebContents mWebContents;
 
     /**
      * Create an instance of VoiceSearchTabHelper.
      *
-     * @param contentViewCore ContentViewCore to update media autoplay status.
+     * @param webContents WebContents to update media autoplay status.
      */
-    public VoiceSearchTabHelper(ContentViewCore contentViewCore) {
-        super(contentViewCore);
-        mWebContents = contentViewCore.getWebContents();
+    public VoiceSearchTabHelper(WebContents webContents) {
+        super(webContents);
+        mWebContents = webContents;
     }
 
     @Override

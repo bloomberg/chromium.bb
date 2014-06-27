@@ -598,7 +598,7 @@ public class AwContents {
                 new AwGestureStateListener(), mContentViewClient, mZoomControls);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
-        mContentsClient.installWebContentsObserver(mContentViewCore);
+        mContentsClient.installWebContentsObserver(mContentViewCore.getWebContents());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
 

@@ -637,7 +637,7 @@ public class ContentViewCore
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
-        mWebContentsObserver = new WebContentsObserverAndroid(this) {
+        mWebContentsObserver = new WebContentsObserverAndroid(mWebContents) {
             @Override
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {

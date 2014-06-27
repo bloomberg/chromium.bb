@@ -18,8 +18,8 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetError;
 
 import java.security.Principal;
@@ -56,8 +56,8 @@ public abstract class AwContentsClient {
     }
 
     class AwWebContentsObserver extends WebContentsObserverAndroid {
-        public AwWebContentsObserver(ContentViewCore contentViewCore) {
-            super(contentViewCore);
+        public AwWebContentsObserver(WebContents webContents) {
+            super(webContents);
         }
 
         @Override
@@ -111,11 +111,11 @@ public abstract class AwContentsClient {
 
     }
 
-    final void installWebContentsObserver(ContentViewCore contentViewCore) {
+    final void installWebContentsObserver(WebContents webContents) {
         if (mWebContentsObserver != null) {
             mWebContentsObserver.detachFromWebContents();
         }
-        mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
+        mWebContentsObserver = new AwWebContentsObserver(webContents);
     }
 
     final AwContentsClientCallbackHelper getCallbackHelper() {

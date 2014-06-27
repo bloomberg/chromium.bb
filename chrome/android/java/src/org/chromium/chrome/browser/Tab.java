@@ -252,8 +252,8 @@ public class Tab implements NavigationClient {
     }
 
     private class TabWebContentsObserverAndroid extends WebContentsObserverAndroid {
-        public TabWebContentsObserverAndroid(ContentViewCore contentViewCore) {
-            super(contentViewCore);
+        public TabWebContentsObserverAndroid(WebContents webContents) {
+            super(webContents);
         }
 
         @Override
@@ -789,8 +789,8 @@ public class Tab implements NavigationClient {
         mContentViewCore = cvc;
 
         mWebContentsDelegate = createWebContentsDelegate();
-        mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore);
-        mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore);
+        mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore.getWebContents());
+        mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore.getWebContents());
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
 

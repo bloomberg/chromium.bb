@@ -12,6 +12,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -29,8 +30,8 @@ public class InterstitialPageTest extends ContentShellTestBase {
     private static class TestWebContentsObserverAndroid extends WebContentsObserverAndroid {
         private boolean mInterstitialShowing;
 
-        public TestWebContentsObserverAndroid(ContentViewCore contentViewCore) {
-            super(contentViewCore);
+        public TestWebContentsObserverAndroid(WebContents webContents) {
+            super(webContents);
         }
 
         public boolean isInterstitialShowing() throws ExecutionException {
@@ -115,7 +116,8 @@ public class InterstitialPageTest extends ContentShellTestBase {
                     @Override
                     public TestWebContentsObserverAndroid call() throws Exception {
                         getContentViewCore().showInterstitialPage(URL, delegate);
-                        return new TestWebContentsObserverAndroid(getContentViewCore());
+                        return new TestWebContentsObserverAndroid(
+                                getContentViewCore().getWebContents());
                     }
                 });
 
