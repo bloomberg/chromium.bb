@@ -153,12 +153,6 @@ public:
     bool styleTreeHasOnlyScopedResolverForDocument() const { return m_styleTree.hasOnlyScopedResolverForDocument(); }
     ScopedStyleResolver* styleTreeScopedStyleResolverForDocument() const { return m_styleTree.scopedStyleResolverForDocument(); }
 
-    ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode* scope)
-    {
-        ASSERT(scope);
-        return m_styleTree.ensureScopedStyleResolver(*scope);
-    }
-
     void styleTreeResolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
     {
         m_styleTree.resolveScopedKeyframesRules(element, resolvers);

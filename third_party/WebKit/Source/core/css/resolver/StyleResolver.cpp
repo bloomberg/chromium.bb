@@ -190,7 +190,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
     if (!scopingNode)
         return;
 
-    ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
+    ScopedStyleResolver* resolver = m_styleTree.ensureScopedStyleResolver(*scopingNode);
     ASSERT(resolver);
     resolver->addRulesFromSheet(cssSheet, *m_medium, this);
 }
@@ -239,7 +239,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 {
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
-        ensureScopedStyleResolver(&scope)->addKeyframeStyle(keyframesRules[i]);
+        m_styleTree.ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
 
     m_treeBoundaryCrossingRules.addTreeBoundaryCrossingRules(authorRules, scope, parentStyleSheet);
 
