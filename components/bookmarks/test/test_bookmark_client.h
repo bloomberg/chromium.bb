@@ -12,7 +12,7 @@ class BookmarkModel;
 
 namespace test {
 
-class TestBookmarkClient : public BookmarkClient {
+class TestBookmarkClient : public bookmarks::BookmarkClient {
  public:
   TestBookmarkClient();
   virtual ~TestBookmarkClient();
@@ -37,7 +37,7 @@ class TestBookmarkClient : public BookmarkClient {
   bool IsAnExtraNode(const BookmarkNode* node);
 
  private:
-  // BookmarkClient:
+  // bookmarks::BookmarkClient:
   virtual bool IsPermanentNodeVisible(
       const BookmarkPermanentNode* node) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;

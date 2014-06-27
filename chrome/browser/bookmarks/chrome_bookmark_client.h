@@ -19,7 +19,7 @@
 class BookmarkModel;
 class Profile;
 
-class ChromeBookmarkClient : public BookmarkClient,
+class ChromeBookmarkClient : public bookmarks::BookmarkClient,
                              public content::NotificationObserver,
                              public BaseBookmarkModelObserver {
  public:
@@ -41,7 +41,7 @@ class ChromeBookmarkClient : public BookmarkClient,
   bool HasDescendantsOfManagedNode(
       const std::vector<const BookmarkNode*>& list);
 
-  // BookmarkClient:
+  // bookmarks::BookmarkClient:
   virtual bool PreferTouchIcon() OVERRIDE;
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const GURL& page_url,

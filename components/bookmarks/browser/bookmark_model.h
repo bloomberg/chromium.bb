@@ -68,7 +68,7 @@ class BookmarkModel : public KeyedService {
 
   // |index_urls| says whether URLs should be stored in the BookmarkIndex
   // in addition to bookmark titles.
-  BookmarkModel(BookmarkClient* client, bool index_urls);
+  BookmarkModel(bookmarks::BookmarkClient* client, bool index_urls);
   virtual ~BookmarkModel();
 
   // KeyedService:
@@ -285,7 +285,7 @@ class BookmarkModel : public KeyedService {
   void OnFaviconChanged(const std::set<GURL>& urls);
 
   // Returns the client used by this BookmarkModel.
-  BookmarkClient* client() const { return client_; }
+  bookmarks::BookmarkClient* client() const { return client_; }
 
  private:
   friend class bookmarks::BookmarkCodecTest;
@@ -380,7 +380,7 @@ class BookmarkModel : public KeyedService {
   scoped_ptr<bookmarks::BookmarkLoadDetails> CreateLoadDetails(
       const std::string& accept_languages);
 
-  BookmarkClient* const client_;
+  bookmarks::BookmarkClient* const client_;
 
   // Whether the initial set of data has been loaded.
   bool loaded_;

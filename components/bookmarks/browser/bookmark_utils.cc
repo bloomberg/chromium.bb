@@ -25,6 +25,7 @@
 #include "url/gurl.h"
 
 using base::Time;
+using bookmarks::BookmarkClient;
 
 namespace {
 

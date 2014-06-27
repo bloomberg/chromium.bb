@@ -12,10 +12,13 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
-class BookmarkClient;
 class BookmarkModel;
 class BookmarkNode;
 class GURL;
+
+namespace bookmarks {
+class BookmarkClient;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -139,7 +142,7 @@ base::string16 CleanUpTitleForMatching(const base::string16& title);
 
 // Returns true if all the |nodes| can be edited by the user,
 // as determined by BookmarkClient::CanBeEditedByUser().
-bool CanAllBeEditedByUser(BookmarkClient* client,
+bool CanAllBeEditedByUser(bookmarks::BookmarkClient* client,
                           const std::vector<const BookmarkNode*>& nodes);
 
 // Returns true if |url| has a bookmark in the |model| that can be edited

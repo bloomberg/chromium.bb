@@ -19,6 +19,8 @@
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 
+using bookmarks::BookmarkClient;
+
 typedef BookmarkClient::NodeTypedCountPair NodeTypedCountPair;
 typedef BookmarkClient::NodeTypedCountPairs NodeTypedCountPairs;
 

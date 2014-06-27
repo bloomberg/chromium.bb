@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace bookmarks {
+
 bool BookmarkClient::PreferTouchIcon() {
   return false;
 }
@@ -28,3 +30,5 @@ void BookmarkClient::GetTypedCountForNodes(
     NodeTypedCountPairs* node_typed_count_pairs) {
   NOTREACHED();
 }
+
+}  // namespace bookmarks

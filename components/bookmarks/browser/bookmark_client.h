@@ -23,6 +23,8 @@ namespace base {
 struct UserMetricsAction;
 }
 
+namespace bookmarks {
+
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
 class BookmarkClient : public KeyedService {
@@ -85,5 +87,7 @@ class BookmarkClient : public KeyedService {
  protected:
   virtual ~BookmarkClient() {}
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
