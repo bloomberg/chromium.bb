@@ -44,9 +44,9 @@ public class AccessibilityTabModelAdapter extends BaseAdapter {
             new AccessibilityTabModelListItemListener() {
         @Override
         public void tabSelected(int tab) {
+            if (mListener != null) mListener.showTab(tab);
             TabModelUtils.setIndex(mActualTabModel,
                     TabModelUtils.getTabIndexById(mActualTabModel, tab));
-            if (mListener != null) mListener.showTab(tab);
             notifyDataSetChanged();
         }
 
