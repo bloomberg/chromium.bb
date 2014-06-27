@@ -284,18 +284,18 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, SharedOptions) {
   // when the owner-only multiprofile restriction is removed, probably M38.
 }
 
-IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreference) {
+IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferencePrimary) {
   RegisterUser(kTestOwner);
   RegisterUser(kTestNonOwner);
   StartupUtils::MarkOobeCompleted();
 }
 
-// Tests that a shared setting indicator appears for the auto-lock setting
-// when the user has the checkbox unselected but another user has enabled
-// auto-lock. (The checkbox is unset if the user's preference is false,
-// but if any other signed-in user has enabled this preference, the shared
-// setting indicator explains this.)
-IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreference) {
+// Tests the shared setting indicator for the primary user's auto-lock setting
+// when the secondary user has enabled or disabled their preference.
+// (The checkbox is unset if the current user's preference is false, but if any
+// other signed-in user has enabled this preference, the shared setting
+// indicator explains this.)
+IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   LoginUser(kTestOwner);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
@@ -307,15 +307,16 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreference) {
 
   PrefService* prefs1 = manager->GetProfileByUser(user1)->GetPrefs();
   PrefService* prefs2 = manager->GetProfileByUser(user2)->GetPrefs();
+
+  // Set both users' preference to false, then change the secondary user's to
+  // true. We'll do the opposite in the next test. Doesn't provide 100% coverage
+  // but reloading the settings page is super slow on debug builds.
   prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, false);
 
-  Browser* browser1 = CreateBrowserForUser(user1);
-  Browser* browser2 = CreateBrowserForUser(user2);
-  content::WebContents* contents1 =
-      browser1->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents2 =
-      browser2->tab_strip_model()->GetActiveWebContents();
+  Browser* browser = CreateBrowserForUser(user1);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
 
   bool disabled = false;
   bool expected_value;
@@ -325,49 +326,98 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreference) {
   {
     SCOPED_TRACE("Screen lock false for both users");
     expected_value = false;
-    CheckBooleanPreference(contents1, prefs::kEnableAutoScreenLock, disabled,
-                           empty_controlled, expected_value);
-    CheckBooleanPreference(contents2, prefs::kEnableAutoScreenLock, disabled,
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
                            empty_controlled, expected_value);
   }
-  // Set the preference to true for the primary user and check that the value
-  // changes appropriately.
-  prefs1->SetBoolean(prefs::kEnableAutoScreenLock, true);
-  {
-    SCOPED_TRACE("Screen lock true for primary user");
-    expected_value = true;
-    CheckBooleanPreference(contents1, prefs::kEnableAutoScreenLock, disabled,
-                           empty_controlled, expected_value);
-  }
-  // Reload the secondary user's browser to see the updated controlled-by
-  // indicator.
-  chrome::Reload(browser2, CURRENT_TAB);
-  content::WaitForLoadStop(contents2);
-  {
-    SCOPED_TRACE("Screen lock false for secondary user");
-    expected_value = false;
-    CheckBooleanPreference(contents2, prefs::kEnableAutoScreenLock, disabled,
-                           shared_controlled, expected_value);
-  }
-  // Set the preference to true for the secondary user and check that the
-  // indicator disappears.
+
+  // Set the secondary user's preference to true, and reload the primary user's
+  // browser to see the updated controlled-by indicator.
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, true);
-  {
-    SCOPED_TRACE("Screen lock true for both users");
-    expected_value = true;
-    CheckBooleanPreference(contents2, prefs::kEnableAutoScreenLock, disabled,
-                           empty_controlled, expected_value);
-  }
-  // Set the preference to false for the primary user, who should then see
-  // a shared setting indicator.
-  prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
-  chrome::Reload(browser1, CURRENT_TAB);
-  content::WaitForLoadStop(contents1);
+  chrome::Reload(browser, CURRENT_TAB);
+  content::WaitForLoadStop(contents);
   {
     SCOPED_TRACE("Screen lock false for primary user");
     expected_value = false;
-    CheckBooleanPreference(contents1, prefs::kEnableAutoScreenLock, disabled,
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
                            shared_controlled, expected_value);
+  }
+
+  // Set the preference to true for the primary user and check that the
+  // indicator disappears.
+  prefs1->SetBoolean(prefs::kEnableAutoScreenLock, true);
+  {
+    SCOPED_TRACE("Screen lock true for both users");
+    expected_value = true;
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
+                           empty_controlled, expected_value);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferenceSecondary) {
+  RegisterUser(kTestOwner);
+  RegisterUser(kTestNonOwner);
+  StartupUtils::MarkOobeCompleted();
+}
+
+// Tests the shared setting indicator for the secondary user's auto-lock setting
+// when the primary user has enabled or disabled their preference.
+// (The checkbox is unset if the current user's preference is false, but if any
+// other signed-in user has enabled this preference, the shared setting
+// indicator explains this.)
+IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
+  LoginUser(kTestOwner);
+  UserAddingScreen::Get()->Start();
+  content::RunAllPendingInMessageLoop();
+  AddUser(kTestNonOwner);
+
+  UserManager* manager = UserManager::Get();
+  const User* user1 = manager->FindUser(kTestOwner);
+  const User* user2 = manager->FindUser(kTestNonOwner);
+
+  PrefService* prefs1 = manager->GetProfileByUser(user1)->GetPrefs();
+  PrefService* prefs2 = manager->GetProfileByUser(user2)->GetPrefs();
+
+  // Set both users' preference to true, then change the secondary user's to
+  // false.
+  prefs1->SetBoolean(prefs::kEnableAutoScreenLock, true);
+  prefs2->SetBoolean(prefs::kEnableAutoScreenLock, true);
+
+  Browser* browser = CreateBrowserForUser(user2);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  bool disabled = false;
+  bool expected_value;
+  std::string empty_controlled;
+  std::string shared_controlled("shared");
+
+  {
+    SCOPED_TRACE("Screen lock true for both users");
+    expected_value = true;
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
+                           empty_controlled, expected_value);
+  }
+
+  // Set the secondary user's preference to false and check that the
+  // controlled-by indicator is shown.
+  prefs2->SetBoolean(prefs::kEnableAutoScreenLock, false);
+  {
+    SCOPED_TRACE("Screen lock false for secondary user");
+    expected_value = false;
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
+                           shared_controlled, expected_value);
+  }
+
+  // Set the preference to false for the primary user and check that the
+  // indicator disappears.
+  prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
+  chrome::Reload(browser, CURRENT_TAB);
+  content::WaitForLoadStop(contents);
+  {
+    SCOPED_TRACE("Screen lock false for both users");
+    expected_value = false;
+    CheckBooleanPreference(contents, prefs::kEnableAutoScreenLock, disabled,
+                           empty_controlled, expected_value);
   }
 }
 
