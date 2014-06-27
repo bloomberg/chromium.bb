@@ -1,4 +1,4 @@
-SUBDIRS = gnulib liblouis tools tables man tests python windows
+SUBDIRS = gnulib liblouis tools tables man tests python windows table-dev
 
 # only build the documentation if we have makeinfo 5
 if HAVE_MAKEINFO_5
