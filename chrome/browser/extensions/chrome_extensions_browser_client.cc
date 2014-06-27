@@ -280,8 +280,12 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 scoped_ptr<extensions::RuntimeAPIDelegate>
 ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
+#if defined(ENABLE_EXTENSIONS)
   return scoped_ptr<extensions::RuntimeAPIDelegate>(
       new ChromeRuntimeAPIDelegate(context));
+#else
+  return scoped_ptr<extensions::RuntimeAPIDelegate>();
+#endif
 }
 
 }  // namespace extensions

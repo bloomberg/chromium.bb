@@ -5,19 +5,18 @@
 #ifndef CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 #define CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {
 class FilePath;
 struct FileDescriptor;
-}
-
-namespace metadata {
-class MediaMetadataParser;
 }
 
 class UtilityMessageHandler;
@@ -32,18 +31,15 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   static void PreSandboxStartup();
 
+  // Shared with extensions::ExtensionsHandler.
+  static void DecodeImage(const std::vector<unsigned char>& encoded_data);
+
  private:
   // IPC message handlers.
-  void OnUnpackExtension(const base::FilePath& extension_path,
-                         const std::string& extension_id,
-                         int location, int creation_flags);
   void OnUnpackWebResource(const std::string& resource_data);
-  void OnParseUpdateManifest(const std::string& xml);
   void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
-  void OnDecodeImageBase64(const std::string& encoded_data);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
-  void OnParseJSON(const std::string& json);
 
 #if defined(OS_CHROMEOS)
   void OnCreateZipFile(const base::FilePath& src_dir,
@@ -60,38 +56,11 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnStartupPing();
   void OnAnalyzeZipFileForDownloadProtection(
       const IPC::PlatformFileForTransit& zip_file);
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  void OnCheckMediaFile(int64 milliseconds_of_decoding,
-                        const IPC::PlatformFileForTransit& media_file);
-  void OnParseMediaMetadata(const std::string& mime_type, int64 total_size,
+#if defined(ENABLE_EXTENSIONS)
+  void OnParseMediaMetadata(const std::string& mime_type,
+                            int64 total_size,
                             bool get_attached_images);
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
-
-#if defined(OS_WIN)
-  void OnParseITunesPrefXml(const std::string& itunes_xml_data);
-#endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-  void OnParseIPhotoLibraryXmlFile(
-      const IPC::PlatformFileForTransit& iphoto_library_file);
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  void OnParseITunesLibraryXmlFile(
-      const IPC::PlatformFileForTransit& itunes_library_file);
-
-  void OnParsePicasaPMPDatabase(
-      const picasa::AlbumTableFilesForTransit& album_table_files);
-
-  void OnIndexPicasaAlbumsContents(
-      const picasa::AlbumUIDSet& album_uids,
-      const std::vector<picasa::FolderINIContents>& folders_inis);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-  void OnGetAndEncryptWiFiCredentials(const std::string& network_guid,
-                                      const std::vector<uint8>& public_key);
-#endif  // defined(OS_WIN)
+#endif
 
   typedef ScopedVector<UtilityMessageHandler> Handlers;
   Handlers handlers_;

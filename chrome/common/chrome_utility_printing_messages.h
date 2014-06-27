@@ -18,7 +18,7 @@
 #error "Full printing must be enabled"
 #endif
 
-#define IPC_MESSAGE_START UtilityPrintingMsgStart
+#define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
   IPC_STRUCT_TRAITS_MEMBER(from)

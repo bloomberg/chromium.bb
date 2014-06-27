@@ -3,14 +3,20 @@
 // found in the LICENSE file.
 
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
-#include "chrome/common/chrome_utility_messages.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#endif
 
 const uint32 kMessageWhitelist[] = {
-#ifdef OS_WIN
+#if defined(ENABLE_EXTENSIONS)
+#if defined(OS_WIN)
     ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials::ID,
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
     ChromeUtilityMsg_ImageWriter_Cancel::ID,
     ChromeUtilityMsg_ImageWriter_Write::ID,
-    ChromeUtilityMsg_ImageWriter_Verify::ID};
+    ChromeUtilityMsg_ImageWriter_Verify::ID
+#endif  // defined(ENABLE_EXTENSIONS)
+};
 
-const size_t kMessageWhitelistSize = arraysize(kMessageWhitelist);
+const size_t kMessageWhitelistSize = ARRAYSIZE_UNSAFE(kMessageWhitelist);

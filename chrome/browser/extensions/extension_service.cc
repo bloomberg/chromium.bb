@@ -20,7 +20,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -38,7 +37,6 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -80,6 +78,13 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #endif
 
+// TODO(thestig): Eventually remove the #ifdefs when ExtensionService is no
+// longer used on mobile.
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
@@ -114,13 +119,15 @@ enum ExternalExtensionEvent {
   EXTERNAL_EXTENSION_BUCKET_BOUNDARY,
 };
 
+#if defined(ENABLE_EXTENSIONS)
 // Prompt the user this many times before considering an extension acknowledged.
-static const int kMaxExtensionAcknowledgePromptCount = 3;
+const int kMaxExtensionAcknowledgePromptCount = 3;
+#endif
 
 // Wait this many seconds after an extensions becomes idle before updating it.
-static const int kUpdateIdleDelay = 5;
+const int kUpdateIdleDelay = 5;
 
-static bool IsCWSSharedModule(const Extension* extension) {
+bool IsCWSSharedModule(const Extension* extension) {
   return extension->from_webstore() &&
          SharedModuleInfo::IsSharedModule(extension);
 }
@@ -321,6 +328,7 @@ ExtensionService::ExtensionService(Profile* profile,
                              callback);
   pref_change_registrar_.Add(extensions::pref_names::kAllowedTypes, callback);
 
+#if defined(ENABLE_EXTENSIONS)
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
     int update_frequency = extensions::kDefaultUpdateFrequencySeconds;
@@ -337,6 +345,7 @@ ExtensionService::ExtensionService(Profile* profile,
         update_frequency,
         extensions::ExtensionCache::GetInstance()));
   }
+#endif
 
   component_loader_.reset(
       new extensions::ComponentLoader(this,
@@ -508,6 +517,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
                                        bool file_ownership_passed,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(ENABLE_EXTENSIONS)
   if (browser_terminating_) {
     LOG(WARNING) << "Skipping UpdateExtension due to browser shutdown";
     // Leak the temp file at extension_path. We don't want to add to the disk
@@ -596,6 +606,9 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     *out_crx_installer = installer.get();
 
   return true;
+#else
+  return false;
+#endif
 }
 
 void ExtensionService::ReloadExtension(
@@ -1177,6 +1190,7 @@ void ExtensionService::CheckManagementPolicy() {
 }
 
 void ExtensionService::CheckForUpdatesSoon() {
+#if defined(ENABLE_EXTENSIONS)
   // This can legitimately happen in unit tests.
   if (!updater_.get())
     return;
@@ -1189,6 +1203,7 @@ void ExtensionService::CheckForUpdatesSoon() {
     // but not before.
     update_once_all_providers_are_ready_ = true;
   }
+#endif
 }
 
 // Some extensions will autoupdate themselves externally from Chrome.  These
@@ -1246,6 +1261,7 @@ bool ExtensionService::AreAllExternalProvidersReady() const {
 
 void ExtensionService::OnAllExternalProvidersReady() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(ENABLE_EXTENSIONS)
   base::TimeDelta elapsed = base::Time::Now() - profile_->GetStartTime();
   UMA_HISTOGRAM_TIMES("Extension.ExternalProvidersReadyAfter", elapsed);
 
@@ -1269,6 +1285,7 @@ void ExtensionService::OnAllExternalProvidersReady() {
   error_controller_->ShowErrorIfNeeded();
 
   UpdateExternalExtensionAlert();
+#endif
 }
 
 void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
@@ -1288,6 +1305,7 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {
+#if defined(ENABLE_EXTENSIONS)
   if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
     return;
 
@@ -1335,6 +1353,7 @@ void ExtensionService::UpdateExternalExtensionAlert() {
       external_install_manager_->AddExternalInstallError(extension, first_run);
     }
   }
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ExtensionService::UnloadExtension(
@@ -1419,10 +1438,12 @@ void ExtensionService::SetReadyAndNotifyListeners() {
 }
 
 void ExtensionService::OnLoadedInstalledExtensions() {
+#if defined(ENABLE_EXTENSIONS)
   if (updater_)
     updater_->Start();
 
   OnBlacklistUpdated();
+#endif
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
@@ -2032,6 +2053,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
          int creation_flags,
          bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(ENABLE_EXTENSIONS)
   CHECK(Extension::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
     return false;
@@ -2095,6 +2117,9 @@ bool ExtensionService::OnExternalExtensionFileFound(
     AcknowledgeExternalExtension(id);
 
   return true;
+#else
+  return false;
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ExtensionService::DidCreateRenderViewForBackgroundPage(

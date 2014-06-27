@@ -453,8 +453,6 @@
           # when enable_extensions==0.
           'sources/': [
             ['exclude', '^browser/api/'],
-            ['include', '^browser/api/runtime/runtime_api.cc'],
-            ['include', '^browser/api/runtime/runtime_api_delegate.cc'],
           ],
           'sources!': [
             'browser/browser_context_keyed_service_factories.cc',

@@ -16,39 +16,50 @@ static_library("utility") {
 
   deps = [
     "//base",
-    #'../components/components_strings.gyp:components_strings',  TODO(GYP)
-    #'../components/components.gyp:url_fixer',  TODO(GYP)
+    #"../components/components_strings.gyp:components_strings",  TODO(GYP)
+    #"../components/components.gyp:url_fixer",  TODO(GYP)
     "//content/public/common",
     "//content/public/utility",
-    #'../media/media.gyp:media',  TODO(GYP)
+    #"../media/media.gyp:media",  TODO(GYP)
     "//skia",
     "//third_party/libxml",
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
-    "//chrome/common/extensions/api",
   ]
 
-  if (is_win || is_mac) {
-    sources += rebase_path(
-        gypi_values.chrome_utility_win_mac_media_gallery_sources, ".", "..")
-    #deps += [ "//components/wifi" ]  TODO(GYP)
-  }
-  if (is_mac) {
-    sources += [
-      "media_galleries/iphoto_library_parser.cc",
-      "media_galleries/iphoto_library_parser.h",
-    ]
+  if (!is_android) {
+    sources += rebase_path(gypi_values.chrome_utility_importer_sources,
+                           ".", "..")
   }
 
-  if (is_android) {
-    sources -= [ "profile_import_handler.cc" ]
-  } else {
-    sources += rebase_path(gypi_values.chrome_utility_importer_sources,
+  if (enable_extensions == 1) {
+    deps += [
+      "//chrome/common/extensions/api",
+      #"//third_party/libexif",  TODO(GYP)
+    ]
+
+    forward_dependent_configs_from = [
+      "//chrome/common/extensions/api",
+    ]
+
+    sources += rebase_path(gypi_values.chrome_utility_extensions_sources,
                            ".", "..")
     sources += rebase_path(gypi_values.chrome_utility_shared_media_sources,
                            ".", "..")
-    #deps += [ "//third_party/libexif" ]  TODO(GYP)
+
+    if (is_win || is_mac) {
+      sources += rebase_path(
+          gypi_values.chrome_utility_win_mac_media_gallery_sources, ".", "..")
+      #deps += [ "//components/wifi" ]  TODO(GYP)
+    } else {
+      sources += [ "image_writer/image_writer_stub.cc" ]
+    }
+
+    if (is_mac) {
+      sources += rebase_path(gypi_values.chrome_utility_mac_media_gallery_sources,
+                             ".", "..")
+    }
   }
 
   if (!use_openssl) {
@@ -65,10 +76,6 @@ static_library("utility") {
     }
   }
 
-
-  if (!is_win && !is_mac) {
-    sources += [ "image_writer/image_writer_stub.cc" ]
-  }
   if (enable_printing != 1) {
     sources -= [
       "printing_handler.cc",
@@ -82,8 +89,4 @@ static_library("utility") {
       "local_discovery/service_discovery_message_handler.h",
     ]
   }
-
-  forward_dependent_configs_from = [
-    "//chrome/common/extensions/api",
-  ]
 }

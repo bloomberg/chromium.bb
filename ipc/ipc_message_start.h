@@ -106,9 +106,10 @@ enum IPCMessageStart {
   PushMessagingMsgStart,
   GinJavaBridgeMsgStart,
   BatteryStatusMsgStart,
-  UtilityPrintingMsgStart,
+  ChromeUtilityPrintingMsgStart,
   AecDumpMsgStart,
   OzoneGpuMsgStart,
+  ChromeUtilityExtensionsMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

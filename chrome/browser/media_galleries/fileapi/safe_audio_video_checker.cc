@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/browser_thread.h"

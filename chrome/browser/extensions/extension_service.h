@@ -375,7 +375,11 @@ class ExtensionService
   }
 
   // Note that this may return NULL if autoupdate is not turned on.
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionUpdater* updater() { return updater_.get(); }
+#else
+  extensions::ExtensionUpdater* updater() { return NULL; }
+#endif
 
   extensions::ComponentLoader* component_loader() {
     return component_loader_.get();
@@ -604,8 +608,10 @@ class ExtensionService
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;
 
+#if defined(ENABLE_EXTENSIONS)
   // Our extension updater, if updates are turned on.
   scoped_ptr<extensions::ExtensionUpdater> updater_;
+#endif
 
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have

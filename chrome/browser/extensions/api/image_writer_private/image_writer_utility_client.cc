@@ -6,7 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

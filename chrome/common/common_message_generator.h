@@ -16,6 +16,10 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/tts_messages.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#endif
+
 #if defined(ENABLE_MDNS)
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #endif

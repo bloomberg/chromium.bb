@@ -5,7 +5,7 @@
 #include "chrome/utility/image_writer/image_writer_handler.h"
 
 #include "base/files/file_path.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "content/public/utility/utility_thread.h"
 

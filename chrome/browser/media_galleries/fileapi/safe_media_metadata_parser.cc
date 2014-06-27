@@ -5,7 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 
 #include "chrome/browser/extensions/blob_reader.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"

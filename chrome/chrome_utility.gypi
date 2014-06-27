@@ -13,6 +13,17 @@
       'utility/cloud_print/bitmap_image.h',
       'utility/cloud_print/pwg_encoder.cc',
       'utility/cloud_print/pwg_encoder.h',
+      'utility/local_discovery/service_discovery_message_handler.cc',
+      'utility/local_discovery/service_discovery_message_handler.h',
+      'utility/printing_handler.cc',
+      'utility/printing_handler.h',
+      'utility/utility_message_handler.h',
+      'utility/web_resource_unpacker.cc',
+      'utility/web_resource_unpacker.h',
+    ],
+    'chrome_utility_extensions_sources': [
+      'utility/extensions/extensions_handler.cc',
+      'utility/extensions/extensions_handler.h',
       'utility/extensions/unpacker.cc',
       'utility/extensions/unpacker.h',
       'utility/image_writer/disk_unmounter_mac.cc',
@@ -25,15 +36,6 @@
       'utility/image_writer/image_writer_handler.h',
       'utility/image_writer/image_writer_mac.cc',
       'utility/image_writer/image_writer_win.cc',
-      'utility/local_discovery/service_discovery_message_handler.cc',
-      'utility/local_discovery/service_discovery_message_handler.h',
-      'utility/printing_handler.cc',
-      'utility/printing_handler.h',
-      'utility/profile_import_handler.cc',
-      'utility/profile_import_handler.h',
-      'utility/utility_message_handler.h',
-      'utility/web_resource_unpacker.cc',
-      'utility/web_resource_unpacker.h',
     ],
     'chrome_utility_importer_sources': [
       'utility/importer/bookmark_html_reader.cc',
@@ -60,6 +62,8 @@
       'utility/importer/nss_decryptor_win.h',
       'utility/importer/safari_importer.h',
       'utility/importer/safari_importer.mm',
+      'utility/profile_import_handler.cc',
+      'utility/profile_import_handler.h',
     ],
     'chrome_utility_shared_media_sources': [
       'utility/media_galleries/image_metadata_extractor.cc',
@@ -70,6 +74,10 @@
       'utility/media_galleries/itunes_pref_parser_win.h',
       'utility/media_galleries/media_metadata_parser.cc',
       'utility/media_galleries/media_metadata_parser.h',
+    ],
+    'chrome_utility_mac_media_gallery_sources': [
+      'utility/media_galleries/iphoto_library_parser.cc',
+      'utility/media_galleries/iphoto_library_parser.h',
     ],
     'chrome_utility_win_mac_media_gallery_sources': [
       'utility/media_galleries/iapps_xml_utils.cc',
@@ -102,33 +110,15 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         'common',
-        'common/extensions/api/api.gyp:chrome_api',
       ],
       'include_dirs': [
         '..',
         '<(grit_out_dir)',
       ],
-      'export_dependent_settings': [
-        'common/extensions/api/api.gyp:chrome_api',
-      ],
       'sources': [
         '<@(chrome_utility_sources)',
       ],
       'conditions': [
-        ['OS=="win" or OS=="mac"', {
-          'dependencies': [
-            '../components/components.gyp:wifi_component',
-          ],
-          'sources': [
-            '<@(chrome_utility_win_mac_media_gallery_sources)',
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'utility/media_galleries/iphoto_library_parser.cc',
-            'utility/media_galleries/iphoto_library_parser.h',
-          ],
-        }],
         ['use_openssl==1', {
           'sources!': [
             'utility/importer/nss_decryptor.cc',
@@ -143,23 +133,42 @@
             'utility/importer/nss_decryptor_system_nss.h',
           ],
         }],
-        ['OS=="android"', {
-          'sources!': [
-            'utility/profile_import_handler.cc',
-          ],
-        }, {  # !android
+        ['OS!="android"', {
           'sources': [
             '<@(chrome_utility_importer_sources)',
-            '<@(chrome_utility_shared_media_sources)',
-          ],
-          'dependencies': [
-            '../third_party/libexif/libexif.gyp:libexif',
           ],
         }],
-        ['OS!="win" and OS!="mac"', {
+        ['enable_extensions==1', {
+          'dependencies': [
+            '../third_party/libexif/libexif.gyp:libexif',
+            'common/extensions/api/api.gyp:chrome_api',
+          ],
+          'export_dependent_settings': [
+            'common/extensions/api/api.gyp:chrome_api',
+          ],
           'sources': [
-            'utility/image_writer/image_writer_stub.cc',
-          ]
+            '<@(chrome_utility_extensions_sources)',
+            '<@(chrome_utility_shared_media_sources)',
+          ],
+          'conditions': [
+            ['OS=="win" or OS=="mac"', {
+              'dependencies': [
+                '../components/components.gyp:wifi_component',
+              ],
+              'sources': [
+                '<@(chrome_utility_win_mac_media_gallery_sources)',
+              ],
+            }, {  # OS!="win" and OS!="mac"
+              'sources': [
+                'utility/image_writer/image_writer_stub.cc',
+              ]
+            }],
+            ['OS=="mac"', {
+              'sources': [
+                '<@(chrome_utility_mac_media_gallery_sources)',
+              ],
+            }],
+          ],
         }],
         ['enable_printing!=1', {
           'sources!': [
