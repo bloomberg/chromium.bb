@@ -84,6 +84,7 @@ component("events") {
   sources = [
     "cocoa/cocoa_event_utils.h",
     "cocoa/cocoa_event_utils.mm",
+    "cocoa/events_mac.mm",
     "event.cc",
     "event.h",
     "event_dispatcher.cc",
@@ -106,9 +107,6 @@ component("events") {
     "events_stub.cc",
     "gestures/gesture_point.cc",
     "gestures/gesture_point.h",
-    "gestures/gesture_recognizer.h",
-    "gestures/gesture_recognizer_impl.cc",
-    "gestures/gesture_recognizer_impl.h",
     "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_sequence.cc",
     "gestures/gesture_sequence.h",
@@ -173,10 +171,13 @@ component("events") {
       "gestures/gesture_provider_aura.h",
       "gestures/motion_event_aura.cc",
       "gestures/motion_event_aura.h",
+      "gestures/gesture_recognizer.h",
+      "gestures/gesture_recognizer_impl.cc",
+      "gestures/gesture_recognizer_impl.h",
     ]
   }
 
-  if (is_win || use_x11 || use_ozone) {
+  if (is_win || is_mac || use_x11 || use_ozone) {
     sources -= [ "events_stub.cc" ]
   }
 }

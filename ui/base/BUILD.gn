@@ -277,6 +277,7 @@ component("base") {
     "//net",
     "//skia",
     "//third_party/icu",
+    "//ui/events:events_base",
     "//ui/resources",
     "//ui/resources:unscaled_resources",
     "//ui/strings",
@@ -321,6 +322,8 @@ component("base") {
   }
   if (!use_x11) {
     sources -= [
+      "x/x11_menu_list.cc",
+      "x/x11_menu_list.h",
       "x/x11_util.cc",
       "x/x11_util.h",
       "x/x11_util_internal.h",
@@ -415,7 +418,7 @@ component("base") {
     libs += [
       "Accelerate.framework",
       "AudioUnit.framework",
-      "CoreView.framework",
+      "CoreVideo.framework",
     ]
   }
 
