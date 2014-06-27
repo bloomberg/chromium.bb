@@ -34,6 +34,7 @@
 #include "google_apis/drive/drive_entry_kinds.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -45,12 +46,6 @@ namespace {
 bool IsAppRoot(const FileTracker& tracker) {
   return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT ||
       tracker.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
-}
-
-std::string RemovePrefix(const std::string& str, const std::string& prefix) {
-  if (StartsWithASCII(str, prefix, true))
-    return str.substr(prefix.size());
-  return str;
 }
 
 base::FilePath ReverseConcatPathComponents(
@@ -213,154 +208,39 @@ SyncStatusCode WriteVersionInfo(leveldb::DB* db) {
               base::Int64ToString(kCurrentDatabaseVersion)));
 }
 
-SyncStatusCode ReadDatabaseContents(leveldb::DB* db,
-                                    DatabaseContents* contents) {
+scoped_ptr<ServiceMetadata> ReadServiceMetadata(leveldb::DB* db) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db);
-  DCHECK(contents);
 
-  scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
-  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
-    std::string key = itr->key().ToString();
-    std::string value = itr->value().ToString();
-    if (key == kServiceMetadataKey) {
-      scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
-      if (!service_metadata->ParseFromString(value)) {
-        util::Log(logging::LOG_WARNING, FROM_HERE,
-                  "Failed to parse SyncServiceMetadata");
-        continue;
-      }
+  std::string value;
+  leveldb::Status status = db->Get(leveldb::ReadOptions(),
+                                   kServiceMetadataKey,
+                                   &value);
+  if (!status.ok())
+    return scoped_ptr<ServiceMetadata>();
 
-      contents->service_metadata = service_metadata.Pass();
-      continue;
-    }
-
-    if (StartsWithASCII(key, kFileMetadataKeyPrefix, true)) {
-      std::string file_id = RemovePrefix(key, kFileMetadataKeyPrefix);
-
-      scoped_ptr<FileMetadata> metadata(new FileMetadata);
-      if (!metadata->ParseFromString(itr->value().ToString())) {
-        util::Log(logging::LOG_WARNING, FROM_HERE,
-                  "Failed to parse a FileMetadata");
-        continue;
-      }
-
-      contents->file_metadata.push_back(metadata.release());
-      continue;
-    }
-
-    if (StartsWithASCII(key, kFileTrackerKeyPrefix, true)) {
-      int64 tracker_id = 0;
-      if (!base::StringToInt64(RemovePrefix(key, kFileTrackerKeyPrefix),
-                               &tracker_id)) {
-        util::Log(logging::LOG_WARNING, FROM_HERE,
-                  "Failed to parse TrackerID");
-        continue;
-      }
-
-      scoped_ptr<FileTracker> tracker(new FileTracker);
-      if (!tracker->ParseFromString(itr->value().ToString())) {
-        util::Log(logging::LOG_WARNING, FROM_HERE,
-                  "Failed to parse a Tracker");
-        continue;
-      }
-      contents->file_trackers.push_back(tracker.release());
-      continue;
-    }
+  scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
+  if (!service_metadata->ParseFromString(value)) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "Failed to parse SyncServiceMetadata");
+    return scoped_ptr<ServiceMetadata>();
   }
-
-  return SYNC_STATUS_OK;
+  return service_metadata.Pass();
 }
 
-SyncStatusCode InitializeServiceMetadata(DatabaseContents* contents,
-                                         leveldb::WriteBatch* batch) {
-  if (!contents->service_metadata) {
-    contents->service_metadata.reset(new ServiceMetadata);
-    contents->service_metadata->set_next_tracker_id(1);
+scoped_ptr<ServiceMetadata> InitializeServiceMetadata(
+    leveldb::DB* db, leveldb::WriteBatch* batch) {
+  scoped_ptr<ServiceMetadata> service_metadata = ReadServiceMetadata(db);
+  if (!service_metadata) {
+    service_metadata.reset(new ServiceMetadata);
+    service_metadata->set_next_tracker_id(1);
 
     std::string value;
-    contents->service_metadata->SerializeToString(&value);
+    service_metadata->SerializeToString(&value);
     if (batch)
       batch->Put(kServiceMetadataKey, value);
   }
-  return SYNC_STATUS_OK;
-}
-
-SyncStatusCode RemoveUnreachableItems(DatabaseContents* contents,
-                                      leveldb::WriteBatch* batch) {
-  typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
-  ChildTrackersByParent trackers_by_parent;
-
-  // Set up links from parent tracker to child trackers.
-  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
-    const FileTracker& tracker = *contents->file_trackers[i];
-    int64 parent_tracker_id = tracker.parent_tracker_id();
-    int64 tracker_id = tracker.tracker_id();
-
-    trackers_by_parent[parent_tracker_id].insert(tracker_id);
-  }
-
-  // Drop links from inactive trackers.
-  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
-    const FileTracker& tracker = *contents->file_trackers[i];
-
-    if (!tracker.active())
-      trackers_by_parent.erase(tracker.tracker_id());
-  }
-
-  std::vector<int64> pending;
-  if (contents->service_metadata->sync_root_tracker_id() != kInvalidTrackerID)
-    pending.push_back(contents->service_metadata->sync_root_tracker_id());
-
-  // Traverse tracker tree from sync-root.
-  std::set<int64> visited_trackers;
-  while (!pending.empty()) {
-    int64 tracker_id = pending.back();
-    DCHECK_NE(kInvalidTrackerID, tracker_id);
-    pending.pop_back();
-
-    if (!visited_trackers.insert(tracker_id).second) {
-      NOTREACHED();
-      continue;
-    }
-
-    AppendContents(
-        LookUpMap(trackers_by_parent, tracker_id, std::set<int64>()),
-        &pending);
-  }
-
-  // Delete all unreachable trackers.
-  ScopedVector<FileTracker> reachable_trackers;
-  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
-    FileTracker* tracker = contents->file_trackers[i];
-    if (ContainsKey(visited_trackers, tracker->tracker_id())) {
-      reachable_trackers.push_back(tracker);
-      contents->file_trackers[i] = NULL;
-    } else {
-      PutFileTrackerDeletionToBatch(tracker->tracker_id(), batch);
-    }
-  }
-  contents->file_trackers = reachable_trackers.Pass();
-
-  // List all |file_id| referred by a tracker.
-  base::hash_set<std::string> referred_file_ids;
-  for (size_t i = 0; i < contents->file_trackers.size(); ++i)
-    referred_file_ids.insert(contents->file_trackers[i]->file_id());
-
-  // Delete all unreferred metadata.
-  ScopedVector<FileMetadata> referred_file_metadata;
-  for (size_t i = 0; i < contents->file_metadata.size(); ++i) {
-    FileMetadata* metadata = contents->file_metadata[i];
-    if (ContainsKey(referred_file_ids, metadata->file_id())) {
-      referred_file_metadata.push_back(metadata);
-      contents->file_metadata[i] = NULL;
-    } else {
-      PutFileMetadataDeletionToBatch(metadata->file_id(), batch);
-    }
-  }
-  contents->file_metadata = referred_file_metadata.Pass();
-
-  return SYNC_STATUS_OK;
+  return service_metadata.Pass();
 }
 
 bool HasInvalidTitle(const std::string& title) {
@@ -622,9 +502,6 @@ struct MetadataDatabase::CreateParam {
         env_override(env_override) {
   }
 };
-
-DatabaseContents::DatabaseContents() {}
-DatabaseContents::~DatabaseContents() {}
 
 // static
 void MetadataDatabase::Create(base::SequencedTaskRunner* worker_task_runner,
@@ -1568,35 +1445,19 @@ SyncStatusCode MetadataDatabase::InitializeOnFileTaskRunner() {
       return status;
   }
 
-  DatabaseContents contents;
-  status = ReadDatabaseContents(db_.get(), &contents);
-  if (status != SYNC_STATUS_OK)
-    return status;
-
   leveldb::WriteBatch batch;
-  status = InitializeServiceMetadata(&contents, &batch);
-  if (status != SYNC_STATUS_OK)
-    return status;
-
-  status = RemoveUnreachableItems(&contents, &batch);
-  if (status != SYNC_STATUS_OK)
-    return status;
+  service_metadata_ = InitializeServiceMetadata(db_.get(), &batch);
+  index_ = MetadataDatabaseIndex::Create(
+      db_.get(), service_metadata_->sync_root_tracker_id(), &batch);
 
   status = LevelDBStatusToSyncStatusCode(
       db_->Write(leveldb::WriteOptions(), &batch));
   if (status != SYNC_STATUS_OK)
     return status;
 
-  BuildIndexes(&contents);
-  return status;
-}
-
-void MetadataDatabase::BuildIndexes(DatabaseContents* contents) {
-  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-
-  service_metadata_ = contents->service_metadata.Pass();
   UpdateLargestKnownChangeID(service_metadata_->largest_change_id());
-  index_.reset(new MetadataDatabaseIndex(contents));
+
+  return status;
 }
 
 void MetadataDatabase::CreateTrackerForParentAndFileID(

@@ -5,10 +5,15 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/logger.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -27,6 +32,10 @@ bool operator<(const ParentIDAndTitle& left, const ParentIDAndTitle& right) {
     return left.parent_id < right.parent_id;
   return left.title < right.title;
 }
+
+DatabaseContents::DatabaseContents() {}
+
+DatabaseContents::~DatabaseContents() {}
 
 namespace {
 
@@ -51,16 +60,159 @@ std::string GetTrackerTitle(const FileTracker& tracker) {
   return std::string();
 }
 
+void ReadDatabaseContents(leveldb::DB* db,
+                          DatabaseContents* contents) {
+  DCHECK(db);
+  DCHECK(contents);
+
+  scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
+  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
+    std::string key = itr->key().ToString();
+    std::string value = itr->value().ToString();
+
+    if (StartsWithASCII(key, kFileMetadataKeyPrefix, true)) {
+      std::string file_id = RemovePrefix(key, kFileMetadataKeyPrefix);
+
+      scoped_ptr<FileMetadata> metadata(new FileMetadata);
+      if (!metadata->ParseFromString(itr->value().ToString())) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse a FileMetadata");
+        continue;
+      }
+
+      contents->file_metadata.push_back(metadata.release());
+      continue;
+    }
+
+    if (StartsWithASCII(key, kFileTrackerKeyPrefix, true)) {
+      int64 tracker_id = 0;
+      if (!base::StringToInt64(RemovePrefix(key, kFileTrackerKeyPrefix),
+                               &tracker_id)) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse TrackerID");
+        continue;
+      }
+
+      scoped_ptr<FileTracker> tracker(new FileTracker);
+      if (!tracker->ParseFromString(itr->value().ToString())) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse a Tracker");
+        continue;
+      }
+      contents->file_trackers.push_back(tracker.release());
+      continue;
+    }
+  }
+}
+
+void RemoveUnreachableItems(DatabaseContents* contents,
+                            int64 sync_root_tracker_id,
+                            leveldb::WriteBatch* batch) {
+  typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
+  ChildTrackersByParent trackers_by_parent;
+
+  // Set up links from parent tracker to child trackers.
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
+    const FileTracker& tracker = *contents->file_trackers[i];
+    int64 parent_tracker_id = tracker.parent_tracker_id();
+    int64 tracker_id = tracker.tracker_id();
+
+    trackers_by_parent[parent_tracker_id].insert(tracker_id);
+  }
+
+  // Drop links from inactive trackers.
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
+    const FileTracker& tracker = *contents->file_trackers[i];
+
+    if (!tracker.active())
+      trackers_by_parent.erase(tracker.tracker_id());
+  }
+
+  std::vector<int64> pending;
+  if (sync_root_tracker_id != kInvalidTrackerID)
+    pending.push_back(sync_root_tracker_id);
+
+  // Traverse tracker tree from sync-root.
+  std::set<int64> visited_trackers;
+  while (!pending.empty()) {
+    int64 tracker_id = pending.back();
+    DCHECK_NE(kInvalidTrackerID, tracker_id);
+    pending.pop_back();
+
+    if (!visited_trackers.insert(tracker_id).second) {
+      NOTREACHED();
+      continue;
+    }
+
+    AppendContents(
+        LookUpMap(trackers_by_parent, tracker_id, std::set<int64>()),
+        &pending);
+  }
+
+  // Delete all unreachable trackers.
+  ScopedVector<FileTracker> reachable_trackers;
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
+    FileTracker* tracker = contents->file_trackers[i];
+    if (ContainsKey(visited_trackers, tracker->tracker_id())) {
+      reachable_trackers.push_back(tracker);
+      contents->file_trackers[i] = NULL;
+    } else {
+      PutFileTrackerDeletionToBatch(tracker->tracker_id(), batch);
+    }
+  }
+  contents->file_trackers = reachable_trackers.Pass();
+
+  // List all |file_id| referred by a tracker.
+  base::hash_set<std::string> referred_file_ids;
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i)
+    referred_file_ids.insert(contents->file_trackers[i]->file_id());
+
+  // Delete all unreferred metadata.
+  ScopedVector<FileMetadata> referred_file_metadata;
+  for (size_t i = 0; i < contents->file_metadata.size(); ++i) {
+    FileMetadata* metadata = contents->file_metadata[i];
+    if (ContainsKey(referred_file_ids, metadata->file_id())) {
+      referred_file_metadata.push_back(metadata);
+      contents->file_metadata[i] = NULL;
+    } else {
+      PutFileMetadataDeletionToBatch(metadata->file_id(), batch);
+    }
+  }
+  contents->file_metadata = referred_file_metadata.Pass();
+}
+
 }  // namespace
 
-MetadataDatabaseIndex::MetadataDatabaseIndex(DatabaseContents* content) {
-  for (size_t i = 0; i < content->file_metadata.size(); ++i)
-    StoreFileMetadata(make_scoped_ptr(content->file_metadata[i]), NULL);
-  content->file_metadata.weak_clear();
+// static
+scoped_ptr<MetadataDatabaseIndex>
+MetadataDatabaseIndex::Create(leveldb::DB* db,
+                              int64 sync_root_tracker_id,
+                              leveldb::WriteBatch* batch) {
+  DatabaseContents contents;
+  ReadDatabaseContents(db, &contents);
+  RemoveUnreachableItems(&contents, sync_root_tracker_id, batch);
 
-  for (size_t i = 0; i < content->file_trackers.size(); ++i)
-    StoreFileTracker(make_scoped_ptr(content->file_trackers[i]), NULL);
-  content->file_trackers.weak_clear();
+  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
+  index->Initialize(&contents);
+  return index.Pass();
+}
+
+// static
+scoped_ptr<MetadataDatabaseIndex>
+MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents) {
+  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
+  index->Initialize(contents);
+  return index.Pass();
+}
+
+void MetadataDatabaseIndex::Initialize(DatabaseContents* contents) {
+  for (size_t i = 0; i < contents->file_metadata.size(); ++i)
+    StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]), NULL);
+  contents->file_metadata.weak_clear();
+
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i)
+    StoreFileTracker(make_scoped_ptr(contents->file_trackers[i]), NULL);
+  contents->file_trackers.weak_clear();
 
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.TrackerNumber", tracker_by_id_.size());
@@ -68,6 +220,7 @@ MetadataDatabaseIndex::MetadataDatabaseIndex(DatabaseContents* content) {
                            app_root_by_app_id_.size());
 }
 
+MetadataDatabaseIndex::MetadataDatabaseIndex() {}
 MetadataDatabaseIndex::~MetadataDatabaseIndex() {}
 
 const FileTracker* MetadataDatabaseIndex::GetFileTracker(

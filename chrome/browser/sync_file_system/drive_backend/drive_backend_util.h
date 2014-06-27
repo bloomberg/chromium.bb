@@ -69,6 +69,8 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
 
 scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj);
 
+std::string RemovePrefix(const std::string& str, const std::string& prefix);
+
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {
   dest->insert(dest->end(), src.begin(), src.end());

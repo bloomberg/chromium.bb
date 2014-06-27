@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
@@ -253,6 +254,12 @@ scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
   if (!obj)
     return scoped_ptr<FileTracker>();
   return scoped_ptr<FileTracker>(new FileTracker(*obj));
+}
+
+std::string RemovePrefix(const std::string& str, const std::string& prefix) {
+  if (StartsWithASCII(str, prefix, true))
+    return str.substr(prefix.size());
+  return str;
 }
 
 }  // namespace drive_backend

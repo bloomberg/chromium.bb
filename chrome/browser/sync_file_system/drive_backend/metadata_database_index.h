@@ -12,15 +12,21 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
+
+namespace leveldb {
+class DB;
+class WriteBatch;
+}
 
 namespace sync_file_system {
 namespace drive_backend {
 
 class FileMetadata;
 class FileTracker;
-struct DatabaseContents;
+class ServiceMetadata;
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
@@ -46,11 +52,24 @@ inline size_t hash_value(
 namespace sync_file_system {
 namespace drive_backend {
 
+struct DatabaseContents {
+  DatabaseContents();
+  ~DatabaseContents();
+  ScopedVector<FileMetadata> file_metadata;
+  ScopedVector<FileTracker> file_trackers;
+};
+
 // Maintains indexes of MetadataDatabase on memory.
 class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
  public:
-  explicit MetadataDatabaseIndex(DatabaseContents* content);
   virtual ~MetadataDatabaseIndex();
+
+  static scoped_ptr<MetadataDatabaseIndex> Create(
+      leveldb::DB* db,
+      int64 sync_root_tracker_id,
+      leveldb::WriteBatch* batch);
+  static scoped_ptr<MetadataDatabaseIndex> CreateForTesting(
+      DatabaseContents* contents);
 
   // MetadataDatabaseIndexInterface overrides.
   virtual const FileMetadata* GetFileMetadata(
@@ -97,6 +116,9 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   typedef std::set<int64> DirtyTrackers;
 
   friend class MetadataDatabaseTest;
+
+  MetadataDatabaseIndex();
+  void Initialize(DatabaseContents* contents);
 
   // Maintains |app_root_by_app_id_|.
   void AddToAppIDIndex(const FileTracker& new_tracker);
