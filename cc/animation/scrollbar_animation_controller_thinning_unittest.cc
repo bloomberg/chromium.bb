@@ -49,8 +49,8 @@ class ScrollbarAnimationControllerThinningTest
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
 
-    scrollbar_layer_->SetClipLayerById(clip_layer_->id());
-    scrollbar_layer_->SetScrollLayerById(scroll_layer_ptr->id());
+    scrollbar_layer_->SetScrollLayerAndClipLayerByIds(scroll_layer_ptr->id(),
+                                                      clip_layer_->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(50, 50));
 

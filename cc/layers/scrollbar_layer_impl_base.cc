@@ -41,8 +41,8 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
 
 void ScrollbarLayerImplBase::PushScrollClipPropertiesTo(LayerImpl* layer) {
   DCHECK(layer->ToScrollbarLayer());
-  layer->ToScrollbarLayer()->SetScrollLayerById(ScrollLayerId());
-  layer->ToScrollbarLayer()->SetClipLayerById(ClipLayerId());
+  layer->ToScrollbarLayer()->SetScrollLayerAndClipLayerByIds(ScrollLayerId(),
+                                                             ClipLayerId());
 }
 
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
@@ -77,28 +77,22 @@ void RegisterScrollbarWithLayers(ScrollbarLayerImplBase* scrollbar,
 }
 }  // namespace
 
-void ScrollbarLayerImplBase::SetScrollLayerById(int id) {
-  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(id);
-  if (scroll_layer_ == scroll_layer)
+void ScrollbarLayerImplBase::SetScrollLayerAndClipLayerByIds(
+    int scroll_layer_id,
+    int clip_layer_id) {
+  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(scroll_layer_id);
+  LayerImpl* clip_layer = layer_tree_impl()->LayerById(clip_layer_id);
+  if (scroll_layer_ == scroll_layer && clip_layer_ == clip_layer)
     return;
 
   RegisterScrollbarWithLayers(
       this, clip_layer_, scroll_layer_, &LayerImpl::RemoveScrollbar);
   scroll_layer_ = scroll_layer;
-  RegisterScrollbarWithLayers(
-      this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
-}
-
-void ScrollbarLayerImplBase::SetClipLayerById(int id) {
-  LayerImpl* clip_layer = layer_tree_impl()->LayerById(id);
-  if (clip_layer_ == clip_layer)
-    return;
-
-  RegisterScrollbarWithLayers(
-      this, clip_layer_, scroll_layer_, &LayerImpl::RemoveScrollbar);
   clip_layer_ = clip_layer;
   RegisterScrollbarWithLayers(
       this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
+
+  ScrollbarParametersDidChange();
 }
 
 gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(

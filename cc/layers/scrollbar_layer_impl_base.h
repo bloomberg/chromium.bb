@@ -19,13 +19,13 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   int ScrollLayerId() const {
     return scroll_layer_ ? scroll_layer_->id() : Layer::INVALID_ID;
   }
-  void ClearScrollLayer() { scroll_layer_ = NULL; }
-  void SetScrollLayerById(int id);
   int ClipLayerId() const {
     return clip_layer_ ? clip_layer_->id() : Layer::INVALID_ID;
   }
+
+  void SetScrollLayerAndClipLayerByIds(int scroll_layer_id, int clip_layer_id);
+  void ClearScrollLayer() { scroll_layer_ = NULL; }
   void ClearClipLayer() { clip_layer_ = NULL; }
-  void SetClipLayerById(int id);
 
   float current_pos() const { return current_pos_; }
   void SetCurrentPos(float current_pos);

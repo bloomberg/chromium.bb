@@ -65,8 +65,8 @@ void SolidColorScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
   SolidColorScrollbarLayerImpl* scrollbar_layer =
       static_cast<SolidColorScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollLayerById(scroll_layer_id_);
-  scrollbar_layer->SetClipLayerById(clip_layer_id_);
+  scrollbar_layer->SetScrollLayerAndClipLayerByIds(scroll_layer_id_,
+                                                   clip_layer_id_);
 }
 
 void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::RectF&) {
