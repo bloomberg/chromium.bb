@@ -753,7 +753,7 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
             && oldSelection.isContentEditable()
             && oldSelection.start().inDocument()
             && !isSelectionInTextField(oldSelection)) {
-            spellCheckOldSelection(oldSelection, newAdjacentWords, newSelectedSentence);
+            spellCheckOldSelection(oldSelection, newAdjacentWords);
         }
 
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
@@ -789,10 +789,10 @@ void SpellChecker::spellCheckAfterBlur()
     }
 
     VisibleSelection empty;
-    spellCheckOldSelection(m_frame.selection().selection(), empty, empty);
+    spellCheckOldSelection(m_frame.selection().selection(), empty);
 }
 
-void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence)
+void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords)
 {
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));

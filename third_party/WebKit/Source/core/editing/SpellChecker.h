@@ -72,7 +72,7 @@ public:
     void replaceMisspelledRange(const String&);
     void removeSpellingMarkers();
     void spellCheckAfterBlur();
-    void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence);
+    void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 
     void didEndEditingOnTextField(Element*);
     bool selectionStartHasMarkerFor(DocumentMarker::MarkerType, int from, int length) const;
