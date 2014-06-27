@@ -52,6 +52,13 @@ const size_t blinkPageSizeLog2 = 17;
 const size_t blinkPageSize = 1 << blinkPageSizeLog2;
 const size_t blinkPageOffsetMask = blinkPageSize - 1;
 const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
+
+// We allocate pages at random addresses but in groups of
+// blinkPagesPerRegion at a given random address. We group pages to
+// not spread out too much over the address space which would blow
+// away the page tables and lead to bad performance.
+const size_t blinkPagesPerRegion = 10;
+
 // Double precision floats are more efficient when 8 byte aligned, so we 8 byte
 // align all allocations even on 32 bit.
 const size_t allocationGranularity = 8;
@@ -823,6 +830,7 @@ public:
 
     inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
+    void addPageMemoryToPool(PageMemory*);
     void addPageToPool(HeapPage<Header>*);
     inline static size_t roundedAllocationSize(size_t size)
     {

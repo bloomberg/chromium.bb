@@ -3,6 +3,8 @@
     'variables': {
         'wtf_files': [
             'ASCIICType.h',
+            'AddressSpaceRandomization.cpp',
+            'AddressSpaceRandomization.h',
             'Alignment.h',
             'ArrayBuffer.cpp',
             'ArrayBuffer.h',
