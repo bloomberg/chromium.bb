@@ -104,7 +104,7 @@ private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
+        return V8ValueTraits<T>::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
     }
 
     template <typename T>

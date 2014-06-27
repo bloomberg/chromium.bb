@@ -219,14 +219,52 @@ inline v8::Handle<v8::Value> v8Undefined()
     return v8::Handle<v8::Value>();
 }
 
-template <class T>
+// Converts a DOM object to a v8 value.
+// This is a no-inline version of toV8(). If you want to call toV8()
+// without creating #include cycles, you can use this function instead.
+// Each specialized implementation will be generated.
+template<typename T>
+v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+template <typename T>
 struct V8ValueTraits {
-    // FIXME: This function requires the associated generated header to be
-    // included. Also, this function does not match with other V8ValueTraits
-    // classes. Remove this V8ValueTraits if possible.
-    static inline v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    typedef typename WTF::RemovePointer<T>::Type TypeWithoutPointer;
+    static v8::Handle<v8::Value> toV8Value(TypeWithoutPointer* const& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     {
-        return toV8(WTF::getPtr(value), creationContext, isolate);
+        return toV8NoInline(value, creationContext, isolate);
+    }
+
+    typedef typename WTF::RemoveTemplate<T, RawPtr>::Type TypeWithoutRawPtr;
+    static v8::Handle<v8::Value> toV8Value(const RawPtr<TypeWithoutRawPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return toV8NoInline(value.get(), creationContext, isolate);
+    }
+
+    // HeapVector<RefPtr> requires the following method:
+    typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
+    static v8::Handle<v8::Value> toV8Value(const RefPtr<TypeWithoutRefPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return toV8NoInline(value.get(), creationContext, isolate);
+    }
+
+    typedef typename WTF::RemoveTemplate<T, PassRefPtr>::Type TypeWithoutPassRefPtr;
+    static v8::Handle<v8::Value> toV8Value(const PassRefPtr<TypeWithoutPassRefPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return toV8NoInline(value.get(), creationContext, isolate);
+    }
+
+    typedef typename WTF::RemoveTemplate<T, Member>::Type TypeWithoutMember;
+    static v8::Handle<v8::Value> toV8Value(const Member<TypeWithoutMember>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return toV8NoInline(value.get(), creationContext, isolate);
+    }
+};
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+struct V8ValueTraits<WTF::Vector<T, inlineCapacity, Allocator> > {
+    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity, Allocator>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return v8ArrayNoInline(value, creationContext, isolate);
     }
 };
 
@@ -881,83 +919,6 @@ void removeHiddenValueFromArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, in
 void moveEventListenerToNewWrapper(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
 PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate*, v8::Handle<v8::Value>, int);
-
-// Converts a DOM object to a v8 value.
-// This is a no-inline version of toV8(). If you want to call toV8()
-// without creating #include cycles, you can use this function instead.
-// Each specialized implementation will be generated.
-template<typename T>
-v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
-// ToV8Value<U, Context> is a class that converts a C++ object to a
-// v8 value. U has to be a class having a static method getCreationContext
-// which returns an object created from a target context.
-template<typename U, typename Context>
-class ToV8Value {
-public:
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const T& value, Context context, v8::Isolate* isolate)
-    {
-        // Default implementaion: for types that don't need the context.
-        return V8ValueTraits<T>::toV8Value(value, context, isolate);
-    }
-
-    // Pointer specializations.
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(T* const& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8NoInline(value, context, isolate);
-    }
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const RefPtr<T>& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8Value(value.get(), context, isolate);
-    }
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const PassRefPtr<T>& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8Value(value.get(), context, isolate);
-    }
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const OwnPtr<T>& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8Value(value.get(), context, isolate);
-    }
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const PassOwnPtr<T>& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8Value(value.get(), context, isolate);
-    }
-    template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const RawPtr<T>& value, Context context, v8::Isolate* isolate)
-    {
-        return toV8Value(value.get(), context, isolate);
-    }
-
-    // const char* should use V8ValueTraits.
-    static v8::Handle<v8::Value> toV8Value(const char* const& value, Context context, v8::Isolate* isolate)
-    {
-        return V8ValueTraits<const char*>::toV8Value(value, context, isolate);
-    }
-
-    template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
-    {
-        return v8ArrayNoInline(value, context, isolate);
-    }
-
-    template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
-    {
-        return v8ArrayNoInline(value, context, isolate);
-    }
-
-    template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const PersistentHeapVector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
-    {
-        return v8ArrayNoInline(static_cast<HeapVector<T, inlineCapacity> >(value), context, isolate);
-    }
-};
 
 // Result values for platform object 'deleter' methods,
 // http://www.w3.org/TR/WebIDL/#delete

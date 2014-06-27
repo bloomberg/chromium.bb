@@ -161,7 +161,7 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Val
 ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, PassRefPtrWillBeRawPtr<DOMException> exception)
 {
     ASSERT(scriptState->isolate()->InContext());
-    return reject(scriptState, ToV8Value<WithScriptState, v8::Handle<v8::Object> >::toV8Value(exception, scriptState->context()->Global(), scriptState->isolate()));
+    return reject(scriptState, V8ValueTraits<PassRefPtrWillBeRawPtr<DOMException> >::toV8Value(exception, scriptState->context()->Global(), scriptState->isolate()));
 }
 
 } // namespace WebCore
