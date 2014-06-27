@@ -10,9 +10,7 @@
       'target_name': 'ipclist',
       'type': 'executable',
       'dependencies': [
-        '../../../base/base.gyp:base',
-        '../../../skia/skia.gyp:skia',
-        '../../../third_party/khronos/khronos.gyp:khronos_headers',
+        '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
         'ipclist.cc',

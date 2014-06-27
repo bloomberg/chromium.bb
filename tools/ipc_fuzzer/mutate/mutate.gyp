@@ -11,16 +11,6 @@
       'target_name': 'ipc_fuzzer_mutate',
       'type': 'executable',
       'dependencies': [
-        '../../../base/base.gyp:base',
-        '../../../chrome/chrome.gyp:common',
-        '../../../ipc/ipc.gyp:ipc',
-        '../../../media/cast/cast.gyp:cast_transport',
-        '../../../ppapi/ppapi_internal.gyp:ppapi_ipc',
-        '../../../skia/skia.gyp:skia',
-        '../../../third_party/libjingle/libjingle.gyp:libjingle',
-        '../../../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
-        '../../../third_party/WebKit/public/blink.gyp:blink',
-        '../../../ui/accessibility/accessibility.gyp:ax_gen',
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
@@ -48,16 +38,6 @@
       'target_name': 'ipc_fuzzer_generate',
       'type': 'executable',
       'dependencies': [
-        '../../../base/base.gyp:base',
-        '../../../chrome/chrome.gyp:common',
-        '../../../ipc/ipc.gyp:ipc',
-        '../../../media/cast/cast.gyp:cast_transport',
-        '../../../ppapi/ppapi_internal.gyp:ppapi_ipc',
-        '../../../skia/skia.gyp:skia',
-        '../../../third_party/libjingle/libjingle.gyp:libjingle',
-        '../../../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
-        '../../../third_party/WebKit/public/blink.gyp:blink',
-        '../../../ui/accessibility/accessibility.gyp:ax_gen',
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
