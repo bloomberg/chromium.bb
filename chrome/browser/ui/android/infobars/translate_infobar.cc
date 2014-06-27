@@ -106,11 +106,10 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
 
 void TranslateInfoBar::TransferOwnership(TranslateInfoBar* destination,
                                          translate::TranslateStep new_type) {
-  int new_target_language = destination->GetDelegate()->target_language_index();
   JNIEnv* env = base::android::AttachCurrentThread();
   if (Java_TranslateInfoBarDelegate_changeTranslateInfoBarTypeAndPointer(
       env, java_translate_delegate_.obj(),
-      reinterpret_cast<intptr_t>(destination), new_type, new_target_language)) {
+      reinterpret_cast<intptr_t>(destination), new_type)) {
     ReassignJavaInfoBar(destination);
     destination->SetJavaDelegate(java_translate_delegate_.Release());
   }

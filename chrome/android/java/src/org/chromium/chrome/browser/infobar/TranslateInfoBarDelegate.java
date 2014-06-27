@@ -21,9 +21,9 @@ public class TranslateInfoBarDelegate {
 
     @CalledByNative
     boolean changeTranslateInfoBarTypeAndPointer(
-            long newNativeInfoBar, int translateBarType, int new_target_language) {
+            long newNativeInfoBar, int translateBarType) {
         mInfoBar.changeInfoBarTypeAndNativePointer(
-                translateBarType, new_target_language, newNativeInfoBar);
+                translateBarType, newNativeInfoBar);
         return true;
     }
 
