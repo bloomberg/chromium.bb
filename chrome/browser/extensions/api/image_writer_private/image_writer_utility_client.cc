@@ -97,7 +97,6 @@ void ImageWriterUtilityClient::StartHost() {
     utility_process_host_->DisableSandbox();
 #endif
     utility_process_host_->StartBatchMode();
-    utility_process_host_->DisableSandbox();
   }
 }
 
