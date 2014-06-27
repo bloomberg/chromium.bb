@@ -38,50 +38,34 @@ class MediaQuerySet;
 // whenever it is needed and to call the listeners if the corresponding query has changed.
 // The listeners must be called in the very same order in which they have been added.
 
-class MediaQueryMatcher FINAL : public RefCountedWillBeGarbageCollected<MediaQueryMatcher> {
+class MediaQueryMatcher FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryMatcher> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher);
 public:
-    static PassRefPtrWillBeRawPtr<MediaQueryMatcher> create(Document* document) { return adoptRefWillBeNoop(new MediaQueryMatcher(document)); }
-    void documentDestroyed();
+    static PassRefPtrWillBeRawPtr<MediaQueryMatcher> create(Document& document) { return adoptRefWillBeNoop(new MediaQueryMatcher(document)); }
+    void documentDetached();
 
-    void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);
-    void removeListener(MediaQueryListListener*, MediaQueryList*);
+    void addMediaQueryList(MediaQueryList*);
+    void removeMediaQueryList(MediaQueryList*);
 
     PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&);
 
-    unsigned evaluationRound() const { return m_evaluationRound; }
-    void styleResolverChanged();
+    void mediaFeaturesChanged();
     bool evaluate(const MediaQuerySet*);
 
     void trace(Visitor*);
 
 private:
-    class Listener FINAL : public NoBaseWillBeGarbageCollected<Listener> {
-    public:
-        Listener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);
-        void evaluate(MediaQueryEvaluator*);
+    explicit MediaQueryMatcher(Document&);
 
-        MediaQueryListListener* listener() { return m_listener.get(); }
-        MediaQueryList* query() { return m_query.get(); }
-
-        void trace(Visitor*);
-
-    private:
-        RefPtrWillBeMember<MediaQueryListListener> m_listener;
-        RefPtrWillBeMember<MediaQueryList> m_query;
-    };
-
-    MediaQueryMatcher(Document*);
-    PassOwnPtr<MediaQueryEvaluator> prepareEvaluator() const;
     AtomicString mediaType() const;
 
-    RawPtrWillBeMember<Document> m_document;
-    WillBeHeapVector<OwnPtrWillBeMember<Listener> > m_listeners;
+    PassOwnPtr<MediaQueryEvaluator> createEvaluator() const;
 
-    // This value is incremented at style selector changes.
-    // It is used to avoid evaluating queries more then once and to make sure
-    // that a media query result change is notified exactly once.
-    unsigned m_evaluationRound;
+    RawPtrWillBeMember<Document> m_document;
+    OwnPtr<MediaQueryEvaluator> m_evaluator;
+
+    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<MediaQueryList> > MediaQueryListSet;
+    MediaQueryListSet m_mediaLists;
 };
 
 }

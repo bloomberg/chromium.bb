@@ -33,12 +33,15 @@ MediaQueryListListener::MediaQueryListListener(ScriptState* scriptState, const S
     ASSERT(m_function.isFunction());
 }
 
-void MediaQueryListListener::queryChanged(MediaQueryList* query)
+void MediaQueryListListener::call()
 {
+    if (!m_query)
+        return;
+
     if (m_scriptState->contextIsEmpty())
         return;
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> args[] = { toV8(query, m_scriptState->context()->Global(), m_scriptState->isolate()) };
+    v8::Handle<v8::Value> args[] = { toV8(m_query.get(), m_scriptState->context()->Global(), m_scriptState->isolate()) };
     ScriptController::callFunction(m_scriptState->executionContext(), v8::Handle<v8::Function>::Cast(m_function.v8Value()), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(args), args, m_scriptState->isolate());
 }
 

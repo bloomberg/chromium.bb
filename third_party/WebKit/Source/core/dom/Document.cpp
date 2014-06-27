@@ -674,7 +674,7 @@ SelectorQueryCache& Document::selectorQueryCache()
 MediaQueryMatcher& Document::mediaQueryMatcher()
 {
     if (!m_mediaQueryMatcher)
-        m_mediaQueryMatcher = MediaQueryMatcher::create(this);
+        m_mediaQueryMatcher = MediaQueryMatcher::create(*this);
     return *m_mediaQueryMatcher;
 }
 
@@ -2210,7 +2210,7 @@ void Document::detach(const AttachContext& context)
     m_frame = 0;
 
     if (m_mediaQueryMatcher)
-        m_mediaQueryMatcher->documentDestroyed();
+        m_mediaQueryMatcher->documentDetached();
 
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
@@ -3394,7 +3394,7 @@ void Document::evaluateMediaQueryListIfNeeded()
 void Document::evaluateMediaQueryList()
 {
     if (m_mediaQueryMatcher)
-        m_mediaQueryMatcher->styleResolverChanged();
+        m_mediaQueryMatcher->mediaFeaturesChanged();
 }
 
 void Document::notifyResizeForViewportUnits()
