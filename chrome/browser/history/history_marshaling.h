@@ -24,11 +24,6 @@ namespace history {
 typedef CancelableRequest<HistoryService::GetVisibleVisitCountToHostCallback>
     GetVisibleVisitCountToHostRequest;
 
-typedef CancelableRequest1<HistoryService::QueryTopURLsAndRedirectsCallback,
-                           Tuple2<std::vector<GURL>,
-                                  history::RedirectMap> >
-    QueryTopURLsAndRedirectsRequest;
-
 typedef CancelableRequest1<HistoryService::QueryMostVisitedURLsCallback,
                            history::MostVisitedURLList>
     QueryMostVisitedURLsRequest;

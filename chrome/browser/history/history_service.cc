@@ -838,16 +838,6 @@ HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
       consumer, new history::GetVisibleVisitCountToHostRequest(callback), url);
 }
 
-HistoryService::Handle HistoryService::QueryTopURLsAndRedirects(
-    int result_count,
-    CancelableRequestConsumerBase* consumer,
-    const QueryTopURLsAndRedirectsCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryTopURLsAndRedirects,
-      consumer, new history::QueryTopURLsAndRedirectsRequest(callback),
-      result_count);
-}
-
 HistoryService::Handle HistoryService::QueryMostVisitedURLs(
     int result_count,
     int days_back,

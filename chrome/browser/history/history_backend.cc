@@ -1332,35 +1332,6 @@ void HistoryBackend::GetVisibleVisitCountToHost(
   request->ForwardResult(request->handle(), success, count, first_visit);
 }
 
-void HistoryBackend::QueryTopURLsAndRedirects(
-    scoped_refptr<QueryTopURLsAndRedirectsRequest> request,
-    int result_count) {
-  if (request->canceled())
-    return;
-
-  if (!db_) {
-    request->ForwardResult(request->handle(), false, NULL, NULL);
-    return;
-  }
-
-  std::vector<GURL>* top_urls = &request->value.a;
-  history::RedirectMap* redirects = &request->value.b;
-
-  ScopedVector<PageUsageData> data;
-  db_->QuerySegmentUsage(base::Time::Now() - base::TimeDelta::FromDays(90),
-      result_count, &data.get());
-
-  for (size_t i = 0; i < data.size(); ++i) {
-    top_urls->push_back(data[i]->GetURL());
-    RefCountedVector<GURL>* list = new RefCountedVector<GURL>;
-    QueryRedirectsFrom(top_urls->back(), &list->data);
-    (*redirects)[top_urls->back()] = list;
-  }
-
-  request->ForwardResult(request->handle(), true, top_urls, redirects);
-}
-
-// Will replace QueryTopURLsAndRedirectsRequest.
 void HistoryBackend::QueryMostVisitedURLs(
     scoped_refptr<QueryMostVisitedURLsRequest> request,
     int result_count,

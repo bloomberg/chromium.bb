@@ -306,35 +306,12 @@ class HistoryService : public CancelableRequestProvider,
       CancelableRequestConsumerBase* consumer,
       const GetVisibleVisitCountToHostCallback& callback);
 
-  // Called when QueryTopURLsAndRedirects completes. The vector contains a list
-  // of the top |result_count| URLs.  For each of these URLs, there is an entry
-  // in the map containing redirects from the URL.  For example, if we have the
-  // redirect chain A -> B -> C and A is a top visited URL, then A will be in
-  // the vector and "A => {B -> C}" will be in the map.
-  typedef base::Callback<
-      void(Handle,
-           bool,  // Did we get the top urls and redirects?
-           std::vector<GURL>*,  // List of top URLs.
-           history::RedirectMap*)>  // Redirects for top URLs.
-      QueryTopURLsAndRedirectsCallback;
-
-  // Request the top |result_count| most visited URLs and the chain of redirects
-  // leading to each of these URLs.
-  // TODO(Nik): remove this. Use QueryMostVisitedURLs instead.
-  Handle QueryTopURLsAndRedirects(
-      int result_count,
-      CancelableRequestConsumerBase* consumer,
-      const QueryTopURLsAndRedirectsCallback& callback);
-
-  typedef base::Callback<void(Handle, history::MostVisitedURLList)>
-      QueryMostVisitedURLsCallback;
-
-  typedef base::Callback<void(Handle, const history::FilteredURLList&)>
-      QueryFilteredURLsCallback;
-
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
+  typedef base::Callback<void(Handle, history::MostVisitedURLList)>
+      QueryMostVisitedURLsCallback;
+
   Handle QueryMostVisitedURLs(int result_count, int days_back,
                               CancelableRequestConsumerBase* consumer,
                               const QueryMostVisitedURLsCallback& callback);
@@ -345,6 +322,9 @@ class HistoryService : public CancelableRequestProvider,
   // more expensive as additional data points are added in future changes, and
   // not useful in most cases. Set |extended_info| to true only if you
   // explicitly require the additional data.
+  typedef base::Callback<void(Handle, const history::FilteredURLList&)>
+      QueryFilteredURLsCallback;
+
   Handle QueryFilteredURLs(
       int result_count,
       const history::VisitFilter& filter,
