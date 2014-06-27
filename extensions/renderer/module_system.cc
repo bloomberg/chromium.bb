@@ -98,9 +98,9 @@ std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
   }
 
   std::string resource_name = "<unknown resource>";
-  if (!message->GetScriptResourceName().IsEmpty()) {
+  if (!message->GetScriptOrigin().ResourceName().IsEmpty()) {
     v8::String::Utf8Value resource_name_v8(
-        message->GetScriptResourceName()->ToString());
+        message->GetScriptOrigin().ResourceName()->ToString());
     resource_name.assign(*resource_name_v8, resource_name_v8.length());
   }
 

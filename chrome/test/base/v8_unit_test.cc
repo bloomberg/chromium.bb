@@ -237,7 +237,7 @@ std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
   if (message.IsEmpty()) {
     str.append(base::StringPrintf("%s\n", *exception));
   } else {
-    v8::String::Utf8Value filename(message->GetScriptResourceName());
+    v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
     int linenum = message->GetLineNumber();
     int colnum = message->GetStartColumn();
     str.append(base::StringPrintf(
