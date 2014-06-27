@@ -3770,9 +3770,6 @@ Battery full
   <message name="IDS_DEVICE_HARD_UNPLUGGED_MESSAGE" desc="Text of notification message which is shown when user manually removes external storage without clicking the eject icon">
     In the future, be sure to eject your removable device in the Files app before unplugging it. Otherwise, you might lose data.
   </message>
-  <message name="IDS_DEVICE_HARD_UNPLUGGED_BUTTON_LABEL" desc="Text of button label which is shown when user manually removes external storage without clicking the eject icon">
-    Got it
-  </message>
 
   <!-- Formatting device notifications -->
   <message name="IDS_FORMATTING_OF_DEVICE_PENDING_TITLE" desc="Title of notification message which is shown when formatting process of some device is in progress">

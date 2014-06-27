@@ -16,19 +16,10 @@ function DeviceHandler() {
    */
   this.mountStatus_ = {};
 
-  /**
-   * List of ID of notifications that have a button.
-   * @type {Array.<string>}
-   * @private
-   */
-  this.buttonNotifications_ = [];
-
   chrome.fileBrowserPrivate.onDeviceChanged.addListener(
       this.onDeviceChanged_.bind(this));
   chrome.fileBrowserPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
-  chrome.notifications.onButtonClicked.addListener(
-      this.onNotificationButtonClicked_.bind(this));
 
   Object.seal(this);
 }
@@ -119,8 +110,7 @@ DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED =
     new DeviceHandler.Notification(
         'deviceFail',
         'DEVICE_HARD_UNPLUGGED_TITLE',
-        'DEVICE_HARD_UNPLUGGED_MESSAGE',
-        'DEVICE_HARD_UNPLUGGED_BUTTON_LABEL');
+        'DEVICE_HARD_UNPLUGGED_MESSAGE');
 
 /**
  * @type {DeviceHandler.Notification}
@@ -244,7 +234,6 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
     case 'hard_unplugged':
       var id = DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
           event.devicePath);
-      this.buttonNotifications_.push(id);
       break;
     case 'format_start':
       DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
@@ -364,18 +353,5 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
   if (message) {
     DeviceHandler.Notification.DEVICE_FAIL.hide(volume.devicePath);
     DeviceHandler.Notification.DEVICE_FAIL.show(volume.devicePath, message);
-  }
-};
-
-/**
- * Handles notification button click.
- * @param {string} id ID of the notification.
- * @private
- */
-DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
-  var index = this.buttonNotifications_.indexOf(id);
-  if (index !== -1) {
-    chrome.notifications.clear(id, function() {});
-    this.buttonNotifications_.splice(index, 1);
   }
 };
