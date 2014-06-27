@@ -38,28 +38,13 @@ struct SVGTextQuery::Data {
         , processedCharacters(0)
         , textRenderer(0)
         , textBox(0)
-        , ligatureAdjustmentLastStartPositionQuery(-1)
-        , ligatureAdjustmentLastEndPositionQuery(-1)
-        , ligatureAdjustmentLastStartPositionResult(-1)
-        , ligatureAdjustmentLastEndPositionResult(-1)
     {
-    }
-
-    void invalidateLigatureAdjustmentCache()
-    {
-        ligatureAdjustmentLastStartPositionQuery = ligatureAdjustmentLastEndPositionQuery = -1;
-        ligatureAdjustmentLastStartPositionResult = ligatureAdjustmentLastEndPositionResult = -1;
     }
 
     bool isVerticalText;
     unsigned processedCharacters;
     RenderSVGInlineText* textRenderer;
     const SVGInlineTextBox* textBox;
-    // Ligature adjustment cache.
-    int ligatureAdjustmentLastStartPositionQuery;
-    int ligatureAdjustmentLastEndPositionQuery;
-    int ligatureAdjustmentLastStartPositionResult;
-    int ligatureAdjustmentLastEndPositionResult;
 };
 
 static inline InlineFlowBox* flowBoxForRenderer(RenderObject* renderer)
@@ -145,7 +130,6 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
         }
 
         queryData->processedCharacters = processedCharacters;
-        queryData->invalidateLigatureAdjustmentCache();
     }
 
     return false;
@@ -157,7 +141,14 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
     startPosition -= queryData->processedCharacters;
     endPosition -= queryData->processedCharacters;
 
-    startPosition = max(0, startPosition);
+    // <startPosition, endPosition> is now a tuple of offsets relative to the current text box.
+    // Compute the offsets of the fragment in the same offset space.
+    int fragmentStartInBox = fragment.characterOffset - queryData->textBox->start();
+    int fragmentEndInBox = fragmentStartInBox + fragment.length;
+
+    // Check if the ranges intersect.
+    startPosition = std::max(startPosition, fragmentStartInBox);
+    endPosition = std::min(endPosition, fragmentEndInBox);
 
     if (startPosition >= endPosition)
         return false;
@@ -172,15 +163,6 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
 
 void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, int& startPosition, int& endPosition) const
 {
-    if (queryData->ligatureAdjustmentLastStartPositionQuery == startPosition && queryData->ligatureAdjustmentLastEndPositionQuery == endPosition) {
-        startPosition = queryData->ligatureAdjustmentLastStartPositionResult;
-        endPosition = queryData->ligatureAdjustmentLastEndPositionResult;
-        return;
-    }
-
-    queryData->ligatureAdjustmentLastStartPositionQuery = startPosition;
-    queryData->ligatureAdjustmentLastEndPositionQuery = endPosition;
-
     SVGTextLayoutAttributes* layoutAttributes = queryData->textRenderer->layoutAttributes();
     Vector<SVGTextMetrics>& textMetricsValues = layoutAttributes->textMetricsValues();
     unsigned boxStart = queryData->textBox->start();
@@ -237,18 +219,16 @@ void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, i
         positionOffset += metrics.length();
     }
 
-    if (alterStartPosition || alterEndPosition) {
-        if (lastPositionOffset != -1 && lastPositionOffset - positionOffset > 1) {
-            if (alterStartPosition && startPosition > lastPositionOffset && startPosition < static_cast<int>(positionOffset))
-                startPosition = lastPositionOffset;
+    if (!alterStartPosition && !alterEndPosition)
+        return;
 
-            if (alterEndPosition && endPosition > lastPositionOffset && endPosition < static_cast<int>(positionOffset))
-                endPosition = positionOffset;
-        }
+    if (lastPositionOffset != -1 && lastPositionOffset - positionOffset > 1) {
+        if (alterStartPosition && startPosition > lastPositionOffset && startPosition < static_cast<int>(positionOffset))
+            startPosition = lastPositionOffset;
+
+        if (alterEndPosition && endPosition > lastPositionOffset && endPosition < static_cast<int>(positionOffset))
+            endPosition = positionOffset;
     }
-
-    queryData->ligatureAdjustmentLastStartPositionResult = startPosition;
-    queryData->ligatureAdjustmentLastEndPositionResult = endPosition;
 }
 
 // numberOfCharacters() implementation
