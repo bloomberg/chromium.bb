@@ -28,6 +28,40 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
 
   static bool RegisterBookmarksBridge(JNIEnv* env);
 
+  base::android::ScopedJavaLocalRef<jobject> GetBookmarkByID(
+      JNIEnv* env,
+      jobject obj,
+      jlong id,
+      jint type);
+
+  void GetPermanentNodeIDs(JNIEnv* env,
+                           jobject obj,
+                           jobject j_result_obj);
+
+  void GetChildIDs(JNIEnv* env,
+                   jobject obj,
+                   jlong id,
+                   jint type,
+                   jboolean get_folders,
+                   jboolean get_bookmarks,
+                   jobject j_result_obj);
+
+  void GetAllBookmarkIDsOrderedByCreationDate(JNIEnv* env,
+                                              jobject obj,
+                                              jobject j_result_obj);
+
+  void SetBookmarkTitle(JNIEnv* env,
+                        jobject obj,
+                        jlong id,
+                        jint type,
+                        jstring title);
+
+  void SetBookmarkUrl(JNIEnv* env,
+                      jobject obj,
+                      jlong id,
+                      jint type,
+                      jstring url);
+
   void GetBookmarksForFolder(JNIEnv* env,
                              jobject obj,
                              jobject j_folder_id_obj,
