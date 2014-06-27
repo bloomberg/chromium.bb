@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
@@ -90,9 +91,9 @@ TEST_F(DataReductionProxyUsageStatsTest, isDataReductionProxyUnreachable) {
                 WasDataReductionProxyUsed(&mock_url_request_, NULL))
         .WillRepeatedly(Return(test_case.was_proxy_used));
 
-    DataReductionProxyUsageStats* usage_stats =
+    scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(
-            &mock_params_, loop_proxy_, loop_proxy_);
+            &mock_params_, loop_proxy_, loop_proxy_));
 
     usage_stats->OnUrlRequestCompleted(&mock_url_request_, false);
     MessageLoop::current()->RunUntilIdle();
