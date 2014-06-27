@@ -1195,7 +1195,7 @@ void RenderBlock::removeChild(RenderObject* oldChild)
         // we need to remove ourself and fix the continuation chain.
         if (!beingDestroyed() && isAnonymousBlockContinuation() && !oldChild->isListMarker()) {
             RenderObject* containingBlockIgnoringAnonymous = containingBlock();
-            while (containingBlockIgnoringAnonymous && containingBlockIgnoringAnonymous->isAnonymousBlock())
+            while (containingBlockIgnoringAnonymous && containingBlockIgnoringAnonymous->isAnonymous())
                 containingBlockIgnoringAnonymous = containingBlockIgnoringAnonymous->containingBlock();
             for (RenderObject* curr = this; curr; curr = curr->previousInPreOrder(containingBlockIgnoringAnonymous)) {
                 if (curr->virtualContinuation() != this)
