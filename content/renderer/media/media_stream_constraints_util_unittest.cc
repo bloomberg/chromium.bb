@@ -51,6 +51,48 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   EXPECT_FALSE(value_false);
 }
 
+TEST_F(MediaStreamConstraintsUtilTest, MandatoryDoubleConstraints) {
+  MockMediaConstraintFactory constraint_factory;
+  const std::string test_key = "test key";
+  const double test_value= 0.01f;
+
+  constraint_factory.AddMandatory(test_key, test_value);
+  blink::WebMediaConstraints constraints =
+      constraint_factory.CreateWebMediaConstraints();
+
+  double value;
+  EXPECT_FALSE(GetOptionalConstraintValueAsDouble(constraints, test_key,
+                                                  &value));
+  EXPECT_TRUE(GetMandatoryConstraintValueAsDouble(constraints, test_key,
+                                                  &value));
+  EXPECT_EQ(test_value, value);
+
+  value = 0;
+  EXPECT_TRUE(GetConstraintValueAsDouble(constraints, test_key, &value));
+  EXPECT_EQ(test_value, value);
+}
+
+TEST_F(MediaStreamConstraintsUtilTest, OptionalDoubleConstraints) {
+  MockMediaConstraintFactory constraint_factory;
+  const std::string test_key = "test key";
+  const double test_value= 0.01f;
+
+  constraint_factory.AddOptional(test_key, test_value);
+  blink::WebMediaConstraints constraints =
+      constraint_factory.CreateWebMediaConstraints();
+
+  double value;
+  EXPECT_FALSE(GetMandatoryConstraintValueAsDouble(constraints, test_key,
+                                                   &value));
+  EXPECT_TRUE(GetOptionalConstraintValueAsDouble(constraints, test_key,
+                                                 &value));
+  EXPECT_EQ(test_value, value);
+
+  value = 0;
+  EXPECT_TRUE(GetConstraintValueAsDouble(constraints, test_key, &value));
+  EXPECT_EQ(test_value, value);
+}
+
 TEST_F(MediaStreamConstraintsUtilTest, IntConstraints) {
   MockMediaConstraintFactory constraint_factory;
   int width = 600;
