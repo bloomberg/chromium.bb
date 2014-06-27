@@ -27,7 +27,6 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 Bug(fmalita) svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
 Bug(fmalita) virtual/threaded/printing/return-from-printing-mode.html [ NeedsRebaseline ]
 
-crbug.com/389286 virtual/implsidepainting/inspector/timeline/timeline-receive-response-event.html [ Pass Failure ]
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
