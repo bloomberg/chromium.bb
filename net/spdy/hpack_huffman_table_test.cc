@@ -391,13 +391,13 @@ TEST_F(HpackHuffmanTableTest, SpecRequestExamples) {
 
   string buffer;
   string test_table[] = {
-    a2b_hex("e7cf9bebe89b6fb16fa9b6ff"),
+    a2b_hex("f1e3c2e5f23a6ba0ab90f4ff"),
     "www.example.com",
-    a2b_hex("b9b9949556bf"),
+    a2b_hex("a8eb10649cbf"),
     "no-cache",
-    a2b_hex("571c5cdb737b2faf"),
+    a2b_hex("25a849e95ba97d7f"),
     "custom-key",
-    a2b_hex("571c5cdb73724d9c57"),
+    a2b_hex("25a849e95bb8e8b4bf"),
     "custom-value",
   };
   // Round-trip each test example.
@@ -420,20 +420,19 @@ TEST_F(HpackHuffmanTableTest, SpecResponseExamples) {
 
   string buffer;
   string test_table[] = {
-    a2b_hex("4017"),
+    a2b_hex("6402"),
     "302",
-    a2b_hex("bf06724b97"),
+    a2b_hex("aec3771a4b"),
     "private",
-    a2b_hex("d6dbb29884de2a718805062098513109"
-            "b56ba3"),
+    a2b_hex("d07abe941054d444a8200595040b8166"
+            "e082a62d1bff"),
     "Mon, 21 Oct 2013 20:13:21 GMT",
-    a2b_hex("adcebf198e7e7cf9bebe89b6fb16fa9b"
-            "6f"),
+    a2b_hex("9d29ad171863c78f0b97c8e9ae82ae43"
+            "d3"),
     "https://www.example.com",
-    a2b_hex("e0d6cf9f6e8f9fd3e5f6fa76fefd3c7e"
-            "df9eff1f2f0f3cfe9f6fcf7f8f879f61"
-            "ad4f4cc9a973a2200ec3725e18b1b74e"
-            "3f"),
+    a2b_hex("94e7821dd7f2e6c7b335dfdfcd5b3960"
+            "d5af27087f3672c1ab270fb5291f9587"
+            "316065c003ed4ee5b1063d5007"),
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1",
   };
   // Round-trip each test example.

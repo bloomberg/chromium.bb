@@ -320,7 +320,7 @@ TEST_F(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
   peer_.EmitString("feedbeef");
   expected_.AppendPrefix(kStringLiteralHuffmanEncoded);
   expected_.AppendUint32(6);
-  expected_.AppendBytes("\xE0\xB5\xD3\xBDk\xE1");
+  expected_.AppendBytes("\x94\xA5\x92""2\x96_");
 
   // Non-compactable. Uses identity coding.
   peer_.EmitString("@@@@@@");

@@ -3515,14 +3515,13 @@ TEST_P(HttpNetworkTransactionTest,
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // CONNECT to news.google.com:443 via SPDY.
-  SpdySynStreamIR connect2_ir(3);
-  spdy_util_.SetPriority(LOWEST, &connect2_ir);
-  connect2_ir.SetHeader(spdy_util_.GetMethodKey(), "CONNECT");
-  connect2_ir.SetHeader(spdy_util_.GetPathKey(), "news.google.com:443");
-  connect2_ir.SetHeader(spdy_util_.GetHostKey(), "news.google.com");
-  spdy_util_.MaybeAddVersionHeader(&connect2_ir);
+  SpdyHeaderBlock connect2_block;
+  connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
+  connect2_block[spdy_util_.GetPathKey()] = "news.google.com:443";
+  connect2_block[spdy_util_.GetHostKey()] = "news.google.com";
+  spdy_util_.MaybeAddVersionHeader(&connect2_block);
   scoped_ptr<SpdyFrame> connect2(
-      spdy_util_.CreateFramer(false)->SerializeFrame(connect2_ir));
+      spdy_util_.ConstructSpdySyn(3, connect2_block, LOWEST, false, false));
 
   scoped_ptr<SpdyFrame> conn_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
@@ -3778,8 +3777,8 @@ TEST_P(HttpNetworkTransactionTest,
   // http://www.google.com/
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.google.com/"));
-  scoped_ptr<SpdyFrame> get1(spdy_util_.ConstructSpdyControlFrame(
-      headers.Pass(), false, 1, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN, 0));
+  scoped_ptr<SpdyFrame> get1(
+      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
   scoped_ptr<SpdyFrame> get_resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body1(
@@ -3788,8 +3787,8 @@ TEST_P(HttpNetworkTransactionTest,
   // http://news.google.com/
   scoped_ptr<SpdyHeaderBlock> headers2(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://news.google.com/"));
-  scoped_ptr<SpdyFrame> get2(spdy_util_.ConstructSpdyControlFrame(
-      headers2.Pass(), false, 3, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN, 0));
+  scoped_ptr<SpdyFrame> get2(
+      spdy_util_.ConstructSpdySyn(3, *headers2, LOWEST, false, true));
   scoped_ptr<SpdyFrame> get_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body2(
@@ -6418,23 +6417,12 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   // The proxy responds to the connect with a 407, using a persistent
   // connection.
+  const char* const kAuthStatus = "407";
   const char* const kAuthChallenge[] = {
-    spdy_util_.GetStatusKey(), "407 Proxy Authentication Required",
-    spdy_util_.GetVersionKey(), "HTTP/1.1",
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
-
-  scoped_ptr<SpdyFrame> conn_auth_resp(
-      spdy_util_.ConstructSpdyControlFrame(NULL,
-                                           0,
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           SYN_REPLY,
-                                           CONTROL_FLAG_NONE,
-                                           kAuthChallenge,
-                                           arraysize(kAuthChallenge),
-                                           0));
+  scoped_ptr<SpdyFrame> conn_auth_resp(spdy_util_.ConstructSpdySynReplyError(
+      kAuthStatus, kAuthChallenge, arraysize(kAuthChallenge) / 2, 1));
 
   scoped_ptr<SpdyFrame> conn_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
@@ -11417,17 +11405,15 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       spdy_util_.ConstructWrappedSpdyFrame(req1, 1));
 
   // SPDY GET for HTTP URL (through the proxy, but not the tunnel).
-  SpdySynStreamIR req2_ir(3);
-  spdy_util_.SetPriority(MEDIUM, &req2_ir);
-  req2_ir.set_fin(true);
-  req2_ir.SetHeader(spdy_util_.GetMethodKey(), "GET");
-  req2_ir.SetHeader(spdy_util_.GetPathKey(),
-                    spdy_util_.is_spdy2() ? http_url.c_str() : "/");
-  req2_ir.SetHeader(spdy_util_.GetHostKey(), "www.google.com:443");
-  req2_ir.SetHeader(spdy_util_.GetSchemeKey(), "http");
-  spdy_util_.MaybeAddVersionHeader(&req2_ir);
+  SpdyHeaderBlock req2_block;
+  req2_block[spdy_util_.GetMethodKey()] = "GET";
+  req2_block[spdy_util_.GetPathKey()] =
+      spdy_util_.is_spdy2() ? http_url.c_str() : "/";
+  req2_block[spdy_util_.GetHostKey()] = "www.google.com:443";
+  req2_block[spdy_util_.GetSchemeKey()] = "http";
+  spdy_util_.MaybeAddVersionHeader(&req2_block);
   scoped_ptr<SpdyFrame> req2(
-      spdy_util_.CreateFramer(false)->SerializeFrame(req2_ir));
+      spdy_util_.ConstructSpdySyn(3, req2_block, MEDIUM, false, true));
 
   MockWrite writes1[] = {
     CreateMockWrite(*connect, 0),
@@ -11598,8 +11584,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   // SPDY GET for HTTP URL (through SPDY proxy)
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.google.com/"));
-  scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyControlFrame(
-      headers.Pass(), false, 1, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN, 0));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
 
   MockWrite writes1[] = {
     CreateMockWrite(*req1, 0),

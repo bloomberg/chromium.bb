@@ -17,7 +17,7 @@
 #include "net/spdy/hpack_output_stream.h"
 
 // An HpackEncoder encodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 
@@ -65,11 +65,11 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   typedef std::pair<base::StringPiece, base::StringPiece> Representation;
   typedef std::vector<Representation> Representations;
 
-  // Emits a static/dynamic indexed representation (Section 4.2).
+  // Emits a static/dynamic indexed representation (Section 7.1).
   void EmitDynamicIndex(HpackEntry* entry);
   void EmitStaticIndex(HpackEntry* entry);
 
-  // Emits a literal representation (Section 4.3).
+  // Emits a literal representation (Section 7.2).
   void EmitIndexedLiteral(const Representation& representation);
   void EmitNonIndexedLiteral(const Representation& representation);
   void EmitLiteral(const Representation& representation);

@@ -296,22 +296,12 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
     CreateMockWrite(*req, 0, ASYNC),
     CreateMockWrite(*rst, 2, ASYNC),
   };
-  const char* const kAuthChallenge[] = {
-    spdy_util_.GetStatusKey(), "407 Proxy Authentication Required",
-    spdy_util_.GetVersionKey(), "HTTP/1.1",
-    "proxy-authenticate", "Basic realm=\"MyRealm1\"",
-  };
-  scoped_ptr<SpdyFrame> resp(
-      spdy_util_.ConstructSpdyControlFrame(NULL,
-                                           0,
-                                           false,
-                                           1,
-                                           LOW,
-                                           SYN_REPLY,
-                                           CONTROL_FLAG_NONE,
-                                           kAuthChallenge,
-                                           arraysize(kAuthChallenge),
-                                           0));
+  SpdyHeaderBlock resp_block;
+  resp_block[spdy_util_.GetStatusKey()] = "407";
+  resp_block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
+  spdy_util_.MaybeAddVersionHeader(&resp_block);
+
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyReply(1, resp_block));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 3)

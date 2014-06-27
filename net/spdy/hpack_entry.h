@@ -15,16 +15,16 @@
 #include "net/base/net_export.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 
-// A structure for an entry in the header table (3.1.2) and the
-// reference set (3.1.3).
+// A structure for an entry in the header table (3.2) and the
+// reference set (3.3).
 class NET_EXPORT_PRIVATE HpackEntry {
  public:
   // The constant amount added to name().size() and value().size() to
-  // get the size of an HpackEntry as defined in 3.3.1.
+  // get the size of an HpackEntry as defined in 5.1.
   static const size_t kSizeOverhead;
 
   // Creates an entry. Preconditions:
@@ -68,7 +68,7 @@ class NET_EXPORT_PRIVATE HpackEntry {
   // Used to compute the entry's index in the header table.
   size_t InsertionIndex() const { return insertion_index_; }
 
-  // Returns the size of an entry as defined in 3.3.1.
+  // Returns the size of an entry as defined in 5.1.
   static size_t Size(base::StringPiece name, base::StringPiece value);
   size_t Size() const;
 

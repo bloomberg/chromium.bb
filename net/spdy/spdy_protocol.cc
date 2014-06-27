@@ -13,16 +13,14 @@ SpdyFrameWithNameValueBlockIR::~SpdyFrameWithNameValueBlockIR() {}
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data)
     : SpdyFrameWithFinIR(stream_id),
-      pad_low_(false),
-      pad_high_(false),
+      padded_(false),
       padding_payload_len_(0) {
   SetDataDeep(data);
 }
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
     : SpdyFrameWithFinIR(stream_id),
-      pad_low_(false),
-      pad_high_(false),
+      padded_(false),
       padding_payload_len_(0) {}
 
 SpdyDataIR::~SpdyDataIR() {}
@@ -39,11 +37,6 @@ bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
 
       // WINDOW_UPDATE is the last valid frame.
       if (frame_type_field > SerializeFrameType(version, WINDOW_UPDATE)) {
-        return false;
-      }
-
-      // The valid range is non-contiguous.
-      if (frame_type_field == NOOP) {
         return false;
       }
 
@@ -189,6 +182,20 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
   return -1;
 }
 
+int SpdyConstants::DataFrameType(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      return 0;
+    case SPDY4:
+    case SPDY5:
+      return SerializeFrameType(version, DATA);
+  }
+
+  LOG(DFATAL) << "Unhandled SPDY version " << version;
+  return 0;
+}
+
 bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
                                      int setting_id_field) {
   switch (version) {
@@ -215,9 +222,9 @@ bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
         return false;
       }
 
-      // COMPRESS_DATA is the last valid setting id.
+      // INITIAL_WINDOW_SIZE is the last valid setting id.
       if (setting_id_field >
-          SerializeSettingId(version, SETTINGS_COMPRESS_DATA)) {
+          SerializeSettingId(version, SETTINGS_INITIAL_WINDOW_SIZE)) {
         return false;
       }
 
@@ -261,8 +268,6 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion version,
           return SETTINGS_MAX_CONCURRENT_STREAMS;
         case 4:
           return SETTINGS_INITIAL_WINDOW_SIZE;
-        case 5:
-          return SETTINGS_COMPRESS_DATA;
       }
       break;
   }
@@ -306,8 +311,6 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
           return 3;
         case SETTINGS_INITIAL_WINDOW_SIZE:
           return 4;
-        case SETTINGS_COMPRESS_DATA:
-          return 5;
         default:
           LOG(DFATAL) << "Serializing unhandled setting id " << id;
           return -1;
@@ -730,6 +733,10 @@ size_t SpdyConstants::GetSizeOfSizeField(SpdyMajorVersion version) {
   return (version < SPDY3) ? sizeof(uint16) : sizeof(uint32);
 }
 
+size_t SpdyConstants::GetSettingSize(SpdyMajorVersion version) {
+  return version <= SPDY3 ? 8 : 6;
+}
+
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
 }
@@ -815,6 +822,24 @@ SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id)
 
 void SpdyAltSvcIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitAltSvc(*this);
+}
+
+SpdyPriorityIR::SpdyPriorityIR(SpdyStreamId stream_id)
+    : SpdyFrameWithStreamIdIR(stream_id) {
+}
+
+SpdyPriorityIR::SpdyPriorityIR(SpdyStreamId stream_id,
+                               SpdyStreamId parent_stream_id,
+                               uint8 weight,
+                               bool exclusive)
+    : SpdyFrameWithStreamIdIR(stream_id),
+      parent_stream_id_(parent_stream_id),
+      weight_(weight),
+      exclusive_(exclusive) {
+}
+
+void SpdyPriorityIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitPriority(*this);
 }
 
 }  // namespace net

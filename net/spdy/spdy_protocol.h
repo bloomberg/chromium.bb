@@ -55,6 +55,9 @@ const int32 kSpdySessionInitialWindowSize = 64 * 1024;  // 64 KBytes
 // Maximum window size for a Spdy stream or session.
 const int32 kSpdyMaximumWindowSize = 0x7FFFFFFF;  // Max signed 32bit int
 
+// Maximum padding size in octets for one DATA or HEADERS or PUSH_PROMISE frame.
+const int32 kPaddingSizePerFrame = 256;
+
 // SPDY 2 dictionary.
 // This is just a hacked dictionary to use for shrinking HTTP-like headers.
 const char kV2Dictionary[] =
@@ -272,24 +275,21 @@ const int kHttp2ConnectionHeaderPrefixSize =
 
 // Types of SPDY frames.
 enum SpdyFrameType {
-  DATA = 0,
-  SYN_STREAM = 1,
-  FIRST_CONTROL_TYPE = SYN_STREAM,
+  DATA,
+  SYN_STREAM,
   SYN_REPLY,
   RST_STREAM,
   SETTINGS,
-  NOOP,  // Because it is valid in SPDY/2, kept for identifiability/enum order.
   PING,
   GOAWAY,
   HEADERS,
   WINDOW_UPDATE,
-  CREDENTIAL,  // No longer valid.  Kept for identifiability/enum order.
+  CREDENTIAL = 10,  // No longer valid.  Kept for identifiability.
   BLOCKED,
   PUSH_PROMISE,
   CONTINUATION,
   ALTSVC,
-  PRIORITY,
-  LAST_CONTROL_TYPE = PRIORITY
+  PRIORITY
 };
 
 // Flags on data packets.
@@ -297,8 +297,7 @@ enum SpdyDataFlags {
   DATA_FLAG_NONE = 0x00,
   DATA_FLAG_FIN = 0x01,
   DATA_FLAG_END_SEGMENT = 0x02,
-  DATA_FLAG_PAD_LOW = 0x08,
-  DATA_FLAG_PAD_HIGH = 0x10,
+  DATA_FLAG_PADDED = 0x08,
   DATA_FLAG_COMPRESSED = 0x20,
 };
 
@@ -317,13 +316,13 @@ enum SpdyPingFlags {
 enum SpdyHeadersFlags {
   HEADERS_FLAG_END_SEGMENT = 0x02,
   HEADERS_FLAG_END_HEADERS = 0x04,
-  HEADERS_FLAG_PAD_LOW = 0x08,
-  HEADERS_FLAG_PAD_HIGH = 0x10,
+  HEADERS_FLAG_PADDED = 0x08,
   HEADERS_FLAG_PRIORITY = 0x20,
 };
 
 enum SpdyPushPromiseFlags {
   PUSH_PROMISE_FLAG_END_PUSH_PROMISE = 0x04,
+  PUSH_PROMISE_FLAG_PADDED = 0x08,
 };
 
 // Flags on the SETTINGS control frame.
@@ -361,8 +360,6 @@ enum SpdySettingsIds {
   SETTINGS_HEADER_TABLE_SIZE = 0x8,
   // Whether or not server push (PUSH_PROMISE) is enabled.
   SETTINGS_ENABLE_PUSH = 0x9,
-  // Whether or not to enable GZip compression of DATA frames.
-  SETTINGS_COMPRESS_DATA = 0xa,
 };
 
 // Status codes for RST_STREAM frames.
@@ -440,6 +437,10 @@ class NET_EXPORT_PRIVATE SpdyConstants {
   static int SerializeFrameType(SpdyMajorVersion version,
                                 SpdyFrameType frame_type);
 
+  // Returns the frame type for non-control (i.e. data) frames
+  // in the given SPDY version.
+  static int DataFrameType(SpdyMajorVersion version);
+
   // Returns true if a given on-the-wire enumeration of a setting id is valid
   // for a given protocol version, false otherwise.
   static bool IsValidSettingId(SpdyMajorVersion version, int setting_id_field);
@@ -509,6 +510,9 @@ class NET_EXPORT_PRIVATE SpdyConstants {
   // Returns the size of a header block size field. Valid only for SPDY
   // versions <= 3.
   static size_t GetSizeOfSizeField(SpdyMajorVersion version);
+
+  // Returns the size (in bytes) of a wire setting ID and value.
+  static size_t GetSettingSize(SpdyMajorVersion version);
 
   static SpdyMajorVersion ParseMajorVersion(int version_number);
 
@@ -622,27 +626,16 @@ class NET_EXPORT_PRIVATE SpdyDataIR
 
   base::StringPiece data() const { return data_; }
 
-  bool pad_low() const { return pad_low_; }
-
-  bool pad_high() const { return pad_high_; }
+  bool padded() const { return padded_; }
 
   int padding_payload_len() const { return padding_payload_len_; }
 
   void set_padding_len(int padding_len) {
-    // The padding_len should be in (0, 65535 + 2].
-    // Note that SpdyFramer::GetDataFrameMaximumPayload() enforces the overall
-    // payload size later so we actually can't pad more than 16375 bytes.
     DCHECK_GT(padding_len, 0);
-    DCHECK_LT(padding_len, 65537);
-
-    if (padding_len <= 256) {
-      pad_low_ = true;
-      --padding_len;
-    } else {
-      pad_low_ = pad_high_ = true;
-      padding_len -= 2;
-    }
-    padding_payload_len_ = padding_len;
+    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    padded_ = true;
+    // The pad field takes one octet on the wire.
+    padding_payload_len_ = padding_len - 1;
   }
 
   // Deep-copy of data (keep private copy).
@@ -664,8 +657,7 @@ class NET_EXPORT_PRIVATE SpdyDataIR
   scoped_ptr<std::string> data_store_;
   base::StringPiece data_;
 
-  bool pad_low_;
-  bool pad_high_;
+  bool padded_;
   // padding_payload_len_ = desired padding length - len(padding length field).
   int padding_payload_len_;
 
@@ -961,6 +953,29 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyAltSvcIR);
 };
 
+class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
+ public:
+  explicit SpdyPriorityIR(SpdyStreamId stream_id);
+  explicit SpdyPriorityIR(SpdyStreamId stream_id,
+                          SpdyStreamId parent_stream_id,
+                          uint8 weight,
+                          bool exclusive);
+  SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
+  void set_parent_stream_id(SpdyStreamId id) { parent_stream_id_ = id; }
+  uint8 weight() const { return weight_; }
+  void set_weight(uint8 weight) { weight_ = weight; }
+  bool exclusive() const { return exclusive_; }
+  void set_exclusive(bool exclusive) { exclusive_ = exclusive; }
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
+ private:
+  SpdyStreamId parent_stream_id_;
+  uint8 weight_;
+  bool exclusive_;
+  DISALLOW_COPY_AND_ASSIGN(SpdyPriorityIR);
+};
+
 // -------------------------------------------------------------------------
 // Wrapper classes for various SPDY frames.
 
@@ -1022,6 +1037,7 @@ class SpdyFrameVisitor {
   virtual void VisitPushPromise(const SpdyPushPromiseIR& push_promise) = 0;
   virtual void VisitContinuation(const SpdyContinuationIR& continuation) = 0;
   virtual void VisitAltSvc(const SpdyAltSvcIR& altsvc) = 0;
+  virtual void VisitPriority(const SpdyPriorityIR& priority) = 0;
   virtual void VisitData(const SpdyDataIR& data) = 0;
 
  protected:

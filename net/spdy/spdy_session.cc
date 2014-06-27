@@ -981,7 +981,7 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     SpdyStreamId stream_id,
     RequestPriority priority,
     SpdyControlFlags flags,
-    const SpdyHeaderBlock& headers) {
+    const SpdyHeaderBlock& block) {
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   CHECK(it != active_streams_.end());
   CHECK_EQ(it->second.stream->stream_id(), stream_id);
@@ -991,22 +991,38 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   DCHECK(buffered_spdy_framer_.get());
   SpdyPriority spdy_priority =
       ConvertRequestPriorityToSpdyPriority(priority, GetProtocolVersion());
-  scoped_ptr<SpdyFrame> syn_frame(
-      buffered_spdy_framer_->CreateSynStream(stream_id, 0, spdy_priority, flags,
-                                             &headers));
+
+  scoped_ptr<SpdyFrame> syn_frame;
+  // TODO(hkhalil): Avoid copy of |block|.
+  if (GetProtocolVersion() <= SPDY3) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_associated_to_stream_id(0);
+    syn_stream.set_priority(spdy_priority);
+    syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+    syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
+    syn_stream.set_name_value_block(block);
+    syn_frame.reset(buffered_spdy_framer_->SerializeFrame(syn_stream));
+  } else {
+    SpdyHeadersIR headers(stream_id);
+    headers.set_priority(spdy_priority);
+    headers.set_has_priority(true);
+    headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+    headers.set_name_value_block(block);
+    syn_frame.reset(buffered_spdy_framer_->SerializeFrame(headers));
+  }
 
   base::StatsCounter spdy_requests("spdy.requests");
   spdy_requests.Increment();
   streams_initiated_count_++;
 
   if (net_log().IsLogging()) {
-    net_log().AddEvent(
-        NetLog::TYPE_SPDY_SESSION_SYN_STREAM,
-        base::Bind(&NetLogSpdySynStreamSentCallback, &headers,
-                   (flags & CONTROL_FLAG_FIN) != 0,
-                   (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
-                   spdy_priority,
-                   stream_id));
+    net_log().AddEvent(NetLog::TYPE_SPDY_SESSION_SYN_STREAM,
+                       base::Bind(&NetLogSpdySynStreamSentCallback,
+                                  &block,
+                                  (flags & CONTROL_FLAG_FIN) != 0,
+                                  (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
+                                  spdy_priority,
+                                  stream_id));
   }
 
   return syn_frame.Pass();

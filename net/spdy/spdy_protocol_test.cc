@@ -40,28 +40,6 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolTests,
                         SpdyProtocolTest,
                         ::testing::Values(SPDY2, SPDY3));
 
-// Test our protocol constants
-// TODO(hkhalil): Remove this test once we no longer rely on exact values.
-TEST_P(SpdyProtocolTest, ProtocolConstants) {
-  EXPECT_EQ(1, SYN_STREAM);
-  EXPECT_EQ(2, SYN_REPLY);
-  EXPECT_EQ(3, RST_STREAM);
-  EXPECT_EQ(4, SETTINGS);
-  EXPECT_EQ(5, NOOP);
-  EXPECT_EQ(6, PING);
-  EXPECT_EQ(7, GOAWAY);
-  EXPECT_EQ(8, HEADERS);
-  EXPECT_EQ(9, WINDOW_UPDATE);
-  EXPECT_EQ(10, CREDENTIAL);
-  EXPECT_EQ(11, BLOCKED);
-  EXPECT_EQ(12, PUSH_PROMISE);
-  EXPECT_EQ(13, CONTINUATION);
-  EXPECT_EQ(14, ALTSVC);
-  EXPECT_EQ(15, PRIORITY);
-  EXPECT_EQ(15, LAST_CONTROL_TYPE);
-  EXPECT_EQ(std::numeric_limits<int32>::max(), kSpdyMaximumWindowSize);
-}
-
 class SpdyProtocolDeathTest : public SpdyProtocolTest {};
 
 // All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.

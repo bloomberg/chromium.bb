@@ -284,6 +284,12 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                         base::StringPiece protocol_id,
                         base::StringPiece host,
                         base::StringPiece origin) {}
+
+  // Called when a PRIORITY frame is received.
+  virtual void OnPriority(SpdyStreamId stream_id,
+                          SpdyStreamId parent_stream_id,
+                          uint8 weight,
+                          bool exclusive) {};
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -477,6 +483,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Serializes an ALTSVC frame. The ALTSVC frame advertises the
   // availability of an alternative service to the client.
   SpdySerializedFrame* SerializeAltSvc(const SpdyAltSvcIR& altsvc);
+
+  // Serializes a PRIORITY frame. The PRIORITY frame advises a change in
+  // the relative priority of the given stream.
+  SpdySerializedFrame* SerializePriority(const SpdyPriorityIR& priority);
 
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
@@ -725,9 +735,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // The length (in bytes) of the padding payload to be processed.
   size_t remaining_padding_payload_length_;
-
-  // The length (in bytes) of the padding length field to be processed.
-  size_t remaining_padding_length_fields_;
 
   // The number of bytes remaining to read from the current control frame's
   // headers. Note that header data blocks (for control types that have them)

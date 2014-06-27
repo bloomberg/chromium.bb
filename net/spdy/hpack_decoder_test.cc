@@ -190,7 +190,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
 }
 
 TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
-  string input = a2b_hex("0088571c5cdb737b2faf");
+  string input = a2b_hex("008825a849e95ba97d7f");
   HpackInputStream input_stream(kLiteralBound, input);
 
   StringPiece string_piece;
@@ -395,11 +395,12 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   //                                         |     :authority
   // 8c                                      |   Literal value (len = 15)
   //                                         |     Huffman encoded:
-  // e7cf 9beb e89b 6fb1 6fa9 b6ff           | ......o.o...
+  // f1e3 c2e5 f23a 6ba0 ab90 f4ff           | .....:k.....
   //                                         |     Decoded:
   //                                         | www.example.com
   //                                         | -> :authority: www.example.com
-  string first = a2b_hex("828786448ce7cf9bebe89b6fb16fa9b6ff");
+  string first = a2b_hex("828786448cf1e3c2e5f23a6ba0ab90f4"
+                         "ff");
   header_set = DecodeBlockExpectingSuccess(first);
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -420,11 +421,11 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   //                                         |     cache-control
   // 86                                      |   Literal value (len = 8)
   //                                         |     Huffman encoded:
-  // b9b9 9495 56bf                          | ....V.
+  // a8eb 1064 9cbf                          | ...d..
   //                                         |     Decoded:
   //                                         | no-cache
   //                                         | -> cache-control: no-cache
-  string second = a2b_hex("5c86b9b9949556bf");
+  string second = a2b_hex("5c86a8eb10649cbf");
   header_set = DecodeBlockExpectingSuccess(second);
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -460,17 +461,17 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   // 40                                      | == Literal indexed ==
   // 88                                      |   Literal name (len = 10)
   //                                         |     Huffman encoded:
-  // 571c 5cdb 737b 2faf                     | W.\.s{/.
+  // 25a8 49e9 5ba9 7d7f                     | %.I.[.}.
   //                                         |     Decoded:
   //                                         | custom-key
   // 89                                      |   Literal value (len = 12)
   //                                         |     Huffman encoded:
-  // 571c 5cdb 7372 4d9c 57                  | W.\.srM.W
+  // 25a8 49e9 5bb8 e8b4 bf                  | %.I.[....
   //                                         |     Decoded:
   //                                         | custom-value
   //                                         | -> custom-key: custom-value
-  string third = a2b_hex("30858c8b844088571c5cdb737b2faf89"
-                         "571c5cdb73724d9c57");
+  string third = a2b_hex("30858c8b84408825a849e95ba97d7f89"
+                         "25a849e95bb8e8b4bf");
   header_set = DecodeBlockExpectingSuccess(third);
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -501,7 +502,7 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |     :status
   // 82                                      |   Literal value (len = 3)
   //                                         |     Huffman encoded:
-  // 4017                                    | @.
+  // 6402                                    | d.
   //                                         |     Decoded:
   //                                         | 302
   //                                         | -> :status: 302
@@ -510,17 +511,17 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |     cache-control
   // 85                                      |   Literal value (len = 7)
   //                                         |     Huffman encoded:
-  // bf06 724b 97                            | ..rK.
+  // aec3 771a 4b                            | ..w.K
   //                                         |     Decoded:
   //                                         | private
   //                                         | -> cache-control: private
   // 63                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 35)
   //                                         |     date
-  // 93                                      |   Literal value (len = 29)
+  // 96                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // d6db b298 84de 2a71 8805 0620 9851 3109 | ......*q... .Q1.
-  // b56b a3                                 | .k.
+  // d07a be94 1054 d444 a820 0595 040b 8166 | .z...T.D. .....f
+  // e082 a62d 1bff                          | ...-..
   //                                         |     Decoded:
   //                                         | Mon, 21 Oct 2013 20:13:21
   //                                         | GMT
@@ -531,16 +532,16 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |     location
   // 91                                      |   Literal value (len = 23)
   //                                         |     Huffman encoded:
-  // adce bf19 8e7e 7cf9 bebe 89b6 fb16 fa9b | ......|.........
-  // 6f                                      | o
+  // 9d29 ad17 1863 c78f 0b97 c8e9 ae82 ae43 | .)...c.........C
+  // d3                                      | .
   //                                         |     Decoded:
   //                                         | https://www.example.com
   //                                         | -> location: https://www.e
   //                                         |    xample.com
-  string first = a2b_hex("488240175985bf06724b976393d6dbb2"
-                         "9884de2a718805062098513109b56ba3"
-                         "7191adcebf198e7e7cf9bebe89b6fb16"
-                         "fa9b6f");
+  string first = a2b_hex("488264025985aec3771a4b6396d07abe"
+                         "941054d444a8200595040b8166e082a6"
+                         "2d1bff71919d29ad171863c78f0b97c8"
+                         "e9ae82ae43d3");
   header_set = DecodeBlockExpectingSuccess(first);
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -585,10 +586,10 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 43                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 3)
   //                                         |     date
-  // 93                                      |   Literal value (len = 29)
+  // 96                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // d6db b298 84de 2a71 8805 0620 9851 3111 | ......*q... .Q1.
-  // b56b a3                                 | .k.
+  // d07a be94 1054 d444 a820 0595 040b 8166 | .z...T.D. .....f
+  // e084 a62d 1bff                          | ...-..
   //                                         |     Decoded:
   //                                         | Mon, 21 Oct 2013 20:13:22
   //                                         | GMT
@@ -599,9 +600,9 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 5e                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 30)
   //                                         |     content-encoding
-  // 84                                      |   Literal value (len = 4)
+  // 83                                      |   Literal value (len = 4)
   //                                         |     Huffman encoded:
-  // abdd 97ff                               | ....
+  // 9bd9 ab                                 | ...
   //                                         |     Decoded:
   //                                         | gzip
   //                                         | - evict: date: Mon, 21 Oct
@@ -624,12 +625,11 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 7b                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 59)
   //                                         |     set-cookie
-  // b1                                      |   Literal value (len = 56)
+  // ad                                      |   Literal value (len = 56)
   //                                         |     Huffman encoded:
-  // e0d6 cf9f 6e8f 9fd3 e5f6 fa76 fefd 3c7e | ....n......v....
-  // df9e ff1f 2f0f 3cfe 9f6f cf7f 8f87 9f61 | ..../....o.....a
-  // ad4f 4cc9 a973 a220 0ec3 725e 18b1 b74e | .OL..s. ..r^...N
-  // 3f                                      | ?
+  // 94e7 821d d7f2 e6c7 b335 dfdf cd5b 3960 | .........5...[9`
+  // d5af 2708 7f36 72c1 ab27 0fb5 291f 9587 | ..'..6r..'..)...
+  // 3160 65c0 03ed 4ee5 b106 3d50 07        | 1`e...N...=P.
   //                                         |     Decoded:
   //                                         | foo=ASDJKHQKBZXOQWEOPIUAXQ
   //                                         | WEOIU; max-age=3600; versi
@@ -640,12 +640,12 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         | -> set-cookie: foo=ASDJKHQ
   //                                         |   KBZXOQWEOPIUAXQWEOIU; ma
   //                                         |   x-age=3600; version=1
-  string third = a2b_hex("84844393d6dbb29884de2a7188050620"
-                         "98513111b56ba35e84abdd97ff848483"
-                         "837bb1e0d6cf9f6e8f9fd3e5f6fa76fe"
-                         "fd3c7edf9eff1f2f0f3cfe9f6fcf7f8f"
-                         "879f61ad4f4cc9a973a2200ec3725e18"
-                         "b1b74e3f");
+  string third = a2b_hex("84844396d07abe941054d444a8200595"
+                         "040b8166e084a62d1bff5e839bd9ab84"
+                         "8483837bad94e7821dd7f2e6c7b335df"
+                         "dfcd5b3960d5af27087f3672c1ab270f"
+                         "b5291f9587316065c003ed4ee5b1063d"
+                         "5007");
   header_set = DecodeBlockExpectingSuccess(third);
 
   EXPECT_THAT(header_set, ElementsAre(

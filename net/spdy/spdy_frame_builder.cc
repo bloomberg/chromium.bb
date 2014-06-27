@@ -16,23 +16,23 @@ namespace {
 
 // A special structure for the 8 bit flags and 24 bit length fields.
 union FlagsAndLength {
-  uint8 flags_[4];  // 8 bits
-  uint32 length_;   // 24 bits
+  uint8 flags[4];  // 8 bits
+  uint32 length;   // 24 bits
 };
 
 // Creates a FlagsAndLength.
 FlagsAndLength CreateFlagsAndLength(uint8 flags, size_t length) {
   DCHECK_EQ(0u, length & ~static_cast<size_t>(kLengthMask));
   FlagsAndLength flags_length;
-  flags_length.length_ = htonl(static_cast<uint32>(length));
+  flags_length.length = htonl(static_cast<uint32>(length));
   DCHECK_EQ(0, flags & ~kControlFlagsMask);
-  flags_length.flags_[0] = flags;
+  flags_length.flags[0] = flags;
   return flags_length;
 }
 
 }  // namespace
 
-  SpdyFrameBuilder::SpdyFrameBuilder(size_t size, SpdyMajorVersion version)
+SpdyFrameBuilder::SpdyFrameBuilder(size_t size, SpdyMajorVersion version)
     : buffer_(new char[size]),
       capacity_(size),
       length_(0),
@@ -89,9 +89,9 @@ bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
   size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
   DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
   FlagsAndLength flags_length;
-  flags_length.length_ = htonl(length_field);
+  flags_length.length = htonl(length_field);
   DCHECK_EQ(0, flags & ~kDataFlagsMask);
-  flags_length.flags_[0] = flags;
+  flags_length.flags[0] = flags;
   success &= WriteBytes(&flags_length, sizeof(flags_length));
   DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
   return success;

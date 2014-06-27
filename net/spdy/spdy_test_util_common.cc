@@ -809,8 +809,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
     SpdyFrameType type,
     SpdyControlFlags flags,
     SpdyStreamId associated_stream_id) const {
-  EXPECT_GE(type, FIRST_CONTROL_TYPE);
-  EXPECT_LE(type, LAST_CONTROL_TYPE);
+  EXPECT_GE(type, DATA);
+  EXPECT_LE(type, PRIORITY);
   const SpdyHeaderInfo header_info = {
     type,
     stream_id,
@@ -939,20 +939,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(
     bool compressed,
     SpdyStreamId stream_id,
     RequestPriority request_priority) const {
-  const SpdyHeaderInfo header_info = {
-    SYN_STREAM,
-    stream_id,
-    0,                   // associated stream ID
-    ConvertRequestPriorityToSpdyPriority(request_priority, spdy_version_),
-    0,                   // credential slot
-    CONTROL_FLAG_FIN,
-    compressed,
-    RST_STREAM_INVALID,  // status
-    NULL,                // data
-    0,                   // length
-    DATA_FLAG_NONE
-  };
-  return ConstructSpdyFrame(header_info, ConstructGetHeaderBlock(url));
+  scoped_ptr<SpdyHeaderBlock> block(ConstructGetHeaderBlock(url));
+  return ConstructSpdySyn(
+      stream_id, *block, request_priority, compressed, true);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
@@ -961,19 +950,15 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                           int stream_id,
                                           RequestPriority request_priority,
                                           bool direct) const {
-  SpdySynStreamIR syn_stream(stream_id);
-  syn_stream.set_priority(
-      ConvertRequestPriorityToSpdyPriority(request_priority, spdy_version_));
-  syn_stream.set_fin(true);
-  syn_stream.SetHeader(GetMethodKey(), "GET");
-  syn_stream.SetHeader(GetHostKey(), "www.google.com");
-  syn_stream.SetHeader(GetSchemeKey(), "http");
-  syn_stream.SetHeader(GetPathKey(), (is_spdy2() && !direct) ?
-                       "http://www.google.com/" : "/");
-  MaybeAddVersionHeader(&syn_stream);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_stream.mutable_name_value_block());
-  return CreateFramer(compressed)->SerializeFrame(syn_stream);
+  SpdyHeaderBlock block;
+  block[GetMethodKey()] = "GET";
+  block[GetPathKey()] =
+      (is_spdy2() && !direct) ? "http://www.google.com/" : "/";
+  block[GetHostKey()] = "www.google.com";
+  block[GetSchemeKey()] = "http";
+  MaybeAddVersionHeader(&block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &block);
+  return ConstructSpdySyn(stream_id, block, request_priority, compressed, true);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
@@ -981,16 +966,13 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     int extra_header_count,
     int stream_id,
     RequestPriority priority) const {
-  SpdySynStreamIR syn_stream(stream_id);
-  syn_stream.set_priority(
-      ConvertRequestPriorityToSpdyPriority(priority, spdy_version_));
-  syn_stream.SetHeader(GetMethodKey(), "CONNECT");
-  syn_stream.SetHeader(GetPathKey(), "www.google.com:443");
-  syn_stream.SetHeader(GetHostKey(), "www.google.com");
-  MaybeAddVersionHeader(&syn_stream);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_stream.mutable_name_value_block());
-  return CreateFramer(false)->SerializeFrame(syn_stream);
+  SpdyHeaderBlock block;
+  block[GetMethodKey()] = "CONNECT";
+  block[GetPathKey()] = "www.google.com:443";
+  block[GetHostKey()] = "www.google.com";
+  MaybeAddVersionHeader(&block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &block);
+  return ConstructSpdySyn(stream_id, block, priority, false, false);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
@@ -1015,10 +997,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
     scoped_ptr<SpdyFrame> push_promise_frame(
         CreateFramer(false)->SerializeFrame(push_promise));
 
-    // Use SynStreamIR to create HEADERS+PRIORITY. Direct creation breaks
-    // framer.
-    SpdySynStreamIR headers(stream_id);
-    SetPriority(LOWEST, &headers);
+    SpdyHeadersIR headers(stream_id);
     headers.SetHeader("hello", "bye");
     headers.SetHeader(GetStatusKey(), "200 OK");
     AppendToHeaderBlock(
@@ -1063,10 +1042,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
     scoped_ptr<SpdyFrame> push_promise_frame(
         CreateFramer(false)->SerializeFrame(push_promise));
 
-    // Use SynStreamIR to create HEADERS+PRIORITY. Direct creation breaks
-    // framer.
-    SpdySynStreamIR headers(stream_id);
-    SetPriority(LOWEST, &headers);
+    SpdyHeadersIR headers(stream_id);
     headers.SetHeader("hello", "bye");
     headers.SetHeader(GetStatusKey(), status);
     headers.SetHeader("location", location);
@@ -1116,18 +1092,54 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
   return CreateFramer(false)->SerializeFrame(headers);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
+                                          const SpdyHeaderBlock& block,
+                                          RequestPriority priority,
+                                          bool compressed,
+                                          bool fin) const {
+  if (protocol_ < kProtoSPDY4) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_name_value_block(block);
+    syn_stream.set_priority(
+        ConvertRequestPriorityToSpdyPriority(priority, spdy_version()));
+    syn_stream.set_fin(fin);
+    return CreateFramer(compressed)->SerializeFrame(syn_stream);
+  } else {
+    SpdyHeadersIR headers(stream_id);
+    headers.set_name_value_block(block);
+    headers.set_has_priority(true);
+    headers.set_priority(
+        ConvertRequestPriorityToSpdyPriority(priority, spdy_version()));
+    headers.set_fin(fin);
+    return CreateFramer(compressed)->SerializeFrame(headers);
+  }
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyReply(int stream_id,
+                                            const SpdyHeaderBlock& headers) {
+  if (protocol_ < kProtoSPDY4) {
+    SpdySynReplyIR syn_reply(stream_id);
+    syn_reply.set_name_value_block(headers);
+    return CreateFramer(false)->SerializeFrame(syn_reply);
+  } else {
+    SpdyHeadersIR reply(stream_id);
+    reply.set_name_value_block(headers);
+    return CreateFramer(false)->SerializeFrame(reply);
+  }
+}
+
 SpdyFrame* SpdyTestUtil::ConstructSpdySynReplyError(
     const char* const status,
     const char* const* const extra_headers,
     int extra_header_count,
     int stream_id) {
-  SpdySynReplyIR syn_reply(stream_id);
-  syn_reply.SetHeader("hello", "bye");
-  syn_reply.SetHeader(GetStatusKey(), status);
-  MaybeAddVersionHeader(&syn_reply);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_reply.mutable_name_value_block());
-  return CreateFramer(false)->SerializeFrame(syn_reply);
+  SpdyHeaderBlock block;
+  block["hello"] = "bye";
+  block[GetStatusKey()] = status;
+  MaybeAddVersionHeader(&block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &block);
+
+  return ConstructSpdyReply(stream_id, block);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReplyRedirect(int stream_id) {
@@ -1146,13 +1158,13 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReply(
     const char* const extra_headers[],
     int extra_header_count,
     int stream_id) {
-  SpdySynReplyIR syn_reply(stream_id);
-  syn_reply.SetHeader("hello", "bye");
-  syn_reply.SetHeader(GetStatusKey(), "200");
-  MaybeAddVersionHeader(&syn_reply);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_reply.mutable_name_value_block());
-  return CreateFramer(false)->SerializeFrame(syn_reply);
+  SpdyHeaderBlock block;
+  block["hello"] = "bye";
+  block[GetStatusKey()] = "200";
+  MaybeAddVersionHeader(&block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &block);
+
+  return ConstructSpdyReply(stream_id, block);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPost(const char* url,
@@ -1161,49 +1173,30 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPost(const char* url,
                                            RequestPriority priority,
                                            const char* const extra_headers[],
                                            int extra_header_count) {
-  const SpdyHeaderInfo kSynStartHeader = {
-    SYN_STREAM,
-    stream_id,
-    0,                      // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(priority, spdy_version_),
-    kSpdyCredentialSlotUnused,
-    CONTROL_FLAG_NONE,
-    false,                  // Compressed
-    RST_STREAM_INVALID,
-    NULL,                   // Data
-    0,                      // Length
-    DATA_FLAG_NONE
-  };
-  return ConstructSpdyFrame(
-      kSynStartHeader, ConstructPostHeaderBlock(url, content_length));
+  scoped_ptr<SpdyHeaderBlock> block(
+      ConstructPostHeaderBlock(url, content_length));
+  AppendToHeaderBlock(extra_headers, extra_header_count, block.get());
+  return ConstructSpdySyn(stream_id, *block, priority, false, false);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructChunkedSpdyPost(
     const char* const extra_headers[],
     int extra_header_count) {
-  SpdySynStreamIR syn_stream(1);
-  syn_stream.SetHeader(GetMethodKey(), "POST");
-  syn_stream.SetHeader(GetPathKey(), "/");
-  syn_stream.SetHeader(GetHostKey(), "www.google.com");
-  syn_stream.SetHeader(GetSchemeKey(), "http");
-  MaybeAddVersionHeader(&syn_stream);
-  SetPriority(LOWEST, &syn_stream);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_stream.mutable_name_value_block());
-  return CreateFramer(false)->SerializeFrame(syn_stream);
+  SpdyHeaderBlock block;
+  block[GetMethodKey()] = "POST";
+  block[GetPathKey()] = "/";
+  block[GetHostKey()] = "www.google.com";
+  block[GetSchemeKey()] = "http";
+  MaybeAddVersionHeader(&block);
+  AppendToHeaderBlock(extra_headers, extra_header_count, &block);
+  return ConstructSpdySyn(1, block, LOWEST, false, false);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPostSynReply(
     const char* const extra_headers[],
     int extra_header_count) {
-  SpdySynReplyIR syn_reply(1);
-  syn_reply.SetHeader("hello", "bye");
-  syn_reply.SetHeader(GetStatusKey(), "200");
-  syn_reply.SetHeader(GetPathKey(), "/index.php");
-  MaybeAddVersionHeader(&syn_reply);
-  AppendToHeaderBlock(extra_headers, extra_header_count,
-                      syn_reply.mutable_name_value_block());
-  return CreateFramer(false)->SerializeFrame(syn_reply);
+  // TODO(jgraettinger): Remove this method.
+  return ConstructSpdyGetSynReply(NULL, 0, 1);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id, bool fin) {
@@ -1308,6 +1301,12 @@ void SpdyTestUtil::MaybeAddVersionHeader(
     SpdyFrameWithNameValueBlockIR* frame_ir) const {
   if (include_version_header()) {
     frame_ir->SetHeader(GetVersionKey(), "HTTP/1.1");
+  }
+}
+
+void SpdyTestUtil::MaybeAddVersionHeader(SpdyHeaderBlock* block) const {
+  if (include_version_header()) {
+    (*block)[GetVersionKey()] = "HTTP/1.1";
   }
 }
 

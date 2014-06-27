@@ -9,10 +9,7 @@
 
 namespace net {
 
-const int kDefaultAssociatedStreamId = 0;
 const bool kDefaultCompressed = false;
-const char* const kDefaultDataPointer = NULL;
-const uint32 kDefaultDataLength = 0;
 
 SpdyWebSocketTestUtil::SpdyWebSocketTestUtil(
     NextProto protocol) : spdy_util_(protocol) {}
@@ -41,76 +38,30 @@ SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketSynStream(
   SetHeader("version", "WebSocket/13", headers.get());
   SetHeader("scheme", "ws", headers.get());
   SetHeader("origin", origin, headers.get());
-  return spdy_util_.ConstructSpdyControlFrame(headers.Pass(),
-                                              /*compressed*/ false,
-                                              stream_id,
-                                              HIGHEST,
-                                              SYN_STREAM,
-                                              CONTROL_FLAG_NONE,
-                                              0);
+  return spdy_util_.ConstructSpdySyn(
+      stream_id, *headers, HIGHEST, false, false);
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketSynReply(
     int stream_id) {
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
-  SetHeader("status", "101", headers.get());
-  return spdy_util_.ConstructSpdyControlFrame(headers.Pass(),
-                                              false,
-                                              stream_id,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              0);
+  SpdyHeaderBlock block;
+  SetHeader("status", "101", &block);
+  return spdy_util_.ConstructSpdyReply(stream_id, block);
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketHandshakeRequestFrame(
     scoped_ptr<SpdyHeaderBlock> headers,
     SpdyStreamId stream_id,
     RequestPriority request_priority) {
-  // SPDY SYN_STREAM control frame header.
-  const SpdyHeaderInfo kSynStreamHeader = {
-    SYN_STREAM,
-    stream_id,
-    kDefaultAssociatedStreamId,
-    ConvertRequestPriorityToSpdyPriority(request_priority, SPDY2),
-    kSpdyCredentialSlotUnused,
-    CONTROL_FLAG_NONE,
-    kDefaultCompressed,
-    RST_STREAM_INVALID,
-    kDefaultDataPointer,
-    kDefaultDataLength,
-    DATA_FLAG_NONE
-  };
-
-  // Construct SPDY SYN_STREAM control frame.
-  return spdy_util_.ConstructSpdyFrame(
-      kSynStreamHeader,
-      headers.Pass());
+  return spdy_util_.ConstructSpdySyn(
+      stream_id, *headers, request_priority, kDefaultCompressed, false);
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketHandshakeResponseFrame(
     scoped_ptr<SpdyHeaderBlock> headers,
     SpdyStreamId stream_id,
     RequestPriority request_priority) {
-  // SPDY SYN_REPLY control frame header.
-  const SpdyHeaderInfo kSynReplyHeader = {
-    SYN_REPLY,
-    stream_id,
-    kDefaultAssociatedStreamId,
-    ConvertRequestPriorityToSpdyPriority(request_priority, SPDY2),
-    kSpdyCredentialSlotUnused,
-    CONTROL_FLAG_NONE,
-    kDefaultCompressed,
-    RST_STREAM_INVALID,
-    kDefaultDataPointer,
-    kDefaultDataLength,
-    DATA_FLAG_NONE
-  };
-
-  // Construct SPDY SYN_REPLY control frame.
-  return spdy_util_.ConstructSpdyFrame(
-      kSynReplyHeader,
-      headers.Pass());
+  return spdy_util_.ConstructSpdyReply(stream_id, *headers);
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketHeadersFrame(
@@ -121,13 +72,7 @@ SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketHeadersFrame(
   SetHeader("opcode", "1", headers.get());  // text frame
   SetHeader("length", length, headers.get());
   SetHeader("fin", fin ? "1" : "0", headers.get());
-  return spdy_util_.ConstructSpdyControlFrame(headers.Pass(),
-                                              /*compression*/ false,
-                                              stream_id,
-                                              LOWEST,
-                                              HEADERS,
-                                              CONTROL_FLAG_NONE,
-                                              0);
+  return spdy_util_.ConstructSpdySyn(stream_id, *headers, LOWEST, false, false);
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketDataFrame(

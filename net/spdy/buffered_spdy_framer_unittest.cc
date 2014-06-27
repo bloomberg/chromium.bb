@@ -226,6 +226,10 @@ TEST_P(BufferedSpdyFramerTest, OnSetting) {
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
+  if (spdy_version() > SPDY3) {
+    // SYN_STREAM not supported in SPDY>3.
+    return;
+  }
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
   headers["bb"] = "ww";
@@ -251,6 +255,10 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
+  if (spdy_version() > SPDY3) {
+    // SYN_REPLY not supported in SPDY>3.
+    return;
+  }
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";

@@ -11,7 +11,7 @@
 #include "net/base/net_export.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 
@@ -42,33 +42,33 @@ const uint32 kDefaultMaxStringLiteralSize = 16 * 1024;
 // TODO(jgraettinger): Remove with SpdyHeadersHandlerInterface switch.
 const uint32 kMaxDecodeBufferSize = 32 * 1024;
 
-// 4.1.2: Flag for a string literal that is stored unmodified (i.e.,
+// 6.2: Flag for a string literal that is stored unmodified (i.e.,
 // without Huffman encoding).
 const HpackPrefix kStringLiteralIdentityEncoded = { 0x0, 1 };
 
-// 4.1.2: Flag for a Huffman-coded string literal.
+// 6.2: Flag for a Huffman-coded string literal.
 const HpackPrefix kStringLiteralHuffmanEncoded = { 0x1, 1 };
 
-// 4.2: Opcode for an indexed header field.
+// 7.1: Opcode for an indexed header field.
 const HpackPrefix kIndexedOpcode = { 0x1, 1 };
 
-// 4.3.1: Opcode for a literal header field with incremental indexing.
+// 7.2.1: Opcode for a literal header field with incremental indexing.
 const HpackPrefix kLiteralIncrementalIndexOpcode = { 0x1, 2 };
 
-// 4.3.2: Opcode for a literal header field without indexing.
+// 7.2.2: Opcode for a literal header field without indexing.
 const HpackPrefix kLiteralNoIndexOpcode = { 0x0, 4 };
 
-// 4.3.3: Opcode for a literal header field which is never indexed.
+// 7.2.3: Opcode for a literal header field which is never indexed.
 const HpackPrefix kLiteralNeverIndexOpcode = { 0x1, 4 };
 
-// 4.4: Opcode for an encoding context update.
+// 7.3: Opcode for an encoding context update.
 const HpackPrefix kEncodingContextOpcode = { 0x1, 3 };
 
-// 4.4: Flag following an |kEncodingContextOpcode|, which indicates
+// 7.3: Flag following an |kEncodingContextOpcode|, which indicates
 // the reference set should be cleared.
 const HpackPrefix kEncodingContextEmptyReferenceSet = { 0x10, 5 };
 
-// 4.4: Flag following an |kEncodingContextOpcode|, which indicates
+// 7.3: Flag following an |kEncodingContextOpcode|, which indicates
 // the encoder is using a new maximum headers table size. Begins a
 // varint-encoded table size with a 4-bit prefix.
 const HpackPrefix kEncodingContextNewMaximumSize = { 0x0, 1 };

@@ -18,7 +18,7 @@
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackDecoder decodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 

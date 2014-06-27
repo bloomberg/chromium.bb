@@ -25,21 +25,21 @@ using test::a2b_hex;
 const size_t kLiteralBound = 1024;
 
 class HpackInputStreamTest : public ::testing::Test {
- protected:
+ public:
   virtual void SetUp() {
     std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(huffman_table.Initialize(&code[0], code.size()));
+    EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }
 
-  HpackHuffmanTable huffman_table;
+ protected:
+  HpackHuffmanTable huffman_table_;
 };
 
 // Hex representation of encoded length and Huffman string.
-const char kEncodedHuffmanFixture[] = "31"  // Length prefix.
-  "e0d6cf9f6e8f9fd3e5f6fa76fefd3c7e"
-  "df9eff1f2f0f3cfe9f6fcf7f8f879f61"
-  "ad4f4cc9a973a2200ec3725e18b1b74e"
-  "3f";
+const char kEncodedHuffmanFixture[] = "2d"  // Length prefix.
+  "94e7821dd7f2e6c7b335dfdfcd5b3960"
+  "d5af27087f3672c1ab270fb5291f9587"
+  "316065c003ed4ee5b1063d5007";
 
 const char kDecodedHuffmanFixture[] =
   "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
@@ -521,7 +521,7 @@ TEST_F(HpackInputStreamTest, DecodeNextHuffmanString) {
   HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture)-1, input);
 
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_TRUE(input_stream.DecodeNextHuffmanString(huffman_table, &output));
+  EXPECT_TRUE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
   EXPECT_EQ(kDecodedHuffmanFixture, output);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
@@ -533,7 +533,7 @@ TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringSizeLimit) {
 
   // Decoded string overflows the max string literal.
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table, &output));
+  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
 }
 
 TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
@@ -543,7 +543,7 @@ TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
 
   // Not enough buffer for declared encoded length.
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table, &output));
+  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
 }
 
 TEST_F(HpackInputStreamTest, PeekBitsAndConsume) {

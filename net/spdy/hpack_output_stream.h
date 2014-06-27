@@ -15,7 +15,7 @@
 #include "net/spdy/hpack_constants.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 
@@ -39,7 +39,7 @@ class NET_EXPORT_PRIVATE HpackOutputStream {
   void AppendBytes(base::StringPiece buffer);
 
   // Appends the given integer using the representation described in
-  // 4.1.1. If the internal buffer ends on a byte boundary, the prefix
+  // 6.1. If the internal buffer ends on a byte boundary, the prefix
   // length N is taken to be 8; otherwise, it is taken to be the
   // number of bits to the next byte boundary.
   //

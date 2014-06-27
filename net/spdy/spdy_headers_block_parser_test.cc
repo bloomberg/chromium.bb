@@ -58,9 +58,9 @@ class SpdyHeadersBlockParserTest :
       // Build the key.
       string key;
       if (insert_nulls) {
-        key = string(base_key) + string("\0", 1) + IntToString(i);
+        key = string(kBaseKey) + string("\0", 1) + IntToString(i);
       } else {
-        key = string(base_key) + IntToString(i);
+        key = string(kBaseKey) + IntToString(i);
       }
       // Encode the key as SPDY header.
       headers += EncodeLength(key.length());
@@ -69,9 +69,9 @@ class SpdyHeadersBlockParserTest :
       // Build the value.
       string value;
       if (insert_nulls) {
-        value = string(base_value) + string("\0", 1) + IntToString(i);
+        value = string(kBaseValue) + string("\0", 1) + IntToString(i);
       } else {
-        value = string(base_value) + IntToString(i);
+        value = string(kBaseValue) + IntToString(i);
       }
       // Encode the value as SPDY header.
       headers += EncodeLength(value.length());
@@ -100,16 +100,16 @@ class SpdyHeadersBlockParserTest :
   MockSpdyHeadersHandler handler_;
   scoped_ptr<SpdyHeadersBlockParser> parser_;
 
-  static const char* base_key;
-  static const char* base_value;
+  static const char *const kBaseKey;
+  static const char *const kBaseValue;
 
   // Number of headers and header blocks used in the tests.
   static const int kNumHeadersInBlock = 10;
   static const int kNumHeaderBlocks = 10;
 };
 
-const char* SpdyHeadersBlockParserTest::base_key = "test_key";
-const char* SpdyHeadersBlockParserTest::base_value = "test_value";
+const char *const SpdyHeadersBlockParserTest::kBaseKey = "test_key";
+const char *const SpdyHeadersBlockParserTest::kBaseValue = "test_value";
 
 // All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, SPDY/4.
 INSTANTIATE_TEST_CASE_P(SpdyHeadersBlockParserTests,
@@ -124,8 +124,8 @@ TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
 
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
-  std::string expect_key = base_key + IntToString(0);
-  std::string expect_value = base_value + IntToString(0);
+  std::string expect_key = kBaseKey + IntToString(0);
+  std::string expect_value = kBaseValue + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
   EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
@@ -142,8 +142,8 @@ TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
 
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
-  std::string expect_key = base_key + string("\0", 1) + IntToString(0);
-  std::string expect_value = base_value + string("\0", 1) + IntToString(0);
+  std::string expect_key = kBaseKey + string("\0", 1) + IntToString(0);
+  std::string expect_value = kBaseValue + string("\0", 1) + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
   EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
@@ -162,8 +162,8 @@ TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
   // The mock doesn't retain storage of arguments, so keep them in scope.
   std::vector<string> retained_arguments;
   for (int i = 0; i < kNumHeadersInBlock; i++) {
-    retained_arguments.push_back(base_key + IntToString(i));
-    retained_arguments.push_back(base_value + IntToString(i));
+    retained_arguments.push_back(kBaseKey + IntToString(i));
+    retained_arguments.push_back(kBaseValue + IntToString(i));
   }
   // For each block we expect to parse out the headers in order.
   for (int i = 0; i < kNumHeaderBlocks; i++) {
@@ -196,8 +196,8 @@ TEST_P(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
 
   string headers(CreateHeaders(1, false));
 
-  string expect_key = base_key + IntToString(0);
-  string expect_value = base_value + IntToString(0);
+  string expect_key = kBaseKey + IntToString(0);
+  string expect_value = kBaseValue + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
   EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
@@ -246,8 +246,8 @@ TEST_P(SpdyHeadersBlockParserTest, ExtraDataTest) {
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
   EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
 
-  string expect_key = base_key + IntToString(0);
-  string expect_value = base_value + IntToString(0);
+  string expect_key = kBaseKey + IntToString(0);
+  string expect_value = kBaseValue + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
 

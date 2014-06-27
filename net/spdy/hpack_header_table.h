@@ -15,7 +15,7 @@
 #include "net/spdy/hpack_entry.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 namespace net {
 
@@ -23,8 +23,8 @@ namespace test {
 class HpackHeaderTablePeer;
 }  // namespace test
 
-// A data structure for both the header table (described in 3.1.2) and
-// the reference set (3.1.3).
+// A data structure for both the header table (described in 3.2) and
+// the reference set (3.3).
 class NET_EXPORT_PRIVATE HpackHeaderTable {
  public:
   friend class test::HpackHeaderTablePeer;
@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t settings_size_bound() { return settings_size_bound_; }
 
   // Current and maximum estimated byte size of the table, as described in
-  // 3.3.1. Notably, this is /not/ the number of entries in the table.
+  // 5.1. Notably, this is /not/ the number of entries in the table.
   size_t size() const { return size_; }
   size_t max_size() const { return max_size_; }
 
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t IndexOf(const HpackEntry* entry) const;
 
   // Sets the maximum size of the header table, evicting entries if
-  // necessary as described in 3.3.2.
+  // necessary as described in 5.2.
   void SetMaxSize(size_t max_size);
 
   // Sets the SETTINGS_HEADER_TABLE_SIZE bound of the table. Will call
