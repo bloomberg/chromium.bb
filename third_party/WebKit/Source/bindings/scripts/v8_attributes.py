@@ -173,9 +173,10 @@ def getter_context(interface, attribute, context):
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
         'ReflectOnly' in extended_attributes or
+        context['is_keep_alive_for_gc'] or
         context['is_getter_raises_exception']):
         context['cpp_value_original'] = cpp_value
-        cpp_value = 'v8Value'
+        cpp_value = 'cppValue'
         # EventHandler has special handling
         if base_idl_type != 'EventHandler' and idl_type.is_interface_type:
             release = True

@@ -134,10 +134,10 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Propert
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceEmpty> result(impl->readonlyTestInterfaceEmptyAttribute());
-    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
+    RefPtr<TestInterfaceEmpty> cppValue(impl->readonlyTestInterfaceEmptyAttribute());
+    if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
@@ -1373,12 +1373,12 @@ static void readonlyEventTargetOrNullAttributeAttributeGetter(const v8::Property
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    RefPtrWillBeRawPtr<EventTarget> v8Value = impl->readonlyEventTargetOrNullAttribute(isNull);
+    RefPtrWillBeRawPtr<EventTarget> cppValue(impl->readonlyEventTargetOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void readonlyEventTargetOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1522,12 +1522,12 @@ static void stringOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    String v8Value = impl->stringOrNullAttribute(isNull);
+    String cppValue(impl->stringOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void stringOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1557,12 +1557,12 @@ static void longOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    int v8Value = impl->longOrNullAttribute(isNull);
+    int cppValue(impl->longOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueInt(info, v8Value);
+    v8SetReturnValueInt(info, cppValue);
 }
 
 static void longOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1593,12 +1593,12 @@ static void testInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallba
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    RefPtr<TestInterfaceImplementation> v8Value = impl->testInterfaceOrNullAttribute(isNull);
+    RefPtr<TestInterfaceImplementation> cppValue(impl->testInterfaceOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void testInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1710,8 +1710,8 @@ static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    EventListener* v8Value = impl->eventHandlerAttribute();
-    v8SetReturnValue(info, v8Value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(v8Value)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    EventListener* cppValue(impl->eventHandlerAttribute());
+    v8SetReturnValue(info, cppValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1856,9 +1856,9 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::PropertyCallbac
             return;
         }
     }
-    ScriptValue v8Value = impl->cachedAttributeAnyAttribute();
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value.v8Value());
-    v8SetReturnValue(info, v8Value.v8Value());
+    ScriptValue cppValue(impl->cachedAttributeAnyAttribute());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.v8Value());
+    v8SetReturnValue(info, cppValue.v8Value());
 }
 
 static void cachedAttributeAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1896,9 +1896,9 @@ static void cachedArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
             return;
         }
     }
-    Vector<String> v8Value = impl->cachedArrayAttribute();
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Array(v8Value, info.Holder(), info.GetIsolate()));
-    v8SetReturnValue(info, v8Array(v8Value, info.Holder(), info.GetIsolate()));
+    Vector<String> cppValue(impl->cachedArrayAttribute());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Array(cppValue, info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(cppValue, info.Holder(), info.GetIsolate()));
 }
 
 static void cachedArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2525,10 +2525,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceEmpty> result(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
-    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
+    RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
+    if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
@@ -2546,10 +2546,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceEmpty> result(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
-    if (result && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
+    RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
+    if (cppValue && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestInterfaceEmpty>(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
@@ -3074,10 +3074,10 @@ static void locationGarbageCollectedAttributeGetter(const v8::PropertyCallbackIn
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RawPtr<TestInterfaceGarbageCollected> result(impl->locationGarbageCollected());
-    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceGarbageCollected>(info.GetReturnValue(), result.get()))
+    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->locationGarbageCollected());
+    if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceGarbageCollected>(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), wrapper);
         v8SetReturnValue(info, wrapper);
@@ -3113,10 +3113,10 @@ static void locationWillBeGarbageCollectedAttributeGetter(const v8::PropertyCall
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> result(impl->locationWillBeGarbageCollected());
-    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceWillBeGarbageCollected>(info.GetReturnValue(), result.get()))
+    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->locationWillBeGarbageCollected());
+    if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceWillBeGarbageCollected>(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationWillBeGarbageCollected"), wrapper);
         v8SetReturnValue(info, wrapper);
@@ -3153,10 +3153,10 @@ static void raisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallba
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionLongAttribute", "TestObject", holder, info.GetIsolate());
-    int v8Value = impl->raisesExceptionLongAttribute(exceptionState);
+    int cppValue(impl->raisesExceptionLongAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, v8Value);
+    v8SetReturnValueInt(info, cppValue);
 }
 
 static void raisesExceptionLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3188,10 +3188,10 @@ static void raisesExceptionGetterLongAttributeAttributeGetter(const v8::Property
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionGetterLongAttribute", "TestObject", holder, info.GetIsolate());
-    int v8Value = impl->raisesExceptionGetterLongAttribute(exceptionState);
+    int cppValue(impl->raisesExceptionGetterLongAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, v8Value);
+    v8SetReturnValueInt(info, cppValue);
 }
 
 static void raisesExceptionGetterLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3253,10 +3253,10 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObject", holder, info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> v8Value = impl->raisesExceptionTestInterfaceEmptyAttribute(exceptionState);
+    RefPtr<TestInterfaceEmpty> cppValue(impl->raisesExceptionTestInterfaceEmptyAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3296,11 +3296,11 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
         }
     }
     ExceptionState exceptionState(ExceptionState::GetterContext, "cachedAttributeRaisesExceptionGetterAnyAttribute", "TestObject", holder, info.GetIsolate());
-    ScriptValue v8Value = impl->cachedAttributeRaisesExceptionGetterAnyAttribute(exceptionState);
+    ScriptValue cppValue(impl->cachedAttributeRaisesExceptionGetterAnyAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value.v8Value());
-    v8SetReturnValue(info, v8Value.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.v8Value());
+    v8SetReturnValue(info, cppValue.v8Value());
 }
 
 static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3707,15 +3707,15 @@ static void limitedToOnlyOneAttributeAttributeGetter(const v8::PropertyCallbackI
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr);
-    if (v8Value.isEmpty()) {
+    String cppValue(impl->fastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr));
+    if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(v8Value, "unique")) {
-        v8Value = "unique";
+    } else if (equalIgnoringCase(cppValue, "unique")) {
+        cppValue = "unique";
     } else {
-        v8Value = "";
+        cppValue = "";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedToOnlyOneAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3746,19 +3746,19 @@ static void limitedToOnlyAttributeAttributeGetter(const v8::PropertyCallbackInfo
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::limitedtoonlyattributeAttr);
-    if (v8Value.isEmpty()) {
+    String cppValue(impl->fastGetAttribute(HTMLNames::limitedtoonlyattributeAttr));
+    if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(v8Value, "Per")) {
-        v8Value = "Per";
-    } else if (equalIgnoringCase(v8Value, "Paal")) {
-        v8Value = "Paal";
-    } else if (equalIgnoringCase(v8Value, "Espen")) {
-        v8Value = "Espen";
+    } else if (equalIgnoringCase(cppValue, "Per")) {
+        cppValue = "Per";
+    } else if (equalIgnoringCase(cppValue, "Paal")) {
+        cppValue = "Paal";
+    } else if (equalIgnoringCase(cppValue, "Espen")) {
+        cppValue = "Espen";
     } else {
-        v8Value = "";
+        cppValue = "";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedToOnlyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3789,17 +3789,17 @@ static void limitedToOnlyOtherAttributeAttributeGetter(const v8::PropertyCallbac
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::otherAttr);
-    if (v8Value.isEmpty()) {
+    String cppValue(impl->fastGetAttribute(HTMLNames::otherAttr));
+    if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(v8Value, "Value1")) {
-        v8Value = "Value1";
-    } else if (equalIgnoringCase(v8Value, "Value2")) {
-        v8Value = "Value2";
+    } else if (equalIgnoringCase(cppValue, "Value1")) {
+        cppValue = "Value1";
+    } else if (equalIgnoringCase(cppValue, "Value2")) {
+        cppValue = "Value2";
     } else {
-        v8Value = "";
+        cppValue = "";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedToOnlyOtherAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3830,17 +3830,17 @@ static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::Property
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr);
-    if (v8Value.isEmpty()) {
-        v8Value = "rsa";
-    } else if (equalIgnoringCase(v8Value, "rsa")) {
-        v8Value = "rsa";
-    } else if (equalIgnoringCase(v8Value, "dsa")) {
-        v8Value = "dsa";
+    String cppValue(impl->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr));
+    if (cppValue.isEmpty()) {
+        cppValue = "rsa";
+    } else if (equalIgnoringCase(cppValue, "rsa")) {
+        cppValue = "rsa";
+    } else if (equalIgnoringCase(cppValue, "dsa")) {
+        cppValue = "dsa";
     } else {
-        v8Value = "";
+        cppValue = "";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedWithMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3871,19 +3871,19 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::P
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr);
-    if (v8Value.isEmpty()) {
-        v8Value = "auto";
-    } else if (equalIgnoringCase(v8Value, "ltr")) {
-        v8Value = "ltr";
-    } else if (equalIgnoringCase(v8Value, "rtl")) {
-        v8Value = "rtl";
-    } else if (equalIgnoringCase(v8Value, "auto")) {
-        v8Value = "auto";
+    String cppValue(impl->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr));
+    if (cppValue.isEmpty()) {
+        cppValue = "auto";
+    } else if (equalIgnoringCase(cppValue, "ltr")) {
+        cppValue = "ltr";
+    } else if (equalIgnoringCase(cppValue, "rtl")) {
+        cppValue = "rtl";
+    } else if (equalIgnoringCase(cppValue, "auto")) {
+        cppValue = "auto";
     } else {
-        v8Value = "ltr";
+        cppValue = "ltr";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3914,19 +3914,19 @@ static void corsSettingAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::corssettingattributeAttr);
-    if (v8Value.isNull()) {
+    String cppValue(impl->fastGetAttribute(HTMLNames::corssettingattributeAttr));
+    if (cppValue.isNull()) {
         ;
-    } else if (v8Value.isEmpty()) {
-        v8Value = "anonymous";
-    } else if (equalIgnoringCase(v8Value, "anonymous")) {
-        v8Value = "anonymous";
-    } else if (equalIgnoringCase(v8Value, "use-credentials")) {
-        v8Value = "use-credentials";
+    } else if (cppValue.isEmpty()) {
+        cppValue = "anonymous";
+    } else if (equalIgnoringCase(cppValue, "anonymous")) {
+        cppValue = "anonymous";
+    } else if (equalIgnoringCase(cppValue, "use-credentials")) {
+        cppValue = "use-credentials";
     } else {
-        v8Value = "anonymous";
+        cppValue = "anonymous";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void corsSettingAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3940,23 +3940,23 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Pro
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String v8Value = impl->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr);
-    if (v8Value.isNull()) {
-        v8Value = "missing";
-    } else if (v8Value.isEmpty()) {
-        v8Value = "empty";
-    } else if (equalIgnoringCase(v8Value, "empty")) {
-        v8Value = "empty";
-    } else if (equalIgnoringCase(v8Value, "missing")) {
-        v8Value = "missing";
-    } else if (equalIgnoringCase(v8Value, "invalid")) {
-        v8Value = "invalid";
-    } else if (equalIgnoringCase(v8Value, "a-normal")) {
-        v8Value = "a-normal";
+    String cppValue(impl->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr));
+    if (cppValue.isNull()) {
+        cppValue = "missing";
+    } else if (cppValue.isEmpty()) {
+        cppValue = "empty";
+    } else if (equalIgnoringCase(cppValue, "empty")) {
+        cppValue = "empty";
+    } else if (equalIgnoringCase(cppValue, "missing")) {
+        cppValue = "missing";
+    } else if (equalIgnoringCase(cppValue, "invalid")) {
+        cppValue = "invalid";
+    } else if (equalIgnoringCase(cppValue, "a-normal")) {
+        cppValue = "a-normal";
     } else {
-        v8Value = "invalid";
+        cppValue = "invalid";
     }
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
+    v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
 static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4444,12 +4444,12 @@ static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetter(cons
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> v8Value = impl->typeCheckingNullableTestInterfaceOrNullAttribute();
-    if (!v8Value) {
+    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingNullableTestInterfaceOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void typeCheckingNullableTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4479,12 +4479,12 @@ static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGe
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> v8Value = impl->typeCheckingInterfaceNullableTestInterfaceOrNullAttribute();
-    if (!v8Value) {
+    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingInterfaceNullableTestInterfaceOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void typeCheckingInterfaceNullableTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4749,12 +4749,12 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(const v8
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    RawPtr<TestInterfaceGarbageCollected> v8Value = impl->testInterfaceGarbageCollectedOrNullAttribute(isNull);
+    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->testInterfaceGarbageCollectedOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4813,12 +4813,12 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetter(co
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> v8Value = impl->testInterfaceWillBeGarbageCollectedOrNullAttribute(isNull);
+    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute(isNull));
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(v8Value.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

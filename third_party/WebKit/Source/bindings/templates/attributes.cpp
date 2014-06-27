@@ -48,13 +48,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_nullable and not attribute.has_type_checking_nullable %}
     bool isNull = false;
     {% endif %}
-    {# FIXME: consider always using a local variable for value #}
-    {% if attribute.cached_attribute_validation_method or
-          attribute.is_getter_raises_exception or
-          attribute.is_nullable or
-          attribute.reflect_only or
-          attribute.idl_type == 'EventHandler' %}
-    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
+    {% if attribute.cpp_value_original %}
+    {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
     {% endif %}
     {# Checks #}
     {% if attribute.is_getter_raises_exception %}
@@ -70,7 +65,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.reflect_only %}
     {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
-                         attribute.reflect_invalid, attribute.reflect_empty)
+                         attribute.reflect_invalid, attribute.reflect_empty,
+                         attribute.cpp_value)
       | indent}}
     {% endif %}
     {% if attribute.is_nullable %}
@@ -88,11 +84,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
-    {# FIXME: merge local variable assignment with above #}
-    {{attribute.cpp_type}} result({{attribute.cpp_value}});
-    if (result && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
+    if ({{attribute.cpp_value}} && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
         {{attribute.v8_set_return_value}};
@@ -108,34 +102,34 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 
 {######################################}
 {% macro release_only_check(reflect_only_values, reflect_missing,
-                            reflect_invalid, reflect_empty) %}
+                            reflect_invalid, reflect_empty, cpp_value) %}
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
 {% if reflect_empty %}
-if (v8Value.isNull()) {
+if ({{cpp_value}}.isNull()) {
 {% if reflect_missing %}
-    v8Value = "{{reflect_missing}}";
+    {{cpp_value}} = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
-} else if (v8Value.isEmpty()) {
-    v8Value = "{{reflect_empty}}";
+} else if ({{cpp_value}}.isEmpty()) {
+    {{cpp_value}} = "{{reflect_empty}}";
 {% else %}
-if (v8Value.isEmpty()) {
+if ({{cpp_value}}.isEmpty()) {
 {# FIXME: should use [ReflectEmpty] instead; need to change IDL files #}
 {% if reflect_missing %}
-    v8Value = "{{reflect_missing}}";
+    {{cpp_value}} = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
-} else if (equalIgnoringCase(v8Value, "{{value}}")) {
-    v8Value = "{{value}}";
+} else if (equalIgnoringCase({{cpp_value}}, "{{value}}")) {
+    {{cpp_value}} = "{{value}}";
 {% endfor %}
 } else {
-    v8Value = "{{reflect_invalid}}";
+    {{cpp_value}} = "{{reflect_invalid}}";
 }
 {% endmacro %}
 

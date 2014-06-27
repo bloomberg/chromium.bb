@@ -360,8 +360,8 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCal
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    EventListener* v8Value = impl->implementsEventHandlerAttribute();
-    v8SetReturnValue(info, v8Value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(v8Value)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    EventListener* cppValue(impl->implementsEventHandlerAttribute());
+    v8SetReturnValue(info, cppValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

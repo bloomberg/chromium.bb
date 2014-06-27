@@ -94,8 +94,8 @@ static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceNode* impl = V8TestInterfaceNode::toNative(holder);
-    EventListener* v8Value = impl->eventHandlerAttribute();
-    v8SetReturnValue(info, v8Value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(v8Value)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    EventListener* cppValue(impl->eventHandlerAttribute());
+    v8SetReturnValue(info, cppValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
