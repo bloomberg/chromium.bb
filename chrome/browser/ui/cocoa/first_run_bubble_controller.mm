@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -59,9 +60,11 @@
 - (void)awakeFromNib {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   DCHECK(header_);
   [header_ setStringValue:cocoa_l10n_util::ReplaceNSStringPlaceholders(
-      [header_ stringValue], GetDefaultSearchEngineName(profile_), NULL)];
+      [header_ stringValue], GetDefaultSearchEngineName(service), NULL)];
 
   // Adapt window size to contents. Do this before all other layouting.
   CGFloat dy = cocoa_l10n_util::VerticallyReflowGroup([[self bubble] subviews]);

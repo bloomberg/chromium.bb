@@ -41,6 +41,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -416,7 +417,8 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     if ((param.value().size() > 2) && (param.value()[0] == '?') &&
         (param.value()[1] == ' ')) {
       GURL url(GetDefaultSearchURLForSearchTerms(
-          profile, param.LossyDisplayName().substr(2)));
+          TemplateURLServiceFactory::GetForProfile(profile),
+          param.LossyDisplayName().substr(2)));
       if (url.is_valid()) {
         urls.push_back(url);
         continue;

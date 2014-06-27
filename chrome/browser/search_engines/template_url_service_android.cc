@@ -170,7 +170,7 @@ TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(JNIEnv* env,
   std::string url;
 
   if (!query.empty()) {
-    GURL gurl(GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query));
+    GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
     if (google_util::IsGoogleSearchUrl(gurl))
       gurl = net::AppendQueryParameter(gurl, "inm", "vs");
     url = gurl.spec();
@@ -208,7 +208,7 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(JNIEnv* env,
   std::string url;
 
   if (!query.empty()) {
-    GURL gurl(GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query));
+    GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
     if (google_util::IsGoogleSearchUrl(gurl))
       gurl = net::AppendQueryParameter(gurl, "ctxs", "1");
     url = gurl.spec();

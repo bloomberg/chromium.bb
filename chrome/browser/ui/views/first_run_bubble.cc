@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -40,11 +41,12 @@ void FirstRunBubble::Init() {
   const gfx::FontList& original_font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
+  const base::string16 search_engine_name = browser_ ?
+      GetDefaultSearchEngineName(
+          TemplateURLServiceFactory::GetForProfile(browser_->profile())) :
+      base::string16();
   views::Label* title = new views::Label(
-      l10n_util::GetStringFUTF16(
-          IDS_FR_BUBBLE_TITLE,
-          browser_ ? GetDefaultSearchEngineName(browser_->profile())
-              : base::string16()),
+      l10n_util::GetStringFUTF16(IDS_FR_BUBBLE_TITLE, search_engine_name),
       original_font_list.Derive(2, gfx::Font::BOLD));
 
   views::Link* change =

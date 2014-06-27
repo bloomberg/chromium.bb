@@ -887,7 +887,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   GetSearchProvidersUsingKeywordResult(
       *result,
       service_.get(),
-      profile_,
+      GetPrefs(),
       &template_urls,
       (default_search_provider_source_ == DefaultSearchManager::FROM_USER) ?
           initial_default_search_provider_.get() : NULL,
