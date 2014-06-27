@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/common/handle_watcher.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "net/base/net_errors.h"
@@ -44,6 +45,8 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
       OVERRIDE;
 
   void SendError(int error);
+  void OnResponseBodyStreamReady(MojoResult result);
+  void WaitToReadMore();
   void ReadMore();
   void DidRead(uint32_t num_bytes, bool completed_synchronously);
 
@@ -51,6 +54,7 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   scoped_ptr<net::URLRequest> url_request_;
   ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<PendingWriteToDataPipe> pending_write_;
+  common::HandleWatcher handle_watcher_;
   bool auto_follow_redirects_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;

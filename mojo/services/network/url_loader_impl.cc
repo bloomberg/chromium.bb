@@ -56,13 +56,13 @@ class URLLoaderImpl::PendingWriteToDataPipe :
         buffer_(NULL) {
   }
 
-  bool BeginWrite(uint32_t* num_bytes) {
+  MojoResult BeginWrite(uint32_t* num_bytes) {
     MojoResult result = BeginWriteDataRaw(handle_.get(), &buffer_, num_bytes,
                                           MOJO_WRITE_DATA_FLAG_NONE);
     if (*num_bytes > kMaxReadSize)
       *num_bytes = kMaxReadSize;
 
-    return result == MOJO_RESULT_OK;
+    return result;
   }
 
   ScopedDataPipeProducerHandle Complete(uint32_t num_bytes) {
@@ -210,16 +210,39 @@ void URLLoaderImpl::SendError(int error_code) {
   client()->OnReceivedError(error.Pass());
 }
 
+void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
+  // TODO(darin): Handle a bad |result| value.
+  ReadMore();
+}
+
+void URLLoaderImpl::WaitToReadMore() {
+  handle_watcher_.Start(response_body_stream_.get(),
+                        MOJO_HANDLE_SIGNAL_WRITABLE,
+                        MOJO_DEADLINE_INDEFINITE,
+                        base::Bind(&URLLoaderImpl::OnResponseBodyStreamReady,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
 void URLLoaderImpl::ReadMore() {
   DCHECK(!pending_write_);
 
   pending_write_ = new PendingWriteToDataPipe(response_body_stream_.Pass());
 
   uint32_t num_bytes;
-  if (!pending_write_->BeginWrite(&num_bytes))
-    CHECK(false);  // Oops! TODO(darin): crbug/386877: The pipe might be full!
-  if (num_bytes > static_cast<uint32_t>(std::numeric_limits<int>::max()))
-    CHECK(false);  // Oops!
+  MojoResult result = pending_write_->BeginWrite(&num_bytes);
+  if (result == MOJO_RESULT_SHOULD_WAIT) {
+    // The pipe is full. We need to wait for it to have more space.
+    response_body_stream_ = pending_write_->Complete(num_bytes);
+    pending_write_ = NULL;
+    WaitToReadMore();
+    return;
+  }
+  if (result != MOJO_RESULT_OK) {
+    // The response body stream is in a bad state. Bail.
+    // TODO(darin): How should this be communicated to our client?
+    return;
+  }
+  CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
 
   scoped_refptr<net::IOBuffer> buf = new DependentIOBuffer(pending_write_);
 
