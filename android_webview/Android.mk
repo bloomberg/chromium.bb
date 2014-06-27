@@ -13,7 +13,12 @@ LOCAL_MODULE := android_webview_java
 
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_ADDITIONAL_DEPENDENCIES := android_webview_java_with_new_resources
+# Temporary extra dependency: force android_webview_java_with_new_resources to
+# be built whenever this target is built, so that we get build coverage until
+# the switch happens.
+LOCAL_ADDITIONAL_DEPENDENCIES := \
+    $(call intermediates-dir-for,JAVA_LIBRARIES,android_webview_java_with_new_resources,,COMMON)/javalib.jar
+
 
 include $(LOCAL_PATH)/java_library_common.mk
 # resource glue layer
