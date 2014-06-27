@@ -33,7 +33,11 @@
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/clipboard/Pasteboard.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/events/Event.h"
+#include "core/events/EventTarget.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorController.h"
@@ -200,8 +204,16 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
     ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
     ASSERT(frontendApiObject.isObject());
+
+    Page* targetPage = m_frontendPage;
+    if (event->target() && event->target()->executionContext() && event->target()->executionContext()->executingWindow()) {
+        LocalDOMWindow* window = event->target()->executionContext()->executingWindow();
+        if (window->document() && window->document()->page())
+            targetPage = window->document()->page();
+    }
+
     RefPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
-    m_frontendPage->contextMenuController().showContextMenu(event, menuProvider);
+    targetPage->contextMenuController().showContextMenu(event, menuProvider);
     m_menuProvider = menuProvider.get();
 }
 
