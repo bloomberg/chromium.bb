@@ -19,6 +19,7 @@ from .constants import *
 from .utils.cryptomath import getRandomBytes
 
 import socket
+import struct
 import errno
 import traceback
 
@@ -522,6 +523,13 @@ class TLSRecordLayer(object):
             yield result
         self._shutdown(False)
         raise TLSLocalAlert(alert, errorStr)
+
+    def _abruptClose(self, reset=False):
+        if reset:
+            #Set an SO_LINGER timeout of 0 to send a TCP RST.
+            self.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+                            struct.pack('ii', 1, 0))
+        self._shutdown(False)
 
     def _sendMsgs(self, msgs):
         randomizeFirstBlock = True

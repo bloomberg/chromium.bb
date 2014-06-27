@@ -1065,7 +1065,7 @@ class TLSConnection(TLSRecordLayer):
                         reqCAs = None, reqCertTypes = None,
                         tacks=None, activationFlags=0,
                         nextProtos=None, anon=False,
-                        tlsIntolerant=None, signedCertTimestamps=None,
+                        signedCertTimestamps=None,
                         fallbackSCSV=False, ocspResponse=None):
         """Perform a handshake in the role of server.
 
@@ -1139,11 +1139,6 @@ class TLSConnection(TLSRecordLayer):
         clients through the Next-Protocol Negotiation Extension, 
         if they support it.
 
-        @type tlsIntolerant: (int, int) or None
-        @param tlsIntolerant: If tlsIntolerant is not None, the server will
-        simulate TLS version intolerance by returning a fatal handshake_failure
-        alert to all TLS versions tlsIntolerant or higher.
-
         @type signedCertTimestamps: str
         @param signedCertTimestamps: A SignedCertificateTimestampList (as a
         binary 8-bit string) that will be sent as a TLS extension whenever
@@ -1175,7 +1170,7 @@ class TLSConnection(TLSRecordLayer):
                 certChain, privateKey, reqCert, sessionCache, settings,
                 checker, reqCAs, reqCertTypes,
                 tacks=tacks, activationFlags=activationFlags, 
-                nextProtos=nextProtos, anon=anon, tlsIntolerant=tlsIntolerant,
+                nextProtos=nextProtos, anon=anon,
                 signedCertTimestamps=signedCertTimestamps,
                 fallbackSCSV=fallbackSCSV, ocspResponse=ocspResponse):
             pass
@@ -1187,7 +1182,6 @@ class TLSConnection(TLSRecordLayer):
                              reqCAs=None, reqCertTypes=None,
                              tacks=None, activationFlags=0,
                              nextProtos=None, anon=False,
-                             tlsIntolerant=None,
                              signedCertTimestamps=None,
                              fallbackSCSV=False,
                              ocspResponse=None
@@ -1210,7 +1204,6 @@ class TLSConnection(TLSRecordLayer):
             reqCAs=reqCAs, reqCertTypes=reqCertTypes,
             tacks=tacks, activationFlags=activationFlags, 
             nextProtos=nextProtos, anon=anon,
-            tlsIntolerant=tlsIntolerant,
             signedCertTimestamps=signedCertTimestamps,
             fallbackSCSV=fallbackSCSV,
             ocspResponse=ocspResponse)
@@ -1223,7 +1216,7 @@ class TLSConnection(TLSRecordLayer):
                              settings, reqCAs, reqCertTypes,
                              tacks, activationFlags, 
                              nextProtos, anon,
-                             tlsIntolerant, signedCertTimestamps, fallbackSCSV,
+                             signedCertTimestamps, fallbackSCSV,
                              ocspResponse):
 
         self._handshakeStart(client=False)
@@ -1261,7 +1254,7 @@ class TLSConnection(TLSRecordLayer):
         # Handle ClientHello and resumption
         for result in self._serverGetClientHello(settings, certChain,\
                                             verifierDB, sessionCache,
-                                            anon, tlsIntolerant, fallbackSCSV):
+                                            anon, fallbackSCSV):
             if result in (0,1): yield result
             elif result == None:
                 self._handshakeDone(resumed=True)                
@@ -1376,7 +1369,7 @@ class TLSConnection(TLSRecordLayer):
 
 
     def _serverGetClientHello(self, settings, certChain, verifierDB,
-                                sessionCache, anon, tlsIntolerant, fallbackSCSV):
+                                sessionCache, anon, fallbackSCSV):
         #Initialize acceptable cipher suites
         cipherSuites = []
         if verifierDB:
@@ -1413,11 +1406,21 @@ class TLSConnection(TLSRecordLayer):
                 yield result
 
         #If simulating TLS intolerance, reject certain TLS versions.
-        elif (tlsIntolerant is not None and
-            clientHello.client_version >= tlsIntolerant):
-            for result in self._sendError(\
+        elif (settings.tlsIntolerant is not None and
+              clientHello.client_version >= settings.tlsIntolerant):
+            if settings.tlsIntoleranceType == "alert":
+                for result in self._sendError(\
                     AlertDescription.handshake_failure):
-                yield result
+                    yield result
+            elif settings.tlsIntoleranceType == "close":
+                self._abruptClose()
+                raise TLSUnsupportedError("Simulating version intolerance")
+            elif settings.tlsIntoleranceType == "reset":
+                self._abruptClose(reset=True)
+                raise TLSUnsupportedError("Simulating version intolerance")
+            else:
+                raise ValueError("Unknown intolerance type: '%s'" %
+                                 settings.tlsIntoleranceType)
 
         #If client's version is too high, propose my highest version
         elif clientHello.client_version > settings.maxVersion:

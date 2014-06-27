@@ -72,6 +72,21 @@ void GetCiphersList(int cipher, base::ListValue* values) {
     values->Append(new base::StringValue("3des"));
 }
 
+base::StringValue* GetTLSIntoleranceType(
+    BaseTestServer::SSLOptions::TLSIntoleranceType type) {
+  switch (type) {
+    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_ALERT:
+      return new base::StringValue("alert");
+    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE:
+      return new base::StringValue("close");
+    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_RESET:
+      return new base::StringValue("reset");
+    default:
+      NOTREACHED();
+      return new base::StringValue("");
+  }
+}
+
 }  // namespace
 
 BaseTestServer::SSLOptions::SSLOptions()
@@ -83,6 +98,7 @@ BaseTestServer::SSLOptions::SSLOptions()
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
       tls_intolerant(TLS_INTOLERANT_NONE),
+      tls_intolerance_type(TLS_INTOLERANCE_ALERT),
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
       enable_npn(false) {}
@@ -97,6 +113,7 @@ BaseTestServer::SSLOptions::SSLOptions(
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
       tls_intolerant(TLS_INTOLERANT_NONE),
+      tls_intolerance_type(TLS_INTOLERANCE_ALERT),
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
       enable_npn(false) {}
@@ -437,6 +454,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (ssl_options_.tls_intolerant != SSLOptions::TLS_INTOLERANT_NONE) {
       arguments->Set("tls-intolerant",
                      new base::FundamentalValue(ssl_options_.tls_intolerant));
+      arguments->Set("tls-intolerance-type", GetTLSIntoleranceType(
+          ssl_options_.tls_intolerance_type));
     }
     if (ssl_options_.fallback_scsv_enabled)
       arguments->Set("fallback-scsv", base::Value::CreateNullValue());

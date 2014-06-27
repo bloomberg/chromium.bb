@@ -18,6 +18,7 @@ ALL_MAC_NAMES = ["sha", "md5"]
 KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
 CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
 CERTIFICATE_TYPES = ["x509"]
+TLS_INTOLERANCE_TYPES = ["alert", "close", "reset"]
 
 class HandshakeSettings(object):
     """This class encapsulates various parameters that can be used with
@@ -92,6 +93,21 @@ class HandshakeSettings(object):
     The default is (3,2).  (WARNING: Some servers may (improperly)
     reject clients which offer support for TLS 1.1.  In this case,
     try lowering maxVersion to (3,1)).
+
+    @type tlsIntolerant: tuple
+    @ivar tlsIntolerant: The TLS ClientHello version which the server
+    simulates intolerance of.
+
+    If tlsIntolerant is not None, the server will simulate TLS version
+    intolerance by aborting the handshake in response to all TLS versions
+    tlsIntolerant or higher.
+
+    @type tlsIntoleranceType: str
+    @ivar tlsIntoleranceType: How the server should react when simulating TLS
+    intolerance.
+
+    The allowed values are "alert" (return a fatal handshake_failure alert),
+    "close" (abruptly close the connection), and "reset" (send a TCP reset).
     
     @type useExperimentalTackExtension: bool
     @ivar useExperimentalTackExtension: Whether to enabled TACK support.
@@ -109,6 +125,8 @@ class HandshakeSettings(object):
         self.certificateTypes = CERTIFICATE_TYPES
         self.minVersion = (3,0)
         self.maxVersion = (3,2)
+        self.tlsIntolerant = None
+        self.tlsIntoleranceType = 'alert'
         self.useExperimentalTackExtension = False
 
     # Validates the min/max fields, and certificateTypes
@@ -124,6 +142,8 @@ class HandshakeSettings(object):
         other.certificateTypes = self.certificateTypes
         other.minVersion = self.minVersion
         other.maxVersion = self.maxVersion
+        other.tlsIntolerant = self.tlsIntolerant
+        other.tlsIntoleranceType = self.tlsIntoleranceType
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]
@@ -164,6 +184,10 @@ class HandshakeSettings(object):
         for s in other.certificateTypes:
             if s not in CERTIFICATE_TYPES:
                 raise ValueError("Unknown certificate type: '%s'" % s)
+
+        if other.tlsIntoleranceType not in TLS_INTOLERANCE_TYPES:
+            raise ValueError(
+                "Unknown TLS intolerance type: '%s'" % other.tlsIntoleranceType)
 
         if other.minVersion > other.maxVersion:
             raise ValueError("Versions set incorrectly")

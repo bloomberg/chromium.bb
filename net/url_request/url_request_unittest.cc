@@ -6571,83 +6571,6 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
   }
 }
 
-// Tests TLSv1.1 -> TLSv1 fallback. Verifies that we don't fall back more
-// than necessary.
-TEST_F(HTTPSRequestTest, TLSv1Fallback) {
-  // The OpenSSL library in use may not support TLS 1.1.
-#if !defined(USE_OPENSSL)
-  EXPECT_GT(kDefaultSSLVersionMax, SSL_PROTOCOL_VERSION_TLS1);
-#endif
-  if (kDefaultSSLVersionMax <= SSL_PROTOCOL_VERSION_TLS1)
-    return;
-
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  TestDelegate d;
-  TestURLRequestContext context(true);
-  context.Init();
-  d.set_allow_certificate_errors(true);
-  URLRequest r(
-      test_server.GetURL(std::string()), DEFAULT_PRIORITY, &d, &context);
-  r.Start();
-
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_NE(0, d.bytes_received());
-  EXPECT_EQ(static_cast<int>(SSL_CONNECTION_VERSION_TLS1),
-            SSLConnectionStatusToVersion(r.ssl_info().connection_status));
-  EXPECT_TRUE(r.ssl_info().connection_status & SSL_CONNECTION_VERSION_FALLBACK);
-}
-
-// Tests that we don't fallback with servers that implement TLS_FALLBACK_SCSV.
-#if defined(USE_OPENSSL)
-TEST_F(HTTPSRequestTest, DISABLED_FallbackSCSV) {
-#else
-TEST_F(HTTPSRequestTest, FallbackSCSV) {
-#endif
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
-  // a version fallback.
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
-  // Have the server process TLS_FALLBACK_SCSV so that version fallback
-  // connections are rejected.
-  ssl_options.fallback_scsv_enabled = true;
-
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  TestDelegate d;
-  TestURLRequestContext context(true);
-  context.Init();
-  d.set_allow_certificate_errors(true);
-  URLRequest r(
-      test_server.GetURL(std::string()), DEFAULT_PRIORITY, &d, &context);
-  r.Start();
-
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.response_started_count());
-  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH is how the server simulates version
-  // intolerance. If the fallback SCSV is processed when the original error
-  // that caused the fallback should be returned, which should be
-  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
-  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, r.status().error());
-}
-
 // This tests that a load of www.google.com with a certificate error sets
 // the |certificate_errors_are_fatal| flag correctly. This flag will cause
 // the interstitial to be fatal.
@@ -6822,34 +6745,6 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   network_delegate.GetLoadTimingInfoBeforeRedirect(&load_timing_info);
   // LoadTimingInfo of HSTS redirects is similar to that of network cache hits
   TestLoadTimingCacheHitNoNetwork(load_timing_info);
-}
-
-TEST_F(HTTPSRequestTest, SSLv3Fallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  TestDelegate d;
-  TestURLRequestContext context(true);
-  context.Init();
-  d.set_allow_certificate_errors(true);
-  URLRequest r(
-      test_server.GetURL(std::string()), DEFAULT_PRIORITY, &d, &context);
-  r.Start();
-
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_NE(0, d.bytes_received());
-  EXPECT_EQ(static_cast<int>(SSL_CONNECTION_VERSION_SSL3),
-            SSLConnectionStatusToVersion(r.ssl_info().connection_status));
-  EXPECT_TRUE(r.ssl_info().connection_status & SSL_CONNECTION_VERSION_FALLBACK);
 }
 
 namespace {
@@ -7074,6 +6969,148 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
     }
   }
 }
+
+class HTTPSFallbackTest : public testing::Test {
+ public:
+  HTTPSFallbackTest() : context_(true) {
+    context_.Init();
+    delegate_.set_allow_certificate_errors(true);
+  }
+  virtual ~HTTPSFallbackTest() {}
+
+ protected:
+  void DoFallbackTest(const SpawnedTestServer::SSLOptions& ssl_options) {
+    DCHECK(!request_);
+    SpawnedTestServer test_server(
+        SpawnedTestServer::TYPE_HTTPS,
+        ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+    ASSERT_TRUE(test_server.Start());
+
+    request_.reset(new URLRequest(
+        test_server.GetURL(std::string()), DEFAULT_PRIORITY,
+        &delegate_, &context_));
+    request_->Start();
+
+    base::RunLoop().Run();
+  }
+
+  void ExpectConnection(int version) {
+    EXPECT_EQ(1, delegate_.response_started_count());
+    EXPECT_NE(0, delegate_.bytes_received());
+    EXPECT_EQ(version, SSLConnectionStatusToVersion(
+        request_->ssl_info().connection_status));
+    EXPECT_TRUE(request_->ssl_info().connection_status &
+                SSL_CONNECTION_VERSION_FALLBACK);
+  }
+
+  void ExpectFailure(int error) {
+    EXPECT_EQ(1, delegate_.response_started_count());
+    EXPECT_FALSE(request_->status().is_success());
+    EXPECT_EQ(URLRequestStatus::FAILED, request_->status().status());
+    EXPECT_EQ(error, request_->status().error());
+  }
+
+ private:
+  TestDelegate delegate_;
+  TestURLRequestContext context_;
+  scoped_ptr<URLRequest> request_;
+};
+
+// Tests TLSv1.1 -> TLSv1 fallback. Verifies that we don't fall back more
+// than necessary.
+TEST_F(HTTPSFallbackTest, TLSv1Fallback) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
+}
+
+// This test is disabled on Android because the remote test server doesn't cause
+// a TCP reset.
+#if !defined(OS_ANDROID)
+// Tests fallback to TLS 1.0 on connection reset.
+TEST_F(HTTPSFallbackTest, TLSv1FallbackReset) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
+  ssl_options.tls_intolerance_type =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_RESET;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
+}
+#endif  // !OS_ANDROID
+
+// Tests that we don't fallback with servers that implement TLS_FALLBACK_SCSV.
+#if defined(USE_OPENSSL)
+TEST_F(HTTPSFallbackTest, DISABLED_FallbackSCSV) {
+#else
+TEST_F(HTTPSFallbackTest, FallbackSCSV) {
+#endif
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
+  // a version fallback.
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  // Have the server process TLS_FALLBACK_SCSV so that version fallback
+  // connections are rejected.
+  ssl_options.fallback_scsv_enabled = true;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+
+  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH is how the server simulates version
+  // intolerance. If the fallback SCSV is processed when the original error
+  // that caused the fallback should be returned, which should be
+  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
+  ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
+}
+
+// Tests that the SSLv3 fallback triggers on alert.
+TEST_F(HTTPSFallbackTest, SSLv3Fallback) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_SSL3);
+}
+
+// Tests that the SSLv3 fallback triggers on closed connections.
+TEST_F(HTTPSFallbackTest, SSLv3FallbackClosed) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  ssl_options.tls_intolerance_type =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_SSL3);
+}
+
+// This test is disabled on Android because the remote test server doesn't cause
+// a TCP reset. It also does not pass on OpenSSL. https://crbug.com/372849
+#if !defined(OS_ANDROID) && !defined(USE_OPENSSL)
+// Tests that a reset connection does not fallback down to SSL3.
+TEST_F(HTTPSFallbackTest, SSLv3NoFallbackReset) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  ssl_options.tls_intolerance_type =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_RESET;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectFailure(ERR_CONNECTION_RESET);
+}
+#endif  // !OS_ANDROID && !USE_OPENSSL
 
 class HTTPSSessionTest : public testing::Test {
  public:

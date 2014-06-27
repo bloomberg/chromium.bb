@@ -154,7 +154,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
                ssl_client_auth, ssl_client_cas, ssl_client_cert_types,
                ssl_bulk_ciphers, ssl_key_exchanges, enable_npn,
-               record_resume_info, tls_intolerant, signed_cert_timestamps,
+               record_resume_info, tls_intolerant,
+               tls_intolerance_type, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response):
     self.cert_chain = tlslite.api.X509CertChain()
     self.cert_chain.parsePemList(pem_cert_and_key)
@@ -172,10 +173,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.next_protos = ['http/1.1']
     else:
       self.next_protos = None
-    if tls_intolerant == 0:
-      self.tls_intolerant = None
-    else:
-      self.tls_intolerant = (3, tls_intolerant)
     self.signed_cert_timestamps = signed_cert_timestamps
     self.fallback_scsv_enabled = fallback_scsv_enabled
     self.ocsp_response = ocsp_response
@@ -199,6 +196,9 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.ssl_handshake_settings.cipherNames = ssl_bulk_ciphers
     if ssl_key_exchanges is not None:
       self.ssl_handshake_settings.keyExchangeNames = ssl_key_exchanges
+    if tls_intolerant != 0:
+      self.ssl_handshake_settings.tlsIntolerant = (3, tls_intolerant)
+      self.ssl_handshake_settings.tlsIntoleranceType = tls_intolerance_type
 
     if record_resume_info:
       # If record_resume_info is true then we'll replace the session cache with
@@ -223,7 +223,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                     reqCAs=self.ssl_client_cas,
                                     reqCertTypes=self.ssl_client_cert_types,
                                     nextProtos=self.next_protos,
-                                    tlsIntolerant=self.tls_intolerant,
                                     signedCertTimestamps=
                                     self.signed_cert_timestamps,
                                     fallbackSCSV=self.fallback_scsv_enabled,
@@ -1982,6 +1981,7 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.enable_npn,
                              self.options.record_resume,
                              self.options.tls_intolerant,
+                             self.options.tls_intolerance_type,
                              self.options.signed_cert_timestamps_tls_ext.decode(
                                  "base64"),
                              self.options.fallback_scsv,
@@ -2128,6 +2128,12 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'aborted. 2 means TLS 1.1 or higher will be '
                                   'aborted. 3 means TLS 1.2 or higher will be '
                                   'aborted.')
+    self.option_parser.add_option('--tls-intolerance-type',
+                                  dest='tls_intolerance_type',
+                                  default="alert",
+                                  help='Controls how the server reacts to a '
+                                  'TLS version it is intolerant to. Valid '
+                                  'values are "alert", "close", and "reset".')
     self.option_parser.add_option('--signed-cert-timestamps-tls-ext',
                                   dest='signed_cert_timestamps_tls_ext',
                                   default='',

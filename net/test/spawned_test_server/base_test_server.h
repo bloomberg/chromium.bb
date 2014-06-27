@@ -111,6 +111,14 @@ class BaseTestServer {
       TLS_INTOLERANT_TLS1_2 = 3,  // Intolerant of TLS 1.2 or higher.
     };
 
+    // Values which control how the server reacts in response to a ClientHello
+    // it is intolerant of.
+    enum TLSIntoleranceType {
+      TLS_INTOLERANCE_ALERT = 0,  // Send a handshake_failure alert.
+      TLS_INTOLERANCE_CLOSE = 1,  // Close the connection.
+      TLS_INTOLERANCE_RESET = 2,  // Send a TCP reset.
+    };
+
     // Initialize a new SSLOptions using CERT_OK as the certificate.
     SSLOptions();
 
@@ -170,6 +178,10 @@ class BaseTestServer {
     // If not TLS_INTOLERANT_NONE, the server will abort any handshake that
     // negotiates an intolerant TLS version in order to test version fallback.
     TLSIntolerantLevel tls_intolerant;
+
+    // If |tls_intolerant| is not TLS_INTOLERANT_NONE, how the server reacts to
+    // an intolerant TLS version.
+    TLSIntoleranceType tls_intolerance_type;
 
     // fallback_scsv_enabled, if true, causes the server to process the
     // TLS_FALLBACK_SCSV cipher suite. This cipher suite is sent by Chrome
