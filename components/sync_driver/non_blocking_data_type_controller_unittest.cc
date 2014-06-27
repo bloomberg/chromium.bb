@@ -29,7 +29,7 @@ class NullModelTypeSyncWorker : public ModelTypeSyncWorker {
   NullModelTypeSyncWorker();
   virtual ~NullModelTypeSyncWorker();
 
-  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+  virtual void EnqueueForCommit(const CommitRequestDataList& list) OVERRIDE;
 };
 
 NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
@@ -38,7 +38,7 @@ NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
 NullModelTypeSyncWorker::~NullModelTypeSyncWorker() {
 }
 
-void NullModelTypeSyncWorker::RequestCommits(
+void NullModelTypeSyncWorker::EnqueueForCommit(
     const CommitRequestDataList& list) {
   NOTREACHED() << "Not implemented.";
 }

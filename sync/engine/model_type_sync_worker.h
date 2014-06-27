@@ -15,7 +15,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncWorker {
   ModelTypeSyncWorker();
   virtual ~ModelTypeSyncWorker();
 
-  virtual void RequestCommits(const CommitRequestDataList& list) = 0;
+  // Entry point for the ModelTypeSyncProxy to send commit requests.
+  virtual void EnqueueForCommit(const CommitRequestDataList& list) = 0;
 };
 
 }  // namespace syncer

@@ -24,7 +24,7 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   virtual ~MockModelTypeSyncWorker();
 
   // Implementation of ModelTypeSyncWorker.
-  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+  virtual void EnqueueForCommit(const CommitRequestDataList& list) OVERRIDE;
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumCommitRequestLists() const;

@@ -8,7 +8,7 @@
 #include "base/sequenced_task_runner.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/sync_context.h"
+#include "sync/internal_api/public/sync_context.h"
 #include "sync/internal_api/sync_context_proxy_impl.h"
 #include "sync/sessions/model_type_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,12 +20,12 @@ class SyncContextProxyImplTest : public ::testing::Test {
   SyncContextProxyImplTest()
       : sync_task_runner_(base::MessageLoopProxy::current()),
         type_task_runner_(base::MessageLoopProxy::current()),
-        context_(new SyncContext(&registry_)),
-        context_proxy_(sync_task_runner_, context_->AsWeakPtr()) {}
+        registry_(new ModelTypeRegistry()),
+        context_proxy_(sync_task_runner_, registry_->AsWeakPtr()) {}
 
   // The sync thread could be shut down at any time without warning.  This
   // function simulates such an event.
-  void DisableSync() { context_.reset(); }
+  void DisableSync() { registry_.reset(); }
 
   scoped_ptr<SyncContextProxy> GetProxy() { return context_proxy_.Clone(); }
 
@@ -33,8 +33,7 @@ class SyncContextProxyImplTest : public ::testing::Test {
   base::MessageLoop loop_;
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> type_task_runner_;
-  ModelTypeRegistry registry_;
-  scoped_ptr<SyncContext> context_;
+  scoped_ptr<ModelTypeRegistry> registry_;
   SyncContextProxyImpl context_proxy_;
 };
 

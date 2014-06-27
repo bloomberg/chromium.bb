@@ -10,6 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
+#include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/non_blocking_sync_common.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -46,6 +47,7 @@ class EntityTracker;
 // cancel the pending commit.
 class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
                                             public CommitContributor,
+                                            public ModelTypeSyncWorker,
                                             public base::NonThreadSafe {
  public:
   ModelTypeSyncWorkerImpl(ModelType type,
@@ -68,8 +70,9 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
 
-  // Entry point for the ModelTypeSyncProxy to send commit requests.
-  void EnqueueForCommit(const CommitRequestDataList& request_list);
+  // ModelTypeSyncWorker implementation.
+  virtual void EnqueueForCommit(
+      const CommitRequestDataList& request_list) OVERRIDE;
 
   // CommitContributor implementation.
   virtual scoped_ptr<CommitContribution> GetContribution(

@@ -197,7 +197,7 @@ void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
   list.push_back(mock_worker_->SuccessfulCommitResponse(request_data));
-  type_sync_proxy_->OnCommitCompletion(data_type_state_, list);
+  type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
 }
 
 std::string ModelTypeSyncProxyImplTest::GenerateTagHash(

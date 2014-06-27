@@ -159,10 +159,10 @@ void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
   }
 
   if (!commit_requests.empty())
-    worker_->RequestCommits(commit_requests);
+    worker_->EnqueueForCommit(commit_requests);
 }
 
-void ModelTypeSyncProxyImpl::OnCommitCompletion(
+void ModelTypeSyncProxyImpl::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   data_type_state_ = type_state;

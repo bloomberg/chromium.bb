@@ -67,8 +67,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
   // Informs this object that some of its commit requests have been
   // successfully serviced.
-  void OnCommitCompletion(const DataTypeState& type_state,
-                          const CommitResponseDataList& response_list);
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list);
 
   // Informs this object that there are some incoming updates is should
   // handle.

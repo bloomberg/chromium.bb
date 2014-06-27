@@ -27,10 +27,10 @@ class ModelTypeSyncProxyWrapper : public ModelTypeSyncProxy {
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   virtual ~ModelTypeSyncProxyWrapper();
 
-  virtual void ReceiveCommitResponse(
+  virtual void OnCommitCompleted(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) OVERRIDE;
-  virtual void ReceiveUpdateResponse(
+  virtual void OnUpdateReceived(
       const DataTypeState& type_state,
       const UpdateResponseDataList& response_list) OVERRIDE;
 
@@ -48,18 +48,18 @@ ModelTypeSyncProxyWrapper::ModelTypeSyncProxyWrapper(
 ModelTypeSyncProxyWrapper::~ModelTypeSyncProxyWrapper() {
 }
 
-void ModelTypeSyncProxyWrapper::ReceiveCommitResponse(
+void ModelTypeSyncProxyWrapper::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ModelTypeSyncProxyImpl::OnCommitCompletion,
+      base::Bind(&ModelTypeSyncProxyImpl::OnCommitCompleted,
                  processor_,
                  type_state,
                  response_list));
 }
 
-void ModelTypeSyncProxyWrapper::ReceiveUpdateResponse(
+void ModelTypeSyncProxyWrapper::OnUpdateReceived(
     const DataTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   processor_task_runner_->PostTask(
@@ -77,7 +77,7 @@ class ModelTypeSyncWorkerWrapper : public ModelTypeSyncWorker {
       const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
   virtual ~ModelTypeSyncWorkerWrapper();
 
-  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+  virtual void EnqueueForCommit(const CommitRequestDataList& list) OVERRIDE;
 
  private:
   base::WeakPtr<ModelTypeSyncWorkerImpl> worker_;
@@ -93,7 +93,7 @@ ModelTypeSyncWorkerWrapper::ModelTypeSyncWorkerWrapper(
 ModelTypeSyncWorkerWrapper::~ModelTypeSyncWorkerWrapper() {
 }
 
-void ModelTypeSyncWorkerWrapper::RequestCommits(
+void ModelTypeSyncWorkerWrapper::EnqueueForCommit(
     const CommitRequestDataList& list) {
   sync_thread_->PostTask(
       FROM_HERE,
@@ -102,12 +102,14 @@ void ModelTypeSyncWorkerWrapper::RequestCommits(
 
 }  // namespace
 
-ModelTypeRegistry::ModelTypeRegistry() : directory_(NULL) {}
+ModelTypeRegistry::ModelTypeRegistry()
+    : directory_(NULL), weak_ptr_factory_(this) {
+}
 
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
     syncable::Directory* directory)
-    : directory_(directory) {
+    : directory_(directory), weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
         std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));
@@ -181,7 +183,7 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
                       GetEnabledNonBlockingTypes()).Empty());
 }
 
-void ModelTypeRegistry::InitializeNonBlockingType(
+void ModelTypeRegistry::ConnectSyncTypeToWorker(
     ModelType type,
     const DataTypeState& data_type_state,
     const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
@@ -217,7 +219,7 @@ void ModelTypeRegistry::InitializeNonBlockingType(
                       GetEnabledNonBlockingTypes()).Empty());
 }
 
-void ModelTypeRegistry::RemoveNonBlockingType(ModelType type) {
+void ModelTypeRegistry::DisconnectSyncWorker(ModelType type) {
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
@@ -281,6 +283,10 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
     it->second->EmitUpdateCountersUpdate();
     it->second->EmitStatusCountersUpdate();
   }
+}
+
+base::WeakPtr<SyncContext> ModelTypeRegistry::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {

@@ -108,7 +108,7 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   }
 
   // Forward these updates to the model thread so it can do the rest.
-  type_sync_proxy_->ReceiveUpdateResponse(data_type_state_, response_datas);
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, response_datas);
 
   return SYNCER_OK;
 }
@@ -123,8 +123,7 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
     data_type_state_.initial_sync_done = true;
 
     UpdateResponseDataList empty_update_list;
-    type_sync_proxy_->ReceiveUpdateResponse(data_type_state_,
-                                            empty_update_list);
+    type_sync_proxy_->OnUpdateReceived(data_type_state_, empty_update_list);
   }
 }
 
@@ -247,7 +246,7 @@ void ModelTypeSyncWorkerImpl::OnCommitResponse(
   // Send the responses back to the model thread.  It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
-  type_sync_proxy_->ReceiveCommitResponse(data_type_state_, response_list);
+  type_sync_proxy_->OnCommitCompleted(data_type_state_, response_list);
 }
 
 base::WeakPtr<ModelTypeSyncWorkerImpl> ModelTypeSyncWorkerImpl::AsWeakPtr() {

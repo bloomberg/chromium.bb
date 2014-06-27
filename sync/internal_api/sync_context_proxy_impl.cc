@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/internal_api/sync_context.h"
+#include "sync/internal_api/public/sync_context.h"
 
 namespace syncer {
 
@@ -37,7 +37,8 @@ void SyncContextProxyImpl::ConnectTypeToSync(
 
 void SyncContextProxyImpl::Disconnect(ModelType type) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncContext::Disconnect, sync_context_, type));
+      FROM_HERE,
+      base::Bind(&SyncContext::DisconnectSyncWorker, sync_context_, type));
 }
 
 scoped_ptr<SyncContextProxy> SyncContextProxyImpl::Clone() const {

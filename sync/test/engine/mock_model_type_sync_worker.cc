@@ -14,7 +14,7 @@ MockModelTypeSyncWorker::MockModelTypeSyncWorker() {
 MockModelTypeSyncWorker::~MockModelTypeSyncWorker() {
 }
 
-void MockModelTypeSyncWorker::RequestCommits(
+void MockModelTypeSyncWorker::EnqueueForCommit(
     const CommitRequestDataList& list) {
   commit_request_lists_.push_back(list);
 }

@@ -16,10 +16,10 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxy {
   ModelTypeSyncProxy();
   virtual ~ModelTypeSyncProxy();
 
-  virtual void ReceiveCommitResponse(
+  virtual void OnCommitCompleted(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) = 0;
-  virtual void ReceiveUpdateResponse(
+  virtual void OnUpdateReceived(
       const DataTypeState& type_state,
       const UpdateResponseDataList& response_list) = 0;
 };

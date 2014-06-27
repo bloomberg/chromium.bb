@@ -13,7 +13,6 @@
 
 namespace syncer {
 
-class ModelTypeRegistry;
 class ModelTypeSyncProxyImpl;
 struct DataTypeState;
 
@@ -27,17 +26,17 @@ struct DataTypeState;
 // instantiate.
 class SYNC_EXPORT_PRIVATE SyncContext {
  public:
-  explicit SyncContext(ModelTypeRegistry* model_type_registry);
-  ~SyncContext();
+  SyncContext();
+  virtual ~SyncContext();
 
   // Initializes the connection between the sync context on the sync thread and
   // a proxy for the specified non-blocking sync type that lives on the data
   // type's thread.
-  void ConnectSyncTypeToWorker(
+  virtual void ConnectSyncTypeToWorker(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const scoped_refptr<base::SequencedTaskRunner>& datatype_task_runner,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy);
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) = 0;
 
   // Disconnects the syncer from the model and stops syncing the type.
   //
@@ -48,15 +47,7 @@ class SYNC_EXPORT_PRIVATE SyncContext {
   // This is the sync thread's chance to clear state associated with the type.
   // It also causes the syncer to stop requesting updates for this type, and to
   // abort any in-progress commit requests.
-  void Disconnect(ModelType type);
-
-  base::WeakPtr<SyncContext> AsWeakPtr();
-
- private:
-  ModelTypeRegistry* model_type_registry_;
-  base::WeakPtrFactory<SyncContext> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncContext);
+  virtual void DisconnectSyncWorker(ModelType type) = 0;
 };
 
 }  // namespace syncer

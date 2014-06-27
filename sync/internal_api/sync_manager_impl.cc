@@ -28,12 +28,12 @@
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/sync_context.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/internal_api/sync_context.h"
 #include "sync/internal_api/sync_context_proxy_impl.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
@@ -390,11 +390,9 @@ void SyncManagerImpl::Init(
 
   model_type_registry_.reset(new ModelTypeRegistry(workers, directory()));
 
-  sync_context_.reset(new SyncContext(model_type_registry_.get()));
-
   // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
   // if the pointer is misused in debug mode.
-  base::WeakPtr<SyncContext> weak_core = sync_context_->AsWeakPtr();
+  base::WeakPtr<SyncContext> weak_core = model_type_registry_->AsWeakPtr();
   weak_core.get();
 
   sync_context_proxy_.reset(

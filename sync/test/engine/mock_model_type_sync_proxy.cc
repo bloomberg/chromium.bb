@@ -14,11 +14,11 @@ MockModelTypeSyncProxy::MockModelTypeSyncProxy() : is_synchronous_(true) {
 MockModelTypeSyncProxy::~MockModelTypeSyncProxy() {
 }
 
-void MockModelTypeSyncProxy::ReceiveCommitResponse(
+void MockModelTypeSyncProxy::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   base::Closure task =
-      base::Bind(&MockModelTypeSyncProxy::ReceiveCommitResponseImpl,
+      base::Bind(&MockModelTypeSyncProxy::OnCommitCompletedImpl,
                  base::Unretained(this),
                  type_state,
                  response_list);
@@ -27,14 +27,13 @@ void MockModelTypeSyncProxy::ReceiveCommitResponse(
     RunQueuedTasks();
 }
 
-void MockModelTypeSyncProxy::ReceiveUpdateResponse(
+void MockModelTypeSyncProxy::OnUpdateReceived(
     const DataTypeState& type_state,
     const UpdateResponseDataList& response_list) {
-  base::Closure task =
-      base::Bind(&MockModelTypeSyncProxy::ReceiveUpdateResponseImpl,
-                 base::Unretained(this),
-                 type_state,
-                 response_list);
+  base::Closure task = base::Bind(&MockModelTypeSyncProxy::OnUpdateReceivedImpl,
+                                  base::Unretained(this),
+                                  type_state,
+                                  response_list);
   pending_tasks_.push_back(task);
   if (is_synchronous_)
     RunQueuedTasks();
@@ -164,7 +163,7 @@ CommitResponseData MockModelTypeSyncProxy::GetCommitResponse(
   return it->second;
 }
 
-void MockModelTypeSyncProxy::ReceiveCommitResponseImpl(
+void MockModelTypeSyncProxy::OnCommitCompletedImpl(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   received_commit_responses_.push_back(response_list);
@@ -180,7 +179,7 @@ void MockModelTypeSyncProxy::ReceiveCommitResponseImpl(
   }
 }
 
-void MockModelTypeSyncProxy::ReceiveUpdateResponseImpl(
+void MockModelTypeSyncProxy::OnUpdateReceivedImpl(
     const DataTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   received_update_responses_.push_back(response_list);

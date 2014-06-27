@@ -31,10 +31,10 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   virtual ~MockModelTypeSyncProxy();
 
   // Implementation of ModelTypeSyncProxy.
-  virtual void ReceiveCommitResponse(
+  virtual void OnCommitCompleted(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) OVERRIDE;
-  virtual void ReceiveUpdateResponse(
+  virtual void OnUpdateReceived(
       const DataTypeState& type_state,
       const UpdateResponseDataList& response_list) OVERRIDE;
 
@@ -86,14 +86,14 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void ReceiveCommitResponseImpl(const DataTypeState& type_state,
-                                 const CommitResponseDataList& response_list);
+  void OnCommitCompletedImpl(const DataTypeState& type_state,
+                             const CommitResponseDataList& response_list);
 
   // Process a received update response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void ReceiveUpdateResponseImpl(const DataTypeState& type_state,
-                                 const UpdateResponseDataList& response_list);
+  void OnUpdateReceivedImpl(const DataTypeState& type_state,
+                            const UpdateResponseDataList& response_list);
 
   // Getter and setter for per-item sequence number tracking.
   int64 GetCurrentSequenceNumber(const std::string& tag_hash) const;
