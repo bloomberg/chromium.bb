@@ -22093,19 +22093,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.CookieSendType" enum="PrerenderCookieSendType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what types of cookies were sent for a prerender.
   </summary>
 </histogram>
 
 <histogram name="Prerender.CookieStatus" enum="PrerenderCookieStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>Enumeration of what cookie actions a prerender caused.</summary>
 </histogram>
 
 <histogram name="Prerender.Event" enum="PrerenderEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what events related to prerendering have occurred.
   </summary>
@@ -22120,7 +22120,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
   </summary>
@@ -22128,7 +22128,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.FinalStatusMatchComplete"
     enum="PrerenderFinalStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
     This is for the MatchComplete set of pages (including some pages that were
@@ -22174,7 +22174,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorEvent"
     enum="PrerenderLocalPredictorEvents">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what events related to the local predictor have occurred
   </summary>
@@ -22182,7 +22182,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorLoggedInLookupTime"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the LoggedIn Lookup for the local predictor. This operation
     checks whether a user his likely logged into a page that we would like to
@@ -22192,7 +22192,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorServiceLookupTime"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the Service Lookup for the local predictor. This operation
     queries a Google service to obtain pages to prerender, as well as whether
@@ -22201,7 +22201,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.LocalPredictorTimeUntilUsed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
@@ -22210,7 +22210,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.LocalPredictorURLLookupTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the URL Lookup for the local predictor. This operation
     retrieves from the user's local browsing history the URLs corresponding to
@@ -22332,7 +22332,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsCouldPrerender">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     A boolean that indicates whether the Omnibox navigation being committed
     could have been prerendered by the Omnibox Prerender system. This provides
@@ -22345,7 +22345,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsUsedPrerenderCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The number of navigations that use a prerender initiated from the Omnibox.
     The count is incremented when the Prerendered tab is swapped in if the
@@ -22355,7 +22355,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.OmniboxPrerenderCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The number of prerenders initiated from the Omnibox. This is incremented
     when the NetworkActionPredictor suggests Prerendering as an optimal strategy
@@ -22367,7 +22367,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PagespeedHeader.ServerCounts"
     enum="PagespeedHeaderServerType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The number of responses received bucketed into the range [0,4]: bucket 0 is
     the total number of responses received; bucket 1 is the number of responses
@@ -22385,7 +22385,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PagespeedHeader.VersionCounts"
     enum="PagespeedVersion">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The number of responses received that either have an X-Mod-Pagespeed header
     or have an X-Page-Speed header with a value in the X-Mod-Pagespeed format
@@ -22406,7 +22406,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PageVisitedStatus" enum="Boolean">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Indicates whether the user has ever visited (in the past) a URL for which a
     prerender is launched.
@@ -22515,7 +22515,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLT" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22526,7 +22526,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMiss" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22539,7 +22539,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissAnyOnly"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22553,7 +22553,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissBoth" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22568,7 +22568,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22582,7 +22582,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22596,7 +22596,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTMatched" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22608,7 +22608,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTMatchedComplete" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22624,7 +22624,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTWindowed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22636,7 +22636,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTWindowNotMatched" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -22648,7 +22648,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PercentLoadDoneAtSwapin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For prerenders that are swapped in, the percentage of the time from load
     start until the onload event fires that has elapsed at the time of the
@@ -22658,7 +22658,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PeriodicCleanupDeleteContentsTime"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     How long the cleanup portion of PrerenderManager::PeriodicCleanup takes, to
     measure jank.
@@ -22667,7 +22667,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.PeriodicCleanupResourceCheckTime"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     How long the resource check portion of PrerenderManager::PeriodicCleanup
     takes, to measure jank.
@@ -22675,7 +22675,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PrerenderCountOf3Max">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     After launching a prerender, how many simultanious prerenders are recorded
     as running, out of a maximum of three.
@@ -22683,7 +22683,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PrerenderNotSwappedInPLT" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For prerenders that finish loading before they are ever swapped in, their
     page load time until the onload event fires.
@@ -22691,14 +22691,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PrerendersPerSessionCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The number of sessions that have at least X successful prerenders.
   </summary>
 </histogram>
 
 <histogram name="Prerender.RelTypesLinkAdded" enum="PrerenderRelTypes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For each prerender link added to a document, records the rel types present
     on the link element.
@@ -22706,7 +22706,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.RelTypesLinkStarted" enum="PrerenderRelTypes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For each prerender in a document which starts prerendering, records the rel
     types present on the link element.
@@ -22768,7 +22768,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.SchemeCancelReason"
     enum="PrerenderSchemeCancelReason">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The detailed reason why a prerender is canceled with
     FINAL_STATUS_UNSUPPORTED_SCHEME
@@ -22785,13 +22785,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.SessionStorageNamespaceMergeTime"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>Time to perform the session storage namespace merge.</summary>
 </histogram>
 
 <histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the baseline PLT of pages without
     any prerendering for pages that would be prerendered.
@@ -22799,7 +22799,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.SimulatedLocalBrowsingPLT" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the estimated PLT of pages with
     prerendering enabled for pages that would be prerendered.
@@ -22808,7 +22808,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.TabContentsDeleterSuppressedDialog"
     enum="BooleanSuppressed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     A boolean that indicates how often we suppress a dialog from a tab when
     swapping it with a prerender.
@@ -22817,7 +22817,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.TabContentsDeleterTimeout"
     enum="BooleanCloseTimeout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     A boolean that indicates how often we fail to delete an old prerendered tab
     before the timeout.
@@ -22825,19 +22825,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.TabHelperEvent" enum="PrerenderTabHelperEvents">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what events related to the TabHelper class have occurred.
   </summary>
 </histogram>
 
 <histogram name="Prerender.TimeBetweenPrerenderRequests" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>Time between subsequent prerender requests.</summary>
 </histogram>
 
 <histogram name="Prerender.TimeSinceLastRecentVisit" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     The time elapsed between the most recent visit to a URL and when an
     attempted prerender of the same URL is cancelled with
@@ -22867,7 +22867,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.TimeUntilUsed2" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
