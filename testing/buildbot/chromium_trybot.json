@@ -120,7 +120,6 @@
       }
     },
     "url_unittests",
-    "webkit_compositor_bindings_unittests",
     {
       "test": "wm_unittests",
       "platforms": ["linux"]

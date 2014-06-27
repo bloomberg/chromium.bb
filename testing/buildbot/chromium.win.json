@@ -21,8 +21,7 @@
       "sbox_validation_tests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
-      "installer_util_unittests",
-      "webkit_compositor_bindings_unittests"
+      "installer_util_unittests"
     ]
   },
   "XP Tests (2)": {
@@ -77,8 +76,7 @@
       "sbox_validation_tests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
-      "installer_util_unittests",
-      "webkit_compositor_bindings_unittests"
+      "installer_util_unittests"
     ]
   },
   "Vista Tests (2)": {
@@ -143,8 +141,7 @@
       "sbox_validation_tests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
-      "installer_util_unittests",
-      "webkit_compositor_bindings_unittests"
+      "installer_util_unittests"
     ]
   },
   "Win7 Tests (2)": {
@@ -209,8 +206,7 @@
       "sbox_integration_tests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
-      "installer_util_unittests",
-      "webkit_compositor_bindings_unittests"
+      "installer_util_unittests"
     ]
   },
   "Win 7 Tests x64 (2)": {
@@ -278,8 +274,7 @@
       "content_unittests",
       "views_unittests",
       "wm_unittests",
-      "installer_util_unittests",
-      "webkit_compositor_bindings_unittests"
+      "installer_util_unittests"
     ]
   },
   "Win7 Tests (dbg)(2)": {

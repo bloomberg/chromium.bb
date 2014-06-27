@@ -17,8 +17,7 @@
       "remoting_unittests",
       "app_list_unittests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
-      "content_browsertests",
-      "webkit_compositor_bindings_unittests"
+      "content_browsertests"
     ]
   },
   "Mac10.6 Tests (2)": {
@@ -71,8 +70,7 @@
       "remoting_unittests",
       "app_list_unittests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
-      "content_browsertests",
-      "webkit_compositor_bindings_unittests"
+      "content_browsertests"
     ]
   },
   "Mac10.7 Tests (2)": {
@@ -121,8 +119,7 @@
       "printing_unittests",
       "remoting_unittests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 4},
-      "content_browsertests",
-      "webkit_compositor_bindings_unittests"
+      "content_browsertests"
     ]
   },
   "Mac 10.6 Tests (dbg)(2)": {
@@ -179,8 +176,7 @@
       "printing_unittests",
       "remoting_unittests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 4},
-      "content_browsertests",
-      "webkit_compositor_bindings_unittests"
+      "content_browsertests"
     ]
   },
   "Mac 10.7 Tests (dbg)(2)": {

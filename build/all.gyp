@@ -108,7 +108,6 @@
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],
         }],
@@ -290,7 +289,6 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/telemetry/telemetry.gyp:*',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         }],
         ['OS=="win"', {
@@ -771,7 +769,6 @@
             '../ui/events/events.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
             '../ui/ui_unittests.gyp:ui_unittests_apk',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests_apk',
           ],
         },
         {
@@ -889,7 +886,6 @@
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
             '../url/url.gyp:url_unittests',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         },
         {
@@ -989,7 +985,6 @@
             '../ui/ui_unittests.gyp:ui_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
           'conditions': [
             ['target_arch=="ia32"', {
@@ -1146,7 +1141,6 @@
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_unittests',
             '../ui/wm/wm.gyp:*',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
             'blink_tests',
           ],
           'conditions': [

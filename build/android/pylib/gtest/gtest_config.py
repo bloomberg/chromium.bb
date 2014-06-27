@@ -31,7 +31,6 @@ STABLE_TEST_SUITES = [
     'sync_unit_tests',
     'ui_unittests',
     'unit_tests',
-    'webkit_compositor_bindings_unittests',
     'webkit_unit_tests',
 ]
 
