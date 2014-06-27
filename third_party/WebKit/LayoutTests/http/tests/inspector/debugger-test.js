@@ -14,7 +14,7 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
 
 InspectorTest.completeDebuggerTest = function()
 {
-    WebInspector.debuggerModel.setBreakpointsActive(true);
+    WebInspector.breakpointManager.setBreakpointsActive(true);
     InspectorTest.resumeExecution(InspectorTest.completeTest.bind(InspectorTest));
 };
 
