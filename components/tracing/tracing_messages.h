@@ -48,7 +48,7 @@ IPC_MESSAGE_CONTROL2(TracingMsg_SetWatchEvent,
 IPC_MESSAGE_CONTROL0(TracingMsg_CancelWatchEvent)
 
 // Sent everytime when a watch event is matched.
-IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched);
+IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched)
 
 // Notify the browser that this child process supports tracing.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)

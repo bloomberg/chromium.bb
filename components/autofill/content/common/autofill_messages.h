@@ -205,7 +205,7 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_PasswordFormsRendered,
 // A ping to the browser that PasswordAutofillAgent was constructed. As a
 // consequence, the browser sends AutofillMsg_SetLoggingState with the current
 // state of the logging activity.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_PasswordAutofillAgentConstructed);
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_PasswordAutofillAgentConstructed)
 
 // Notification that this password form was submitted by the user.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
@@ -254,7 +254,7 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
 
 // Sent when interactive autocomplete is cancelled (e.g. because the invoking
 // frame was navigated to a different URL).
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_CancelRequestAutocomplete);
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_CancelRequestAutocomplete)
 
 // Send when a text field is done editing.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
