@@ -612,13 +612,16 @@ class RegistryEntry {
     if (is_string_) {
       base::string16 read_value;
       found = key.ReadValue(name_.c_str(), &read_value) == ERROR_SUCCESS;
-      correct_value = read_value.size() == value_.size() &&
-          std::equal(value_.begin(), value_.end(), read_value.begin(),
-                     base::CaseInsensitiveCompare<wchar_t>());
+      if (found) {
+        correct_value = read_value.size() == value_.size() &&
+            std::equal(value_.begin(), value_.end(), read_value.begin(),
+                       base::CaseInsensitiveCompare<wchar_t>());
+      }
     } else {
       DWORD read_value;
       found = key.ReadValueDW(name_.c_str(), &read_value) == ERROR_SUCCESS;
-      correct_value = read_value == int_value_;
+      if (found)
+        correct_value = read_value == int_value_;
     }
     return found ?
         (correct_value ? SAME_VALUE : DIFFERENT_VALUE) : DOES_NOT_EXIST;
