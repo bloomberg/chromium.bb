@@ -1286,8 +1286,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Flaky on Linux. http://crbug.com/368280.
+#if defined(OS_LINUX)
+#define MAYBE_TestRedirectGoodToBadHTTPS DISABLED_TestRedirectGoodToBadHTTPS
+#else
+#define MAYBE_TestRedirectGoodToBadHTTPS TestRedirectGoodToBadHTTPS
+#endif
+
 // Visit a page over good https that is a redirect to a page with bad https.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRedirectGoodToBadHTTPS) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -1322,8 +1329,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Flaky on Linux. http://crbug.com/368280.
+#if defined(OS_LINUX)
+#define MAYBE_TestRedirectHTTPToBadHTTPS DISABLED_TestRedirectHTTPToBadHTTPS
+#else
+#define MAYBE_TestRedirectHTTPToBadHTTPS TestRedirectHTTPToBadHTTPS
+#endif
+
 // Visit a page over http that is a redirect to a page with bad HTTPS.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRedirectHTTPToBadHTTPS) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
