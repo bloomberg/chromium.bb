@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
@@ -59,6 +58,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "net/base/escape.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/unpacked_installer.h"
+#endif
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -372,6 +375,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   error_console_.reset(new ErrorConsole(profile_));
   quota_service_.reset(new QuotaService);
 
+// TODO(thestig): Remove this once ExtensionSystemImpl is no longer built on
+// platforms that do not support extensions.
+#if defined(ENABLE_EXTENSIONS)
   if (extensions_enabled) {
     // Load any extensions specified with --load-extension.
     // TODO(yoz): Seems like this should move into ExtensionService::Init.
@@ -389,6 +395,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       }
     }
   }
+#endif
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {

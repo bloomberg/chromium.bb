@@ -33,9 +33,7 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/shared_module_service.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -82,6 +80,8 @@
 // longer used on mobile.
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #endif
 
@@ -615,6 +615,7 @@ void ExtensionService::ReloadExtension(
     // "transient" because the process of reloading may cause the reference
     // to become invalid. Instead, use |extension_id|, a copy.
     const std::string& transient_extension_id) {
+#if defined(ENABLE_EXTENSIONS)
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If the extension is already reloading, don't reload again.
@@ -701,6 +702,7 @@ void ExtensionService::ReloadExtension(
   }
   // When reloading is done, mark this extension as done reloading.
   SetBeingReloaded(extension_id, false);
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 bool ExtensionService::UninstallExtension(
@@ -979,8 +981,10 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
 }
 
 void ExtensionService::GrantPermissions(const Extension* extension) {
+#if defined(ENABLE_EXTENSIONS)
   CHECK(extension);
   extensions::PermissionsUpdater(profile()).GrantActivePermissions(extension);
+#endif
 }
 
 // static
@@ -1566,8 +1570,9 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
 
 void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
                                                 bool is_extension_installed) {
-  extensions::PermissionsUpdater(profile_)
-      .InitializeActivePermissions(extension);
+#if defined(ENABLE_EXTENSIONS)
+  extensions::PermissionsUpdater(profile_).InitializeActivePermissions(
+      extension);
 
   // We keep track of all permissions the user has granted each extension.
   // This allows extensions to gracefully support backwards compatibility
@@ -1668,6 +1673,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
         extension->id(),
         static_cast<Extension::DisableReason>(disable_reasons));
   }
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ExtensionService::UpdateActiveExtensionsInCrashReporter() {

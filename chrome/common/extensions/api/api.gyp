@@ -18,7 +18,6 @@
       'activity_log_private.json',
       'file_system.idl',
       'manifest_types.json',
-      'permissions.json',
       'sync_file_system.idl',
       'tab_capture.idl',
       'tabs.json',

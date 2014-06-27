@@ -2138,6 +2138,7 @@
             'browser/extensions/permissions_updater_unittest.cc',
             'browser/extensions/sandboxed_unpacker_unittest.cc',
             'browser/extensions/updater/extension_updater_unittest.cc',
+            'browser/extensions/user_script_listener_unittest.cc',
             'browser/extensions/webstore_inline_installer_unittest.cc',
             'browser/extensions/webstore_installer_unittest.cc',
             'browser/guest_view/guest_view_manager_unittest.cc',
