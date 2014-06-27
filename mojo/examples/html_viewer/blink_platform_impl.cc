@@ -128,6 +128,10 @@ void BlinkPlatformImpl::callOnMainThread(
   main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
+blink::WebScrollbarBehavior* BlinkPlatformImpl::scrollbarBehavior() {
+  return &scrollbar_behavior_;
+}
+
 const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
     const char* category_name) {
   static const unsigned char buf[] = "*";

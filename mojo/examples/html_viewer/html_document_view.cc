@@ -101,8 +101,7 @@ void HTMLDocumentView::AttachToNode(view_manager::Node* node) {
   ConfigureSettings(web_view_->settings());
   web_view_->setMainFrame(blink::WebLocalFrame::create(this));
 
-  // TODO(darin): Track size of view_manager::Node.
-  web_view_->resize(gfx::Size(800, 600));
+  web_view_->resize(gfx::Size(node->bounds().size()));
 }
 
 void HTMLDocumentView::Load(URLResponsePtr response,

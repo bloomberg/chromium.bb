@@ -12,6 +12,7 @@
 #include "mojo/examples/html_viewer/webthemeengine_impl.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -46,6 +47,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebWaitableEvent* createWaitableEvent();
   virtual blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events);
+  virtual blink::WebScrollbarBehavior* scrollbarBehavior();
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name);
 
@@ -70,6 +72,7 @@ class BlinkPlatformImpl : public blink::Platform {
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
+  blink::WebScrollbarBehavior scrollbar_behavior_;
 };
 
 }  // namespace examples
