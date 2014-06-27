@@ -4,20 +4,29 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-var scriptUrl = "timeline-network-resource.js";
-
 function performActions() 
 {
     var image = new Image();
     image.src = "resources/anImage.png";
     var script = document.createElement("script");
-    script.src = scriptUrl;
+    script.src = "timeline-network-resource.js";
     document.body.appendChild(script);
 }
 
 function test()
 {
-    var scriptUrl = "timeline-network-resource.js";
+    var callbackBarrier = new CallbackBarrier();
+    var resourceReceivedCallback = callbackBarrier.createCallback();
+    // It will be called from timeline-network-resource.js script by evaluateInWebInspector call.
+    InspectorTest.scriptEvaluated = callbackBarrier.createCallback();
+    callbackBarrier.callWhenDone(done);
+
+    function done()
+    {
+        InspectorTest.addResult("Script evaluated.");
+        InspectorTest.addResult("Resource received data has length, test passed.");
+        InspectorTest.completeTest();
+    }
 
     var calledOnce;
 
@@ -35,8 +44,7 @@ function test()
                     if (property === "encodedDataLength") {
                         if (!calledOnce) {
                             calledOnce = true;
-                            InspectorTest.addResult("Resource received data has length, test passed.");
-                            InspectorTest.completeTest();
+                            resourceReceivedCallback();
                         }
                         return;
                     }

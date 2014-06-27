@@ -26,10 +26,10 @@ function test()
     function step1()
     {
         InspectorTest.evaluateInPage("performActions()");
-        InspectorTest.addConsoleSniffer(step2);
     }
 
-    function step2()
+    // It will be called from timeline-network-resource.js script by evaluateInWebInspector call.
+    InspectorTest.scriptEvaluated = function()
     {
         InspectorTest.stopTimeline(step3);
     }

@@ -4,4 +4,4 @@ var element = document.createElement("div");
 element.innerHTML = "Script resource loaded";
 document.body.appendChild(element);
 
-console.log("Script evaluated");
+testRunner.evaluateInWebInspector(1000, "InspectorTest.scriptEvaluated();");
