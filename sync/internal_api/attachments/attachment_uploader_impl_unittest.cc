@@ -33,6 +33,7 @@ const char kAttachmentData[] = "some data";
 const char kAccountId[] = "some-account-id";
 const char kAccessToken[] = "some-access-token";
 const char kAuthorization[] = "Authorization";
+const char kAttachments[] = "/attachments/";
 
 }  // namespace
 
@@ -264,8 +265,7 @@ void AttachmentUploaderImplTest::SetUp() {
       base::Bind(&RequestHandler::HandleRequest,
                  base::Unretained(request_handler_.get())));
 
-  std::string url_prefix(
-      base::StringPrintf("http://localhost:%d/uploads/", server_.port()));
+  GURL url(base::StringPrintf("http://localhost:%d/", server_.port()));
 
   token_service_.reset(new MockOAuth2TokenService);
   scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
@@ -273,7 +273,7 @@ void AttachmentUploaderImplTest::SetUp() {
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  uploader().reset(new AttachmentUploaderImpl(url_prefix,
+  uploader().reset(new AttachmentUploaderImpl(url,
                                               url_request_context_getter_,
                                               kAccountId,
                                               scopes,
@@ -377,6 +377,42 @@ net::HttpStatusCode RequestHandler::GetStatusCode() const {
   return status_code_;
 }
 
+TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_NoPath) {
+  AttachmentId id = AttachmentId::Create();
+  std::string unique_id = id.GetProto().unique_id();
+  GURL sync_service_url("https://example.com");
+  EXPECT_EQ("https://example.com/attachments/" + unique_id,
+            AttachmentUploaderImpl::GetURLForAttachmentId(sync_service_url, id)
+                .spec());
+}
+
+TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_JustSlash) {
+  AttachmentId id = AttachmentId::Create();
+  std::string unique_id = id.GetProto().unique_id();
+  GURL sync_service_url("https://example.com/");
+  EXPECT_EQ("https://example.com/attachments/" + unique_id,
+            AttachmentUploaderImpl::GetURLForAttachmentId(sync_service_url, id)
+                .spec());
+}
+
+TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_Path) {
+  AttachmentId id = AttachmentId::Create();
+  std::string unique_id = id.GetProto().unique_id();
+  GURL sync_service_url("https://example.com/service");
+  EXPECT_EQ("https://example.com/service/attachments/" + unique_id,
+            AttachmentUploaderImpl::GetURLForAttachmentId(sync_service_url, id)
+                .spec());
+}
+
+TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_PathAndSlash) {
+  AttachmentId id = AttachmentId::Create();
+  std::string unique_id = id.GetProto().unique_id();
+  GURL sync_service_url("https://example.com/service/");
+  EXPECT_EQ("https://example.com/service/attachments/" + unique_id,
+            AttachmentUploaderImpl::GetURLForAttachmentId(sync_service_url, id)
+                .spec());
+}
+
 // Verify the "happy case" of uploading an attachment.
 //
 // Token is requested, token is returned, HTTP request is made, attachment is
@@ -403,7 +439,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_HappyCase) {
   ASSERT_EQ(1U, http_requests_received().size());
   const HttpRequest& http_request = http_requests_received().front();
   EXPECT_EQ(net::test_server::METHOD_POST, http_request.method);
-  std::string expected_relative_url("/uploads/" +
+  std::string expected_relative_url(kAttachments +
                                     attachment.GetId().GetProto().unique_id());
   EXPECT_EQ(expected_relative_url, http_request.relative_url);
   EXPECT_TRUE(http_request.has_content);
@@ -506,7 +542,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
   ASSERT_EQ(1U, http_requests_received().size());
   const HttpRequest& http_request = http_requests_received().front();
   EXPECT_EQ(net::test_server::METHOD_POST, http_request.method);
-  std::string expected_relative_url("/uploads/" +
+  std::string expected_relative_url(kAttachments +
                                     attachment.GetId().GetProto().unique_id());
   EXPECT_EQ(expected_relative_url, http_request.relative_url);
   EXPECT_TRUE(http_request.has_content);
@@ -544,7 +580,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   ASSERT_EQ(1U, http_requests_received().size());
   const HttpRequest& http_request = http_requests_received().front();
   EXPECT_EQ(net::test_server::METHOD_POST, http_request.method);
-  std::string expected_relative_url("/uploads/" +
+  std::string expected_relative_url(kAttachments +
                                     attachment.GetId().GetProto().unique_id());
   EXPECT_EQ(expected_relative_url, http_request.relative_url);
   EXPECT_TRUE(http_request.has_content);
