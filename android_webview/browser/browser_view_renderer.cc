@@ -96,8 +96,6 @@ BrowserViewRenderer::BrowserViewRenderer(
     : client_(client),
       shared_renderer_state_(shared_renderer_state),
       web_contents_(web_contents),
-      weak_factory_on_ui_thread_(this),
-      ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
       ui_task_runner_(ui_task_runner),
       compositor_(NULL),
       is_paused_(false),
@@ -247,7 +245,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!hardware_enabled_)
     return false;
 
-  ReturnResources();
+  ReturnResourceFromParent();
   SynchronousCompositorMemoryPolicy new_policy = CalculateDesiredMemoryPolicy();
   RequestMemoryPolicy(new_policy);
   compositor_->SetMemoryPolicy(memory_policy_);
@@ -271,36 +269,25 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
 
   frame->AssignTo(&draw_gl_input->frame);
-  scoped_ptr<DrawGLInput> old_input = shared_renderer_state_->PassDrawGLInput();
-  if (old_input.get()) {
-    shared_renderer_state_->ReturnResources(
-        old_input->frame.delegated_frame_data->resource_list);
-  }
+  ReturnUnusedResource(shared_renderer_state_->PassDrawGLInput());
   shared_renderer_state_->SetDrawGLInput(draw_gl_input.Pass());
-
   DidComposite();
-  bool did_request = client_->RequestDrawGL(java_canvas, false);
-  if (did_request)
-    return true;
-
-  ReturnResources();
-  return false;
+  return client_->RequestDrawGL(java_canvas, false);
 }
 
-void BrowserViewRenderer::DidDrawDelegated() {
-  if (!ui_task_runner_->BelongsToCurrentThread()) {
-    // TODO(boliu): This should be a cancelable callback.
-    // TODO(boliu): Do this PostTask in AwContents instead so every method in
-    // this class is called by UI thread.
-    ui_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&BrowserViewRenderer::DidDrawDelegated,
-                                         ui_thread_weak_ptr_));
+void BrowserViewRenderer::ReturnUnusedResource(scoped_ptr<DrawGLInput> input) {
+  if (!input.get())
     return;
-  }
-  ReturnResources();
+
+  cc::CompositorFrameAck frame_ack;
+  cc::TransferableResource::ReturnResources(
+      input->frame.delegated_frame_data->resource_list,
+      &frame_ack.resources);
+  if (!frame_ack.resources.empty())
+    compositor_->ReturnResources(frame_ack);
 }
 
-void BrowserViewRenderer::ReturnResources() {
+void BrowserViewRenderer::ReturnResourceFromParent() {
   cc::CompositorFrameAck frame_ack;
   shared_renderer_state_->SwapReturnedResources(&frame_ack.resources);
   if (!frame_ack.resources.empty()) {
@@ -426,12 +413,8 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
   attached_to_window_ = false;
   if (hardware_enabled_) {
-    scoped_ptr<DrawGLInput> input = shared_renderer_state_->PassDrawGLInput();
-    if (input.get()) {
-      shared_renderer_state_->ReturnResources(
-          input->frame.delegated_frame_data->resource_list);
-    }
-    ReturnResources();
+    ReturnUnusedResource(shared_renderer_state_->PassDrawGLInput());
+    ReturnResourceFromParent();
     DCHECK(shared_renderer_state_->ReturnedResourcesEmpty());
 
     compositor_->ReleaseHwDraw();
@@ -714,6 +697,7 @@ void BrowserViewRenderer::ForceFakeCompositeSW() {
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(compositor_);
+  ReturnResourceFromParent();
   bool result = compositor_->DemandDrawSw(canvas);
   DidComposite();
   return result;

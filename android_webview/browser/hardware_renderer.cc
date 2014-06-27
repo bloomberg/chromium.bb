@@ -126,7 +126,7 @@ void HardwareRenderer::DidBeginMainFrame() {
   output_surface_->SetDrawConstraints(viewport_, clip_);
 }
 
-bool HardwareRenderer::DrawGL(bool stencil_enabled,
+void HardwareRenderer::DrawGL(bool stencil_enabled,
                               int framebuffer_binding_ext,
                               AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
@@ -136,7 +136,7 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
   EGLContext current_context = eglGetCurrentContext();
   if (!current_context) {
     DLOG(ERROR) << "DrawGL called without EGLContext";
-    return false;
+    return;
   }
 
   // TODO(boliu): Handle context loss.
@@ -206,8 +206,6 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
     layer_tree_host_->Composite(gfx::FrameTime::Now());
   }
   gl_surface_->ResetBackingFrameBufferObject();
-
-  return true;
 }
 
 scoped_ptr<cc::OutputSurface> HardwareRenderer::CreateOutputSurface(

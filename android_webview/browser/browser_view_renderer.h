@@ -81,7 +81,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
               const gfx::Vector2d& scroll,
               const gfx::Rect& global_visible_rect,
               const gfx::Rect& clip);
-  void DidDrawDelegated();
 
   // CapturePicture API methods.
   skia::RefPtr<SkPicture> CapturePicture(int width, int height);
@@ -116,7 +115,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void TrimMemory(const int level, const bool visible);
 
-  // SynchronousCompositorClient overrides
+  // SynchronousCompositorClient overrides.
   virtual void DidInitializeCompositor(
       content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void DidDestroyCompositor(content::SynchronousCompositor* compositor)
@@ -136,7 +135,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
-  // GlobalTileManagerClient overrides
+  // GlobalTileManagerClient overrides.
   virtual size_t GetNumTiles() const OVERRIDE;
   virtual void SetNumTiles(size_t num_tiles,
                            bool effective_immediately) OVERRIDE;
@@ -155,7 +154,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       const gfx::SizeF& scrollable_size_dip);
 
   bool OnDrawHardware(jobject java_canvas);
-  void ReturnResources();
+  void ReturnUnusedResource(scoped_ptr<DrawGLInput> input);
+  void ReturnResourceFromParent();
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
@@ -179,12 +179,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   BrowserViewRendererClient* client_;
   SharedRendererState* shared_renderer_state_;
   content::WebContents* web_contents_;
-  // TODO(boliu): This class should only be used on the UI thread. However in
-  // short term to supporting HardwareRenderer, some callbacks on
-  // SynchronousCompositorClient may be called on non-UI thread. These are
-  // used to detect this and post them back to UI thread.
-  base::WeakPtrFactory<BrowserViewRenderer> weak_factory_on_ui_thread_;
-  base::WeakPtr<BrowserViewRenderer> ui_thread_weak_ptr_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   content::SynchronousCompositor* compositor_;

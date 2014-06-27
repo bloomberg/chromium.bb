@@ -368,11 +368,9 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
   }
 
-  if (hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
-                                 state_restore.framebuffer_binding_ext(),
-                                 draw_info)) {
-    browser_view_renderer_.DidDrawDelegated();
-  }
+  hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
+                             state_restore.framebuffer_binding_ext(),
+                             draw_info);
 }
 
 namespace {

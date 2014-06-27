@@ -29,7 +29,9 @@ SharedRendererState::SharedRendererState(
   DCHECK(client_on_ui_);
 }
 
-SharedRendererState::~SharedRendererState() {}
+SharedRendererState::~SharedRendererState() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+}
 
 void SharedRendererState::ClientRequestDrawGL() {
   if (ui_loop_->BelongsToCurrentThread()) {
@@ -82,12 +84,6 @@ gpu::GLInProcessContext* SharedRendererState::GetSharedContext() const {
   return share_context_;
 }
 
-void SharedRendererState::ReturnResources(
-    const cc::TransferableResourceArray& input) {
-  base::AutoLock lock(lock_);
-  cc::TransferableResource::ReturnResources(input, &returned_resources_);
-}
-
 void SharedRendererState::InsertReturnedResources(
     const cc::ReturnedResourceArray& resources) {
   base::AutoLock lock(lock_);
@@ -97,6 +93,7 @@ void SharedRendererState::InsertReturnedResources(
 
 void SharedRendererState::SwapReturnedResources(
     cc::ReturnedResourceArray* resources) {
+  DCHECK(resources->empty());
   base::AutoLock lock(lock_);
   resources->swap(returned_resources_);
 }

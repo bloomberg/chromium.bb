@@ -32,7 +32,7 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   explicit HardwareRenderer(SharedRendererState* state);
   virtual ~HardwareRenderer();
 
-  bool DrawGL(bool stencil_enabled,
+  void DrawGL(bool stencil_enabled,
               int framebuffer_binding_ext,
               AwDrawGLInfo* draw_info);
 
