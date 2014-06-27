@@ -7,6 +7,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/basictypes.h"
+#include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -15,6 +16,8 @@
 #define IPC_MESSAGE_START GinJavaBridgeMsgStart
 
 // Messages for handling Java objects injected into JavaScript -----------------
+
+IPC_ENUM_TRAITS(content::GinJavaBridgeError)
 
 // Sent from browser to renderer to add a Java object with the given name.
 // Object IDs are generated on the browser side.
@@ -45,14 +48,16 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GinJavaBridgeHostMsg_HasMethod,
 // a container to work around immutability of base::Value.
 // Empty result list indicates that an error has happened on the Java side
 // (either bridge-induced error or an unhandled Java exception) and an exception
-// must be thrown into JavaScript.
+// must be thrown into JavaScript. |error_code| indicates the cause of
+// the error.
 // Some special value types that are not supported by base::Value are encoded
 // as BinaryValues via GinJavaBridgeValue.
-IPC_SYNC_MESSAGE_ROUTED3_1(GinJavaBridgeHostMsg_InvokeMethod,
+IPC_SYNC_MESSAGE_ROUTED3_2(GinJavaBridgeHostMsg_InvokeMethod,
                            int32 /* object_id */,
                            std::string /* method_name */,
                            base::ListValue /* arguments */,
-                           base::ListValue /* result */)
+                           base::ListValue /* result */,
+                           content::GinJavaBridgeError /* error_code */)
 
 // Sent from renderer to browser in two cases:
 //

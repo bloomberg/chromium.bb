@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "content/browser/renderer_host/java/gin_java_bound_object.h"
 #include "content/browser/renderer_host/java/java_type.h"
+#include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -68,7 +69,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   const base::ListValue& GetPrimitiveResult();
   const base::android::JavaRef<jobject>& GetObjectResult();
   const base::android::JavaRef<jclass>& GetSafeAnnotationClass();
-  const std::string& GetErrorMessage();
+  const GinJavaBridgeError GetInvocationError();
 
  private:
   friend class base::RefCountedThreadSafe<GinJavaMethodInvocationHelper>;
@@ -89,7 +90,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
                     const JavaType& return_type,
                     jmethodID id,
                     jvalue* parameters);
-  void SetInvocationFailure(const char* error_message);
+  void SetInvocationError(GinJavaBridgeError error);
   void SetPrimitiveResult(const base::ListValue& result_wrapper);
   void SetObjectResult(
       const base::android::JavaRef<jobject>& object,
@@ -104,7 +105,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   ObjectRefs object_refs_;
   bool holds_primitive_result_;
   scoped_ptr<base::ListValue> primitive_result_;
-  std::string error_message_;
+  GinJavaBridgeError invocation_error_;
   base::android::ScopedJavaGlobalRef<jobject> object_result_;
   base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;
 

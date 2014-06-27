@@ -1,0 +1,497 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/renderer_host/java/gin_java_bridge_dispatcher_host.h"
+
+#include "base/android/java_handler_thread.h"
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#include "base/lazy_instance.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "content/browser/renderer_host/java/gin_java_bound_object_delegate.h"
+#include "content/browser/renderer_host/java/jni_helper.h"
+#include "content/common/android/gin_java_bridge_value.h"
+#include "content/common/android/hash_set.h"
+#include "content/common/gin_java_bridge_messages.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "ipc/ipc_message_utils.h"
+
+#if !defined(OS_ANDROID)
+#error "JavaBridge only supports OS_ANDROID"
+#endif
+
+namespace content {
+
+namespace {
+// The JavaBridge needs to use a Java thread so the callback
+// will happen on a thread with a prepared Looper.
+class JavaBridgeThread : public base::android::JavaHandlerThread {
+ public:
+  JavaBridgeThread() : base::android::JavaHandlerThread("JavaBridge") {
+    Start();
+  }
+  virtual ~JavaBridgeThread() {
+    Stop();
+  }
+};
+
+base::LazyInstance<JavaBridgeThread> g_background_thread =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+GinJavaBridgeDispatcherHost::GinJavaBridgeDispatcherHost(
+    WebContents* web_contents,
+    jobject retained_object_set)
+    : WebContentsObserver(web_contents),
+      retained_object_set_(base::android::AttachCurrentThread(),
+                           retained_object_set),
+      allow_object_contents_inspection_(true) {
+  DCHECK(retained_object_set);
+}
+
+GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
+}
+
+void GinJavaBridgeDispatcherHost::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  renderers_.insert(render_frame_host);
+  for (NamedObjectMap::const_iterator iter = named_objects_.begin();
+       iter != named_objects_.end();
+       ++iter) {
+    render_frame_host->Send(new GinJavaBridgeMsg_AddNamedObject(
+        render_frame_host->GetRoutingID(), iter->first, iter->second));
+  }
+}
+
+void GinJavaBridgeDispatcherHost::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  renderers_.erase(render_frame_host);
+  RemoveHolder(render_frame_host,
+               GinJavaBoundObject::ObjectMap::iterator(&objects_),
+               objects_.size());
+}
+
+GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(
+    const base::android::JavaRef<jobject>& object,
+    const base::android::JavaRef<jclass>& safe_annotation_clazz,
+    bool is_named,
+    RenderFrameHost* holder) {
+  DCHECK(is_named || holder);
+  GinJavaBoundObject::ObjectID object_id;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  JavaObjectWeakGlobalRef ref(env, object.obj());
+  if (is_named) {
+    object_id = objects_.Add(new scoped_refptr<GinJavaBoundObject>(
+        GinJavaBoundObject::CreateNamed(ref, safe_annotation_clazz)));
+  } else {
+    object_id = objects_.Add(new scoped_refptr<GinJavaBoundObject>(
+        GinJavaBoundObject::CreateTransient(
+            ref, safe_annotation_clazz, holder)));
+  }
+#if DCHECK_IS_ON
+  {
+    GinJavaBoundObject::ObjectID added_object_id;
+    DCHECK(FindObjectId(object, &added_object_id));
+    DCHECK_EQ(object_id, added_object_id);
+  }
+#endif  // DCHECK_IS_ON
+  base::android::ScopedJavaLocalRef<jobject> retained_object_set =
+        retained_object_set_.get(env);
+  if (!retained_object_set.is_null()) {
+    JNI_Java_HashSet_add(env, retained_object_set, object);
+  }
+  return object_id;
+}
+
+bool GinJavaBridgeDispatcherHost::FindObjectId(
+    const base::android::JavaRef<jobject>& object,
+    GinJavaBoundObject::ObjectID* object_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  for (GinJavaBoundObject::ObjectMap::iterator it(&objects_); !it.IsAtEnd();
+       it.Advance()) {
+    if (env->IsSameObject(
+            object.obj(),
+            it.GetCurrentValue()->get()->GetLocalRef(env).obj())) {
+      *object_id = it.GetCurrentKey();
+      return true;
+    }
+  }
+  return false;
+}
+
+JavaObjectWeakGlobalRef GinJavaBridgeDispatcherHost::GetObjectWeakRef(
+    GinJavaBoundObject::ObjectID object_id) {
+  scoped_refptr<GinJavaBoundObject>* result = objects_.Lookup(object_id);
+  scoped_refptr<GinJavaBoundObject> object(result ? *result : NULL);
+  if (object.get())
+    return object->GetWeakRef();
+  else
+    return JavaObjectWeakGlobalRef();
+}
+
+void GinJavaBridgeDispatcherHost::RemoveHolder(
+    RenderFrameHost* holder,
+    const GinJavaBoundObject::ObjectMap::iterator& from,
+    size_t count) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> retained_object_set =
+      retained_object_set_.get(env);
+  size_t i = 0;
+  for (GinJavaBoundObject::ObjectMap::iterator it(from);
+       !it.IsAtEnd() && i < count;
+       it.Advance(), ++i) {
+    scoped_refptr<GinJavaBoundObject> object(*it.GetCurrentValue());
+    if (object->IsNamed())
+      continue;
+    object->RemoveHolder(holder);
+    if (!object->HasHolders()) {
+      if (!retained_object_set.is_null()) {
+        JNI_Java_HashSet_remove(
+            env, retained_object_set, object->GetLocalRef(env));
+      }
+      objects_.Remove(it.GetCurrentKey());
+    }
+  }
+}
+
+void GinJavaBridgeDispatcherHost::AddNamedObject(
+    const std::string& name,
+    const base::android::JavaRef<jobject>& object,
+    const base::android::JavaRef<jclass>& safe_annotation_clazz) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GinJavaBoundObject::ObjectID object_id;
+  NamedObjectMap::iterator iter = named_objects_.find(name);
+  bool existing_object = FindObjectId(object, &object_id);
+  if (existing_object && iter != named_objects_.end() &&
+      iter->second == object_id) {
+    // Nothing to do.
+    return;
+  }
+  if (iter != named_objects_.end()) {
+    RemoveNamedObject(iter->first);
+  }
+  if (existing_object) {
+    (*objects_.Lookup(object_id))->AddName();
+  } else {
+    object_id = AddObject(object, safe_annotation_clazz, true, NULL);
+  }
+  named_objects_[name] = object_id;
+
+  for (RendererSet::iterator iter = renderers_.begin();
+      iter != renderers_.end(); ++iter) {
+    (*iter)->Send(new GinJavaBridgeMsg_AddNamedObject(
+        (*iter)->GetRoutingID(), name, object_id));
+  }
+}
+
+void GinJavaBridgeDispatcherHost::RemoveNamedObject(
+    const std::string& name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NamedObjectMap::iterator iter = named_objects_.find(name);
+  if (iter == named_objects_.end())
+    return;
+
+  scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(iter->second));
+  named_objects_.erase(iter);
+  object->RemoveName();
+
+  // Not erasing from the objects map, as we can still receive method
+  // invocation requests for this object, and they should work until the
+  // java object is gone.
+  if (!object->IsNamed()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jobject> retained_object_set =
+        retained_object_set_.get(env);
+    if (!retained_object_set.is_null()) {
+      JNI_Java_HashSet_remove(
+          env, retained_object_set, object->GetLocalRef(env));
+    }
+  }
+
+  for (RendererSet::iterator iter = renderers_.begin();
+      iter != renderers_.end(); ++iter) {
+    (*iter)->Send(new GinJavaBridgeMsg_RemoveNamedObject(
+        (*iter)->GetRoutingID(), name));
+  }
+}
+
+void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
+  allow_object_contents_inspection_ = allow;
+}
+
+void GinJavaBridgeDispatcherHost::DocumentAvailableInMainFrame() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Called when the window object has been cleared in the main frame.
+  // That means, all sub-frames have also been cleared, so only named
+  // objects survived.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> retained_object_set =
+      retained_object_set_.get(env);
+  if (!retained_object_set.is_null()) {
+    JNI_Java_HashSet_clear(env, retained_object_set);
+  }
+
+  // We also need to add back the named objects we have so far as they
+  // should survive navigations.
+  for (GinJavaBoundObject::ObjectMap::iterator it(&objects_); !it.IsAtEnd();
+       it.Advance()) {
+    scoped_refptr<GinJavaBoundObject> object(*it.GetCurrentValue());
+    if (object->IsNamed()) {
+      if (!retained_object_set.is_null()) {
+        JNI_Java_HashSet_add(
+            env, retained_object_set, object->GetLocalRef(env));
+      }
+    } else {
+      objects_.Remove(it.GetCurrentKey());
+    }
+  }
+}
+
+namespace {
+
+// TODO(mnaganov): Implement passing of a parameter into sync message handlers.
+class MessageForwarder : public IPC::Sender {
+ public:
+  MessageForwarder(GinJavaBridgeDispatcherHost* gjbdh,
+                   RenderFrameHost* render_frame_host)
+      : gjbdh_(gjbdh), render_frame_host_(render_frame_host) {}
+  void OnGetMethods(GinJavaBoundObject::ObjectID object_id,
+                    IPC::Message* reply_msg) {
+    gjbdh_->OnGetMethods(render_frame_host_,
+                         object_id,
+                         reply_msg);
+  }
+  void OnHasMethod(GinJavaBoundObject::ObjectID object_id,
+                   const std::string& method_name,
+                   IPC::Message* reply_msg) {
+    gjbdh_->OnHasMethod(render_frame_host_,
+                        object_id,
+                        method_name,
+                        reply_msg);
+  }
+  void OnInvokeMethod(GinJavaBoundObject::ObjectID object_id,
+                      const std::string& method_name,
+                      const base::ListValue& arguments,
+                      IPC::Message* reply_msg) {
+    gjbdh_->OnInvokeMethod(render_frame_host_,
+                           object_id,
+                           method_name,
+                           arguments,
+                           reply_msg);
+  }
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+ private:
+  GinJavaBridgeDispatcherHost* gjbdh_;
+  RenderFrameHost* render_frame_host_;
+};
+
+}
+
+bool GinJavaBridgeDispatcherHost::OnMessageReceived(
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
+  bool handled = true;
+  MessageForwarder forwarder(this, render_frame_host);
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(GinJavaBridgeDispatcherHost, message,
+                                   render_frame_host)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(GinJavaBridgeHostMsg_GetMethods,
+                                    &forwarder,
+                                    MessageForwarder::OnGetMethods)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(GinJavaBridgeHostMsg_HasMethod,
+                                    &forwarder,
+                                    MessageForwarder::OnHasMethod)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(GinJavaBridgeHostMsg_InvokeMethod,
+                                    &forwarder,
+                                    MessageForwarder::OnInvokeMethod)
+    IPC_MESSAGE_HANDLER(GinJavaBridgeHostMsg_ObjectWrapperDeleted,
+                        OnObjectWrapperDeleted)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void GinJavaBridgeDispatcherHost::SendReply(
+    RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (renderers_.find(render_frame_host) != renderers_.end()) {
+    render_frame_host->Send(reply_msg);
+  } else {
+    delete reply_msg;
+  }
+}
+
+void GinJavaBridgeDispatcherHost::OnGetMethods(
+    RenderFrameHost* render_frame_host,
+    GinJavaBoundObject::ObjectID object_id,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
+  if (!allow_object_contents_inspection_) {
+    IPC::WriteParam(reply_msg, std::set<std::string>());
+    render_frame_host->Send(reply_msg);
+    return;
+  }
+  scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
+  if (!object) {
+    LOG(ERROR) << "WebView: Unknown object: " << object_id;
+    IPC::WriteParam(reply_msg, std::set<std::string>());
+    render_frame_host->Send(reply_msg);
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      g_background_thread.Get().message_loop()->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&GinJavaBoundObject::GetMethodNames, object),
+      base::Bind(&GinJavaBridgeDispatcherHost::SendMethods,
+                 AsWeakPtr(),
+                 render_frame_host,
+                 reply_msg));
+}
+
+void GinJavaBridgeDispatcherHost::SendMethods(
+    RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg,
+    const std::set<std::string>& method_names) {
+  IPC::WriteParam(reply_msg, method_names);
+  SendReply(render_frame_host, reply_msg);
+}
+
+void GinJavaBridgeDispatcherHost::OnHasMethod(
+    RenderFrameHost* render_frame_host,
+    GinJavaBoundObject::ObjectID object_id,
+    const std::string& method_name,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
+  scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
+  if (!object) {
+    LOG(ERROR) << "WebView: Unknown object: " << object_id;
+    IPC::WriteParam(reply_msg, false);
+    render_frame_host->Send(reply_msg);
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      g_background_thread.Get().message_loop()->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&GinJavaBoundObject::HasMethod, object, method_name),
+      base::Bind(&GinJavaBridgeDispatcherHost::SendHasMethodReply,
+                 AsWeakPtr(),
+                 render_frame_host,
+                 reply_msg));
+}
+
+void GinJavaBridgeDispatcherHost::SendHasMethodReply(
+    RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg,
+    bool result) {
+  IPC::WriteParam(reply_msg, result);
+  SendReply(render_frame_host, reply_msg);
+}
+
+void GinJavaBridgeDispatcherHost::OnInvokeMethod(
+    RenderFrameHost* render_frame_host,
+    GinJavaBoundObject::ObjectID object_id,
+    const std::string& method_name,
+    const base::ListValue& arguments,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
+  scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
+  if (!object) {
+    LOG(ERROR) << "WebView: Unknown object: " << object_id;
+    base::ListValue result;
+    result.Append(base::Value::CreateNullValue());
+    IPC::WriteParam(reply_msg, result);
+    IPC::WriteParam(reply_msg, kGinJavaBridgeUnknownObjectId);
+    render_frame_host->Send(reply_msg);
+    return;
+  }
+  scoped_refptr<GinJavaMethodInvocationHelper> result =
+      new GinJavaMethodInvocationHelper(
+          make_scoped_ptr(new GinJavaBoundObjectDelegate(object))
+              .PassAs<GinJavaMethodInvocationHelper::ObjectDelegate>(),
+          method_name,
+          arguments);
+  result->Init(this);
+  g_background_thread.Get()
+      .message_loop()
+      ->message_loop_proxy()
+      ->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&GinJavaMethodInvocationHelper::Invoke, result),
+          base::Bind(
+              &GinJavaBridgeDispatcherHost::ProcessMethodInvocationResult,
+              AsWeakPtr(),
+              render_frame_host,
+              reply_msg,
+              result));
+}
+
+void GinJavaBridgeDispatcherHost::ProcessMethodInvocationResult(
+    RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg,
+    scoped_refptr<GinJavaMethodInvocationHelper> result) {
+  if (result->HoldsPrimitiveResult()) {
+    IPC::WriteParam(reply_msg, result->GetPrimitiveResult());
+    IPC::WriteParam(reply_msg, result->GetInvocationError());
+    SendReply(render_frame_host, reply_msg);
+  } else {
+    ProcessMethodInvocationObjectResult(render_frame_host, reply_msg, result);
+  }
+}
+
+void GinJavaBridgeDispatcherHost::ProcessMethodInvocationObjectResult(
+    RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg,
+    scoped_refptr<GinJavaMethodInvocationHelper> result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (renderers_.find(render_frame_host) == renderers_.end()) {
+    delete reply_msg;
+    return;
+  }
+  base::ListValue wrapped_result;
+  if (!result->GetObjectResult().is_null()) {
+    GinJavaBoundObject::ObjectID returned_object_id;
+    if (FindObjectId(result->GetObjectResult(), &returned_object_id)) {
+      (*objects_.Lookup(returned_object_id))->AddHolder(render_frame_host);
+    } else {
+      returned_object_id = AddObject(result->GetObjectResult(),
+                                     result->GetSafeAnnotationClass(),
+                                     false,
+                                     render_frame_host);
+    }
+    wrapped_result.Append(
+        GinJavaBridgeValue::CreateObjectIDValue(returned_object_id).release());
+  } else {
+    wrapped_result.Append(base::Value::CreateNullValue());
+  }
+  IPC::WriteParam(reply_msg, wrapped_result);
+  IPC::WriteParam(reply_msg, result->GetInvocationError());
+  render_frame_host->Send(reply_msg);
+}
+
+void GinJavaBridgeDispatcherHost::OnObjectWrapperDeleted(
+    RenderFrameHost* render_frame_host,
+    GinJavaBoundObject::ObjectID object_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
+  if (objects_.Lookup(object_id)) {
+    GinJavaBoundObject::ObjectMap::iterator iter(&objects_);
+    while (!iter.IsAtEnd() && iter.GetCurrentKey() != object_id)
+      iter.Advance();
+    DCHECK(!iter.IsAtEnd());
+    RemoveHolder(render_frame_host, iter, 1);
+  }
+}
+
+}  // namespace content

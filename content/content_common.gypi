@@ -140,6 +140,8 @@
       'common/android/address_parser_internal.h',
       'common/android/common_jni_registrar.cc',
       'common/android/common_jni_registrar.h',
+      'common/android/gin_java_bridge_errors.cc',
+      'common/android/gin_java_bridge_errors.h',
       'common/android/gin_java_bridge_value.cc',
       'common/android/gin_java_bridge_value.h',
       'common/android/hash_set.cc',

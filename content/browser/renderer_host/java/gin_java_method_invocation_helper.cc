@@ -23,13 +23,6 @@ namespace content {
 
 namespace {
 
-const char kObjectIsGone[] = "Java object is gone";
-const char kMethodNotFound[] = "Method not found";
-const char kAccessToObjectGetClassIsBlocked[] =
-    "Access to java.lang.Object.getClass is blocked";
-const char kJavaExceptionRaised[] =
-    "Java exception has been raised during method invocation";
-
 // See frameworks/base/core/java/android/webkit/EventLogTags.logtags
 const int kObjectGetClassInvocationAttemptLogTag = 70151;
 
@@ -41,7 +34,8 @@ GinJavaMethodInvocationHelper::GinJavaMethodInvocationHelper(
     const base::ListValue& arguments)
     : object_(object.Pass()),
       method_name_(method_name),
-      arguments_(arguments.DeepCopy()) {
+      arguments_(arguments.DeepCopy()),
+      invocation_error_(kGinJavaBridgeNoError) {
 }
 
 GinJavaMethodInvocationHelper::~GinJavaMethodInvocationHelper() {}
@@ -121,14 +115,14 @@ void GinJavaMethodInvocationHelper::Invoke() {
   const JavaMethod* method =
       object_->FindMethod(method_name_, arguments_->GetSize());
   if (!method) {
-    SetInvocationFailure(kMethodNotFound);
+    SetInvocationError(kGinJavaBridgeMethodNotFound);
     return;
   }
 
   if (object_->IsObjectGetClassMethod(method)) {
     base::android::EventLogWriteInt(kObjectGetClassInvocationAttemptLogTag,
                                     getuid());
-    SetInvocationFailure(kAccessToObjectGetClassIsBlocked);
+    SetInvocationError(kGinJavaBridgeAccessToObjectGetClassIsBlocked);
     return;
   }
 
@@ -140,7 +134,7 @@ void GinJavaMethodInvocationHelper::Invoke() {
     obj = object_->GetLocalRef(env);
   }
   if (obj.is_null() && cls.is_null()) {
-    SetInvocationFailure(kObjectIsGone);
+    SetInvocationError(kGinJavaBridgeObjectIsGone);
     return;
   }
 
@@ -166,11 +160,11 @@ void GinJavaMethodInvocationHelper::Invoke() {
   }
 }
 
-void GinJavaMethodInvocationHelper::SetInvocationFailure(
-    const char* error_message) {
+void GinJavaMethodInvocationHelper::SetInvocationError(
+    GinJavaBridgeError error) {
   holds_primitive_result_ = true;
   primitive_result_.reset(new base::ListValue());
-  error_message_ = error_message;
+  invocation_error_ = error;
 }
 
 void GinJavaMethodInvocationHelper::SetPrimitiveResult(
@@ -205,8 +199,8 @@ GinJavaMethodInvocationHelper::GetSafeAnnotationClass() {
   return safe_annotation_clazz_;
 }
 
-const std::string& GinJavaMethodInvocationHelper::GetErrorMessage() {
-  return error_message_;
+const GinJavaBridgeError GinJavaMethodInvocationHelper::GetInvocationError() {
+  return invocation_error_;
 }
 
 void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
@@ -295,7 +289,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       // methods. ScopedJavaLocalRef is liable to make such calls, so we test
       // first.
       if (base::android::ClearException(env)) {
-        SetInvocationFailure(kJavaExceptionRaised);
+        SetInvocationError(kGinJavaBridgeJavaExceptionRaised);
         return;
       }
       ScopedJavaLocalRef<jstring> scoped_java_string(env, java_string);
@@ -318,7 +312,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
           object ? env->CallObjectMethodA(object, id, parameters)
                  : env->CallStaticObjectMethodA(clazz, id, parameters);
       if (base::android::ClearException(env)) {
-        SetInvocationFailure(kJavaExceptionRaised);
+        SetInvocationError(kGinJavaBridgeJavaExceptionRaised);
         return;
       }
       ScopedJavaLocalRef<jobject> scoped_java_object(env, java_object);
@@ -334,7 +328,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
   if (!base::android::ClearException(env)) {
     SetPrimitiveResult(result_wrapper);
   } else {
-    SetInvocationFailure(kJavaExceptionRaised);
+    SetInvocationError(kGinJavaBridgeJavaExceptionRaised);
   }
 }
 

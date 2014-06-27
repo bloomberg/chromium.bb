@@ -114,14 +114,16 @@ bool GinJavaBridgeDispatcher::HasJavaMethod(ObjectID object_id,
 scoped_ptr<base::Value> GinJavaBridgeDispatcher::InvokeJavaMethod(
     ObjectID object_id,
     const std::string& method_name,
-    const base::ListValue& arguments) {
+    const base::ListValue& arguments,
+    GinJavaBridgeError* error) {
   base::ListValue result_wrapper;
   render_frame()->Send(
       new GinJavaBridgeHostMsg_InvokeMethod(routing_id(),
                                             object_id,
                                             method_name,
                                             arguments,
-                                            &result_wrapper));
+                                            &result_wrapper,
+                                            error));
   base::Value* result;
   if (result_wrapper.Get(0, &result)) {
     return scoped_ptr<base::Value>(result->DeepCopy());

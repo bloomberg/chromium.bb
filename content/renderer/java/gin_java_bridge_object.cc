@@ -5,6 +5,7 @@
 #include "content/renderer/java/gin_java_bridge_object.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/java/gin_java_bridge_value_converter.h"
@@ -125,11 +126,12 @@ v8::Handle<v8::Value> GinJavaBridgeObject::InvokeMethod(
     }
   }
 
-  scoped_ptr<base::Value> result =
-      dispatcher_->InvokeJavaMethod(object_id_, name, arguments);
+  GinJavaBridgeError error;
+  scoped_ptr<base::Value> result = dispatcher_->InvokeJavaMethod(
+      object_id_, name, arguments, &error);
   if (!result.get()) {
     args->isolate()->ThrowException(v8::Exception::Error(gin::StringToV8(
-        args->isolate(), kMethodInvocationErrorMessage)));
+        args->isolate(), GinJavaBridgeErrorToString(error))));
     return v8::Undefined(args->isolate());
   }
   if (!result->IsType(base::Value::TYPE_BINARY)) {

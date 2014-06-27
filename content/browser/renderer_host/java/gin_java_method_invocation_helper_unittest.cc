@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/java/gin_java_method_invocation_helper.h"
 
 #include "base/android/jni_android.h"
+#include "content/browser/renderer_host/java/jni_helper.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -154,21 +155,73 @@ TEST_F(GinJavaMethodInvocationHelperTest, RetrievalOfObjectsHaveObjects) {
   counter.AssertInvocationsCount(1, 6);
 }
 
+namespace {
+
+class ObjectIsGoneObjectDelegate : public NullObjectDelegate {
+ public:
+  ObjectIsGoneObjectDelegate() :
+      get_local_ref_called_(false) {
+    // We need a Java Method object to create a valid JavaMethod instance.
+    JNIEnv* env = base::android::AttachCurrentThread();
+    jmethodID method_id =
+        GetMethodIDFromClassName(env, "java/lang/Object", "hashCode", "()I");
+    EXPECT_TRUE(method_id);
+    base::android::ScopedJavaLocalRef<jobject> method_obj(
+        env,
+        env->ToReflectedMethod(
+            base::android::GetClass(env, "java/lang/Object").obj(),
+            method_id,
+            false));
+    EXPECT_TRUE(method_obj.obj());
+    method_.reset(new JavaMethod(method_obj));
+  }
+
+  virtual ~ObjectIsGoneObjectDelegate() {}
+
+  virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
+      JNIEnv* env) OVERRIDE {
+    get_local_ref_called_ = true;
+    return NullObjectDelegate::GetLocalRef(env);
+  }
+
+  virtual const JavaMethod* FindMethod(const std::string& method_name,
+                                       size_t num_parameters) OVERRIDE {
+    return method_.get();
+  }
+
+  bool get_local_ref_called() { return get_local_ref_called_; }
+
+  const std::string& get_method_name() { return method_->name(); }
+
+ protected:
+  scoped_ptr<JavaMethod> method_;
+  bool get_local_ref_called_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObjectIsGoneObjectDelegate);
+};
+
+}  // namespace
+
 TEST_F(GinJavaMethodInvocationHelperTest, HandleObjectIsGone) {
   base::ListValue no_objects;
+  ObjectIsGoneObjectDelegate* object_delegate =
+      new ObjectIsGoneObjectDelegate();
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
           scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
-              new NullObjectDelegate()),
-          "foo",
+              object_delegate),
+          object_delegate->get_method_name(),
           no_objects);
   NullDispatcherDelegate dispatcher;
   helper->Init(&dispatcher);
-  EXPECT_TRUE(helper->GetErrorMessage().empty());
+  EXPECT_FALSE(object_delegate->get_local_ref_called());
+  EXPECT_EQ(kGinJavaBridgeNoError, helper->GetInvocationError());
   helper->Invoke();
+  EXPECT_TRUE(object_delegate->get_local_ref_called());
   EXPECT_TRUE(helper->HoldsPrimitiveResult());
   EXPECT_TRUE(helper->GetPrimitiveResult().empty());
-  EXPECT_FALSE(helper->GetErrorMessage().empty());
+  EXPECT_EQ(kGinJavaBridgeObjectIsGone, helper->GetInvocationError());
 }
 
 namespace {
@@ -215,12 +268,12 @@ TEST_F(GinJavaMethodInvocationHelperTest, HandleMethodNotFound) {
   NullDispatcherDelegate dispatcher;
   helper->Init(&dispatcher);
   EXPECT_FALSE(object_delegate->find_method_called());
-  EXPECT_TRUE(helper->GetErrorMessage().empty());
+  EXPECT_EQ(kGinJavaBridgeNoError, helper->GetInvocationError());
   helper->Invoke();
   EXPECT_TRUE(object_delegate->find_method_called());
   EXPECT_TRUE(helper->HoldsPrimitiveResult());
   EXPECT_TRUE(helper->GetPrimitiveResult().empty());
-  EXPECT_FALSE(helper->GetErrorMessage().empty());
+  EXPECT_EQ(kGinJavaBridgeMethodNotFound, helper->GetInvocationError());
 }
 
 namespace {
@@ -273,13 +326,14 @@ TEST_F(GinJavaMethodInvocationHelperTest, HandleGetClassInvocation) {
   helper->Init(&dispatcher);
   EXPECT_FALSE(object_delegate->find_method_called());
   EXPECT_FALSE(object_delegate->get_class_called());
-  EXPECT_TRUE(helper->GetErrorMessage().empty());
+  EXPECT_EQ(kGinJavaBridgeNoError, helper->GetInvocationError());
   helper->Invoke();
   EXPECT_TRUE(object_delegate->find_method_called());
   EXPECT_TRUE(object_delegate->get_class_called());
   EXPECT_TRUE(helper->HoldsPrimitiveResult());
   EXPECT_TRUE(helper->GetPrimitiveResult().empty());
-  EXPECT_FALSE(helper->GetErrorMessage().empty());
+  EXPECT_EQ(kGinJavaBridgeAccessToObjectGetClassIsBlocked,
+            helper->GetInvocationError());
 }
 
 }  // namespace content
