@@ -15,6 +15,9 @@
 
 namespace chromeos {
 
+typedef std::vector<std::string> StringList;
+typedef std::vector<base::string16> String16List;
+
 template<typename T>
 struct UnwrapConstRef {
   typedef T Type;
@@ -25,42 +28,15 @@ struct UnwrapConstRef<const T&> {
   typedef T Type;
 };
 
-template<typename T>
-inline bool ParseValue(const base::Value* value, T* out_value);
-
-template<>
-inline bool ParseValue<bool>(const base::Value* value, bool* out_value) {
-  return value->GetAsBoolean(out_value);
-}
-
-template<>
-inline bool ParseValue<int>(const base::Value* value, int* out_value) {
-  return value->GetAsInteger(out_value);
-}
-
-template<>
-inline bool ParseValue<double>(const base::Value* value, double* out_value) {
-  return value->GetAsDouble(out_value);
-}
-
-template<>
-inline bool ParseValue<std::string>(const base::Value* value,
-                                    std::string* out_value) {
-  return value->GetAsString(out_value);
-}
-
-template<>
-inline bool ParseValue<base::string16>(const base::Value* value,
-                                       base::string16* out_value) {
-  return value->GetAsString(out_value);
-}
-
-template<>
-inline bool ParseValue<const base::DictionaryValue*>(
-    const base::Value* value,
-    const base::DictionaryValue** out_value) {
-  return value->GetAsDictionary(out_value);
-}
+bool ParseValue(const base::Value* value, bool* out_value);
+bool ParseValue(const base::Value* value, int* out_value);
+bool ParseValue(const base::Value* value, double* out_value);
+bool ParseValue(const base::Value* value, std::string* out_value);
+bool ParseValue(const base::Value* value, base::string16* out_value);
+bool ParseValue(const base::Value* value,
+                const base::DictionaryValue** out_value);
+bool ParseValue(const base::Value* value, StringList* out_value);
+bool ParseValue(const base::Value* value, String16List* out_value);
 
 template<typename T>
 inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
@@ -70,37 +46,19 @@ inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
   return ParseValue(value, out_value);
 }
 
-inline base::FundamentalValue MakeValue(bool v) {
-  return base::FundamentalValue(v);
-}
-
-inline base::FundamentalValue MakeValue(int v) {
-  return base::FundamentalValue(v);
-}
-
-inline base::FundamentalValue MakeValue(double v) {
-  return base::FundamentalValue(v);
-}
-
-inline base::StringValue MakeValue(const std::string& v) {
-  return base::StringValue(v);
-}
-
-inline base::StringValue MakeValue(const base::string16& v) {
-  return base::StringValue(v);
-}
+base::FundamentalValue MakeValue(bool v);
+base::FundamentalValue MakeValue(int v);
+base::FundamentalValue MakeValue(double v);
+base::StringValue MakeValue(const std::string& v);
+base::StringValue MakeValue(const base::string16& v);
 
 template<typename T>
 inline const T& MakeValue(const T& v) {
   return v;
 }
 
-inline void CallbackWrapper0(base::Callback<void()> callback,
-                             const base::ListValue* args) {
-  DCHECK(args);
-  DCHECK(args->empty());
-  callback.Run();
-}
+void CallbackWrapper0(base::Callback<void()> callback,
+                      const base::ListValue* args);
 
 template<typename A1>
 void CallbackWrapper1(base::Callback<void(A1)> callback,

@@ -45,18 +45,27 @@ class ScreenContext : public base::NonThreadSafe {
   bool SetDouble(const KeyType& key, double value);
   bool SetString(const KeyType& key, const std::string& value);
   bool SetString(const KeyType& key, const base::string16& value);
+  bool SetStringList(const KeyType& key, const StringList& value);
+  bool SetString16List(const KeyType& key, const String16List& value);
 
-  bool GetBoolean(const KeyType& key);
-  bool GetBoolean(const KeyType& key, bool default_value);
-  int GetInteger(const KeyType& key);
-  int GetInteger(const KeyType& key, int default_value);
-  double GetDouble(const KeyType& key);
-  double GetDouble(const KeyType& key, double default_value);
-  std::string GetString(const KeyType& key);
-  std::string GetString(const KeyType& key, const std::string& default_value);
-  base::string16 GetString16(const KeyType& key);
+  bool GetBoolean(const KeyType& key) const;
+  bool GetBoolean(const KeyType& key, bool default_value) const;
+  int GetInteger(const KeyType& key) const;
+  int GetInteger(const KeyType& key, int default_value) const;
+  double GetDouble(const KeyType& key) const;
+  double GetDouble(const KeyType& key, double default_value) const;
+  std::string GetString(const KeyType& key) const;
+  std::string GetString(const KeyType& key,
+                        const std::string& default_value) const;
+  base::string16 GetString16(const KeyType& key) const;
   base::string16 GetString16(const KeyType& key,
-                             const base::string16& default_value);
+                             const base::string16& default_value) const;
+  StringList GetStringList(const KeyType& key) const;
+  StringList GetStringList(const KeyType& key,
+                           const StringList& default_value) const;
+  String16List GetString16List(const KeyType& key) const;
+  String16List GetString16List(const KeyType& key,
+                               const String16List& default_value) const;
 
   // Returns true if context has |key|.
   bool HasKey(const KeyType& key) const;
@@ -78,22 +87,22 @@ class ScreenContext : public base::NonThreadSafe {
  private:
   bool Set(const KeyType& key, base::Value* value);
 
-  template<typename T>
-  T Get(const KeyType& key) {
+  template <typename T>
+  T Get(const KeyType& key) const {
     DCHECK(CalledOnValidThread());
     const base::Value* value;
     bool has_key = storage_.Get(key, &value);
     DCHECK(has_key);
     T result;
-    if (!ParseValue<T>(value, &result)) {
+    if (!ParseValue(value, &result)) {
       NOTREACHED();
       return T();
     }
     return result;
   }
 
-  template<typename T>
-  T Get(const KeyType& key, const T& default_value) {
+  template <typename T>
+  T Get(const KeyType& key, const T& default_value) const {
     DCHECK(CalledOnValidThread());
     if (!HasKey(key))
       return default_value;

@@ -22,8 +22,9 @@ cr.define('login', function() {
 
   function checkValueIsValid(value) {
     var valueType = typeof value;
-    require(['string', 'boolean', 'number'].indexOf(valueType) != -1,
-        'Invalid type of value: "' + valueType + '".');
+    require((['string', 'boolean', 'number'].indexOf(valueType) != -1 ||
+             Array.isArray(value)),
+            'Invalid type of value: "' + valueType + '".');
   }
 
   function ScreenContext() {

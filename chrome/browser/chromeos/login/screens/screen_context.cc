@@ -9,6 +9,21 @@
 
 namespace chromeos {
 
+namespace {
+
+template <typename StringListType>
+base::ListValue* StringListToListValue(const StringListType& list) {
+  base::ListValue* result = new base::ListValue();
+  for (typename StringListType::const_iterator it = list.begin();
+       it != list.end();
+       ++it) {
+    result->AppendString(*it);
+  }
+  return result;
+}
+
+}  // namespace
+
 ScreenContext::ScreenContext() {
 }
 
@@ -35,45 +50,75 @@ bool ScreenContext::SetString(const KeyType& key, const base::string16& value) {
   return Set(key, new base::StringValue(value));
 }
 
-bool ScreenContext::GetBoolean(const KeyType& key) {
+bool ScreenContext::SetStringList(const KeyType& key, const StringList& value) {
+  return Set(key, StringListToListValue(value));
+}
+
+bool ScreenContext::SetString16List(const KeyType& key,
+                                    const String16List& value) {
+  return Set(key, StringListToListValue(value));
+}
+
+bool ScreenContext::GetBoolean(const KeyType& key) const {
   return Get<bool>(key);
 }
 
-bool ScreenContext::GetBoolean(const KeyType& key, bool default_value) {
+bool ScreenContext::GetBoolean(const KeyType& key, bool default_value) const {
   return Get(key, default_value);
 }
 
-int ScreenContext::GetInteger(const KeyType& key) {
+int ScreenContext::GetInteger(const KeyType& key) const {
   return Get<int>(key);
 }
 
-int ScreenContext::GetInteger(const KeyType& key, int default_value) {
+int ScreenContext::GetInteger(const KeyType& key, int default_value) const {
   return Get(key, default_value);
 }
 
-double ScreenContext::GetDouble(const KeyType& key) {
+double ScreenContext::GetDouble(const KeyType& key) const {
   return Get<double>(key);
 }
 
-double ScreenContext::GetDouble(const KeyType& key, double default_value) {
+double ScreenContext::GetDouble(const KeyType& key,
+                                double default_value) const {
   return Get(key, default_value);
 }
 
-std::string ScreenContext::GetString(const KeyType& key) {
+std::string ScreenContext::GetString(const KeyType& key) const {
   return Get<std::string>(key);
 }
 
 std::string ScreenContext::GetString(const KeyType& key,
-                                     const std::string& default_value) {
+                                     const std::string& default_value) const {
   return Get(key, default_value);
 }
 
-base::string16 ScreenContext::GetString16(const KeyType& key) {
+base::string16 ScreenContext::GetString16(const KeyType& key) const {
   return Get<base::string16>(key);
 }
 
-base::string16 ScreenContext::GetString16(const KeyType& key,
-                                          const base::string16& default_value) {
+base::string16 ScreenContext::GetString16(
+    const KeyType& key,
+    const base::string16& default_value) const {
+  return Get(key, default_value);
+}
+
+StringList ScreenContext::GetStringList(const KeyType& key) const {
+  return Get<StringList>(key);
+}
+
+StringList ScreenContext::GetStringList(const KeyType& key,
+                                        const StringList& default_value) const {
+  return Get(key, default_value);
+}
+
+String16List ScreenContext::GetString16List(const KeyType& key) const {
+  return Get<String16List>(key);
+}
+
+String16List ScreenContext::GetString16List(
+    const KeyType& key,
+    const String16List& default_value) const {
   return Get(key, default_value);
 }
 
