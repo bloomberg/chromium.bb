@@ -445,6 +445,7 @@ Running: testSourceMappingReload
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
+    debuggerModel.removeBreakpoint(a.js:10)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
     debuggerModel.removeBreakpoint(b.js:20)
     breakpointRemoved(b.js, 20, 0)
@@ -488,10 +489,11 @@ Running: testBreakpointInCollectedReload
     debuggerModel.setBreakpoint(a.js:10:)
 
   Emulating breakpoint resolved event:
-
-  Waiting for breakpoint to be set in debugger again:
     breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, , true)
+    Location created: a.js:10
+
+  Waiting for breakpoint to be set in debugger again:
     Location created: a.js:10
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
@@ -500,6 +502,7 @@ Running: testBreakpointInCollectedReload
     a.js:10 enabled:true condition:
   Resetting breakpoint manager
     breakpointRemoved(a.js, 10, 0)
+    Location disposed: a.js:10
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
   Dumping Breakpoint Locations
