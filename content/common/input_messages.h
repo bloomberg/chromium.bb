@@ -115,6 +115,19 @@ IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
 IPC_MESSAGE_ROUTED1(InputMsg_CursorVisibilityChange,
                     bool /* is_visible */)
 
+// Sets the text composition to be between the given start and end offsets in
+// the currently focused editable field.
+IPC_MESSAGE_ROUTED3(InputMsg_SetCompositionFromExistingText,
+    int /* start */,
+    int /* end */,
+    std::vector<blink::WebCompositionUnderline> /* underlines */)
+
+// Deletes the current selection plus the specified number of characters before
+// and after the selection or caret.
+IPC_MESSAGE_ROUTED2(InputMsg_ExtendSelectionAndDelete,
+                    int /* before */,
+                    int /* after */)
+
 // This message sends a string being composed with an input method.
 IPC_MESSAGE_ROUTED4(
     InputMsg_ImeSetComposition,

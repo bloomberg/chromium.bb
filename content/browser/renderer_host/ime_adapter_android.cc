@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -276,7 +277,7 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*, jobject,
   underlines.push_back(blink::WebCompositionUnderline(
       0, end - start, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
 
-  rfh->Send(new FrameMsg_SetCompositionFromExistingText(
+  rfh->Send(new InputMsg_SetCompositionFromExistingText(
       rfh->GetRoutingID(), start, end, underlines));
 }
 
