@@ -11082,7 +11082,7 @@ Chrome ran out of memory.
         </if>
         <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
                  desc="Text for the context menu item that shows the application information. (In sentence case.)">
-          App info...
+          App info
         </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In sentence case.)">
@@ -11133,7 +11133,7 @@ Chrome ran out of memory.
         </if>
         <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
                  desc="Text for the context menu item that shows the application information. (In title case.)">
-          App Info...
+          App Info
         </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In title case.)">
@@ -13941,9 +13941,18 @@ Do you accept?
         <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
           Unpin from shelf
         </message>
-        <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
-          Uninstall
-        </message>
+        <if expr="is_macosx">
+          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
+                   desc="Title text for the 'uninstall' context menu item of an app list item.">
+            Uninstall
+          </message>
+        </if>
+        <if expr="not is_macosx">
+          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
+                   desc="Title text for the 'uninstall' context menu item of an app list item.">
+            Uninstall...
+          </message>
+        </if>
         <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
           Search
         </message>
@@ -13985,9 +13994,18 @@ Do you accept?
         <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
           Unpin from Shelf
         </message>
-        <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
-          Uninstall
-        </message>
+        <if expr="is_macosx">
+          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
+                   desc="Title text for the 'uninstall' context menu item of an app list item.">
+            Uninstall
+          </message>
+        </if>
+        <if expr="not is_macosx">
+          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
+                   desc="Title text for the 'uninstall' context menu item of an app list item.">
+            Uninstall...
+          </message>
+        </if>
         <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
           Search
         </message>

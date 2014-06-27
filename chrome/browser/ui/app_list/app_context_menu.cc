@@ -36,7 +36,6 @@ enum CommandId {
   OPTIONS,
   UNINSTALL,
   REMOVE_FROM_FOLDER,
-  DETAILS,
   MENU_NEW_WINDOW,
   MENU_NEW_INCOGNITO_WINDOW,
   // Order matters in USE_LAUNCH_TYPE_* and must match the LaunchType enum.
@@ -97,12 +96,9 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
         profile_, this, menu_model_.get(),
         base::Bind(MenuItemHasLauncherContext)));
 
+    // First, add the primary actions.
     if (!is_platform_app_)
       menu_model_->AddItem(LAUNCH_NEW, base::string16());
-
-    int index = 0;
-    extension_menu_items_->AppendExtensionItems(
-        extensions::MenuItem::ExtensionKey(app_id_), base::string16(), &index);
 
     // Show Pin/Unpin option if shelf is available.
     if (controller_->GetPinnable() != AppListControllerDelegate::NO_PIN) {
@@ -118,14 +114,9 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
-
-    if (controller_->CanDoShowAppInfoFlow()) {
-      menu_model_->AddItemWithStringId(SHOW_APP_INFO,
-                                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
-    }
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 
     if (!is_platform_app_) {
-      menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       // Streamlined hosted apps can only toggle between USE_LAUNCH_TYPE_WINDOW
       // and USE_LAUNCH_TYPE_REGULAR.
       if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -157,14 +148,29 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
 #endif
       }
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     }
 
-    menu_model_->AddItemWithStringId(DETAILS, IDS_NEW_TAB_APP_DETAILS);
-    menu_model_->AddItemWithStringId(
-        UNINSTALL,
-        is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
-                         : IDS_EXTENSIONS_UNINSTALL);
+    // Assign unique IDs to commands added by the app itself.
+    int index = USE_LAUNCH_TYPE_COMMAND_END;
+    extension_menu_items_->AppendExtensionItems(
+        extensions::MenuItem::ExtensionKey(app_id_), base::string16(), &index);
+
+    // If at least 1 item was added, add another separator after the list.
+    if (index > USE_LAUNCH_TYPE_COMMAND_END)
+      menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+
+    if (!is_platform_app_)
+      menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
+
+    menu_model_->AddItemWithStringId(UNINSTALL,
+                                     is_platform_app_
+                                         ? IDS_APP_LIST_UNINSTALL_ITEM
+                                         : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
+
+    if (controller_->CanDoShowAppInfoFlow()) {
+      menu_model_->AddItemWithStringId(SHOW_APP_INFO,
+                                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
+    }
   }
 
   return menu_model_.get();
@@ -216,8 +222,6 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
     return controller_->HasOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     return controller_->UserMayModifySettings(profile_, app_id_);
-  } else if (command_id == DETAILS) {
-    return controller_->IsAppFromWebStore(profile_, app_id_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_menu_items_->IsCommandIdEnabled(command_id);
@@ -270,8 +274,6 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     controller_->UninstallApp(profile_, app_id_);
-  } else if (command_id == DETAILS) {
-    controller_->ShowAppInWebStore(profile_, app_id_, is_search_result_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     extension_menu_items_->ExecuteCommand(command_id, NULL,
