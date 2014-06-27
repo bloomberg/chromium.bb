@@ -701,9 +701,6 @@ crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
-# Rebaseline needed after https://codereview.chromium.org/356833006/
-crbug.com/381683 fast/dom/Window/property-access-on-cached-window-after-frame-removed-and-gced.html [ NeedsRebaseline ]
-
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
