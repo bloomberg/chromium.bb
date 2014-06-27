@@ -39,9 +39,9 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
   MOCK_METHOD1(OnErrorInternal, void(PrivetURLFetcher::ErrorType error));
 
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE {
-    saved_value_.reset(value->DeepCopy());
+    saved_value_.reset(value.DeepCopy());
     OnParsedJsonInternal(has_error);
   }
 

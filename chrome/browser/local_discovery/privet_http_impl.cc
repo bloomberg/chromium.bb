@@ -115,9 +115,9 @@ void PrivetInfoOperationImpl::OnError(PrivetURLFetcher* fetcher,
 }
 
 void PrivetInfoOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
-                                           const base::DictionaryValue* value,
+                                           const base::DictionaryValue& value,
                                            bool has_error) {
-  callback_.Run(value);
+  callback_.Run(&value);
 }
 
 PrivetRegisterOperationImpl::PrivetRegisterOperationImpl(
@@ -195,25 +195,25 @@ void PrivetRegisterOperationImpl::OnError(PrivetURLFetcher* fetcher,
 
 void PrivetRegisterOperationImpl::OnParsedJson(
     PrivetURLFetcher* fetcher,
-    const base::DictionaryValue* value,
+    const base::DictionaryValue& value,
     bool has_error) {
   if (has_error) {
     std::string error;
-    value->GetString(kPrivetKeyError, &error);
+    value.GetString(kPrivetKeyError, &error);
 
     ongoing_ = false;
     delegate_->OnPrivetRegisterError(this,
                                      current_action_,
                                      FAILURE_JSON_ERROR,
                                      fetcher->response_code(),
-                                     value);
+                                     &value);
     return;
   }
 
   // TODO(noamsml): Match the user&action with the user&action in the object,
   // and fail if different.
 
-  next_response_handler_.Run(*value);
+  next_response_handler_.Run(value);
 }
 
 void PrivetRegisterOperationImpl::OnNeedPrivetToken(
@@ -336,7 +336,7 @@ void PrivetRegisterOperationImpl::Cancelation::OnError(
 
 void PrivetRegisterOperationImpl::Cancelation::OnParsedJson(
     PrivetURLFetcher* fetcher,
-    const base::DictionaryValue* value,
+    const base::DictionaryValue& value,
     bool has_error) {
 }
 
@@ -377,11 +377,10 @@ void PrivetJSONOperationImpl::OnError(
   callback_.Run(NULL);
 }
 
-void PrivetJSONOperationImpl::OnParsedJson(
-    PrivetURLFetcher* fetcher,
-    const base::DictionaryValue* value,
-    bool has_error) {
-  callback_.Run(value);
+void PrivetJSONOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
+                                           const base::DictionaryValue& value,
+                                           bool has_error) {
+  callback_.Run(&value);
 }
 
 void PrivetJSONOperationImpl::OnNeedPrivetToken(
@@ -445,7 +444,7 @@ void PrivetDataReadOperationImpl::OnError(
 
 void PrivetDataReadOperationImpl::OnParsedJson(
     PrivetURLFetcher* fetcher,
-    const base::DictionaryValue* value,
+    const base::DictionaryValue& value,
     bool has_error) {
   NOTREACHED();
 }
@@ -771,10 +770,10 @@ void PrivetLocalPrintOperationImpl::OnError(
 
 void PrivetLocalPrintOperationImpl::OnParsedJson(
     PrivetURLFetcher* fetcher,
-    const base::DictionaryValue* value,
+    const base::DictionaryValue& value,
     bool has_error) {
   DCHECK(!current_response_.is_null());
-  current_response_.Run(has_error, value);
+  current_response_.Run(has_error, &value);
 }
 
 void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(

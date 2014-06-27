@@ -49,7 +49,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
         const TokenCallback& callback);
     virtual void OnError(PrivetURLFetcher* fetcher, ErrorType error) = 0;
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                              const base::DictionaryValue* value,
+                              const base::DictionaryValue& value,
                               bool has_error) = 0;
 
     // If this method is returns true, the data will not be parsed as JSON, and
@@ -68,6 +68,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
       Delegate* delegate);
 
   virtual ~PrivetURLFetcher();
+
+  // net::URLFetcherDelegate methods.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   static void SetTokenForHost(const std::string& host,
                               const std::string& token);
@@ -94,14 +97,13 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void SetUploadFilePath(const std::string& upload_content_type,
                          const base::FilePath& upload_file_path);
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-  void OnURLFetchCompleteParseData(const net::URLFetcher* source);
-  bool OnURLFetchCompleteDoNotParseData(const net::URLFetcher* source);
-
   const GURL& url() const { return url_fetcher_->GetOriginalURL(); }
   int response_code() const { return url_fetcher_->GetResponseCode(); }
 
  private:
+  void OnURLFetchCompleteParseData(const net::URLFetcher* source);
+  bool OnURLFetchCompleteDoNotParseData(const net::URLFetcher* source);
+
   std::string GetHostString();  // Get string representing the host.
   std::string GetPrivetAccessToken();
   void Try();

@@ -37,7 +37,7 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE;
 
  private:
@@ -64,7 +64,7 @@ class PrivetRegisterOperationImpl
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
 
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE;
 
   virtual void OnNeedPrivetToken(
@@ -82,7 +82,7 @@ class PrivetRegisterOperationImpl
                          PrivetURLFetcher::ErrorType error) OVERRIDE;
 
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                              const base::DictionaryValue* value,
+                              const base::DictionaryValue& value,
                               bool has_error) OVERRIDE;
 
     void Cleanup();
@@ -133,7 +133,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE;
   virtual void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
@@ -169,7 +169,7 @@ class PrivetDataReadOperationImpl : public PrivetDataReadOperation,
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE;
   virtual void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
@@ -225,7 +225,7 @@ class PrivetLocalPrintOperationImpl
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue* value,
+                            const base::DictionaryValue& value,
                             bool has_error) OVERRIDE;
   virtual void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
