@@ -356,7 +356,6 @@ MediaStreamVideoSource::MediaStreamVideoSource()
 }
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
-  DVLOG(3) << "~MediaStreamVideoSource()";
 }
 
 void MediaStreamVideoSource::AddTrack(
@@ -515,9 +514,7 @@ void MediaStreamVideoSource::OnStartDone(bool success) {
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
   } else {
-    state_ = ENDED;
-    SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
-    StopSourceImpl();
+    StopSource();
   }
 
   // This object can be deleted after calling FinalizeAddTrack. See comment in
@@ -570,6 +567,7 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
 
 void MediaStreamVideoSource::SetReadyState(
     blink::WebMediaStreamSource::ReadyState state) {
+  DVLOG(3) << "MediaStreamVideoSource::SetReadyState state " << state;
   if (!owner().isNull()) {
     owner().setReadyState(state);
   }
