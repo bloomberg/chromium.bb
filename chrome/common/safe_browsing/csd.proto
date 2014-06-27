@@ -410,6 +410,7 @@ message ClientIncidentReport {
         repeated Feature feature = 4;
       }
       repeated Dll dll = 9;
+      repeated string blacklisted_dll = 10;
     }
     optional Process process = 3;
   }

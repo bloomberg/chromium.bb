@@ -32,7 +32,7 @@ extern "C" {
 // When modifying the blacklist in the test process, use the exported test dll
 // functions on the test blacklist dll, not the ones linked into the test
 // executable itself.
-__declspec(dllimport) bool TestDll_AddDllsFromRegistryToBlacklist();
+__declspec(dllimport) void TestDll_AddDllsFromRegistryToBlacklist();
 __declspec(dllimport) bool TestDll_AddDllToBlacklist(const wchar_t* dll_name);
 __declspec(dllimport) bool TestDll_IsBlacklistInitialized();
 __declspec(dllimport) bool TestDll_RemoveDllFromBlacklist(
@@ -240,7 +240,7 @@ TEST_F(BlacklistTest, AddDllsFromRegistryToBlacklist) {
                                             test_data[i].dll_name);
   }
 
-  EXPECT_TRUE(TestDll_AddDllsFromRegistryToBlacklist());
+  TestDll_AddDllsFromRegistryToBlacklist();
   CheckBlacklistedDllsNotLoaded();
 }
 

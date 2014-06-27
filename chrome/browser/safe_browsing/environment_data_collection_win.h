@@ -18,6 +18,11 @@ bool CollectDlls(ClientIncidentReport_EnvironmentData_Process* process);
 // check one of them is a registered LSP.
 void RecordLspFeature(ClientIncidentReport_EnvironmentData_Process* process);
 
+// Populates |process| with the dll names that have been added to the chrome elf
+// blacklist through the Windows registry.
+void CollectDllBlacklistData(
+    ClientIncidentReport_EnvironmentData_Process* process);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_ENVIRONMENT_DATA_COLLECTION_WIN_H_

@@ -6,13 +6,22 @@
 
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/scoped_native_library.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
+#include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "net/base/winsock_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const wchar_t test_dll[] = L"test_name.dll";
 
 // Helper function that returns true if a dll with filename |dll_name| is
 // found in |process_report|.
@@ -114,4 +123,51 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
   }
 
   ASSERT_TRUE(lsp_feature_found);
+}
+
+TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
+  // Ensure that CollectDllBlacklistData correctly adds the set of sanitized dll
+  // names currently stored in the registry to the report.
+  registry_util::RegistryOverrideManager override_manager;
+  override_manager.OverrideRegistry(HKEY_CURRENT_USER, L"safe_browsing_test");
+
+  base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER,
+                                           blacklist::kRegistryFinchListPath,
+                                           KEY_QUERY_VALUE | KEY_SET_VALUE);
+
+  // Check that with an empty registry the blacklisted dlls field is left empty.
+  safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
+  safe_browsing::CollectDllBlacklistData(&process_report);
+  EXPECT_EQ(0, process_report.blacklisted_dll_size());
+
+  // Check that after adding exactly one dll to the registry it appears in the
+  // process report.
+  blacklist_registry_key.WriteValue(test_dll, test_dll);
+  safe_browsing::CollectDllBlacklistData(&process_report);
+  ASSERT_EQ(1, process_report.blacklisted_dll_size());
+
+  base::string16 process_report_dll =
+      base::UTF8ToWide(process_report.blacklisted_dll(0));
+  EXPECT_EQ(base::string16(test_dll), process_report_dll);
+
+  // Check that if the registry contains the full path to a dll it is properly
+  // sanitized before being reported.
+  blacklist_registry_key.DeleteValue(test_dll);
+  process_report.clear_blacklisted_dll();
+
+  base::FilePath path;
+  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &path));
+  base::string16 input_path =
+      path.Append(FILE_PATH_LITERAL("test_path.dll")).value();
+
+  std::string path_expected = base::FilePath(FILE_PATH_LITERAL("~"))
+                                  .Append(FILE_PATH_LITERAL("test_path.dll"))
+                                  .AsUTF8Unsafe();
+
+  blacklist_registry_key.WriteValue(input_path.c_str(), input_path.c_str());
+  safe_browsing::CollectDllBlacklistData(&process_report);
+
+  ASSERT_EQ(1, process_report.blacklisted_dll_size());
+  std::string process_report_path = process_report.blacklisted_dll(0);
+  EXPECT_EQ(path_expected, process_report_path);
 }

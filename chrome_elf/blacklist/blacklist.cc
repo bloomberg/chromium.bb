@@ -386,7 +386,7 @@ bool Initialize(bool force) {
   return NT_SUCCESS(ret) && page_executable;
 }
 
-bool AddDllsFromRegistryToBlacklist() {
+void AddDllsFromRegistryToBlacklist() {
   HKEY key = NULL;
   LONG result = ::RegOpenKeyEx(HKEY_CURRENT_USER,
                                kRegistryFinchListPath,
@@ -395,9 +395,9 @@ bool AddDllsFromRegistryToBlacklist() {
                                &key);
 
   if (result != ERROR_SUCCESS)
-    return false;
+    return;
 
-  // We add dlls from the registry to the blacklist, and then clear registry.
+  // We add dlls from the registry to the blacklist.
   DWORD value_len;
   DWORD name_len = MAX_PATH;
   std::vector<wchar_t> name_buffer(name_len);
@@ -406,24 +406,23 @@ bool AddDllsFromRegistryToBlacklist() {
     value_len = 0;
     result = ::RegEnumValue(
         key, i, &name_buffer[0], &name_len, NULL, NULL, NULL, &value_len);
+    if (result != ERROR_SUCCESS)
+      break;
+
     name_len = name_len + 1;
     value_len = value_len + 1;
     std::vector<wchar_t> value_buffer(value_len);
     result = ::RegEnumValue(key, i, &name_buffer[0], &name_len, NULL, NULL,
                             reinterpret_cast<BYTE*>(&value_buffer[0]),
                             &value_len);
+    if (result != ERROR_SUCCESS)
+      break;
     value_buffer[value_len - 1] = L'\0';
-
-    if (result == ERROR_SUCCESS) {
-      AddDllToBlacklist(&value_buffer[0]);
-    }
+    AddDllToBlacklist(&value_buffer[0]);
   }
 
-  // Delete the finch registry key to clear the values.
-  result = ::RegDeleteKey(key, L"");
-
   ::RegCloseKey(key);
-  return result == ERROR_SUCCESS;
+  return;
 }
 
 }  // namespace blacklist

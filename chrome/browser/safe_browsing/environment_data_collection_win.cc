@@ -10,11 +10,13 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome_elf/chrome_elf_constants.h"
 
 namespace safe_browsing {
 
@@ -88,10 +90,23 @@ void RecordLspFeature(ClientIncidentReport_EnvironmentData_Process* process) {
   }
 }
 
+void CollectDllBlacklistData(
+    ClientIncidentReport_EnvironmentData_Process* process) {
+  PathSanitizer path_sanitizer;
+  base::win::RegistryValueIterator iter(HKEY_CURRENT_USER,
+                                        blacklist::kRegistryFinchListPath);
+  for (; iter.Valid(); ++iter) {
+    base::FilePath dll_name(iter.Value());
+    path_sanitizer.StripHomeDirectory(&dll_name);
+    process->add_blacklisted_dll(dll_name.AsUTF8Unsafe());
+  }
+}
+
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
   RecordLspFeature(process);
+  CollectDllBlacklistData(process);
 }
 
 }  // namespace safe_browsing
