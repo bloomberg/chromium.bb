@@ -310,26 +310,16 @@ static inline ClipRect backgroundClipRectForPosition(const ClipRects& parentRect
 ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
 {
     ASSERT(m_renderer.layer()->parent());
+    ASSERT(m_renderer.view());
 
     ClipRects parentRects;
-
-    // If we cross into a different pagination context, then we can't rely on the cache.
-    // Just switch over to using UncachedClipRects.
-    if (context.usesCache() && m_renderer.layer()->parent()->enclosingPaginationLayer() != m_renderer.layer()->enclosingPaginationLayer()) {
-        ClipRectsContext tempContext(context);
-        tempContext.cacheSlot = UncachedClipRects;
-        parentClipRects(tempContext, parentRects);
-    } else {
-        parentClipRects(context, parentRects);
-    }
+    parentClipRects(context, parentRects);
 
     ClipRect backgroundClipRect = backgroundClipRectForPosition(parentRects, m_renderer.style()->position());
-    RenderView* view = m_renderer.view();
-    ASSERT(view);
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentRects.fixed() && context.rootLayer->renderer() == view && backgroundClipRect != PaintInfo::infiniteRect())
-        backgroundClipRect.move(view->frameView()->scrollOffsetForFixedPosition());
+    if (parentRects.fixed() && context.rootLayer->renderer() == m_renderer.view() && backgroundClipRect != PaintInfo::infiniteRect())
+        backgroundClipRect.move(m_renderer.view()->frameView()->scrollOffsetForFixedPosition());
 
     return backgroundClipRect;
 }
