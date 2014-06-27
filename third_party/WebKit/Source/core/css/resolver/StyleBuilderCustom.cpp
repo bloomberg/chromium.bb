@@ -223,7 +223,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
         int len = list->length();
         state.style()->setCursor(CURSOR_AUTO);
         for (int i = 0; i < len; i++) {
-            CSSValue* item = list->itemWithoutBoundsCheck(i);
+            CSSValue* item = list->item(i);
             if (item->isCursorImageValue()) {
                 CSSCursorImageValue* image = toCSSCursorImageValue(item);
                 if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
@@ -1030,7 +1030,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
         if (list->length() != 2)
             return;
         for (unsigned i = 0; i < 2; ++i) {
-            CSSValue* item = list->itemWithoutBoundsCheck(i);
+            CSSValue* item = list->item(i);
             if (!item->isPrimitiveValue())
                 continue;
 

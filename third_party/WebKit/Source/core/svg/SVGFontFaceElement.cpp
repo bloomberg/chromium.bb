@@ -301,7 +301,7 @@ void SVGFontFaceElement::rebuildFontFace()
 
         unsigned srcLength = srcList ? srcList->length() : 0;
         for (unsigned i = 0; i < srcLength; i++) {
-            if (CSSFontFaceSrcValue* item = toCSSFontFaceSrcValue(srcList->itemWithoutBoundsCheck(i)))
+            if (CSSFontFaceSrcValue* item = toCSSFontFaceSrcValue(srcList->item(i)))
                 item->setSVGFontFaceElement(this);
         }
     }

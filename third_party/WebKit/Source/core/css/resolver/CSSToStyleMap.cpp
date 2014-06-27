@@ -463,16 +463,17 @@ void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID p
             mapNinePieceImageSlice(current, image);
         else if (current->isValueList()) {
             CSSValueList* slashList = toCSSValueList(current);
+            size_t length = slashList->length();
             // Map in the image slices.
-            if (slashList->item(0) && slashList->item(0)->isBorderImageSliceValue())
+            if (length && slashList->item(0)->isBorderImageSliceValue())
                 mapNinePieceImageSlice(slashList->item(0), image);
 
             // Map in the border slices.
-            if (slashList->item(1))
+            if (length > 1)
                 image.setBorderSlices(mapNinePieceImageQuad(slashList->item(1)));
 
             // Map in the outset.
-            if (slashList->item(2))
+            if (length > 2)
                 image.setOutset(mapNinePieceImageQuad(slashList->item(2)));
         } else if (current->isPrimitiveValue()) {
             // Set the appropriate rules for stretch/round/repeat of the slices.

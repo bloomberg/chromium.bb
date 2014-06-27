@@ -502,9 +502,9 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         for (unsigned j = 0; j < size; j++) {
             RefPtrWillBeRawPtr<CSSValue> value = nullptr;
             if (values[j]) {
-                if (values[j]->isBaseValueList())
-                    value = toCSSValueList(values[j].get())->item(i);
-                else {
+                if (values[j]->isBaseValueList()) {
+                    value = toCSSValueList(values[j].get())->itemWithBoundsCheck(i);
+                } else {
                     value = values[j];
 
                     // Color only belongs in the last layer.
@@ -530,7 +530,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
                     RefPtrWillBeRawPtr<CSSValue> nextValue = values[j + 1];
                     if (nextValue->isValueList())
-                        yValue = toCSSValueList(nextValue.get())->itemWithoutBoundsCheck(i);
+                        yValue = toCSSValueList(nextValue.get())->item(i);
                     else
                         yValue = nextValue;
 

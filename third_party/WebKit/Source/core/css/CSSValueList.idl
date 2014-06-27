@@ -27,6 +27,6 @@
 [
 ] interface CSSValueList : CSSValue {
     readonly attribute unsigned long    length;
-    getter CSSValue           item(unsigned long index);
+    [ImplementedAs=itemWithBoundsCheck] getter CSSValue item(unsigned long index);
 };
 

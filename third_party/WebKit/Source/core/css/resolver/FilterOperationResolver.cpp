@@ -104,7 +104,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
         if (operationType == FilterOperation::REFERENCE) {
             if (filterValue->length() != 1)
                 continue;
-            CSSValue* argument = filterValue->itemWithoutBoundsCheck(0);
+            CSSValue* argument = filterValue->item(0);
 
             if (!argument->isSVGDocumentValue())
                 continue;
@@ -128,7 +128,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
         if (operationType != FilterOperation::DROP_SHADOW) {
             bool haveNonPrimitiveValue = false;
             for (unsigned j = 0; j < filterValue->length(); ++j) {
-                if (!filterValue->itemWithoutBoundsCheck(j)->isPrimitiveValue()) {
+                if (!filterValue->item(j)->isPrimitiveValue()) {
                     haveNonPrimitiveValue = true;
                     break;
                 }
@@ -137,7 +137,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
                 continue;
         }
 
-        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->itemWithoutBoundsCheck(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->itemWithoutBoundsCheck(0)) : 0;
+        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : 0;
         switch (filterValue->operationType()) {
         case CSSFilterValue::GrayscaleFilterOperation:
         case CSSFilterValue::SepiaFilterOperation:
@@ -185,7 +185,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             if (filterValue->length() != 1)
                 return false;
 
-            CSSValue* cssValue = filterValue->itemWithoutBoundsCheck(0);
+            CSSValue* cssValue = filterValue->item(0);
             if (!cssValue->isShadowValue())
                 continue;
 

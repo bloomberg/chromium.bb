@@ -3760,7 +3760,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
 
     for (size_t i = 0; i < repetitions; ++i) {
         for (size_t j = 0; j < repeatedValues->length(); ++j)
-            list.append(repeatedValues->itemWithoutBoundsCheck(j));
+            list.append(repeatedValues->item(j));
     }
 
     // parseGridTrackSize iterated over the repeat arguments, move to the next value.
@@ -7327,7 +7327,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         if (!shadowValueList || shadowValueList->length() != 1)
             return nullptr;
 
-        filterValue->append((shadowValueList.release())->itemWithoutBoundsCheck(0));
+        filterValue->append((shadowValueList.release())->item(0));
         break;
     }
     default:

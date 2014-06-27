@@ -403,7 +403,7 @@ void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
     if (value->isValueList()) {
         CSSValueList* valueList = toCSSValueList(value);
         for (size_t i = 0; i < valueList->length(); ++i) {
-            CSSValue* item = valueList->itemWithoutBoundsCheck(i);
+            CSSValue* item = valueList->item(i);
             ASSERT(item->isPrimitiveValue());
             if (item->isPrimitiveValue()) {
                 CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
@@ -511,7 +511,7 @@ void FontBuilder::setFeatureSettingsValue(CSSValue* value)
     RefPtr<FontFeatureSettings> settings = FontFeatureSettings::create();
     int len = list->length();
     for (int i = 0; i < len; ++i) {
-        CSSValue* item = list->itemWithoutBoundsCheck(i);
+        CSSValue* item = list->item(i);
         if (!item->isFontFeatureValue())
             continue;
         CSSFontFeatureValue* feature = toCSSFontFeatureValue(item);
