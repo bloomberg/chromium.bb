@@ -33,35 +33,16 @@
 #define ElementData_h
 
 #include "core/dom/Attribute.h"
+#include "core/dom/AttributeCollection.h"
 #include "core/dom/SpaceSplitString.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class Attr;
 class ShareableElementData;
 class StylePropertySet;
 class UniqueElementData;
-
-class AttributeCollection {
-public:
-    typedef const Attribute* const_iterator;
-
-    AttributeCollection(const Attribute* array, unsigned size)
-        : m_array(array)
-        , m_size(size)
-    { }
-
-    const_iterator begin() const { return m_array; }
-    const_iterator end() const { return m_array + m_size; }
-
-    unsigned size() const { return m_size; }
-
-private:
-    const Attribute* m_array;
-    unsigned m_size;
-};
 
 // ElementData represents very common, but not necessarily unique to an element,
 // data such as attributes, inline style, and parsed class names and ids.
@@ -89,17 +70,7 @@ public:
 
     const StylePropertySet* presentationAttributeStyle() const;
 
-    // This is not a trivial getter and its return value should be cached for performance.
-    size_t attributeCount() const;
-    bool hasAttributes() const { return !!attributeCount(); }
-
     AttributeCollection attributes() const;
-
-    const Attribute& attributeAt(unsigned index) const;
-    const Attribute* findAttributeByName(const QualifiedName&) const;
-    size_t findAttributeIndexByName(const QualifiedName&, bool shouldIgnoreCase = false) const;
-    size_t findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
-    size_t findAttrNodeIndex(Attr*) const;
 
     bool hasID() const { return !m_idForStyleResolution.isNull(); }
     bool hasClass() const { return !m_classNames.isNull(); }
@@ -137,10 +108,6 @@ private:
     void destroy();
 #endif
 
-    const Attribute* attributeBase() const;
-    const Attribute* findAttributeByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
-    size_t findAttributeIndexByNameSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
-
     PassRefPtrWillBeRawPtr<UniqueElementData> makeUniqueCopy() const;
 };
 
@@ -173,6 +140,8 @@ public:
         return location;
     }
 
+    AttributeCollection attributes() const;
+
     Attribute m_attributeArray[0];
 };
 
@@ -194,6 +163,8 @@ public:
     // These functions do no error/duplicate checking.
     void appendAttribute(const QualifiedName&, const AtomicString&);
     void removeAttributeAt(size_t index);
+
+    AttributeCollection attributes() const;
 
     Attribute& attributeAt(unsigned index);
     Attribute* findAttributeByName(const QualifiedName&);
@@ -221,13 +192,6 @@ inline void ElementData::deref()
 }
 #endif
 
-inline size_t ElementData::attributeCount() const
-{
-    if (isUnique())
-        return static_cast<const UniqueElementData*>(this)->m_attributeVector.size();
-    return m_arraySize;
-}
-
 inline const StylePropertySet* ElementData::presentationAttributeStyle() const
 {
     if (!m_isUnique)
@@ -235,84 +199,21 @@ inline const StylePropertySet* ElementData::presentationAttributeStyle() const
     return static_cast<const UniqueElementData*>(this)->m_presentationAttributeStyle.get();
 }
 
-inline const Attribute* ElementData::findAttributeByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const
-{
-    size_t index = findAttributeIndexByName(name, shouldIgnoreAttributeCase);
-    if (index != kNotFound)
-        return &attributeAt(index);
-    return 0;
-}
-
-inline const Attribute* ElementData::attributeBase() const
-{
-    if (m_isUnique)
-        return static_cast<const UniqueElementData*>(this)->m_attributeVector.begin();
-    return static_cast<const ShareableElementData*>(this)->m_attributeArray;
-}
-
-inline size_t ElementData::findAttributeIndexByName(const QualifiedName& name, bool shouldIgnoreCase) const
-{
-    AttributeCollection attributes = this->attributes();
-    AttributeCollection::const_iterator end = attributes.end();
-    unsigned index = 0;
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it, ++index) {
-        if (it->name().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
-            return index;
-    }
-    return kNotFound;
-}
-
-// We use a boolean parameter instead of calling shouldIgnoreAttributeCase so that the caller
-// can tune the behavior (hasAttribute is case sensitive whereas getAttribute is not).
-inline size_t ElementData::findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const
-{
-    bool doSlowCheck = shouldIgnoreAttributeCase;
-
-    // Optimize for the case where the attribute exists and its name exactly matches.
-    AttributeCollection attributes = this->attributes();
-    AttributeCollection::const_iterator end = attributes.end();
-    unsigned index = 0;
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it, ++index) {
-        // FIXME: Why check the prefix? Namespaces should be all that matter.
-        // Most attributes (all of HTML and CSS) have no namespace.
-        if (!it->name().hasPrefix()) {
-            if (name == it->localName())
-                return index;
-        } else {
-            doSlowCheck = true;
-        }
-    }
-
-    if (doSlowCheck)
-        return findAttributeIndexByNameSlowCase(name, shouldIgnoreAttributeCase);
-    return kNotFound;
-}
-
 inline AttributeCollection ElementData::attributes() const
 {
-    if (isUnique()) {
-        const Vector<Attribute, 4>& attributeVector = static_cast<const UniqueElementData*>(this)->m_attributeVector;
-        return AttributeCollection(attributeVector.data(), attributeVector.size());
-    }
-    return AttributeCollection(static_cast<const ShareableElementData*>(this)->m_attributeArray, m_arraySize);
+    if (isUnique())
+        return static_cast<const UniqueElementData*>(this)->attributes();
+    return static_cast<const ShareableElementData*>(this)->attributes();
 }
 
-inline const Attribute* ElementData::findAttributeByName(const QualifiedName& name) const
+inline AttributeCollection ShareableElementData::attributes() const
 {
-    AttributeCollection attributes = this->attributes();
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-        if (it->name().matches(name))
-            return it;
-    }
-    return 0;
+    return AttributeCollection(m_attributeArray, m_arraySize);
 }
 
-inline const Attribute& ElementData::attributeAt(unsigned index) const
+inline AttributeCollection UniqueElementData::attributes() const
 {
-    RELEASE_ASSERT(index < attributeCount());
-    ASSERT(attributeBase() + index);
-    return *(attributeBase() + index);
+    return AttributeCollection(m_attributeVector.data(), m_attributeVector.size());
 }
 
 inline void UniqueElementData::appendAttribute(const QualifiedName& attributeName, const AtomicString& value)

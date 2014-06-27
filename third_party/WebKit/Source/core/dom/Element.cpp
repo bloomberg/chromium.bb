@@ -278,7 +278,7 @@ PassRefPtrWillBeRawPtr<Element> Element::cloneElementWithoutAttributesAndChildre
 PassRefPtrWillBeRawPtr<Attr> Element::detachAttribute(size_t index)
 {
     ASSERT(elementData());
-    const Attribute& attribute = elementData()->attributeAt(index);
+    const Attribute& attribute = elementData()->attributes().at(index);
     RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(attribute.name());
     if (attrNode)
         detachAttrNodeAtIndex(attrNode.get(), index);
@@ -294,7 +294,7 @@ void Element::detachAttrNodeAtIndex(Attr* attr, size_t index)
     ASSERT(attr);
     ASSERT(elementData());
 
-    const Attribute& attribute = elementData()->attributeAt(index);
+    const Attribute& attribute = elementData()->attributes().at(index);
     ASSERT(attribute.name() == attr->qualifiedName());
     detachAttrNodeFromElementWithValue(attr, attribute.value());
     removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
@@ -305,7 +305,7 @@ void Element::removeAttribute(const QualifiedName& name)
     if (!elementData())
         return;
 
-    size_t index = elementData()->findAttributeIndexByName(name);
+    size_t index = elementData()->attributes().findIndex(name);
     if (index == kNotFound)
         return;
 
@@ -880,7 +880,7 @@ const AtomicString& Element::getAttribute(const AtomicString& localName) const
     if (!elementData())
         return nullAtom;
     synchronizeAttribute(localName);
-    if (const Attribute* attribute = elementData()->findAttributeByName(localName, shouldIgnoreAttributeCase()))
+    if (const Attribute* attribute = elementData()->attributes().find(localName, shouldIgnoreAttributeCase()))
         return attribute->value();
     return nullAtom;
 }
@@ -900,21 +900,27 @@ void Element::setAttribute(const AtomicString& localName, const AtomicString& va
     synchronizeAttribute(localName);
     const AtomicString& caseAdjustedLocalName = shouldIgnoreAttributeCase() ? localName.lower() : localName;
 
-    size_t index = elementData() ? elementData()->findAttributeIndexByName(caseAdjustedLocalName, false) : kNotFound;
-    const QualifiedName& qName = index != kNotFound ? attributeAt(index).name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
+    if (!elementData()) {
+        setAttributeInternal(kNotFound, QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom), value, NotInSynchronizationOfLazyAttribute);
+        return;
+    }
+
+    AttributeCollection attributes = elementData()->attributes();
+    size_t index = attributes.findIndex(caseAdjustedLocalName, false);
+    const QualifiedName& qName = index != kNotFound ? attributes[index].name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
     setAttributeInternal(index, qName, value, NotInSynchronizationOfLazyAttribute);
 }
 
 void Element::setAttribute(const QualifiedName& name, const AtomicString& value)
 {
     synchronizeAttribute(name);
-    size_t index = elementData() ? elementData()->findAttributeIndexByName(name) : kNotFound;
+    size_t index = elementData() ? elementData()->attributes().findIndex(name) : kNotFound;
     setAttributeInternal(index, name, value, NotInSynchronizationOfLazyAttribute);
 }
 
 void Element::setSynchronizedLazyAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    size_t index = elementData() ? elementData()->findAttributeIndexByName(name) : kNotFound;
+    size_t index = elementData() ? elementData()->attributes().findIndex(name) : kNotFound;
     setAttributeInternal(index, name, value, InSynchronizationOfLazyAttribute);
 }
 
@@ -1159,7 +1165,7 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
 bool Element::hasAttributes() const
 {
     synchronizeAllAttributes();
-    return elementData() && elementData()->hasAttributes();
+    return elementData() && !elementData()->attributes().isEmpty();
 }
 
 bool Element::hasEquivalentAttributes(const Element* other) const
@@ -1877,10 +1883,11 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
     synchronizeAllAttributes();
     UniqueElementData& elementData = ensureUniqueElementData();
 
-    size_t index = elementData.findAttributeIndexByName(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
+    AttributeCollection attributes = elementData.attributes();
+    size_t index = attributes.findIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
     AtomicString localName;
     if (index != kNotFound) {
-        const Attribute& attr = elementData.attributeAt(index);
+        const Attribute& attr = attributes[index];
 
         // If the name of the ElementData attribute doesn't
         // (case-sensitively) match that of the Attr node, record it
@@ -1929,7 +1936,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionS
 
     synchronizeAttribute(attr->qualifiedName());
 
-    size_t index = elementData()->findAttrNodeIndex(attr);
+    size_t index = elementData()->attributes().findIndex(attr);
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "The attribute was not found on this element.");
         return nullptr;
@@ -2022,7 +2029,7 @@ void Element::removeAttribute(const AtomicString& name)
         return;
 
     AtomicString localName = shouldIgnoreAttributeCase() ? name.lower() : name;
-    size_t index = elementData()->findAttributeIndexByName(localName, false);
+    size_t index = elementData()->attributes().findIndex(localName, false);
     if (index == kNotFound) {
         if (UNLIKELY(localName == styleAttr) && elementData()->m_styleAttributeIsDirty && isStyledElement())
             removeAllInlineStyleProperties();
@@ -2042,7 +2049,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::getAttributeNode(const AtomicString& local
     if (!elementData())
         return nullptr;
     synchronizeAttribute(localName);
-    const Attribute* attribute = elementData()->findAttributeByName(localName, shouldIgnoreAttributeCase());
+    const Attribute* attribute = elementData()->attributes().find(localName, shouldIgnoreAttributeCase());
     if (!attribute)
         return nullptr;
     return ensureAttr(attribute->name());
@@ -2054,7 +2061,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::getAttributeNodeNS(const AtomicString& nam
         return nullptr;
     QualifiedName qName(nullAtom, localName, namespaceURI);
     synchronizeAttribute(qName);
-    const Attribute* attribute = elementData()->findAttributeByName(qName);
+    const Attribute* attribute = elementData()->attributes().find(qName);
     if (!attribute)
         return nullptr;
     return ensureAttr(attribute->name());
@@ -2065,7 +2072,7 @@ bool Element::hasAttribute(const AtomicString& localName) const
     if (!elementData())
         return false;
     synchronizeAttribute(localName);
-    return elementData()->findAttributeByName(shouldIgnoreAttributeCase() ? localName.lower() : localName, false);
+    return elementData()->attributes().findIndex(shouldIgnoreAttributeCase() ? localName.lower() : localName, false) != kNotFound;
 }
 
 bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName) const
@@ -2074,7 +2081,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
         return false;
     QualifiedName qName(nullAtom, localName, namespaceURI);
     synchronizeAttribute(qName);
-    return elementData()->findAttributeByName(qName);
+    return elementData()->attributes().find(qName);
 }
 
 void Element::focus(bool restorePreviousSelection, FocusType type)
@@ -2480,10 +2487,11 @@ AtomicString Element::computeInheritedLanguage() const
     do {
         if (n->isElementNode()) {
             if (const ElementData* elementData = toElement(n)->elementData()) {
+                AttributeCollection attributes = elementData->attributes();
                 // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
-                if (const Attribute* attribute = elementData->findAttributeByName(XMLNames::langAttr))
+                if (const Attribute* attribute = attributes.find(XMLNames::langAttr))
                     value = attribute->value();
-                else if (const Attribute* attribute = elementData->findAttributeByName(HTMLNames::langAttr))
+                else if (const Attribute* attribute = attributes.find(HTMLNames::langAttr))
                     value = attribute->value();
             }
         } else if (n->isDocumentNode()) {

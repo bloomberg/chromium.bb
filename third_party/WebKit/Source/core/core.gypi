@@ -1939,6 +1939,8 @@
             'dom/AddConsoleMessageTask.cpp',
             'dom/AddConsoleMessageTask.h',
             'dom/Attr.cpp',
+            'dom/AttributeCollection.cpp',
+            'dom/AttributeCollection.h',
             'dom/CDATASection.cpp',
             'dom/CDATASection.h',
             'dom/CSSSelectorWatch.cpp',

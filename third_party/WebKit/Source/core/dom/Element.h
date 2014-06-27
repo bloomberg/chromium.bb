@@ -175,8 +175,8 @@ public:
     size_t attributeCount() const;
     const Attribute& attributeAt(unsigned index) const;
     const Attribute* findAttributeByName(const QualifiedName&) const;
-    size_t findAttributeIndexByName(const QualifiedName& name) const { return elementData()->findAttributeIndexByName(name); }
-    size_t findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const { return elementData()->findAttributeIndexByName(name, shouldIgnoreAttributeCase); }
+    size_t findAttributeIndexByName(const QualifiedName& name) const { return elementData()->attributes().findIndex(name); }
+    size_t findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const { return elementData()->attributes().findIndex(name, shouldIgnoreAttributeCase); }
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
@@ -717,7 +717,7 @@ inline const AtomicString& Element::fastGetAttribute(const QualifiedName& name) 
 
 inline bool Element::hasAttributesWithoutUpdate() const
 {
-    return elementData() && elementData()->hasAttributes();
+    return elementData() && !elementData()->attributes().isEmpty();
 }
 
 inline const AtomicString& Element::idForStyleResolution() const
@@ -769,19 +769,19 @@ inline const SpaceSplitString& Element::classNames() const
 inline size_t Element::attributeCount() const
 {
     ASSERT(elementData());
-    return elementData()->attributeCount();
+    return elementData()->attributes().size();
 }
 
 inline const Attribute& Element::attributeAt(unsigned index) const
 {
     ASSERT(elementData());
-    return elementData()->attributeAt(index);
+    return elementData()->attributes()[index];
 }
 
 inline const Attribute* Element::findAttributeByName(const QualifiedName& name) const
 {
     ASSERT(elementData());
-    return elementData()->findAttributeByName(name);
+    return elementData()->attributes().find(name);
 }
 
 inline bool Element::hasID() const
