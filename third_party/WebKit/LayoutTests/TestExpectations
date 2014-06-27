@@ -1021,8 +1021,6 @@ crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip 
 crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
 crbug.com/376194 inspector/runtime/runtime-es6-setSymbolPropertyValue.html [ Skip ]
 
-crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure Pass ]
-
 crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
