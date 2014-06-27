@@ -50,6 +50,7 @@ class LocalDOMWindow;
 class Gamepad;
 class MediaStream;
 class HeaderMap;
+class Headers;
 class IDBKeyRange;
 class MIDIPort;
 class MediaKeyError;
@@ -104,6 +105,7 @@ public:
     bool get(const String&, RefPtrWillBeMember<DOMError>&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;
     bool get(const String&, RefPtr<HeaderMap>&) const;
+    bool get(const String&, RefPtr<Headers>&) const;
 
     class ConversionContext {
     public:
