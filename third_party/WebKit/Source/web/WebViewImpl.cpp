@@ -3671,6 +3671,7 @@ void WebViewImpl::deviceOrPageScaleFactorChanged()
 {
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
+    m_page->inspectorController().deviceOrPageScaleFactorChanged();
 }
 
 bool WebViewImpl::useExternalPopupMenus()

@@ -107,6 +107,7 @@ public:
     bool handleKeyboardEvent(LocalFrame*, const PlatformKeyboardEvent&);
 
     void requestPageScaleFactor(float scale, const IntPoint& origin);
+    void deviceOrPageScaleFactorChanged();
     bool deviceEmulationEnabled();
 
     bool isUnderTest();

@@ -966,6 +966,7 @@ void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
             m_inspectorResourceContentLoader->stop();
     }
     m_frontend->frameNavigated(buildObjectForFrame(loader->frame()));
+    viewportChanged();
 }
 
 void InspectorPageAgent::frameAttachedToParent(LocalFrame* frame)
@@ -1140,12 +1141,29 @@ void InspectorPageAgent::didLayout(RenderObject*)
     if (!m_enabled)
         return;
     m_overlay->update();
+    viewportChanged();
 }
 
 void InspectorPageAgent::didScroll()
 {
     if (m_enabled)
         m_overlay->update();
+    viewportChanged();
+}
+
+void InspectorPageAgent::viewportChanged()
+{
+    if (!m_enabled)
+        return;
+    IntSize contentsSize = m_page->deprecatedLocalMainFrame()->view()->contentsSize();
+    IntRect viewRect = m_page->deprecatedLocalMainFrame()->view()->visibleContentRect();
+    RefPtr<TypeBuilder::Page::Viewport> viewport = TypeBuilder::Page::Viewport::create()
+        .setScrollX(viewRect.x())
+        .setScrollY(viewRect.y())
+        .setContentsWidth(contentsSize.width())
+        .setContentsHeight(contentsSize.height())
+        .setPageScaleFactor(m_page->pageScaleFactor());
+    m_frontend->viewportChanged(viewport);
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -1155,12 +1173,20 @@ void InspectorPageAgent::didResizeMainFrame()
         m_overlay->showAndHideViewSize(m_state->getBoolean(PageAgentState::showGridOnResize));
 #endif
     m_frontend->frameResized();
+    viewportChanged();
 }
 
 void InspectorPageAgent::didRecalculateStyle(int)
 {
     if (m_enabled)
         m_overlay->update();
+}
+
+void InspectorPageAgent::deviceOrPageScaleFactorChanged()
+{
+    if (m_enabled)
+        m_overlay->update();
+    viewportChanged();
 }
 
 void InspectorPageAgent::scriptsEnabled(bool isEnabled)

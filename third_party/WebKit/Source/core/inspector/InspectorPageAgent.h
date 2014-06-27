@@ -162,6 +162,7 @@ public:
     String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
+    void deviceOrPageScaleFactorChanged();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
     void clearEditedResourcesContent();
@@ -181,6 +182,8 @@ private:
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
+
+    void viewportChanged();
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
