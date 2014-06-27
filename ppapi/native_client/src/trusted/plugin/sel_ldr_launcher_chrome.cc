@@ -27,8 +27,6 @@ void SelLdrLauncherChrome::Start(
     bool enable_dyncode_syscalls,
     bool enable_exception_handling,
     bool enable_crash_throttling,
-    const PPP_ManifestService* manifest_service_interface,
-    void* manifest_service_user_data,
     pp::CompletionCallback callback) {
   if (!GetNaClInterface()) {
     pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
@@ -46,8 +44,6 @@ void SelLdrLauncherChrome::Start(
       PP_FromBool(enable_dyncode_syscalls),
       PP_FromBool(enable_exception_handling),
       PP_FromBool(enable_crash_throttling),
-      manifest_service_interface,
-      manifest_service_user_data,
       &channel_,
       callback.pp_completion_callback());
 }

@@ -26,8 +26,6 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool enable_dyncode_syscalls,
                      bool enable_exception_handling,
                      bool enable_crash_throttling,
-                     const PPP_ManifestService* manifest_service_interface,
-                     void* manifest_service_user_data,
                      pp::CompletionCallback callback);
 };
 

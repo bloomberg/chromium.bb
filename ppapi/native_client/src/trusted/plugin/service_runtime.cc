@@ -51,61 +51,6 @@
 
 namespace plugin {
 
-namespace {
-
-class ManifestService {
- public:
-  ManifestService(nacl::WeakRefAnchor* anchor,
-                  PluginReverseInterface* plugin_reverse)
-      : anchor_(anchor),
-        plugin_reverse_(plugin_reverse) {
-  }
-
-  ~ManifestService() {
-    anchor_->Unref();
-  }
-
-  bool Quit() {
-    delete this;
-    return false;
-  }
-
-  bool StartupInitializationComplete() {
-    // Release this instance if the ServiceRuntime is already destructed.
-    if (anchor_->is_abandoned()) {
-      delete this;
-      return false;
-    }
-
-    plugin_reverse_->StartupInitializationComplete();
-    return true;
-  }
-
-  static PP_Bool QuitTrampoline(void* user_data) {
-    return PP_FromBool(static_cast<ManifestService*>(user_data)->Quit());
-  }
-
-  static PP_Bool StartupInitializationCompleteTrampoline(void* user_data) {
-    return PP_FromBool(static_cast<ManifestService*>(user_data)->
-                       StartupInitializationComplete());
-  }
-
- private:
-  // Weak reference to check if plugin_reverse is legally accessible or not.
-  nacl::WeakRefAnchor* anchor_;
-  PluginReverseInterface* plugin_reverse_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestService);
-};
-
-// Vtable to pass functions to LaunchSelLdr.
-const PPP_ManifestService kManifestServiceVTable = {
-  &ManifestService::QuitTrampoline,
-  &ManifestService::StartupInitializationCompleteTrampoline,
-};
-
-}  // namespace
-
 OpenManifestEntryResource::~OpenManifestEntryResource() {
 }
 
@@ -450,8 +395,6 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     return;
   }
 
-  ManifestService* manifest_service =
-      new ManifestService(anchor_->Ref(), rev_interface_);
   bool enable_dev_interfaces =
       GetNaClInterface()->DevInterfacesEnabled(pp_instance_);
 
@@ -466,8 +409,6 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                         params.enable_dyncode_syscalls,
                         params.enable_exception_handling,
                         params.enable_crash_throttling,
-                        &kManifestServiceVTable,
-                        manifest_service,
                         callback);
   subprocess_.reset(tmp_subprocess.release());
 }

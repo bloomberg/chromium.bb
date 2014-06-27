@@ -165,31 +165,37 @@ void DownloadFile(PP_Instance instance,
                   const std::string& url,
                   const DownloadFileCallback& callback);
 
+PP_Bool StartPpapiProxy(PP_Instance instance);
+
 // Thin adapter from PPP_ManifestService to ManifestServiceChannel::Delegate.
 // Note that user_data is managed by the caller of LaunchSelLdr. Please see
 // also PP_ManifestService's comment for more details about resource
 // management.
 class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
  public:
-  ManifestServiceProxy(PP_Instance pp_instance,
-                       const PPP_ManifestService* manifest_service,
-                       void* user_data)
-      : pp_instance_(pp_instance),
-        manifest_service_(*manifest_service),
-        user_data_(user_data) {
+  ManifestServiceProxy(PP_Instance pp_instance)
+      : pp_instance_(pp_instance) {
   }
 
-  virtual ~ManifestServiceProxy() {
-    Quit();
-  }
+  virtual ~ManifestServiceProxy() { }
 
   virtual void StartupInitializationComplete() OVERRIDE {
-    if (!user_data_)
-      return;
-
-    if (!PP_ToBool(
-            manifest_service_.StartupInitializationComplete(user_data_))) {
-      user_data_ = NULL;
+    if (StartPpapiProxy(pp_instance_) == PP_TRUE) {
+      JsonManifest* manifest = GetJsonManifest(pp_instance_);
+      NexeLoadManager* load_manager = GetNexeLoadManager(pp_instance_);
+      if (load_manager && manifest) {
+        std::string full_url;
+        PP_PNaClOptions pnacl_options;
+        bool uses_nonsfi_mode;
+        JsonManifest::ErrorInfo error_info;
+        if (manifest->GetProgramURL(&full_url,
+                                    &pnacl_options,
+                                    &uses_nonsfi_mode,
+                                    &error_info)) {
+          int64_t nexe_size = load_manager->nexe_size();
+          load_manager->ReportLoadSuccess(full_url, nexe_size, nexe_size);
+        }
+      }
     }
   }
 
@@ -198,9 +204,6 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
       const ManifestServiceChannel::OpenResourceCallback& callback) OVERRIDE {
     DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
                BelongsToCurrentThread());
-
-    if (!user_data_)
-      return;
 
     std::string url;
     // TODO(teravest): Clean up pnacl_options logic in JsonManifest so we don't
@@ -239,18 +242,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     callback.Run(base::File(file_info.handle));
   }
 
-  void Quit() {
-    if (!user_data_)
-      return;
-
-    bool result = PP_ToBool(manifest_service_.Quit(user_data_));
-    DCHECK(!result);
-    user_data_ = NULL;
-  }
-
   PP_Instance pp_instance_;
-  PPP_ManifestService manifest_service_;
-  void* user_data_;
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
 
@@ -305,21 +297,15 @@ void LaunchSelLdr(PP_Instance instance,
                   PP_Bool enable_dyncode_syscalls,
                   PP_Bool enable_exception_handling,
                   PP_Bool enable_crash_throttling,
-                  const PPP_ManifestService* manifest_service_interface,
-                  void* manifest_service_user_data,
                   void* imc_handle,
                   PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
 
   // Create the manifest service proxy here, so on error case, it will be
-  // destructed (without passing it to ManifestServiceChannel), and QUIT
-  // will be called in its destructor so that the caller of this function
-  // can free manifest_service_user_data properly.
+  // destructed (without passing it to ManifestServiceChannel).
   scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
-      new ManifestServiceProxy(instance,
-                               manifest_service_interface,
-                               manifest_service_user_data));
+      new ManifestServiceProxy(instance));
 
   FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
