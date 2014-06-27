@@ -53,5 +53,6 @@ crbug.com/379147 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure ]
 crbug.com/379147 svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
 crbug.com/379147 svg/filters/big-sized-filter.svg [ ImageOnlyFailure ]
 crbug.com/379147 svg/filters/feLighting-crash.svg [ ImageOnlyFailure ]
+crbug.com/375162 svg/filters/feTurbulence-scale.svg [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
