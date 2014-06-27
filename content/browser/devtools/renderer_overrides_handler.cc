@@ -614,6 +614,23 @@ void RendererOverridesHandler::ScreencastFrameCaptured(
     response_metadata->Set(
         devtools::Page::ScreencastFrameMetadata::kParamViewport, viewport);
 
+    gfx::SizeF viewport_size_dip = gfx::ScaleSize(metadata.viewport_size,
+                                                  metadata.page_scale_factor);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamDeviceWidth,
+        viewport_size_dip.width());
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamDeviceHeight,
+        viewport_size_dip.height() +
+            metadata.location_bar_content_translation.y() +
+            metadata.overdraw_bottom_height);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamScrollOffsetX,
+        metadata.root_scroll_offset.x());
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamScrollOffsetY,
+        metadata.root_scroll_offset.y());
+
     response->Set(devtools::Page::screencastFrame::kParamMetadata,
                   response_metadata);
   }
