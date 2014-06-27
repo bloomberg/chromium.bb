@@ -13,7 +13,10 @@
           # GN version: //webkit/common/gpu
           'target_name': 'webkit_gpu',
           'type': '<(component)',
-          'variables': { 'enable_wexit_time_destructors': 1, },
+          'variables': {
+            'chromium_code': 1,
+            'enable_wexit_time_destructors': 1,
+          },
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/cc/cc.gyp:cc',

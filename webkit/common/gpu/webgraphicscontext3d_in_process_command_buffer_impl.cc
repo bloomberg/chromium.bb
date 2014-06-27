@@ -33,13 +33,6 @@ namespace gpu {
 
 namespace {
 
-const int32 kCommandBufferSize = 1024 * 1024;
-// TODO(kbr): make the transfer buffer size configurable via context
-// creation attributes.
-const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
-const size_t kMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
  public:
