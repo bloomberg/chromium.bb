@@ -31,6 +31,8 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ElementDataCache)
+
 inline unsigned attributeHash(const Vector<Attribute>& attributes)
 {
     return StringHasher::hashMemory(attributes.data(), attributes.size() * sizeof(Attribute));
@@ -63,8 +65,9 @@ ElementDataCache::ElementDataCache()
 {
 }
 
-ElementDataCache::~ElementDataCache()
+void ElementDataCache::trace(Visitor* visitor)
 {
+    visitor->trace(m_shareableElementDataCache);
 }
 
 }

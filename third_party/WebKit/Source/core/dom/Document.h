@@ -1353,7 +1353,7 @@ private:
     void elementDataCacheClearTimerFired(Timer<Document>*);
     Timer<Document> m_elementDataCacheClearTimer;
 
-    OwnPtr<ElementDataCache> m_elementDataCache;
+    OwnPtrWillBeMember<ElementDataCache> m_elementDataCache;
 
 #ifndef NDEBUG
     bool m_didDispatchViewportPropertiesChanged;
