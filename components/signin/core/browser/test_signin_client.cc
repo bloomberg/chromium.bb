@@ -41,6 +41,10 @@ scoped_refptr<TokenWebData> TestSigninClient::GetDatabase() {
 
 bool TestSigninClient::CanRevokeCredentials() { return true; }
 
+std::string TestSigninClient::GetSigninScopedDeviceId() {
+  return std::string();
+}
+
 net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
   return request_context_;
 }

@@ -60,8 +60,10 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
       void(const std::string& account_id,
            const GoogleServiceAuthError& error,
            const std::vector<std::pair<std::string, bool> >& accounts));
-  MOCK_METHOD2(PerformAddToChromeAction, void(const std::string& account_id,
-                                              int session_index));
+  MOCK_METHOD3(PerformAddToChromeAction,
+               void(const std::string& account_id,
+                    int session_index,
+                    const std::string& signin_scoped_device_id));
   MOCK_METHOD0(PerformLogoutAllAccountsAction, void());
 };
 
@@ -630,7 +632,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToChrome) {
   token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
 
   EXPECT_CALL(*GetMockReconcilor(),
-              PerformAddToChromeAction("other@gmail.com", 1));
+              PerformAddToChromeAction("other@gmail.com", 1, ""));
 
   SetFakeResponse(GaiaUrls::GetInstance()->list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 1], "

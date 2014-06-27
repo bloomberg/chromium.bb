@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -48,6 +49,7 @@ class InlineSigninHelper : public SigninOAuthHelper,
       const std::string& email,
       const std::string& password,
       const std::string& session_index,
+      const std::string& signin_scoped_device_id,
       bool choose_what_to_sync);
 
  private:
@@ -78,18 +80,17 @@ InlineSigninHelper::InlineSigninHelper(
     const std::string& email,
     const std::string& password,
     const std::string& session_index,
+    const std::string& signin_scoped_device_id,
     bool choose_what_to_sync)
-    : SigninOAuthHelper(getter, session_index, this),
+    : SigninOAuthHelper(getter, session_index, signin_scoped_device_id, this),
       handler_(handler),
       profile_(profile),
       current_url_(current_url),
       email_(email),
       password_(password),
-      session_index_(session_index),
       choose_what_to_sync_(choose_what_to_sync) {
   DCHECK(profile_);
   DCHECK(!email_.empty());
-  DCHECK(!session_index_.empty());
 }
 
 void InlineSigninHelper::OnSigninOAuthInformationAvailable(
@@ -304,11 +305,15 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
           contents->GetBrowserContext(),
           GURL(chrome::kChromeUIChromeSigninURL));
 
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  std::string signin_scoped_device_id =
+      signin_client->GetSigninScopedDeviceId();
   // InlineSigninHelper will delete itself.
   new InlineSigninHelper(GetWeakPtr(), partition->GetURLRequestContext(),
                          Profile::FromWebUI(web_ui()), current_url,
                          email_, password_, session_index_,
-                         choose_what_to_sync_);
+                         signin_scoped_device_id, choose_what_to_sync_);
 
   email_.clear();
   password_.clear();

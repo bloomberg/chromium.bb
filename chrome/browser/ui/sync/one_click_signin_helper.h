@@ -100,6 +100,7 @@ class OneClickSigninHelper
                   const std::string& email,
                   const std::string& password,
                   const std::string& refresh_token,
+                  const std::string& signin_scoped_device_id,
                   content::WebContents* web_contents,
                   bool untrusted_confirmation_required,
                   signin::Source source,
@@ -113,6 +114,7 @@ class OneClickSigninHelper
     std::string email;
     std::string password;
     std::string refresh_token;
+    std::string signin_scoped_device_id;
 
     // Web contents in which the sync setup page should be displayed,
     // if necessary. Can be NULL.

@@ -41,6 +41,9 @@ class TestSigninClient : public SigninClient {
   // Returns true.
   virtual bool CanRevokeCredentials() OVERRIDE;
 
+  // Returns empty string.
+  virtual std::string GetSigninScopedDeviceId() OVERRIDE;
+
   // Returns the empty string.
   virtual std::string GetProductVersion() OVERRIDE;
 

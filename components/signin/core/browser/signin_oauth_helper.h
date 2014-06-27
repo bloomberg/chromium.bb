@@ -36,6 +36,7 @@ class SigninOAuthHelper : public GaiaAuthConsumer {
 
   explicit SigninOAuthHelper(net::URLRequestContextGetter* getter,
                              const std::string& session_index,
+                             const std::string& signin_scoped_device_id,
                              Consumer* consumer);
   virtual ~SigninOAuthHelper();
 

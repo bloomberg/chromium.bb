@@ -126,6 +126,13 @@ bool ChromeSigninClient::CanRevokeCredentials() {
   return true;
 }
 
+std::string ChromeSigninClient::GetSigninScopedDeviceId() {
+  // TODO(pavely): crbug/382968. In the future this method will read
+  // SigninScopedDeviceId from prefs, generating new one if it doesn't exist.
+  // For now it returns empty string to maintain existing behavior.
+  return std::string();
+}
+
 net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
   return profile_->GetRequestContext();
 }

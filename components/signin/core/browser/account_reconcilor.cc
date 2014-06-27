@@ -52,7 +52,8 @@ class AccountReconcilor::RefreshTokenFetcher
  public:
   RefreshTokenFetcher(AccountReconcilor* reconcilor,
                       const std::string& account_id,
-                      int session_index);
+                      int session_index,
+                      const std::string& signin_scoped_device_id);
   virtual ~RefreshTokenFetcher() {}
 
  private:
@@ -76,9 +77,11 @@ class AccountReconcilor::RefreshTokenFetcher
 AccountReconcilor::RefreshTokenFetcher::RefreshTokenFetcher(
     AccountReconcilor* reconcilor,
     const std::string& account_id,
-    int session_index)
+    int session_index,
+    const std::string& signin_scoped_device_id)
     : SigninOAuthHelper(reconcilor->client()->GetURLRequestContext(),
                         base::IntToString(session_index),
+                        signin_scoped_device_id,
                         this),
       reconcilor_(reconcilor),
       account_id_(account_id),
@@ -398,8 +401,10 @@ void AccountReconcilor::PerformFinishRemoveAction(
   // Wait for the next ReconcileAction if there is an error.
 }
 
-void AccountReconcilor::PerformAddToChromeAction(const std::string& account_id,
-                                                 int session_index) {
+void AccountReconcilor::PerformAddToChromeAction(
+    const std::string& account_id,
+    int session_index,
+    const std::string& signin_scoped_device_id) {
   if (!switches::IsNewProfileManagement()) {
     MarkAccountAsAddedToChrome(account_id);
     return;
@@ -408,8 +413,8 @@ void AccountReconcilor::PerformAddToChromeAction(const std::string& account_id,
           << " account=" << account_id << " session_index=" << session_index;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  refresh_token_fetchers_.push_back(
-      new RefreshTokenFetcher(this, account_id, session_index));
+  refresh_token_fetchers_.push_back(new RefreshTokenFetcher(
+      this, account_id, session_index, signin_scoped_device_id));
 #endif
 }
 
@@ -662,6 +667,7 @@ void AccountReconcilor::FinishReconcile() {
     }
   }
 
+  std::string signin_scoped_device_id = client_->GetSigninScopedDeviceId();
   // For each account in the gaia cookie not known to chrome,
   // PerformAddToChromeAction. Make a copy of |add_to_chrome| since calls to
   // PerformAddToChromeAction() may modify this array.
@@ -670,7 +676,7 @@ void AccountReconcilor::FinishReconcile() {
            add_to_chrome_copy.begin();
        i != add_to_chrome_copy.end();
        ++i) {
-    PerformAddToChromeAction(i->first, i->second);
+    PerformAddToChromeAction(i->first, i->second, signin_scoped_device_id);
   }
 
   signin_metrics::LogSigninAccountReconciliation(valid_chrome_accounts_.size(),

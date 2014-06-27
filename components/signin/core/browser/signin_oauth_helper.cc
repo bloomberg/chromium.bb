@@ -10,13 +10,15 @@
 
 SigninOAuthHelper::SigninOAuthHelper(net::URLRequestContextGetter* getter,
                                      const std::string& session_index,
+                                     const std::string& signin_scoped_device_id,
                                      Consumer* consumer)
     : gaia_auth_fetcher_(this, GaiaConstants::kChromeSource, getter),
       consumer_(consumer) {
   DCHECK(consumer_);
   DCHECK(getter);
   DCHECK(!session_index.empty());
-  gaia_auth_fetcher_.StartCookieForOAuthLoginTokenExchange(session_index);
+  gaia_auth_fetcher_.StartCookieForOAuthLoginTokenExchangeWithDeviceId(
+      session_index, signin_scoped_device_id);
 }
 
 SigninOAuthHelper::~SigninOAuthHelper() {}

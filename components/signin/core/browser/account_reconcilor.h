@@ -144,8 +144,10 @@ class AccountReconcilor : public KeyedService,
   // All actions with side effects.  Virtual so that they can be overridden
   // in tests.
   virtual void PerformMergeAction(const std::string& account_id);
-  virtual void PerformAddToChromeAction(const std::string& account_id,
-                                        int session_index);
+  virtual void PerformAddToChromeAction(
+      const std::string& account_id,
+      int session_index,
+      const std::string& signin_scoped_device_id);
   virtual void PerformLogoutAllAccountsAction();
   virtual void PerformAddAccountToTokenService(
       const std::string& account_id,
