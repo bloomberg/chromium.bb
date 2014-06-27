@@ -34,6 +34,7 @@
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,6 +53,17 @@ namespace {
 
 const int kExpectedReturnValue = 42;
 const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
+
+// Set the global environment to allow the use of UnsafeTrap() policies.
+void EnableUnsafeTraps() {
+  // The use of UnsafeTrap() causes us to print a warning message. This is
+  // generally desirable, but it results in the unittest failing, as it doesn't
+  // expect any messages on "stderr". So, temporarily disable messages. The
+  // BPF_TEST() is guaranteed to turn messages back on, after the policy
+  // function has completed.
+  setenv(kSandboxDebuggingEnv, "t", 0);
+  Die::SuppressInfoMessages(true);
+}
 
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
@@ -480,13 +492,10 @@ intptr_t CountSyscalls(const struct arch_seccomp_data& args, void* aux) {
 }
 
 ErrorCode GreyListedPolicy(SandboxBPF* sandbox, int sysno, int* aux) {
-  // The use of UnsafeTrap() causes us to print a warning message. This is
-  // generally desirable, but it results in the unittest failing, as it doesn't
-  // expect any messages on "stderr". So, temporarily disable messages. The
-  // BPF_TEST() is guaranteed to turn messages back on, after the policy
-  // function has completed.
-  setenv(kSandboxDebuggingEnv, "t", 0);
-  Die::SuppressInfoMessages(true);
+  // Set the global environment for unsafe traps once.
+  if (sysno == MIN_SYSCALL) {
+    EnableUnsafeTraps();
+  }
 
   // Some system calls must always be allowed, if our policy wants to make
   // use of UnsafeTrap()
@@ -2058,6 +2067,88 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     BPF_ASSERT_NE(-1, ptrace(PTRACE_CONT, pid, NULL, NULL));
   }
 }
+
+// Android does not expose pread64 nor pwrite64.
+#if !defined(OS_ANDROID)
+
+bool FullPwrite64(int fd, const char* buffer, size_t count, off64_t offset) {
+  while (count > 0) {
+    const ssize_t transfered =
+        HANDLE_EINTR(pwrite64(fd, buffer, count, offset));
+    if (transfered <= 0 || static_cast<size_t>(transfered) > count) {
+      return false;
+    }
+    count -= transfered;
+    buffer += transfered;
+    offset += transfered;
+  }
+  return true;
+}
+
+bool FullPread64(int fd, char* buffer, size_t count, off64_t offset) {
+  while (count > 0) {
+    const ssize_t transfered = HANDLE_EINTR(pread64(fd, buffer, count, offset));
+    if (transfered <= 0 || static_cast<size_t>(transfered) > count) {
+      return false;
+    }
+    count -= transfered;
+    buffer += transfered;
+    offset += transfered;
+  }
+  return true;
+}
+
+bool pread_64_was_forwarded = false;
+
+class TrapPread64Policy : public SandboxBPFPolicy {
+ public:
+  TrapPread64Policy() {}
+  virtual ~TrapPread64Policy() {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE {
+    // Set the global environment for unsafe traps once.
+    if (system_call_number == MIN_SYSCALL) {
+      EnableUnsafeTraps();
+    }
+
+    if (system_call_number == __NR_pread64) {
+      return sandbox_compiler->UnsafeTrap(ForwardPreadHandler, NULL);
+    }
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+
+ private:
+  static intptr_t ForwardPreadHandler(const struct arch_seccomp_data& args,
+                                      void* aux) {
+    BPF_ASSERT(args.nr == __NR_pread64);
+    pread_64_was_forwarded = true;
+
+    return SandboxBPF::ForwardSyscall(args);
+  }
+  DISALLOW_COPY_AND_ASSIGN(TrapPread64Policy);
+};
+
+// pread(2) takes a 64 bits offset. On 32 bits systems, it will be split
+// between two arguments. In this test, we make sure that ForwardSyscall() can
+// forward it properly.
+BPF_TEST_C(SandboxBPF, Pread64, TrapPread64Policy) {
+  ScopedTemporaryFile temp_file;
+  const uint64_t kLargeOffset = (static_cast<uint64_t>(1) << 32) | 0xBEEF;
+  const char kTestString[] = "This is a test!";
+  BPF_ASSERT(FullPwrite64(
+      temp_file.fd(), kTestString, sizeof(kTestString), kLargeOffset));
+
+  char read_test_string[sizeof(kTestString)] = {0};
+  BPF_ASSERT(FullPread64(temp_file.fd(),
+                         read_test_string,
+                         sizeof(read_test_string),
+                         kLargeOffset));
+  BPF_ASSERT_EQ(0, memcmp(kTestString, read_test_string, sizeof(kTestString)));
+  BPF_ASSERT(pread_64_was_forwarded);
+}
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 

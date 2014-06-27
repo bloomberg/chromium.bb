@@ -24,6 +24,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,38 +39,6 @@ class BrokerProcessTestHelper {
 };
 
 namespace {
-
-// Creates and open a temporary file on creation and closes
-// and removes it on destruction.
-// Unlike base/ helpers, this does not require JNI on Android.
-class ScopedTemporaryFile {
- public:
-  ScopedTemporaryFile()
-      : fd_(-1) {
-#if defined(OS_ANDROID)
-    static const char file_template[] = "/data/local/tmp/ScopedTempFileXXXXXX";
-#else
-    static const char file_template[] = "/tmp/ScopedTempFileXXXXXX";
-#endif  // defined(OS_ANDROID)
-    COMPILE_ASSERT(sizeof(full_file_name_) >= sizeof(file_template),
-                   full_file_name_is_large_enough);
-    memcpy(full_file_name_, file_template, sizeof(file_template));
-    fd_ = mkstemp(full_file_name_);
-    CHECK_LE(0, fd_);
-  }
-  ~ScopedTemporaryFile() {
-    CHECK_EQ(0, unlink(full_file_name_));
-    CHECK_EQ(0, IGNORE_EINTR(close(fd_)));
-  }
-
-  int fd() const { return fd_; }
-  const char* full_file_name() const { return full_file_name_; }
-
- private:
-  int fd_;
-  char full_file_name_[128];
-  DISALLOW_COPY_AND_ASSIGN(ScopedTemporaryFile);
-};
 
 bool NoOpCallback() { return true; }
 

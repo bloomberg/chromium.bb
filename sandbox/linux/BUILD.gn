@@ -66,12 +66,15 @@ source_set("sandbox_linux_test_utils") {
 # The main sandboxing test target.
 test("sandbox_linux_unittests") {
   sources = [
-    "tests/main.cc",
-    "tests/unit_tests_unittest.cc",
     "services/broker_process_unittest.cc",
     "services/scoped_process_unittest.cc",
     "services/thread_helpers_unittests.cc",
     "services/yama_unittests.cc",
+    "tests/main.cc",
+    "tests/scoped_temporary_file.cc",
+    "tests/scoped_temporary_file.h",
+    "tests/scoped_temporary_file_unittest.cc",
+    "tests/unit_tests_unittest.cc",
   ]
 
   deps = [

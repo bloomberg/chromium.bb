@@ -16,12 +16,15 @@
     '../..',
   ],
   'sources': [
-    'tests/main.cc',
-    'tests/unit_tests_unittest.cc',
     'services/broker_process_unittest.cc',
     'services/scoped_process_unittest.cc',
     'services/thread_helpers_unittests.cc',
     'services/yama_unittests.cc',
+    'tests/main.cc',
+    'tests/scoped_temporary_file.cc',
+    'tests/scoped_temporary_file.h',
+    'tests/scoped_temporary_file_unittest.cc',
+    'tests/unit_tests_unittest.cc',
   ],
   'conditions': [
     [ 'compile_suid_client==1', {
