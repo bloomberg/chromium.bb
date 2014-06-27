@@ -1058,10 +1058,6 @@ bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebNode& nod
     if (command == "DeleteToEndOfParagraph") {
         if (!frame()->editor().deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
             frame()->editor().deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
-    } else if (command == "Indent") {
-        frame()->editor().indent();
-    } else if (command == "Outdent") {
-        frame()->editor().outdent();
     } else if (command == "DeleteBackward") {
         result = frame()->editor().command(AtomicString("BackwardDelete")).execute();
     } else if (command == "DeleteForward") {

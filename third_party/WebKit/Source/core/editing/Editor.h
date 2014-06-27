@@ -100,8 +100,6 @@ public:
     static void countEvent(ExecutionContext*, const Event*);
     void copyImage(const HitTestResult&);
 
-    void indent();
-    void outdent();
     void transpose();
 
     bool shouldDeleteRange(Range*) const;

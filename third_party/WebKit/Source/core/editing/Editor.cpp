@@ -629,18 +629,6 @@ String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
     return selectionStyle->style()->getPropertyValue(propertyID);
 }
 
-void Editor::indent()
-{
-    ASSERT(m_frame.document());
-    IndentOutdentCommand::create(*m_frame.document(), IndentOutdentCommand::Indent)->apply();
-}
-
-void Editor::outdent()
-{
-    ASSERT(m_frame.document());
-    IndentOutdentCommand::create(*m_frame.document(), IndentOutdentCommand::Outdent)->apply();
-}
-
 static void dispatchEditableContentChangedEvents(PassRefPtrWillBeRawPtr<Element> startRoot, PassRefPtrWillBeRawPtr<Element> endRoot)
 {
     if (startRoot)
