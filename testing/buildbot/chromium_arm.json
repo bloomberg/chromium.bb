@@ -1,10 +1,12 @@
 {
   "compile_targets": [
     "browser_tests_run",
+    "nacl_loader_unittests_run",
     "sandbox_linux_unittests_run"
   ],
   "gtest_tests": [
     "browser_tests",
+    "nacl_loader_unittests",
     "sandbox_linux_unittests"
   ]
 }
