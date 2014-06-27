@@ -124,6 +124,8 @@ using content::BrowserThread;
 
 namespace {
 
+const char kAttachmentsPath[] = "/attachments/";
+
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
     const CommandLine& command_line) {
   syncer::ModelTypeSet disabled_types;
@@ -140,6 +142,11 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
     enabled_types.Put(syncer::SYNCED_NOTIFICATIONS);
   }
   return enabled_types;
+}
+
+// Returns the base URL for attachments.
+std::string GetSyncServiceAttachmentsURL(const GURL& sync_service_url) {
+  return sync_service_url.spec() + kAttachmentsPath;
 }
 
 }  // namespace
@@ -624,6 +631,7 @@ OAuth2TokenService* TokenServiceProvider::GetTokenService() {
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     syncer::AttachmentService::Delegate* delegate) {
+  std::string url_prefix = GetSyncServiceAttachmentsURL(sync_service_url_);
   scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(
           content::BrowserThread::GetMessageLoopProxyForThread(
@@ -634,7 +642,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   // AttachmentUploader and AttachmentDownloader instead of creating a new one
   // per AttachmentService (bug 369536).
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
-      new syncer::AttachmentUploaderImpl(sync_service_url_,
+      new syncer::AttachmentUploaderImpl(url_prefix,
                                          url_request_context_getter_,
                                          account_id_,
                                          scope_set_,

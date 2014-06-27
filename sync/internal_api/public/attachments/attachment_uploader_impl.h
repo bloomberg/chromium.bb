@@ -23,7 +23,8 @@ namespace syncer {
 class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
                                            public base::NonThreadSafe {
  public:
-  // |sync_service_url| is the URL of the sync service.
+  // |url_prefix| is the URL prefix (including trailing slash) to be used when
+  // uploading attachments.
   //
   // |url_request_context_getter| provides a URLRequestContext.
   //
@@ -33,7 +34,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   //
   // |token_service_provider| provides an OAuth2 token service.
   AttachmentUploaderImpl(
-      const GURL& sync_service_url,
+      const std::string& url_prefix,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       const std::string& account_id,
@@ -46,18 +47,15 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   virtual void UploadAttachment(const Attachment& attachment,
                                 const UploadCallback& callback) OVERRIDE;
 
-  // Return the URL for the given |sync_service_url| and |attachment_id|.
-  static GURL GetURLForAttachmentId(const GURL& sync_service_url,
-                                    const AttachmentId& attachment_id);
-
  private:
   class UploadState;
   typedef std::string UniqueId;
   typedef base::ScopedPtrHashMap<UniqueId, UploadState> StateMap;
 
+  GURL GetUploadURLForAttachmentId(const AttachmentId& attachment_id) const;
   void DeleteUploadStateFor(const UniqueId& unique_id);
 
-  GURL sync_service_url_;
+  std::string url_prefix_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::string account_id_;
   OAuth2TokenService::ScopeSet scopes_;
