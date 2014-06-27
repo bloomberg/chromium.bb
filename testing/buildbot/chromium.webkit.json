@@ -1,0 +1,102 @@
+{
+  "Linux ChromiumOS Tests (1)": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "chromeos_unittests",
+      "components_unittests",
+      "crypto_unittests",
+      "dbus_unittests",
+      "display_unittests",
+      "gcm_unit_tests",
+      "google_apis_unittests",
+      "gpu_unittests",
+      "url_unittests",
+      "jingle_unittests",
+      "content_unittests",
+      "device_unittests",
+      "media_unittests",
+      "net_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "ui_unittests",
+      "views_unittests",
+      "wm_unittests",
+      "aura_unittests",
+      "ash_unittests",
+      "app_list_unittests",
+      "message_center_unittests",
+      "compositor_unittests",
+      "events_unittests",
+      "ipc_tests",
+      "sync_unit_tests",
+      "unit_tests",
+      "sql_unittests",
+      "nacl_loader_unittests",
+      "athena_unittests"
+    ]
+  },
+  "Linux ChromiumOS Tests (2)": {
+    "gtest_tests": [
+      "interactive_ui_tests",
+      "browser_tests",
+      "content_browsertests",
+      "app_shell_browsertests"
+    ]
+  },
+  "Linux ChromiumOS Tests (dbg)(1)": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "chromeos_unittests",
+      "components_unittests",
+      "crypto_unittests",
+      "dbus_unittests",
+      "google_apis_unittests",
+      "gpu_unittests",
+      "url_unittests",
+      "jingle_unittests",
+      "content_unittests",
+      "device_unittests",
+      "display_unittests",
+      "media_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "ui_unittests",
+      "views_unittests",
+      "wm_unittests",
+      "aura_unittests",
+      "ash_unittests",
+      "app_list_unittests",
+      "message_center_unittests",
+      "compositor_unittests",
+      "events_unittests",
+      "ipc_tests",
+      "sync_unit_tests",
+      "unit_tests",
+      "sql_unittests",
+      "nacl_loader_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux ChromiumOS Tests (dbg)(2)": {
+    "gtest_tests": [
+      "app_shell_browsertests",
+      "content_browsertests",
+      "net_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux ChromiumOS Tests (dbg)(3)": {
+    "gtest_tests": [
+      "athena_unittests",
+      "gcm_unit_tests",
+      "interactive_ui_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
+  }
+}
