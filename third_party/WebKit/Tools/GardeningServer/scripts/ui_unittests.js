@@ -85,8 +85,8 @@ test("results.ResultsGrid", 8, function() {
     var comparisons = grid.querySelectorAll("ct-results-comparison");
 
     equal(comparisons[0].type, "text");
-    equal(comparisons[0].actualUrl, "");
-    equal(comparisons[0].expectedUrl, "");
+    equal(comparisons[0].actualUrl, undefined);
+    equal(comparisons[0].expectedUrl, undefined);
     equal(comparisons[0].diffUrl, "http://example.com/foo-bar-diff.txt");
 
     equal(comparisons[1].type, "image");
