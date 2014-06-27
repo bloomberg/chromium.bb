@@ -27,7 +27,6 @@
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 
@@ -65,19 +64,8 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     // Text shadows are disabled when printing. http://crbug.com/258321
     const ShadowList* shadowList = context->printing() ? 0 : style->textShadow();
     bool hasShadow = shadowList;
-    if (hasShadow) {
-        OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-        for (size_t i = shadowList->shadows().size(); i--; ) {
-            const ShadowData& shadow = shadowList->shadows()[i];
-            float shadowX = isHorizontal() ? shadow.x() : shadow.y();
-            float shadowY = isHorizontal() ? shadow.y() : -shadow.x();
-            FloatSize offset(shadowX, shadowY);
-            drawLooperBuilder->addShadow(offset, shadow.blur(), shadow.color(),
-                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-        }
-        drawLooperBuilder->addUnmodifiedContent();
-        context->setDrawLooper(drawLooperBuilder.release());
-    }
+    if (hasShadow)
+        context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, isHorizontal()));
 
     TextRun textRun = RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);

@@ -33,6 +33,8 @@
 
 #include "core/rendering/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/DrawLooperBuilder.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
@@ -60,6 +62,8 @@ public:
 
     void adjustRectForShadow(LayoutRect&, float additionalOutlineSize = 0) const;
     void adjustRectForShadow(FloatRect&, float additionalOutlineSize = 0) const;
+
+    PassOwnPtr<DrawLooperBuilder> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode, bool isHorizontal = true) const;
 
 private:
     ShadowList(ShadowDataVector& shadows)
