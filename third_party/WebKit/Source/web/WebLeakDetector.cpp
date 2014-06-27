@@ -61,6 +61,7 @@ public:
         : m_client(client)
         , m_delayedGCAndReportTimer(this, &WebLeakDetectorImpl::delayedGCAndReport)
         , m_delayedReportTimer(this, &WebLeakDetectorImpl::delayedReport)
+        , m_numberOfGCNeeded(0)
     {
         ASSERT(m_client);
     }
@@ -76,6 +77,7 @@ private:
     WebLeakDetectorClient* m_client;
     Timer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
     Timer<WebLeakDetectorImpl> m_delayedReportTimer;
+    int m_numberOfGCNeeded;
 };
 
 void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
@@ -98,19 +100,25 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
     // This method is called from navigation hook inside FrameLoader,
     // so previous document is still held by the loader until the next event loop.
     // Complete all pending tasks before proceeding to gc.
+    m_numberOfGCNeeded = 2;
     m_delayedGCAndReportTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
 {
-    // We do a second GC here to address flakiness: Resource GC may have postponed clean-up tasks to next event loop.
+    // We do a second and third GC here to address flakiness
+    // The second GC is necessary as Resource GC may have postponed clean-up tasks to next event loop.
+    // The third GC is necessary for cleaning up Document after worker object died.
 
     for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
         V8GCController::collectGarbage(V8PerIsolateData::mainThreadIsolate());
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Inspect counters on the next event loop.
-    m_delayedReportTimer.startOneShot(0, FROM_HERE);
+    if (--m_numberOfGCNeeded)
+        m_delayedGCAndReportTimer.startOneShot(0, FROM_HERE);
+    else
+        m_delayedReportTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
