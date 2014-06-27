@@ -98,7 +98,6 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #else
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
-#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service_factory.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
 
@@ -204,7 +203,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
   notifier::ChromeNotifierServiceFactory::GetInstance();
-  notifier::SyncedNotificationAppInfoServiceFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
 #endif
   PasswordStoreFactory::GetInstance();

@@ -154,9 +154,6 @@ class DesktopNotificationService : public KeyedService,
   // Called when the disabled_system_component_id pref has been changed.
   void OnDisabledSystemComponentIdsChanged();
 
-  // Called when the enabled_sync_notifier_id pref has been changed.
-  void OnEnabledSyncNotifierIdsChanged();
-
   void FirePermissionLevelChangedEvent(
       const message_center::NotifierId& notifier_id,
       bool enabled);
@@ -179,17 +176,11 @@ class DesktopNotificationService : public KeyedService,
   // Prefs listener for disabled_system_component_id.
   StringListPrefMember disabled_system_component_id_pref_;
 
-  // Prefs listener for enabled_sync_notifier_id.
-  StringListPrefMember enabled_sync_notifier_id_pref_;
-
   // On-memory data for the availability of extensions.
   std::set<std::string> disabled_extension_ids_;
 
   // On-memory data for the availability of system_component.
   std::set<std::string> disabled_system_component_ids_;
-
-  // On-memory data for the availability of sync notifiers.
-  std::set<std::string> enabled_sync_notifier_ids_;
 
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;

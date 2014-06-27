@@ -12,6 +12,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -75,6 +76,9 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif
   DependsOn(WebDataServiceFactory::GetInstance());
+#if defined(ENABLE_EXTENSIONS)
+  DependsOn(notifier::ChromeNotifierServiceFactory::GetInstance());
+#endif
 
   // The following have not been converted to KeyedServices yet,
   // and for now they are explicitly destroyed after the

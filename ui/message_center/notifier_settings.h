@@ -40,7 +40,6 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
     APPLICATION,
     WEB_PAGE,
     SYSTEM_COMPONENT,
-    SYNCED_NOTIFICATION_SERVICE,
   };
 
   // Constructor for non WEB_PAGE type.

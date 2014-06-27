@@ -246,21 +246,6 @@ void MessageCenterSettingsController::GetNotifierList(
     app_icon_loader_->FetchImage(extension->id());
   }
 
-  if (notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
-          CommandLine::ForCurrentProcess())) {
-    notifier::ChromeNotifierService* sync_notifier_service =
-        notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-            profile, Profile::EXPLICIT_ACCESS);
-    if (sync_notifier_service) {
-      sync_notifier_service->GetSyncedNotificationServices(notifiers);
-
-      if (comparator)
-        std::sort(notifiers->begin(), notifiers->end(), *comparator);
-      else
-        std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
-    }
-  }
-
   int app_count = notifiers->size();
 
   ContentSettingsForOneType settings;
@@ -366,13 +351,6 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     }
   } else {
     notification_service->SetNotifierEnabled(notifier.notifier_id, enabled);
-    if (notifier.notifier_id.type == NotifierId::SYNCED_NOTIFICATION_SERVICE) {
-      notifier::ChromeNotifierService* notifier_service =
-          notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-              profile, Profile::EXPLICIT_ACCESS);
-      notifier_service->OnSyncedNotificationServiceEnabled(
-          notifier.notifier_id.id, enabled);
-    }
   }
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,

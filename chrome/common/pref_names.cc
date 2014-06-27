@@ -1159,26 +1159,6 @@ const char kMessageCenterDisabledExtensionIds[] =
 const char kMessageCenterDisabledSystemComponentIds[] =
     "message_center.disabled_system_component_ids";
 
-// List pref containing the system component ids which are allowed to send
-// notifications to the message center.
-extern const char kMessageCenterEnabledSyncNotifierIds[] =
-    "message_center.enabled_sync_notifier_ids";
-
-// List pref containing synced notification sending services that are currently
-// enabled.
-extern const char kEnabledSyncedNotificationSendingServices[] =
-    "synced_notification.enabled_remote_services";
-
-// List pref containing which synced notification sending services have already
-// been turned on once for the user (so we don't turn them on again).
-extern const char kInitializedSyncedNotificationSendingServices[] =
-    "synced_notification.initialized_remote_services";
-
-// Boolean pref containing whether this is the first run of the Synced
-// Notification feature.
-extern const char kSyncedNotificationFirstRun[] =
-    "synced_notification.first_run";
-
 // Boolean pref indicating the Chrome Now welcome notification was dismissed
 // by the user. Syncable.
 // Note: This is now read-only. The welcome notification writes the _local
