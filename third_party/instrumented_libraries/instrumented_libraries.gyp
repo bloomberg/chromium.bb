@@ -46,6 +46,7 @@
       # $ character in a way that would work for every package.
       '-Wl,-R,XORIGIN/.'
     ],
+    'patch': '',
     'run_before_build': '',
 
     'conditions': [
@@ -176,7 +177,7 @@
     {
       'package_name': 'freetype',
       'dependencies=': [],
-      'run_before_build': 'freetype.sh',
+      'run_before_build': 'scripts/freetype.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -223,7 +224,7 @@
         # From debian/rules.
         '--with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts',
       ],
-      'run_before_build': 'libfontconfig.sh',
+      'patch': 'patches/libfontconfig.diff',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -255,7 +256,7 @@
         # TSan reports data races on debug variables.
         '--disable-debug',
       ],
-      'run_before_build': 'libnspr4.sh',
+      'run_before_build': 'scripts/libnspr4.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -371,7 +372,7 @@
     {
       'package_name': 'zlib1g',
       'dependencies=': [],
-      'run_before_build': 'zlib1g.sh',
+      'patch': 'patches/zlib1g.diff',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -379,7 +380,7 @@
       'dependencies=': [
         '<(_sanitizer_type)-libnspr4',
       ],
-      'run_before_build': 'nss.sh',
+      'patch': 'patches/nss.diff',
       'build_method': 'custom_nss',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
@@ -388,20 +389,21 @@
       'dependencies=': [
         '<(_sanitizer_type)-libdbus-1-3',
       ],
-      'run_before_build': 'pulseaudio.sh',
+      'patch': 'patches/pulseaudio.diff',
+      'run_before_build': 'scripts/pulseaudio.sh',
       'jobs': 1,
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
       'package_name': 'libasound2',
       'dependencies=': [],
-      'run_before_build': 'libasound2.sh',
+      'run_before_build': 'scripts/libasound2.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
       'package_name': 'libcups2',
       'dependencies=': [],
-      'run_before_build': 'libcups2.sh',
+      'patch': 'patches/libcups2.diff',
       'jobs': 1,
       'extra_configure_flags': [
         # All from debian/rules.
@@ -487,7 +489,8 @@
           '--with-xinput=yes',
       ],
       'dependencies=': [],
-      'run_before_build': 'libgtk2.0-0.sh',
+      'patch': 'patches/libgtk2.0-0.diff',
+      'run_before_build': 'scripts/libgtk2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -500,7 +503,8 @@
           '--disable-introspection',
       ],
       'dependencies=': [],
-      'run_before_build': 'libgdk-pixbuf2.0-0.sh',
+      'patch': 'patches/libgdk-pixbuf2.0-0.diff',
+      'run_before_build': 'scripts/libgdk-pixbuf2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -553,6 +557,7 @@
       ],
       'dependencies=': [],
       'build_method': 'custom_libappindicator1',
+      'jobs': 1,
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {

@@ -27,6 +27,7 @@
         '--extra-configure-flags=>(_extra_configure_flags)',
         '--cflags=>(_package_cflags)',
         '--ldflags=>(_package_ldflags)',
+        '--patch=>(_patch)',
         '--run-before-build=>(_run_before_build)',
         '--cc=<(_cc)',
         '--cxx=<(_cxx)',
@@ -40,7 +41,19 @@
             '--verbose',
           ],
         }],
-      ]
+      ],
+      'target_conditions': [
+        ['">(_patch)"!=""', {
+          'inputs+': [
+            '>(_patch)',
+          ],
+        }],
+        ['">(_run_before_build)"!=""', {
+          'inputs+': [
+            '>(_run_before_build)',
+          ],
+        }],
+      ],
     },
   ],
 }

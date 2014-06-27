@@ -286,6 +286,12 @@ def download_build_install(parsed_arguments):
                        'a package %s' % parsed_arguments.package))
     with ScopedChangeDirectory(subdirectories[0]):
       # Here we are in the package directory.
+      if parsed_arguments.patch:
+        shell_call(
+            'patch -p1 -i %s/%s' %
+            (os.path.relpath(cd_package.old_path),
+             parsed_arguments.patch),
+            parsed_arguments.verbose)
       if parsed_arguments.run_before_build:
         shell_call(
             '%s/%s' %
@@ -330,8 +336,9 @@ def main():
   argument_parser.add_argument('--check-build-deps', action='store_true')
   argument_parser.add_argument('--cc')
   argument_parser.add_argument('--cxx')
-  # This should be a shell script to run before building specific libraries
-  # e.g. extracting archives with sources, patching makefiles, etc.
+  argument_parser.add_argument('--patch', default='')
+  # This should be a shell script to run before building specific libraries.
+  # This will be run after applying the patch above.
   argument_parser.add_argument('--run-before-build', default='')
   argument_parser.add_argument('--build-method', default='destdir')
   argument_parser.add_argument('--sanitizer-blacklist', default='')
