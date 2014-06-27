@@ -16,6 +16,7 @@ from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+
 class _HTML5GamingMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('benchmark();')
@@ -28,6 +29,7 @@ class _HTML5GamingMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score', result)
 
 
+@benchmark.Disabled
 class HTML5Gaming(benchmark.Benchmark):
   """Imapct HTML5 smooth running games benchmark suite."""
   test = _HTML5GamingMeasurement

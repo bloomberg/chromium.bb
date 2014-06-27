@@ -46,6 +46,7 @@ class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score', total)
 
 
+@benchmark.Disabled
 class CanvasMark(benchmark.Benchmark):
   test = _CanvasMarkMeasurement
 

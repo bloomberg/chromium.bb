@@ -1,13 +1,13 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import benchmark
 
 from measurements import startup
 import page_sets
+from telemetry import benchmark
 
 
-@benchmark.Disabled('snowleopard') # crbug.com/336913
+@benchmark.Disabled('android', 'snowleopard') # crbug.com/336913
 class StartWithUrlCold(benchmark.Benchmark):
   """Measure time to start Chrome cold with startup URLs"""
   tag = 'cold'
@@ -16,6 +16,8 @@ class StartWithUrlCold(benchmark.Benchmark):
   options = {'cold': True,
              'pageset_repeat': 5}
 
+
+@benchmark.Enabled('has tabs')
 class StartWithUrlWarm(benchmark.Benchmark):
   """Measure time to start Chrome warm with startup URLs"""
   tag = 'warm'

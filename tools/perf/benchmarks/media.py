@@ -35,12 +35,14 @@ class Media(benchmark.Benchmark):
   page_set = page_sets.ToughVideoCasesPageSet
 
 
+@benchmark.Disabled
 class MediaNetworkSimulation(benchmark.Benchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media
   page_set = page_sets.MediaCnsCasesPageSet
 
 
+@benchmark.Enabled('android')
 class MediaAndroid(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
@@ -50,6 +52,7 @@ class MediaAndroid(benchmark.Benchmark):
   options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
 
 
+@benchmark.Enabled('chromeos')
 class MediaChromeOS4kOnly(benchmark.Benchmark):
   """Benchmark for media performance on ChromeOS using only is_4k test content.
   """
@@ -63,6 +66,7 @@ class MediaChromeOS4kOnly(benchmark.Benchmark):
   }
 
 
+@benchmark.Enabled('chromeos')
 class MediaChromeOS(benchmark.Benchmark):
   """Benchmark for media performance on all ChromeOS platforms.
 

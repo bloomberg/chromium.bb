@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
-
 from benchmarks import silk_flags
-from measurements import smoothness
 import page_sets
+from measurements import smoothness
+from telemetry import benchmark
 
 
 class SmoothnessTop25(benchmark.Benchmark):
@@ -29,6 +28,7 @@ class SmoothnessToughWebGLCases(benchmark.Benchmark):
   page_set = page_sets.ToughWebglCasesPageSet
 
 
+@benchmark.Disabled
 class SmoothnessMaps(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.MapsPageSet

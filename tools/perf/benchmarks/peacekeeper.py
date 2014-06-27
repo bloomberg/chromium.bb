@@ -68,6 +68,7 @@ class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
         scalar.ScalarValue(None, 'Total.Score', 'score', total))
 
 
+@benchmark.Disabled
 class PeaceKeeperBenchmark(benchmark.Benchmark):
   """A base class for Peackeeper benchmarks."""
   test = _PeaceKeeperMeasurement
@@ -89,6 +90,7 @@ class PeaceKeeperBenchmark(benchmark.Benchmark):
     return ps
 
 
+@benchmark.Disabled
 class PeaceKeeperRender(PeaceKeeperBenchmark):
   """PeaceKeeper rendering benchmark suite.
 
@@ -104,6 +106,7 @@ class PeaceKeeperRender(PeaceKeeperBenchmark):
                ]
 
 
+@benchmark.Disabled
 class PeaceKeeperData(PeaceKeeperBenchmark):
   """PeaceKeeper Data operations benchmark suite.
 
@@ -123,6 +126,7 @@ class PeaceKeeperData(PeaceKeeperBenchmark):
                ]
 
 
+@benchmark.Disabled
 class PeaceKeeperDom(PeaceKeeperBenchmark):
   """PeaceKeeper DOM operations benchmark suite.
 
@@ -163,6 +167,7 @@ class PeaceKeeperDom(PeaceKeeperBenchmark):
                ]
 
 
+@benchmark.Disabled
 class PeaceKeeperTextParsing(PeaceKeeperBenchmark):
   """PeaceKeeper Text Parsing benchmark suite.
 
@@ -192,6 +197,7 @@ class PeaceKeeperTextParsing(PeaceKeeperBenchmark):
                ]
 
 
+@benchmark.Disabled
 class PeaceKeeperHTML5Canvas(PeaceKeeperBenchmark):
   """PeaceKeeper HTML5 Canvas benchmark suite.
 
@@ -209,6 +215,7 @@ class PeaceKeeperHTML5Canvas(PeaceKeeperBenchmark):
                ]
 
 
+@benchmark.Disabled
 class PeaceKeeperHTML5Capabilities(PeaceKeeperBenchmark):
   """PeaceKeeper HTML5 Capabilities benchmark suite.
 

@@ -10,10 +10,9 @@ page sets, and the statistics that are gathered are determined by the Endure
 measurement class.
 """
 
-from telemetry import benchmark
-
 from measurements import endure
 import page_sets
+from telemetry import benchmark
 
 
 class _EndureBenchmark(benchmark.Benchmark):
@@ -29,34 +28,42 @@ class _EndureBenchmark(benchmark.Benchmark):
   }
 
 
+@benchmark.Disabled
 class EndureCalendarForwardBackward(_EndureBenchmark):
   page_set = page_sets.CalendarForwardBackwardPageSet
 
 
+@benchmark.Disabled
 class EndureBrowserControl(_EndureBenchmark):
   page_set = page_sets.BrowserControlPageSet
 
 
+@benchmark.Disabled
 class EndureBrowserControlClick(_EndureBenchmark):
   page_set = page_sets.BrowserControlClickPageSet
 
 
+@benchmark.Disabled
 class EndureGmailAltThreadlistConversation(_EndureBenchmark):
   page_set = page_sets.GmailAltThreadlistConversationPageSet
 
 
+@benchmark.Disabled
 class EndureGmailAltTwoLabels(_EndureBenchmark):
   page_set = page_sets.GmailAltTwoLabelsPageSet
 
 
+@benchmark.Disabled
 class EndureGmailExpandCollapseConversation(_EndureBenchmark):
   page_set = page_sets.GmailExpandCollapseConversationPageSet
 
 
+@benchmark.Disabled
 class EndureIndexedDBOffline(_EndureBenchmark):
   page_set = page_sets.IndexeddbOfflinePageSet
 
 
+@benchmark.Disabled
 class EndurePlusAltPostsPhotos(_EndureBenchmark):
   page_set = page_sets.PlusAltPostsPhotosPageSet
 

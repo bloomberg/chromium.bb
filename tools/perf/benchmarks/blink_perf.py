@@ -102,6 +102,8 @@ class BlinkPerfAll(benchmark.Benchmark):
         'third_party', 'WebKit', 'PerformanceTests')
     return _CreatePageSetFromPath(path)
 
+
+@benchmark.Disabled
 class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement

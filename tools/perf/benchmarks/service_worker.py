@@ -20,6 +20,7 @@ class _ServiceWorkerMeasurement(page_measurement.PageMeasurement):
       results.Add(key, value['units'], value['value'])
 
 
+@benchmark.Disabled
 class ServiceWorkerPerfTest(benchmark.Benchmark):
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet

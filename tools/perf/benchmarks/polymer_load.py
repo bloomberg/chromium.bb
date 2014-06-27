@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import page_sets
 from measurements import polymer_load
+import page_sets
 from telemetry import benchmark
 
 
+@benchmark.Disabled
 class PolymerLoadPica(benchmark.Benchmark):
-  """Measures time to polymer-ready for PICA
-  """
+  """Measures time to polymer-ready for PICA."""
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.PicaPageSet

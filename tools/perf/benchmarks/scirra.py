@@ -50,6 +50,7 @@ class _ScirraMeasurement(page_measurement.PageMeasurement):
     results.Add('Count', 'count', total)
 
 
+@benchmark.Disabled
 class ScirraBenchmark(benchmark.Benchmark):
   """WebGL and Canvas2D rendering benchmark suite."""
   test = _ScirraMeasurement

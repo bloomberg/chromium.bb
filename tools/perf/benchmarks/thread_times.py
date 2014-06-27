@@ -1,11 +1,11 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import benchmark
 
 from benchmarks import silk_flags
 from measurements import thread_times
 import page_sets
+from telemetry import benchmark
 
 
 class ThreadTimesKeySilkCases(benchmark.Benchmark):
@@ -27,6 +27,7 @@ class ThreadTimesFastPathKeySilkCases(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
+@benchmark.Disabled
 class LegacySilkBenchmark(ThreadTimesKeySilkCases):
   """Same as thread_times.key_silk_cases but with the old name."""
   @classmethod

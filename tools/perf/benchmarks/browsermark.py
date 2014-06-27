@@ -44,6 +44,7 @@ class _BrowsermarkMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score', result)
 
 
+@benchmark.Disabled
 class Browsermark(benchmark.Benchmark):
   """Browsermark suite tests CSS, DOM, resize, page load, WebGL and JS."""
   test = _BrowsermarkMeasurement
