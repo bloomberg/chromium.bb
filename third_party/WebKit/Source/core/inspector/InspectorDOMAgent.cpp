@@ -276,9 +276,10 @@ void InspectorDOMAgent::clearFrontend()
 
 void InspectorDOMAgent::restore()
 {
-    // Reset document to avoid early return from setDocument.
-    m_document = nullptr;
-    setDocument(m_pageAgent->mainFrame()->document());
+    if (!enabled())
+        return;
+    innerEnable();
+    notifyDocumentUpdated();
 }
 
 Vector<Document*> InspectorDOMAgent::documents()
@@ -486,13 +487,25 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
     return element;
 }
 
+void InspectorDOMAgent::innerEnable()
+{
+    m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
+    if (m_listener)
+        m_listener->domAgentWasEnabled();
+}
+
 void InspectorDOMAgent::enable(ErrorString*)
 {
     if (enabled())
         return;
-    m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
-    if (m_listener)
-        m_listener->domAgentWasEnabled();
+    innerEnable();
+    notifyDocumentUpdated();
+}
+
+void InspectorDOMAgent::notifyDocumentUpdated()
+{
+    m_document = nullptr;
+    setDocument(m_pageAgent->mainFrame()->document());
 }
 
 bool InspectorDOMAgent::enabled() const
@@ -513,7 +526,8 @@ void InspectorDOMAgent::disable(ErrorString*)
 void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder::DOM::Node>& root)
 {
     // Backward compatibility. Mark agent as enabled when it requests document.
-    enable(errorString);
+    if (!enabled())
+        innerEnable();
 
     if (!m_document) {
         *errorString = "Document is not available";
