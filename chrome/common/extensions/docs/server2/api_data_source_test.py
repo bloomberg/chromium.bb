@@ -11,6 +11,7 @@ import unittest
 from api_data_source import (_JSCModel,
                              _FormatValue,
                              _GetEventByNameFromEvents)
+from api_schema_graph import APISchemaGraph
 from availability_finder import AvailabilityInfo
 from branch_utility import ChannelInfo
 from extensions_paths import CHROME_EXTENSIONS
@@ -55,6 +56,21 @@ class _FakeFeaturesBundle(object):
     })
 
 
+class _FakeAvailabilityFinder(object):
+  def __init__(self, fake_availability):
+    self._fake_availability = fake_availability
+
+  def GetAPIAvailability(self, api_name):
+    return self._fake_availability
+
+  def GetAPINodeAvailability(self, api_name):
+    '''The tests that use this fake class don't
+    use the node availability, so just return a
+    dummy graph.
+    '''
+    return APISchemaGraph(_graph={'dummy': 'graph'})
+
+
 class APIDataSourceTest(unittest.TestCase):
 
   def setUp(self):
@@ -91,8 +107,9 @@ class APIDataSourceTest(unittest.TestCase):
     return json.loads(self._ReadLocalFile(filename))
 
   def testCreateId(self):
+    fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      self._fake_availability,
+                      fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -105,9 +122,10 @@ class APIDataSourceTest(unittest.TestCase):
 
   # TODO(kalman): re-enable this when we have a rebase option.
   def DISABLED_testToDict(self):
+    fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     expected_json = self._LoadJSON('expected_tester.json')
     dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      self._fake_availability,
+                      fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -126,12 +144,14 @@ class APIDataSourceTest(unittest.TestCase):
       'jsonStableAPI': 20,
       'idle': 5,
       'input.ime': 18,
+      'signedInDevices': 'trunk',
+      'systemInfo.stuff': 28,
       'tabs': 18
     }
     for api_name, availability in api_availabilities.iteritems():
       model_dict = _JSCModel(
           self._avail_api_models.GetModel(api_name).Get(),
-          self._avail_finder.GetAPIAvailability(api_name),
+          self._avail_finder,
           self._avail_json_cache,
           _FakeTemplateCache(),
           _FakeFeaturesBundle(),
@@ -140,8 +160,9 @@ class APIDataSourceTest(unittest.TestCase):
                         model_dict['introList'][1]['content'][0]['version'])
 
   def testGetIntroList(self):
+    fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     model = _JSCModel(self._api_models.GetModel('tester').Get(),
-                      self._fake_availability,
+                      fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,
@@ -187,8 +208,10 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals(model._GetIntroTableList(), expected_list)
 
     # Tests the same data with a scheduled availability.
+    fake_avail_finder = _FakeAvailabilityFinder(
+        AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28))
     model = _JSCModel(self._api_models.GetModel('tester').Get(),
-        AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28),
+        fake_avail_finder,
         self._json_cache,
         _FakeTemplateCache(),
         self._features_bundle,
@@ -230,8 +253,9 @@ class APIDataSourceTest(unittest.TestCase):
     return Future(value=_GetEventByNameFromEvents(events))
 
   def testAddRules(self):
+    fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     dict_ = _JSCModel(self._api_models.GetModel('add_rules_tester').Get(),
-                      self._fake_availability,
+                      fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,

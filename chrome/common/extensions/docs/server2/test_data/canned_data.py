@@ -155,6 +155,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'extension': {
           'channel': 'stable'
         },
+        'signedInDevices': {
+          'channel': 'stable'
+        },
         'systemInfo.cpu': {
           'channel': 'stable'
         },
@@ -254,6 +257,14 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'description': 'An API that has the potential to cause some trouble.'
       }]),
       'menus.json': json.dumps([{'namespace': 'menus', 'description': ''}]),
+      'signed_in_devices.json': json.dumps([{
+        'namespace': 'signedInDevices',
+        'description': 'Another API that could cause some trouble.'
+      }]),
+      'system_info_stuff.json': json.dumps([{
+        'namespace': 'systemInfo.stuff',
+        'description': 'Yet another API that could wreck havoc...'
+      }]),
       'tabs.json': json.dumps([{'namespace': 'tabs', 'description': ''}]),
       'windows.json': json.dumps([{'namespace': 'windows', 'description': ''}])
     },

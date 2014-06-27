@@ -72,12 +72,12 @@ class _JSCModel(object):
 
   def __init__(self,
                namespace,
-               availability,
+               availability_finder,
                json_cache,
                template_cache,
                features_bundle,
                event_byname_future):
-    self._availability = availability
+    self._availability = availability_finder.GetAPIAvailability(namespace.name)
     self._api_availabilities = json_cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'api_availabilities.json'))
     self._intro_tables = json_cache.GetFromFile(
@@ -506,8 +506,7 @@ class APIDataSource(DataSource):
       if jsc_model is None:
         jsc_model = _JSCModel(
             model_future.Get(),
-            self._platform_bundle.GetAvailabilityFinder(
-                platform).GetAPIAvailability(api_name),
+            self._platform_bundle.GetAvailabilityFinder(platform),
             self._json_cache,
             self._template_cache,
             self._platform_bundle.GetFeaturesBundle(platform),
