@@ -20,11 +20,11 @@ namespace cast {
 
 namespace {
 struct TestScenario {
-  transport::AudioCodec codec;
+  transport::Codec codec;
   int num_channels;
   int sampling_rate;
 
-  TestScenario(transport::AudioCodec c, int n, int s)
+  TestScenario(transport::Codec c, int n, int s)
       : codec(c), num_channels(n), sampling_rate(s) {}
 };
 }  // namespace
@@ -51,7 +51,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     last_frame_id_ = 0;
     seen_a_decoded_frame_ = false;
 
-    if (GetParam().codec == transport::kOpus) {
+    if (GetParam().codec == transport::CODEC_AUDIO_OPUS) {
       opus_encoder_memory_.reset(
           new uint8[opus_encoder_get_size(GetParam().num_channels)]);
       OpusEncoder* const opus_encoder =
@@ -88,13 +88,13 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     std::vector<int16> interleaved(num_elements);
     audio_bus->ToInterleaved(
         audio_bus->frames(), sizeof(int16), &interleaved.front());
-    if (GetParam().codec == transport::kPcm16) {
+    if (GetParam().codec == transport::CODEC_AUDIO_PCM16) {
       encoded_frame->data.resize(num_elements * sizeof(int16));
       int16* const pcm_data =
           reinterpret_cast<int16*>(encoded_frame->mutable_bytes());
       for (size_t i = 0; i < interleaved.size(); ++i)
         pcm_data[i] = static_cast<int16>(base::HostToNet16(interleaved[i]));
-    } else if (GetParam().codec == transport::kOpus) {
+    } else if (GetParam().codec == transport::CODEC_AUDIO_OPUS) {
       OpusEncoder* const opus_encoder =
           reinterpret_cast<OpusEncoder*>(opus_encoder_memory_.get());
       const int kOpusEncodeBufferSize = 4000;
@@ -154,7 +154,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     // first frame seen at the start (and immediately after dropped packet
     // recovery) because it introduces a tiny, significant delay.
     bool examine_signal = true;
-    if (GetParam().codec == transport::kOpus) {
+    if (GetParam().codec == transport::CODEC_AUDIO_OPUS) {
       examine_signal = seen_a_decoded_frame_ && should_be_continuous;
       seen_a_decoded_frame_ = true;
     }
@@ -229,13 +229,14 @@ TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
   WaitForAllAudioToBeDecoded();
 }
 
-INSTANTIATE_TEST_CASE_P(AudioDecoderTestScenarios,
-                        AudioDecoderTest,
-                        ::testing::Values(
-                             TestScenario(transport::kPcm16, 1, 8000),
-                             TestScenario(transport::kPcm16, 2, 48000),
-                             TestScenario(transport::kOpus, 1, 8000),
-                             TestScenario(transport::kOpus, 2, 48000)));
+INSTANTIATE_TEST_CASE_P(
+    AudioDecoderTestScenarios,
+    AudioDecoderTest,
+    ::testing::Values(
+         TestScenario(transport::CODEC_AUDIO_PCM16, 1, 8000),
+         TestScenario(transport::CODEC_AUDIO_PCM16, 2, 48000),
+         TestScenario(transport::CODEC_AUDIO_OPUS, 1, 8000),
+         TestScenario(transport::CODEC_AUDIO_OPUS, 2, 48000)));
 
 }  // namespace cast
 }  // namespace media

@@ -70,12 +70,14 @@ media::cast::AudioSenderConfig GetAudioSenderConfig() {
   audio_config.use_external_encoder = false;
   audio_config.frequency = kAudioSamplingFrequency;
   audio_config.channels = kAudioChannels;
-  audio_config.bitrate = 64000;
-  audio_config.codec = media::cast::transport::kOpus;
-  audio_config.rtp_config.ssrc = 1;
+  audio_config.bitrate = 0;  // Use Opus auto-VBR mode.
+  audio_config.codec = media::cast::transport::CODEC_AUDIO_OPUS;
+  audio_config.ssrc = 1;
   audio_config.incoming_feedback_ssrc = 2;
-  audio_config.rtp_config.payload_type = 127;
-  audio_config.rtp_config.max_delay_ms = 300;
+  audio_config.rtp_payload_type = 127;
+  // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
+  // should receiver.cc's config also be 100?
+  audio_config.target_playout_delay = base::TimeDelta::FromMilliseconds(300);
   return audio_config;
 }
 
@@ -96,7 +98,7 @@ media::cast::VideoSenderConfig GetVideoSenderConfig() {
   video_config.start_bitrate = video_config.min_bitrate;
 
   // Codec.
-  video_config.codec = media::cast::transport::kVp8;
+  video_config.codec = media::cast::transport::CODEC_VIDEO_VP8;
   video_config.max_number_of_video_buffers_used = 1;
   video_config.number_of_encode_threads = 2;
 
@@ -105,10 +107,12 @@ media::cast::VideoSenderConfig GetVideoSenderConfig() {
   video_config.max_qp = 40;
 
   // SSRCs and payload type. Don't change them.
-  video_config.rtp_config.ssrc = 11;
+  video_config.ssrc = 11;
   video_config.incoming_feedback_ssrc = 12;
-  video_config.rtp_config.payload_type = 96;
-  video_config.rtp_config.max_delay_ms = 300;
+  video_config.rtp_payload_type = 96;
+  // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
+  // should receiver.cc's config also be 100?
+  video_config.target_playout_delay = base::TimeDelta::FromMilliseconds(300);
   return video_config;
 }
 

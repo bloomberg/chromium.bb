@@ -46,9 +46,8 @@ class CastTransportSenderImpl : public CastTransportSender {
 
   virtual ~CastTransportSenderImpl();
 
-  virtual void InitializeAudio(const CastTransportAudioConfig& config) OVERRIDE;
-
-  virtual void InitializeVideo(const CastTransportVideoConfig& config) OVERRIDE;
+  virtual void InitializeAudio(const CastTransportRtpConfig& config) OVERRIDE;
+  virtual void InitializeVideo(const CastTransportRtpConfig& config) OVERRIDE;
 
   // CastTransportSender implementation.
   virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver)

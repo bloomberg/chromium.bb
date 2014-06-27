@@ -30,8 +30,7 @@ VideoSender::VideoSender(
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     transport::CastTransportSender* const transport_sender)
     : cast_environment_(cast_environment),
-      target_playout_delay_(base::TimeDelta::FromMilliseconds(
-          video_config.rtp_config.max_delay_ms)),
+      target_playout_delay_(video_config.target_playout_delay),
       transport_sender_(transport_sender),
       max_unacked_frames_(
           std::min(kMaxUnackedFrames,
@@ -45,7 +44,7 @@ VideoSender::VideoSender(
             NULL,
             video_config.rtcp_mode,
             base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-            video_config.rtp_config.ssrc,
+            video_config.ssrc,
             video_config.incoming_feedback_ssrc,
             video_config.rtcp_c_name,
             VIDEO_EVENT),
@@ -75,10 +74,12 @@ VideoSender::VideoSender(
   }
   cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
 
-  media::cast::transport::CastTransportVideoConfig transport_config;
-  transport_config.codec = video_config.codec;
-  transport_config.rtp.config = video_config.rtp_config;
-  transport_config.rtp.max_outstanding_frames = max_unacked_frames_;
+  media::cast::transport::CastTransportRtpConfig transport_config;
+  transport_config.ssrc = video_config.ssrc;
+  transport_config.rtp_payload_type = video_config.rtp_payload_type;
+  transport_config.stored_frames = max_unacked_frames_;
+  transport_config.aes_key = video_config.aes_key;
+  transport_config.aes_iv_mask = video_config.aes_iv_mask;
   transport_sender_->InitializeVideo(transport_config);
 
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);

@@ -23,7 +23,7 @@ class AudioDecoder::ImplBase
     : public base::RefCountedThreadSafe<AudioDecoder::ImplBase> {
  public:
   ImplBase(const scoped_refptr<CastEnvironment>& cast_environment,
-           transport::AudioCodec codec,
+           transport::Codec codec,
            int num_channels,
            int sampling_rate)
       : cast_environment_(cast_environment),
@@ -77,7 +77,7 @@ class AudioDecoder::ImplBase
   virtual scoped_ptr<AudioBus> Decode(uint8* data, int len) = 0;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
-  const transport::AudioCodec codec_;
+  const transport::Codec codec_;
   const int num_channels_;
 
   // Subclass' ctor is expected to set this to STATUS_AUDIO_INITIALIZED.
@@ -96,7 +96,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
            int num_channels,
            int sampling_rate)
       : ImplBase(cast_environment,
-                 transport::kOpus,
+                 transport::CODEC_AUDIO_OPUS,
                  num_channels,
                  sampling_rate),
         decoder_memory_(new uint8[opus_decoder_get_size(num_channels)]),
@@ -166,7 +166,7 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
             int num_channels,
             int sampling_rate)
       : ImplBase(cast_environment,
-                 transport::kPcm16,
+                 transport::CODEC_AUDIO_PCM16,
                  num_channels,
                  sampling_rate) {
     if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
@@ -202,13 +202,13 @@ AudioDecoder::AudioDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     int channels,
     int sampling_rate,
-    transport::AudioCodec codec)
+    transport::Codec codec)
     : cast_environment_(cast_environment) {
   switch (codec) {
-    case transport::kOpus:
+    case transport::CODEC_AUDIO_OPUS:
       impl_ = new OpusImpl(cast_environment, channels, sampling_rate);
       break;
-    case transport::kPcm16:
+    case transport::CODEC_AUDIO_PCM16:
       impl_ = new Pcm16Impl(cast_environment, channels, sampling_rate);
       break;
     default:

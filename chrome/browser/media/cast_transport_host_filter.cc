@@ -102,7 +102,7 @@ void CastTransportHostFilter::OnDelete(int32 channel_id) {
 
 void CastTransportHostFilter::OnInitializeAudio(
     int32 channel_id,
-    const media::cast::transport::CastTransportAudioConfig& config) {
+    const media::cast::transport::CastTransportRtpConfig& config) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
@@ -115,7 +115,7 @@ void CastTransportHostFilter::OnInitializeAudio(
 
 void CastTransportHostFilter::OnInitializeVideo(
     int32 channel_id,
-    const media::cast::transport::CastTransportVideoConfig& config) {
+    const media::cast::transport::CastTransportRtpConfig& config) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {

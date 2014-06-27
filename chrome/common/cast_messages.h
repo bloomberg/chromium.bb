@@ -20,10 +20,8 @@
 IPC_ENUM_TRAITS_MAX_VALUE(
     media::cast::transport::EncodedFrame::Dependency,
     media::cast::transport::EncodedFrame::DEPENDENCY_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::AudioCodec,
-                          media::cast::transport::kAudioCodecLast)
-IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::VideoCodec,
-                          media::cast::transport::kVideoCodecLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::Codec,
+                          media::cast::transport::CODEC_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
                           media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
@@ -45,29 +43,12 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpDlrrReportBlock)
   IPC_STRUCT_TRAITS_MEMBER(delay_since_last_rr)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtpConfig)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportRtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(ssrc)
-  IPC_STRUCT_TRAITS_MEMBER(max_delay_ms)
-  IPC_STRUCT_TRAITS_MEMBER(payload_type)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_payload_type)
+  IPC_STRUCT_TRAITS_MEMBER(stored_frames)
   IPC_STRUCT_TRAITS_MEMBER(aes_key)
   IPC_STRUCT_TRAITS_MEMBER(aes_iv_mask)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportRtpConfig)
-  IPC_STRUCT_TRAITS_MEMBER(config)
-  IPC_STRUCT_TRAITS_MEMBER(max_outstanding_frames)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportAudioConfig)
-  IPC_STRUCT_TRAITS_MEMBER(rtp)
-  IPC_STRUCT_TRAITS_MEMBER(codec)
-  IPC_STRUCT_TRAITS_MEMBER(frequency)
-  IPC_STRUCT_TRAITS_MEMBER(channels)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportVideoConfig)
-  IPC_STRUCT_TRAITS_MEMBER(rtp)
-  IPC_STRUCT_TRAITS_MEMBER(codec)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::SendRtcpFromRtpSenderData)
@@ -110,12 +91,12 @@ IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
 IPC_MESSAGE_CONTROL2(
   CastHostMsg_InitializeAudio,
   int32 /*channel_id*/,
-  media::cast::transport::CastTransportAudioConfig /*config*/)
+  media::cast::transport::CastTransportRtpConfig /*config*/)
 
 IPC_MESSAGE_CONTROL2(
   CastHostMsg_InitializeVideo,
   int32 /*channel_id*/,
-  media::cast::transport::CastTransportVideoConfig /*config*/)
+  media::cast::transport::CastTransportRtpConfig /*config*/)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_InsertCodedAudioFrame,

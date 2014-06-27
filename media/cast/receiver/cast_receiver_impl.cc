@@ -41,8 +41,8 @@ CastReceiverImpl::CastReceiverImpl(
       ssrc_of_video_sender_(video_config.incoming_ssrc),
       num_audio_channels_(audio_config.channels),
       audio_sampling_rate_(audio_config.frequency),
-      audio_codec_(audio_config.codec.audio),
-      video_codec_(video_config.codec.video) {}
+      audio_codec_(audio_config.codec),
+      video_codec_(video_config.codec) {}
 
 CastReceiverImpl::~CastReceiverImpl() {}
 

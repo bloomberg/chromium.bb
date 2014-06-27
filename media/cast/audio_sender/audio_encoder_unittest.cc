@@ -13,7 +13,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/media.h"
 #include "media/cast/audio_sender/audio_encoder.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -22,13 +21,13 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = INT64_C(12345678900000);
+static const int kNumChannels = 2;
 
 namespace {
 
 class TestEncodedAudioFrameReceiver {
  public:
-  explicit TestEncodedAudioFrameReceiver(transport::AudioCodec codec)
+  explicit TestEncodedAudioFrameReceiver(transport::Codec codec)
       : codec_(codec), frames_received_(0), rtp_lower_bound_(0) {}
   virtual ~TestEncodedAudioFrameReceiver() {}
 
@@ -62,7 +61,7 @@ class TestEncodedAudioFrameReceiver {
   }
 
  private:
-  const transport::AudioCodec codec_;
+  const transport::Codec codec_;
   int frames_received_;
   uint32 rtp_lower_bound_;
   base::TimeTicks lower_bound_;
@@ -96,8 +95,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   AudioEncoderTest() {
     InitializeMediaLibraryForTesting();
     testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
   virtual void SetUp() {
@@ -111,7 +109,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
   virtual ~AudioEncoderTest() {}
 
-  void RunTestForCodec(transport::AudioCodec codec) {
+  void RunTestForCodec(transport::Codec codec) {
     const TestScenario& scenario = GetParam();
     SCOPED_TRACE(::testing::Message() << "Durations: " << scenario.ToString());
 
@@ -144,18 +142,10 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
  private:
-  void CreateObjectsForCodec(transport::AudioCodec codec) {
-    AudioSenderConfig audio_config;
-    audio_config.codec = codec;
-    audio_config.use_external_encoder = false;
-    audio_config.frequency = kDefaultAudioSamplingRate;
-    audio_config.channels = 2;
-    audio_config.bitrate = kDefaultAudioEncoderBitrate;
-    audio_config.rtp_config.payload_type = 127;
-
+  void CreateObjectsForCodec(transport::Codec codec) {
     audio_bus_factory_.reset(
-        new TestAudioBusFactory(audio_config.channels,
-                                audio_config.frequency,
+        new TestAudioBusFactory(kNumChannels,
+                                kDefaultAudioSamplingRate,
                                 TestAudioBusFactory::kMiddleANoteFreq,
                                 0.5f));
 
@@ -163,7 +153,10 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
     audio_encoder_.reset(new AudioEncoder(
         cast_environment_,
-        audio_config,
+        kNumChannels,
+        kDefaultAudioSamplingRate,
+        kDefaultAudioEncoderBitrate,
+        codec,
         base::Bind(&TestEncodedAudioFrameReceiver::FrameEncoded,
                    base::Unretained(receiver_.get()))));
   }
@@ -178,9 +171,13 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   DISALLOW_COPY_AND_ASSIGN(AudioEncoderTest);
 };
 
-TEST_P(AudioEncoderTest, EncodeOpus) { RunTestForCodec(transport::kOpus); }
+TEST_P(AudioEncoderTest, EncodeOpus) {
+  RunTestForCodec(transport::CODEC_AUDIO_OPUS);
+}
 
-TEST_P(AudioEncoderTest, EncodePcm16) { RunTestForCodec(transport::kPcm16); }
+TEST_P(AudioEncoderTest, EncodePcm16) {
+  RunTestForCodec(transport::CODEC_AUDIO_PCM16);
+}
 
 static const int64 kOneCall_3Millis[] = {3};
 static const int64 kOneCall_10Millis[] = {10};

@@ -30,7 +30,7 @@ class VideoDecoder::ImplBase
     : public base::RefCountedThreadSafe<VideoDecoder::ImplBase> {
  public:
   ImplBase(const scoped_refptr<CastEnvironment>& cast_environment,
-           transport::VideoCodec codec)
+           transport::Codec codec)
       : cast_environment_(cast_environment),
         codec_(codec),
         cast_initialization_status_(STATUS_VIDEO_UNINITIALIZED),
@@ -77,7 +77,7 @@ class VideoDecoder::ImplBase
   virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) = 0;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
-  const transport::VideoCodec codec_;
+  const transport::Codec codec_;
 
   // Subclass' ctor is expected to set this to STATUS_VIDEO_INITIALIZED.
   CastInitializationStatus cast_initialization_status_;
@@ -92,7 +92,7 @@ class VideoDecoder::ImplBase
 class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
  public:
   explicit Vp8Impl(const scoped_refptr<CastEnvironment>& cast_environment)
-      : ImplBase(cast_environment, transport::kVp8) {
+      : ImplBase(cast_environment, transport::CODEC_VIDEO_VP8) {
     if (ImplBase::cast_initialization_status_ != STATUS_VIDEO_UNINITIALIZED)
       return;
 
@@ -173,7 +173,7 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
 class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
  public:
   explicit FakeImpl(const scoped_refptr<CastEnvironment>& cast_environment)
-      : ImplBase(cast_environment, transport::kFakeSoftwareVideo),
+      : ImplBase(cast_environment, transport::CODEC_VIDEO_FAKE),
         last_decoded_id_(-1) {
     if (ImplBase::cast_initialization_status_ != STATUS_VIDEO_UNINITIALIZED)
       return;
@@ -209,18 +209,18 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
 
 VideoDecoder::VideoDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    transport::VideoCodec codec)
+    transport::Codec codec)
     : cast_environment_(cast_environment) {
   switch (codec) {
 #ifndef OFFICIAL_BUILD
-    case transport::kFakeSoftwareVideo:
+    case transport::CODEC_VIDEO_FAKE:
       impl_ = new FakeImpl(cast_environment);
       break;
 #endif
-    case transport::kVp8:
+    case transport::CODEC_VIDEO_VP8:
       impl_ = new Vp8Impl(cast_environment);
       break;
-    case transport::kH264:
+    case transport::CODEC_VIDEO_H264:
       // TODO(miu): Need implementation.
       NOTIMPLEMENTED();
       break;

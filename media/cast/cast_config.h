@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/transport/cast_transport_config.h"
 
@@ -31,34 +32,66 @@ enum RtcpMode {
 // naming/documentation consistent with FrameReceiverConfig.
 struct AudioSenderConfig {
   AudioSenderConfig();
+  ~AudioSenderConfig();
 
-  // The sender ssrc is in rtp_config.ssrc.
+  // Identifier referring to the sender, used by the receiver.
+  uint32 ssrc;
+
+  // The receiver's SSRC identifier.
   uint32 incoming_feedback_ssrc;
 
   int rtcp_interval;
   std::string rtcp_c_name;
   RtcpMode rtcp_mode;
 
-  transport::RtpConfig rtp_config;
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
+  // a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  base::TimeDelta target_playout_delay;
+
+  // RTP payload type enum: Specifies the type/encoding of frame data.
+  int rtp_payload_type;
 
   bool use_external_encoder;
   int frequency;
   int channels;
   int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
-  transport::AudioCodec codec;
+  transport::Codec codec;
+
+  // The AES crypto key and initialization vector.  Each of these strings
+  // contains the data in binary form, of size kAesKeySize.  If they are empty
+  // strings, crypto is not being used.
+  std::string aes_key;
+  std::string aes_iv_mask;
 };
 
 struct VideoSenderConfig {
   VideoSenderConfig();
+  ~VideoSenderConfig();
 
-  // The sender ssrc is in rtp_config.ssrc.
-  uint32 incoming_feedback_ssrc;
+  // Identifier referring to the sender, used by the receiver.
+  uint32 ssrc;
+
+  // The receiver's SSRC identifier.
+  uint32 incoming_feedback_ssrc;  // TODO(miu): Rename to receiver_ssrc.
 
   int rtcp_interval;
   std::string rtcp_c_name;
   RtcpMode rtcp_mode;
 
-  transport::RtpConfig rtp_config;
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
+  // a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  base::TimeDelta target_playout_delay;
+
+  // RTP payload type enum: Specifies the type/encoding of frame data.
+  int rtp_payload_type;
 
   bool use_external_encoder;
   int width;  // Incoming frames will be scaled to this size.
@@ -72,8 +105,14 @@ struct VideoSenderConfig {
   int min_qp;
   int max_frame_rate;
   int max_number_of_video_buffers_used;  // Max value depend on codec.
-  transport::VideoCodec codec;
+  transport::Codec codec;
   int number_of_encode_threads;
+
+  // The AES crypto key and initialization vector.  Each of these strings
+  // contains the data in binary form, of size kAesKeySize.  If they are empty
+  // strings, crypto is not being used.
+  std::string aes_key;
+  std::string aes_iv_mask;
 };
 
 // TODO(miu): Naming and minor type changes are badly needed in a later CL.
@@ -127,11 +166,7 @@ struct FrameReceiverConfig {
   // Codec used for the compression of signal data.
   // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union
   // is not necessary.
-  union MergedCodecPlaceholder {
-    transport::AudioCodec audio;
-    transport::VideoCodec video;
-    MergedCodecPlaceholder() : audio(transport::kUnknownAudioCodec) {}
-  } codec;
+  transport::Codec codec;
 
   // The AES crypto key and initialization vector.  Each of these strings
   // contains the data in binary form, of size kAesKeySize.  If they are empty

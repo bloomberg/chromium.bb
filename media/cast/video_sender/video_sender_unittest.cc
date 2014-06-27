@@ -156,10 +156,10 @@ class VideoSenderTest : public ::testing::Test {
 
   void InitEncoder(bool external) {
     VideoSenderConfig video_config;
-    video_config.rtp_config.ssrc = 1;
+    video_config.ssrc = 1;
     video_config.incoming_feedback_ssrc = 2;
     video_config.rtcp_c_name = "video_test@10.1.1.1";
-    video_config.rtp_config.payload_type = 127;
+    video_config.rtp_payload_type = 127;
     video_config.use_external_encoder = external;
     video_config.width = kWidth;
     video_config.height = kHeight;
@@ -170,7 +170,7 @@ class VideoSenderTest : public ::testing::Test {
     video_config.min_qp = 0;
     video_config.max_frame_rate = 30;
     video_config.max_number_of_video_buffers_used = 1;
-    video_config.codec = transport::kVp8;
+    video_config.codec = transport::CODEC_VIDEO_VP8;
 
     if (external) {
       scoped_ptr<VideoEncodeAccelerator> fake_vea(

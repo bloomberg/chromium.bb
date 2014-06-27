@@ -99,20 +99,19 @@ class LocalVideoEncodeAcceleratorClient
 
     VideoCodecProfile output_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
     switch (video_config.codec) {
-      case transport::kVp8:
+      case transport::CODEC_VIDEO_VP8:
         output_profile = media::VP8PROFILE_MAIN;
         break;
-      case transport::kH264:
+      case transport::CODEC_VIDEO_H264:
         output_profile = media::H264PROFILE_MAIN;
         break;
-      case transport::kFakeSoftwareVideo:
+      case transport::CODEC_VIDEO_FAKE:
         NOTREACHED() << "Fake software video encoder cannot be external";
         break;
-      case transport::kUnknownVideoCodec:
-        NOTREACHED() << "Video codec not specified";
+      default:
+        NOTREACHED() << "Video codec not specified or not supported";
         break;
     }
-    codec_ = video_config.codec;
     max_frame_rate_ = video_config.max_frame_rate;
 
     if (!video_encode_accelerator_->Initialize(
@@ -313,7 +312,6 @@ class LocalVideoEncodeAcceleratorClient
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
   const base::WeakPtr<ExternalVideoEncoder> weak_owner_;
   int max_frame_rate_;
-  transport::VideoCodec codec_;
   uint32 last_encoded_frame_id_;
   bool key_frame_encountered_;
   std::string stream_header_;

@@ -44,7 +44,7 @@ class AudioEncoder::ImplBase
     : public base::RefCountedThreadSafe<AudioEncoder::ImplBase> {
  public:
   ImplBase(const scoped_refptr<CastEnvironment>& cast_environment,
-           transport::AudioCodec codec,
+           transport::Codec codec,
            int num_channels,
            int sampling_rate,
            const FrameEncodedCallback& callback)
@@ -151,7 +151,7 @@ class AudioEncoder::ImplBase
   virtual bool EncodeFromFilledBuffer(std::string* out) = 0;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
-  const transport::AudioCodec codec_;
+  const transport::Codec codec_;
   const int num_channels_;
   const int samples_per_frame_;
   const FrameEncodedCallback callback_;
@@ -193,7 +193,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
            int bitrate,
            const FrameEncodedCallback& callback)
       : ImplBase(cast_environment,
-                 transport::kOpus,
+                 transport::CODEC_AUDIO_OPUS,
                  num_channels,
                  sampling_rate,
                  callback),
@@ -283,7 +283,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
             int sampling_rate,
             const FrameEncodedCallback& callback)
       : ImplBase(cast_environment,
-                 transport::kPcm16,
+                 transport::CODEC_AUDIO_PCM16,
                  num_channels,
                  sampling_rate,
                  callback),
@@ -326,24 +326,27 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
 
 AudioEncoder::AudioEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const AudioSenderConfig& audio_config,
+    int num_channels,
+    int sampling_rate,
+    int bitrate,
+    transport::Codec codec,
     const FrameEncodedCallback& frame_encoded_callback)
     : cast_environment_(cast_environment) {
   // Note: It doesn't matter which thread constructs AudioEncoder, just so long
   // as all calls to InsertAudio() are by the same thread.
   insert_thread_checker_.DetachFromThread();
-  switch (audio_config.codec) {
-    case transport::kOpus:
+  switch (codec) {
+    case transport::CODEC_AUDIO_OPUS:
       impl_ = new OpusImpl(cast_environment,
-                           audio_config.channels,
-                           audio_config.frequency,
-                           audio_config.bitrate,
+                           num_channels,
+                           sampling_rate,
+                           bitrate,
                            frame_encoded_callback);
       break;
-    case transport::kPcm16:
+    case transport::CODEC_AUDIO_PCM16:
       impl_ = new Pcm16Impl(cast_environment,
-                            audio_config.channels,
-                            audio_config.frequency,
+                            num_channels,
+                            sampling_rate,
                             frame_encoded_callback);
       break;
     default:

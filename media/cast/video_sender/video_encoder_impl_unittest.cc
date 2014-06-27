@@ -66,9 +66,9 @@ class VideoEncoderImplTest : public ::testing::Test {
  protected:
   VideoEncoderImplTest()
       : test_video_encoder_callback_(new TestVideoEncoderCallback()) {
-    video_config_.rtp_config.ssrc = 1;
+    video_config_.ssrc = 1;
     video_config_.incoming_feedback_ssrc = 2;
-    video_config_.rtp_config.payload_type = 127;
+    video_config_.rtp_payload_type = 127;
     video_config_.use_external_encoder = false;
     video_config_.width = 320;
     video_config_.height = 240;
@@ -79,7 +79,7 @@ class VideoEncoderImplTest : public ::testing::Test {
     video_config_.min_qp = 0;
     video_config_.max_frame_rate = 30;
     video_config_.max_number_of_video_buffers_used = 3;
-    video_config_.codec = transport::kVp8;
+    video_config_.codec = transport::CODEC_VIDEO_VP8;
     gfx::Size size(video_config_.width, video_config_.height);
     video_frame_ = media::VideoFrame::CreateFrame(
         VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());

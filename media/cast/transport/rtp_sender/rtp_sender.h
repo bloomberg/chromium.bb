@@ -40,13 +40,9 @@ class RtpSender {
 
   ~RtpSender();
 
-  // Initialize audio stack. Audio must be initialized prior to sending encoded
-  // audio frames. Returns false if configuration is invalid.
-  bool InitializeAudio(const CastTransportAudioConfig& config);
-
-  // Initialize video stack. Video must be initialized prior to sending encoded
-  // video frames. Returns false if configuration is invalid.
-  bool InitializeVideo(const CastTransportVideoConfig& config);
+  // This must be called before sending any frames. Returns false if
+  // configuration is invalid.
+  bool Initialize(const CastTransportRtpConfig& config);
 
   void SendFrame(const EncodedFrame& frame);
 

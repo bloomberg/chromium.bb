@@ -28,21 +28,12 @@ struct RtpPacketizerConfig {
   ~RtpPacketizerConfig();
 
   // General.
-  bool audio;
   int payload_type;
   uint16 max_payload_length;
   uint16 sequence_number;
-  int frequency;
 
   // SSRC.
   unsigned int ssrc;
-
-  // Video.
-  VideoCodec video_codec;
-
-  // Audio.
-  uint8 channels;
-  AudioCodec audio_codec;
 };
 
 // This object is only called from the main cast thread.

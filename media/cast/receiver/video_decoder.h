@@ -28,7 +28,7 @@ class VideoDecoder {
                               bool is_continuous)> DecodeFrameCallback;
 
   VideoDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
-               transport::VideoCodec codec);
+               transport::Codec codec);
   virtual ~VideoDecoder();
 
   // Returns STATUS_VIDEO_INITIALIZED if the decoder was successfully

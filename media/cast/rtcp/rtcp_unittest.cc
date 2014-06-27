@@ -174,9 +174,10 @@ class RtcpTest : public ::testing::Test {
         base::TimeDelta(),
         task_runner_,
         &sender_to_receiver_));
-    transport::CastTransportAudioConfig config;
-    config.rtp.config.ssrc = kSenderSsrc;
-    config.rtp.max_outstanding_frames = 1;
+    transport::CastTransportRtpConfig config;
+    config.ssrc = kSenderSsrc;
+    config.rtp_payload_type = 127;
+    config.stored_frames = 1;
     transport_sender_->InitializeAudio(config);
     EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(0);
   }

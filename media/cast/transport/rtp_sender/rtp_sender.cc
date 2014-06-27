@@ -41,30 +41,13 @@ RtpSender::RtpSender(
 
 RtpSender::~RtpSender() {}
 
-bool RtpSender::InitializeAudio(const CastTransportAudioConfig& config) {
-  storage_.reset(new PacketStorage(config.rtp.max_outstanding_frames));
+bool RtpSender::Initialize(const CastTransportRtpConfig& config) {
+  storage_.reset(new PacketStorage(config.stored_frames));
   if (!storage_->IsValid()) {
     return false;
   }
-  config_.audio = true;
-  config_.ssrc = config.rtp.config.ssrc;
-  config_.payload_type = config.rtp.config.payload_type;
-  config_.frequency = config.frequency;
-  config_.audio_codec = config.codec;
-  packetizer_.reset(new RtpPacketizer(transport_, storage_.get(), config_));
-  return true;
-}
-
-bool RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
-  storage_.reset(new PacketStorage(config.rtp.max_outstanding_frames));
-  if (!storage_->IsValid()) {
-    return false;
-  }
-  config_.audio = false;
-  config_.ssrc = config.rtp.config.ssrc;
-  config_.payload_type = config.rtp.config.payload_type;
-  config_.frequency = kVideoFrequency;
-  config_.video_codec = config.codec;
+  config_.ssrc = config.ssrc;
+  config_.payload_type = config.rtp_payload_type;
   packetizer_.reset(new RtpPacketizer(transport_, storage_.get(), config_));
   return true;
 }

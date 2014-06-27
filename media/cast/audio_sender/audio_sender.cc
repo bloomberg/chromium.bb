@@ -27,8 +27,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          transport::CastTransportSender* const transport_sender)
     : cast_environment_(cast_environment),
-      target_playout_delay_(base::TimeDelta::FromMilliseconds(
-          audio_config.rtp_config.max_delay_ms)),
+      target_playout_delay_(audio_config.target_playout_delay),
       transport_sender_(transport_sender),
       max_unacked_frames_(
           std::min(kMaxUnackedFrames,
@@ -43,7 +42,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
             NULL,
             audio_config.rtcp_mode,
             base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
-            audio_config.rtp_config.ssrc,
+            audio_config.ssrc,
             audio_config.incoming_feedback_ssrc,
             audio_config.rtcp_c_name,
             AUDIO_EVENT),
@@ -60,7 +59,10 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   if (!audio_config.use_external_encoder) {
     audio_encoder_.reset(
         new AudioEncoder(cast_environment,
-                         audio_config,
+                         audio_config.channels,
+                         audio_config.frequency,
+                         audio_config.bitrate,
+                         audio_config.codec,
                          base::Bind(&AudioSender::SendEncodedAudioFrame,
                                     weak_factory_.GetWeakPtr())));
     cast_initialization_status_ = audio_encoder_->InitializationResult();
@@ -69,12 +71,14 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
     cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
   }
 
-  media::cast::transport::CastTransportAudioConfig transport_config;
-  transport_config.codec = audio_config.codec;
-  transport_config.rtp.config = audio_config.rtp_config;
-  transport_config.frequency = audio_config.frequency;
-  transport_config.channels = audio_config.channels;
-  transport_config.rtp.max_outstanding_frames = max_unacked_frames_;
+  media::cast::transport::CastTransportRtpConfig transport_config;
+  transport_config.ssrc = audio_config.ssrc;
+  transport_config.rtp_payload_type = audio_config.rtp_payload_type;
+  // TODO(miu): AudioSender needs to be like VideoSender in providing an upper
+  // limit on the number of in-flight frames.
+  transport_config.stored_frames = max_unacked_frames_;
+  transport_config.aes_key = audio_config.aes_key;
+  transport_config.aes_iv_mask = audio_config.aes_iv_mask;
   transport_sender_->InitializeAudio(transport_config);
 
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);

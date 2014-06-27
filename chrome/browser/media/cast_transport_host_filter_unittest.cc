@@ -82,13 +82,13 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   CastHostMsg_New new_msg(kChannelId, receive_endpoint_);
   FakeSend(new_msg);
 
-  media::cast::transport::CastTransportAudioConfig audio_config;
-  audio_config.rtp.max_outstanding_frames = 10;
+  media::cast::transport::CastTransportRtpConfig audio_config;
+  audio_config.stored_frames = 10;
   CastHostMsg_InitializeAudio init_audio_msg(kChannelId, audio_config);
   FakeSend(init_audio_msg);
 
-  media::cast::transport::CastTransportVideoConfig video_config;
-  video_config.rtp.max_outstanding_frames = 10;
+  media::cast::transport::CastTransportRtpConfig video_config;
+  video_config.stored_frames = 10;
   CastHostMsg_InitializeVideo init_video_msg(kChannelId, video_config);
   FakeSend(init_video_msg);
 

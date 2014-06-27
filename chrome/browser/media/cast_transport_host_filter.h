@@ -36,10 +36,10 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // Forwarding functions.
   void OnInitializeAudio(
       int32 channel_id,
-      const media::cast::transport::CastTransportAudioConfig& config);
+      const media::cast::transport::CastTransportRtpConfig& config);
   void OnInitializeVideo(
       int32 channel_id,
-      const media::cast::transport::CastTransportVideoConfig& config);
+      const media::cast::transport::CastTransportRtpConfig& config);
   void OnInsertCodedAudioFrame(
       int32 channel_id,
       const media::cast::transport::EncodedFrame& audio_frame);

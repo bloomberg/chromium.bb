@@ -80,18 +80,16 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 }
 
 void CastTransportSenderImpl::InitializeAudio(
-    const CastTransportAudioConfig& config) {
-  LOG_IF(WARNING, config.rtp.config.aes_key.empty() ||
-                  config.rtp.config.aes_iv_mask.empty())
+    const CastTransportRtpConfig& config) {
+  LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send audio with encryption DISABLED.";
-  if (!audio_encryptor_.Initialize(config.rtp.config.aes_key,
-                                   config.rtp.config.aes_iv_mask)) {
+  if (!audio_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
     status_callback_.Run(TRANSPORT_AUDIO_UNINITIALIZED);
     return;
   }
   audio_sender_.reset(new RtpSender(clock_, transport_task_runner_, &pacer_));
-  if (audio_sender_->InitializeAudio(config)) {
-    pacer_.RegisterAudioSsrc(config.rtp.config.ssrc);
+  if (audio_sender_->Initialize(config)) {
+    pacer_.RegisterAudioSsrc(config.ssrc);
     status_callback_.Run(TRANSPORT_AUDIO_INITIALIZED);
   } else {
     audio_sender_.reset();
@@ -100,18 +98,16 @@ void CastTransportSenderImpl::InitializeAudio(
 }
 
 void CastTransportSenderImpl::InitializeVideo(
-    const CastTransportVideoConfig& config) {
-  LOG_IF(WARNING, config.rtp.config.aes_key.empty() ||
-                  config.rtp.config.aes_iv_mask.empty())
+    const CastTransportRtpConfig& config) {
+  LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send video with encryption DISABLED.";
-  if (!video_encryptor_.Initialize(config.rtp.config.aes_key,
-                                   config.rtp.config.aes_iv_mask)) {
+  if (!video_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
     status_callback_.Run(TRANSPORT_VIDEO_UNINITIALIZED);
     return;
   }
   video_sender_.reset(new RtpSender(clock_, transport_task_runner_, &pacer_));
-  if (video_sender_->InitializeVideo(config)) {
-    pacer_.RegisterVideoSsrc(config.rtp.config.ssrc);
+  if (video_sender_->Initialize(config)) {
+    pacer_.RegisterVideoSsrc(config.ssrc);
     status_callback_.Run(TRANSPORT_VIDEO_INITIALIZED);
   } else {
     video_sender_.reset();

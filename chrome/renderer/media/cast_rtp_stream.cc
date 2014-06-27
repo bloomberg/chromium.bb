@@ -150,50 +150,69 @@ std::vector<CastRtpParams> SupportedVideoParams() {
 
 bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
-  config->rtp_config.ssrc = params.payload.ssrc;
+  config->ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  config->rtp_config.payload_type = params.payload.payload_type;
-  config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
-  config->rtp_config.aes_key = params.payload.aes_key;
-  config->rtp_config.aes_iv_mask = params.payload.aes_iv_mask;
+  if (config->ssrc == config->incoming_feedback_ssrc)
+    return false;
+  config->target_playout_delay =
+      base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
+  if (config->target_playout_delay <= base::TimeDelta())
+    return false;
+  config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
+  if (config->frequency < 8000)
+    return false;
   config->channels = params.payload.channels;
+  if (config->channels < 1)
+    return false;
   config->bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  config->codec = media::cast::transport::kPcm16;
   if (params.payload.codec_name == kCodecNameOpus)
-    config->codec = media::cast::transport::kOpus;
+    config->codec = media::cast::transport::CODEC_AUDIO_OPUS;
   else
     return false;
+  config->aes_key = params.payload.aes_key;
+  config->aes_iv_mask = params.payload.aes_iv_mask;
   return true;
 }
 
 bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
-  config->rtp_config.ssrc = params.payload.ssrc;
+  config->ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  config->rtp_config.payload_type = params.payload.payload_type;
-  config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
-  config->rtp_config.aes_key = params.payload.aes_key;
-  config->rtp_config.aes_iv_mask = params.payload.aes_iv_mask;
-  config->use_external_encoder = false;
+  if (config->ssrc == config->incoming_feedback_ssrc)
+    return false;
+  config->target_playout_delay =
+      base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
+  if (config->target_playout_delay <= base::TimeDelta())
+    return false;
+  config->rtp_payload_type = params.payload.payload_type;
   config->width = params.payload.width;
   config->height = params.payload.height;
+  if (config->width < 2 || config->height < 2)
+    return false;
+  // TODO(miu): Should the frame rate be parsed from the |params|?
+  config->max_frame_rate = 30;
   config->min_bitrate = config->start_bitrate =
       params.payload.min_bitrate * kBitrateMultiplier;
   config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
+  if (config->min_bitrate > config->max_bitrate)
+    return false;
+  config->start_bitrate = config->min_bitrate;
   if (params.payload.codec_name == kCodecNameVp8) {
     config->use_external_encoder = IsHardwareVP8EncodingSupported();
-    config->codec = media::cast::transport::kVp8;
+    config->codec = media::cast::transport::CODEC_VIDEO_VP8;
   } else if (params.payload.codec_name == kCodecNameH264) {
     config->use_external_encoder = IsHardwareH264EncodingSupported();
-    config->codec = media::cast::transport::kH264;
+    config->codec = media::cast::transport::CODEC_VIDEO_H264;
   } else {
     return false;
   }
   if (!config->use_external_encoder) {
     config->number_of_encode_threads = NumberOfEncodeThreads();
   }
+  config->aes_key = params.payload.aes_key;
+  config->aes_iv_mask = params.payload.aes_iv_mask;
   return true;
 }
 

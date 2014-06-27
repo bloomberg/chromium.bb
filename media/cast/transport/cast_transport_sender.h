@@ -65,9 +65,8 @@ class CastTransportSender : public base::NonThreadSafe {
   // Audio/Video initialization.
   // Encoded frames cannot be transmitted until the relevant initialize method
   // is called. Usually called by CastSender.
-  virtual void InitializeAudio(const CastTransportAudioConfig& config) = 0;
-
-  virtual void InitializeVideo(const CastTransportVideoConfig& config) = 0;
+  virtual void InitializeAudio(const CastTransportRtpConfig& config) = 0;
+  virtual void InitializeVideo(const CastTransportRtpConfig& config) = 0;
 
   // Sets the Cast packet receiver. Should be called after creation on the
   // Cast sender. Packets won't be received until this function is called.

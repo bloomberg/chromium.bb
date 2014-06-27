@@ -25,54 +25,35 @@ enum RtcpMode {
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
 };
 
-enum VideoCodec {
-  kUnknownVideoCodec,
-  kFakeSoftwareVideo,
-  kVp8,
-  kH264,
-  kVideoCodecLast = kH264
-};
-
-enum AudioCodec {
-  kUnknownAudioCodec,
-  kOpus,
-  kPcm16,
-  kAudioCodecLast = kPcm16
-};
-
-struct RtpConfig {
-  RtpConfig();
-  ~RtpConfig();
-  uint32 ssrc;
-  int max_delay_ms;
-  int payload_type;
-  std::string aes_key;      // Binary string of size kAesKeySize.
-  std::string aes_iv_mask;  // Binary string of size kAesBlockSize.
+enum Codec {
+  CODEC_UNKNOWN,
+  CODEC_AUDIO_OPUS,
+  CODEC_AUDIO_PCM16,
+  CODEC_VIDEO_FAKE,
+  CODEC_VIDEO_VP8,
+  CODEC_VIDEO_H264,
+  CODEC_LAST = CODEC_VIDEO_H264
 };
 
 struct CastTransportRtpConfig {
   CastTransportRtpConfig();
   ~CastTransportRtpConfig();
-  RtpConfig config;
-  int max_outstanding_frames;
-};
 
-struct CastTransportAudioConfig {
-  CastTransportAudioConfig();
-  ~CastTransportAudioConfig();
+  // Identifier refering to this sender.
+  uint32 ssrc;
 
-  CastTransportRtpConfig rtp;
-  AudioCodec codec;
-  int frequency;
-  int channels;
-};
+  // RTP payload type enum: Specifies the type/encoding of frame data.
+  int rtp_payload_type;
 
-struct CastTransportVideoConfig {
-  CastTransportVideoConfig();
-  ~CastTransportVideoConfig();
+  // The number of most-recent frames that must be stored in the transport
+  // layer, to facilitate re-transmissions.
+  int stored_frames;
 
-  CastTransportRtpConfig rtp;
-  VideoCodec codec;
+  // The AES crypto key and initialization vector.  Each of these strings
+  // contains the data in binary form, of size kAesKeySize.  If they are empty
+  // strings, crypto is not being used.
+  std::string aes_key;
+  std::string aes_iv_mask;
 };
 
 // A combination of metadata and data for one encoded frame.  This can contain

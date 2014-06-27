@@ -29,7 +29,7 @@ class AudioDecoder {
   AudioDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
                int channels,
                int sampling_rate,
-               transport::AudioCodec codec);
+               transport::Codec codec);
   virtual ~AudioDecoder();
 
   // Returns STATUS_AUDIO_INITIALIZED if the decoder was successfully

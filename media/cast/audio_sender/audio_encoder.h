@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/audio_bus.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 
 namespace base {
@@ -25,7 +24,10 @@ class AudioEncoder {
       FrameEncodedCallback;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
-               const AudioSenderConfig& audio_config,
+               int num_channels,
+               int sampling_rate,
+               int bitrate,
+               transport::Codec codec,
                const FrameEncodedCallback& frame_encoded_callback);
   virtual ~AudioEncoder();
 

@@ -53,7 +53,6 @@ class VideoEncoderImpl : public VideoEncoder {
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
 
  private:
-  const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   CodecDynamicConfig dynamic_config_;
 

@@ -68,9 +68,8 @@ VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     int max_unacked_frames)
-    : video_config_(video_config),
-      cast_environment_(cast_environment) {
-  if (video_config.codec == transport::kVp8) {
+    : cast_environment_(cast_environment) {
+  if (video_config.codec == transport::CODEC_VIDEO_VP8) {
     encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
     cast_environment_->PostTask(CastEnvironment::VIDEO,
                                 FROM_HERE,
@@ -78,7 +77,7 @@ VideoEncoderImpl::VideoEncoderImpl(
                                            cast_environment,
                                            encoder_.get()));
 #ifndef OFFICIAL_BUILD
-  } else if (video_config.codec == transport::kFakeSoftwareVideo) {
+  } else if (video_config.codec == transport::CODEC_VIDEO_FAKE) {
     encoder_.reset(new FakeSoftwareVideoEncoder(video_config));
 #endif
   } else {

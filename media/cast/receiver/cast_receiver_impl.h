@@ -102,8 +102,8 @@ class CastReceiverImpl : public CastReceiver {
   // the internal software-based decoders.
   const int num_audio_channels_;
   const int audio_sampling_rate_;
-  const transport::AudioCodec audio_codec_;
-  const transport::VideoCodec video_codec_;
+  const transport::Codec audio_codec_;
+  const transport::Codec video_codec_;
 
   // Created on-demand to decode frames from |audio_receiver_| into AudioBuses
   // for playback.

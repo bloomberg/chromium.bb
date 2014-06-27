@@ -35,7 +35,7 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   config.frequency = 48000;
   config.channels = 2;
   config.max_frame_rate = 100;  // 10ms of signal per frame
-  config.codec.audio = media::cast::transport::kOpus;
+  config.codec = media::cast::transport::CODEC_AUDIO_OPUS;
   return config;
 }
 
@@ -49,7 +49,7 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   config.frequency = kVideoFrequency;
   config.channels = 1;
   config.max_frame_rate = kDefaultMaxFrameRate;
-  config.codec.video = media::cast::transport::kVp8;
+  config.codec = media::cast::transport::CODEC_VIDEO_VP8;
   return config;
 }
 

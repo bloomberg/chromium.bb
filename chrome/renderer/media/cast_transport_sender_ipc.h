@@ -30,9 +30,9 @@ class CastTransportSenderIPC
       const media::cast::transport::PacketReceiverCallback& packet_callback)
       OVERRIDE;
   virtual void InitializeAudio(
-      const media::cast::transport::CastTransportAudioConfig& config) OVERRIDE;
+      const media::cast::transport::CastTransportRtpConfig& config) OVERRIDE;
   virtual void InitializeVideo(
-      const media::cast::transport::CastTransportVideoConfig& config) OVERRIDE;
+      const media::cast::transport::CastTransportRtpConfig& config) OVERRIDE;
   virtual void InsertCodedAudioFrame(
       const media::cast::transport::EncodedFrame& audio_frame) OVERRIDE;
   virtual void InsertCodedVideoFrame(

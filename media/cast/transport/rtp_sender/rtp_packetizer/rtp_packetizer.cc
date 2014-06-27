@@ -19,13 +19,10 @@ static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 static const uint8 kRtpMarkerBitMask = 0x80;
 
 RtpPacketizerConfig::RtpPacketizerConfig()
-    : audio(false),
-      payload_type(-1),
+    : payload_type(-1),
       max_payload_length(kMaxIpPacketSize - 28),  // Default is IP-v4/UDP.
       sequence_number(0),
-      frequency(8000),
-      ssrc(0),
-      channels(0) {}
+      ssrc(0) {}
 
 RtpPacketizerConfig::~RtpPacketizerConfig() {}
 

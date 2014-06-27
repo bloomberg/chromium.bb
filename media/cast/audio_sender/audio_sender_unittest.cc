@@ -65,12 +65,12 @@ class AudioSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_);
-    audio_config_.codec = transport::kOpus;
+    audio_config_.codec = transport::CODEC_AUDIO_OPUS;
     audio_config_.use_external_encoder = false;
     audio_config_.frequency = kDefaultAudioSamplingRate;
     audio_config_.channels = 2;
     audio_config_.bitrate = kDefaultAudioEncoderBitrate;
-    audio_config_.rtp_config.payload_type = 127;
+    audio_config_.rtp_payload_type = 127;
 
     net::IPEndPoint dummy_endpoint;
 

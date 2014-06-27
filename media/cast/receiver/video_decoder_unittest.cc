@@ -35,8 +35,7 @@ VideoSenderConfig GetVideoSenderConfigForTest() {
 
 }  // namespace
 
-class VideoDecoderTest
-    : public ::testing::TestWithParam<transport::VideoCodec> {
+class VideoDecoderTest : public ::testing::TestWithParam<transport::Codec> {
  public:
   VideoDecoderTest()
       : cast_environment_(new StandaloneCastEnvironment()),
@@ -76,7 +75,8 @@ class VideoDecoderTest
     // Encode |frame| into |encoded_frame->data|.
     scoped_ptr<transport::EncodedFrame> encoded_frame(
         new transport::EncodedFrame());
-    CHECK_EQ(transport::kVp8, GetParam());  // Only support VP8 test currently.
+    // Test only supports VP8, currently.
+    CHECK_EQ(transport::CODEC_VIDEO_VP8, GetParam());
     vp8_encoder_.Encode(video_frame, encoded_frame.get());
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
     last_frame_id_ = encoded_frame->frame_id;
@@ -177,7 +177,7 @@ TEST_P(VideoDecoderTest, RecoversFromDroppedFrames) {
 
 INSTANTIATE_TEST_CASE_P(VideoDecoderTestScenarios,
                         VideoDecoderTest,
-                        ::testing::Values(transport::kVp8));
+                        ::testing::Values(transport::CODEC_VIDEO_VP8));
 
 }  // namespace cast
 }  // namespace media

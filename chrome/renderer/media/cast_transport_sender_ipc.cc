@@ -36,12 +36,12 @@ void CastTransportSenderIPC::SetPacketReceiver(
 }
 
 void CastTransportSenderIPC::InitializeAudio(
-    const media::cast::transport::CastTransportAudioConfig& config) {
+    const media::cast::transport::CastTransportRtpConfig& config) {
   Send(new CastHostMsg_InitializeAudio(channel_id_, config));
 }
 
 void CastTransportSenderIPC::InitializeVideo(
-    const media::cast::transport::CastTransportVideoConfig& config) {
+    const media::cast::transport::CastTransportRtpConfig& config) {
   Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
