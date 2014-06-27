@@ -1568,4 +1568,10 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
+void RenderInline::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
+{
+    LayoutState state(*this);
+    RenderObject::invalidateTreeAfterLayout(paintInvalidationContainer);
+}
+
 } // namespace WebCore

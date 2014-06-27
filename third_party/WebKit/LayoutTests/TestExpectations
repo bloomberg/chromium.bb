@@ -568,6 +568,8 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
+Bug(jchaffraix) fast/repaint/layoutstate-invalid-invalidation-inline-relative-positioned.html [ NeedsRebaseline ]
+
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]

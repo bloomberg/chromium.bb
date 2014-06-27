@@ -36,6 +36,7 @@ namespace WebCore {
 class ForceHorriblySlowRectMapping;
 class RenderBox;
 class RenderObject;
+class RenderInline;
 class RenderView;
 
 class LayoutState {
@@ -47,6 +48,7 @@ public:
     explicit LayoutState(RenderObject& root);
 
     LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0);
+    LayoutState(RenderInline&);
 
     ~LayoutState();
 

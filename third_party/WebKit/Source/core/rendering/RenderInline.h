@@ -119,6 +119,8 @@ private:
     InlineBox* culledInlineFirstLineBox() const;
     InlineBox* culledInlineLastLineBox() const;
 
+    virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&) OVERRIDE FINAL;
+
     template<typename GeneratorContext>
     void generateLineBoxRects(GeneratorContext& yield) const;
     template<typename GeneratorContext>

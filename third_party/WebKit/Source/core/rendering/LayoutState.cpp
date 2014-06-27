@@ -122,6 +122,33 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
+LayoutState::LayoutState(RenderInline& renderer)
+    : m_next(renderer.view()->layoutState())
+    , m_renderer(renderer)
+{
+    ASSERT(m_next);
+
+    renderer.view()->pushLayoutState(*this);
+    m_cachedOffsetsEnabled = m_next->m_cachedOffsetsEnabled && renderer.supportsLayoutStateCachedOffsets();
+
+    m_paintOffset = m_next->m_paintOffset;
+    // Handle relative positioned inline.
+    if (renderer.style()->hasInFlowPosition() && renderer.layer())
+        m_paintOffset += renderer.layer()->offsetForInFlowPosition();
+
+    // RenderInline can't be out-of-flow positioned.
+
+    // The following can't apply to RenderInline so we just propagate them.
+    m_clipped = m_next->m_clipped;
+    m_clipRect = m_next->m_clipRect;
+
+    m_pageLogicalHeight = m_next->m_pageLogicalHeight;
+    m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
+    m_pageOffset = m_next->m_pageOffset;
+
+    m_columnInfo = m_next->m_columnInfo;
+}
+
 inline static bool shouldDisableLayoutStateForSubtree(RenderObject& renderer)
 {
     RenderObject* object = &renderer;
