@@ -30,6 +30,10 @@ static void ReceivedAdbDevices(
     int result_code,
     const std::string& response) {
   std::vector<std::string> result;
+  if (result_code < 0) {
+    callback.Run(result);
+    return;
+  }
   std::vector<std::string> serials;
   Tokenize(response, "\n", &serials);
   for (size_t i = 0; i < serials.size(); ++i) {
