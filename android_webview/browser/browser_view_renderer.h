@@ -159,6 +159,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
+  // Do this in a two stage tick due to native MessageLoop favors delayed task,
+  // so ensure delayed task is inserted only after the draw task returns.
+  void PostFallbackTick();
   void FallbackTickFired();
 
   // Force invoke the compositor to run produce a 1x1 software frame that is
@@ -205,8 +208,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // Used to block additional invalidates while one is already pending.
   bool block_invalidates_;
 
-  // Holds a callback to FallbackTickFired while it is pending.
-  base::CancelableClosure fallback_tick_;
+  base::CancelableClosure post_fallback_tick_;
+  base::CancelableClosure fallback_tick_fired_;
 
   int width_;
   int height_;

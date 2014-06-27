@@ -35,7 +35,7 @@ namespace android_webview {
 
 namespace {
 
-const int64 kFallbackTickTimeoutInMilliseconds = 20;
+const int64 kFallbackTickTimeoutInMilliseconds = 100;
 
 // Used to calculate memory allocation. Determined experimentally.
 const size_t kMemoryMultiplier = 10;
@@ -657,18 +657,27 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
 
   block_invalidates_ = compositor_needs_continuous_invalidate_;
 
-  // Unretained here is safe because the callback is cancelled when
-  // |fallback_tick_| is destroyed.
-  fallback_tick_.Reset(base::Bind(&BrowserViewRenderer::FallbackTickFired,
-                                  base::Unretained(this)));
+  // Unretained here is safe because the callbacks are cancelled when
+  // they are destroyed.
+  post_fallback_tick_.Reset(base::Bind(&BrowserViewRenderer::PostFallbackTick,
+                                       base::Unretained(this)));
+  fallback_tick_fired_.Cancel();
 
   // No need to reschedule fallback tick if compositor does not need to be
   // ticked. This can happen if this is reached because force_invalidate is
   // true.
+  if (compositor_needs_continuous_invalidate_)
+    ui_task_runner_->PostTask(FROM_HERE, post_fallback_tick_.callback());
+}
+
+void BrowserViewRenderer::PostFallbackTick() {
+  DCHECK(fallback_tick_fired_.IsCancelled());
+  fallback_tick_fired_.Reset(base::Bind(&BrowserViewRenderer::FallbackTickFired,
+                                        base::Unretained(this)));
   if (compositor_needs_continuous_invalidate_) {
     ui_task_runner_->PostDelayedTask(
         FROM_HERE,
-        fallback_tick_.callback(),
+        fallback_tick_fired_.callback(),
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
   }
 }
@@ -705,7 +714,8 @@ bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
 
 void BrowserViewRenderer::DidComposite() {
   block_invalidates_ = false;
-  fallback_tick_.Cancel();
+  post_fallback_tick_.Cancel();
+  fallback_tick_fired_.Cancel();
   EnsureContinuousInvalidation(false);
 }
 
