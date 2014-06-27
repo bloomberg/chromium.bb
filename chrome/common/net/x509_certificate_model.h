@@ -90,7 +90,6 @@ void GetCertChainFromCert(net::X509Certificate::OSCertHandle cert_handle,
                           net::X509Certificate::OSCertHandles* cert_handles);
 void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles);
 
-std::string GetDerString(net::X509Certificate::OSCertHandle cert_handle);
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end);
 

@@ -50,8 +50,11 @@ std::string WrapAt64(const std::string &str) {
 }
 
 std::string GetBase64String(net::X509Certificate::OSCertHandle cert) {
+  std::string der_cert;
+  if (!net::X509Certificate::GetDEREncoded(cert, &der_cert))
+    return std::string();
   std::string base64;
-  base::Base64Encode(x509_certificate_model::GetDerString(cert), &base64);
+  base::Base64Encode(der_cert, &base64);
   return "-----BEGIN CERTIFICATE-----\r\n" +
       WrapAt64(base64) +
       "-----END CERTIFICATE-----\r\n";
@@ -120,7 +123,7 @@ void Exporter::FileSelected(const base::FilePath& path, int index,
         data += GetBase64String(cert_chain_list_[i]);
       break;
     case 3:
-      data = x509_certificate_model::GetDerString(cert_chain_list_[0]);
+      net::X509Certificate::GetDEREncoded(cert_chain_list_[0], &data);
       break;
     case 4:
       data = x509_certificate_model::GetCMSString(cert_chain_list_, 0, 1);

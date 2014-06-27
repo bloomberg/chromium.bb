@@ -243,11 +243,6 @@ void DestroyCertChain(X509Certificate::OSCertHandles* cert_handles) {
   cert_handles->clear();
 }
 
-string GetDerString(X509Certificate::OSCertHandle cert_handle) {
-  return string(reinterpret_cast<const char*>(cert_handle->derCert.data),
-                cert_handle->derCert.len);
-}
-
 string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                     size_t start, size_t end) {
   crypto::ScopedPLArenaPool arena(PORT_NewArena(1024));

@@ -1140,11 +1140,6 @@ void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles) {
   cert_handles->clear();
 }
 
-std::string GetDerString(net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
-}
-
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end) {
   // TODO(bulach): implement me.
