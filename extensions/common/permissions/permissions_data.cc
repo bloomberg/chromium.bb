@@ -17,6 +17,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace extensions {
 
@@ -68,6 +69,48 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
 
   return std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
          whitelist.end();
+}
+
+// static
+bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
+                                      const GURL& top_frame_url,
+                                      const Extension* extension,
+                                      std::string* error) {
+  if (CanExecuteScriptEverywhere(extension))
+    return false;
+
+  // Check if the scheme is valid for extensions. If not, return.
+  if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
+      document_url.spec() != url::kAboutBlankURL) {
+    if (error) {
+      *error = ErrorUtils::FormatErrorMessage(
+                   manifest_errors::kCannotAccessPage,
+                   document_url.spec());
+    }
+    return true;
+  }
+
+  if (!ExtensionsClient::Get()->IsScriptableURL(document_url, error))
+    return true;
+
+  bool allow_on_chrome_urls = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kExtensionsOnChromeURLs);
+  if (document_url.SchemeIs(content::kChromeUIScheme) &&
+      !allow_on_chrome_urls) {
+    if (error)
+      *error = manifest_errors::kCannotAccessChromeUrl;
+    return true;
+  }
+
+  if (top_frame_url.SchemeIs(kExtensionScheme) &&
+      top_frame_url.host() != extension->id() &&
+      !allow_on_chrome_urls) {
+    if (error)
+      *error = manifest_errors::kCannotAccessExtensionUrl;
+    return true;
+  }
+
+  return false;
 }
 
 void PermissionsData::SetActivePermissions(
@@ -283,30 +326,8 @@ bool PermissionsData::CanRunOnPage(const Extension* extension,
     return false;
   }
 
-  bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
-  if (!can_execute_everywhere &&
-      !ExtensionsClient::Get()->IsScriptableURL(document_url, error)) {
+  if (IsRestrictedUrl(document_url, top_frame_url, extension, error))
     return false;
-  }
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExtensionsOnChromeURLs)) {
-    if (document_url.SchemeIs(content::kChromeUIScheme) &&
-        !can_execute_everywhere) {
-      if (error)
-        *error = manifest_errors::kCannotAccessChromeUrl;
-      return false;
-    }
-  }
-
-  if (top_frame_url.SchemeIs(kExtensionScheme) &&
-      top_frame_url.GetOrigin() !=
-          Extension::GetBaseURLFromExtensionId(extension->id()).GetOrigin() &&
-      !can_execute_everywhere) {
-    if (error)
-      *error = manifest_errors::kCannotAccessExtensionUrl;
-    return false;
-  }
 
   if (HasTabSpecificPermissionToExecuteScript(tab_id, top_frame_url))
     return true;

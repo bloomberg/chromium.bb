@@ -15,7 +15,6 @@ extern const char kOnDetach[];
 
 // Errors.
 extern const char kAlreadyAttachedError[];
-extern const char kAttachToWebUIError[];
 extern const char kNoTargetError[];
 extern const char kInvalidTargetError[];
 extern const char kNotAttachedError[];

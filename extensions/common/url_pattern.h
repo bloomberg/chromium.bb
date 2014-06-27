@@ -78,6 +78,9 @@ class URLPattern {
   // The <all_urls> string pattern.
   static const char kAllUrlsPattern[];
 
+  // Returns true if the given |scheme| is considered valid for extensions.
+  static bool IsValidSchemeForExtensions(const std::string& scheme);
+
   explicit URLPattern(int valid_schemes);
 
   // Convenience to construct a URLPattern from a string. If the string is not

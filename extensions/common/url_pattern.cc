@@ -109,6 +109,15 @@ std::string StripTrailingWildcard(const std::string& path) {
 
 }  // namespace
 
+// static
+bool URLPattern::IsValidSchemeForExtensions(const std::string& scheme) {
+  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+    if (scheme == kValidSchemes[i])
+      return true;
+  }
+  return false;
+}
+
 URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),

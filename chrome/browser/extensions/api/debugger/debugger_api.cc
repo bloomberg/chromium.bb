@@ -47,8 +47,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -503,6 +507,7 @@ void DebuggerFunction::FormatErrorMessage(const std::string& format) {
 }
 
 bool DebuggerFunction::InitAgentHost() {
+  const Extension* extension = GetExtension();
   if (debuggee_.tab_id) {
     WebContents* web_contents = NULL;
     bool result = ExtensionTabUtil::GetTabById(*debuggee_.tab_id,
@@ -513,12 +518,10 @@ bool DebuggerFunction::InitAgentHost() {
                                                &web_contents,
                                                NULL);
     if (result && web_contents) {
-      if (content::HasWebUIScheme(web_contents->GetURL())) {
-        error_ = ErrorUtils::FormatErrorMessage(
-            keys::kAttachToWebUIError,
-            web_contents->GetURL().scheme());
+      // TODO(rdevlin.cronin) This should definitely be GetLastCommittedURL().
+      GURL url = web_contents->GetVisibleURL();
+      if (PermissionsData::IsRestrictedUrl(url, url, extension, &error_))
         return false;
-      }
       agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
     }
   } else if (debuggee_.extension_id) {
@@ -527,6 +530,12 @@ bool DebuggerFunction::InitAgentHost() {
             ->process_manager()
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
+      if (PermissionsData::IsRestrictedUrl(extension_host->GetURL(),
+                                           extension_host->GetURL(),
+                                           extension,
+                                           &error_)) {
+        return false;
+      }
       agent_host_ = DevToolsAgentHost::GetOrCreateFor(
           extension_host->render_view_host());
     }
@@ -588,25 +597,26 @@ bool DebuggerAttachFunction::RunAsync() {
     return false;
   }
 
+  const Extension* extension = GetExtension();
   infobars::InfoBar* infobar = NULL;
   if (!CommandLine::ForCurrentProcess()->
-       HasSwitch(switches::kSilentDebuggerExtensionAPI)) {
+       HasSwitch(::switches::kSilentDebuggerExtensionAPI)) {
     // Do not attach to the target if for any reason the infobar cannot be shown
     // for this WebContents instance.
     infobar = ExtensionDevToolsInfoBarDelegate::Create(
-        agent_host_->GetRenderViewHost(), GetExtension()->name());
+        agent_host_->GetRenderViewHost(), extension->name());
     if (!infobar) {
       error_ = ErrorUtils::FormatErrorMessage(
           keys::kSilentDebuggingRequired,
-          switches::kSilentDebuggerExtensionAPI);
+          ::switches::kSilentDebuggerExtensionAPI);
       return false;
     }
   }
 
   new ExtensionDevToolsClientHost(GetProfile(),
                                   agent_host_.get(),
-                                  GetExtension()->id(),
-                                  GetExtension()->name(),
+                                  extension->id(),
+                                  extension->name(),
                                   debuggee_,
                                   infobar);
   SendResponse(true);

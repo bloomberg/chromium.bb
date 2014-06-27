@@ -5,12 +5,14 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/common/switches.h"
 
 class ExtensionApiTestWithSwitch : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kSilentDebuggerExtensionAPI);
+    command_line->AppendSwitch(extensions::switches::kExtensionsOnChromeURLs);
   }
 };
 

@@ -8,8 +8,6 @@ namespace debugger_api_constants {
 
 const char kAlreadyAttachedError[] =
     "Another debugger is already attached to the * with id: *.";
-const char kAttachToWebUIError[] =
-    "Can not attach to the page with the \"*://\" scheme.";
 const char kNoTargetError[] = "No * with given id *.";
 const char kInvalidTargetError[] =
     "Either tab id or extension id must be specified.";
