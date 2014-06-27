@@ -116,7 +116,6 @@ class UserManagerImpl
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool UserSessionsRestored() const OVERRIDE;
-  virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& user_id) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;

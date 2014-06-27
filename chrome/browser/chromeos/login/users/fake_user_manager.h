@@ -103,7 +103,6 @@ class FakeUserManager : public UserManager {
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool UserSessionsRestored() const OVERRIDE;
-  virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const OVERRIDE;
   virtual void SetUserFlow(const std::string& email, UserFlow* flow) OVERRIDE {}

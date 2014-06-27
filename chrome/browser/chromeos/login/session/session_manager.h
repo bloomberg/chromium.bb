@@ -69,11 +69,19 @@ class SessionManager :
                     bool has_active_session,
                     Delegate* delegate);
 
+  // Perform additional actions once system wide notification
+  // "UserLoggedIn" has been sent.
+  void PerformPostUserLoggedInActions();
+
   // Restores authentication session after crash.
   void RestoreAuthenticationSession(Profile* profile);
 
   // Initialize RLZ.
   void InitRlz(Profile* profile);
+
+  // Returns true when the browser has crashed and restarted during the current
+  // user's session.
+  bool HasBrowserRestarted() const;
 
   // TODO(nkostylev): Drop these methods once LoginUtilsImpl::AttemptRestart()
   // is migrated.

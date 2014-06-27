@@ -33,6 +33,9 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -207,6 +210,9 @@ void SessionManager::OnConnectionTypeChanged(
   // Need to iterate over all users and their OAuth2 session state.
   const UserList& users = user_manager->GetLoggedInUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if (!(*it)->is_profile_created())
+      continue;
+
     Profile* user_profile = user_manager->GetProfileByUser(*it);
     bool should_restore_session =
         pending_restore_sessions_.find((*it)->email()) !=
@@ -245,6 +251,21 @@ void SessionManager::StartSession(const UserContext& user_context,
   // ready to be used (http://crbug.com/361528).
   NotifyUserLoggedIn();
   PrepareProfile();
+}
+
+void SessionManager::PerformPostUserLoggedInActions() {
+  UserManager* user_manager = UserManager::Get();
+  if (user_manager->GetLoggedInUsers().size() == 1) {
+    // Owner must be first user in session. DeviceSettingsService can't deal
+    // with multiple user and will mix up ownership, crbug.com/230018.
+    OwnerSettingsServiceFactory::GetInstance()->
+        SetUsername(user_manager->GetActiveUser()->email());
+
+    if (NetworkPortalDetector::IsInitialized()) {
+      NetworkPortalDetector::Get()->SetStrategy(
+          PortalDetectorStrategy::STRATEGY_ID_SESSION);
+    }
+  }
 }
 
 void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
@@ -286,6 +307,13 @@ void SessionManager::InitRlz(Profile* profile) {
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&SessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
+}
+
+bool SessionManager::HasBrowserRestarted() const {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return base::SysInfo::IsRunningOnChromeOS() &&
+         command_line->HasSwitch(switches::kLoginUser) &&
+         !command_line->HasSwitch(switches::kLoginPassword);
 }
 
 OAuth2LoginManager::SessionRestoreStrategy
@@ -393,7 +421,7 @@ void SessionManager::StartCrosSession() {
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
-void SessionManager:: NotifyUserLoggedIn() {
+void SessionManager::NotifyUserLoggedIn() {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager* user_manager = UserManager::Get();
