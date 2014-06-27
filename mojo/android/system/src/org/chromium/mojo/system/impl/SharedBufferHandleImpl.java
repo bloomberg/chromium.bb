@@ -23,8 +23,16 @@ class SharedBufferHandleImpl extends HandleBase implements SharedBufferHandle {
     /**
      * @see HandleBase#HandleBase(HandleBase)
      */
-    SharedBufferHandleImpl(UntypedHandleImpl handle) {
+    SharedBufferHandleImpl(HandleBase handle) {
         super(handle);
+    }
+
+    /**
+     * @see org.chromium.mojo.system.SharedBufferHandle#pass()
+     */
+    @Override
+    public SharedBufferHandle pass() {
+        return new SharedBufferHandleImpl(this);
     }
 
     /**

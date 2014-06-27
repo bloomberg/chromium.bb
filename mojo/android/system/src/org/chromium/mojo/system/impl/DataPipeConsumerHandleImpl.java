@@ -24,8 +24,16 @@ class DataPipeConsumerHandleImpl extends HandleBase implements ConsumerHandle {
     /**
      * @see HandleBase#HandleBase(HandleBase)
      */
-    DataPipeConsumerHandleImpl(UntypedHandleImpl other) {
+    DataPipeConsumerHandleImpl(HandleBase other) {
         super(other);
+    }
+
+    /**
+     * @see org.chromium.mojo.system.Handle#pass()
+     */
+    @Override
+    public ConsumerHandle pass() {
+        return new DataPipeConsumerHandleImpl(this);
     }
 
     /**

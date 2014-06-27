@@ -25,8 +25,16 @@ class MessagePipeHandleImpl extends HandleBase implements MessagePipeHandle {
     /**
      * @see HandleBase#HandleBase(HandleBase)
      */
-    MessagePipeHandleImpl(UntypedHandleImpl handle) {
+    MessagePipeHandleImpl(HandleBase handle) {
         super(handle);
+    }
+
+    /**
+     * @see org.chromium.mojo.system.MessagePipeHandle#pass()
+     */
+    @Override
+    public MessagePipeHandle pass() {
+        return new MessagePipeHandleImpl(this);
     }
 
     /**

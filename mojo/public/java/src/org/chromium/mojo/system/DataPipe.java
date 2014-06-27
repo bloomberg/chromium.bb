@@ -213,6 +213,12 @@ public interface DataPipe {
     public static interface ProducerHandle extends Handle {
 
         /**
+         * @see org.chromium.mojo.system.Handle#pass()
+         */
+        @Override
+        public ProducerHandle pass();
+
+        /**
          * Writes the given data to the data pipe producer. |elements| points to data; the buffer
          * must be a direct ByteBuffer and the limit should be a multiple of the data pipe's element
          * size. If |allOrNone| is set in |flags|, either all the data will be written or none is.
@@ -272,6 +278,12 @@ public interface DataPipe {
     public static interface ConsumerHandle extends Handle {
 
         /**
+         * @see org.chromium.mojo.system.Handle#pass()
+         */
+        @Override
+        public ConsumerHandle pass();
+
+       /**
          * Discards data on the data pie consumer. This method discards up to |numBytes| (which
          * again be a multiple of the element size) bytes of data, returning the amount actually
          * discarded. if |flags| has |allOrNone|, it will either discard exactly |numBytes| bytes of

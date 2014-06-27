@@ -83,18 +83,6 @@ public interface MessagePipeHandle extends Handle {
     }
 
     /**
-     * Writes a message to the message pipe endpoint, with message data specified by |bytes| and
-     * attached handles specified by |handles|, and options specified by |flags|. If there is no
-     * message data, |bytes| may be null, otherwise it must be a direct ByteBuffer. If there are no
-     * attached handles, |handles| may be null.
-     * <p>
-     * If handles are attached, on success the handles will no longer be valid (the receiver will
-     * receive equivalent, but logically different, handles). Handles to be sent should not be in
-     * simultaneous use (e.g., on another thread).
-     */
-    void writeMessage(ByteBuffer bytes, List<? extends Handle> handles, WriteFlags flags);
-
-    /**
      * Result of the |readMessage| method.
      */
     public static class ReadMessageResult {
@@ -173,6 +161,24 @@ public interface MessagePipeHandle extends Handle {
             mHandles = handles;
         }
     }
+
+    /**
+     * @see org.chromium.mojo.system.Handle#pass()
+     */
+    @Override
+    public MessagePipeHandle pass();
+
+    /**
+     * Writes a message to the message pipe endpoint, with message data specified by |bytes| and
+     * attached handles specified by |handles|, and options specified by |flags|. If there is no
+     * message data, |bytes| may be null, otherwise it must be a direct ByteBuffer. If there are no
+     * attached handles, |handles| may be null.
+     * <p>
+     * If handles are attached, on success the handles will no longer be valid (the receiver will
+     * receive equivalent, but logically different, handles). Handles to be sent should not be in
+     * simultaneous use (e.g., on another thread).
+     */
+    void writeMessage(ByteBuffer bytes, List<? extends Handle> handles, WriteFlags flags);
 
     /**
      * Reads a message from the message pipe endpoint; also usable to query the size of the next

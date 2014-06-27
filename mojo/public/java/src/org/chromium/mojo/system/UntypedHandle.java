@@ -15,6 +15,12 @@ import org.chromium.mojo.system.DataPipe.ProducerHandle;
 public interface UntypedHandle extends Handle {
 
     /**
+     * @see org.chromium.mojo.system.Handle#pass()
+     */
+    @Override
+    public UntypedHandle pass();
+
+    /**
      * Returns the underlying handle, as a {@link MessagePipeHandle}, invalidating this
      * representation.
      */

@@ -44,4 +44,10 @@ public interface Handle extends Closeable {
      */
     public Core getCore();
 
+    /**
+     * Passes ownership of the handle from this handle to the newly created Handle object,
+     * invalidating this handle object in the process.
+     */
+    public Handle pass();
+
 }

@@ -130,6 +130,12 @@ public interface SharedBufferHandle extends Handle {
     }
 
     /**
+     * @see org.chromium.mojo.system.Handle#pass()
+     */
+    @Override
+    public SharedBufferHandle pass();
+
+    /**
      * Duplicates the handle. This creates another handle (returned on success), which can then be
      * sent to another application over a message pipe, while retaining access to this handle (and
      * any mappings that it may have).

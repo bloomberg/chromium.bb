@@ -30,6 +30,14 @@ class UntypedHandleImpl extends HandleBase implements UntypedHandle {
     }
 
     /**
+     * @see org.chromium.mojo.system.UntypedHandle#pass()
+     */
+    @Override
+    public UntypedHandle pass() {
+        return new UntypedHandleImpl(this);
+    }
+
+    /**
      * @see org.chromium.mojo.system.UntypedHandle#toMessagePipeHandle()
      */
     @Override

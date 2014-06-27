@@ -24,8 +24,16 @@ class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
     /**
      * @see HandleBase#HandleBase(HandleBase)
      */
-    DataPipeProducerHandleImpl(UntypedHandleImpl handle) {
+    DataPipeProducerHandleImpl(HandleBase handle) {
         super(handle);
+    }
+
+    /**
+     * @see org.chromium.mojo.system.DataPipe.ProducerHandle#pass()
+     */
+    @Override
+    public ProducerHandle pass() {
+        return new DataPipeProducerHandleImpl(this);
     }
 
     /**

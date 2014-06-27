@@ -61,6 +61,15 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
     }
 
     /**
+     * @see org.chromium.mojo.system.Handle#pass()
+     */
+    @Override
+    public InvalidHandle pass() {
+        return this;
+    }
+
+
+    /**
      * @see Handle#toUntypedHandle()
      */
     @Override

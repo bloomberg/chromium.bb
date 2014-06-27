@@ -66,6 +66,14 @@ public class HandleMock implements UntypedHandle, MessagePipeHandle,
     }
 
     /**
+     * @see org.chromium.mojo.system.UntypedHandle#pass()
+     */
+    @Override
+    public HandleMock pass() {
+        return this;
+    }
+
+    /**
      * @see ConsumerHandle#discardData(int, DataPipe.ReadFlags)
      */
     @Override
