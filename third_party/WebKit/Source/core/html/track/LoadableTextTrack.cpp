@@ -61,8 +61,10 @@ void LoadableTextTrack::clearTrackElement()
 void LoadableTextTrack::setMode(const AtomicString& mode)
 {
     TextTrack::setMode(mode);
+#if !ENABLE(OILPAN)
     if (!m_trackElement)
         return;
+#endif
 
     if (m_trackElement->readyState() == HTMLTrackElement::NONE)
         m_trackElement->scheduleLoad();
@@ -98,8 +100,10 @@ void LoadableTextTrack::loadTimerFired(Timer<LoadableTextTrack>*)
     if (m_loader)
         m_loader->cancelLoad();
 
+#if !ENABLE(OILPAN)
     if (!m_trackElement)
         return;
+#endif
 
     // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
 
@@ -134,8 +138,10 @@ void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadin
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
+#if !ENABLE(OILPAN)
     if (!m_trackElement)
         return;
+#endif
 
     m_trackElement->didCompleteLoad(loadingFailed ? HTMLTrackElement::Failure : HTMLTrackElement::Success);
 }
