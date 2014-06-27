@@ -71,9 +71,6 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   }
   timed_cache_.SetRecentlySeen(request_scheme_host);
 
-  predictor_->RecordPreconnectNavigationStat(request->url_chain(),
-                                             is_subresource);
-
   // Subresources for main frames usually get predicted when we detected the
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
   // predictions now for subresources or for redirected hosts.
