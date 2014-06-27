@@ -13,8 +13,9 @@ enum IsolatedWorldIDs {
   // Isolated world ID for Chrome Translate.
   ISOLATED_WORLD_ID_TRANSLATE,
 
-  // UserScriptSlave::GetIsolatedWorldIdForExtension assigns numbers which are
-  // equal to, or larger than this number.
+  // Numbers for isolated worlds for extensions are set in
+  // extensions/renderer/script_injection.cc, and are are greater than or equal
+  // to this number.
   ISOLATED_WORLD_ID_EXTENSIONS
 };
 

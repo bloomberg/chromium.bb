@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -14,8 +13,9 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/renderer/extension_helper.h"
-#include "extensions/renderer/programmatic_script_injection.h"
-#include "extensions/renderer/script_context.h"
+#include "extensions/renderer/programmatic_script_injector.h"
+#include "extensions/renderer/script_injection.h"
+#include "extensions/renderer/scripts_run_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -29,50 +29,6 @@ namespace {
 // The length of time to wait after the DOM is complete to try and run user
 // scripts.
 const int kScriptIdleTimeoutInMs = 200;
-
-// Log information about a given script run.
-void LogScriptsRun(blink::WebFrame* frame,
-                   UserScript::RunLocation location,
-                   const ScriptInjection::ScriptsRunInfo& info) {
-  // Notify the browser if any extensions are now executing scripts.
-  if (!info.executing_scripts.empty()) {
-    content::RenderView* render_view =
-        content::RenderView::FromWebView(frame->view());
-    render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
-        render_view->GetRoutingID(),
-        info.executing_scripts,
-        render_view->GetPageId(),
-        ScriptContext::GetDataSourceURLForFrame(frame)));
-  }
-
-  switch (location) {
-    case UserScript::DOCUMENT_START:
-      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount", info.num_css);
-      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount",
-                               info.num_js);
-      if (info.num_css || info.num_js)
-        UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time",
-                            info.timer.Elapsed());
-      break;
-    case UserScript::DOCUMENT_END:
-      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", info.num_js);
-      if (info.num_js)
-        UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", info.timer.Elapsed());
-      break;
-    case UserScript::DOCUMENT_IDLE:
-      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_ScriptCount",
-                               info.num_js);
-      if (info.num_js)
-        UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", info.timer.Elapsed());
-      break;
-    case UserScript::RUN_DEFERRED:
-      // TODO(rdevlin.cronin): Add histograms.
-      break;
-    case UserScript::UNDEFINED:
-    case UserScript::RUN_LOCATION_LAST:
-      NOTREACHED();
-  }
-}
 
 }  // namespace
 
@@ -261,7 +217,7 @@ void ScriptInjectionManager::InjectScripts(
   }
 
   // Inject any scripts that were waiting for the right run location.
-  ScriptInjection::ScriptsRunInfo scripts_run_info;
+  ScriptsRunInfo scripts_run_info;
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
@@ -295,7 +251,7 @@ void ScriptInjectionManager::InjectScripts(
     }
   }
 
-  LogScriptsRun(frame, run_location, scripts_run_info);
+  scripts_run_info.LogRun(frame, run_location);
 }
 
 void ScriptInjectionManager::HandleExecuteCode(
@@ -313,10 +269,15 @@ void ScriptInjectionManager::HandleExecuteCode(
     return;
   }
 
-  scoped_ptr<ScriptInjection> injection(new ProgrammaticScriptInjection(
-      main_frame, params, ExtensionHelper::Get(render_view)->tab_id()));
+  scoped_ptr<ScriptInjection> injection(new ScriptInjection(
+      scoped_ptr<ScriptInjector>(
+          new ProgrammaticScriptInjector(params, main_frame)),
+      main_frame,
+      params.extension_id,
+      static_cast<UserScript::RunLocation>(params.run_at),
+      ExtensionHelper::Get(render_view)->tab_id()));
 
-  ScriptInjection::ScriptsRunInfo scripts_run_info;
+  ScriptsRunInfo scripts_run_info;
   FrameStatusMap::const_iterator iter = frame_statuses_.find(main_frame);
   if (!injection->TryToInject(
           iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second,
@@ -339,12 +300,11 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int request_id) {
   scoped_ptr<ScriptInjection> injection(*iter);
   pending_injections_.weak_erase(iter);
 
-  ScriptInjection::ScriptsRunInfo scripts_run_info;
+  ScriptsRunInfo scripts_run_info;
   if (injection->OnPermissionGranted(extensions_->GetByID(
                                          injection->extension_id()),
                                      &scripts_run_info)) {
-    LogScriptsRun(
-        injection->web_frame(), UserScript::RUN_DEFERRED, scripts_run_info);
+    scripts_run_info.LogRun(injection->web_frame(), UserScript::RUN_DEFERRED);
   }
 }
 

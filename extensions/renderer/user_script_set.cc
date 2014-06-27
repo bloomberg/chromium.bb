@@ -12,7 +12,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/user_script_injection.h"
+#include "extensions/renderer/script_injection.h"
+#include "extensions/renderer/user_script_injector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/gurl.h"
@@ -205,12 +206,12 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   bool inject_js =
       !script->js_scripts().empty() && script->run_location() == run_location;
   if (inject_css || inject_js) {
-    injection.reset(new UserScriptInjection(web_frame,
-                                            extension->id(),
-                                            run_location,
-                                            tab_id,
-                                            this,
-                                            script));
+    injection.reset(new ScriptInjection(
+        scoped_ptr<ScriptInjector>(new UserScriptInjector(script, this)),
+        web_frame,
+        extension->id(),
+        run_location,
+        tab_id));
   }
   return injection.Pass();
 }

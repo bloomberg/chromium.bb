@@ -7,14 +7,25 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
+#include "base/timer/elapsed_timer.h"
+#include "base/values.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "extensions/renderer/dom_activity_logger.h"
+#include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -33,17 +44,22 @@ bool ShouldDelayForPermission() {
   return FeatureSwitch::scripts_require_action()->IsEnabled();
 }
 
-}  // namespace
-
-ScriptInjection::ScriptsRunInfo::ScriptsRunInfo() : num_css(0u), num_js(0u) {
+// Append all the child frames of |parent_frame| to |frames_vector|.
+void AppendAllChildFrames(blink::WebFrame* parent_frame,
+                          std::vector<blink::WebFrame*>* frames_vector) {
+  DCHECK(parent_frame);
+  for (blink::WebFrame* child_frame = parent_frame->firstChild(); child_frame;
+       child_frame = child_frame->nextSibling()) {
+    frames_vector->push_back(child_frame);
+    AppendAllChildFrames(child_frame, frames_vector);
+  }
 }
 
-ScriptInjection::ScriptsRunInfo::~ScriptsRunInfo() {
-}
-
-// static
-int ScriptInjection::GetIsolatedWorldIdForExtension(const Extension* extension,
-                                                    blink::WebFrame* frame) {
+// Gets the isolated world ID to use for the given |extension| in the given
+// |frame|. If no isolated world has been created for that extension,
+// one will be created and initialized.
+int GetIsolatedWorldIdForExtension(const Extension* extension,
+                                   blink::WebFrame* frame) {
   static int g_next_isolated_world_id =
       ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId();
 
@@ -72,6 +88,8 @@ int ScriptInjection::GetIsolatedWorldIdForExtension(const Extension* extension,
   return id;
 }
 
+}  // namespace
+
 // static
 std::string ScriptInjection::GetExtensionIdForIsolatedWorld(
     int isolated_world_id) {
@@ -92,11 +110,13 @@ void ScriptInjection::RemoveIsolatedWorld(const std::string& extension_id) {
 }
 
 ScriptInjection::ScriptInjection(
+    scoped_ptr<ScriptInjector> injector,
     blink::WebFrame* web_frame,
     const std::string& extension_id,
     UserScript::RunLocation run_location,
     int tab_id)
-    : web_frame_(web_frame),
+    : injector_(injector.Pass()),
+      web_frame_(web_frame),
       extension_id_(extension_id),
       run_location_(run_location),
       tab_id_(tab_id),
@@ -106,7 +126,7 @@ ScriptInjection::ScriptInjection(
 
 ScriptInjection::~ScriptInjection() {
   if (!complete_)
-    OnWillNotInject(WONT_INJECT);
+    injector_->OnWillNotInject(ScriptInjector::WONT_INJECT);
 }
 
 bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
@@ -119,21 +139,22 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
     return false;  // We're waiting for permission right now, try again later.
 
   if (!extension) {
-    NotifyWillNotInject(EXTENSION_REMOVED);
+    NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return true;  // We're done.
   }
 
-  switch (Allowed(extension)) {
-    case DENY_ACCESS:
-      NotifyWillNotInject(NOT_ALLOWED);
+  switch (injector_->CanExecuteOnFrame(
+      extension, web_frame_, tab_id_, web_frame_->top()->document().url())) {
+    case ScriptInjector::DENY_ACCESS:
+      NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return true;  // We're done.
-    case REQUEST_ACCESS:
+    case ScriptInjector::REQUEST_ACCESS:
       RequestPermission();
       if (ShouldDelayForPermission())
         return false;  // Wait around for permission.
       // else fall through
-    case ALLOW_ACCESS:
-      InjectAndMarkComplete(extension, scripts_run_info);
+    case ScriptInjector::ALLOW_ACCESS:
+      Inject(extension, scripts_run_info);
       return true;  // We're done!
   }
 
@@ -145,11 +166,11 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
 bool ScriptInjection::OnPermissionGranted(const Extension* extension,
                                           ScriptsRunInfo* scripts_run_info) {
   if (!extension) {
-    NotifyWillNotInject(EXTENSION_REMOVED);
+    NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return false;
   }
 
-  InjectAndMarkComplete(extension, scripts_run_info);
+  Inject(extension, scripts_run_info);
   return true;
 }
 
@@ -159,25 +180,137 @@ void ScriptInjection::RequestPermission() {
 
   // If the feature to delay for permission isn't enabled, then just send an
   // invalid request (which is treated like a notification).
-  int64 request_id = ShouldDelayForPermission() ? g_next_pending_id++
-                                                : kInvalidRequestId;
-  set_request_id(request_id);
+  request_id_ =
+      ShouldDelayForPermission() ? g_next_pending_id++ : kInvalidRequestId;
   render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_view->GetRoutingID(),
       extension_id_,
       render_view->GetPageId(),
-      request_id));
+      request_id_));
 }
 
-void ScriptInjection::NotifyWillNotInject(InjectFailureReason reason) {
+void ScriptInjection::NotifyWillNotInject(
+    ScriptInjector::InjectFailureReason reason) {
   complete_ = true;
-  OnWillNotInject(reason);
+  injector_->OnWillNotInject(reason);
 }
 
-void ScriptInjection::InjectAndMarkComplete(const Extension* extension,
-                                            ScriptsRunInfo* scripts_run_info) {
+void ScriptInjection::Inject(const Extension* extension,
+                             ScriptsRunInfo* scripts_run_info) {
+  DCHECK(extension);
+  DCHECK(scripts_run_info);
+  DCHECK(!complete_);
+
+  std::vector<blink::WebFrame*> frame_vector;
+  frame_vector.push_back(web_frame_);
+  if (injector_->ShouldExecuteInChildFrames())
+    AppendAllChildFrames(web_frame_, &frame_vector);
+
+  scoped_ptr<blink::WebScopedUserGesture> gesture;
+  if (injector_->IsUserGesture())
+    gesture.reset(new blink::WebScopedUserGesture());
+
+  bool inject_js = injector_->ShouldInjectJs(run_location_);
+  bool inject_css = injector_->ShouldInjectCss(run_location_);
+  DCHECK(inject_js || inject_css);
+
+  scoped_ptr<base::ListValue> execution_results(new base::ListValue());
+  GURL top_url = web_frame_->top()->document().url();
+  for (std::vector<blink::WebFrame*>::iterator iter = frame_vector.begin();
+       iter != frame_vector.end();
+       ++iter) {
+    blink::WebFrame* frame = *iter;
+
+    // We recheck access here in the renderer for extra safety against races
+    // with navigation, but different frames can have different URLs, and the
+    // extension might only have access to a subset of them.
+    // For child frames, we just skip ones the extension doesn't have access
+    // to and carry on.
+    // Note: we don't consider REQUEST_ACCESS because there is nowhere to
+    // surface a request for a child frame.
+    // TODO(rdevlin.cronin): We should ask for permission somehow.
+    if (injector_->CanExecuteOnFrame(extension, frame, tab_id_, top_url) ==
+        ScriptInjector::DENY_ACCESS) {
+      DCHECK(frame->parent());
+      continue;
+    }
+    if (inject_js)
+      InjectJs(extension, frame, execution_results.get());
+    if (inject_css)
+      InjectCss(frame);
+  }
+
   complete_ = true;
-  Inject(extension, scripts_run_info);
+  injector_->OnInjectionComplete(execution_results.Pass(),
+                                 scripts_run_info,
+                                 run_location_);
+}
+
+void ScriptInjection::InjectJs(const Extension* extension,
+                               blink::WebFrame* frame,
+                               base::ListValue* execution_results) {
+  std::vector<blink::WebScriptSource> sources =
+      injector_->GetJsSources(run_location_);
+  bool in_main_world = injector_->ShouldExecuteInMainWorld();
+  int world_id = in_main_world
+                     ? DOMActivityLogger::kMainWorldId
+                     : GetIsolatedWorldIdForExtension(extension, frame);
+  bool expects_results = injector_->ExpectsResults();
+
+  base::ElapsedTimer exec_timer;
+  DOMActivityLogger::AttachToWorld(world_id, extension->id());
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> script_value;
+  if (in_main_world) {
+    // We only inject in the main world for javascript: urls.
+    DCHECK_EQ(1u, sources.size());
+
+    const blink::WebScriptSource& source = sources.front();
+    if (expects_results)
+      script_value = frame->executeScriptAndReturnValue(source);
+    else
+      frame->executeScript(source);
+  } else {  // in isolated world
+    scoped_ptr<blink::WebVector<v8::Local<v8::Value> > > results;
+    if (expects_results)
+      results.reset(new blink::WebVector<v8::Local<v8::Value> >());
+    frame->executeScriptInIsolatedWorld(world_id,
+                                        &sources.front(),
+                                        sources.size(),
+                                        EXTENSION_GROUP_CONTENT_SCRIPTS,
+                                        results.get());
+    if (expects_results && !results->isEmpty())
+      script_value = (*results)[0];
+  }
+
+  UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
+
+  if (expects_results) {
+    // Right now, we only support returning single results (per frame).
+    scoped_ptr<content::V8ValueConverter> v8_converter(
+        content::V8ValueConverter::create());
+    // It's safe to always use the main world context when converting
+    // here. V8ValueConverterImpl shouldn't actually care about the
+    // context scope, and it switches to v8::Object's creation context
+    // when encountered.
+    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+    scoped_ptr<base::Value> result(
+        v8_converter->FromV8Value(script_value, context));
+    // Always append an execution result (i.e. no result == null result)
+    // so that |execution_results| lines up with the frames.
+    execution_results->Append(result.get() ? result.release()
+                                           : base::Value::CreateNullValue());
+  }
+}
+
+void ScriptInjection::InjectCss(blink::WebFrame* frame) {
+  std::vector<std::string> css_sources =
+      injector_->GetCssSources(run_location_);
+  for (std::vector<std::string>::const_iterator iter = css_sources.begin();
+       iter != css_sources.end();
+       ++iter) {
+    frame->document().insertStyleSheet(blink::WebString::fromUTF8(*iter));
+  }
 }
 
 }  // namespace extensions

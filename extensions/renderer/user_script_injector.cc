@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/user_script_injection.h"
+#include "extensions/renderer/user_script_injector.h"
 
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "extensions/renderer/dom_activity_logger.h"
-#include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/scripts_run_info.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -56,32 +54,25 @@ base::LazyInstance<GreasemonkeyApiJsString> g_greasemonkey_api =
 
 }  // namespace
 
-UserScriptInjection::UserScriptInjection(
-    blink::WebFrame* web_frame,
-    const std::string& extension_id,
-    UserScript::RunLocation run_location,
-    int tab_id,
-    UserScriptSet* script_list,
-    const UserScript* script)
-    : ScriptInjection(web_frame,
-                      extension_id,
-                      run_location,
-                      tab_id),
-      script_(script),
+UserScriptInjector::UserScriptInjector(
+    const UserScript* script,
+    UserScriptSet* script_list)
+    : script_(script),
       script_id_(script_->id()),
+      extension_id_(script_->extension_id()),
       user_script_set_observer_(this) {
   user_script_set_observer_.Add(script_list);
 }
 
-UserScriptInjection::~UserScriptInjection() {
+UserScriptInjector::~UserScriptInjector() {
 }
 
-void UserScriptInjection::OnUserScriptsUpdated(
+void UserScriptInjector::OnUserScriptsUpdated(
     const std::set<std::string>& changed_extensions,
     const std::vector<UserScript*>& scripts) {
   // If the extension causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
-  if (changed_extensions.count(extension_id()) > 0)
+  if (changed_extensions.count(extension_id_) > 0)
     return;
 
   for (std::vector<UserScript*>::const_iterator iter = scripts.begin();
@@ -96,41 +87,62 @@ void UserScriptInjection::OnUserScriptsUpdated(
   }
 }
 
-ScriptInjection::AccessType UserScriptInjection::Allowed(
-    const Extension* extension) const {
+bool UserScriptInjector::ShouldExecuteInChildFrames() const {
+  return false;
+}
+
+bool UserScriptInjector::ShouldExecuteInMainWorld() const {
+  return false;
+}
+
+bool UserScriptInjector::IsUserGesture() const {
+  return false;
+}
+
+bool UserScriptInjector::ExpectsResults() const {
+  return false;
+}
+
+bool UserScriptInjector::ShouldInjectJs(
+    UserScript::RunLocation run_location) const {
+  return script_->run_location() == run_location &&
+         !script_->js_scripts().empty();
+}
+
+bool UserScriptInjector::ShouldInjectCss(
+    UserScript::RunLocation run_location) const {
+  return run_location == UserScript::DOCUMENT_START &&
+         !script_->css_scripts().empty();
+}
+
+ScriptInjector::AccessType UserScriptInjector::CanExecuteOnFrame(
+    const Extension* extension,
+    blink::WebFrame* web_frame,
+    int tab_id,
+    const GURL& top_url) const {
   // If we don't have a tab id, we have no UI surface to ask for user consent.
   // For now, we treat this as an automatic allow.
-  if (tab_id() == -1)
+  if (tab_id == -1)
     return ALLOW_ACCESS;
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      web_frame(), web_frame()->document().url(), script_->match_about_blank());
+      web_frame, web_frame->document().url(), script_->match_about_blank());
 
   return extension->permissions_data()->RequiresActionForScriptExecution(
-      extension, tab_id(), web_frame()->top()->document().url())
-      ? REQUEST_ACCESS : ALLOW_ACCESS;
+             extension, tab_id, web_frame->top()->document().url())
+             ? REQUEST_ACCESS
+             : ALLOW_ACCESS;
 }
 
-void UserScriptInjection::Inject(const Extension* extension,
-                                 ScriptsRunInfo* scripts_run_info) {
-  if (!script_->css_scripts().empty() &&
-      run_location() == UserScript::DOCUMENT_START) {
-    InjectCSS(scripts_run_info);
-  }
-  if (!script_->js_scripts().empty() &&
-      script_->run_location() == run_location()) {
-    InjectJS(extension, scripts_run_info);
-  }
-}
+std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
+    UserScript::RunLocation run_location) const {
+  DCHECK_EQ(script_->run_location(), run_location);
 
-void UserScriptInjection::InjectJS(const Extension* extension,
-                                   ScriptsRunInfo* scripts_run_info) {
-  const UserScript::FileList& js_scripts = script_->js_scripts();
   std::vector<blink::WebScriptSource> sources;
-  scripts_run_info->num_js += js_scripts.size();
-
+  const UserScript::FileList& js_scripts = script_->js_scripts();
   bool is_standalone_or_emulate_greasemonkey =
       script_->is_standalone() || script_->emulate_greasemonkey();
+
   for (UserScript::FileList::const_iterator iter = js_scripts.begin();
        iter != js_scripts.end();
        ++iter) {
@@ -153,34 +165,43 @@ void UserScriptInjection::InjectJS(const Extension* extension,
   if (is_standalone_or_emulate_greasemonkey)
     sources.insert(sources.begin(), g_greasemonkey_api.Get().GetSource());
 
-  int isolated_world_id =
-      GetIsolatedWorldIdForExtension(extension, web_frame());
-  base::ElapsedTimer exec_timer;
-  DOMActivityLogger::AttachToWorld(isolated_world_id, script_->extension_id());
-  web_frame()->executeScriptInIsolatedWorld(isolated_world_id,
-                                            &sources.front(),
-                                            sources.size(),
-                                            EXTENSION_GROUP_CONTENT_SCRIPTS);
-  UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
-
-  for (std::vector<blink::WebScriptSource>::const_iterator iter =
-           sources.begin();
-       iter != sources.end();
-       ++iter) {
-    scripts_run_info->executing_scripts[script_->extension_id()].insert(
-        GURL(iter->url).path());
-  }
+  return sources;
 }
 
-void UserScriptInjection::InjectCSS(ScriptsRunInfo* scripts_run_info) {
+std::vector<std::string> UserScriptInjector::GetCssSources(
+    UserScript::RunLocation run_location) const {
+  DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
+
+  std::vector<std::string> sources;
   const UserScript::FileList& css_scripts = script_->css_scripts();
-  scripts_run_info->num_css += css_scripts.size();
   for (UserScript::FileList::const_iterator iter = css_scripts.begin();
        iter != css_scripts.end();
        ++iter) {
-    web_frame()->document().insertStyleSheet(
-        blink::WebString::fromUTF8(iter->GetContent().as_string()));
+    sources.push_back(iter->GetContent().as_string());
   }
+  return sources;
+}
+
+void UserScriptInjector::OnInjectionComplete(
+    scoped_ptr<base::ListValue> execution_results,
+    ScriptsRunInfo* scripts_run_info,
+    UserScript::RunLocation run_location) {
+  if (ShouldInjectJs(run_location)) {
+    const UserScript::FileList& js_scripts = script_->js_scripts();
+    scripts_run_info->num_js += js_scripts.size();
+    for (UserScript::FileList::const_iterator iter = js_scripts.begin();
+         iter != js_scripts.end();
+         ++iter) {
+      scripts_run_info->executing_scripts[extension_id_].insert(
+          iter->url().path());
+    }
+  }
+
+  if (ShouldInjectCss(run_location))
+    scripts_run_info->num_css += script_->css_scripts().size();
+}
+
+void UserScriptInjector::OnWillNotInject(InjectFailureReason reason) {
 }
 
 }  // namespace extensions
