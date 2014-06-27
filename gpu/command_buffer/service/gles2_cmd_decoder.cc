@@ -590,7 +590,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
   virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
   virtual Capabilities GetCapabilities() OVERRIDE;
-  virtual void RestoreState(const ContextState* prev_state) const OVERRIDE;
+  virtual void RestoreState(const ContextState* prev_state) OVERRIDE;
 
   virtual void RestoreActiveTexture() const OVERRIDE {
     state_.RestoreActiveTexture();
@@ -616,6 +616,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     state_.RestoreTextureUnitBindings(unit, NULL);
   }
   virtual void RestoreFramebufferBindings() const OVERRIDE;
+  virtual void RestoreRenderbufferBindings() OVERRIDE;
   virtual void RestoreTextureState(unsigned service_id) const OVERRIDE;
 
   virtual void ClearAllAttributes() const OVERRIDE;
@@ -687,6 +688,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Overriden from ErrorStateClient.
   virtual void OnOutOfMemoryError() OVERRIDE;
+
+  // Ensure Renderbuffer corresponding to last DoBindRenderbuffer() is bound.
+  void EnsureRenderbufferBound();
 
   // Helpers to facilitate calling into compatible extensions.
   static void RenderbufferStorageMultisampleHelper(
@@ -3896,7 +3900,7 @@ GLuint GLES2DecoderImpl::GetBackbufferServiceId() const {
              : (surface_.get() ? surface_->GetBackingFrameBufferObject() : 0);
 }
 
-void GLES2DecoderImpl::RestoreState(const ContextState* prev_state) const {
+void GLES2DecoderImpl::RestoreState(const ContextState* prev_state) {
   TRACE_EVENT1("gpu", "GLES2DecoderImpl::RestoreState",
                "context", logger_.GetLogPrefix());
   // Restore the Framebuffer first because of bugs in Intel drivers.
@@ -3921,6 +3925,10 @@ void GLES2DecoderImpl::RestoreFramebufferBindings() const {
     glBindFramebufferEXT(GL_READ_FRAMEBUFFER, service_id);
   }
   OnFboChanged();
+}
+
+void GLES2DecoderImpl::RestoreRenderbufferBindings() {
+  state_.RestoreRenderbufferBindings();
 }
 
 void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
@@ -4044,7 +4052,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
         return;
       }
 
-      // It's a new id so make a renderbuffer renderbuffer for it.
+      // It's a new id so make a renderbuffer for it.
       glGenRenderbuffersEXT(1, &service_id);
       CreateRenderbuffer(client_id, service_id);
       renderbuffer = GetRenderbuffer(client_id);
@@ -4058,7 +4066,8 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
   }
   LogClientServiceForInfo(renderbuffer, client_id, "glBindRenderbuffer");
   state_.bound_renderbuffer = renderbuffer;
-  glBindRenderbufferEXT(target, service_id);
+  state_.bound_renderbuffer_valid = true;
+  glBindRenderbufferEXT(GL_RENDERBUFFER, service_id);
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
@@ -5198,6 +5207,8 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
         "glGetRenderbufferParameteriv", "no renderbuffer bound");
     return;
   }
+
+  EnsureRenderbufferBound();
   switch (pname) {
     case GL_RENDERBUFFER_INTERNAL_FORMAT:
       *params = renderbuffer->internal_format();
@@ -5237,6 +5248,16 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
                                   state_.enable_flags.scissor_test);
+}
+
+void GLES2DecoderImpl::EnsureRenderbufferBound() {
+  if (!state_.bound_renderbuffer_valid) {
+    state_.bound_renderbuffer_valid = true;
+    glBindRenderbufferEXT(GL_RENDERBUFFER,
+                          state_.bound_renderbuffer.get()
+                              ? state_.bound_renderbuffer->service_id()
+                              : 0);
+  }
 }
 
 void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
@@ -5339,6 +5360,7 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     return;
   }
 
+  EnsureRenderbufferBound();
   GLenum impl_format =
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat);
@@ -5385,6 +5407,7 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleEXT(
     return;
   }
 
+  EnsureRenderbufferBound();
   GLenum impl_format =
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat);
@@ -5540,6 +5563,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
     return;
   }
 
+  EnsureRenderbufferBound();
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorage");
   glRenderbufferStorageEXT(
       target,

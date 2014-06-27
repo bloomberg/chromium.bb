@@ -281,6 +281,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::RenderbufferStorage, 0>(
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   if (valid) {
+    EnsureRenderbufferBound(false);
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();

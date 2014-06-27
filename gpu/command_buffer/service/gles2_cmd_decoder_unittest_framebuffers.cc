@@ -229,6 +229,33 @@ TEST_P(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   EXPECT_EQ(static_cast<GLuint>(*result_value), client_texture_id_);
 }
 
+TEST_P(GLES2DecoderWithShaderTest,
+       GetRenderbufferParameterivRebindRenderbuffer) {
+  SetupTexture();
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 1, 1, GL_NO_ERROR);
+
+  GetRenderbufferParameteriv cmd;
+  cmd.Init(GL_RENDERBUFFER,
+           GL_RENDERBUFFER_RED_SIZE,
+           shared_memory_id_,
+           shared_memory_offset_);
+
+  RestoreRenderbufferBindings();
+  EnsureRenderbufferBound(true);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              GetRenderbufferParameterivEXT(
+                  GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, _));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -242,6 +269,15 @@ TEST_P(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
            shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, RenderbufferStorageRebindRenderbuffer) {
+  SetupTexture();
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  RestoreRenderbufferBindings();
+  EnsureRenderbufferBound(true);
+  DoRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 1, 1, GL_NO_ERROR);
 }
 
 TEST_P(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
@@ -1144,6 +1180,7 @@ TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
 
+  EnsureRenderbufferBound(false);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))  // for RenderbufferStoage
       .WillOnce(Return(GL_NO_ERROR))
@@ -1213,6 +1250,7 @@ TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
 
+  EnsureRenderbufferBound(false);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))  // for RenderbufferStoage
       .WillOnce(Return(GL_NO_ERROR))
@@ -1335,6 +1373,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DGLError) {
 TEST_P(GLES2DecoderTest, RenderbufferStorageGLError) {
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  EnsureRenderbufferBound(false);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -1372,6 +1411,7 @@ TEST_P(GLES2DecoderManualInitTest,
   InitDecoder(init);
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  EnsureRenderbufferBound(false);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -1431,29 +1471,32 @@ TEST_P(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleCHROMIUM) {
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
   InSequence sequence;
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  EXPECT_CALL(
-      *gl_,
-      RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                        TestHelper::kMaxSamples,
-                                        GL_RGBA,
-                                        TestHelper::kMaxRenderbufferSize,
-                                        1))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  RenderbufferStorageMultisampleCHROMIUM cmd;
-  cmd.Init(GL_RENDERBUFFER,
-           TestHelper::kMaxSamples,
-           GL_RGBA4,
-           TestHelper::kMaxRenderbufferSize,
-           1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EnsureRenderbufferBound(false);
+  DoRenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER,
+                                           TestHelper::kMaxSamples,
+                                           GL_RGBA4,
+                                           GL_RGBA,
+                                           TestHelper::kMaxRenderbufferSize,
+                                           1);
+}
+
+TEST_P(GLES2DecoderManualInitTest,
+       RenderbufferStorageMultisampleCHROMIUMRebindRenderbuffer) {
+  InitState init;
+  init.extensions = "GL_EXT_framebuffer_multisample";
+  init.gl_version = "2.1";
+  InitDecoder(init);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  RestoreRenderbufferBindings();
+  InSequence sequence;
+  EnsureRenderbufferBound(true);
+  DoRenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER,
+                                           TestHelper::kMaxSamples,
+                                           GL_RGBA4,
+                                           GL_RGBA,
+                                           TestHelper::kMaxRenderbufferSize,
+                                           1);
 }
 
 TEST_P(GLES2DecoderManualInitTest,
@@ -1493,10 +1536,18 @@ class GLES2DecoderMultisampledRenderToTextureTest
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   }
 
-  void TestRenderbufferStorageMultisampleEXT(const char* extension) {
+  void TestRenderbufferStorageMultisampleEXT(const char* extension,
+                                             bool rb_rebind) {
     DoBindRenderbuffer(
         GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
     InSequence sequence;
+    if (rb_rebind) {
+      RestoreRenderbufferBindings();
+      EnsureRenderbufferBound(true);
+    } else {
+      EnsureRenderbufferBound(false);
+    }
+
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
@@ -1554,15 +1605,29 @@ TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
 TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        RenderbufferStorageMultisampleEXT_EXT) {
   Init("GL_EXT_multisampled_render_to_texture");
-  TestRenderbufferStorageMultisampleEXT(
-      "GL_EXT_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT("GL_EXT_multisampled_render_to_texture",
+                                        false);
 }
 
 TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        RenderbufferStorageMultisampleEXT_IMG) {
   Init("GL_IMG_multisampled_render_to_texture");
-  TestRenderbufferStorageMultisampleEXT(
-      "GL_IMG_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT("GL_IMG_multisampled_render_to_texture",
+                                        false);
+}
+
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       RenderbufferStorageMultisampleEXT_EXT_RebindRenderbuffer) {
+  Init("GL_EXT_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT("GL_EXT_multisampled_render_to_texture",
+                                        true);
+}
+
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       RenderbufferStorageMultisampleEXT_IMG_RebindRenderbuffer) {
+  Init("GL_IMG_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT("GL_IMG_multisampled_render_to_texture",
+                                        true);
 }
 
 TEST_P(GLES2DecoderTest, ReadPixelsGLError) {

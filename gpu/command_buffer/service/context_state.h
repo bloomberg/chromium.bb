@@ -105,7 +105,7 @@ struct GPU_EXPORT ContextState {
     ignore_cached_state = ignore;
   }
 
-  void RestoreState(const ContextState* prev_state) const;
+  void RestoreState(const ContextState* prev_state);
   void InitCapabilities(const ContextState* prev_state) const;
   void InitState(const ContextState* prev_state) const;
 
@@ -119,7 +119,7 @@ struct GPU_EXPORT ContextState {
   void RestoreBufferBindings() const;
   void RestoreGlobalState(const ContextState* prev_state) const;
   void RestoreProgramBindings() const;
-  void RestoreRenderbufferBindings() const;
+  void RestoreRenderbufferBindings();
   void RestoreTextureUnitBindings(
       GLuint unit, const ContextState* prev_state) const;
 
@@ -198,6 +198,7 @@ struct GPU_EXPORT ContextState {
 
   // The currently bound renderbuffer
   scoped_refptr<Renderbuffer> bound_renderbuffer;
+  bool bound_renderbuffer_valid;
 
   // A map of of target -> Query for current queries
   typedef std::map<GLuint, scoped_refptr<QueryManager::Query> > QueryMap;

@@ -217,6 +217,14 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoBindBuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
+  void DoRenderbufferStorageMultisampleCHROMIUM(GLenum target,
+                                                GLsizei samples,
+                                                GLenum internal_format,
+                                                GLenum gl_format,
+                                                GLsizei width,
+                                                GLsizei height);
+  void RestoreRenderbufferBindings();
+  void EnsureRenderbufferBound(bool expect_bind);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindVertexArrayOES(GLuint client_id, GLuint service_id);
 
@@ -517,7 +525,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void* shared_memory_address_;
   void* shared_memory_base_;
 
-  int8 immediate_buffer_[256];
+  GLuint service_renderbuffer_id_;
+  bool service_renderbuffer_valid_;
+
+  uint32 immediate_buffer_[64];
 
   const bool ignore_cached_state_for_test_;
   bool cached_color_mask_red_;
