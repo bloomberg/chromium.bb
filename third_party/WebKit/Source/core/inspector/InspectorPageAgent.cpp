@@ -96,9 +96,7 @@ static const char pageAgentFitWindow[] = "pageAgentFitWindow";
 static const char deviceScale[] = "deviceScale";
 static const char deviceOffsetX[] = "deviceOffsetX";
 static const char deviceOffsetY[] = "deviceOffsetY";
-static const char fontScaleFactor[] = "fontScaleFactor";
 static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
-static const char pageAgentTextAutosizingOverride[] = "pageAgentTextAutosizingOverride";
 static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
 static const char pageAgentShowPaintRects[] = "pageAgentShowPaintRects";
 static const char pageAgentShowDebugBorders[] = "pageAgentShowDebugBorders";
@@ -116,6 +114,31 @@ KURL urlWithoutFragment(const KURL& url)
     KURL result = url;
     result.removeFragmentIdentifier();
     return result;
+}
+
+static float calculateFontScaleFactor(int width, int height, float deviceScaleFactor)
+{
+    // Chromium on Android uses a device scale adjustment for fonts used in text autosizing for
+    // improved legibility. This function computes this adjusted value for text autosizing.
+    // For a description of the Android device scale adjustment algorithm, see:
+    // chrome/browser/chrome_content_browser_client.cc, GetDeviceScaleAdjustment(...)
+    if (!width || !height || !deviceScaleFactor)
+        return 1;
+
+    static const float kMinFSM = 1.05f;
+    static const int kWidthForMinFSM = 320;
+    static const float kMaxFSM = 1.3f;
+    static const int kWidthForMaxFSM = 800;
+
+    float minWidth = std::min(width, height) / deviceScaleFactor;
+    if (minWidth <= kWidthForMinFSM)
+        return kMinFSM;
+    if (minWidth >= kWidthForMaxFSM)
+        return kMaxFSM;
+
+    // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
+    float ratio = static_cast<float>(minWidth - kWidthForMinFSM) / (kWidthForMaxFSM - kWidthForMinFSM);
+    return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
 
 }
@@ -391,14 +414,16 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
 void InspectorPageAgent::setTextAutosizingEnabled(bool enabled)
 {
     m_embedderTextAutosizingEnabled = enabled;
-    if (!m_deviceMetricsOverridden)
+    bool emulateViewportEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateViewportEnabled;
+    if (!emulateViewportEnabled)
         m_page->settings().setTextAutosizingEnabled(enabled);
 }
 
 void InspectorPageAgent::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     m_embedderFontScaleFactor = deviceScaleAdjustment;
-    if (!m_deviceMetricsOverridden)
+    bool emulateViewportEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateViewportEnabled;
+    if (!emulateViewportEnabled)
         m_page->settings().setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
 
@@ -471,11 +496,11 @@ void InspectorPageAgent::disable(ErrorString*)
         m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, false);
     }
 
-    if (!deviceMetricsChanged(false, 0, 0, 0, false, false, 1, 0, 0, 1, false))
+    if (!deviceMetricsChanged(false, 0, 0, 0, false, false, 1, 0, 0))
         return;
 
     // When disabling the agent, reset the override values if necessary.
-    updateViewMetrics(false, 0, 0, 0, false, false, 1, 0, 0, m_embedderFontScaleFactor, m_embedderTextAutosizingEnabled);
+    updateViewMetrics(false, 0, 0, 0, false, false, 1, 0, 0);
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, 0);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, 0);
     m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 0);
@@ -484,8 +509,6 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->setDouble(PageAgentState::deviceScale, 1);
     m_state->setDouble(PageAgentState::deviceOffsetX, 0);
     m_state->setDouble(PageAgentState::deviceOffsetY, 0);
-    m_state->setDouble(PageAgentState::fontScaleFactor, 1);
-    m_state->setBoolean(PageAgentState::pageAgentTextAutosizingOverride, false);
 }
 
 void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* identifier)
@@ -750,7 +773,7 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
     DOMPatchSupport::patchDocument(*document, html);
 }
 
-void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY, const bool* optionalTextAutosizing, const double* optionalFontScaleFactor)
+void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY)
 {
     const static long maxDimension = 10000000;
     const static double maxScale = 10;
@@ -758,8 +781,6 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     double scale = optionalScale ? *optionalScale : 1;
     double offsetX = optionalOffsetX ? *optionalOffsetX : 0;
     double offsetY = optionalOffsetY ? *optionalOffsetY : 0;
-    bool textAutosizing = optionalTextAutosizing ? *optionalTextAutosizing : false;
-    double fontScaleFactor = optionalFontScaleFactor ? *optionalFontScaleFactor : 1;
 
     if (width < 0 || height < 0 || width > maxDimension || height > maxDimension) {
         *errorString = "Width and height values must be positive, not greater than " + String::number(maxDimension);
@@ -776,11 +797,6 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
         return;
     }
 
-    if (fontScaleFactor <= 0) {
-        *errorString = "fontScaleFactor must be positive";
-        return;
-    }
-
     Settings& settings = m_page->settings();
     if (!settings.acceleratedCompositingEnabled()) {
         if (errorString)
@@ -788,7 +804,7 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
         return;
     }
 
-    if (!deviceMetricsChanged(true, width, height, deviceScaleFactor, emulateViewport, fitWindow, scale, offsetX, offsetY, fontScaleFactor, textAutosizing))
+    if (!deviceMetricsChanged(true, width, height, deviceScaleFactor, emulateViewport, fitWindow, scale, offsetX, offsetY))
         return;
 
     m_state->setBoolean(PageAgentState::deviceMetricsOverrideEnabled, true);
@@ -800,8 +816,6 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     m_state->setDouble(PageAgentState::deviceScale, scale);
     m_state->setDouble(PageAgentState::deviceOffsetX, offsetX);
     m_state->setDouble(PageAgentState::deviceOffsetY, offsetY);
-    m_state->setDouble(PageAgentState::fontScaleFactor, fontScaleFactor);
-    m_state->setBoolean(PageAgentState::pageAgentTextAutosizingOverride, textAutosizing);
     updateViewMetricsFromState();
 }
 
@@ -813,7 +827,7 @@ void InspectorPageAgent::clearDeviceMetricsOverride(ErrorString*)
     }
 }
 
-bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY, double fontScaleFactor, bool textAutosizing)
+bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY)
 {
     bool currentEnabled = m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled);
     // These two always fit an int.
@@ -825,8 +839,6 @@ bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int heigh
     double currentScale = m_state->getDouble(PageAgentState::deviceScale, 1);
     double currentOffsetX = m_state->getDouble(PageAgentState::deviceOffsetX, 0);
     double currentOffsetY = m_state->getDouble(PageAgentState::deviceOffsetY, 0);
-    double currentFontScaleFactor = m_state->getDouble(PageAgentState::fontScaleFactor, 1);
-    bool currentTextAutosizing = m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
 
     return enabled != currentEnabled
         || width != currentWidth
@@ -836,9 +848,7 @@ bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int heigh
         || fitWindow != currentFitWindow
         || scale != currentScale
         || offsetX != currentOffsetX
-        || offsetY != currentOffsetY
-        || fontScaleFactor != currentFontScaleFactor
-        || textAutosizing != currentTextAutosizing;
+        || offsetY != currentOffsetY;
 }
 
 void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
@@ -1276,12 +1286,10 @@ void InspectorPageAgent::updateViewMetricsFromState()
     double scale = m_state->getDouble(PageAgentState::deviceScale, 1);
     double offsetX = m_state->getDouble(PageAgentState::deviceOffsetX, 0);
     double offsetY = m_state->getDouble(PageAgentState::deviceOffsetY, 0);
-    double fontScaleFactor = m_state->getDouble(PageAgentState::fontScaleFactor);
-    bool textAutosizingEnabled = m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
-    updateViewMetrics(enabled, width, height, deviceScaleFactor, emulateViewport, fitWindow, scale, offsetX, offsetY, fontScaleFactor, textAutosizingEnabled);
+    updateViewMetrics(enabled, width, height, deviceScaleFactor, emulateViewport, fitWindow, scale, offsetX, offsetY);
 }
 
-void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY, double fontScaleFactor, bool textAutosizingEnabled)
+void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY)
 {
     if (enabled && !m_page->settings().acceleratedCompositingEnabled())
         return;
@@ -1301,8 +1309,8 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
     InspectorInstrumentation::mediaQueryResultChanged(document);
 
     if (m_deviceMetricsOverridden) {
-        m_page->settings().setTextAutosizingEnabled(textAutosizingEnabled);
-        m_page->settings().setDeviceScaleAdjustment(fontScaleFactor);
+        m_page->settings().setTextAutosizingEnabled(emulateViewport);
+        m_page->settings().setDeviceScaleAdjustment(calculateFontScaleFactor(width, height, static_cast<float>(deviceScaleFactor)));
     } else {
         m_page->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
         m_page->settings().setDeviceScaleAdjustment(m_embedderFontScaleFactor);

@@ -61,13 +61,13 @@
       },
 
       function checkAutosizedWithDeviceMetrics(next) {
-        PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: true}, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: true, fitWindow: true}, function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkNotAutosizedWithDeviceMetrics(next) {
-        PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: false}, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: true}, function() {
           assertAutosizingResult(false, next);
         });
       },
@@ -88,14 +88,16 @@
 
       function checkAutosizedWhenDeviceMetricsOverrideSettings(next) {
         InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: true}, function() {
+          PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: true, fitWindow: true}, function() {
             assertAutosizingResult(true, next);
           });
         });
       },
 
       function cleanup(next) {
-        InspectorTest.evaluateInPage("var el = document.getElementById('measure'); el.parentNode.removeChild(el);", next);
+        PageAgent.clearDeviceMetricsOverride(function() {
+          InspectorTest.evaluateInPage("var el = document.getElementById('measure'); el.parentNode.removeChild(el);", next);
+        });
       }
     ]);
   }
