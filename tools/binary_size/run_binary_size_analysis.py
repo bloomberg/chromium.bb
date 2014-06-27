@@ -490,9 +490,12 @@ class Progress():
     self.collisions = 0
     self.time_last_output = time.time()
     self.count_last_output = 0
+    self.disambiguations = 0
+    self.was_ambiguous = 0
 
 
-def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
+def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs,
+                     disambiguate, src_path):
   nm_output = RunNm(library, nm_binary)
   nm_output_lines = nm_output.splitlines()
   nm_output_lines_len = len(nm_output_lines)
@@ -505,6 +508,11 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
       #                                   str(address_symbol[addr].name))
       progress.collisions += 1
     else:
+      if symbol.disambiguated:
+        progress.disambiguations += 1
+      if symbol.was_ambiguous:
+        progress.was_ambiguous += 1
+
       address_symbol[addr] = symbol
 
     progress_output()
@@ -525,12 +533,25 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
           speed = 0
         progress_percent = (100.0 * (progress.count + progress.skip_count) /
                             nm_output_lines_len)
-        print('%.1f%%: Looked up %d symbols (%d collisions) - %.1f lookups/s.' %
-              (progress_percent, progress.count, progress.collisions, speed))
+        disambiguation_percent = 0
+        if progress.disambiguations != 0:
+          disambiguation_percent = (100.0 * progress.disambiguations /
+                                    progress.was_ambiguous)
 
+        sys.stdout.write('\r%.1f%%: Looked up %d symbols (%d collisions, '
+              '%d disambiguations where %.1f%% succeeded)'
+              '- %.1f lookups/s.' %
+              (progress_percent, progress.count, progress.collisions,
+               progress.disambiguations, disambiguation_percent, speed))
+
+  # In case disambiguation was disabled, we remove the source path (which upon
+  # being set signals the symbolizer to enable disambiguation)
+  if not disambiguate:
+    src_path = None
   symbolizer = elf_symbolizer.ELFSymbolizer(library, addr2line_binary,
                                             map_address_symbol,
-                                            max_concurrent_jobs=jobs)
+                                            max_concurrent_jobs=jobs,
+                                            source_root_path=src_path)
   user_interrupted = False
   try:
     for line in nm_output_lines:
@@ -562,6 +583,8 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
     # Don't want to abort here since we will be finished in a few seconds.
     user_interrupted = True
     print('Patience you must have my young padawan.')
+
+  print ''
 
   if user_interrupted:
     print('Skipping the rest of the file mapping. '
@@ -613,14 +636,15 @@ def RunNm(binary, nm_binary):
 
 
 def GetNmSymbols(nm_infile, outfile, library, jobs, verbose,
-                 addr2line_binary, nm_binary):
+                 addr2line_binary, nm_binary, disambiguate, src_path):
   if nm_infile is None:
     if outfile is None:
       outfile = tempfile.NamedTemporaryFile(delete=False).name
 
     if verbose:
       print 'Running parallel addr2line, dumping symbols to ' + outfile
-    RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs)
+    RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs,
+                     disambiguate, src_path)
 
     nm_infile = outfile
 
@@ -730,6 +754,15 @@ def main():
                     'This argument is only valid when using --library.')
   parser.add_option('--legacy', action='store_true',
                     help='emit legacy binary size report instead of modern')
+  parser.add_option('--disable-disambiguation', action='store_true',
+                    help='disables the disambiguation process altogether,'
+                    ' NOTE: this may, depending on your toolchain, produce'
+                    ' output with some symbols at the top layer if addr2line'
+                    ' could not get the entire source path.')
+  parser.add_option('--source-path', default='./',
+                    help='the path to the source code of the output binary, '
+                    'default set to current directory. Used in the'
+                    ' disambiguation process.')
   opts, _args = parser.parse_args()
 
   if ((not opts.library) and (not opts.nm_in)) or (opts.library and opts.nm_in):
@@ -770,7 +803,9 @@ def main():
 
   symbols = GetNmSymbols(opts.nm_in, opts.nm_out, opts.library,
                          opts.jobs, opts.verbose is True,
-                         addr2line_binary, nm_binary)
+                         addr2line_binary, nm_binary,
+                         opts.disable_disambiguation is None,
+                         opts.source_path)
   if not os.path.exists(opts.destdir):
     os.makedirs(opts.destdir, 0755)
 

@@ -75,7 +75,8 @@ class ELFSymbolizer(object):
   """
 
   def __init__(self, elf_file_path, addr2line_path, callback, inlines=False,
-      max_concurrent_jobs=None, addr2line_timeout=30, max_queue_size=50):
+      max_concurrent_jobs=None, addr2line_timeout=30, max_queue_size=50,
+      source_root_path=None, strip_base_path=None):
     """Args:
       elf_file_path: path of the elf file to be symbolized.
       addr2line_path: path of the toolchain's addr2line binary.
@@ -91,6 +92,18 @@ class ELFSymbolizer(object):
       max_queue_size: Max number of outstanding requests per addr2line instance.
       addr2line_timeout: Max time (in seconds) to wait for a addr2line response.
           After the timeout, the instance will be considered hung and respawned.
+      source_root_path: In some toolchains only the name of the source file is
+          is output, without any path information; disambiguation searches
+          through the source directory specified by |source_root_path| argument
+          for files whose name matches, adding the full path information to the
+          output. For example, if the toolchain outputs "unicode.cc" and there
+          is a file called "unicode.cc" located under |source_root_path|/foo,
+          the tool will replace "unicode.cc" with
+          "|source_root_path|/foo/unicode.cc". If there are multiple files with
+          the same name, disambiguation will fail because the tool cannot
+          determine which of the files was the source of the symbol.
+      strip_base_path: Rebases the symbols source paths onto |source_root_path|
+          (i.e replace |strip_base_path| with |source_root_path).
     """
     assert(os.path.isfile(addr2line_path)), 'Cannot find ' + addr2line_path
     self.elf_file_path = elf_file_path
@@ -103,6 +116,14 @@ class ELFSymbolizer(object):
     self.addr2line_timeout = addr2line_timeout
     self.requests_counter = 0  # For generating monotonic request IDs.
     self._a2l_instances = []  # Up to |max_concurrent_jobs| _Addr2Line inst.
+
+    # If necessary, create disambiguation lookup table
+    self.disambiguate = source_root_path is not None
+    self.disambiguation_table = {}
+    self.strip_base_path = strip_base_path
+    if(self.disambiguate):
+      self.source_root_path = os.path.abspath(source_root_path)
+      self._CreateDisambiguationTable()
 
     # Create one addr2line instance. More instances will be created on demand
     # (up to |max_concurrent_jobs|) depending on the rate of the requests.
@@ -160,6 +181,15 @@ class ELFSymbolizer(object):
     a2l = ELFSymbolizer.Addr2Line(self)
     self._a2l_instances.append(a2l)
     return a2l
+
+  def _CreateDisambiguationTable(self):
+    """ Non-unique file names will result in None entries"""
+    self.disambiguation_table = {}
+
+    for root, _, filenames in os.walk(self.source_root_path):
+      for f in filenames:
+        self.disambiguation_table[f] = os.path.join(root, f) if (f not in
+                                       self.disambiguation_table) else None
 
 
   class Addr2Line(object):
@@ -312,7 +342,28 @@ class ELFSymbolizer(object):
         else:
           logging.warning('Got invalid symbol path from addr2line: %s' % line2)
 
-        sym_info = ELFSymbolInfo(name, source_path, source_line)
+        # In case disambiguation is on, and needed
+        was_ambiguous = False
+        disambiguated = False
+        if self._symbolizer.disambiguate:
+          if source_path and not posixpath.isabs(source_path):
+            path = self._symbolizer.disambiguation_table.get(source_path)
+            was_ambiguous = True
+            disambiguated = path is not None
+            source_path = path if disambiguated else source_path
+
+          # Use absolute paths (so that paths are consistent, as disambiguation
+          # uses absolute paths)
+          if source_path and not was_ambiguous:
+            source_path = os.path.abspath(source_path)
+
+        if source_path and self._symbolizer.strip_base_path:
+          # Strip the base path
+          source_path = re.sub('^' + self._symbolizer.strip_base_path,
+              self._symbolizer.source_root_path or '', source_path)
+
+        sym_info = ELFSymbolInfo(name, source_path, source_line, was_ambiguous,
+                                 disambiguated)
         if prev_sym_info:
           prev_sym_info.inlined_by = sym_info
         if not innermost_sym_info:
@@ -393,7 +444,8 @@ class ELFSymbolizer(object):
 class ELFSymbolInfo(object):
   """The result of the symbolization passed as first arg. of each callback."""
 
-  def __init__(self, name, source_path, source_line):
+  def __init__(self, name, source_path, source_line, was_ambiguous=False,
+               disambiguated=False):
     """All the fields here can be None (if addr2line replies with '??')."""
     self.name = name
     self.source_path = source_path
@@ -401,6 +453,8 @@ class ELFSymbolInfo(object):
     # In the case of |inlines|=True, the |inlined_by| points to the outer
     # function inlining the current one (and so on, to form a chain).
     self.inlined_by = None
+    self.disambiguated = disambiguated
+    self.was_ambiguous = was_ambiguous
 
   def __str__(self):
     return '%s [%s:%d]' % (
