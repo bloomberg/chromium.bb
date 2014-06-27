@@ -140,14 +140,17 @@ def CheckForMissingDevices(options, adb_online_devs):
   missing_devs = list(set(last_devices) - set(adb_online_devs))
   new_missing_devs = list(set(missing_devs) - set(last_missing_devices))
 
-  if new_missing_devs:
+  if new_missing_devs and os.environ.get('BUILDBOT_SLAVENAME'):
     logging.info('new_missing_devs %s' % new_missing_devs)
     devices_missing_msg = '%d devices not detected.' % len(missing_devs)
     bb_annotations.PrintSummaryText(devices_missing_msg)
 
     from_address = 'chrome-bot@chromium.org'
     to_addresses = ['zty@chromium.org']
-    subject = 'Devices offline on %s' % os.environ.get('BUILDBOT_SLAVENAME')
+    subject = 'Devices offline on %s, %s, %s' % (
+      os.environ.get('BUILDBOT_SLAVENAME'),
+      os.environ.get('BUILDBOT_BUILDERNAME'),
+      os.environ.get('BUILDBOT_BUILDNUMBER'))
     msg = ('Please reboot the following devices:\n%s' %
            '\n'.join(map(str,new_missing_devs)))
     SendEmail(from_address, to_addresses, subject, msg)
