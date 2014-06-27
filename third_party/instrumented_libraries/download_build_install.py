@@ -271,33 +271,44 @@ def download_build_install(parsed_arguments):
   package_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
                                  parsed_arguments.package)
 
-  # A failed build might have left a dirty source tree behind.
+  # Clobber by default, unless the developer wants to hack on the package's
+  # source code.
+  clobber = (environment.get('INSTRUMENTED_LIBRARIES_NO_CLOBBER', '') != '1')
+
+  download_source = True
   if os.path.exists(package_directory):
-    shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
-  os.makedirs(package_directory)
+    if clobber:
+      shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
+    else:
+      download_source = False
+  if download_source:
+    os.makedirs(package_directory)
 
   with ScopedChangeDirectory(package_directory) as cd_package:
-    shell_call('apt-get source %s' % parsed_arguments.package,
-               parsed_arguments.verbose)
+    if download_source:
+      shell_call('apt-get source %s' % parsed_arguments.package,
+                 parsed_arguments.verbose)
     # There should be exactly one subdirectory after downloading a package.
     subdirectories = [d for d in os.listdir('.') if os.path.isdir(d)]
     if len(subdirectories) != 1:
-      raise (Exception('There was not one directory after downloading '
-                       'a package %s' % parsed_arguments.package))
+      raise Exception('apt-get source %s must create exactly one subdirectory.'
+         % parsed_arguments.package)
     with ScopedChangeDirectory(subdirectories[0]):
       # Here we are in the package directory.
-      if parsed_arguments.patch:
-        shell_call(
-            'patch -p1 -i %s/%s' %
-            (os.path.relpath(cd_package.old_path),
-             parsed_arguments.patch),
-            parsed_arguments.verbose)
-      if parsed_arguments.run_before_build:
-        shell_call(
-            '%s/%s' %
-            (os.path.relpath(cd_package.old_path),
-             parsed_arguments.run_before_build),
-            parsed_arguments.verbose)
+      if download_source:
+        # Patch/run_before_build steps are only done once.
+        if parsed_arguments.patch:
+          shell_call(
+              'patch -p1 -i %s/%s' %
+              (os.path.relpath(cd_package.old_path),
+               parsed_arguments.patch),
+              parsed_arguments.verbose)
+        if parsed_arguments.run_before_build:
+          shell_call(
+              '%s/%s' %
+              (os.path.relpath(cd_package.old_path),
+               parsed_arguments.run_before_build),
+              parsed_arguments.verbose)
       try:
         build_and_install(parsed_arguments, environment, install_prefix)
       except Exception as exception:
@@ -313,7 +324,8 @@ def download_build_install(parsed_arguments):
   # Remove downloaded package and generated temporary build files.
   # Failed builds intentionally skip this step, in order to aid in tracking down
   # build failures.
-  shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
+  if clobber:
+    shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
 
 def main():
   argument_parser = argparse.ArgumentParser(
