@@ -8,6 +8,9 @@
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "skia/ext/directwrite_keepalive_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -17,7 +20,9 @@ namespace content {
 
 namespace {
 
+struct Unused {};
 SkFontMgr* g_warmup_fontmgr = NULL;
+base::RepeatingTimer<Unused>* g_keepalive_timer = NULL;
 
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
 // before sandbox lock down to allow Skia access to the Font Manager service.
@@ -63,6 +68,11 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
     CreateDirectWriteFactory(&factory);
     blink::WebFontRendering::setDirectWriteFactory(factory);
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
+    g_keepalive_timer = new base::RepeatingTimer<Unused>;
+    g_keepalive_timer->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMinutes(10),
+        base::Bind(SkiaDirectWriteKeepalive, g_warmup_fontmgr));
   }
   return g_warmup_fontmgr;
 }
