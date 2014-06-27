@@ -281,9 +281,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   }
   PrintToStderr("\n");
 
-#if !defined(__UCLIBC__)
   debug::StackTrace().Print();
-#endif
 
 #if defined(OS_LINUX)
 #if ARCH_CPU_X86_FAMILY
@@ -751,15 +749,17 @@ StackTrace::StackTrace() {
 #endif
 }
 
-#if !defined(__UCLIBC__)
 void StackTrace::Print() const {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 
+#if !defined(__UCLIBC__)
   PrintBacktraceOutputHandler handler;
   ProcessBacktrace(trace_, count_, &handler);
+#endif
 }
 
+#if !defined(__UCLIBC__)
 void StackTrace::OutputToStream(std::ostream* os) const {
   StreamBacktraceOutputHandler handler(os);
   ProcessBacktrace(trace_, count_, &handler);

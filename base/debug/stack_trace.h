@@ -64,10 +64,10 @@ class BASE_EXPORT StackTrace {
   // number of elements in the returned array.
   const void* const* Addresses(size_t* count) const;
 
-#if !defined(__UCLIBC__)
   // Prints the stack trace to stderr.
   void Print() const;
 
+#if !defined(__UCLIBC__)
   // Resolves backtrace to symbols and write to stream.
   void OutputToStream(std::ostream* os) const;
 #endif
