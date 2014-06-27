@@ -342,7 +342,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   void SignOut() {
-    signin_manager_->SignOut();
+    signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
     waiter_.PumpIOLoop();
   }
 

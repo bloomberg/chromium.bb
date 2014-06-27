@@ -87,7 +87,7 @@ class SigninManagerFake : public FakeSigninManager {
   void ForceSignOut() {
     // Allow signing out now.
     prohibit_signout_ = false;
-    SignOut();
+    SignOut(signin_metrics::SIGNOUT_TEST);
   }
 
   static KeyedService* Build(content::BrowserContext* profile) {
@@ -569,7 +569,8 @@ TEST_F(UserPolicySigninServiceSignedInTest, SignOutAfterInit) {
   EXPECT_CALL(*mock_store_, Clear());
 
   // Now sign out.
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
+  SigninManagerFactory::GetForProfile(profile_.get())->SignOut(
+      signin_metrics::SIGNOUT_TEST);
 
   // UserCloudPolicyManager should be shut down.
   ASSERT_FALSE(manager_->core()->service());

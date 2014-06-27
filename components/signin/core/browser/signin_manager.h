@@ -34,6 +34,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "net/cookies/canonical_cookie.h"
@@ -87,7 +88,7 @@ class SigninManager : public SigninManagerBase {
 
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
-  virtual void SignOut();
+  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric);
 
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during

@@ -95,7 +95,8 @@ void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
 }
 
-void FakeSigninManager::SignOut() {
+void FakeSigninManager::SignOut(
+    signin_metrics::ProfileSignout signout_source_metric) {
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());

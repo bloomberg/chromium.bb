@@ -17,6 +17,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -171,9 +172,11 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
 }
 
-void SigninManager::SignOut() {
+void SigninManager::SignOut(
+    signin_metrics::ProfileSignout signout_source_metric) {
   DCHECK(IsInitialized());
 
+  signin_metrics::LogSignout(signout_source_metric);
   if (GetAuthenticatedUsername().empty()) {
     if (AuthInProgress()) {
       // If the user is in the process of signing in, then treat a call to
@@ -235,7 +238,7 @@ void SigninManager::Initialize(PrefService* local_state) {
   if ((!user.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
     // User is signed in, but the username is invalid - the administrator must
     // have changed the policy since the last signin, so sign out the user.
-    SignOut();
+    SignOut(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN);
   }
 
   InitTokenService();
@@ -257,7 +260,7 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
       !IsAllowedUsername(GetAuthenticatedUsername())) {
     // Signed in user is invalid according to the current policy so sign
     // the user out.
-    SignOut();
+    SignOut(signin_metrics::GOOGLE_SERVICE_NAME_PATTERN_CHANGED);
   }
 }
 
@@ -267,7 +270,7 @@ bool SigninManager::IsSigninAllowed() const {
 
 void SigninManager::OnSigninAllowedPrefChanged() {
   if (!IsSigninAllowed())
-    SignOut();
+    SignOut(signin_metrics::SIGNOUT_PREF_CHANGED);
 }
 
 // static

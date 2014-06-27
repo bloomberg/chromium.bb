@@ -230,7 +230,7 @@ TEST_F(SigninManagerTest, SignOut) {
       "user@gmail.com",
       "password",
       SigninManager::OAuthTokenFetchedCallback());
-  manager_->SignOut();
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
   // Should not be persisted anymore
   ShutDownManager();
@@ -245,10 +245,10 @@ TEST_F(SigninManagerTest, SignOutWhileProhibited) {
 
   manager_->SetAuthenticatedUsername("user@gmail.com");
   manager_->ProhibitSignout(true);
-  manager_->SignOut();
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
   manager_->ProhibitSignout(false);
-  manager_->SignOut();
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }
 

@@ -224,7 +224,7 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
 
-  signin_manager()->SignOut();
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 }
 

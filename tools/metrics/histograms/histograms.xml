@@ -26946,6 +26946,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.SignoutProfile" enum="SigninSignoutProfile">
+  <owner>mlerman@chromium.org</owner>
+  <summary>Track how a profile gets signed out.</summary>
+</histogram>
+
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -45347,6 +45352,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The sync was started through auto-accept with advanced settings.
   </int>
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
+</enum>
+
+<enum name="SigninSignoutProfile" type="int">
+  <int value="0" label="Preference changed">
+    The preference or policy controlling if signin is valid has changed.
+  </int>
+  <int value="1" label="Google service pattern changed">
+    The valid username pattern for signing in to the Google service changed.
+  </int>
+  <int value="2" label="Signin preference changed during signin">
+    The preference or policy controlling if signin is valid changed during the
+    signin process.
+  </int>
+  <int value="3" label="User clicked signout">User clicked to signout.</int>
+  <int value="4" label="Signin aborted">
+    The signin process was aborted, but signin had succeeded, so signout. This
+    may be due to a server response, policy definition or user action.
+  </int>
+  <int value="5" label="Server forced">
+    The sync server caused the profile to be signed out.
+  </int>
+  <int value="6" label="Credentials transfered">
+    The credentials are being transfered to a new profile, so the old one is
+    signed out.
+  </int>
 </enum>
 
 <enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">

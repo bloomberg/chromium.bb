@@ -91,7 +91,7 @@ TEST_F(SigninNamesOnIOThreadTest, Signin) {
 TEST_F(SigninNamesOnIOThreadTest, Signout) {
   const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
   SimulateSignin(email);
-  signin_manager_->SignOut();
+  signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
 
   const SigninNamesOnIOThread::EmailSet& emails = signin_names_.GetEmails();
   ASSERT_EQ(0u, emails.size());

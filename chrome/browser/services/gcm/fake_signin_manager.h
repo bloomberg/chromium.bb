@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -36,9 +37,10 @@ class FakeSigninManager : public SigninManager {
 
   void SignIn(const std::string& username);
 #if defined(OS_CHROMEOS)
-  void SignOut();
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric);
 #else
-  virtual void SignOut() OVERRIDE;
+  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
+      OVERRIDE;
 #endif
 
   static KeyedService* Build(content::BrowserContext* context);

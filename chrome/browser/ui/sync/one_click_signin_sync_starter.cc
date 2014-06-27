@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "grit/chromium_strings.h"
@@ -279,7 +280,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       // the signin for the original profile was cancelled (must do this after
       // we have called Initialize() with the new profile, as otherwise this
       // object will get freed when the signin on the old profile is cancelled.
-      old_signin_manager->SignOut();
+      old_signin_manager->SignOut(signin_metrics::TRANSFER_CREDENTIALS);
 
       // Load policy for the just-created profile - once policy has finished
       // loading the signin process will complete.
@@ -306,7 +307,8 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
 #endif
 
 void OneClickSigninSyncStarter::CancelSigninAndDelete() {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut();
+  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+      signin_metrics::ABORT_SIGNIN);
   // The statement above results in a call to SigninFailed() which will free
   // this object, so do not refer to the OneClickSigninSyncStarter object
   // after this point.

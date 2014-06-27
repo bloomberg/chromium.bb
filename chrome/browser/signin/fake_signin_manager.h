@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 namespace content {
 class BrowserContext;
@@ -59,7 +60,8 @@ class FakeSigninManager : public SigninManager {
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback) OVERRIDE;
 
-  virtual void SignOut() OVERRIDE;
+  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
+      OVERRIDE;
 
   virtual void CompletePendingSignin() OVERRIDE;
 

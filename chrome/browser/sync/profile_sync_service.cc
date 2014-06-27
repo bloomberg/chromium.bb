@@ -69,6 +69,7 @@
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/pref_names.h"
@@ -1414,8 +1415,10 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 #if !defined(OS_CHROMEOS)
       // On desktop Chrome, sign out the user after a dashboard clear.
       // Skip sign out on ChromeOS/Android.
-      if (!startup_controller_.auto_start_enabled())
-        SigninManagerFactory::GetForProfile(profile_)->SignOut();
+      if (!startup_controller_.auto_start_enabled()) {
+        SigninManagerFactory::GetForProfile(profile_)->SignOut(
+            signin_metrics::SERVER_FORCED_DISABLE);
+      }
 #endif
       break;
     case syncer::ROLLBACK_DONE:

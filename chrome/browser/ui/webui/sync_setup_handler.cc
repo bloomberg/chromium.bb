@@ -42,6 +42,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/render_view_host.h"
@@ -805,7 +806,8 @@ void SyncSetupHandler::HandleStartSignin(const base::ListValue* args) {
 void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-  SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
+  SigninManagerFactory::GetForProfile(GetProfile())->SignOut(
+      signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS);
 
   bool delete_profile = false;
   if (args->GetBoolean(0, &delete_profile) && delete_profile) {
@@ -849,8 +851,10 @@ void SyncSetupHandler::CloseSyncSetup() {
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.
           // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
-          if (sync_service->FirstSetupInProgress())
-            SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
+          if (sync_service->FirstSetupInProgress()) {
+            SigninManagerFactory::GetForProfile(GetProfile())->SignOut(
+                signin_metrics::ABORT_SIGNIN);
+          }
   #endif
         }
       }

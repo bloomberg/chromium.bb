@@ -330,7 +330,7 @@ class IdentityAccountTrackerTest : public testing::Test {
   void NotifyRemoveAccount(const std::string& username) {
 #if !defined(OS_CHROMEOS)
     if (username == kPrimaryAccountKey)
-      fake_signin_manager_->SignOut();
+      fake_signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
     else
       account_tracker()->GoogleSignedOut(username);
 #else

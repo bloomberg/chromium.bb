@@ -23,6 +23,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "jni/SigninManager_jni.h"
 
@@ -133,7 +134,8 @@ void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env, jobject obj) {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut();
+  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+      signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS);
 }
 
 base::android::ScopedJavaLocalRef<jstring>

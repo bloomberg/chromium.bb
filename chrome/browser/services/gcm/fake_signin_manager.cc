@@ -41,7 +41,8 @@ void FakeSigninManager::SignIn(const std::string& username) {
                     GoogleSigninSucceeded(username, std::string()));
 }
 
-void FakeSigninManager::SignOut() {
+void FakeSigninManager::SignOut(
+    signin_metrics::ProfileSignout signout_source_metric) {
   const std::string username = GetAuthenticatedUsername();
   clear_authenticated_username();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);

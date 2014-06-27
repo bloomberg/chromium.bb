@@ -20,6 +20,32 @@ enum DifferentPrimaryAccounts {
   NUM_DIFFERENT_PRIMARY_ACCOUNT_METRICS,
 };
 
+// Track all the ways a profile can become signed out as a histogram.
+enum ProfileSignout {
+  // The value used within unit tests
+  SIGNOUT_TEST = 0,
+  // The preference or policy controlling if signin is valid has changed.
+  SIGNOUT_PREF_CHANGED = 0,
+  // The valid pattern for signing in to the Google service changed.
+  GOOGLE_SERVICE_NAME_PATTERN_CHANGED,
+  // The preference or policy controlling if signin is valid changed during
+  // the signin process.
+  SIGNIN_PREF_CHANGED_DURING_SIGNIN,
+  // User clicked to signout from the settings page.
+  USER_CLICKED_SIGNOUT_SETTINGS,
+  // The signin process was aborted, but signin had succeeded, so signout. This
+  // may be due to a server response, policy definition or user action.
+  ABORT_SIGNIN,
+  // The sync server caused the profile to be signed out.
+  SERVER_FORCED_DISABLE,
+  // The credentials are being transfered to a new profile, so the old one is
+  // signed out.
+  TRANSFER_CREDENTIALS,
+
+  // Keep this as the last enum.
+  NUM_PROFILE_SIGNOUT_METRICS,
+};
+
 // Log to UMA histograms and UserCounts stats about a single execution of the
 // AccountReconciler.
 // |total_number_accounts| - How many accounts are in the browser for this
@@ -43,6 +69,9 @@ void LogSigninAccountReconciliation(int total_number_accounts,
 
 // Track a successful signin.
 void LogSigninAddAccount();
+
+// Track a profile signout.
+void LogSignout(ProfileSignout metric);
 
 }  // namespace signin_metrics
 

@@ -59,4 +59,9 @@ void LogSigninAddAccount() {
   UMA_HISTOGRAM_BOOLEAN("Signin.AddAccount", true);
 }
 
+void LogSignout(ProfileSignout metric) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.SignoutProfile", metric,
+                            NUM_PROFILE_SIGNOUT_METRICS);
+}
+
 }  // namespace signin_metrics
