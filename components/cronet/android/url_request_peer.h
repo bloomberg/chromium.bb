@@ -5,16 +5,25 @@
 #ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
 #define COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
 
-#include "base/compiler_specific.h"
+#include <jni.h>
+
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/cronet/android/url_request_context_peer.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
-#include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
+namespace net {
+class GrowableIOBuffer;
+class UploadDataStream;
+}  // namespace net
+
 namespace cronet {
+
+class URLRequestContextPeer;
 
 // An adapter from the JNI |UrlRequest| object and the Chromium |URLRequest|
 // object.
@@ -24,7 +33,6 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   class URLRequestPeerDelegate
       : public base::RefCountedThreadSafe<URLRequestPeerDelegate> {
    public:
-    virtual void OnAppendChunkCompleted(URLRequestPeer* request) = 0;
     virtual void OnResponseStarted(URLRequestPeer* request) = 0;
     virtual void OnBytesRead(URLRequestPeer* request) = 0;
     virtual void OnRequestFinished(URLRequestPeer* request) = 0;
@@ -46,16 +54,11 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   // Adds a header to the request
   void AddHeader(const std::string& name, const std::string& value);
 
-  // Sets the contents of the POST request
-  void SetPostContent(const char* bytes, int bytes_len);
+  // Sets the contents of the POST or PUT request
+  void SetUploadContent(const char* bytes, int bytes_len);
 
-  // Indicates that the request body will be streamed by calling AppendChunk()
-  // repeatedly. This must be called before Start().
-  void EnableStreamingUpload();
-
-  // Appends a chunk to the POST body
-  // This must be called after EnableChunkedUpload() and Start().
-  void AppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
+  // Sets the request to streaming upload.
+  void SetUploadChannel(JNIEnv* env, jobject content, int64 content_length);
 
   // Starts the request.
   void Start();
@@ -99,6 +102,19 @@ class URLRequestPeer : public net::URLRequest::Delegate {
                                int bytes_read) OVERRIDE;
 
  private:
+  static void OnDestroyRequest(URLRequestPeer* self);
+
+  void OnInitiateConnection();
+  void OnCancelRequest();
+  void OnRequestSucceeded();
+  void OnRequestFailed();
+  void OnRequestCompleted();
+  void OnRequestCanceled();
+  void OnBytesRead(int bytes_read);
+  void OnAppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
+
+  void Read();
+
   URLRequestContextPeer* context_;
   scoped_refptr<URLRequestPeerDelegate> delegate_;
   GURL url_;
@@ -115,20 +131,6 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   std::string content_type_;
   bool canceled_;
   int64 expected_size_;
-  bool streaming_upload_;
-
-  static void OnDestroyRequest(URLRequestPeer* self);
-
-  void OnInitiateConnection();
-  void OnCancelRequest();
-  void OnRequestSucceeded();
-  void OnRequestFailed();
-  void OnRequestCompleted();
-  void OnRequestCanceled();
-  void OnBytesRead(int bytes_read);
-  void OnAppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
-
-  void Read();
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPeer);
 };

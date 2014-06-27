@@ -160,7 +160,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
     @Override
     public void setUploadChannel(String contentType,
-            ReadableByteChannel channel) {
+            ReadableByteChannel channel, long contentLength) {
         validateNotStarted();
         mPostContentType = contentType;
         mPostDataChannel = channel;

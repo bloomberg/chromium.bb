@@ -65,8 +65,10 @@ public interface HttpUrlRequest {
      *            POST.
      * @param channel The channel to read to read upload data from if this is a
      *            POST request.
+     * @param contentLength The length of data to upload.
      */
-    void setUploadChannel(String contentType, ReadableByteChannel channel);
+    void setUploadChannel(String contentType, ReadableByteChannel channel,
+                          long contentLength);
 
     /**
      * Start executing the request.

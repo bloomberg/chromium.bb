@@ -14,7 +14,7 @@ import java.util.Map;
  * Network request factory using the native http stack implementation.
  */
 @UsedByReflection("HttpUrlRequestFactory.java")
-class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
+public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     private UrlRequestContext mRequestContext;
 
     @UsedByReflection("HttpUrlRequestFactory.java")

@@ -212,7 +212,8 @@ public class CronetSampleActivity extends Activity {
             InputStream dataStream = new ByteArrayInputStream(
                     postData.getBytes());
             ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
-            request.setUploadChannel("text/plain", dataChannel);
+            request.setUploadChannel("text/plain", dataChannel,
+                    postData.length());
         }
     }
 

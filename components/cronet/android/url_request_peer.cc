@@ -5,7 +5,10 @@
 #include "url_request_peer.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "components/cronet/android/url_request_context_peer.h"
+#include "components/cronet/android/wrapped_channel_upload_element_reader.h"
 #include "net/base/load_flags.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_status_code.h"
 
 namespace cronet {
@@ -24,8 +27,7 @@ URLRequestPeer::URLRequestPeer(URLRequestContextPeer* context,
       error_code_(0),
       http_status_code_(0),
       canceled_(false),
-      expected_size_(0),
-      streaming_upload_(false) {
+      expected_size_(0)  {
   context_ = context;
   delegate_ = delegate;
   url_ = url;
@@ -41,31 +43,21 @@ void URLRequestPeer::AddHeader(const std::string& name,
   headers_.SetHeader(name, value);
 }
 
-void URLRequestPeer::SetPostContent(const char* bytes, int bytes_len) {
-  if (!upload_data_stream_) {
-    upload_data_stream_.reset(
-        new net::UploadDataStream(net::UploadDataStream::CHUNKED, 0));
-  }
-  upload_data_stream_->AppendChunk(bytes, bytes_len, true /* is_last_chunk */);
+void URLRequestPeer::SetUploadContent(const char* bytes, int bytes_len) {
+  std::vector<char> data(bytes, bytes + bytes_len);
+  scoped_ptr<net::UploadElementReader> reader(
+      new net::UploadOwnedBytesElementReader(&data));
+  upload_data_stream_.reset(net::UploadDataStream::CreateWithReader(
+      reader.Pass(), 0));
 }
 
-void URLRequestPeer::EnableStreamingUpload() { streaming_upload_ = true; }
-
-void URLRequestPeer::AppendChunk(const char* bytes,
-                                 int bytes_len,
-                                 bool is_last_chunk) {
-  VLOG(context_->logging_level()) << "AppendChunk, len: " << bytes_len
-                                  << ", last: " << is_last_chunk;
-
-  context_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestPeer::OnAppendChunk,
-                 base::Unretained(this),
-                 bytes,
-                 bytes_len,
-                 is_last_chunk));
+void URLRequestPeer::SetUploadChannel(
+    JNIEnv* env, jobject channel, int64 content_length) {
+  scoped_ptr<net::UploadElementReader> reader(
+      new WrappedChannelElementReader(env, channel, content_length));
+  upload_data_stream_.reset(net::UploadDataStream::CreateWithReader(
+      reader.Pass(), 0));
 }
-
 
 std::string URLRequestPeer::GetHeader(const std::string &name) const {
   std::string value;
@@ -80,15 +72,6 @@ void URLRequestPeer::Start() {
       FROM_HERE,
       base::Bind(&URLRequestPeer::OnInitiateConnection,
                  base::Unretained(this)));
-}
-
-void URLRequestPeer::OnAppendChunk(const char* bytes,
-                                   int bytes_len,
-                                   bool is_last_chunk) {
-  if (url_request_ != NULL) {
-    url_request_->AppendChunkToUpload(bytes, bytes_len, is_last_chunk);
-    delegate_->OnAppendChunkCompleted(this);
-  }
 }
 
 void URLRequestPeer::OnInitiateConnection() {
@@ -113,11 +96,8 @@ void URLRequestPeer::OnInitiateConnection() {
       net::HttpRequestHeaders::kUserAgent, user_agent, true /* override */);
   }
 
-  if (upload_data_stream_) {
-    url_request_->set_upload(make_scoped_ptr(upload_data_stream_.release()));
-  } else if (streaming_upload_) {
-    url_request_->EnableChunkedUpload();
-  }
+  if (upload_data_stream_)
+    url_request_->set_upload(upload_data_stream_.Pass());
 
   url_request_->SetPriority(priority_);
 

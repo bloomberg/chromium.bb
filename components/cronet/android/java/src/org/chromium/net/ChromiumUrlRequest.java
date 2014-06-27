@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Network request using the native http stack implementation.
  */
-class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
+public class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
 
     private final HttpUrlRequestListener mListener;
 

@@ -18,7 +18,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Semaphore;
 
 /**
  * Network request using the native http stack implementation.
@@ -28,15 +27,15 @@ public class UrlRequest {
     private static final class ContextLock {
     }
 
-    private static final int UPLOAD_BYTE_BUFFER_SIZE = 32768;
-
     private final UrlRequestContext mRequestContext;
     private final String mUrl;
     private final int mPriority;
     private final Map<String, String> mHeaders;
     private final WritableByteChannel mSink;
     private Map<String, String> mAdditionalHeaders;
-    private boolean mPostBodySet;
+    private String mPostBodyContentType;
+    private String mMethod;
+    private byte[] mPostBody;
     private ReadableByteChannel mPostBodyChannel;
     private WritableByteChannel mOutputChannel;
     private IOException mSinkException;
@@ -47,7 +46,7 @@ public class UrlRequest {
     private boolean mHeadersAvailable;
     private String mContentType;
     private long mContentLength;
-    private Semaphore mAppendChunkSemaphore;
+    private long mUploadContentLength;
     private final ContextLock mLock;
 
     /**
@@ -82,7 +81,6 @@ public class UrlRequest {
         mLock = new ContextLock();
         mUrlRequestPeer = nativeCreateRequestPeer(
                 mRequestContext.getUrlRequestContextPeer(), mUrl, mPriority);
-        mPostBodySet = false;
     }
 
     /**
@@ -107,9 +105,9 @@ public class UrlRequest {
     public void setUploadData(String contentType, byte[] data) {
         synchronized (mLock) {
             validateNotStarted();
-            validatePostBodyNotSet();
-            nativeSetPostData(mUrlRequestPeer, contentType, data);
-            mPostBodySet = true;
+            mPostBodyContentType = contentType;
+            mPostBody = data;
+            mPostBodyChannel = null;
         }
     }
 
@@ -120,17 +118,25 @@ public class UrlRequest {
      *            POST request.
      * @param channel The channel to read to read upload data from if this is a
      *            POST request.
+     * @param contentLength The length of data to upload.
      */
     public void setUploadChannel(String contentType,
-            ReadableByteChannel channel) {
+            ReadableByteChannel channel, long contentLength) {
         synchronized (mLock) {
             validateNotStarted();
-            validatePostBodyNotSet();
-            nativeBeginChunkedUpload(mUrlRequestPeer, contentType);
+            mPostBodyContentType = contentType;
             mPostBodyChannel = channel;
-            mPostBodySet = true;
+            mUploadContentLength = contentLength;
+            mPostBody = null;
         }
-        mAppendChunkSemaphore = new Semaphore(0);
+    }
+
+    public void setHttpMethod(String method) {
+        validateNotStarted();
+        if (!("PUT".equals(method) || "POST".equals(method))) {
+            throw new IllegalArgumentException("Only PUT and POST are allowed.");
+        }
+        mMethod = method;
     }
 
     public WritableByteChannel getSink() {
@@ -138,97 +144,54 @@ public class UrlRequest {
     }
 
     public void start() {
-        try {
-            synchronized (mLock) {
-                if (mCanceled) {
-                    return;
-                }
-
-                validateNotStarted();
-                validateNotRecycled();
-
-                mStarted = true;
-
-                if (mHeaders != null && !mHeaders.isEmpty()) {
-                    for (Entry<String, String> entry : mHeaders.entrySet()) {
-                        nativeAddHeader(mUrlRequestPeer, entry.getKey(),
-                                entry.getValue());
-                    }
-                }
-
-                if (mAdditionalHeaders != null && !mAdditionalHeaders.isEmpty()) {
-                    for (Entry<String, String> entry :
-                            mAdditionalHeaders.entrySet()) {
-                        nativeAddHeader(mUrlRequestPeer, entry.getKey(),
-                                entry.getValue());
-                    }
-                }
-
-                nativeStart(mUrlRequestPeer);
+        synchronized (mLock) {
+            if (mCanceled) {
+                return;
             }
 
-            if (mPostBodyChannel != null) {
-                uploadFromChannel(mPostBodyChannel);
+            validateNotStarted();
+            validateNotRecycled();
+
+            mStarted = true;
+
+            String method = mMethod;
+            if (method == null &&
+                    ((mPostBody != null && mPostBody.length > 0) ||
+                      mPostBodyChannel != null)) {
+                // Default to POST if there is data to upload but no method was
+                // specified.
+                method = "POST";
             }
-        } finally {
-            if (mPostBodyChannel != null) {
-                try {
-                    mPostBodyChannel.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
+
+            if (method != null) {
+                nativeSetMethod(mUrlRequestPeer, method);
             }
-        }
-    }
 
-    /**
-     * Uploads data from a {@code ReadableByteChannel} using chunked transfer
-     * encoding. The native call to append a chunk is asynchronous so a
-     * semaphore is used to delay writing into the buffer again until chromium
-     * is finished with it.
-     *
-     * @param channel the channel to read data from.
-     */
-    private void uploadFromChannel(ReadableByteChannel channel) {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(UPLOAD_BYTE_BUFFER_SIZE);
+            if (mHeaders != null && !mHeaders.isEmpty()) {
+                for (Entry<String, String> entry : mHeaders.entrySet()) {
+                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                                    entry.getValue());
+              }
+            }
 
-        // The chromium API requires us to specify in advance if a chunk is the
-        // last one. This extra ByteBuffer is needed to peek ahead and check for
-        // the end of the channel.
-        ByteBuffer checkForEnd = ByteBuffer.allocate(1);
+            if (mAdditionalHeaders != null) {
+                for (Entry<String, String> entry :
+                     mAdditionalHeaders.entrySet()) {
+                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                                    entry.getValue());
+              }
+            }
 
-        try {
-            boolean lastChunk;
-            do {
-                // First dump in the one byte we read to check for the end of
-                // the channel. (The first time through the loop the checkForEnd
-                // buffer will be empty).
-                checkForEnd.flip();
-                buffer.clear();
-                buffer.put(checkForEnd);
-                checkForEnd.clear();
+            if (mPostBody != null && mPostBody.length > 0) {
+                nativeSetUploadData(mUrlRequestPeer, mPostBodyContentType,
+                                    mPostBody);
+            } else if (mPostBodyChannel != null) {
+                nativeSetUploadChannel(mUrlRequestPeer, mPostBodyContentType,
+                                       mPostBodyChannel, mUploadContentLength);
+            }
 
-                channel.read(buffer);
-                lastChunk = channel.read(checkForEnd) <= 0;
-                buffer.flip();
-                nativeAppendChunk(mUrlRequestPeer, buffer, buffer.limit(),
-                        lastChunk);
-
-                if (lastChunk) {
-                    break;
-                }
-
-                // Acquire permit before writing to the buffer again to ensure
-                // chromium is done with it.
-                mAppendChunkSemaphore.acquire();
-            } while (!lastChunk && !mFinished);
-        } catch (IOException e) {
-            mSinkException = e;
-            cancel();
-        } catch (InterruptedException e) {
-            mSinkException = new IOException(e);
-            cancel();
-        }
+            nativeStart(mUrlRequestPeer);
+          }
     }
 
     public void cancel() {
@@ -314,14 +277,6 @@ public class UrlRequest {
     }
 
     /**
-     * A callback invoked when appending a chunk to the request has completed.
-     */
-    @CalledByNative
-    protected void onAppendChunkCompleted() {
-        mAppendChunkSemaphore.release();
-    }
-
-    /**
      * A callback invoked when the first chunk of the response has arrived.
      */
     @CalledByNative
@@ -364,9 +319,6 @@ public class UrlRequest {
     private void finish() {
         synchronized (mLock) {
             mFinished = true;
-            if (mAppendChunkSemaphore != null) {
-                mAppendChunkSemaphore.release();
-            }
 
             if (mRecycled) {
                 return;
@@ -395,13 +347,6 @@ public class UrlRequest {
         }
     }
 
-    private void validatePostBodyNotSet() {
-        if (mPostBodySet) {
-            throw new IllegalStateException("Post Body already set");
-        }
-    }
-
-
     private void validateHeadersAvailable() {
         if (!mHeadersAvailable) {
             throw new IllegalStateException("Response headers not available");
@@ -418,14 +363,14 @@ public class UrlRequest {
     private native void nativeAddHeader(long urlRequestPeer, String name,
             String value);
 
-    private native void nativeSetPostData(long urlRequestPeer,
+    private native void nativeSetMethod(long urlRequestPeer, String method);
+
+    private native void nativeSetUploadData(long urlRequestPeer,
             String contentType, byte[] content);
 
-    private native void nativeBeginChunkedUpload(long urlRequestPeer,
-            String contentType);
-
-    private native void nativeAppendChunk(long urlRequestPeer, ByteBuffer chunk,
-            int chunkSize, boolean isLastChunk);
+    private native void nativeSetUploadChannel(long urlRequestPeer,
+            String contentType, ReadableByteChannel content,
+            long contentLength);
 
     private native void nativeStart(long urlRequestPeer);
 

@@ -8,6 +8,7 @@
 #include "base/at_exit.h"
 #include "components/cronet/android/org_chromium_net_UrlRequest.h"
 #include "components/cronet/android/org_chromium_net_UrlRequestContext.h"
+#include "components/cronet/android/wrapped_channel_upload_element_reader.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
 
@@ -23,6 +24,7 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
   {"UrlAndroid", url::android::RegisterJni},
   {"UrlRequest", cronet::UrlRequestRegisterJni},
   {"UrlRequestContext", cronet::UrlRequestContextRegisterJni},
+  {"WrappedChannel", cronet::WrappedChannelRegisterJni},
 };
 
 base::AtExitManager* g_at_exit_manager = NULL;

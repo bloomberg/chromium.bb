@@ -60,11 +60,6 @@ class JniURLRequestPeerDelegate
     owner_ = env->NewGlobalRef(owner);
   }
 
-  virtual void OnAppendChunkCompleted(URLRequestPeer* request) OVERRIDE {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_UrlRequest_onAppendChunkCompleted(env, owner_);
-  }
-
   virtual void OnResponseStarted(URLRequestPeer* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_UrlRequest_onResponseStarted(env, owner_);
@@ -136,24 +131,32 @@ static void AddHeader(JNIEnv* env,
                       jstring name,
                       jstring value) {
   URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
-  DCHECK(request != NULL);
+  DCHECK(request);
 
-  const char* name_utf8 = env->GetStringUTFChars(name, NULL);
-  std::string name_string(name_utf8);
-  env->ReleaseStringUTFChars(name, name_utf8);
-
-  const char* value_utf8 = env->GetStringUTFChars(value, NULL);
-  std::string value_string(value_utf8);
-  env->ReleaseStringUTFChars(value, value_utf8);
+  std::string name_string(base::android::ConvertJavaStringToUTF8(env, name));
+  std::string value_string(base::android::ConvertJavaStringToUTF8(env, value));
 
   request->AddHeader(name_string, value_string);
 }
 
-static void SetPostData(JNIEnv* env,
-                        jobject object,
-                        jlong urlRequestPeer,
-                        jstring content_type,
-                        jbyteArray content) {
+static void SetMethod(JNIEnv* env,
+                      jobject object,
+                      jlong urlRequestPeer,
+                      jstring method) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  DCHECK(request);
+
+  std::string method_string(
+      base::android::ConvertJavaStringToUTF8(env, method));
+
+  request->SetMethod(method_string);
+}
+
+static void SetUploadData(JNIEnv* env,
+                          jobject object,
+                          jlong urlRequestPeer,
+                          jstring content_type,
+                          jbyteArray content) {
   URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   SetPostContentType(env, request, content_type);
 
@@ -161,38 +164,25 @@ static void SetPostData(JNIEnv* env,
     jsize size = env->GetArrayLength(content);
     if (size > 0) {
       jbyte* content_bytes = env->GetByteArrayElements(content, NULL);
-      request->SetPostContent(reinterpret_cast<const char*>(content_bytes),
-                              size);
+      request->SetUploadContent(reinterpret_cast<const char*>(content_bytes),
+                                size);
       env->ReleaseByteArrayElements(content, content_bytes, 0);
     }
   }
 }
 
-static void BeginChunkedUpload(JNIEnv* env,
-                               jobject object,
-                               jlong urlRequestPeer,
-                               jstring content_type) {
+static void SetUploadChannel(JNIEnv* env,
+                             jobject object,
+                             jlong urlRequestPeer,
+                             jstring content_type,
+                             jobject content,
+                             jlong content_length) {
   URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   SetPostContentType(env, request, content_type);
 
-  request->EnableStreamingUpload();
+  request->SetUploadChannel(env, content, content_length);
 }
 
-static void AppendChunk(JNIEnv* env,
-                        jobject object,
-                        jlong urlRequestPeer,
-                        jobject chunk_byte_buffer,
-                        jint chunk_size,
-                        jboolean is_last_chunk) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
-  CHECK(request != NULL);
-
-  if (chunk_byte_buffer != NULL) {
-    void* chunk = env->GetDirectBufferAddress(chunk_byte_buffer);
-    request->AppendChunk(
-        reinterpret_cast<const char*>(chunk), chunk_size, is_last_chunk);
-  }
-}
 
 /* synchronized */
 static void Start(JNIEnv* env, jobject object, jlong urlRequestPeer) {

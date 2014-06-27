@@ -122,6 +122,8 @@
             'cronet/android/url_request_context_peer.h',
             'cronet/android/url_request_peer.cc',
             'cronet/android/url_request_peer.h',
+            'cronet/android/wrapped_channel_upload_element_reader.cc',
+            'cronet/android/wrapped_channel_upload_element_reader.h',
           ],
           'cflags': [
             '-DLOGGING=1',
