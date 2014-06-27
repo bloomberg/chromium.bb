@@ -22,6 +22,10 @@ namespace relocation_packer {
 // Encode packed words as a LEB128 byte stream.
 class Leb128Encoder {
  public:
+  // Explicit (but empty) constructor and destructor, for chromium-style.
+  Leb128Encoder();
+  ~Leb128Encoder();
+
   // Add a value to the encoding stream.
   // |value| is the unsigned int to add.
   void Enqueue(uint32_t value);
@@ -44,8 +48,10 @@ class Leb128Decoder {
  public:
   // Create a new decoder for the given encoded stream.
   // |encoding| is the vector of encoded data.
-  explicit Leb128Decoder(const std::vector<uint8_t>& encoding)
-      : encoding_(encoding), cursor_(0) { }
+  explicit Leb128Decoder(const std::vector<uint8_t>& encoding);
+
+  // Explicit (but empty) destructor, for chromium-style.
+  ~Leb128Decoder();
 
   // Retrieve the next value from the encoded stream.
   uint32_t Dequeue();

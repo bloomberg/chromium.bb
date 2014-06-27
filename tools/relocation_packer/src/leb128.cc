@@ -11,6 +11,10 @@
 
 namespace relocation_packer {
 
+// Empty constructor and destructor to silence chromium-style.
+Leb128Encoder::Leb128Encoder() { }
+Leb128Encoder::~Leb128Encoder() { }
+
 // Add a single value to the encoding.  Values are encoded with variable
 // length.  The least significant 7 bits of each byte hold 7 bits of data,
 // and the most significant bit is set on each byte except the last.
@@ -27,6 +31,15 @@ void Leb128Encoder::EnqueueAll(const std::vector<uint32_t>& values) {
   for (size_t i = 0; i < values.size(); ++i)
     Enqueue(values[i]);
 }
+
+// Create a new decoder for the given encoded stream.
+Leb128Decoder::Leb128Decoder(const std::vector<uint8_t>& encoding) {
+  encoding_ = encoding;
+  cursor_ = 0;
+}
+
+// Empty destructor to silence chromium-style.
+Leb128Decoder::~Leb128Decoder() { }
 
 // Decode and retrieve a single value from the encoding.  Read forwards until
 // a byte without its most significant bit is found, then read the 7 bit
