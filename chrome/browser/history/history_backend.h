@@ -268,12 +268,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
 
-  void GetMostRecentKeywordSearchTerms(
-      scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
-      KeywordID keyword_id,
-      const base::string16& prefix,
-      int max_count);
-
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
   void DeleteMatchingURLsForKeyword(KeywordID keyword_id,

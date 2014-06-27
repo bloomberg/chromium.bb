@@ -352,19 +352,6 @@ void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
                     keyword_id);
 }
 
-HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
-    KeywordID keyword_id,
-    const base::string16& prefix,
-    int max_count,
-    CancelableRequestConsumerBase* consumer,
-    const GetMostRecentKeywordSearchTermsCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_UI, &HistoryBackend::GetMostRecentKeywordSearchTerms,
-                  consumer,
-                  new history::GetMostRecentKeywordSearchTermsRequest(callback),
-                  keyword_id, prefix, max_count);
-}
-
 void HistoryService::DeleteKeywordSearchTermForURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_UI, &HistoryBackend::DeleteKeywordSearchTermForURL,

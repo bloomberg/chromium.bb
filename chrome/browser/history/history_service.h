@@ -451,21 +451,6 @@ class HistoryService : public CancelableRequestProvider,
   // Deletes all search terms for the specified keyword.
   void DeleteAllSearchTermsForKeyword(history::KeywordID keyword_id);
 
-  typedef base::Callback<
-      void(Handle, std::vector<history::KeywordSearchTermVisit>*)>
-          GetMostRecentKeywordSearchTermsCallback;
-
-  // Returns up to max_count of the most recent search terms starting with the
-  // specified text. The matching is case insensitive. The results are ordered
-  // in descending order up to |max_count| with the most recent search term
-  // first.
-  Handle GetMostRecentKeywordSearchTerms(
-      history::KeywordID keyword_id,
-      const base::string16& prefix,
-      int max_count,
-      CancelableRequestConsumerBase* consumer,
-      const GetMostRecentKeywordSearchTermsCallback& callback);
-
   // Deletes any search term corresponding to |url|.
   void DeleteKeywordSearchTermForURL(const GURL& url);
 

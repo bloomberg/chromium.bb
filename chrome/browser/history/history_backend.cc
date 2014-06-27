@@ -1086,21 +1086,6 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
   ScheduleCommit();
 }
 
-void HistoryBackend::GetMostRecentKeywordSearchTerms(
-    scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
-    KeywordID keyword_id,
-    const base::string16& prefix,
-    int max_count) {
-  if (request->canceled())
-    return;
-
-  if (db_) {
-    db_->GetMostRecentKeywordSearchTerms(keyword_id, prefix, max_count,
-                                         &(request->value));
-  }
-  request->ForwardResult(request->handle(), &request->value);
-}
-
 void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
   if (!db_)
     return;
