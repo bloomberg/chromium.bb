@@ -397,14 +397,15 @@ test("gfx_unittests") {
     "geometry/vector2d_unittest.cc",
     "geometry/vector3d_unittest.cc",
     "range/range_unittest.cc",
+    "test/run_all_unittests.cc",
   ]
 
   deps = [
     ":gfx",
     "//base",
-    "//base/test:run_all_unittests",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
+    "//ui/base",
     "//ui/gfx/geometry",
   ]
 }
