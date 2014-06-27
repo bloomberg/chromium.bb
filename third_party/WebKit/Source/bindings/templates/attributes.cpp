@@ -13,13 +13,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
     {# holder #}
-    {% if attribute.is_unforgeable and interface_name != 'Window' %}
-    {# perform lookup first #}
-    {# FIXME: can we remove this lookup? #}
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
-    if (holder.IsEmpty())
-        return;
-    {% elif not attribute.is_static %}
+    {% if not attribute.is_static %}
     v8::Handle<v8::Object> holder = info.Holder();
     {% endif %}
     {# impl #}
