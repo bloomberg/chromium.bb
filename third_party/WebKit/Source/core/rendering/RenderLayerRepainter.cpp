@@ -125,12 +125,12 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
         return;
     }
     IntRect repaintRect = pixelSnappedIntRect(r);
-    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
-    if (m_renderer.groupedMapping()) {
-        if (GraphicsLayer* squashingLayer = m_renderer.groupedMapping()->squashingLayer())
+    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squasphing-agnostic.
+    if (m_renderer.layer()->groupedMapping()) {
+        if (GraphicsLayer* squashingLayer = m_renderer.layer()->groupedMapping()->squashingLayer())
             squashingLayer->setNeedsDisplayInRect(repaintRect);
     } else {
-        m_renderer.compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
+        m_renderer.layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
     }
 }
 

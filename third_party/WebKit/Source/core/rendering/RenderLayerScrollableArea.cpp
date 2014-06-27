@@ -139,7 +139,7 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 {
-    return box().hasCompositedLayerMapping() ? box().compositedLayerMapping()->scrollingContentsLayer() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->scrollingContentsLayer() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const
@@ -147,7 +147,7 @@ GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    return box().hasCompositedLayerMapping() ? box().compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
@@ -155,7 +155,7 @@ GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    return box().hasCompositedLayerMapping() ? box().compositedLayerMapping()->layerForVerticalScrollbar() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
@@ -163,7 +163,7 @@ GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    return box().hasCompositedLayerMapping() ? box().compositedLayerMapping()->layerForScrollCorner() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
 void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
@@ -952,8 +952,8 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
     // FIXME, this should eventually be removed, once we are certain that composited
     // controls get correctly positioned on a compositor update. For now, conservatively
     // leaving this unchanged.
-    if (box().hasCompositedLayerMapping())
-        box().compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
+    if (layer()->hasCompositedLayerMapping())
+        layer()->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
 }
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()
@@ -1420,8 +1420,8 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
     if (compositor->inCompositingMode()) {
         if (usesCompositedScrolling()) {
             DisableCompositingQueryAsserts disabler;
-            ASSERT(box().hasCompositedLayerMapping());
-            box().compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+            ASSERT(layer()->hasCompositedLayerMapping());
+            layer()->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
             compositor->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
         } else {
             layer()->setNeedsCompositingInputsUpdate();
@@ -1437,7 +1437,7 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
 
     // See https://codereview.chromium.org/176633003/ for the tests that fail without this disabler.
     DisableCompositingQueryAsserts disabler;
-    return box().hasCompositedLayerMapping() && box().compositedLayerMapping()->scrollingLayer();
+    return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();
 }
 
 bool RenderLayerScrollableArea::needsCompositedScrolling() const

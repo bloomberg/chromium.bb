@@ -801,7 +801,6 @@ public:
     // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
     // methods.
     const RenderLayerModelObject* containerForPaintInvalidation() const;
-    const RenderLayerModelObject* enclosingCompositedContainer() const;
     const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* paintInvalidationContainer) const;
     bool isPaintInvalidationContainer() const;
 
@@ -1080,6 +1079,8 @@ protected:
     void fullyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 private:
+    const RenderLayerModelObject* enclosingCompositedContainer() const;
+
     RenderBlock* containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;

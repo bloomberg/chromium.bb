@@ -66,10 +66,6 @@ public:
     // This is null for anonymous renderers.
     ContainerNode* node() const { return toContainerNode(RenderObject::node()); }
 
-    CompositedLayerMappingPtr compositedLayerMapping() const;
-    bool hasCompositedLayerMapping() const;
-    CompositedLayerMapping* groupedMapping() const;
-
 protected:
     void createLayer(LayerType);
 

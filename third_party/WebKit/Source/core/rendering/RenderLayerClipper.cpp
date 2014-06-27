@@ -360,17 +360,21 @@ void RenderLayerClipper::parentClipRects(const ClipRectsContext& context, ClipRe
 
 RenderLayer* RenderLayerClipper::clippingRootForPainting() const
 {
-    if (m_renderer.hasCompositedLayerMapping() || m_renderer.groupedMapping())
-        return const_cast<RenderLayer*>(m_renderer.layer());
-
     const RenderLayer* current = m_renderer.layer();
+    // FIXME: getting rid of current->hasCompositedLayerMapping() here breaks the
+    // compositing/backing/no-backing-for-clip.html layout test, because there is a
+    // "composited but paints into ancestor" layer involved. However, it doesn't make sense that
+    // that check would be appropriate here but not inside the while loop below.
+    if (current->isPaintInvalidationContainer() || current->hasCompositedLayerMapping())
+        return const_cast<RenderLayer*>(current);
+
     while (current) {
         if (current->isRootLayer())
             return const_cast<RenderLayer*>(current);
 
         current = current->compositingContainer();
         ASSERT(current);
-        if (current->transform() || (current->compositingState() == PaintsIntoOwnBacking) || current->groupedMapping())
+        if (current->transform() || current->isPaintInvalidationContainer())
             return const_cast<RenderLayer*>(current);
     }
 

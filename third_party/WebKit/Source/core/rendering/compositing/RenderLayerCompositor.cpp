@@ -252,7 +252,7 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
 
     bool isMainFrame = m_renderView.frame()->isMainFrame();
     RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
-    if (!video || !video->hasCompositedLayerMapping()) {
+    if (!video || !video->layer()->hasCompositedLayerMapping()) {
         if (isMainFrame) {
             GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
             if (backgroundLayer && !backgroundLayer->parent())
@@ -261,7 +261,7 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
         return;
     }
 
-    GraphicsLayer* videoLayer = video->compositedLayerMapping()->mainGraphicsLayer();
+    GraphicsLayer* videoLayer = video->layer()->compositedLayerMapping()->mainGraphicsLayer();
 
     // The fullscreen video has layer position equal to its enclosing frame's scroll position because fullscreen container is fixed-positioned.
     // We should reset layer position here since we are going to reattach the layer at the very top level.

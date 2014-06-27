@@ -600,7 +600,7 @@ void RenderLayer::updatePagination()
 
 LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer)
 {
-    if (!paintInvalidationContainer || !paintInvalidationContainer->groupedMapping())
+    if (!paintInvalidationContainer || !paintInvalidationContainer->layer()->groupedMapping())
         return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
     RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
@@ -614,13 +614,13 @@ LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObje
     ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
 
     LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor);
-    point.moveBy(-paintInvalidationContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    point.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
     return point;
 }
 
 void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
-    if (!paintInvalidationContainer->groupedMapping()) {
+    if (!paintInvalidationContainer->layer()->groupedMapping()) {
         renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
         return;
     }
@@ -645,7 +645,7 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
     // transformed ancestor.
     rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
 
-    rect.moveBy(-paintInvalidationContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    rect.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
 LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer)
