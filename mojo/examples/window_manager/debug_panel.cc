@@ -39,7 +39,9 @@ DebugPanel::DebugPanel(Delegate* delegate, view_manager::Node* node)
       colored_square_(new views::BlueButton(
           this, base::ASCIIToUTF16("Local nav test"))),
       close_last_(new views::BlueButton(
-          this, base::ASCIIToUTF16("Close last window"))) {
+          this, base::ASCIIToUTF16("Close last window"))),
+      cross_app_(new views::BlueButton(
+          this, base::ASCIIToUTF16("Cross-app nav test"))) {
   navigation_target_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   navigation_target_default_->SetChecked(true);
 
@@ -52,6 +54,7 @@ DebugPanel::DebugPanel(Delegate* delegate, view_manager::Node* node)
   widget_delegate->GetContentsView()->AddChildView(navigation_target_source_);
   widget_delegate->GetContentsView()->AddChildView(colored_square_);
   widget_delegate->GetContentsView()->AddChildView(close_last_);
+  widget_delegate->GetContentsView()->AddChildView(cross_app_);
   widget_delegate->GetContentsView()->SetLayoutManager(this);
 
   views::Widget* widget = new views::Widget();
@@ -103,6 +106,7 @@ void DebugPanel::Layout(views::View* view) {
   views::Button* buttons[] = {
     colored_square_,
     close_last_,
+    cross_app_,
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(buttons); ++i) {
     buttons[i]->SetBounds(kControlBorderInset, y, w,
@@ -113,17 +117,21 @@ void DebugPanel::Layout(views::View* view) {
 
 void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == colored_square_) {
-      navigation::NavigationDetailsPtr details(
-          navigation::NavigationDetails::New());
-      details->url = base::StringPrintf(
-          "mojo://mojo_embedded_app/%x",
-          kColors[next_color_ % arraysize(kColors)]);
-      next_color_++;
-      delegate_->RequestNavigate(node_->id(), navigation::NEW_NODE,
-                                 details.Pass());
+    Navigate(base::StringPrintf("mojo://mojo_embedded_app/%x",
+                                kColors[next_color_ % arraysize(kColors)]));
+    next_color_++;
   } else if (sender == close_last_) {
     delegate_->CloseTopWindow();
+  } else if (sender == cross_app_) {
+    Navigate("http://www.aaronboodman.com/z_dropbox/test.html");
   }
+}
+
+void DebugPanel::Navigate(const std::string& url) {
+  navigation::NavigationDetailsPtr details(
+      navigation::NavigationDetails::New());
+  details->url = url;
+  delegate_->RequestNavigate(node_->id(), navigation::NEW_NODE, details.Pass());
 }
 
 }  // namespace examples

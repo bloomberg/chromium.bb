@@ -6,7 +6,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -78,7 +77,6 @@ class EmbeddedApp : public ApplicationDelegate,
     // TODO(aa): Weird for embeddee to talk to embedder by URL. Seems like
     // embedder should be able to specify the SP embeddee receives, then
     // communication can be anonymous.
-    app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
     app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
   }
 
@@ -104,11 +102,9 @@ class EmbeddedApp : public ApplicationDelegate,
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED) {
       if (event->flags & ui::EF_LEFT_MOUSE_BUTTON) {
-        window_manager_->CloseWindow(view->node()->id());
-      } else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON) {
         navigation::NavigationDetailsPtr nav_details(
             navigation::NavigationDetails::New());
-        nav_details->url = "http://ranchtastic.com/s6.png";
+        nav_details->url = "http://www.aaronboodman.com/z_dropbox/test.html";
         navigator_host_->RequestNavigate(view->node()->id(),
                                          navigation::SOURCE_NODE,
                                          nav_details.Pass());
@@ -151,7 +147,6 @@ class EmbeddedApp : public ApplicationDelegate,
   }
 
   view_manager::ViewManager* view_manager_;
-  IWindowManagerPtr window_manager_;
   navigation::NavigatorHostPtr navigator_host_;
   std::map<Node*, View*> views_to_reap_;
 

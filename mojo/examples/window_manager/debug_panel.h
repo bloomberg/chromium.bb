@@ -59,6 +59,8 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  void Navigate(const std::string& url);
+
   Delegate* delegate_;
   view_manager::Node* node_;
 
@@ -70,6 +72,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   size_t next_color_;
   views::Button* colored_square_;
   views::Button* close_last_;
+  views::Button* cross_app_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugPanel);
 };
