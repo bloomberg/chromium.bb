@@ -244,9 +244,7 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, Cli
         if (context.usesCache() && parentLayer->clipper().cachedClipRects(context)) {
             clipRects = *parentLayer->clipper().cachedClipRects(context);
         } else {
-            ClipRectsContext parentContext(context);
-            parentContext.scrollbarRelevancy = IgnoreOverlayScrollbarSize; // FIXME: why?
-            parentLayer->clipper().calculateClipRects(parentContext, clipRects);
+            parentLayer->clipper().calculateClipRects(context, clipRects);
         }
     } else {
         clipRects.reset(PaintInfo::infiniteRect());
