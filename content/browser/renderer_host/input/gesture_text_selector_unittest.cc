@@ -52,6 +52,10 @@ class GestureTextSelectorTest : public testing::Test,
     event_log_.push_back("Unselect");
   }
 
+  virtual void LongPress(base::TimeTicks time, float x, float y) OVERRIDE {
+    event_log_.push_back("LongPress");
+  }
+
  protected:
   scoped_ptr<GestureTextSelector> selector_;
   std::vector<std::string> event_log_;
@@ -89,19 +93,24 @@ TEST_F(GestureTextSelectorTest, ShouldStartTextSelection) {
   }
 }
 
-TEST_F(GestureTextSelectorTest, EventConsumption) {
+TEST_F(GestureTextSelectorTest, FingerTouch) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float x = 50.0f;
+  const float y = 30.0f;
+  // 1. Touched with a finger: ignored
+  MockMotionEvent finger(MotionEvent::ACTION_DOWN, event_time, x, y);
+  finger.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
+  EXPECT_FALSE(selector_->OnTouchEvent(finger));
+  // We do not consume finger events.
+  EXPECT_TRUE(event_log_.empty());
+}
+
+TEST_F(GestureTextSelectorTest, PenDragging) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float x1 = 50.0f;
   const float y1 = 30.0f;
   const float x2 = 100.0f;
   const float y2 = 90.0f;
-  // 0. Touched with a finger: ignored
-  MockMotionEvent finger(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  finger.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
-  EXPECT_FALSE(selector_->OnTouchEvent(finger));
-  // We do not consume finger events.
-  EXPECT_TRUE(event_log_.empty());
-
   // 1. ACTION_DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(10);
   MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
@@ -160,6 +169,54 @@ TEST_F(GestureTextSelectorTest, EventConsumption) {
       x2, y2, x2, y2, 1, gfx::RectF(0, 0, 0, 0));
   EXPECT_TRUE(selector_->OnGestureEvent(scroll_end));
   EXPECT_EQ(3u, event_log_.size());  // NO CHANGE
+}
+
+TEST_F(GestureTextSelectorTest, TapToSelectWord) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float x1 = 50.0f;
+  const float y1 = 30.0f;
+  const float x2 = 51.0f;
+  const float y2 = 31.0f;
+  // 1. ACTION_DOWN with stylus + button
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_down.SetButtonState(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_down));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 5. TAP_DOWN
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  const GestureEventData tap_down(
+      GestureEventDetails(ui::ET_GESTURE_TAP_DOWN, 0, 0), 0, event_time,
+      x2, y2, x2, y2, 1, gfx::RectF(0, 0, 0, 0));
+  EXPECT_TRUE(selector_->OnGestureEvent(tap_down));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 2. ACTION_MOVE
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move.SetButtonState(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 3. ACTION_UP
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x2, y2);
+  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_up.SetButtonState(0);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_up));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 4. TAP
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  const GestureEventData tap(
+      GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0), 0, event_time,
+      x1, y1, x1, y1, 1, gfx::RectF(0, 0, 0, 0));
+  EXPECT_TRUE(selector_->OnGestureEvent(tap));
+  EXPECT_EQ(1u, event_log_.size());  // Unselect, Show
+  EXPECT_STREQ("LongPress", event_log_.back().c_str());
 }
 
 }  // namespace content

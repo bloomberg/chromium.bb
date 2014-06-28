@@ -35,7 +35,7 @@ bool GestureTextSelector::OnGestureEvent(const ui::GestureEventData& gesture) {
 
   switch (gesture.type()) {
     case ui::ET_GESTURE_TAP: {
-      client_->Unselect();
+      client_->LongPress(gesture.time, gesture.x, gesture.y);
       break;
     }
     case ui::ET_GESTURE_SCROLL_BEGIN: {

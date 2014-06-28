@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1458,6 +1459,14 @@ void RenderWidgetHostViewAndroid::SelectRange(
 void RenderWidgetHostViewAndroid::Unselect() {
   if (content_view_core_)
     content_view_core_->GetWebContents()->Unselect();
+}
+
+void RenderWidgetHostViewAndroid::LongPress(
+    base::TimeTicks time, float x, float y) {
+  blink::WebGestureEvent long_press = WebGestureEventBuilder::Build(
+      blink::WebInputEvent::GestureLongPress,
+      (time - base::TimeTicks()).InSecondsF(), x, y);
+  SendGestureEvent(long_press);
 }
 
 // static

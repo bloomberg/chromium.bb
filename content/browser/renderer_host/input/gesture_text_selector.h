@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace ui {
@@ -17,8 +18,8 @@ class MotionEvent;
 namespace content {
 class GestureTextSelectorTest;
 
-// Interface with which GestureTextSelector can select, unselect, or show
-// selection handles.
+// Interface with which GestureTextSelector can select, unselect, show
+// selection handles, or long press.
 class CONTENT_EXPORT GestureTextSelectorClient {
  public:
   virtual ~GestureTextSelectorClient() {}
@@ -26,10 +27,12 @@ class CONTENT_EXPORT GestureTextSelectorClient {
   virtual void ShowSelectionHandlesAutomatically() = 0;
   virtual void SelectRange(float x1, float y1, float x2, float y2) = 0;
   virtual void Unselect() = 0;
+  virtual void LongPress(base::TimeTicks time, float x, float y) = 0;
 };
 
 // A class to handle gesture-based text selection, such as when clicking first
-// button on stylus input.
+// button on stylus input. It also generates a synthetic long press gesture on
+// tap so that a word can be selected or the contextual menu can be shown.
 class CONTENT_EXPORT GestureTextSelector {
  public:
   explicit GestureTextSelector(GestureTextSelectorClient* client);
