@@ -876,6 +876,8 @@
       'browser/net/network_stats.h',
       'browser/net/preconnect.cc',
       'browser/net/preconnect.h',
+      'browser/net/prediction_options.cc',
+      'browser/net/prediction_options.h',
       'browser/net/predictor.cc',
       'browser/net/predictor.h',
       'browser/net/pref_proxy_config_tracker.cc',

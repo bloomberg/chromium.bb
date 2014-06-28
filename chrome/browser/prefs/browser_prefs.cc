@@ -39,6 +39,7 @@
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/net_pref_observer.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
@@ -355,6 +356,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(
       registry);
   chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
+  chrome_browser_net::RegisterPredictionOptionsProfilePrefs(registry);
   chrome_prefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   easy_unlock::RegisterProfilePrefs(registry);
