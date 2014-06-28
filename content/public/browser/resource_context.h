@@ -16,10 +16,6 @@
 
 class GURL;
 
-namespace content {
-class AppCacheService;
-}
-
 namespace net {
 class ClientCertStore;
 class HostResolver;
@@ -28,6 +24,8 @@ class URLRequestContext;
 }
 
 namespace content {
+
+class AppCacheService;
 
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on

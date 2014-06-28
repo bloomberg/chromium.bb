@@ -23,17 +23,13 @@ FORWARD_DECLARE_TEST(AppCacheGroupTest, CancelUpdate);
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyChecking);
 FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
-class AppCacheUpdateJobTest;
-class MockAppCacheStorage;
-}
-
-namespace content {
-
 class AppCache;
 class AppCacheHost;
 class AppCacheStorage;
 class AppCacheUpdateJob;
+class AppCacheUpdateJobTest;
 class HostObserver;
+class MockAppCacheStorage;
 
 // Collection of application caches identified by the same manifest URL.
 // A group exists as long as it is in use by a host or is being updated.

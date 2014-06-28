@@ -12,10 +12,6 @@
 
 class GURL;
 
-namespace content {
-class AppCacheService;
-}
-
 namespace fileapi {
 class FileSystemContext;
 }
@@ -35,6 +31,7 @@ class DatabaseTracker;
 
 namespace content {
 
+class AppCacheService;
 class BrowserContext;
 class IndexedDBContext;
 class DOMStorageContext;

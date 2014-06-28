@@ -14,9 +14,6 @@
 namespace content {
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
-}
-
-namespace content {
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.

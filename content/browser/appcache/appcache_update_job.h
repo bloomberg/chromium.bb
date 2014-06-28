@@ -30,10 +30,6 @@ namespace content {
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 class AppCacheGroupTest;
 class AppCacheUpdateJobTest;
-}
-
-namespace content {
-
 class HostNotifier;
 
 // Application cache Update algorithm and state.

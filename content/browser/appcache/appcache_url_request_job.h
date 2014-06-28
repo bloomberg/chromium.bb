@@ -16,18 +16,14 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
-namespace content {
-class AppCacheRequestHandlerTest;
-class AppCacheURLRequestJobTest;
-}
-
 namespace net {
 class GrowableIOBuffer;
 };
 
 namespace content {
-
 class AppCacheHost;
+class AppCacheRequestHandlerTest;
+class AppCacheURLRequestJobTest;
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.

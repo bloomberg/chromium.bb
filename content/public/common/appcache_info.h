@@ -19,28 +19,28 @@ static const int64 kAppCacheNoResponseId = 0;
 static const int64 kAppCacheUnknownCacheId = -1;
 
 enum AppCacheStatus {
-    APPCACHE_STATUS_UNCACHED,
-    APPCACHE_STATUS_IDLE,
-    APPCACHE_STATUS_CHECKING,
-    APPCACHE_STATUS_DOWNLOADING,
-    APPCACHE_STATUS_UPDATE_READY,
-    APPCACHE_STATUS_OBSOLETE,
-    APPCACHE_STATUS_LAST = APPCACHE_STATUS_OBSOLETE
+  APPCACHE_STATUS_UNCACHED,
+  APPCACHE_STATUS_IDLE,
+  APPCACHE_STATUS_CHECKING,
+  APPCACHE_STATUS_DOWNLOADING,
+  APPCACHE_STATUS_UPDATE_READY,
+  APPCACHE_STATUS_OBSOLETE,
+  APPCACHE_STATUS_LAST = APPCACHE_STATUS_OBSOLETE
 };
 
 struct CONTENT_EXPORT AppCacheInfo {
-    AppCacheInfo();
-    ~AppCacheInfo();
+  AppCacheInfo();
+  ~AppCacheInfo();
 
-    GURL manifest_url;
-    base::Time creation_time;
-    base::Time last_update_time;
-    base::Time last_access_time;
-    int64 cache_id;
-    int64 group_id;
-    AppCacheStatus status;
-    int64 size;
-    bool is_complete;
+  GURL manifest_url;
+  base::Time creation_time;
+  base::Time last_update_time;
+  base::Time last_access_time;
+  int64 cache_id;
+  int64 group_id;
+  AppCacheStatus status;
+  int64 size;
+  bool is_complete;
 };
 
 typedef std::vector<AppCacheInfo> AppCacheInfoVector;

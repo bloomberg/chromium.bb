@@ -42,9 +42,6 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema4to5);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
 class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
-}
-
-namespace content {
 
 class CONTENT_EXPORT AppCacheDatabase {
  public:

@@ -20,10 +20,6 @@ class URLRequestJob;
 
 namespace content {
 class AppCacheRequestHandlerTest;
-}
-
-namespace content {
-
 class AppCacheURLRequestJob;
 
 // An instance is created for each net::URLRequest. The instance survives all

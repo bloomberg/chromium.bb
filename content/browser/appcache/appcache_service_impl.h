@@ -30,22 +30,18 @@ class FilePath;
 class MessageLoopProxy;
 }
 
-namespace content {
-FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
-class AppCacheServiceImplTest;
-class AppCacheStorageImplTest;
-}
-
 namespace quota {
 class SpecialStoragePolicy;
 }
 
 namespace content {
-
+FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
 class AppCacheBackendImpl;
 class AppCacheExecutableHandlerFactory;
 class AppCacheQuotaClient;
 class AppCachePolicy;
+class AppCacheServiceImplTest;
+class AppCacheStorageImplTest;
 class AppCacheStorage;
 
 // Refcounted container to manage the lifetime of the old storage instance

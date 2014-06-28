@@ -22,19 +22,15 @@ class GURL;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheStorageTest, DelegateReferences);
 FORWARD_DECLARE_TEST(AppCacheStorageTest, UsageMap);
-class AppCacheQuotaClientTest;
-class AppCacheResponseTest;
-class AppCacheStorageTest;
-}
-
-namespace content {
-
 class AppCache;
 class AppCacheEntry;
 class AppCacheGroup;
+class AppCacheQuotaClientTest;
 class AppCacheResponseReader;
+class AppCacheResponseTest;
 class AppCacheResponseWriter;
 class AppCacheServiceImpl;
+class AppCacheStorageTest;
 struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 

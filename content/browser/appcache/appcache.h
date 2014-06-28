@@ -25,17 +25,13 @@ class IOBuffer;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheTest, InitializeWithManifest);
 FORWARD_DECLARE_TEST(AppCacheTest, ToFromDatabaseRecords);
-class AppCacheTest;
-class AppCacheStorageImplTest;
-class AppCacheUpdateJobTest;
-}
-
-namespace content {
-
 class AppCacheExecutableHandler;
 class AppCacheGroup;
 class AppCacheHost;
 class AppCacheStorage;
+class AppCacheTest;
+class AppCacheStorageImplTest;
+class AppCacheUpdateJobTest;
 
 // Set of cached resources for an application. A cache exists as long as a
 // host is associated with it, the cache is in an appcache group or the

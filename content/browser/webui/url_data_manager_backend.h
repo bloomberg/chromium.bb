@@ -18,15 +18,13 @@
 
 class GURL;
 
-namespace content {
-class AppCacheServiceImpl;
-}
-
 namespace base {
 class RefCountedMemory;
 }
 
 namespace content {
+
+class AppCacheServiceImpl;
 class ChromeBlobStorageContext;
 class ResourceContext;
 class URLDataManagerBackend;

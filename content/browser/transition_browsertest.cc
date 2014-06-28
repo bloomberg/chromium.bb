@@ -41,7 +41,7 @@ class TransitionBrowserTestObserver
   virtual void RequestBeginning(
       net::URLRequest* request,
       ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
+      AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,

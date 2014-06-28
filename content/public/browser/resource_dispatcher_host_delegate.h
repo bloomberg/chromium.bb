@@ -15,18 +15,6 @@
 class GURL;
 template <class T> class ScopedVector;
 
-namespace content {
-class AppCacheService;
-}
-
-namespace content {
-class ResourceContext;
-class ResourceThrottle;
-class StreamHandle;
-struct Referrer;
-struct ResourceResponse;
-}
-
 namespace IPC {
 class Sender;
 }
@@ -38,7 +26,13 @@ class URLRequest;
 
 namespace content {
 
+class AppCacheService;
+class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
+class ResourceThrottle;
+class StreamHandle;
+struct Referrer;
+struct ResourceResponse;
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
 // observing and modifying requests.

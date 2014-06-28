@@ -15,9 +15,6 @@ class URLRequestJob;
 
 namespace content {
 class AppCacheServiceImpl;
-}
-
-namespace content {
 
 class ViewAppCacheInternalsJobFactory {
  public:

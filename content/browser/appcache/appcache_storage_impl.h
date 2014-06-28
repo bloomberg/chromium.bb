@@ -23,9 +23,6 @@
 namespace content {
 class AppCacheStorageImplTest;
 class ChromeAppCacheServiceTest;
-}
-
-namespace content {
 
 class AppCacheStorageImpl : public AppCacheStorage {
  public:

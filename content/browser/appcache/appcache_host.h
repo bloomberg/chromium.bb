@@ -34,19 +34,15 @@ FORWARD_DECLARE_TEST(AppCacheHostTest, ForDedicatedWorker);
 FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheAllowed);
 FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheBlocked);
 FORWARD_DECLARE_TEST(AppCacheTest, CleanupUnusedCache);
-class AppCacheTest;
-class AppCacheHostTest;
-class AppCacheGroupTest;
-class AppCacheStorageImplTest;
-class AppCacheRequestHandlerTest;
-class AppCacheUpdateJobTest;
-}
-
-namespace content {
-
 class AppCache;
 class AppCacheFrontend;
+class AppCacheGroupTest;
+class AppCacheHostTest;
 class AppCacheRequestHandler;
+class AppCacheRequestHandlerTest;
+class AppCacheStorageImplTest;
+class AppCacheTest;
+class AppCacheUpdateJobTest;
 
 typedef base::Callback<void(AppCacheStatus, void*)> GetStatusCallback;
 typedef base::Callback<void(bool, void*)> StartUpdateCallback;

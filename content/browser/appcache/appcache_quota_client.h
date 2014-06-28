@@ -21,13 +21,8 @@
 
 namespace content {
 class AppCacheQuotaClientTest;
-}
-
-namespace content {
-
 class AppCacheServiceImpl;
 class AppCacheStorageImpl;
-class AppCacheQuotaClientTest;
 
 // A QuotaClient implementation to integrate the appcache service
 // with the quota management system. The QuotaClient interface is

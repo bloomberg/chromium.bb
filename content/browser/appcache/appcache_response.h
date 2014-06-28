@@ -20,12 +20,8 @@ class IOBuffer;
 }
 
 namespace content {
-class MockAppCacheStorage;
-}
-
-namespace content {
-
 class AppCacheStorage;
+class MockAppCacheStorage;
 
 static const int kUnkownResponseDataSize = -1;
 
