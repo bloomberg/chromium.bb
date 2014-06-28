@@ -772,7 +772,16 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     const base::TimeDelta start_time =
         ExtractStartTime(stream, start_time_estimates[i]);
-    if (start_time == kNoTimestamp())
+    const bool has_start_time = start_time != kNoTimestamp();
+
+    // Always prefer the video stream for seeking.  If none exists, we'll swap
+    // the fallback stream with the preferred stream below.
+    if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      preferred_stream_for_seeking_ =
+          StreamSeekInfo(i, has_start_time ? start_time : base::TimeDelta());
+    }
+
+    if (!has_start_time)
       continue;
 
     if (start_time < start_time_) {
@@ -780,13 +789,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
       // Choose the stream with the lowest starting time as the fallback stream
       // for seeking.  Video should always be preferred.
-      fallback_stream_for_seeking_ = std::make_pair(i, start_time);
+      fallback_stream_for_seeking_ = StreamSeekInfo(i, start_time);
     }
-
-    // Always prefer the video stream for seeking.  If none exists, we'll swap
-    // the fallback stream with the preferred stream below.
-    if (codec_type == AVMEDIA_TYPE_VIDEO)
-      preferred_stream_for_seeking_ = std::make_pair(i, start_time);
   }
 
   if (!audio_stream && !video_stream) {
@@ -814,7 +818,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   // put timestamps on its frames.
   if (start_time_ == kInfiniteDuration()) {
     start_time_ = base::TimeDelta();
-    preferred_stream_for_seeking_ = std::make_pair(
+    preferred_stream_for_seeking_ = StreamSeekInfo(
         video_stream ? video_stream->index : audio_stream->index, start_time_);
   } else if (!video_stream) {
     // If no video stream exists, use the audio or text stream found above.

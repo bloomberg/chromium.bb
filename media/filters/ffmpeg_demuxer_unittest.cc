@@ -193,6 +193,10 @@ class FFmpegDemuxerTest : public testing::Test {
     return demuxer_->glue_->format_context();
   }
 
+  int preferred_seeking_stream_index() const {
+    return demuxer_->preferred_stream_for_seeking_.first;
+  }
+
   void ReadUntilEndOfStream(DemuxerStream* stream) {
     bool got_eos_buffer = false;
     const int kMaxBuffers = 170;
@@ -410,6 +414,12 @@ TEST_F(FFmpegDemuxerTest, Read_Text) {
 
   text_stream->Read(NewReadCB(FROM_HERE, 19, 500000));
   message_loop_.Run();
+}
+
+TEST_F(FFmpegDemuxerTest, SeekInitialized_NoVideoStartTime) {
+  CreateDemuxer("audio-start-time-only.webm");
+  InitializeDemuxer();
+  EXPECT_EQ(0, preferred_seeking_stream_index());
 }
 
 TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
