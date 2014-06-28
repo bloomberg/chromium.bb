@@ -417,29 +417,6 @@ class HistoryService : public CancelableRequestProvider,
   // and forget' operation.
   void RemoveDownloads(const std::set<uint32>& ids);
 
-  // Visit Segments ------------------------------------------------------------
-
-  typedef base::Callback<void(Handle, std::vector<PageUsageData*>*)>
-      SegmentQueryCallback;
-
-  // Query usage data for all visit segments since the provided time.
-  //
-  // The request is performed asynchronously and can be cancelled by using the
-  // returned handle.
-  //
-  // The vector provided to the callback and its contents is owned by the
-  // history system. It will be deeply deleted after the callback is invoked.
-  // If you want to preserve any PageUsageData instance, simply remove them
-  // from the vector.
-  //
-  // The vector contains a list of PageUsageData. Each PageUsageData ID is set
-  // to the segment ID. The URL and all the other information is set to the page
-  // representing the segment.
-  Handle QuerySegmentUsageSince(CancelableRequestConsumerBase* consumer,
-                                const base::Time from_time,
-                                int max_result_count,
-                                const SegmentQueryCallback& callback);
-
   // Keyword search terms -----------------------------------------------------
 
   // Sets the search terms for the specified url and keyword. url_id gives the

@@ -32,12 +32,6 @@ typedef CancelableRequest1<HistoryService::QueryFilteredURLsCallback,
                            history::FilteredURLList>
     QueryFilteredURLsRequest;
 
-// Segment usage --------------------------------------------------------------
-
-typedef CancelableRequest1<HistoryService::SegmentQueryCallback,
-                           ScopedVector<PageUsageData> >
-    QuerySegmentUsageRequest;
-
 // Generic operations ---------------------------------------------------------
 
 // The argument here is an input value, which is the task to run on the

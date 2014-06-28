@@ -983,12 +983,6 @@ class HistoryTest : public testing::Test {
   virtual ~HistoryTest() {
   }
 
-  void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
-                               std::vector<PageUsageData*>* data) {
-    page_usage_data_.swap(*data);
-    base::MessageLoop::current()->Quit();
-  }
-
   void OnDeleteURLsDone(CancelableRequestProvider::Handle handle) {
     base::MessageLoop::current()->Quit();
   }
@@ -1092,9 +1086,6 @@ class HistoryTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   base::MessageLoopForUI message_loop_;
-
-  // PageUsageData vector to test segments.
-  ScopedVector<PageUsageData> page_usage_data_;
 
   MostVisitedURLList most_visited_urls_;
 
@@ -1385,76 +1376,6 @@ TEST_F(HistoryTest, SetTitle) {
 
   // TODO(brettw) this should also test redirects, which get the title of the
   // destination page.
-}
-
-// crbug.com/159387: This test fails when daylight savings time ends.
-TEST_F(HistoryTest, DISABLED_Segments) {
-  ASSERT_TRUE(history_service_.get());
-
-  static ContextID context_id = static_cast<ContextID>(this);
-
-  // Add a URL.
-  const GURL existing_url("http://www.google.com/");
-  history_service_->AddPage(
-      existing_url, base::Time::Now(), context_id, 0, GURL(),
-      history::RedirectList(), content::PAGE_TRANSITION_TYPED,
-      history::SOURCE_BROWSED, false);
-
-  // Make sure a segment was created.
-  history_service_->QuerySegmentUsageSince(
-      &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
-                 base::Unretained(this)));
-
-  // Wait for processing.
-  base::MessageLoop::current()->Run();
-
-  ASSERT_EQ(1U, page_usage_data_.size());
-  EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
-  EXPECT_DOUBLE_EQ(3.0, page_usage_data_[0]->GetScore());
-
-  // Add a URL which doesn't create a segment.
-  const GURL link_url("http://yahoo.com/");
-  history_service_->AddPage(
-      link_url, base::Time::Now(), context_id, 0, GURL(),
-      history::RedirectList(), content::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
-
-  // Query again
-  history_service_->QuerySegmentUsageSince(
-      &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
-                 base::Unretained(this)));
-
-  // Wait for processing.
-  base::MessageLoop::current()->Run();
-
-  // Make sure we still have one segment.
-  ASSERT_EQ(1U, page_usage_data_.size());
-  EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
-
-  // Add a page linked from existing_url.
-  history_service_->AddPage(
-      GURL("http://www.google.com/foo"), base::Time::Now(),
-      context_id, 3, existing_url, history::RedirectList(),
-      content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
-      false);
-
-  // Query again
-  history_service_->QuerySegmentUsageSince(
-      &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
-                 base::Unretained(this)));
-
-  // Wait for processing.
-  base::MessageLoop::current()->Run();
-
-  // Make sure we still have one segment.
-  ASSERT_EQ(1U, page_usage_data_.size());
-  EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
-
-  // However, the score should have increased.
-  EXPECT_GT(page_usage_data_[0]->GetScore(), 5.0);
 }
 
 TEST_F(HistoryTest, MostVisitedURLs) {

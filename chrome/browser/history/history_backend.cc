@@ -67,11 +67,13 @@ using base::TimeTicks;
 
 namespace history {
 
+#if defined(OS_ANDROID)
 // How long we keep segment data for in days. Currently 3 months.
 // This value needs to be greater or equal to
 // MostVisitedModel::kMostVisitedScope but we don't want to introduce a direct
 // dependency between MostVisitedModel and the history backend.
 const int kSegmentDataRetention = 90;
+#endif
 
 // How long we'll wait to do a commit, so that things are batched together.
 const int kCommitIntervalSeconds = 10;
@@ -1020,37 +1022,6 @@ void HistoryBackend::QueryURL(const GURL& url,
 
 TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
   return typed_url_syncable_service_.get();
-}
-
-// Segment usage ---------------------------------------------------------------
-
-void HistoryBackend::DeleteOldSegmentData() {
-  if (db_)
-    db_->DeleteSegmentData(Time::Now() -
-                           TimeDelta::FromDays(kSegmentDataRetention));
-}
-
-void HistoryBackend::QuerySegmentUsage(
-    scoped_refptr<QuerySegmentUsageRequest> request,
-    const Time from_time,
-    int max_result_count) {
-  if (request->canceled())
-    return;
-
-  if (db_) {
-    db_->QuerySegmentUsage(from_time, max_result_count, &request->value.get());
-
-    // If this is the first time we query segments, invoke
-    // DeleteOldSegmentData asynchronously. We do this to cleanup old
-    // entries.
-    if (!segment_queried_) {
-      segment_queried_ = true;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&HistoryBackend::DeleteOldSegmentData, this));
-    }
-  }
-  request->ForwardResult(request->handle(), &request->value.get());
 }
 
 // Keyword visits --------------------------------------------------------------

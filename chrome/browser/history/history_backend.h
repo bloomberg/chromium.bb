@@ -253,13 +253,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool CreateDownload(const history::DownloadRow& history_info);
   void RemoveDownloads(const std::set<uint32>& ids);
 
-  // Segment usage -------------------------------------------------------------
-
-  void QuerySegmentUsage(scoped_refptr<QuerySegmentUsageRequest> request,
-                         const base::Time from_time,
-                         int max_result_count);
-  void DeleteOldSegmentData();
-
   // Keyword search terms ------------------------------------------------------
 
   void SetKeywordSearchTermsForURL(const GURL& url,

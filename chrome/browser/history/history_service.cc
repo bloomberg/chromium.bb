@@ -380,17 +380,6 @@ void HistoryService::ScheduleDBTask(history::HistoryDBTask* task,
   Schedule(PRIORITY_UI, &HistoryBackend::ProcessDBTask, consumer, request);
 }
 
-HistoryService::Handle HistoryService::QuerySegmentUsageSince(
-    CancelableRequestConsumerBase* consumer,
-    const Time from_time,
-    int max_result_count,
-    const SegmentQueryCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_UI, &HistoryBackend::QuerySegmentUsage,
-                  consumer, new history::QuerySegmentUsageRequest(callback),
-                  from_time, max_result_count);
-}
-
 void HistoryService::FlushForTest(const base::Closure& flushed) {
   thread_->message_loop_proxy()->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), flushed);
