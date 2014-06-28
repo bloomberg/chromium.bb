@@ -37,6 +37,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -44,6 +45,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -115,6 +117,15 @@ base::FilePath GetRlzDisabledFlagPath() {
 }
 #endif
 
+// Callback to GetNSSCertDatabaseForProfile. It starts CertLoader using the
+// provided NSS database. It must be called for primary user only.
+void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
+  if (!CertLoader::IsInitialized())
+    return;
+
+  CertLoader::Get()->StartWithNSSDB(database);
+}
+
 }  // namespace
 
 // static
@@ -140,95 +151,6 @@ SessionManager::SessionManager()
 
 SessionManager::~SessionManager() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-}
-
-void SessionManager::OnSessionRestoreStateChanged(
-    Profile* user_profile,
-    OAuth2LoginManager::SessionRestoreState state) {
-  User::OAuthTokenStatus user_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
-  OAuth2LoginManager* login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-
-  bool connection_error = false;
-  switch (state) {
-    case OAuth2LoginManager::SESSION_RESTORE_DONE:
-      user_status = User::OAUTH2_TOKEN_STATUS_VALID;
-      break;
-    case OAuth2LoginManager::SESSION_RESTORE_FAILED:
-      user_status = User::OAUTH2_TOKEN_STATUS_INVALID;
-      break;
-    case OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED:
-      connection_error = true;
-      break;
-    case OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED:
-    case OAuth2LoginManager::SESSION_RESTORE_PREPARING:
-    case OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS:
-      return;
-  }
-
-  // We should not be clearing existing token state if that was a connection
-  // error. http://crbug.com/295245
-  if (!connection_error) {
-    // We are in one of "done" states here.
-    UserManager::Get()->SaveUserOAuthStatus(
-        UserManager::Get()->GetLoggedInUser()->email(),
-        user_status);
-  }
-
-  login_manager->RemoveObserver(this);
-}
-
-void SessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
-  // Check if we were waiting to restart chrome.
-  if (!exit_after_session_restore_)
-    return;
-
-  OAuth2LoginManager* login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-  login_manager->RemoveObserver(this);
-
-  // Mark user auth token status as valid.
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_VALID);
-
-  LOG(WARNING) << "Exiting after new refresh token fetched";
-
-  // We need to restart cleanly in this case to make sure OAuth2 RT is actually
-  // saved.
-  chrome::AttemptRestart();
-}
-
-void SessionManager::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  UserManager* user_manager = UserManager::Get();
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
-      user_manager->IsLoggedInAsGuest() || !user_manager->IsUserLoggedIn()) {
-    return;
-  }
-
-  // Need to iterate over all users and their OAuth2 session state.
-  const UserList& users = user_manager->GetLoggedInUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if (!(*it)->is_profile_created())
-      continue;
-
-    Profile* user_profile = user_manager->GetProfileByUser(*it);
-    bool should_restore_session =
-        pending_restore_sessions_.find((*it)->email()) !=
-            pending_restore_sessions_.end();
-    OAuth2LoginManager* login_manager =
-        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-    if (login_manager->state() ==
-            OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
-      // If we come online for the first time after successful offline login,
-      // we need to kick off OAuth token verification process again.
-      login_manager->ContinueSessionRestore();
-    } else if (should_restore_session) {
-      pending_restore_sessions_.erase((*it)->email());
-      RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
-    }
-  }
 }
 
 void SessionManager::StartSession(const UserContext& user_context,
@@ -270,11 +192,14 @@ void SessionManager::PerformPostUserLoggedInActions() {
 
 void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   UserManager* user_manager = UserManager::Get();
-  // We don't need to restore session for demo/guest/stub/public account users.
+  // We need to restore session only for logged in regular (GAIA) users.
+  // Note: stub user is a special case that is used for tests, running
+  // linux_chromeos build on dev workstations w/o user_id parameters.
+  // Stub user is considered to be a regular GAIA user but it has special
+  // user_id (kStubUser) and certain services like restoring OAuth session are
+  // explicitly disabled for it.
   if (!user_manager->IsUserLoggedIn() ||
-      user_manager->IsLoggedInAsGuest() ||
-      user_manager->IsLoggedInAsPublicAccount() ||
-      user_manager->IsLoggedInAsDemoUser() ||
+      !user_manager->IsLoggedInAsRegularUser() ||
       user_manager->IsLoggedInAsStub()) {
     return;
   }
@@ -325,6 +250,29 @@ SessionManager::GetSigninSessionRestoreStrategy() {
 void SessionManager::SetFirstLoginPrefs(PrefService* prefs) {
   VLOG(1) << "Setting first login prefs";
   InitLocaleAndInputMethodsForNewUser(prefs);
+}
+
+bool SessionManager::GetAppModeChromeClientOAuthInfo(
+    std::string* chrome_client_id, std::string* chrome_client_secret) {
+  if (!chrome::IsRunningInForcedAppMode() ||
+      chrome_client_id_.empty() ||
+      chrome_client_secret_.empty()) {
+    return false;
+  }
+
+  *chrome_client_id = chrome_client_id_;
+  *chrome_client_secret = chrome_client_secret_;
+  return true;
+}
+
+void SessionManager::SetAppModeChromeClientOAuthInfo(
+    const std::string& chrome_client_id,
+    const std::string& chrome_client_secret) {
+  if (!chrome::IsRunningInForcedAppMode())
+    return;
+
+  chrome_client_id_ = chrome_client_id;
+  chrome_client_secret_ = chrome_client_secret;
 }
 
 bool SessionManager::RespectLocalePreference(
@@ -398,6 +346,97 @@ bool SessionManager::RespectLocalePreference(
                               callback.Pass());
 
   return true;
+}
+
+void SessionManager::OnSessionRestoreStateChanged(
+    Profile* user_profile,
+    OAuth2LoginManager::SessionRestoreState state) {
+  User::OAuthTokenStatus user_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+
+  bool connection_error = false;
+  switch (state) {
+    case OAuth2LoginManager::SESSION_RESTORE_DONE:
+      user_status = User::OAUTH2_TOKEN_STATUS_VALID;
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_FAILED:
+      user_status = User::OAUTH2_TOKEN_STATUS_INVALID;
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED:
+      connection_error = true;
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED:
+    case OAuth2LoginManager::SESSION_RESTORE_PREPARING:
+    case OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS:
+      return;
+  }
+
+  // We should not be clearing existing token state if that was a connection
+  // error. http://crbug.com/295245
+  if (!connection_error) {
+    // We are in one of "done" states here.
+    UserManager::Get()->SaveUserOAuthStatus(
+        UserManager::Get()->GetLoggedInUser()->email(),
+        user_status);
+  }
+
+  login_manager->RemoveObserver(this);
+}
+
+void SessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
+  // Check if we were waiting to restart chrome.
+  if (!exit_after_session_restore_)
+    return;
+
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+  login_manager->RemoveObserver(this);
+
+  // Mark user auth token status as valid.
+  UserManager::Get()->SaveUserOAuthStatus(
+      UserManager::Get()->GetLoggedInUser()->email(),
+      User::OAUTH2_TOKEN_STATUS_VALID);
+
+  LOG(WARNING) << "Exiting after new refresh token fetched";
+
+  // We need to restart cleanly in this case to make sure OAuth2 RT is actually
+  // saved.
+  chrome::AttemptRestart();
+}
+
+void SessionManager::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  UserManager* user_manager = UserManager::Get();
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
+      !user_manager->IsUserLoggedIn() ||
+      !user_manager->IsLoggedInAsRegularUser() ||
+      user_manager->IsLoggedInAsStub()) {
+    return;
+  }
+
+  // Need to iterate over all users and their OAuth2 session state.
+  const UserList& users = user_manager->GetLoggedInUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if (!(*it)->is_profile_created())
+      continue;
+
+    Profile* user_profile = user_manager->GetProfileByUser(*it);
+    bool should_restore_session =
+        pending_restore_sessions_.find((*it)->email()) !=
+            pending_restore_sessions_.end();
+    OAuth2LoginManager* login_manager =
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+    if (login_manager->state() ==
+            OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
+      // If we come online for the first time after successful offline login,
+      // we need to kick off OAuth token verification process again.
+      login_manager->ContinueSessionRestore();
+    } else if (should_restore_session) {
+      pending_restore_sessions_.erase((*it)->email());
+      RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
+    }
+  }
 }
 
 void SessionManager::CreateUserSession(const UserContext& user_context,
@@ -571,6 +610,8 @@ void SessionManager::FinalizePrepareProfile(Profile* profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
 
+  InitializeCertsForPrimaryUser(profile);
+
   // Initialize RLZ only for primary user.
   if (user_manager->GetPrimaryUser() ==
       user_manager->GetUserByProfile(profile)) {
@@ -677,6 +718,21 @@ void SessionManager::InitRlzImpl(Profile* profile, bool disabled) {
   if (delegate_)
     delegate_->OnRlzInitialized();
 #endif
+}
+
+void SessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
+  // Now that the user profile has been initialized
+  // |GetNSSCertDatabaseForProfile| is safe to be used.
+  UserManager* user_manager = UserManager::Get();
+  const User* primary_user = user_manager->GetPrimaryUser();
+  if (user_manager->IsUserLoggedIn() &&
+      primary_user &&
+      profile == user_manager->GetProfileByUser(primary_user) &&
+      CertLoader::IsInitialized() &&
+      base::SysInfo::IsRunningOnChromeOS()) {
+    GetNSSCertDatabaseForProfile(profile,
+                                 base::Bind(&OnGetNSSCertDatabaseForUser));
+  }
 }
 
 }  // namespace chromeos

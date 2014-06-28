@@ -77,10 +77,6 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
 
-  MOCK_METHOD2(GetAppModeChromeClientOAuthInfo, bool(std::string*,
-                                                     std::string*));
-  MOCK_METHOD2(SetAppModeChromeClientOAuthInfo, void(const std::string&,
-                                                     const std::string&));
   MOCK_CONST_METHOD0(AreLocallyManagedUsersAllowed, bool(void));
   MOCK_CONST_METHOD1(GetUserProfileDir,
                      base::FilePath(const std::string& email));

@@ -109,12 +109,6 @@ class FakeUserManager : public UserManager {
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;
   virtual void ResetUserFlow(const std::string& email) OVERRIDE {}
-  virtual bool GetAppModeChromeClientOAuthInfo(
-      std::string* chrome_client_id,
-      std::string* chrome_client_secret) OVERRIDE;
-  virtual void SetAppModeChromeClientOAuthInfo(
-      const std::string& chrome_client_id,
-      const std::string& chrome_client_secret) OVERRIDE {}
   virtual void AddObserver(Observer* obs) OVERRIDE {}
   virtual void RemoveObserver(Observer* obs) OVERRIDE {}
   virtual void AddSessionStateObserver(

@@ -51,16 +51,6 @@ class SessionManager :
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // OAuth2LoginManager::Observer overrides:
-  virtual void OnSessionRestoreStateChanged(
-      Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
-  virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) OVERRIDE;
-
-  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
-  virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
   // Start user session given |user_context| and |authenticator| which holds
   // authentication context (profile).
   void StartSession(const UserContext& user_context,
@@ -95,6 +85,15 @@ class SessionManager :
   // a guest user.
   static void SetFirstLoginPrefs(PrefService* prefs);
 
+  // Gets/sets Chrome OAuth client id and secret for kiosk app mode. The default
+  // values can be overridden with kiosk auth file.
+  bool GetAppModeChromeClientOAuthInfo(
+      std::string* chrome_client_id,
+      std::string* chrome_client_secret);
+  void SetAppModeChromeClientOAuthInfo(
+      const std::string& chrome_client_id,
+      const std::string& chrome_client_secret);
+
   // Changes browser locale (selects best suitable locale from different
   // user settings). Returns true if callback will be called.
   // Returns true if callback will be called.
@@ -110,6 +109,16 @@ class SessionManager :
 
   SessionManager();
   virtual ~SessionManager();
+
+  // OAuth2LoginManager::Observer overrides:
+  virtual void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
+  virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) OVERRIDE;
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);
@@ -153,6 +162,10 @@ class SessionManager :
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
 
+  // Get the NSS cert database for the primary user and start certificate
+  // loader with it.
+  void InitializeCertsForPrimaryUser(Profile* profile);
+
   Delegate* delegate_;
 
   // Authentication/user context.
@@ -177,6 +190,11 @@ class SessionManager :
   // Set of user_id for those users that we should restore authentication
   // session when notified about online state change.
   SessionRestoreStateSet pending_restore_sessions_;
+
+  // Kiosk mode related members.
+  // Chrome oauth client id and secret - override values for kiosk mode.
+  std::string chrome_client_id_;
+  std::string chrome_client_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

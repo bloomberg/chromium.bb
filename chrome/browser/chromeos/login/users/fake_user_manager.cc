@@ -276,12 +276,6 @@ UserFlow* FakeUserManager::GetUserFlow(const std::string& email) const {
   return NULL;
 }
 
-bool FakeUserManager::GetAppModeChromeClientOAuthInfo(
-    std::string* chrome_client_id,
-    std::string* chrome_client_secret) {
-  return false;
-}
-
 bool FakeUserManager::AreLocallyManagedUsersAllowed() const {
   return true;
 }

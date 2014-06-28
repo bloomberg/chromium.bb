@@ -28,7 +28,6 @@
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
@@ -46,10 +45,8 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
-#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -59,7 +56,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -175,15 +171,6 @@ void ResolveLocale(
   l10n_util::CheckAndResolveLocale(raw_locale, &resolved_locale);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(on_resolve_callback, resolved_locale));
-}
-
-// Callback to GetNSSCertDatabaseForProfile. It starts CertLoader using the
-// provided NSS database. It must be called for primary user only.
-void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
-  if (!CertLoader::IsInitialized())
-    return;
-
-  CertLoader::Get()->StartWithNSSDB(database);
 }
 
 }  // namespace
@@ -868,18 +855,6 @@ void UserManagerImpl::Observe(int type,
           sync_observer->StartObserving();
           multi_profile_user_controller_->StartObserving(profile);
         }
-      }
-
-      // Now that the user profile has been initialized and
-      // |GetNSSCertDatabaseForProfile| is safe to be used, get the NSS cert
-      // database for the primary user and start certificate loader with it.
-      if (IsUserLoggedIn() &&
-          GetPrimaryUser() &&
-          profile == GetProfileByUser(GetPrimaryUser()) &&
-          CertLoader::IsInitialized() &&
-          base::SysInfo::IsRunningOnChromeOS()) {
-        GetNSSCertDatabaseForProfile(profile,
-                                     base::Bind(&OnGetNSSCertDatabaseForUser));
       }
       break;
     }
@@ -1750,29 +1725,6 @@ void UserManagerImpl::ResetUserFlow(const std::string& user_id) {
     delete it->second;
     specific_flows_.erase(it);
   }
-}
-
-bool UserManagerImpl::GetAppModeChromeClientOAuthInfo(
-    std::string* chrome_client_id, std::string* chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode() ||
-      chrome_client_id_.empty() ||
-      chrome_client_secret_.empty()) {
-    return false;
-  }
-
-  *chrome_client_id = chrome_client_id_;
-  *chrome_client_secret = chrome_client_secret_;
-  return true;
-}
-
-void UserManagerImpl::SetAppModeChromeClientOAuthInfo(
-    const std::string& chrome_client_id,
-    const std::string& chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode())
-    return;
-
-  chrome_client_id_ = chrome_client_id;
-  chrome_client_secret_ = chrome_client_secret;
 }
 
 bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
