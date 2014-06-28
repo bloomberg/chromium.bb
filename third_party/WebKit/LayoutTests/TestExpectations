@@ -950,11 +950,6 @@ crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass F
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
-# Failing after https://src.chromium.org/viewvc/chrome?revision=279709&view=revision
-crbug.com/388748 screen_orientation/lockOrientation-bad-argument.html [ Pass Failure ]
-crbug.com/388748 screen_orientation/lockOrientation-bad-array-argument.html [ Pass Failure ]
-crbug.com/388748 screen_orientation/orientation-attribute.html [ Pass Failure ]
-
 crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-gradient.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
@@ -1052,8 +1047,6 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Fai
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
 
 crbug.com/328961 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
-
-crbug.com/389047 screen_orientation/page-visibility.html [ Pass Failure ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win7 ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
