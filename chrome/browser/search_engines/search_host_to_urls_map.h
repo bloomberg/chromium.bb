@@ -32,8 +32,7 @@ class SearchHostToURLsMap {
            const SearchTermsData& search_terms_data);
 
   // Removes the TemplateURL from the lookup.
-  void Remove(TemplateURL* template_url,
-              const SearchTermsData& search_terms_data);
+  void Remove(TemplateURL* template_url);
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
@@ -51,11 +50,6 @@ class SearchHostToURLsMap {
   // Adds many URLs to the map.
   void Add(const TemplateURLService::TemplateURLVector& template_urls,
            const SearchTermsData& search_terms_data);
-
-  // Removes the given template_url using only the pointer instead of the value.
-  // This is useful when the value may have changed before being updated in the
-  // map. (Specifically when the GoogleBaseURLValue changes.)
-  void RemoveByPointer(TemplateURL* template_url);
 
   // Maps from host to set of TemplateURLs whose search url host is host.
   HostToURLsMap host_to_urls_map_;

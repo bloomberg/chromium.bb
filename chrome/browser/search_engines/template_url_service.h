@@ -355,7 +355,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // data is bad for some reason, an ACTION_DELETE change is added and the
   // function returns NULL.
   static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
-      Profile* profile,
+      PrefService* prefs,
+      const SearchTermsData& search_terms_data,
       TemplateURL* existing_turl,
       const syncer::SyncData& sync_data,
       syncer::SyncChangeList* change_list);
@@ -491,28 +492,23 @@ class TemplateURLService : public WebDataServiceConsumer,
   // |new_values|, but the ID for |existing_turl| is retained.  Notifying
   // observers is the responsibility of the caller.  Returns whether
   // |existing_turl| was found in |template_urls_| and thus could be updated.
-  // |old_search_terms_data| is passed to SearchHostToURLsMap::Remove().
   //
   // NOTE: This should not be called with an extension keyword as there are no
   // updates needed in that case.
   bool UpdateNoNotify(TemplateURL* existing_turl,
-                      const TemplateURL& new_values,
-                      const SearchTermsData& old_search_terms_data);
+                      const TemplateURL& new_values);
 
   // If the TemplateURL comes from a prepopulated URL available in the current
   // country, update all its fields save for the keyword, short name and id so
   // that they match the internal prepopulated URL. TemplateURLs not coming from
   // a prepopulated URL are not modified.
   static void UpdateTemplateURLIfPrepopulated(TemplateURL* existing_turl,
-                                              Profile* profile);
+                                              PrefService* prefs);
 
   // If the TemplateURL's sync GUID matches the kSyncedDefaultSearchProviderGUID
   // preference it will be used to update the DSE in memory and as persisted in
   // preferences.
   void MaybeUpdateDSEAfterSync(TemplateURL* synced_turl);
-
-  // Returns the preferences we use.
-  PrefService* GetPrefs();
 
   // Iterates through the TemplateURLs to see if one matches the visited url.
   // For each TemplateURL whose url matches the visited url
@@ -526,7 +522,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Invoked when the Google base URL has changed. Updates the mapping for all
   // TemplateURLs that have a replacement term of {google:baseURL} or
   // {google:baseSuggestURL}.
-  void GoogleBaseURLChanged(const GURL& old_base_url);
+  void GoogleBaseURLChanged();
 
   // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
@@ -673,6 +669,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // When Load is invoked, if we haven't yet loaded, the WebDataService is
   // obtained from the Profile. This allows us to lazily access the database.
   Profile* profile_;
+
+  PrefService* prefs_;
 
   scoped_ptr<SearchTermsData> search_terms_data_;
 

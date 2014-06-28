@@ -340,8 +340,8 @@ syncer::SyncDataList TemplateURLServiceSyncTest::CreateInitialSyncData() const {
 TemplateURL* TemplateURLServiceSyncTest::Deserialize(
     const syncer::SyncData& sync_data) {
   syncer::SyncChangeList dummy;
-  return TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(NULL,
-      NULL, sync_data, &dummy);
+  return TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
+      NULL, SearchTermsData(), NULL, sync_data, &dummy);
 }
 
 TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(

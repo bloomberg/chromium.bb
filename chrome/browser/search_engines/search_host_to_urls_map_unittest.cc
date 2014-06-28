@@ -53,7 +53,7 @@ TEST_F(SearchHostToURLsMapTest, Add) {
 }
 
 TEST_F(SearchHostToURLsMapTest, Remove) {
-  provider_map_->Remove(t_urls_[0].get(), SearchTermsData());
+  provider_map_->Remove(t_urls_[0].get());
 
   const TemplateURL* found_url = provider_map_->GetTemplateURLForHost(host_);
   ASSERT_EQ(t_urls_[1].get(), found_url);
