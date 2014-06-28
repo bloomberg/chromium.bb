@@ -125,24 +125,33 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   int explanation_id = GetIdForContentType(
       kBlockedExplanatoryTextIDs, arraysize(kBlockedExplanatoryTextIDs), type);
 
+  // For plugins, don't show the animated explanation unless the plugin was
+  // blocked despite the user's content settings being set to allow it (e.g.
+  // due to auto-blocking NPAPI plugins).
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    GURL url = web_contents->GetURL();
+    if (map->GetContentSetting(url, url, type, std::string()) !=
+        CONTENT_SETTING_ALLOW)
+      explanation_id = 0;
+  }
+
   // If a content type is blocked by default and was accessed, display the
-  // accessed icon.
+  // content blocked page action.
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!content_settings->IsContentBlocked(get_content_settings_type())) {
-    if (!content_settings->IsContentAllowed(get_content_settings_type()))
+  if (!content_settings->IsContentBlocked(type)) {
+    if (!content_settings->IsContentAllowed(type))
       return;
 
-    // For cookies, only show the accessed bubble if cookies are blocked by
-    // default.
-    if (get_content_settings_type() == CONTENT_SETTINGS_TYPE_COOKIES &&
-        (profile->GetHostContentSettingsMap()->
-            GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES, NULL) !=
-                CONTENT_SETTING_BLOCK))
+    // For cookies, only show the cookie blocked page action if cookies are
+    // blocked by default.
+    if (type == CONTENT_SETTINGS_TYPE_COOKIES &&
+        (map->GetDefaultContentSetting(type, NULL) != CONTENT_SETTING_BLOCK))
       return;
 
     static const ContentSettingsTypeIdEntry kAccessedIconIDs[] = {
