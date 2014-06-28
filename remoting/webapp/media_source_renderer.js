@@ -31,6 +31,9 @@ remoting.MediaSourceRenderer = function(videoTag) {
  * @param {string} format Format of the stream.
  */
 remoting.MediaSourceRenderer.prototype.reset = function(format) {
+  // Reset the queue.
+  this.buffers_ = [];
+
   // Create a new MediaSource instance.
   this.sourceBuffer_ = null;
   this.mediaSource_ = new MediaSource();
