@@ -32,6 +32,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
@@ -397,7 +398,9 @@ namespace content {
 // DelegatedFrameHost, public:
 
 ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
-  return [browser_compositor_view_ compositor];
+  if (browser_compositor_view_->IsValid())
+    return browser_compositor_view_->GetCompositor();
+  return NULL;
 }
 
 ui::Layer* RenderWidgetHostViewMac::GetLayer() {
@@ -410,7 +413,8 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  [browser_compositor_view_ compositor]->ScheduleFullRedraw();
+  if (browser_compositor_view_->IsValid())
+    browser_compositor_view_->GetCompositor()->ScheduleFullRedraw();
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -443,7 +447,7 @@ DelegatedFrameHost* RenderWidgetHostViewMac::GetDelegatedFrameHost() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCompositorViewClient, public:
+// BrowserCompositorViewMacClient, public:
 
 void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
     const std::vector<ui::LatencyInfo>& all_latency_info) {
@@ -455,6 +459,14 @@ void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
     render_widget_host_->FrameSwapped(latency_info);
   }
+}
+
+NSView* RenderWidgetHostViewMac::BrowserCompositorSuperview() {
+  return cocoa_view_;
+}
+
+ui::Layer* RenderWidgetHostViewMac::BrowserCompositorRootLayer() {
+  return root_layer_.get();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -473,6 +485,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      browser_compositor_view_(BrowserCompositorViewMac::CreateInvalid()),
       pending_latency_info_delay_(0),
       pending_latency_info_delay_weak_ptr_factory_(this),
       backing_store_scale_factor_(1),
@@ -496,6 +509,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   [background_layer_ setContentsGravity:kCAGravityTopLeft];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
+
+  if (IsDelegatedRendererEnabled()) {
+    root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
+    delegated_frame_host_.reset(new DelegatedFrameHost(this));
+  }
 
   render_widget_host_->SetView(this);
 }
@@ -583,6 +601,32 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
   }
 
   return true;
+}
+
+void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
+  if (!delegated_frame_host_)
+    return;
+  if (browser_compositor_view_->IsValid())
+    return;
+
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::EnsureBrowserCompositorView");
+
+  browser_compositor_view_.reset(BrowserCompositorViewMac::CreateForClient(
+      this));
+  delegated_frame_host_->AddedToWindow();
+  delegated_frame_host_->WasShown();
+}
+
+void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::DestroyBrowserCompositorView");
+  if (!browser_compositor_view_->IsValid())
+    return;
+
+  delegated_frame_host_->WasHidden();
+  delegated_frame_host_->RemovingFromWindow();
+  browser_compositor_view_.reset(BrowserCompositorViewMac::CreateInvalid());
 }
 
 void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
@@ -815,8 +859,6 @@ void RenderWidgetHostViewMac::WasShown() {
 
   render_widget_host_->WasShown();
   software_frame_manager_->SetVisibility(true);
-  if (delegated_frame_host_)
-    delegated_frame_host_->WasShown();
 
   // Call setNeedsDisplay before pausing for new frames to come in -- if any
   // do, and are drawn, then the needsDisplay bit will be cleared.
@@ -832,12 +874,12 @@ void RenderWidgetHostViewMac::WasHidden() {
   // them now.
   SendPendingSwapAck();
 
+  DestroyBrowserCompositorView();
+
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
   software_frame_manager_->SetVisibility(false);
-  if (delegated_frame_host_)
-    delegated_frame_host_->WasHidden();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
@@ -1041,7 +1083,7 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
-  [browser_compositor_view_ resetClient];
+  DestroyBrowserCompositorView();
   delegated_frame_host_.reset();
   root_layer_.reset();
 
@@ -1776,21 +1818,17 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   if (frame->delegated_frame_data) {
-    if (!browser_compositor_view_) {
-      browser_compositor_view_.reset([[BrowserCompositorViewMac alloc]
-          initWithSuperview:cocoa_view_ withClient:this]);
-      root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
-      delegated_frame_host_.reset(new DelegatedFrameHost(this));
-      [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
-    }
-
     float scale_factor = frame->metadata.device_scale_factor;
     gfx::Size dip_size = ToCeiledSize(frame->metadata.viewport_size);
     gfx::Size pixel_size = ConvertSizeToPixel(
         scale_factor, dip_size);
-    [browser_compositor_view_ compositor]->SetScaleAndSize(
-        scale_factor, pixel_size);
     root_layer_->SetBounds(gfx::Rect(dip_size));
+
+    if (!render_widget_host_->is_hidden()) {
+      EnsureBrowserCompositorView();
+      browser_compositor_view_->GetCompositor()->SetScaleAndSize(
+          scale_factor, pixel_size);
+    }
 
     delegated_frame_host_->SwapDelegatedFrame(
         output_surface_id,
@@ -2237,7 +2275,7 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 }
 
 void RenderWidgetHostViewMac::LayoutLayers() {
-  if (browser_compositor_view_) {
+  if (delegated_frame_host_) {
     return;
   }
 

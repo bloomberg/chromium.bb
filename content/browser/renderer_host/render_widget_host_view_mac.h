@@ -35,6 +35,7 @@
 struct ViewHostMsg_TextInputState_Params;
 
 namespace content {
+class BrowserCompositorviewMac;
 class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
 class RenderWidgetHostViewMac;
@@ -47,7 +48,6 @@ class Compositor;
 class Layer;
 }
 
-@class BrowserCompositorViewMac;
 @class CompositingIOSurfaceLayer;
 @class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
@@ -216,7 +216,7 @@ class RenderWidgetHostImpl;
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
-      public BrowserCompositorViewClient,
+      public BrowserCompositorViewMacClient,
       public IPC::Sender,
       public SoftwareFrameManagerClient,
       public CompositingIOSurfaceLayerClient {
@@ -436,9 +436,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   scoped_refptr<CompositingIOSurfaceContext> compositing_iosurface_context_;
 
   // Delegated frame management and compositior.
-  base::scoped_nsobject<BrowserCompositorViewMac> browser_compositor_view_;
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
+
+  // Container for the NSView drawn by the browser compositor. This will never
+  // be NULL, but may be invalid (see its IsValid method).
+  scoped_ptr<BrowserCompositorViewMac> browser_compositor_view_;
 
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
@@ -512,9 +515,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) OVERRIDE;
   virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
-  // BrowserCompositorViewClient implementation.
+  // BrowserCompositorViewMacClient implementation.
   virtual void BrowserCompositorViewFrameSwapped(
       const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
+  virtual NSView* BrowserCompositorSuperview() OVERRIDE;
+  virtual ui::Layer* BrowserCompositorRootLayer() OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewMacTest;
@@ -537,6 +542,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();
+
+  void EnsureBrowserCompositorView();
+  void DestroyBrowserCompositorView();
 
   void EnsureSoftwareLayer();
   void DestroySoftwareLayer();

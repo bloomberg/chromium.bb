@@ -18,16 +18,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
-class BrowserCompositorViewMacHelper;
-
-class BrowserCompositorViewClient {
- public:
-  virtual void BrowserCompositorViewFrameSwapped(
-      const std::vector<ui::LatencyInfo>& latency_info) = 0;
-};
-
-}  // namespace content
+@class BrowserCompositorViewCocoa;
 
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
@@ -42,32 +33,64 @@ class BrowserCompositorViewClient {
               withCanvas:(SkCanvas*)canvas;
 @end  // NSView (BrowserCompositorView)
 
-// NSView drawn by a ui::Compositor. The superview of this view is responsible
-// for changing the ui::Compositor SizeAndScale and calling layoutLayers when
-// the size of the parent view may change. This interface is patterned after
-// the needs of RenderWidgetHostViewCocoa, and could change.
-@interface BrowserCompositorViewMac : NSView {
-  scoped_ptr<ui::Compositor> compositor_;
 
-  base::scoped_nsobject<CALayer> background_layer_;
-  base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
-  int accelerated_layer_output_surface_id_;
-  std::vector<ui::LatencyInfo> accelerated_latency_info_;
-  base::scoped_nsobject<SoftwareLayer> software_layer_;
+namespace content {
 
-  content::BrowserCompositorViewClient* client_;
-  scoped_ptr<content::BrowserCompositorViewMacHelper> helper_;
-}
+// The interface through which BrowserCompositorViewMac calls back into
+// RenderWidgetHostViewMac (or any other structure that wishes to draw a
+// NSView backed by a ui::Compositor).
+class BrowserCompositorViewMacClient {
+ public:
+  // Called when a frame is drawn, and used to pass latency info back to the
+  // renderer (if any).
+  virtual void BrowserCompositorViewFrameSwapped(
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
 
-// Initialize to render the content of a specific superview.
-- (id)initWithSuperview:(NSView*)view
-             withClient:(content::BrowserCompositorViewClient*)client;
+  // Used to install the ui::Compositor-backed NSView as a child of its parent
+  // view.
+  virtual NSView* BrowserCompositorSuperview() = 0;
 
-// Disallow further access to the client.
-- (void)resetClient;
+  // Used to install the root ui::Layer into the ui::Compositor.
+  virtual ui::Layer* BrowserCompositorRootLayer() = 0;
+};
 
-// Access the underlying ui::Compositor for this view.
-- (ui::Compositor*)compositor;
-@end  // BrowserCompositorViewMac
+// The class to hold a ui::Compositor-backed NSView. Because a ui::Compositor
+// is expensive in terms of resources and re-allocating a ui::Compositor is
+// expensive in terms of work, this class is largely used to manage recycled
+// instances of BrowserCompositorViewCocoa, which actually is a NSView and
+// has a ui::Compositor instance.
+class BrowserCompositorViewMac {
+ public:
+  // This will install the NSView which is drawn by the ui::Compositor into
+  // the NSView provided by the client.
+  static BrowserCompositorViewMac* CreateForClient(
+      BrowserCompositorViewMacClient* client);
+
+  // This is used as a placeholder to indicate that the owner may want a full
+  // instance soon. One recycled instance of BrowserCompositorViewCocoa will
+  // be kept around as long as a non-zero number of invalid instances are
+  // present.
+  static BrowserCompositorViewMac* CreateInvalid();
+
+  ~BrowserCompositorViewMac();
+
+  // Returns true if this was created with CreateForClient, as opposed to
+  // CreateInvalid.
+  bool IsValid() const { return client_; }
+
+  // The ui::Compositor being used to render the NSView.
+  ui::Compositor* GetCompositor() const;
+
+  // The client (used by the BrowserCompositorViewCocoa to access the client).
+  BrowserCompositorViewMacClient* GetClient() const { return client_; }
+
+ private:
+  BrowserCompositorViewMac(BrowserCompositorViewMacClient* client);
+
+  BrowserCompositorViewMacClient* client_;
+  base::scoped_nsobject<BrowserCompositorViewCocoa> cocoa_view_;
+};
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_MAC_H_

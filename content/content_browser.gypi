@@ -1390,6 +1390,8 @@
       'browser/compositor/browser_compositor_output_surface_proxy.h',
       'browser/compositor/browser_compositor_view_mac.mm',
       'browser/compositor/browser_compositor_view_mac.h',
+      'browser/compositor/browser_compositor_view_private_mac.mm',
+      'browser/compositor/browser_compositor_view_private_mac.h',
       'browser/compositor/delegated_frame_host.cc',
       'browser/compositor/delegated_frame_host.h',
       'browser/compositor/gpu_process_transport_factory.cc',

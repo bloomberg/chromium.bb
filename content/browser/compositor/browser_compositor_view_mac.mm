@@ -5,47 +5,12 @@
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 
 #include "base/debug/trace_event.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "content/browser/compositor/gpu_process_transport_factory.h"
-#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
-#include "content/browser/renderer_host/compositing_iosurface_mac.h"
-#include "content/browser/renderer_host/software_layer_mac.h"
-#include "content/public/browser/context_factory.h"
-#include "ui/base/cocoa/animation_utils.h"
-#include "ui/gl/scoped_cgl.h"
+#include "base/lazy_instance.h"
+#include "content/browser/compositor/browser_compositor_view_private_mac.h"
 
-@interface BrowserCompositorViewMac (Private)
-- (void)layerDidDrawFrame;
-- (void)gotAcceleratedLayerError;
-@end  // BrowserCompositorViewMac (Private)
+////////////////////////////////////////////////////////////////////////////////
+// NSView (BrowserCompositorView)
 
-namespace content {
-
-// The CompositingIOSurfaceLayerClient interface needs to be implemented as a
-// C++ class to operate on, rather than Objective C class. This helper class
-// provides a bridge between the two.
-class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
- public:
-  BrowserCompositorViewMacHelper(BrowserCompositorViewMac* view)
-      : view_(view) {}
-  virtual ~BrowserCompositorViewMacHelper() {}
-
- private:
-  // CompositingIOSurfaceLayerClient implementation:
-  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE {
-    [view_ layerDidDrawFrame];
-    if (!succeeded)
-      [view_ gotAcceleratedLayerError];
-  }
-
-  BrowserCompositorViewMac* view_;
-};
-
-}  // namespace content
-
-
-// The default implementation of additions to the NSView interface for browser
-// compositing should never be called. Log an error if they are.
 @implementation NSView (BrowserCompositorView)
 
 - (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
@@ -53,6 +18,8 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
                      withLatencyInfo:(std::vector<ui::LatencyInfo>) latency_info
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
+  // The default implementation of additions to the NSView interface for browser
+  // compositing should never be called. Log an error if they are.
   DLOG(ERROR) << "-[NSView gotAcceleratedIOSurfaceFrame] called on "
               << "non-overriden class.";
 }
@@ -65,169 +32,70 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 @end  // NSView (BrowserCompositorView)
 
-@implementation BrowserCompositorViewMac : NSView
+////////////////////////////////////////////////////////////////////////////////
+// BrowserCompositorViewMac
 
-- (id)initWithSuperview:(NSView*)view
-             withClient:(content::BrowserCompositorViewClient*)client {
-  if (self = [super init]) {
-    accelerated_layer_output_surface_id_ = 0;
-    client_ = client;
-    helper_.reset(new content::BrowserCompositorViewMacHelper(self));
+namespace content {
+namespace {
 
-    // Disable the fade-in animation as the layer and view are added.
-    ScopedCAActionDisabler disabler;
+// The number of invalid BrowserCompositorViewMac objects. If this reaches
+// zero, then the BrowserCompositorViewCocoa being held on to for recycling,
+// |g_recyclable_cocoa_view|, will be freed.
+uint32 g_invalid_view_count = 0;
 
-    // Make this view host a transparent layer.
-    background_layer_.reset([[CALayer alloc] init]);
-    [background_layer_ setContentsGravity:kCAGravityTopLeft];
-    [self setLayer:background_layer_];
-    [self setWantsLayer:YES];
+// A spare BrowserCompositorViewCocoa kept around for recycling.
+base::LazyInstance<base::scoped_nsobject<BrowserCompositorViewCocoa>>
+  g_recyclable_cocoa_view;
 
-    compositor_.reset(new ui::Compositor(self, content::GetContextFactory()));
-    [view addSubview:self];
-  }
-  return self;
+}  // namespace
+
+BrowserCompositorViewMac* BrowserCompositorViewMac::CreateForClient(
+    BrowserCompositorViewMacClient* client) {
+  return new BrowserCompositorViewMac(client);
 }
 
-- (void)gotAcceleratedLayerError {
-  if (!accelerated_layer_)
-    return;
-
-  [accelerated_layer_ context]->PoisonContextAndSharegroup();
-  compositor_->ScheduleFullRedraw();
+BrowserCompositorViewMac* BrowserCompositorViewMac::CreateInvalid() {
+  return new BrowserCompositorViewMac(NULL);
 }
 
-- (void)resetClient {
-  [accelerated_layer_ resetClient];
-  client_ = NULL;
-}
-
-- (ui::Compositor*)compositor {
-  return compositor_.get();
-}
-
-- (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
-                 withOutputSurfaceID:(int)surface_id
-                     withLatencyInfo:(std::vector<ui::LatencyInfo>) latency_info
-                       withPixelSize:(gfx::Size)pixel_size
-                     withScaleFactor:(float)scale_factor {
-  DCHECK(!accelerated_layer_output_surface_id_);
-  accelerated_layer_output_surface_id_ = surface_id;
-  accelerated_latency_info_.insert(accelerated_latency_info_.end(),
-                                   latency_info.begin(), latency_info.end());
-
-  ScopedCAActionDisabler disabler;
-
-  // If there is already an accelerated layer, but it has the wrong scale
-  // factor or it was poisoned, remove the old layer and replace it.
-  base::scoped_nsobject<CompositingIOSurfaceLayer> old_accelerated_layer;
-  if (accelerated_layer_ && (
-          [accelerated_layer_ context]->HasBeenPoisoned() ||
-          [accelerated_layer_ iosurface]->scale_factor() != scale_factor)) {
-    old_accelerated_layer = accelerated_layer_;
-    accelerated_layer_.reset();
-  }
-
-  // If there is not a layer for accelerated frames, create one.
-  if (!accelerated_layer_) {
-    // Disable the fade-in animation as the layer is added.
-    ScopedCAActionDisabler disabler;
-    scoped_refptr<content::CompositingIOSurfaceMac> iosurface =
-        content::CompositingIOSurfaceMac::Create();
-    accelerated_layer_.reset([[CompositingIOSurfaceLayer alloc]
-        initWithIOSurface:iosurface
-          withScaleFactor:scale_factor
-               withClient:helper_.get()]);
-    [[self layer] addSublayer:accelerated_layer_];
-  }
-
-  {
-    bool result = true;
-    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-        [accelerated_layer_ context]->cgl_context());
-    result = [accelerated_layer_ iosurface]->SetIOSurfaceWithContextCurrent(
-        [accelerated_layer_ context], surface_handle, pixel_size, scale_factor);
-    if (!result)
-      LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
-  }
-  [accelerated_layer_ gotNewFrame];
-
-  // Set the bounds of the accelerated layer to match the size of the frame.
-  // If the bounds changed, force the content to be displayed immediately.
-  CGRect new_layer_bounds = CGRectMake(
-    0,
-    0,
-    [accelerated_layer_ iosurface]->dip_io_surface_size().width(),
-    [accelerated_layer_ iosurface]->dip_io_surface_size().height());
-  bool bounds_changed = !CGRectEqualToRect(
-      new_layer_bounds, [accelerated_layer_ bounds]);
-  [accelerated_layer_ setBounds:new_layer_bounds];
-  if (bounds_changed) {
-    [accelerated_layer_ setNeedsDisplay];
-    [accelerated_layer_ displayIfNeeded];
-  }
-
-  // If there was a software layer or an old accelerated layer, remove it.
-  // Disable the fade-out animation as the layer is removed.
-  {
-    ScopedCAActionDisabler disabler;
-    [software_layer_ removeFromSuperlayer];
-    software_layer_.reset();
-    [old_accelerated_layer resetClient];
-    [old_accelerated_layer removeFromSuperlayer];
-    old_accelerated_layer.reset();
+BrowserCompositorViewMac::BrowserCompositorViewMac(
+    BrowserCompositorViewMacClient* client) : client_(client) {
+  if (client_) {
+    // Try to use the recyclable BrowserCompositorViewMac if there is one,
+    // otherwise allocate a new one.
+    // TODO(ccameron): If there exists a frame in flight (swap has been called
+    // by the compositor, but the frame has not arrived from the GPU process
+    // yet), then that frame may inappropriately flash in the new view.
+    swap(g_recyclable_cocoa_view.Get(), cocoa_view_);
+    if (!cocoa_view_)
+      cocoa_view_.reset([[BrowserCompositorViewCocoa alloc] init]);
+    [cocoa_view_ setClient:client_];
+  } else {
+    g_invalid_view_count += 1;
   }
 }
 
-- (void)gotSoftwareFrame:(cc::SoftwareFrameData*)frame_data
-         withScaleFactor:(float)scale_factor
-              withCanvas:(SkCanvas*)canvas {
-  if (!frame_data || !canvas)
-    return;
-
-  // If there is not a layer for software frames, create one.
-  if (!software_layer_) {
-    // Disable the fade-in animation as the layer is added.
-    ScopedCAActionDisabler disabler;
-    software_layer_.reset([[SoftwareLayer alloc] init]);
-    [[self layer] addSublayer:software_layer_];
+BrowserCompositorViewMac::~BrowserCompositorViewMac() {
+  if (client_) {
+    [cocoa_view_ setClient:NULL];
+    // If there are invalid views that may want need a
+    // BrowserCompositorViewCocoa momentarily, then allow the
+    // BrowserCompositorViewCocoa to be recycled. Otherwise, discard it.
+    if (g_invalid_view_count)
+      swap(g_recyclable_cocoa_view.Get(), cocoa_view_);
+  } else {
+    // If this is the last invalid view going away, then discard the
+    // BrowserCompositorViewCocoa that was being saved to recycle.
+    DCHECK_GT(g_invalid_view_count, 0u);
+    g_invalid_view_count -= 1;
+    if (!g_invalid_view_count)
+      g_recyclable_cocoa_view.Get().reset();
   }
-
-  SkImageInfo info;
-  size_t row_bytes;
-  const void* pixels = canvas->peekPixels(&info, &row_bytes);
-  [software_layer_ setContentsToData:pixels
-                        withRowBytes:row_bytes
-                       withPixelSize:gfx::Size(info.fWidth, info.fHeight)
-                     withScaleFactor:scale_factor];
-
-  // If there was an accelerated layer, remove it.
-  // Disable the fade-out animation as the layer is removed.
-  {
-    ScopedCAActionDisabler disabler;
-    [accelerated_layer_ resetClient];
-    [accelerated_layer_ removeFromSuperlayer];
-    accelerated_layer_.reset();
-  }
-
-  // This call can be nested insider ui::Compositor commit calls, and can also
-  // make additional ui::Compositor commit calls. Avoid the potential recursion
-  // by acknowledging the frame asynchronously.
-  [self performSelector:@selector(layerDidDrawFrame)
-             withObject:nil
-             afterDelay:0];
 }
 
-- (void)layerDidDrawFrame {
-  if (accelerated_layer_output_surface_id_) {
-    content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
-        accelerated_layer_output_surface_id_);
-    accelerated_layer_output_surface_id_ = 0;
-  }
-
-  if (client_)
-    client_->BrowserCompositorViewFrameSwapped(accelerated_latency_info_);
-  accelerated_latency_info_.clear();
+ui::Compositor* BrowserCompositorViewMac::GetCompositor() const {
+  DCHECK(cocoa_view_);
+  return [cocoa_view_ compositor];
 }
 
-@end  // BrowserCompositorViewMac
+}  // namespace content

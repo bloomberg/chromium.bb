@@ -206,16 +206,15 @@ void Compositor::Draw() {
     draw_on_compositing_end_ = true;
     return;
   }
-  waiting_on_compositing_end_ = true;
-
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "Compositor::Draw", last_started_frame_ + 1);
-
   if (!root_layer_)
     return;
+
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "Compositor::Draw", last_started_frame_ + 1);
 
   DCHECK_NE(swap_state_, SWAP_POSTED);
   swap_state_ = SWAP_NONE;
 
+  waiting_on_compositing_end_ = true;
   last_started_frame_++;
   if (!IsLocked()) {
     // TODO(nduca): Temporary while compositor calls
