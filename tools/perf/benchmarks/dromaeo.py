@@ -155,6 +155,7 @@ class DromaeoJslibEventPrototype(_DromaeoBenchmark):
   query_param = 'jslib-event-prototype'
 
 
+@benchmark.Disabled('xp')  # crbug.com/389731
 class DromaeoJslibModifyJquery(_DromaeoBenchmark):
   """Dromaeo JSLib modify jquery JavaScript benchmark"""
   tag = 'jslibmodifyjquery'
