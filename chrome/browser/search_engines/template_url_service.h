@@ -35,6 +35,10 @@ class TemplateURL;
 struct TemplateURLData;
 class TemplateURLServiceObserver;
 
+namespace rappor {
+class RapporService;
+}
+
 namespace syncer {
 class SyncData;
 class SyncErrorFactory;
@@ -85,7 +89,8 @@ class TemplateURLService : public WebDataServiceConsumer,
     const char* const content;
   };
 
-  explicit TemplateURLService(Profile* profile);
+  TemplateURLService(Profile* profile,
+                     rappor::RapporService* rappor_service);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
   virtual ~TemplateURLService();
@@ -671,6 +676,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   Profile* profile_;
 
   PrefService* prefs_;
+
+  rappor::RapporService* rappor_service_;
 
   scoped_ptr<SearchTermsData> search_terms_data_;
 

@@ -31,15 +31,4 @@ void SampleDomainAndRegistryFromGURL(const std::string& metric,
       GetDomainAndRegistrySampleFromGURL(gurl));
 }
 
-void SampleDomainAndRegistryFromHost(const std::string& metric,
-                                     const std::string& host) {
-  if (!g_browser_process->rappor_service())
-    return;
-  g_browser_process->rappor_service()->RecordSample(
-      metric,
-      rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-}
-
 }  // namespace rappor

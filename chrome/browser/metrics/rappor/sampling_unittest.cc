@@ -24,7 +24,6 @@ TEST(RapporSamplingTest, GetDomainAndRegistrySampleFromGURLTest) {
 // Make sure recording a sample during tests, when the Rappor service is NULL,
 // doesn't cause a crash.
 TEST(RapporSamplingTest, SmokeTest) {
-  SampleDomainAndRegistryFromHost(std::string(), std::string());
   SampleDomainAndRegistryFromGURL(std::string(), GURL());
 }
 

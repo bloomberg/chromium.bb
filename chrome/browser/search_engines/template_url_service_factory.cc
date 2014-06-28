@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -31,7 +32,8 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 // static
 KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
-  return new TemplateURLService(static_cast<Profile*>(profile));
+  return new TemplateURLService(static_cast<Profile*>(profile),
+                                g_browser_process->rappor_service());
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()

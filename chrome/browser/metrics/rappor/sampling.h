@@ -21,11 +21,6 @@ std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl);
 void SampleDomainAndRegistryFromGURL(const std::string& metric,
                                      const GURL& gurl);
 
-// Records the domain and registry of a host to a Rappor metric.
-// If the Rappor service is NULL, such as during tests, this call does nothing.
-void SampleDomainAndRegistryFromHost(const std::string& metric,
-                                     const std::string& host);
-
 }  // namespace rappor
 
 #endif  // CHROME_BROWSER_METRICS_RAPPOR_SAMPLING_H_

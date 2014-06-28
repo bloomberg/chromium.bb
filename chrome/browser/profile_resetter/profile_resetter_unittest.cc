@@ -145,7 +145,7 @@ void ProfileResetterTest::SetUp() {
 // static
 KeyedService* ProfileResetterTest::CreateTemplateURLService(
     content::BrowserContext* context) {
-  return new TemplateURLService(static_cast<Profile*>(context));
+  return new TemplateURLService(static_cast<Profile*>(context), NULL);
 }
 
 

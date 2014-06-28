@@ -130,7 +130,7 @@ class HistoryQuickProviderTest : public testing::Test,
 
   static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return new TemplateURLService(static_cast<Profile*>(profile));
+    return new TemplateURLService(static_cast<Profile*>(profile), NULL);
   }
 
   virtual void SetUp();

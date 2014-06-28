@@ -57,7 +57,7 @@ class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
  private:
   static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return new TemplateURLService(static_cast<Profile*>(profile));
+    return new TemplateURLService(static_cast<Profile*>(profile), NULL);
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkInstantExtendedTest);

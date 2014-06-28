@@ -25,7 +25,6 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
@@ -33,12 +32,14 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "components/rappor/rappor_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/search_engine_specifics.pb.h"
@@ -184,10 +185,12 @@ class TemplateURLService::LessWithPrefix {
 
 // TemplateURLService ---------------------------------------------------------
 
-TemplateURLService::TemplateURLService(Profile* profile)
+TemplateURLService::TemplateURLService(Profile* profile,
+                                       rappor::RapporService* rappor_service)
     : provider_map_(new SearchHostToURLsMap),
       profile_(profile),
       prefs_(profile ? profile->GetPrefs() : NULL),
+      rappor_service_(rappor_service),
       search_terms_data_(new UIThreadSearchTermsData(profile)),
       loaded_(false),
       load_failed_(false),
@@ -211,6 +214,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
     : provider_map_(new SearchHostToURLsMap),
       profile_(NULL),
       prefs_(NULL),
+      rappor_service_(NULL),
       search_terms_data_(new UIThreadSearchTermsData(NULL)),
       loaded_(false),
       load_failed_(false),
@@ -873,9 +877,15 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         TemplateURLPrepopulateData::GetEngineType(
             *default_search_provider_, search_terms_data()),
         SEARCH_ENGINE_MAX);
-    rappor::SampleDomainAndRegistryFromHost(
-        "Search.DefaultSearchProvider",
-        default_search_provider_->url_ref().GetHost(search_terms_data()));
+
+    if (rappor_service_) {
+      rappor_service_->RecordSample(
+          "Search.DefaultSearchProvider",
+          rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+          net::registry_controlled_domains::GetDomainAndRegistry(
+              default_search_provider_->url_ref().GetHost(search_terms_data()),
+              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+    }
   }
 }
 

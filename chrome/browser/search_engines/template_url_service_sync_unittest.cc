@@ -235,7 +235,7 @@ void TemplateURLServiceSyncTest::SetUp() {
   profile_b_.reset(new TestingProfile);
   TemplateURLServiceFactory::GetInstance()->
       RegisterUserPrefsOnBrowserContextForTest(profile_b_.get());
-  model_b_.reset(new TemplateURLService(profile_b_.get()));
+  model_b_.reset(new TemplateURLService(profile_b_.get(), NULL));
   model_b_->Load();
 }
 
