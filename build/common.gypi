@@ -194,9 +194,8 @@
             'enable_hidpi%': 1,
           }],
 
-          # Enable App Launcher on ChromeOS, Windows and OSX.
-          # On Linux, enable App Launcher for the Aura build.
-          ['use_ash==1 or OS=="win" or OS=="mac" or (desktop_linux==1 and use_aura==1)', {
+          # Enable App Launcher everywhere but mobile.
+          ['OS!="ios" and OS!="android"', {
             'enable_app_list%': 1,
           }, {
             'enable_app_list%': 0,
