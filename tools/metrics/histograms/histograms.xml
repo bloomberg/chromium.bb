@@ -38132,6 +38132,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="818" label="WEBVIEWINTERNAL_STOP"/>
   <int value="819" label="WEBVIEWINTERNAL_STOPFINDING"/>
   <int value="820" label="WEBVIEWINTERNAL_TERMINATE"/>
+  <int value="821" label="BLUETOOTHLOWENERGY_STARTCHARACTERISTICNOTIFICATIONS"/>
+  <int value="822" label="BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

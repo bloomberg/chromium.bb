@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "Test the Bluetooth LE API methods to start and stop notifications",
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": ["runtest.js"]
+    }
+  },
+  "bluetooth": {
+    "low_energy": true,
+    "uuids": ["1234"]
+  }
+}

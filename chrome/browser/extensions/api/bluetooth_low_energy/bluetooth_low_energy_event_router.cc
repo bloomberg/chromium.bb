@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,6 +134,20 @@ ConnectionResourceManager* GetConnectionResourceManager(
          "If this assertion is failing during a test, then it is likely that "
          "TestExtensionSystem is failing to provide an instance of "
          "ApiResourceManager<BluetoothLowEnergyConnection>.";
+  return manager;
+}
+
+typedef extensions::ApiResourceManager<
+    extensions::BluetoothLowEnergyNotifySession> NotifySessionResourceManager;
+NotifySessionResourceManager* GetNotifySessionResourceManager(
+    content::BrowserContext* context) {
+  NotifySessionResourceManager* manager =
+      NotifySessionResourceManager::Get(context);
+  DCHECK(manager)
+      << "There is no Bluetooth low energy value update session manager."
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "ApiResourceManager<BluetoothLowEnergyNotifySession>.";
   return manager;
 }
 
@@ -627,6 +642,103 @@ void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
                  error_callback));
 }
 
+void BluetoothLowEnergyEventRouter::StartCharacteristicNotifications(
+    bool persistent,
+    const Extension* extension,
+    const std::string& instance_id,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    error_callback.Run(kStatusErrorFailed);
+    return;
+  }
+
+  const std::string extension_id = extension->id();
+  const std::string session_id = extension_id + instance_id;
+
+  if (pending_session_calls_.count(session_id) != 0) {
+    error_callback.Run(kStatusErrorInProgress);
+    return;
+  }
+
+  BluetoothLowEnergyNotifySession* session =
+      FindNotifySession(extension_id, instance_id);
+  if (session) {
+    if (session->GetSession()->IsActive()) {
+      VLOG(1) << "Application has already enabled notifications from "
+              << "characteristic: " << instance_id;
+      error_callback.Run(kStatusErrorAlreadyNotifying);
+      return;
+    }
+
+    RemoveNotifySession(extension_id, instance_id);
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      FindCharacteristicById(instance_id);
+  if (!characteristic) {
+    VLOG(1) << "Characteristic not found: " << instance_id;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
+  }
+
+  BluetoothPermissionRequest request(
+      characteristic->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this characteristic: "
+            << instance_id;
+    error_callback.Run(kStatusErrorPermissionDenied);
+    return;
+  }
+
+  pending_session_calls_.insert(session_id);
+  characteristic->StartNotifySession(
+      base::Bind(&BluetoothLowEnergyEventRouter::OnStartNotifySession,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 persistent,
+                 extension_id,
+                 instance_id,
+                 callback),
+      base::Bind(&BluetoothLowEnergyEventRouter::OnStartNotifySessionError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
+                 instance_id,
+                 error_callback));
+}
+
+void BluetoothLowEnergyEventRouter::StopCharacteristicNotifications(
+    const Extension* extension,
+    const std::string& instance_id,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    error_callback.Run(kStatusErrorFailed);
+    return;
+  }
+
+  const std::string extension_id = extension->id();
+
+  BluetoothLowEnergyNotifySession* session =
+      FindNotifySession(extension_id, instance_id);
+  if (!session || !session->GetSession()->IsActive()) {
+    VLOG(1) << "Application has not enabled notifications from "
+            << "characteristic: " << instance_id;
+    error_callback.Run(kStatusErrorNotNotifying);
+    return;
+  }
+
+  session->GetSession()->Stop(
+      base::Bind(&BluetoothLowEnergyEventRouter::OnStopNotifySession,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
+                 instance_id,
+                 callback));
+}
+
 void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
     const Extension* extension,
     const std::string& instance_id,
@@ -801,6 +913,7 @@ void BluetoothLowEnergyEventRouter::GattServiceChanged(
   DispatchEventToExtensionsWithPermission(
       apibtle::OnServiceChanged::kEventName,
       service->GetUUID(),
+      "" /* characteristic_id */,
       apibtle::OnServiceChanged::Create(api_service));
 }
 
@@ -890,6 +1003,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
   DispatchEventToExtensionsWithPermission(
       apibtle::OnCharacteristicValueChanged::kEventName,
       service->GetUUID(),
+      characteristic->GetIdentifier(),
       args.Pass());
 }
 
@@ -916,6 +1030,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
   DispatchEventToExtensionsWithPermission(
       apibtle::OnDescriptorValueChanged::kEventName,
       characteristic->GetService()->GetUUID(),
+      "" /* characteristic_id */,
       args.Pass());
 }
 
@@ -990,9 +1105,10 @@ void BluetoothLowEnergyEventRouter::InitializeIdentifierMappings() {
 }
 
 void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
-      const std::string& event_name,
-      const device::BluetoothUUID& uuid,
-      scoped_ptr<base::ListValue> args) {
+    const std::string& event_name,
+    const device::BluetoothUUID& uuid,
+    const std::string& characteristic_id,
+    scoped_ptr<base::ListValue> args) {
   // Obtain the listeners of |event_name|. The list can contain multiple
   // entries for the same extension, so we keep track of the extensions that we
   // already sent the event to, since we want the send an event to an extension
@@ -1021,6 +1137,14 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
     // check here.
     if (!BluetoothManifestData::CheckRequest(extension, request) ||
         !BluetoothManifestData::CheckLowEnergyPermitted(extension))
+      continue;
+
+    // If |event_name| is "onCharacteristicValueChanged", then send the
+    // event only if the extension has requested notifications from the
+    // related characteristic.
+    if (event_name == apibtle::OnCharacteristicValueChanged::kEventName &&
+        !characteristic_id.empty() &&
+        !FindNotifySession(extension_id, characteristic_id))
       continue;
 
     // Send the event.
@@ -1181,6 +1305,62 @@ void BluetoothLowEnergyEventRouter::OnConnectError(
   error_callback.Run(kStatusErrorFailed);
 }
 
+void BluetoothLowEnergyEventRouter::OnStartNotifySession(
+    bool persistent,
+    const std::string& extension_id,
+    const std::string& characteristic_id,
+    const base::Closure& callback,
+    scoped_ptr<device::BluetoothGattNotifySession> session) {
+  VLOG(2) << "Value update session created for characteristic: "
+          << characteristic_id;
+  DCHECK(session.get());
+  DCHECK(!FindNotifySession(extension_id, characteristic_id));
+  DCHECK_EQ(characteristic_id, session->GetCharacteristicIdentifier());
+
+  const std::string session_id = extension_id + characteristic_id;
+  DCHECK_NE(0U, pending_session_calls_.count(session_id));
+
+  BluetoothLowEnergyNotifySession* resource =
+      new BluetoothLowEnergyNotifySession(
+          persistent, extension_id, session.Pass());
+
+  NotifySessionResourceManager* manager =
+      GetNotifySessionResourceManager(browser_context_);
+  manager->Add(resource);
+
+  pending_session_calls_.erase(session_id);
+  callback.Run();
+}
+
+void BluetoothLowEnergyEventRouter::OnStartNotifySessionError(
+    const std::string& extension_id,
+    const std::string& characteristic_id,
+    const ErrorCallback& error_callback) {
+  VLOG(2) << "Failed to create value update session for characteristic: "
+          << characteristic_id;
+
+  const std::string session_id = extension_id + characteristic_id;
+  DCHECK_NE(0U, pending_session_calls_.count(session_id));
+
+  pending_session_calls_.erase(session_id);
+  error_callback.Run(kStatusErrorFailed);
+}
+
+void BluetoothLowEnergyEventRouter::OnStopNotifySession(
+    const std::string& extension_id,
+    const std::string& characteristic_id,
+    const base::Closure& callback) {
+  VLOG(2) << "Value update session terminated.";
+
+  if (!RemoveNotifySession(extension_id, characteristic_id)) {
+    VLOG(1) << "The value update session was removed before Stop completed, "
+            << "id: " << extension_id
+            << ", characteristic: " << characteristic_id;
+  }
+
+  callback.Run();
+}
+
 BluetoothLowEnergyConnection* BluetoothLowEnergyEventRouter::FindConnection(
     const std::string& extension_id,
     const std::string& device_address) {
@@ -1222,6 +1402,60 @@ bool BluetoothLowEnergyEventRouter::RemoveConnection(
     extensions::BluetoothLowEnergyConnection* conn =
         manager->Get(extension_id, *iter);
     if (!conn || conn->GetConnection()->GetDeviceAddress() != device_address)
+      continue;
+
+    manager->Remove(extension_id, *iter);
+    return true;
+  }
+
+  return false;
+}
+
+BluetoothLowEnergyNotifySession*
+BluetoothLowEnergyEventRouter::FindNotifySession(
+    const std::string& extension_id,
+    const std::string& characteristic_id) {
+  NotifySessionResourceManager* manager =
+      GetNotifySessionResourceManager(browser_context_);
+
+  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  if (!ids)
+    return NULL;
+
+  for (base::hash_set<int>::const_iterator iter = ids->begin();
+       iter != ids->end();
+       ++iter) {
+    BluetoothLowEnergyNotifySession* session =
+        manager->Get(extension_id, *iter);
+    if (!session)
+      continue;
+
+    if (session->GetSession()->GetCharacteristicIdentifier() ==
+        characteristic_id)
+      return session;
+  }
+
+  return NULL;
+}
+
+bool BluetoothLowEnergyEventRouter::RemoveNotifySession(
+    const std::string& extension_id,
+    const std::string& characteristic_id) {
+  NotifySessionResourceManager* manager =
+      GetNotifySessionResourceManager(browser_context_);
+
+  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  if (!ids)
+    return false;
+
+  for (base::hash_set<int>::const_iterator iter = ids->begin();
+       iter != ids->end();
+       ++iter) {
+    BluetoothLowEnergyNotifySession* session =
+        manager->Get(extension_id, *iter);
+    if (!session ||
+        session->GetSession()->GetCharacteristicIdentifier() !=
+            characteristic_id)
       continue;
 
     manager->Remove(extension_id, *iter);

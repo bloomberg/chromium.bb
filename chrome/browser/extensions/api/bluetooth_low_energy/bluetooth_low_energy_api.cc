@@ -26,8 +26,10 @@ namespace {
 const char kErrorAdapterNotInitialized[] =
     "Could not initialize Bluetooth adapter";
 const char kErrorAlreadyConnected[] = "Already connected";
+const char kErrorAlreadyNotifying[] = "Already notifying";
 const char kErrorInProgress[] = "In progress";
 const char kErrorNotConnected[] = "Not connected";
+const char kErrorNotNotifying[] = "Not notifying";
 const char kErrorNotFound[] = "Instance not found";
 const char kErrorOperationFailed[] = "Operation failed";
 const char kErrorPermissionDenied[] = "Permission denied";
@@ -45,8 +47,12 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorNotFound;
     case BluetoothLowEnergyEventRouter::kStatusErrorAlreadyConnected:
       return kErrorAlreadyConnected;
+    case BluetoothLowEnergyEventRouter::kStatusErrorAlreadyNotifying:
+      return kErrorAlreadyNotifying;
     case BluetoothLowEnergyEventRouter::kStatusErrorNotConnected:
       return kErrorNotConnected;
+    case BluetoothLowEnergyEventRouter::kStatusErrorNotNotifying:
+      return kErrorNotNotifying;
     case BluetoothLowEnergyEventRouter::kStatusErrorInProgress:
       return kErrorInProgress;
     case BluetoothLowEnergyEventRouter::kStatusSuccess:
@@ -568,6 +574,96 @@ void BluetoothLowEnergyWriteCharacteristicValueFunction::SuccessCallback() {
 }
 
 void BluetoothLowEnergyWriteCharacteristicValueFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
+  SendResponse(false);
+}
+
+bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::StartCharacteristicNotifications::Params> params(
+      apibtle::StartCharacteristicNotifications::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  bool persistent = false;  // Not persistent by default.
+  apibtle::NotificationProperties* properties = params.get()->properties.get();
+  if (properties)
+    persistent = properties->persistent;
+
+  event_router->StartCharacteristicNotifications(
+      persistent,
+      GetExtension(),
+      params->characteristic_id,
+      base::Bind(&BluetoothLowEnergyStartCharacteristicNotificationsFunction::
+                     SuccessCallback,
+                 this),
+      base::Bind(&BluetoothLowEnergyStartCharacteristicNotificationsFunction::
+                     ErrorCallback,
+                 this));
+
+  return true;
+}
+
+void
+BluetoothLowEnergyStartCharacteristicNotificationsFunction::SuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyStartCharacteristicNotificationsFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
+  SendResponse(false);
+}
+
+bool BluetoothLowEnergyStopCharacteristicNotificationsFunction::DoWork() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::StopCharacteristicNotifications::Params> params(
+      apibtle::StopCharacteristicNotifications::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  event_router->StopCharacteristicNotifications(
+      GetExtension(),
+      params->characteristic_id,
+      base::Bind(&BluetoothLowEnergyStopCharacteristicNotificationsFunction::
+                     SuccessCallback,
+                 this),
+      base::Bind(&BluetoothLowEnergyStopCharacteristicNotificationsFunction::
+                     ErrorCallback,
+                 this));
+
+  return true;
+}
+
+void
+BluetoothLowEnergyStopCharacteristicNotificationsFunction::SuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyStopCharacteristicNotificationsFunction::ErrorCallback(
     BluetoothLowEnergyEventRouter::Status status) {
   SetError(StatusToString(status));
   SendResponse(false);

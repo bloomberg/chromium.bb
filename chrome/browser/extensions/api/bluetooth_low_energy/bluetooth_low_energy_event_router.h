@@ -31,9 +31,16 @@ class BrowserContext;
 
 }  // namespace content
 
+namespace device {
+
+class BluetoothGattNotifySession;
+
+}  // namespace device
+
 namespace extensions {
 
 class BluetoothLowEnergyConnection;
+class BluetoothLowEnergyNotifySession;
 class Extension;
 
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
@@ -52,7 +59,9 @@ class BluetoothLowEnergyEventRouter
     kStatusErrorPermissionDenied,
     kStatusErrorNotFound,
     kStatusErrorAlreadyConnected,
+    kStatusErrorAlreadyNotifying,
     kStatusErrorNotConnected,
+    kStatusErrorNotNotifying,
     kStatusErrorInProgress,
     kStatusErrorFailed
   };
@@ -180,6 +189,24 @@ class BluetoothLowEnergyEventRouter
                                 const base::Closure& callback,
                                 const ErrorCallback& error_callback);
 
+  // Sends a request to start characteristic notifications from characteristic
+  // with instance ID |instance_id|, for extension |extension|. Invokes
+  // |callback| on success and |error_callback| on failure. If |persistent| is
+  // true, then the allocated connection resource is persistent across unloads.
+  void StartCharacteristicNotifications(bool persistent,
+                                        const Extension* extension,
+                                        const std::string& instance_id,
+                                        const base::Closure& callback,
+                                        const ErrorCallback& error_callback);
+
+  // Sends a request to stop characteristic notifications from characteristic
+  // with instance ID |instance_id|, for extension |extension|. Invokes
+  // |callback| on success and |error_callback| on failure.
+  void StopCharacteristicNotifications(const Extension* extension,
+                                       const std::string& instance_id,
+                                       const base::Closure& callback,
+                                       const ErrorCallback& error_callback);
+
   // Sends a request to read the value of the descriptor with instance ID
   // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
@@ -249,10 +276,13 @@ class BluetoothLowEnergyEventRouter
   // Sends the event named |event_name| to all listeners of that event that
   // have the Bluetooth UUID manifest permission for UUID |uuid| and the
   // "low_energy" manifest permission, with |args| as the argument to that
-  // event.
+  // event. If the event involves a characteristic, then |characteristic_id|
+  // should be the instance ID of the involved characteristic. Otherwise, an
+  // empty string should be passed.
   void DispatchEventToExtensionsWithPermission(
       const std::string& event_name,
       const device::BluetoothUUID& uuid,
+      const std::string& characteristic_id,
       scoped_ptr<base::ListValue> args);
 
   // Returns a BluetoothGattService by its instance ID |instance_id|. Returns
@@ -298,6 +328,26 @@ class BluetoothLowEnergyEventRouter
                       const ErrorCallback& error_callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
 
+  // Called by BluetoothGattCharacteristic in response to a call to
+  // StartNotifySession.
+  void OnStartNotifySession(
+      bool persistent,
+      const std::string& extension_id,
+      const std::string& characteristic_id,
+      const base::Closure& callback,
+      scoped_ptr<device::BluetoothGattNotifySession> session);
+
+  // Called by BluetoothGattCharacteristic in response to a call to
+  // StartNotifySession.
+  void OnStartNotifySessionError(const std::string& extension_id,
+                                 const std::string& characteristic_id,
+                                 const ErrorCallback& error_callback);
+
+  // Called by BluetoothGattNotifySession in response to a call to Stop.
+  void OnStopNotifySession(const std::string& extension_id,
+                           const std::string& characteristic_id,
+                           const base::Closure& callback);
+
   // Finds and returns a BluetoothLowEnergyConnection to device with address
   // |device_address| from the managed API resources for extension with ID
   // |extension_id|.
@@ -310,6 +360,20 @@ class BluetoothLowEnergyEventRouter
   // if the connection could not be found.
   bool RemoveConnection(const std::string& extension_id,
                         const std::string& device_address);
+
+  // Finds and returns a BluetoothLowEnergyNotifySession associated with
+  // characteristic with instance ID |characteristic_id| from the managed API
+  // API resources for extension with ID |extension_id|.
+  BluetoothLowEnergyNotifySession* FindNotifySession(
+      const std::string& extension_id,
+      const std::string& characteristic_id);
+
+  // Removes the notify session associated with characteristic with
+  // instance ID |characteristic_id| from the managed API resources for
+  // extension with ID |extension_id|. Returns false, if the session could
+  // not be found.
+  bool RemoveNotifySession(const std::string& extension_id,
+                           const std::string& characteristic_id);
 
   // Mapping from instance ids to identifiers of owning instances. The keys are
   // used to identify individual instances of GATT objects and are used by
@@ -342,6 +406,10 @@ class BluetoothLowEnergyEventRouter
   // currently pending.
   std::set<std::string> connecting_devices_;
   std::set<std::string> disconnecting_devices_;
+
+  // Set of extension ID + characteristic ID to which a request to start a
+  // notify session is currently pending.
+  std::set<std::string> pending_session_calls_;
 
   // BrowserContext passed during initialization.
   content::BrowserContext* browser_context_;

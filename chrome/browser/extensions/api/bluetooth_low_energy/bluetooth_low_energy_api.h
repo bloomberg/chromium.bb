@@ -247,6 +247,46 @@ class BluetoothLowEnergyWriteCharacteristicValueFunction
   std::string instance_id_;
 };
 
+class BluetoothLowEnergyStartCharacteristicNotificationsFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "bluetoothLowEnergy.startCharacteristicNotifications",
+      BLUETOOTHLOWENERGY_STARTCHARACTERISTICNOTIFICATIONS);
+
+ protected:
+  virtual ~BluetoothLowEnergyStartCharacteristicNotificationsFunction() {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::StartCharacteristicNotifications.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+};
+
+class BluetoothLowEnergyStopCharacteristicNotificationsFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "bluetoothLowEnergy.stopCharacteristicNotifications",
+      BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS);
+
+ protected:
+  virtual ~BluetoothLowEnergyStopCharacteristicNotificationsFunction() {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::StopCharacteristicNotifications.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+};
+
 class BluetoothLowEnergyReadDescriptorValueFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
