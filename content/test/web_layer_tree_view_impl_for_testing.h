@@ -76,8 +76,6 @@ class WebLayerTreeViewImplForTesting
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  virtual void ScheduleComposite() OVERRIDE {}
-  virtual void ScheduleAnimation() OVERRIDE {}
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 

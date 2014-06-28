@@ -1184,8 +1184,6 @@ void RenderWidget::suppressCompositorScheduling(bool enable) {
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
-  DCHECK(RenderThreadImpl::current()->compositor_message_loop_proxy().get());
-
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
