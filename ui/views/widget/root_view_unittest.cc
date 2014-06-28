@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/root_view.h"
 
-#include "ui/events/event_targeter.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_targeter.h"
@@ -54,7 +53,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   child->SetFocusable(true);
   child->RequestFocus();
 
-  ui::EventTargeter* targeter = new ViewTargeter();
+  ViewTargeter* targeter = new ViewTargeter();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
   root_view->SetEventTargeter(make_scoped_ptr(targeter));

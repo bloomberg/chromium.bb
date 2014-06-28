@@ -1101,9 +1101,9 @@ const InputMethod* View::GetInputMethod() const {
   return widget ? widget->GetInputMethod() : NULL;
 }
 
-scoped_ptr<ui::EventTargeter>
-View::SetEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
-  scoped_ptr<ui::EventTargeter> old_targeter = targeter_.Pass();
+scoped_ptr<ViewTargeter>
+View::SetEventTargeter(scoped_ptr<ViewTargeter> targeter) {
+  scoped_ptr<ViewTargeter> old_targeter = targeter_.Pass();
   targeter_ = targeter.Pass();
   return old_targeter.Pass();
 }

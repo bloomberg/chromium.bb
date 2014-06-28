@@ -26,13 +26,13 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
-#include "ui/events/event_targeter.h"
 #include "ui/gfx/geometry/r_tree.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/views/cull_set.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
@@ -719,10 +719,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual InputMethod* GetInputMethod();
   virtual const InputMethod* GetInputMethod() const;
 
-  // Sets a new event-targeter for the view, and returns the previous
-  // event-targeter.
-  scoped_ptr<ui::EventTargeter> SetEventTargeter(
-      scoped_ptr<ui::EventTargeter> targeter);
+  // Sets a new ViewTargeter for the view, and returns the previous
+  // ViewTargeter.
+  scoped_ptr<ViewTargeter> SetEventTargeter(scoped_ptr<ViewTargeter> targeter);
 
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
@@ -731,6 +730,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
   virtual void ConvertEventToTarget(ui::EventTarget* target,
                                     ui::LocatedEvent* event) OVERRIDE;
+
+  ViewTargeter* targeter() const { return targeter_.get(); }
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -1604,7 +1605,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Input  --------------------------------------------------------------------
 
-  scoped_ptr<ui::EventTargeter> targeter_;
+  scoped_ptr<ViewTargeter> targeter_;
 
   // Accessibility -------------------------------------------------------------
 

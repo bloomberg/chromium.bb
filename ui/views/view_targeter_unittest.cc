@@ -7,6 +7,7 @@
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
@@ -61,10 +62,11 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   grandchild->SetFocusable(true);
   grandchild->RequestFocus();
 
-  ui::EventTargeter* targeter = new ViewTargeter();
+  ViewTargeter* view_targeter = new ViewTargeter();
+  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
 
@@ -109,10 +111,11 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
-  ui::EventTargeter* targeter = new ViewTargeter();
+  ViewTargeter* view_targeter = new ViewTargeter();
+  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   // The event falls within the bounds of |child| and |content| but not
   // |grandchild|, so |child| should be the initial target for the event.
@@ -161,7 +164,7 @@ TEST_F(ViewTargeterTest, SubtreeShouldBeExploredForEvent) {
   params.bounds = gfx::Rect(0, 0, 650, 650);
   widget.Init(params);
 
-  ui::EventTargeter* targeter = new ViewTargeter();
+  ViewTargeter* targeter = new ViewTargeter();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
   root_view->SetEventTargeter(make_scoped_ptr(targeter));
@@ -226,10 +229,11 @@ TEST_F(ViewTargeterTest, CanProcessEventsWithinSubtree) {
   params.bounds = gfx::Rect(0, 0, 650, 650);
   widget.Init(params);
 
-  ui::EventTargeter* targeter = new ViewTargeter();
+  ViewTargeter* view_targeter = new ViewTargeter();
+  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   TestingView v1, v2, v3;
