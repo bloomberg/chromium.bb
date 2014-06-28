@@ -185,9 +185,6 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-      file_path = file_path.NormalizePathSeparators();
-#endif  // defined(FILE_PATH_USES_WIN_SEPARATORS)
       root_hashes_[file_path] = std::string();
       root_hashes_[file_path].swap(root_hash);
     }
@@ -200,7 +197,7 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
 const std::string* VerifiedContents::GetTreeHashRoot(
     const base::FilePath& relative_path) {
   std::map<base::FilePath, std::string>::const_iterator i =
-      root_hashes_.find(relative_path);
+      root_hashes_.find(relative_path.NormalizePathSeparatorsTo('/'));
   if (i == root_hashes_.end())
     return NULL;
   return &i->second;

@@ -57,6 +57,7 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
 
     base::FilePath relative_path =
         base::FilePath::FromUTF8Unsafe(relative_path_utf8);
+    relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
     data_[relative_path] = HashInfo(block_size, std::vector<std::string>());
     std::vector<std::string>* hashes = &(data_[relative_path].second);
@@ -80,7 +81,8 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
 bool ComputedHashes::Reader::GetHashes(const base::FilePath& relative_path,
                                        int* block_size,
                                        std::vector<std::string>* hashes) {
-  std::map<base::FilePath, HashInfo>::iterator i = data_.find(relative_path);
+  base::FilePath path = relative_path.NormalizePathSeparatorsTo('/');
+  std::map<base::FilePath, HashInfo>::iterator i = data_.find(path);
   if (i == data_.end())
     return false;
   HashInfo& info = i->second;
@@ -100,7 +102,8 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* block_hashes = new base::ListValue();
   file_list_.Append(dict);
-  dict->SetString(kPathKey, relative_path.AsUTF8Unsafe());
+  dict->SetString(kPathKey,
+                  relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
   dict->SetInteger(kBlockSizeKey, block_size);
   dict->Set(kBlockHashesKey, block_hashes);
 

@@ -350,6 +350,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     const base::FilePath& full_path = *i;
     base::FilePath relative_path;
     extension_path_.AppendRelativePath(full_path, &relative_path);
+    relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
     const std::string* expected_root =
         verified_contents.GetTreeHashRoot(relative_path);
