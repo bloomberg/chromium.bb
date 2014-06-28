@@ -81,7 +81,11 @@ def BuildScriptX86(status, context):
     with Step('nonsfi_tests', status, halt_on_fail=False):
       # TODO(mseaborn): Enable more tests here when they pass.
       tests = ['run_' + test + '_test_irt' for test in
-               ['hello_world', 'float', 'malloc_realloc_calloc_free']]
+               ['float',
+                'hello_world',
+                'irt_futex',
+                'malloc_realloc_calloc_free',
+                'thread']]
       # Extra non-IRT-using test to run for x86-32
       tests.extend(['run_clock_get_test',
                     'run_dup_test',
@@ -98,8 +102,14 @@ def BuildScriptX86(status, context):
     # Test nonsfi_loader linked against host's libc.
     with Step('nonsfi_tests_host_libc', status, halt_on_fail=False):
       tests = ['run_' + test + '_test_irt' for test in
-               ['hello_world', 'float', 'malloc_realloc_calloc_free',
-                'dup', 'syscall', 'getpid']]
+               ['dup',
+                'float',
+                'getpid',
+                'hello_world',
+                'irt_futex',
+                'malloc_realloc_calloc_free',
+                'syscall',
+                'thread']]
       # Using skip_nonstable_bitcode=1 here disables the tests for
       # zero-cost C++ exception handling, which don't pass for Non-SFI
       # mode yet because we don't build libgcc_eh for Non-SFI mode.

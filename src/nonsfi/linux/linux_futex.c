@@ -76,7 +76,10 @@ static int nacl_irt_futex_wake(volatile int *addr, int nwake, int *count) {
   return 0;
 }
 
-struct nacl_irt_futex __nc_irt_futex = {
+const struct nacl_irt_futex nacl_irt_futex = {
   nacl_irt_futex_wait_abs,
   nacl_irt_futex_wake,
 };
+
+extern struct nacl_irt_futex __nc_irt_futex
+  __attribute__((alias("nacl_irt_futex")));
