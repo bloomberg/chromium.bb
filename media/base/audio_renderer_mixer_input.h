@@ -68,7 +68,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   AudioRendererSink::RenderCallback* callback_;
 
   // Error callback for handing to AudioRendererMixer.
-  base::Closure error_cb_;
+  const base::Closure error_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };

@@ -150,8 +150,10 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   EXPECT_EQ(mixer_count(), 2);
 
   // Destroying the inputs should destroy the mixers.
+  input->Stop();
   input = NULL;
   EXPECT_EQ(mixer_count(), 1);
+  another_input->Stop();
   another_input = NULL;
   EXPECT_EQ(mixer_count(), 0);
 }

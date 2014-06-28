@@ -24,22 +24,25 @@ AudioRendererMixerInput::AudioRendererMixerInput(
 }
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
-  // Mixer is no longer safe to use after |remove_mixer_cb_| has been called.
-  if (initialized_) {
-    mixer_->RemoveErrorCallback(error_cb_);
-    remove_mixer_cb_.Run(params_);
-  }
+  DCHECK(!callback_);
+  DCHECK(!playing_);
+  DCHECK(!mixer_);
 }
 
 void AudioRendererMixerInput::Initialize(
     const AudioParameters& params,
     AudioRendererSink::RenderCallback* callback) {
+  DCHECK(callback);
   DCHECK(!initialized_);
+
   params_ = params;
-  mixer_ = get_mixer_cb_.Run(params_);
-  mixer_->AddErrorCallback(error_cb_);
   callback_ = callback;
   initialized_ = true;
+  mixer_ = get_mixer_cb_.Run(params_);
+
+  // Note: OnRenderError() may be called immediately after this call completes,
+  // so ensure |callback_| has been set first.
+  mixer_->AddErrorCallback(error_cb_);
 }
 
 void AudioRendererMixerInput::Start() {
@@ -50,11 +53,18 @@ void AudioRendererMixerInput::Start() {
 void AudioRendererMixerInput::Stop() {
   // Stop() may be called at any time, if Pause() hasn't been called we need to
   // remove our mixer input before shutdown.
-  if (!playing_)
-    return;
+  if (playing_) {
+    mixer_->RemoveMixerInput(this);
+    playing_ = false;
+  }
 
-  mixer_->RemoveMixerInput(this);
-  playing_ = false;
+  // Once Stop() is called the input can no longer be used.
+  if (callback_) {
+    mixer_->RemoveErrorCallback(error_cb_);
+    remove_mixer_cb_.Run(params_);
+    mixer_ = NULL;
+    callback_ = NULL;
+  }
 }
 
 void AudioRendererMixerInput::Play() {
