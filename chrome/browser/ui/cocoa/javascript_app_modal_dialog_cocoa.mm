@@ -18,47 +18,104 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/text_elider.h"
 
+namespace {
+
 const int kSlotsPerLine = 50;
 const int kMessageTextMaxSlots = 2000;
+
+// The presentation of the NSAlert is delayed, due to an AppKit bug. See
+// JavaScriptAppModalDialogCocoa::ShowAppModalDialog for more details.  If the
+// NSAlert has not yet been presented, then actions that affect the NSAlert
+// should be delayed as well. Due to the destructive nature of these actions,
+// at most one action should be queued.
+enum AlertAction {
+  ACTION_NONE,
+  ACTION_CLOSE,
+  ACTION_ACCEPT,
+  ACTION_CANCEL
+};
+
+}  // namespace
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
 @interface JavaScriptAppModalDialogHelper : NSObject<NSAlertDelegate> {
  @private
   base::scoped_nsobject<NSAlert> alert_;
-  NSTextField* textField_;  // WEAK; owned by alert_
+  JavaScriptAppModalDialogCocoa* nativeDialog_;  // Weak.
+  base::scoped_nsobject<NSTextField> textField_;
+  BOOL alertShown_;
+  AlertAction queuedAction_;
 }
 
+// Creates an NSAlert if one does not already exist. Otherwise returns the
+// existing NSAlert.
 - (NSAlert*)alert;
-- (NSTextField*)textField;
+- (void)addTextFieldWithPrompt:(NSString*)prompt;
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo;
+
+// If the alert has been presented, immediately play the action. Otherwise
+// queue the action for replay immediately after the alert is presented.
+- (void)playOrQueueAction:(AlertAction)action;
+- (void)queueAction:(AlertAction)action;
+
+// Presents an AppKit blocking dialog.
+- (void)showAlert;
+
+// Selects the first button of the alert, which should accept it.
+- (void)acceptAlert;
+
+// Selects the second button of the alert, which should cancel it.
+- (void)cancelAlert;
+
+// Closes the window, and the alert along with it.
+- (void)closeWindow;
+
+// Designated initializer.
+- (instancetype)initWithNativeDialog:(JavaScriptAppModalDialogCocoa*)dialog;
 
 @end
 
 @implementation JavaScriptAppModalDialogHelper
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithNativeDialog:(JavaScriptAppModalDialogCocoa*)dialog {
+  DCHECK(dialog);
+  self = [super init];
+  if (self) {
+    nativeDialog_ = dialog;
+    queuedAction_ = ACTION_NONE;
+  }
+  return self;
+}
+
 - (NSAlert*)alert {
-  alert_.reset([[NSAlert alloc] init]);
+  if (!alert_)
+    alert_.reset([[NSAlert alloc] init]);
   return alert_;
 }
 
-- (NSTextField*)textField {
-  textField_ = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 22)];
+- (void)addTextFieldWithPrompt:(NSString*)prompt {
+  DCHECK(!textField_);
+  textField_.reset(
+      [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 22)]);
   [[textField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-  [alert_ setAccessoryView:textField_];
-  [textField_ release];
+  [[self alert] setAccessoryView:textField_];
 
-  return textField_;
+  [textField_ setStringValue:prompt];
 }
 
 // |contextInfo| is the JavaScriptAppModalDialogCocoa that owns us.
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  scoped_ptr<JavaScriptAppModalDialogCocoa> native_dialog(
-      reinterpret_cast<JavaScriptAppModalDialogCocoa*>(contextInfo));
+  DCHECK(nativeDialog_);
   base::string16 input;
   if (textField_)
     input = base::SysNSStringToUTF16([textField_ stringValue]);
@@ -67,28 +124,90 @@ const int kMessageTextMaxSlots = 2000;
     shouldSuppress = [[alert suppressionButton] state] == NSOnState;
   switch (returnCode) {
     case NSAlertFirstButtonReturn:  {  // OK
-      native_dialog->dialog()->OnAccept(input, shouldSuppress);
+      nativeDialog_->dialog()->OnAccept(input, shouldSuppress);
       break;
     }
     case NSAlertSecondButtonReturn:  {  // Cancel
       // If the user wants to stay on this page, stop quitting (if a quit is in
       // progress).
-      if (native_dialog->dialog()->is_before_unload_dialog())
+      if (nativeDialog_->dialog()->is_before_unload_dialog())
         chrome_browser_application_mac::CancelTerminate();
-      native_dialog->dialog()->OnCancel(shouldSuppress);
+      nativeDialog_->dialog()->OnCancel(shouldSuppress);
       break;
     }
     case NSRunStoppedResponse: {  // Window was closed underneath us
       // Need to call OnCancel() because there is some cleanup that needs
       // to be done.  It won't call back to the javascript since the
       // JavaScriptAppModalDialog knows that the WebContents was destroyed.
-      native_dialog->dialog()->OnCancel(shouldSuppress);
+      nativeDialog_->dialog()->OnCancel(shouldSuppress);
       break;
     }
     default:  {
       NOTREACHED();
     }
   }
+}
+
+- (void)playOrQueueAction:(AlertAction)action {
+  if (alertShown_)
+    [self playAlertAction:action];
+  else
+    [self queueAction:action];
+}
+
+- (void)queueAction:(AlertAction)action {
+  DCHECK(!alertShown_);
+  DCHECK(queuedAction_ == ACTION_NONE);
+
+  queuedAction_ = action;
+}
+
+- (void)playAlertAction:(AlertAction)action {
+  switch (action) {
+    case ACTION_NONE:
+      break;
+    case ACTION_CLOSE:
+      [self closeWindow];
+      break;
+    case ACTION_CANCEL:
+      [self cancelAlert];
+      break;
+    case ACTION_ACCEPT:
+      [self acceptAlert];
+      break;
+  }
+}
+
+- (void)showAlert {
+  alertShown_ = YES;
+  NSAlert* alert = [self alert];
+  [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
+                    modalDelegate:self
+                   didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
+                      contextInfo:NULL];
+
+  if ([alert accessoryView])
+    [[alert window] makeFirstResponder:[alert accessoryView]];
+
+  [self playAlertAction:queuedAction_];
+}
+
+- (void)acceptAlert {
+  NSButton* first = [[[self alert] buttons] objectAtIndex:0];
+  [first performClick:nil];
+}
+
+- (void)cancelAlert {
+  NSAlert* alert = [self alert];
+  DCHECK([[alert buttons] count] >= 2);
+  NSButton* second = [[alert buttons] objectAtIndex:1];
+  [second performClick:nil];
+}
+
+- (void)closeWindow {
+  DCHECK([self alert]);
+
+  [NSApp endSheet:[[self alert] window]];
 }
 
 @end
@@ -135,19 +254,16 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   }
 
   // Create a helper which will receive the sheet ended selector. It will
-  // delete itself when done. It doesn't need anything passed to its init
-  // as it will get a contextInfo parameter.
-  helper_.reset([[JavaScriptAppModalDialogHelper alloc] init]);
+  // delete itself when done.
+  helper_.reset(
+      [[JavaScriptAppModalDialogHelper alloc] initWithNativeDialog:this]);
 
   // Show the modal dialog.
-  alert_ = [helper_ alert];
-  NSTextField* field = nil;
   if (text_field) {
-    field = [helper_ textField];
-    [field setStringValue:base::SysUTF16ToNSString(
+    [helper_ addTextFieldWithPrompt:base::SysUTF16ToNSString(
         dialog_->default_prompt_text())];
   }
-  [alert_ setDelegate:helper_];
+  [GetAlert() setDelegate:helper_];
   NSString* informative_text =
       base::SysUTF16ToNSString(dialog_->message_text());
 
@@ -168,20 +284,20 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
     }
   }
 
-  [alert_ setInformativeText:informative_text];
+  [GetAlert() setInformativeText:informative_text];
   NSString* message_text =
       base::SysUTF16ToNSString(dialog_->title());
-  [alert_ setMessageText:message_text];
-  [alert_ addButtonWithTitle:default_button];
+  [GetAlert() setMessageText:message_text];
+  [GetAlert() addButtonWithTitle:default_button];
   if (!one_button) {
-    NSButton* other = [alert_ addButtonWithTitle:other_button];
+    NSButton* other = [GetAlert() addButtonWithTitle:other_button];
     [other setKeyEquivalent:@"\e"];
   }
   if (dialog_->display_suppress_checkbox()) {
-    [alert_ setShowsSuppressionButton:YES];
+    [GetAlert() setShowsSuppressionButton:YES];
     NSString* suppression_title = l10n_util::GetNSStringWithFixup(
         IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION);
-    [[alert_ suppressionButton] setTitle:suppression_title];
+    [[GetAlert() suppressionButton] setTitle:suppression_title];
   }
 
   // Fix RTL dialogs.
@@ -209,13 +325,13 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
     // Force layout of the dialog. NSAlert leaves its dialog alone once laid
     // out; if this is not done then all the modifications that are to come will
     // be un-done when the dialog is finally displayed.
-    [alert_ layout];
+    [GetAlert() layout];
 
     // Locate the NSTextFields that implement the text display. These are
     // actually available as the ivars |_messageField| and |_informationField|
     // of the NSAlert, but it is safer (and more forward-compatible) to search
     // for them in the subviews.
-    for (NSView* view in [[[alert_ window] contentView] subviews]) {
+    for (NSView* view in [[[GetAlert() window] contentView] subviews]) {
       NSTextField* text_field = base::mac::ObjCCast<NSTextField>(view);
       if ([[text_field stringValue] isEqualTo:message_text])
         message_text_field = text_field;
@@ -265,6 +381,14 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
 }
 
 JavaScriptAppModalDialogCocoa::~JavaScriptAppModalDialogCocoa() {
+  [NSObject cancelPreviousPerformRequestsWithTarget:helper_.get()];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// JavaScriptAppModalDialogCocoa, private:
+
+NSAlert* JavaScriptAppModalDialogCocoa::GetAlert() const {
+  return [helper_ alert];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,7 +397,7 @@ JavaScriptAppModalDialogCocoa::~JavaScriptAppModalDialogCocoa() {
 int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
   // From the above, it is the case that if there is 1 button, it is always the
   // OK button.  The second button, if it exists, is always the Cancel button.
-  int num_buttons = [[alert_ buttons] count];
+  int num_buttons = [[GetAlert() buttons] count];
   switch (num_buttons) {
     case 1:
       return ui::DIALOG_BUTTON_OK;
@@ -286,36 +410,28 @@ int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
 }
 
 void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
-  [alert_
-      beginSheetModalForWindow:nil  // nil here makes it app-modal
-                 modalDelegate:helper_.get()
-                didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                   contextInfo:this];
-
-  if ([alert_ accessoryView])
-    [[alert_ window] makeFirstResponder:[alert_ accessoryView]];
+  // Dispatch the method to show the alert back to the top of the CFRunLoop.
+  // This fixes an interaction bug with NSSavePanel. http://crbug.com/375785
+  // When this object is destroyed, outstanding performSelector: requests
+  // should be cancelled.
+  [helper_.get() performSelector:@selector(showAlert)
+                      withObject:nil
+                      afterDelay:0];
 }
 
 void JavaScriptAppModalDialogCocoa::ActivateAppModalDialog() {
 }
 
 void JavaScriptAppModalDialogCocoa::CloseAppModalDialog() {
-  DCHECK([alert_ isKindOfClass:[NSAlert class]]);
-
-  // Note: the call below will delete |this|,
-  // see JavaScriptAppModalDialogHelper's alertDidEnd.
-  [NSApp endSheet:[alert_ window]];
+  [helper_ playOrQueueAction:ACTION_CLOSE];
 }
 
 void JavaScriptAppModalDialogCocoa::AcceptAppModalDialog() {
-  NSButton* first = [[alert_ buttons] objectAtIndex:0];
-  [first performClick:nil];
+  [helper_ playOrQueueAction:ACTION_ACCEPT];
 }
 
 void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
-  DCHECK([[alert_ buttons] count] >= 2);
-  NSButton* second = [[alert_ buttons] objectAtIndex:1];
-  [second performClick:nil];
+  [helper_ playOrQueueAction:ACTION_CANCEL];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

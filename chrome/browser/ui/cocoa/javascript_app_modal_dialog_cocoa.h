@@ -35,10 +35,13 @@ class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
   JavaScriptAppModalDialog* dialog() const { return dialog_.get(); }
 
  private:
+  // Returns the NSAlert associated with the modal dialog.
+  NSAlert* GetAlert() const;
+
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
 
+  // Created in the constructor and destroyed in the destructor.
   base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
-  NSAlert* alert_; // weak, owned by |helper_|.
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogCocoa);
 };
