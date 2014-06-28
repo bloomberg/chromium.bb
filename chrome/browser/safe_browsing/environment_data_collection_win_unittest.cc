@@ -40,6 +40,28 @@ bool ProcessReportContainsDll(
   return false;
 }
 
+// Look through dll entries and check for the presence of the LSP feature for
+// |dll|.
+bool DllEntryContainsLspFeature(
+    const safe_browsing::ClientIncidentReport_EnvironmentData_Process&
+        process_report,
+    const std::string& dll) {
+  for (int i = 0; i < process_report.dll_size(); ++i) {
+    if (process_report.dll(i).path() == dll) {
+      // Verify each feature of |dll|.
+      for (int j = 0; j < process_report.dll(i).feature_size(); ++j) {
+        if (process_report.dll(i).feature(j) ==
+            safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll::
+                LSP)
+          // LSP feature found.
+          return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDlls) {
@@ -72,57 +94,31 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
 
   // We'll test RecordLspFeatures against a real dll registered as a LSP. All
   // dll paths are expected to be lowercase in the process report.
-  std::string lsp_path = "c:\\windows\\system32\\mswsock.dll";
+  std::string lsp = "c:\\windows\\system32\\mswsock.dll";
   int base_address = 0x77770000;
   int length = 0x180000;
 
-  // Look for dlls that are registered as a LSP.
   safe_browsing::RecordLspFeature(&process_report);
 
-  // Look through dll entries and check that none contains the LSP feature.
-  bool lsp_feature_found = false;
-  for (int i = 0; i < process_report.dll_size(); ++i) {
-    if (process_report.dll(i).path() == lsp_path) {
-      // Look for ClientIncidentReport_EnvironmentData_Process_DLL_Feature_LSP
-      // through the features of each dll.
-      for (int j = 0; j < process_report.dll(i).feature_size(); ++j) {
-        if (process_report.dll(i).feature(j) ==
-            safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll::
-                LSP)
-          lsp_feature_found = true;
-      }
-    }
-  }
+  // Return successfully if LSP feature is found.
+  if (DllEntryContainsLspFeature(process_report, lsp))
+    return;
 
-  ASSERT_FALSE(lsp_feature_found);
-
-  // Manually add an entry to the process report that will get marked as a LSP.
+  // |lsp| was not already loaded into the current process. Manually add it
+  // to the process report so that it will get marked as a LSP.
   safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll* dll =
       process_report.add_dll();
-  dll->set_path(lsp_path);
+  dll->set_path(lsp);
   dll->set_base_address(base_address);
   dll->set_length(length);
 
-  // Look for dlls that are registered as a LSP.
   safe_browsing::RecordLspFeature(&process_report);
 
-  // Look through dll entries and check if the one we added contains the LSP
-  // feature.
-  lsp_feature_found = false;
-  for (int i = 0; i < process_report.dll_size(); ++i) {
-    if (process_report.dll(i).path() == lsp_path) {
-      // Look for ClientIncidentReport_EnvironmentData_Process_DLL_Feature_LSP
-      // through the features of each dll.
-      for (int j = 0; j < process_report.dll(i).feature_size(); ++j) {
-        if (process_report.dll(i).feature(j) ==
-            safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll::
-                LSP)
-          lsp_feature_found = true;
-      }
-    }
-  }
+  // Return successfully if LSP feature is found.
+  if (DllEntryContainsLspFeature(process_report, lsp))
+    return;
 
-  ASSERT_TRUE(lsp_feature_found);
+  FAIL() << "No LSP feature found for " << lsp;
 }
 
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
