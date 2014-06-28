@@ -47,17 +47,6 @@ class SafeBrowsingDatabaseFactory {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
 
-// Contains full_hash elements which are cached in memory.  Differs from
-// SBAddFullHash in deriving |list_id| from |chunk_id|.  Differs from
-// SBFullHashResult in adding |received| for later expiration.
-// TODO(shess): Remove/refactor this as part of converting to v2.3 caching
-// semantics.
-struct SBFullHashCached {
-  SBFullHash hash;
-  int list_id;  // TODO(shess): Use safe_browsing_util::ListType.
-  base::Time expire_after;
-};
-
 // Encapsulates on-disk databases that for safebrowsing. There are
 // four databases: browse, download, download whitelist and
 // client-side detection (csd) whitelist databases. The browse database contains
@@ -103,10 +92,10 @@ class SafeBrowsingDatabase {
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
 
-  // Returns false if |url| is not in the browse database.  If it returns true,
-  // then |prefix_hits| contains the list of prefix matches, and |cache_hits|
-  // contains the cached gethash results for those prefixes (if any).  This
-  // function is safe to call from threads other than the creation thread.
+  // Returns false if |url| is not in the browse database or already was cached
+  // as a miss.  If it returns true, |prefix_hits| contains matching hash
+  // prefixes which had no cached results and |cache_hits| contains any matching
+  // cached gethash results.  This function is safe to call from any thread.
   virtual bool ContainsBrowseUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
@@ -338,6 +327,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
  private:
   friend class SafeBrowsingDatabaseTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, HashCaching);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, CachedFullMiss);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, BrowseFullHashMatching);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest,
+                           BrowseFullHashAndPrefixMatching);
 
   // A SafeBrowsing whitelist contains a list of whitelisted full-hashes (stored
   // in a sorted vector) as well as a boolean flag indicating whether all
@@ -348,6 +342,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // to a set of hashed blacklisted IP prefixes.  Each IP prefix is a hashed
   // IPv6 IP prefix using SHA-1.
   typedef std::map<std::string, base::hash_set<std::string> > IPBlacklist;
+
+  // Helper for ContainsBrowseUrl, exposed for testing.
+  bool ContainsBrowseUrlHashes(const std::vector<SBFullHash>& full_hashes,
+                               std::vector<SBPrefix>* prefix_hits,
+                               std::vector<SBFullHashResult>* cache_hits);
 
   // Returns true if the whitelist is disabled or if any of the given hashes
   // matches the whitelist.
@@ -413,9 +412,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // object was created on.
   base::MessageLoop* creation_loop_;
 
-  // Lock for protecting access to variables that may be used on the
-  // IO thread.  This includes |prefix_set_|, |cached_browse_hashes_|,
-  // |prefix_miss_cache_|, |csd_whitelist_|.
+  // Lock for protecting access to variables that may be used on the IO thread.
+  // This includes |prefix_set_|, |browse_gethash_cache_|, |csd_whitelist_|.
   base::Lock lookup_lock_;
 
   // The base filename passed to Init(), used to generate the store and prefix
@@ -453,14 +451,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // The IP blacklist should be small.  At most a couple hundred IPs.
   IPBlacklist ip_blacklist_;
 
-  // Store items from CacheHashResults(), ordered by hash for efficient
-  // scanning.  Discarded on next update.
-  std::vector<SBFullHashCached> cached_browse_hashes_;
-
-  // Cache of prefixes that returned empty results (no full hash
-  // match) to |CacheHashResults()|.  Cached to prevent asking for
-  // them every time.  Cleared on next update.
-  std::set<SBPrefix> prefix_miss_cache_;
+  // Cache of gethash results for browse store. Entries should not be used if
+  // they are older than their expire_after field.  Cached misses will have
+  // empty full_hashes field.  Cleared on each update.
+  std::map<SBPrefix, SBCachedFullHashResult> browse_gethash_cache_;
 
   // Used to schedule resetting the database because of corruption.
   base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;

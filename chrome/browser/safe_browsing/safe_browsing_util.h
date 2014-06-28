@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
 namespace safe_browsing {
@@ -89,6 +90,16 @@ struct SBFullHashResult {
   SBFullHash hash;
   // TODO(shess): Refactor to allow ListType here.
   int list_id;
+};
+
+// Caches individual response from GETHASH request.
+struct SBCachedFullHashResult {
+  SBCachedFullHashResult();
+  explicit SBCachedFullHashResult(const base::Time& in_expire_after);
+  ~SBCachedFullHashResult();
+
+  base::Time expire_after;
+  std::vector<SBFullHashResult> full_hashes;
 };
 
 // Contains information about a list in the database.

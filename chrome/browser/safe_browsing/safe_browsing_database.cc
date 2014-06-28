@@ -182,42 +182,6 @@ bool MatchAddPrefixes(SafeBrowsingStore* store,
   return found_match;
 }
 
-// Find the entries in |full_hashes| with prefix in |prefix_hits|, and
-// add them to |full_hits| if not expired.  "Not expired" is when
-// either |last_update| was recent enough, or the item has been
-// received recently enough.  Expired items are not deleted because a
-// future update may make them acceptable again.
-//
-// For efficiency reasons the code walks |prefix_hits| and
-// |full_hashes| in parallel, so they must be sorted by prefix.
-void GetCachedFullHashesForBrowse(
-    const std::vector<SBPrefix>& prefix_hits,
-    const std::vector<SBFullHashCached>& full_hashes,
-    std::vector<SBFullHashResult>* full_hits) {
-  const base::Time now = base::Time::Now();
-
-  std::vector<SBPrefix>::const_iterator piter = prefix_hits.begin();
-  std::vector<SBFullHashCached>::const_iterator hiter = full_hashes.begin();
-
-  while (piter != prefix_hits.end() && hiter != full_hashes.end()) {
-    if (*piter < hiter->hash.prefix) {
-      ++piter;
-    } else if (hiter->hash.prefix < *piter) {
-      ++hiter;
-    } else {
-      if (now <= hiter->expire_after) {
-        SBFullHashResult result;
-        result.list_id = hiter->list_id;
-        result.hash = hiter->hash;
-        full_hits->push_back(result);
-      }
-
-      // Only increment |hiter|, |piter| might have multiple hits.
-      ++hiter;
-    }
-  }
-}
-
 // This function generates a chunk range string for |chunks|. It
 // outputs one chunk range string per list and writes it to the
 // |list_ranges| vector.  We expect |list_ranges| to already be of the
@@ -294,12 +258,6 @@ void UpdateChunkRangesForList(SafeBrowsingStore* store,
   UpdateChunkRanges(store, std::vector<std::string>(1, listname), lists);
 }
 
-// Order |SBFullHashCached| items on the prefix part.
-bool SBFullHashCachedPrefixLess(const SBFullHashCached& a,
-                                const SBFullHashCached& b) {
-  return a.hash.prefix < b.hash.prefix;
-}
-
 // This code always checks for non-zero file size.  This helper makes
 // that less verbose.
 int64 GetFileSizeOrZero(const base::FilePath& file_path) {
@@ -307,6 +265,37 @@ int64 GetFileSizeOrZero(const base::FilePath& file_path) {
   if (!base::GetFileSize(file_path, &size_64))
     return 0;
   return size_64;
+}
+
+// Helper for ContainsBrowseUrlHashes().  Returns true if an un-expired match
+// for |full_hash| is found in |cache|, with any matches appended to |results|
+// (true can be returned with zero matches).  |expire_base| is used to check the
+// cache lifetime of matches, expired matches will be discarded from |cache|.
+bool GetCachedFullHash(std::map<SBPrefix, SBCachedFullHashResult>* cache,
+                       const SBFullHash& full_hash,
+                       const base::Time& expire_base,
+                       std::vector<SBFullHashResult>* results) {
+  // First check if there is a valid cached result for this prefix.
+  std::map<SBPrefix, SBCachedFullHashResult>::iterator
+      citer = cache->find(full_hash.prefix);
+  if (citer == cache->end())
+    return false;
+
+  // Remove expired entries.
+  SBCachedFullHashResult& cached_result = citer->second;
+  if (cached_result.expire_after <= expire_base) {
+    cache->erase(citer);
+    return false;
+  }
+
+  // Find full-hash matches.
+  std::vector<SBFullHashResult>& cached_hashes = cached_result.full_hashes;
+  for (size_t i = 0; i < cached_hashes.size(); ++i) {
+    if (SBFullHashEqual(full_hash, cached_hashes[i].hash))
+      results->push_back(cached_hashes[i]);
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -513,7 +502,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     // threads.  Then again, that means there is no possibility of
     // contention on the lock...
     base::AutoLock locked(lookup_lock_);
-    cached_browse_hashes_.clear();
+    browse_gethash_cache_.clear();
     LoadPrefixSet();
   }
 
@@ -621,8 +610,7 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
   // Reset objects in memory.
   {
     base::AutoLock locked(lookup_lock_);
-    cached_browse_hashes_.clear();
-    prefix_miss_cache_.clear();
+    browse_gethash_cache_.clear();
     browse_prefix_set_.reset();
     side_effect_free_whitelist_prefix_set_.reset();
     ip_blacklist_.clear();
@@ -646,6 +634,16 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   if (full_hashes.empty())
     return false;
 
+  return ContainsBrowseUrlHashes(full_hashes, prefix_hits, cache_hits);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsBrowseUrlHashes(
+    const std::vector<SBFullHash>& full_hashes,
+    std::vector<SBPrefix>* prefix_hits,
+    std::vector<SBFullHashResult>* cache_hits) {
+  // Used to determine cache expiration.
+  const base::Time now = base::Time::Now();
+
   // This function is called on the I/O thread, prevent changes to
   // filter and caches.
   base::AutoLock locked(lookup_lock_);
@@ -656,25 +654,23 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   if (!browse_prefix_set_.get())
     return false;
 
-  size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
-    if (browse_prefix_set_->Exists(full_hashes[i])) {
-      const SBPrefix prefix = full_hashes[i].prefix;
-      prefix_hits->push_back(prefix);
-      if (prefix_miss_cache_.count(prefix) > 0)
-        ++miss_count;
+    if (!GetCachedFullHash(&browse_gethash_cache_,
+                           full_hashes[i],
+                           now,
+                           cache_hits)) {
+      // No valid cached result, check the database.
+      if (browse_prefix_set_->Exists(full_hashes[i]))
+        prefix_hits->push_back(full_hashes[i].prefix);
     }
   }
 
-  // If all the prefixes are cached as 'misses', don't issue a GetHash.
-  if (miss_count == prefix_hits->size())
-    return false;
-
-  // Find matching cached gethash responses.
+  // Multiple full hashes could share prefix, remove duplicates.
   std::sort(prefix_hits->begin(), prefix_hits->end());
-  GetCachedFullHashesForBrowse(*prefix_hits, cached_browse_hashes_, cache_hits);
+  prefix_hits->erase(std::unique(prefix_hits->begin(), prefix_hits->end()),
+                     prefix_hits->end());
 
-  return true;
+  return !prefix_hits->empty() || !cache_hits->empty();
 }
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
@@ -943,31 +939,17 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
   // This is called on the I/O thread, lock against updates.
   base::AutoLock locked(lookup_lock_);
 
-  if (full_hits.empty()) {
-    prefix_miss_cache_.insert(prefixes.begin(), prefixes.end());
-    return;
+  // Create or reset all cached results for these prefixes.
+  for (size_t i = 0; i < prefixes.size(); ++i) {
+    browse_gethash_cache_[prefixes[i]] = SBCachedFullHashResult(expire_after);
   }
 
-  const size_t orig_size = cached_browse_hashes_.size();
-  for (std::vector<SBFullHashResult>::const_iterator iter = full_hits.begin();
-       iter != full_hits.end(); ++iter) {
-    if (iter->list_id == safe_browsing_util::MALWARE ||
-        iter->list_id == safe_browsing_util::PHISH) {
-      SBFullHashCached cached_hash;
-      cached_hash.hash = iter->hash;
-      cached_hash.list_id = iter->list_id;
-      cached_hash.expire_after = expire_after;
-      cached_browse_hashes_.push_back(cached_hash);
-    }
+  // Insert any fullhash hits. Note that there may be one, multiple, or no
+  // fullhashes for any given entry in |prefixes|.
+  for (size_t i = 0; i < full_hits.size(); ++i) {
+    const SBPrefix prefix = full_hits[i].hash.prefix;
+    browse_gethash_cache_[prefix].full_hashes.push_back(full_hits[i]);
   }
-
-  // Sort new entries then merge with the previously-sorted entries.
-  std::vector<SBFullHashCached>::iterator
-      orig_end = cached_browse_hashes_.begin() + orig_size;
-  std::sort(orig_end, cached_browse_hashes_.end(), SBFullHashCachedPrefixLess);
-  std::inplace_merge(cached_browse_hashes_.begin(),
-                     orig_end, cached_browse_hashes_.end(),
-                     SBFullHashCachedPrefixLess);
 }
 
 bool SafeBrowsingDatabaseNew::UpdateStarted(
@@ -1020,6 +1002,10 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     HandleCorruptDatabase();
     return false;
   }
+
+  // Cached fullhash results must be cleared on every database update (whether
+  // successful or not.)
+  browse_gethash_cache_.clear();
 
   UpdateChunkRangesForLists(browse_store_.get(),
                             safe_browsing_util::kMalwareList,
@@ -1233,17 +1219,9 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   scoped_ptr<safe_browsing::PrefixSet>
       prefix_set(builder.GetPrefixSet(full_hash_results));
 
-  // Swap in the newly built filter and cache.
+  // Swap in the newly built filter.
   {
     base::AutoLock locked(lookup_lock_);
-
-    // TODO(shess): If |CacheHashResults()| is posted between the
-    // earlier lock and this clear, those pending hashes will be lost.
-    // It could be fixed by only removing hashes which were collected
-    // at the earlier point.  I believe that is fail-safe as-is (the
-    // hash will be fetched again).
-    cached_browse_hashes_.clear();
-    prefix_miss_cache_.clear();
     browse_prefix_set_.swap(prefix_set);
   }
 

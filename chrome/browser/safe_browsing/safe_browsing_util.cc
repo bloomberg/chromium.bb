@@ -27,6 +27,16 @@ SBFullHash SBFullHashForString(const base::StringPiece& str) {
   return h;
 }
 
+// SBCachedFullHashResult ------------------------------------------------------
+
+SBCachedFullHashResult::SBCachedFullHashResult() {}
+
+SBCachedFullHashResult::SBCachedFullHashResult(
+    const base::Time& in_expire_after)
+    : expire_after(in_expire_after) {}
+
+SBCachedFullHashResult::~SBCachedFullHashResult() {}
+
 // SBChunkData -----------------------------------------------------------------
 
 // TODO(shess): Right now this contains a scoped_ptr<ChunkData> so that the

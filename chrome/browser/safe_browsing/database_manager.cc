@@ -757,7 +757,10 @@ void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
   } else {
     // We may have cached results for previous GetHash queries.  Since
     // this data comes from cache, don't histogram hits.
-    HandleOneCheck(check, check->cache_hits);
+    bool is_threat = HandleOneCheck(check, check->cache_hits);
+    // cache_hits should only contain hits for a fullhash we searched for, so if
+    // we got to this point it should always result in a threat match.
+    DCHECK(is_threat);
   }
 }
 
