@@ -69,7 +69,8 @@ readonly SCONS_NONSFI_TC="\
     run_mmap_test \
     run_nanosleep_test \
     run_printf_test \
-    run_pwrite_test"
+    run_pwrite_test \
+    run_syscall_test"
 
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"

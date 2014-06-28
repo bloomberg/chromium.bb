@@ -91,7 +91,6 @@ static void ensure_file_is_absent(const char *filename) {
  */
 
 bool test_sched_yield() {
-  // test sched_yield
   if (sched_yield()) {
     printf("sched_yield failed\n");
     return false;
@@ -100,7 +99,10 @@ bool test_sched_yield() {
 }
 
 bool test_sysconf() {
-  // test sysconf
+  // TODO(hamaji): Implement _SC_NPROCESSORS_ONLN for newlib based
+  // non-SFI mode. Note that this test works for unsandboxed mode.
+  if (NONSFI_MODE)
+    return true;
   int rv;
   rv = sysconf(_SC_NPROCESSORS_ONLN);
   if (rv == -1) {

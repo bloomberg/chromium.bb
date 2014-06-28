@@ -209,10 +209,8 @@ off_t lseek(int fd, off_t offset, int whence) {
   int rc = errno_value_call(
       linux_syscall5(__NR__llseek, fd, offset_high, offset_low,
                      (uintptr_t) &result, whence));
-  if (linux_is_error_result(rc)) {
-    errno = -rc;
+  if (rc == -1)
     return -1;
-  }
   return result;
 #else
 # error Unsupported architecture
@@ -225,6 +223,112 @@ int dup(int fd) {
 
 int dup2(int oldfd, int newfd) {
   return errno_value_call(linux_syscall2(__NR_dup2, oldfd, newfd));
+}
+
+int fstat(int fd, struct stat *st) {
+  struct linux_abi_stat64 linux_st;
+  int rc = errno_value_call(
+      linux_syscall2(__NR_fstat64, fd, (uintptr_t) &linux_st));
+  if (rc == -1)
+    return -1;
+  linux_stat_to_nacl_stat(&linux_st, st);
+  return 0;
+}
+
+int stat(const char *file, struct stat *st) {
+  struct linux_abi_stat64 linux_st;
+  int rc = errno_value_call(
+      linux_syscall2(__NR_stat64, (uintptr_t) file, (uintptr_t) &linux_st));
+  if (rc == -1)
+    return -1;
+  linux_stat_to_nacl_stat(&linux_st, st);
+  return 0;
+}
+
+int lstat(const char *file, struct stat *st) {
+  struct linux_abi_stat64 linux_st;
+  int rc = errno_value_call(
+      linux_syscall2(__NR_lstat64, (uintptr_t) file, (uintptr_t) &linux_st));
+  if (rc == -1)
+    return -1;
+  linux_stat_to_nacl_stat(&linux_st, st);
+  return 0;
+}
+
+int mkdir(const char *path, mode_t mode) {
+  return errno_value_call(linux_syscall2(__NR_mkdir, (uintptr_t) path, mode));
+}
+
+int rmdir(const char *path) {
+  return errno_value_call(linux_syscall1(__NR_rmdir, (uintptr_t) path));
+}
+
+int chdir(const char *path) {
+  return errno_value_call(linux_syscall1(__NR_chdir, (uintptr_t) path));
+}
+
+char *getcwd(char *buffer, size_t len) {
+  int rc = errno_value_call(
+      linux_syscall2(__NR_getcwd, (uintptr_t) buffer, len));
+  if (rc == -1)
+    return NULL;
+  return buffer;
+}
+
+int unlink(const char *path) {
+  return errno_value_call(linux_syscall1(__NR_unlink, (uintptr_t) path));
+}
+
+int truncate(const char *path, off_t length) {
+  uint32_t length_low = (uint32_t) length;
+  uint32_t length_high = length >> 32;
+#if defined(__i386__)
+  return errno_value_call(
+      linux_syscall3(__NR_truncate64, (uintptr_t) path,
+                     length_low, length_high));
+#elif defined(__arm__)
+  /*
+   * On ARM, a 64-bit parameter has to be in an even-odd register
+   * pair. Hence these calls ignore their second argument (r1) so that
+   * their third and fourth make such a pair (r2,r3).
+   */
+  return errno_value_call(
+      linux_syscall4(__NR_truncate64, (uintptr_t) path,
+                     0  /* dummy */, length_low, length_high));
+#else
+# error Unsupported architecture
+#endif
+}
+
+int link(const char *oldpath, const char *newpath) {
+  return errno_value_call(
+      linux_syscall2(__NR_link, (uintptr_t) oldpath, (uintptr_t) newpath));
+}
+
+int rename(const char *oldpath, const char* newpath) {
+  return errno_value_call(
+      linux_syscall2(__NR_rename, (uintptr_t) oldpath, (uintptr_t) newpath));
+}
+
+int symlink(const char *oldpath, const char* newpath) {
+  return errno_value_call(
+      linux_syscall2(__NR_symlink, (uintptr_t) oldpath, (uintptr_t) newpath));
+}
+
+int chmod(const char *path, mode_t mode) {
+  return errno_value_call(
+      linux_syscall2(__NR_chmod, (uintptr_t) path, mode));
+}
+
+int access(const char *path, int amode) {
+  return errno_value_call(
+      linux_syscall2(__NR_access, (uintptr_t) path, amode));
+}
+
+int readlink(const char *path, char *buf, int bufsize) {
+  return errno_value_call(
+      linux_syscall3(__NR_readlink, (uintptr_t) path,
+                     (uintptr_t) buf, bufsize));
 }
 
 int fork(void) {
