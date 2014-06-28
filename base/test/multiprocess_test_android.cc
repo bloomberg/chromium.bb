@@ -46,7 +46,7 @@ ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
   // Keep standard FDs (stdin, stdout, stderr, etc.) open since this
   // is not meant to spawn a daemon.
   int base = GlobalDescriptors::kBaseDescriptor;
-  for (int fd = base; fd < getdtablesize(); ++fd) {
+  for (int fd = base; fd < sysconf(_SC_OPEN_MAX); ++fd) {
     if (fds_to_keep_open.find(fd) == fds_to_keep_open.end()) {
       close(fd);
     }

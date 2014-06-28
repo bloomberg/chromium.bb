@@ -23,7 +23,7 @@ int main(int argc, char ** argv) {
 
   /* child (daemon) continues */
   int j;
-  for (j = 0; j < getdtablesize(); j++)
+  for (j = 0; j < sysconf(_SC_OPEN_MAX); j++)
     close(j);
 
   setsid(); /* obtain a new process group */
