@@ -80,7 +80,9 @@
     {
         debug('\nAdjusted point within bounds');
         var adjustedPoint = adjustTouchPoint(touchPoint(20, 0, 20))
-        shouldBeWithin(adjustedPoint, touchPoint(20, 0, 20));
+        // Note: we allow 1 pixel of slop here due to corresponding 1px
+        // padding FIXME in HitTestLocation::rectForPoint.
+        shouldBeWithin(adjustedPoint, touchPoint(20.5, 0.5, 20.5));
 
         adjustedPoint = adjustTouchPoint(touchPoint(60, 60, 20))
         shouldBeWithin(adjustedPoint, touchPoint(60, 60, 20));

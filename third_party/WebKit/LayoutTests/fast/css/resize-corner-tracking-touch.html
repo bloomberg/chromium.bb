@@ -60,8 +60,7 @@
             //    the object, will do the resize.
             // 3. Touch scrolling starting at inside the object, and only a little bit
             //    off the resizer area, e.g. offset (-20, -20) to bottom right corner of
-            //    the object, will do the resize for div/textarea. (not work for the
-            //    iframe case, and may add support in the future)
+            //    the object, will do the resize.
 
             resize("div", -6, -7, 20, 10, "resize");
             resize("div", 6, 7, 20, 10, "noresize");
@@ -71,7 +70,7 @@
             document.documentElement.scrollTop += 100;
 
             resize("iframe1", -6, -7, 20, 10, "resize");
-            resize("iframe1", -20, -20, 20, 10, "noresize");
+            resize("iframe1", -20, -20, 20, 10, "resize");
             resizeInIframe("textarea2", "iframe1", -6, -7, 20, 20, "resize");
         }
     </script>

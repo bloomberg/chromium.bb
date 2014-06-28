@@ -18,34 +18,46 @@
    Boston, MA 02110-1301, USA.
 */
 
-#ifndef MouseEventWithHitTestResults_h
-#define MouseEventWithHitTestResults_h
+#ifndef EventWithHitTestResults_h
+#define EventWithHitTestResults_h
 
 #include "core/rendering/HitTestResult.h"
+#include "platform/PlatformEvent.h"
+#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 
 class Scrollbar;
 
-class MouseEventWithHitTestResults {
+template <typename EventType>
+class EventWithHitTestResults {
     STACK_ALLOCATED();
-public:
-    MouseEventWithHitTestResults(const PlatformMouseEvent&, const HitTestResult&);
 
-    const PlatformMouseEvent& event() const { return m_event; }
+public:
+    EventWithHitTestResults(const EventType& event, const HitTestResult& hitTestResult)
+        : m_event(event)
+        , m_hitTestResult(hitTestResult)
+    {
+    }
+
+    const EventType& event() const { return m_event; }
     const HitTestResult& hitTestResult() const { return m_hitTestResult; }
     LayoutPoint localPoint() const { return m_hitTestResult.localPoint(); }
     Scrollbar* scrollbar() const { return m_hitTestResult.scrollbar(); }
-    bool isOverLink() const;
+    bool isOverLink() const { return m_hitTestResult.isOverLink(); }
     bool isOverWidget() const { return m_hitTestResult.isOverWidget(); }
     Node* targetNode() const { return m_hitTestResult.targetNode(); }
 
 private:
-    PlatformMouseEvent m_event;
+    EventType m_event;
     HitTestResult m_hitTestResult;
 };
 
+typedef EventWithHitTestResults<PlatformMouseEvent> MouseEventWithHitTestResults;
+
+typedef EventWithHitTestResults<PlatformGestureEvent> GestureEventWithHitTestResults;
+
 } // namespace WebCore
 
-#endif // MouseEventWithHitTestResults_h
+#endif // EventWithHitTestResults_h

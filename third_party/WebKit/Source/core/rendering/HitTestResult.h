@@ -126,6 +126,9 @@ public:
     // the same thing as mutableRectBasedTestResult(), but here the return value is const.
     const NodeSet& rectBasedTestResult() const;
 
+    // Collapse the rect-based test result into a single target at the specified location.
+    void resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame);
+
     Node* targetNode() const;
 
 private:
@@ -137,6 +140,7 @@ private:
     RefPtrWillBeMember<Node> m_innerNode;
     RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;
     RefPtrWillBeMember<Node> m_innerNonSharedNode;
+    // FIXME: Nothing changes this to a value different from m_hitTestLocation!
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
     LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
                               // determine where inside the renderer we hit on subsequent operations.

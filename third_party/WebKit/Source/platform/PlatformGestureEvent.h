@@ -49,15 +49,16 @@ public:
         , m_globalPosition(globalPosition)
         , m_area(area)
     {
-        ASSERT(type == PlatformEvent::GestureScrollBegin
+        memset(&m_data, 0, sizeof(m_data));
+        if (type == PlatformEvent::GestureScrollBegin
             || type == PlatformEvent::GestureScrollEnd
             || type == PlatformEvent::GestureScrollUpdate
-            || type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
-        memset(&m_data, 0, sizeof(m_data));
-        m_data.m_scrollUpdate.m_deltaX = deltaX;
-        m_data.m_scrollUpdate.m_deltaY = deltaY;
-        m_data.m_scrollUpdate.m_velocityX = velocityX;
-        m_data.m_scrollUpdate.m_velocityY = velocityY;
+            || type == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
+            m_data.m_scrollUpdate.m_deltaX = deltaX;
+            m_data.m_scrollUpdate.m_deltaY = deltaY;
+            m_data.m_scrollUpdate.m_velocityX = velocityX;
+            m_data.m_scrollUpdate.m_velocityY = velocityY;
+        }
     }
 
     const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
@@ -103,6 +104,43 @@ public:
     {
         ASSERT(m_type == PlatformEvent::GesturePinchUpdate);
         return m_data.m_pinchUpdate.m_scale;
+    }
+
+    void applyTouchAdjustment(const IntPoint& adjustedPosition)
+    {
+        // Update the window-relative position of the event so that the node that was
+        // ultimately hit is under this point (i.e. elementFromPoint for the client
+        // co-ordinates in a 'click' event should yield the target). The global
+        // position is intentionally left unmodified because it's intended to reflect
+        // raw co-ordinates unrelated to any content.
+        m_position = adjustedPosition;
+    }
+
+    bool isScrollEvent() const
+    {
+        switch (m_type) {
+        case GestureScrollBegin:
+        case GestureScrollEnd:
+        case GestureScrollUpdate:
+        case GestureScrollUpdateWithoutPropagation:
+        case GestureFlingStart:
+        case GesturePinchBegin:
+        case GesturePinchEnd:
+        case GesturePinchUpdate:
+            return true;
+        case GestureTap:
+        case GestureTapUnconfirmed:
+        case GestureTapDown:
+        case GestureShowPress:
+        case GestureTapDownCancel:
+        case GestureTwoFingerTap:
+        case GestureLongPress:
+        case GestureLongTap:
+            return false;
+        default:
+            ASSERT_NOT_REACHED();
+            return false;
+        }
     }
 
 protected:

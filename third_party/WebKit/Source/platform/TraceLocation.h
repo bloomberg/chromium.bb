@@ -33,8 +33,7 @@ private:
     const char* m_fileName;
 };
 
-#define FROM_HERE WebCore::TraceLocation(__FUNCTION__, __FILE__)
-
+#define FROM_HERE ::WebCore::TraceLocation(__FUNCTION__, __FILE__)
 }
 
 #endif // TraceLocation_h

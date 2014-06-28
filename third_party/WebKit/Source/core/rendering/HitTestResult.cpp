@@ -484,6 +484,17 @@ HitTestResult::NodeSet& HitTestResult::mutableRectBasedTestResult()
     return *m_rectBasedTestResult;
 }
 
+void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame)
+{
+    ASSERT(isRectBasedTest());
+    ASSERT(m_hitTestLocation.containsPoint(resolvedPointInMainFrame));
+    m_innerNode = resolvedInnerNode;
+    m_hitTestLocation = HitTestLocation(resolvedPointInMainFrame);
+    m_pointInInnerNodeFrame = resolvedPointInMainFrame;
+    m_rectBasedTestResult = nullptr;
+    ASSERT(!isRectBasedTest());
+}
+
 Node* HitTestResult::targetNode() const
 {
     Node* node = innerNode();

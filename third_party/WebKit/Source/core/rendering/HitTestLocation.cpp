@@ -152,6 +152,11 @@ bool HitTestLocation::intersects(const RoundedRect& rect) const
     return rect.intersectsQuad(m_transformedRect);
 }
 
+bool HitTestLocation::containsPoint(const FloatPoint& point) const
+{
+    return m_transformedRect.containsPoint(point);
+}
+
 IntRect HitTestLocation::rectForPoint(const LayoutPoint& point, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
 {
     IntPoint actualPoint(flooredIntPoint(point));

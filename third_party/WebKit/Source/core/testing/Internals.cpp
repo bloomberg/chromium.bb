@@ -1098,6 +1098,9 @@ String Internals::rangeAsText(const Range* range, ExceptionState& exceptionState
     return range->text();
 }
 
+// FIXME: The next four functions are very similar - combine them once
+// bestClickableNode/bestContextMenuNode have been combined..
+
 PassRefPtrWillBeRawPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
 {
     if (!document || !document->frame()) {
@@ -1110,10 +1113,14 @@ PassRefPtrWillBeRawPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickable
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
+    EventHandler& eventHandler = document->frame()->eventHandler();
+    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+
     Node* targetNode;
     IntPoint adjustedPoint;
 
-    bool foundNode = document->frame()->eventHandler().bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    bool foundNode = eventHandler.bestClickableNodeForHitTestResult(result, adjustedPoint, targetNode);
     if (foundNode)
         return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
@@ -1132,9 +1139,13 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
+    EventHandler& eventHandler = document->frame()->eventHandler();
+    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+
     Node* targetNode;
     IntPoint adjustedPoint;
-    document->frame()->eventHandler().bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    document->frame()->eventHandler().bestClickableNodeForHitTestResult(result, adjustedPoint, targetNode);
     return targetNode;
 }
 
@@ -1150,10 +1161,14 @@ PassRefPtrWillBeRawPtr<DOMPoint> Internals::touchPositionAdjustedToBestContextMe
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
+    EventHandler& eventHandler = document->frame()->eventHandler();
+    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+
     Node* targetNode = 0;
     IntPoint adjustedPoint;
 
-    bool foundNode = document->frame()->eventHandler().bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    bool foundNode = eventHandler.bestContextMenuNodeForHitTestResult(result, adjustedPoint, targetNode);
     if (foundNode)
         return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
@@ -1172,9 +1187,13 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
+    EventHandler& eventHandler = document->frame()->eventHandler();
+    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+
     Node* targetNode = 0;
     IntPoint adjustedPoint;
-    document->frame()->eventHandler().bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    eventHandler.bestContextMenuNodeForHitTestResult(result, adjustedPoint, targetNode);
     return targetNode;
 }
 

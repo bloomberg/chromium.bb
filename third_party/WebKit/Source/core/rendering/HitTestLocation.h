@@ -64,6 +64,7 @@ public:
     bool intersects(const LayoutRect&) const;
     bool intersects(const FloatRect&) const;
     bool intersects(const RoundedRect&) const;
+    bool containsPoint(const FloatPoint&) const;
 
     const FloatPoint& transformedPoint() const { return m_transformedPoint; }
     const FloatQuad& transformedRect() const { return m_transformedRect; }

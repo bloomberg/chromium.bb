@@ -86,6 +86,8 @@ class ElementDataCache;
 class Event;
 class EventFactoryBase;
 class EventListener;
+template <typename EventType>
+class EventWithHitTestResults;
 class ExceptionState;
 class FastTextAutosizer;
 class FloatQuad;
@@ -114,7 +116,6 @@ class LocalFrame;
 class Location;
 class MainThreadTaskRunner;
 class MediaQueryMatcher;
-class MouseEventWithHitTestResults;
 class NodeFilter;
 class NodeIterator;
 class Page;
@@ -151,6 +152,7 @@ class WebGLRenderingContext;
 struct AnnotatedRegionValue;
 struct IconURL;
 
+typedef EventWithHitTestResults<PlatformMouseEvent> MouseEventWithHitTestResults;
 typedef int ExceptionCode;
 
 enum StyleResolverUpdateMode {

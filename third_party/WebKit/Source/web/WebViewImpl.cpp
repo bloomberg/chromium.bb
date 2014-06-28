@@ -66,6 +66,7 @@
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
 #include "core/page/EventHandler.h"
+#include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/InjectedStyleSheets.h"
@@ -654,6 +655,9 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
 
+    // FIXME: Remove redundant hit tests by pushing the call to EventHandler::targetGestureEvent
+    // up to this point and pass GestureEventWithHitTestResults around.
+
     // Handle link highlighting outside the main switch to avoid getting lost in the
     // complicated set of cases handled below.
     switch (event.type) {
@@ -1171,17 +1175,16 @@ static bool invokesHandCursor(Node* node, LocalFrame* frame)
 
 Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
 {
-    if (!m_page || !m_page->mainFrame() || !m_page->mainFrame()->isLocalFrame())
+    TRACE_EVENT0("input", "WebViewImpl::bestTapNode");
+
+    if (!m_page || !m_page->mainFrame())
         return 0;
 
     Node* bestTouchNode = 0;
 
-    IntPoint touchEventLocation(tapEvent.position());
-    m_page->deprecatedLocalMainFrame()->eventHandler().adjustGesturePosition(tapEvent, touchEventLocation);
-
-    IntPoint hitTestPoint = m_page->deprecatedLocalMainFrame()->view()->windowToContents(touchEventLocation);
-    HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent);
-    bestTouchNode = result.targetNode();
+    // FIXME: Rely on earlier hit test instead of hit testing again.
+    GestureEventWithHitTestResults targetedEvent = m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(tapEvent, true);
+    bestTouchNode = targetedEvent.hitTestResult().targetNode();
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
@@ -1816,43 +1819,51 @@ const WebInputEvent* WebViewImpl::m_currentInputEvent = 0;
 
 // FIXME: autogenerate this kind of code, and use it throughout Blink rather than
 // the one-offs for subsets of these values.
-static const AtomicString* inputTypeToName(WebInputEvent::Type type)
+static String inputTypeToName(WebInputEvent::Type type)
 {
     switch (type) {
     case WebInputEvent::MouseDown:
-        return &EventTypeNames::mousedown;
+        return EventTypeNames::mousedown;
     case WebInputEvent::MouseUp:
-        return &EventTypeNames::mouseup;
+        return EventTypeNames::mouseup;
     case WebInputEvent::MouseMove:
-        return &EventTypeNames::mousemove;
+        return EventTypeNames::mousemove;
     case WebInputEvent::MouseEnter:
-        return &EventTypeNames::mouseenter;
+        return EventTypeNames::mouseenter;
     case WebInputEvent::MouseLeave:
-        return &EventTypeNames::mouseleave;
+        return EventTypeNames::mouseleave;
     case WebInputEvent::ContextMenu:
-        return &EventTypeNames::contextmenu;
+        return EventTypeNames::contextmenu;
     case WebInputEvent::MouseWheel:
-        return &EventTypeNames::mousewheel;
+        return EventTypeNames::mousewheel;
     case WebInputEvent::KeyDown:
-        return &EventTypeNames::keydown;
+        return EventTypeNames::keydown;
     case WebInputEvent::KeyUp:
-        return &EventTypeNames::keyup;
+        return EventTypeNames::keyup;
     case WebInputEvent::GestureScrollBegin:
-        return &EventTypeNames::gesturescrollstart;
+        return EventTypeNames::gesturescrollstart;
     case WebInputEvent::GestureScrollEnd:
-        return &EventTypeNames::gesturescrollend;
+        return EventTypeNames::gesturescrollend;
     case WebInputEvent::GestureScrollUpdate:
-        return &EventTypeNames::gesturescrollupdate;
+        return EventTypeNames::gesturescrollupdate;
+    case WebInputEvent::GestureTapDown:
+        return EventTypeNames::gesturetapdown;
+    case WebInputEvent::GestureShowPress:
+        return EventTypeNames::gestureshowpress;
+    case WebInputEvent::GestureTap:
+        return EventTypeNames::gesturetap;
+    case WebInputEvent::GestureTapUnconfirmed:
+        return EventTypeNames::gesturetapunconfirmed;
     case WebInputEvent::TouchStart:
-        return &EventTypeNames::touchstart;
+        return EventTypeNames::touchstart;
     case WebInputEvent::TouchMove:
-        return &EventTypeNames::touchmove;
+        return EventTypeNames::touchmove;
     case WebInputEvent::TouchEnd:
-        return &EventTypeNames::touchend;
+        return EventTypeNames::touchend;
     case WebInputEvent::TouchCancel:
-        return &EventTypeNames::touchcancel;
+        return EventTypeNames::touchcancel;
     default:
-        return 0;
+        return String("unknown");
     }
 }
 
@@ -1871,8 +1882,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         m_autofillClient->firstUserGestureObserved();
     }
 
-    const AtomicString* inputEventName = inputTypeToName(inputEvent.type);
-    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputEventName ? inputEventName->ascii() : "unknown");
+    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)

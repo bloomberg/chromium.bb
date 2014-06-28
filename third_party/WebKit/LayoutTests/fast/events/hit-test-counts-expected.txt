@@ -16,11 +16,11 @@ Wheel: 1
 TouchStart: 1
 TouchMove: 0
 TouchEnd: 0
-GestureTapDown: 3
-GestureShowPress: 5
-GestureTap: 7
-GestureScrollBegin: 2
-GestureTapCancel: 2
+GestureTapDown: 1
+GestureShowPress: 2
+GestureTap: 6
+GestureScrollBegin: 1
+GestureTapCancel: 1
 GestureScrollUpdate: 0
 GestureScrollEnd: 0
 
@@ -34,11 +34,11 @@ Wheel: 1 1 1
 TouchStart: 1 1 1
 TouchMove: 0 0 0
 TouchEnd: 0 0 0
-GestureTapDown: 5 5 5
-GestureShowPress: 7 7 7
-GestureTap: 3 3 7
-GestureScrollBegin: 4 4 4
-GestureTapCancel: 2 2 2
+GestureTapDown: 1 1 1
+GestureShowPress: 2 2 2
+GestureTap: 2 2 6
+GestureScrollBegin: 1 1 1
+GestureTapCancel: 1 1 1
 GestureScrollUpdate: 0 0 0
 GestureScrollEnd: 0 0 0
 
@@ -52,11 +52,11 @@ Wheel: 1 1 0
 TouchStart: 1 1 0
 TouchMove: 0 0 0
 TouchEnd: 0 0 0
-GestureTapDown: 5 14 50
-GestureShowPress: 7 19 67
-GestureTap: 3 7 0
-GestureScrollBegin: 3 3 0
-GestureTapCancel: 2 2 0
+GestureTapDown: 1 4 16
+GestureShowPress: 2 8 32
+GestureTap: 2 6 0
+GestureScrollBegin: 1 1 0
+GestureTapCancel: 1 1 0
 GestureScrollUpdate: 0 0 0
 GestureScrollEnd: 0 0 0
 
