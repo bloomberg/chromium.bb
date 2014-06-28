@@ -1888,7 +1888,9 @@ internal_brillo_paladin.add_config('gizmo-paladin',
   trybot_list=True,
 )
 
-internal_brillo_paladin.add_config('panther_embedded-minimal-paladin',
+external_brillo_paladin = paladin.derive(brillo)
+
+external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
   paladin_builder_name='panther_embedded-minimal paladin',
   profile='minimal',
