@@ -11,9 +11,9 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 
+class AUtocompleteInput;
 struct AutocompleteMatch;
 class AutocompleteResult;
 class InstantController;

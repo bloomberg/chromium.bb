@@ -18,6 +18,7 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'autocomplete/autocomplete_input_unittest.cc',
             'autofill/content/browser/content_autofill_driver_unittest.cc',
             'autofill/content/browser/request_autocomplete_manager_unittest.cc',
             'autofill/content/browser/wallet/full_wallet_unittest.cc',
@@ -228,6 +229,10 @@
 
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
+
+            # Dependencies of autocomplete
+            'components.gyp:autocomplete',
+            'components.gyp:autocomplete_test_support',
 
             # Dependencies of autofill
             'components.gyp:autofill_core_browser',

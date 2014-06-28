@@ -1,5 +1,6 @@
 include_rules = [
   "+components/metrics/proto",
+  "+components/url_fixer",
   "+net",
   "+url",
 ]

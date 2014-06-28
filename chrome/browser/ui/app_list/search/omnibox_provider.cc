@@ -6,12 +6,12 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

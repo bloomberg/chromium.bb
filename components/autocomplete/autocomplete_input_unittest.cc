@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_input.h"
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
@@ -13,11 +13,18 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_parse.h"
+#include "url/url_util.h"
 
 using base::ASCIIToUTF16;
 using metrics::OmniboxEventProto;
 
 TEST(AutocompleteInputTest, InputType) {
+  // TODO(mukai): Fix this scheme setup.
+  url::Initialize();
+  url::AddStandardScheme("chrome");
+  url::AddStandardScheme("chrome-devtools");
+  url::AddStandardScheme("chrome-search");
+
   struct test_data {
     const base::string16 input;
     const metrics::OmniboxInputType::Type type;
@@ -148,6 +155,8 @@ TEST(AutocompleteInputTest, InputType) {
                             true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
   }
+
+  url::Shutdown();
 }
 
 TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {

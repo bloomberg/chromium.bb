@@ -9,11 +9,17 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
+        'component_metrics_proto',
+        'url_fixer',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'autocomplete/autocomplete_input.cc',
+        'autocomplete/autocomplete_input.h',
         'autocomplete/autocomplete_scheme_classifier.h',
         'autocomplete/url_prefix.cc',
         'autocomplete/url_prefix.h',

@@ -10,11 +10,11 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
+class AutocompleteInput;
 class AutocompleteProvider;
 class Profile;
 

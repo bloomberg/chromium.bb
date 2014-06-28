@@ -608,7 +608,6 @@
         'browser/app_controller_mac_unittest.mm',
         'browser/apps/drive/drive_app_mapping_unittest.cc',
         'browser/apps/ephemeral_app_service_unittest.cc',
-        'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_match_unittest.cc',
         'browser/autocomplete/autocomplete_provider_unittest.cc',
         'browser/autocomplete/autocomplete_result_unittest.cc',

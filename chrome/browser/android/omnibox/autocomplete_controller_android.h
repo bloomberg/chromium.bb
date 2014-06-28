@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_input.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/metrics/proto/omnibox_event.pb.h"

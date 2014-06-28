@@ -8,9 +8,9 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/common/url_constants.h"
+#include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/url_fixer/url_fixer.h"
 

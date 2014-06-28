@@ -126,8 +126,6 @@
       'browser/autocomplete/autocomplete_controller.cc',
       'browser/autocomplete/autocomplete_controller.h',
       'browser/autocomplete/autocomplete_controller_delegate.h',
-      'browser/autocomplete/autocomplete_input.cc',
-      'browser/autocomplete/autocomplete_input.h',
       'browser/autocomplete/autocomplete_match.cc',
       'browser/autocomplete/autocomplete_match.h',
       'browser/autocomplete/autocomplete_provider.cc',

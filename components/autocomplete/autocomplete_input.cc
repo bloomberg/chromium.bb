@@ -1,21 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_input.h"
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autocomplete/autocomplete_scheme_classifier.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/url_canon_ip.h"
 #include "url/url_util.h"
 
 namespace {
+
+// Hardcode constant to avoid any dependencies on content/.
+const char kViewSourceScheme[] = "view-source";
 
 void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
                                      size_t* cursor_position) {
@@ -420,7 +422,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   int after_scheme_and_colon = parts.scheme.end() + 1;
   // For the view-source scheme, we should emphasize the scheme and host of the
   // URL qualified by the view-source prefix.
-  if (LowerCaseEqualsASCII(scheme_str, content::kViewSourceScheme) &&
+  if (LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
     // Obtain the URL prefixed by view-source and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
@@ -487,8 +489,7 @@ int AutocompleteInput::NumNonHostComponents(const url::Parsed& parts) {
 bool AutocompleteInput::HasHTTPScheme(const base::string16& input) {
   std::string utf8_input(base::UTF16ToUTF8(input));
   url::Component scheme;
-  if (url::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
-                                &scheme)) {
+  if (url::FindAndCompareScheme(utf8_input, kViewSourceScheme, &scheme)) {
     utf8_input.erase(0, scheme.end() + 1);
   }
   return url::FindAndCompareScheme(utf8_input, url::kHttpScheme, NULL);
