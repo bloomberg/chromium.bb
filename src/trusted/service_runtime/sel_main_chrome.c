@@ -40,6 +40,7 @@
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_main_common.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
@@ -127,16 +128,15 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
             " descriptor\n");
   }
 
-  errcode = NaClAppLoadFileDynamically(nap, nd, &metadata);
+  errcode = NaClMainLoadIrt(nap, nd, &metadata);
   if (errcode != LOAD_OK) {
     NaClLog(LOG_FATAL,
             "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",
             NaClErrorString(errcode));
   }
 
-  CHECK(NULL == nap->irt_nexe_desc);
-  nap->irt_nexe_desc = nd;
   NaClMetadataDtor(&metadata);
+  NaClDescUnref(nd);
 }
 
 int NaClChromeMainLoad(struct NaClApp *nap,
@@ -303,9 +303,8 @@ int NaClChromeMainLoad(struct NaClApp *nap,
   /*
    * Load the integrated runtime (IRT) library.
    */
-  if (args->irt_fd != -1 && !nap->irt_loaded) {
+  if (args->irt_fd != -1) {
     NaClLoadIrt(nap, args->irt_fd);
-    nap->irt_loaded = 1;
   }
 
   if (NACL_FI_ERROR_COND("LaunchServiceThreads",

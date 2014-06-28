@@ -181,7 +181,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->secure_service_address = NULL;
   nap->bootstrap_channel = NULL;
   nap->secure_service = NULL;
-  nap->irt_loaded = 0;
   nap->main_exe_prevalidated = 0;
 
   nap->kernel_service = NULL;

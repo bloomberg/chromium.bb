@@ -208,16 +208,6 @@ struct NaClApp {
   struct NaClDesc           *bootstrap_channel;
 
   /*
-   * The IRT may be supplied by an SRPC call via the command channel,
-   * or by the irt_fd member in struct NaClChromeMainArgs in the case
-   * of sel_main_chrome (the embedded service runtime), or by the -B
-   * command line argument in the case of sel_main (the standalone
-   * service runtime process).  We let the command channel have
-   * priority.
-   */
-  int irt_loaded;  /* bool */
-
-  /*
    * The main NaCl executable may already be validated during ELF
    * loading, where after a validation cache hit the code gets mmapped
    * into memory if the file descriptor is "blessed" as referring to a

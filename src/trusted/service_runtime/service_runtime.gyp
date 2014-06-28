@@ -63,6 +63,7 @@
           # "sel_main_chrome" library once Chromium is changed to
           # depend on that rather than on "sel".
           'sel_main_chrome.c',
+          'sel_main_common.c',
           'sel_mem.c',
           'sel_qualify.c',
           'sel_validate_image.c',

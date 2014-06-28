@@ -56,6 +56,7 @@
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_main_common.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
@@ -193,13 +194,12 @@ int NaClSelLdrMain(int argc, char **argv) {
   struct redir                  **redir_qend;
 
 
-  struct NaClApp                state;
   char                          *nacl_file = NULL;
   char                          *blob_library_file = NULL;
   int                           rpc_supplies_nexe = 0;
   int                           export_addr_to = -1;
 
-  struct NaClApp                *nap = &state;
+  struct NaClApp                *nap = NULL;
 
   struct GioFile                gout;
   NaClErrorCode                 errcode = LOAD_INTERNAL;
@@ -235,10 +235,23 @@ int NaClSelLdrMain(int argc, char **argv) {
   redir_queue = NULL;
   redir_qend = &redir_queue;
 
-  memset(&state, 0, sizeof state);
   NaClAllModulesInit();
+
+  /*
+   * If this is a secondary process spun up to assist windows exception
+   * handling, the following function will not return.  If this is a normal
+   * sel_ldr process, the following function does nothing.
+   */
+  NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
+
+  nap = NaClAppCreate();
+  if (nap == NULL) {
+    fprintf(stderr, "NaClAppCreate() failed\n");
+    exit(1);
+  }
+
   NaClBootstrapChannelErrorReporterInit();
-  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, &state);
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
 
   verbosity = NaClLogGetVerbosity();
 
@@ -246,14 +259,9 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   fflush((FILE *) NULL);
 
-  NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
-
   if (!GioFileRefCtor(&gout, stdout)) {
     fprintf(stderr, "Could not create general standard output channel\n");
     exit(1);
-  }
-  if (!NaClAppCtor(&state)) {
-    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
   }
   if (!DynArrayCtor(&env_vars, 0)) {
     NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
@@ -512,20 +520,20 @@ int NaClSelLdrMain(int argc, char **argv) {
   /* to be passed to NaClMain, eventually... */
   argv[--optind] = (char *) "NaClMain";
 
-  state.ignore_validator_result = (debug_mode_ignore_validator > 0);
-  state.skip_validator = (debug_mode_ignore_validator > 1);
+  nap->ignore_validator_result = (debug_mode_ignore_validator > 0);
+  nap->skip_validator = (debug_mode_ignore_validator > 1);
 
   if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
-    state.enable_exception_handling = 1;
+    nap->enable_exception_handling = 1;
   }
   /*
    * TODO(mseaborn): Always enable the Mach exception handler on Mac
    * OS X, and remove handle_signals and sel_ldr's "-S" option.
    */
-  if (state.enable_exception_handling || enable_debug_stub ||
+  if (nap->enable_exception_handling || enable_debug_stub ||
       (handle_signals && NACL_OSX)) {
 #if NACL_WINDOWS
-    state.attach_debug_exception_handler_func =
+    nap->attach_debug_exception_handler_func =
         NaClDebugExceptionHandlerStandaloneAttach;
 #elif NACL_LINUX
     /* NaCl's signal handler is always enabled on Linux. */
@@ -736,18 +744,10 @@ int NaClSelLdrMain(int argc, char **argv) {
   }
 
   if (NULL != blob_library_file) {
-    if (nap->irt_loaded) {
-      NaClLog(LOG_INFO, "IRT loaded via command channel; ignoring -B irt\n");
-    } else if (LOAD_OK == errcode) {
+    if (LOAD_OK == errcode) {
       NaClLog(2, "Loading blob file %s\n", blob_library_file);
-      errcode = NaClAppLoadFileDynamically(nap, blob_file,
-                                           NULL);
-      if (LOAD_OK == errcode) {
-        nap->irt_loaded = 1;
-        CHECK(NULL == nap->irt_nexe_desc);
-        NaClDescRef(blob_file);
-        nap->irt_nexe_desc = blob_file;
-      } else {
+      errcode = NaClMainLoadIrt(nap, blob_file, NULL);
+      if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
                 blob_library_file,
                 NaClErrorString(errcode));
