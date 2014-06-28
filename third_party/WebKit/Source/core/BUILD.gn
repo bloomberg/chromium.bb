@@ -565,6 +565,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 # GYP version: WebKit/Source/core/core_generated.gyp:make_core_generated
 group("make_core_generated") {
   deps = [
+    ":make_core_generated_private_script",
     ":make_core_generated_xml_viewer_css",
     ":make_core_generated_xml_viewer_js",
     ":make_core_generated_html_entity_table",
