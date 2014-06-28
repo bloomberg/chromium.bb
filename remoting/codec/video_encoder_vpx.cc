@@ -133,10 +133,9 @@ ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size,
   if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
     return ScopedVpxCodec();
 
-  // VP9 encode doesn't yet support Realtime, so falls back to Good quality,
-  // for which 4 is the lowest CPU usage.
+  // Request the lowest-CPU encode feature-set that VP9 supports.
   // Note that this is configured via the same parameter as for VP8.
-  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, 4))
+  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, 5))
     return ScopedVpxCodec();
 
   // Use the lowest level of noise sensitivity so as to spend less time
