@@ -27,7 +27,7 @@
 // VP8 is more likely to work on different versions of Chrome. Undefine this
 // to decode H264.
 #define USE_VP8_TESTDATA_INSTEAD_OF_H264
-#include "ppapi/examples/video_decode/testdata.h"
+#include "testdata.h"
 
 
 // Use assert as a poor-man's CHECK, even in non-debug mode.
