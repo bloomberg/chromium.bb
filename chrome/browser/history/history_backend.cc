@@ -1288,22 +1288,25 @@ void HistoryBackend::GetVisibleVisitCountToHost(
   request->ForwardResult(request->handle(), success, count, first_visit);
 }
 
-void HistoryBackend::QueryMostVisitedURLs(
-    scoped_refptr<QueryMostVisitedURLsRequest> request,
-    int result_count,
-    int days_back) {
-  if (request->canceled())
+void HistoryBackend::QueryMostVisitedURLs(int result_count,
+                                          int days_back,
+                                          MostVisitedURLList* result) {
+  if (!db_)
     return;
 
-  if (!db_) {
-    // No History Database - return an empty list.
-    request->ForwardResult(request->handle(), MostVisitedURLList());
-    return;
+  ScopedVector<PageUsageData> data;
+  db_->QuerySegmentUsage(
+      base::Time::Now() - base::TimeDelta::FromDays(days_back),
+      result_count,
+      &data.get());
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    PageUsageData* current_data = data[i];
+    RedirectList redirects;
+    QueryRedirectsFrom(current_data->GetURL(), &redirects);
+    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
+    result->push_back(url);
   }
-
-  MostVisitedURLList* result = &request->value;
-  QueryMostVisitedURLsImpl(result_count, days_back, result);
-  request->ForwardResult(request->handle(), *result);
 }
 
 void HistoryBackend::QueryFilteredURLs(
@@ -1387,26 +1390,6 @@ void HistoryBackend::QueryFilteredURLs(
           1, 1000, 100, base::Histogram::kUmaTargetedHistogramFlag));
 
   request->ForwardResult(request->handle(), result);
-}
-
-void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,
-                                              int days_back,
-                                              MostVisitedURLList* result) {
-  if (!db_)
-    return;
-
-  ScopedVector<PageUsageData> data;
-  db_->QuerySegmentUsage(base::Time::Now() -
-                         base::TimeDelta::FromDays(days_back),
-                         result_count, &data.get());
-
-  for (size_t i = 0; i < data.size(); ++i) {
-    PageUsageData* current_data = data[i];
-    RedirectList redirects;
-    QueryRedirectsFrom(current_data->GetURL(), &redirects);
-    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
-    result->push_back(url);
-  }
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(
@@ -2725,8 +2708,8 @@ void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {
 #if defined(OS_ANDROID)
 void HistoryBackend::PopulateMostVisitedURLMap() {
   MostVisitedURLList most_visited_urls;
-  QueryMostVisitedURLsImpl(kPageVisitStatsMaxTopSites, kSegmentDataRetention,
-                           &most_visited_urls);
+  QueryMostVisitedURLs(
+      kPageVisitStatsMaxTopSites, kSegmentDataRetention, &most_visited_urls);
 
   DCHECK_LE(most_visited_urls.size(), kPageVisitStatsMaxTopSites);
   for (size_t i = 0; i < most_visited_urls.size(); ++i) {

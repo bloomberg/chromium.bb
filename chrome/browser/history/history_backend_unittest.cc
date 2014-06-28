@@ -220,12 +220,6 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   HistoryBackendTest() {}
   virtual ~HistoryBackendTest() {}
 
-  // Callback for QueryMostVisited.
-  void OnQueryMostVisited(CancelableRequestProvider::Handle handle,
-                          history::MostVisitedURLList data) {
-    most_visited_list_.swap(data);
-  }
-
   // Callback for QueryFiltered.
   void OnQueryFiltered(CancelableRequestProvider::Handle handle,
                        const history::FilteredURLList& data) {
@@ -233,10 +227,6 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   }
 
  protected:
-  const history::MostVisitedURLList& get_most_visited_list() const {
-    return most_visited_list_;
-  }
-
   const history::FilteredURLList& get_filtered_list() const {
     return filtered_list_;
   }
@@ -437,7 +427,6 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   }
 
  private:
-  history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTest);

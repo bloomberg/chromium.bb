@@ -216,8 +216,7 @@ class TopSitesImpl : public TopSites {
       const scoped_refptr<MostVisitedThumbnails>& thumbnails);
 
   // Called when history service returns a list of top URLs.
-  void OnTopSitesAvailableFromHistory(CancelableRequestProvider::Handle handle,
-                                      MostVisitedURLList data);
+  void OnTopSitesAvailableFromHistory(const MostVisitedURLList* data);
 
   scoped_refptr<TopSitesBackend> backend_;
 

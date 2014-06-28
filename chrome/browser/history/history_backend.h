@@ -176,10 +176,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  void QueryMostVisitedURLs(
-      scoped_refptr<QueryMostVisitedURLsRequest> request,
-      int result_count,
-      int days_back);
+  void QueryMostVisitedURLs(int result_count,
+                            int days_back,
+                            MostVisitedURLList* result);
 
   // Request the |result_count| URLs and the chain of redirects
   // leading to each of these URLs, filterd and sorted based on the |filter|.
@@ -189,11 +188,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int result_count,
       const history::VisitFilter& filter,
       bool debug);
-
-  // QueryMostVisitedURLs without the request.
-  void QueryMostVisitedURLsImpl(int result_count,
-                                int days_back,
-                                MostVisitedURLList* result);
 
   // Favicon -------------------------------------------------------------------
 

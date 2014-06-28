@@ -309,12 +309,14 @@ class HistoryService : public CancelableRequestProvider,
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  typedef base::Callback<void(Handle, history::MostVisitedURLList)>
+  typedef base::Callback<void(const history::MostVisitedURLList*)>
       QueryMostVisitedURLsCallback;
 
-  Handle QueryMostVisitedURLs(int result_count, int days_back,
-                              CancelableRequestConsumerBase* consumer,
-                              const QueryMostVisitedURLsCallback& callback);
+  base::CancelableTaskTracker::TaskId QueryMostVisitedURLs(
+      int result_count,
+      int days_back,
+      const QueryMostVisitedURLsCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Request the |result_count| URLs filtered and sorted based on the |filter|.
   // If |extended_info| is true, additional data will be provided in the

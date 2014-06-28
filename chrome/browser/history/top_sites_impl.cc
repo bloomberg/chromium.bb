@@ -456,9 +456,9 @@ CancelableRequestProvider::Handle TopSitesImpl::StartQueryForMostVisited() {
     return hs->QueryMostVisitedURLs(
         num_results_to_request_from_history(),
         kDaysOfHistory,
-        &history_consumer_,
         base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &cancelable_task_tracker_);
   }
   return 0;
 }
@@ -930,9 +930,9 @@ void TopSitesImpl::OnGotMostVisitedThumbnails(
 }
 
 void TopSitesImpl::OnTopSitesAvailableFromHistory(
-    CancelableRequestProvider::Handle handle,
-    MostVisitedURLList pages) {
-  SetTopSites(pages);
+    const MostVisitedURLList* pages) {
+  DCHECK(pages);
+  SetTopSites(*pages);
 }
 
 }  // namespace history

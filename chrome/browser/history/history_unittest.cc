@@ -987,9 +987,8 @@ class HistoryTest : public testing::Test {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnMostVisitedURLsAvailable(CancelableRequestProvider::Handle handle,
-                                  MostVisitedURLList url_list) {
-    most_visited_urls_.swap(url_list);
+  void OnMostVisitedURLsAvailable(const MostVisitedURLList* url_list) {
+    most_visited_urls_ = *url_list;
     base::MessageLoop::current()->Quit();
   }
 
@@ -1399,10 +1398,11 @@ TEST_F(HistoryTest, MostVisitedURLs) {
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
-      20, 90, &consumer_,
-      base::Bind(
-          &HistoryTest::OnMostVisitedURLsAvailable,
-          base::Unretained(this)));
+      20,
+      90,
+      base::Bind(&HistoryTest::OnMostVisitedURLsAvailable,
+                 base::Unretained(this)),
+      &tracker_);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(2U, most_visited_urls_.size());
@@ -1415,10 +1415,11 @@ TEST_F(HistoryTest, MostVisitedURLs) {
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
-      20, 90, &consumer_,
-      base::Bind(
-          &HistoryTest::OnMostVisitedURLsAvailable,
-          base::Unretained(this)));
+      20,
+      90,
+      base::Bind(&HistoryTest::OnMostVisitedURLsAvailable,
+                 base::Unretained(this)),
+      &tracker_);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -1432,10 +1433,11 @@ TEST_F(HistoryTest, MostVisitedURLs) {
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
-      20, 90, &consumer_,
-      base::Bind(
-          &HistoryTest::OnMostVisitedURLsAvailable,
-          base::Unretained(this)));
+      20,
+      90,
+      base::Bind(&HistoryTest::OnMostVisitedURLsAvailable,
+                 base::Unretained(this)),
+      &tracker_);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -1449,10 +1451,11 @@ TEST_F(HistoryTest, MostVisitedURLs) {
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
-      20, 90, &consumer_,
-      base::Bind(
-          &HistoryTest::OnMostVisitedURLsAvailable,
-          base::Unretained(this)));
+      20,
+      90,
+      base::Bind(&HistoryTest::OnMostVisitedURLsAvailable,
+                 base::Unretained(this)),
+      &tracker_);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -1471,10 +1474,11 @@ TEST_F(HistoryTest, MostVisitedURLs) {
       redirects, content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
-      20, 90, &consumer_,
-      base::Bind(
-          &HistoryTest::OnMostVisitedURLsAvailable,
-          base::Unretained(this)));
+      20,
+      90,
+      base::Bind(&HistoryTest::OnMostVisitedURLsAvailable,
+                 base::Unretained(this)),
+      &tracker_);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(4U, most_visited_urls_.size());

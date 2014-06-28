@@ -814,16 +814,22 @@ HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
       consumer, new history::GetVisibleVisitCountToHostRequest(callback), url);
 }
 
-HistoryService::Handle HistoryService::QueryMostVisitedURLs(
+base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
     int result_count,
     int days_back,
-    CancelableRequestConsumerBase* consumer,
-    const QueryMostVisitedURLsCallback& callback) {
+    const QueryMostVisitedURLsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryMostVisitedURLs,
-                  consumer,
-                  new history::QueryMostVisitedURLsRequest(callback),
-                  result_count, days_back);
+  history::MostVisitedURLList* result = new history::MostVisitedURLList();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::QueryMostVisitedURLs,
+                 history_backend_.get(),
+                 result_count,
+                 days_back,
+                 base::Unretained(result)),
+      base::Bind(callback, base::Owned(result)));
 }
 
 HistoryService::Handle HistoryService::QueryFilteredURLs(
