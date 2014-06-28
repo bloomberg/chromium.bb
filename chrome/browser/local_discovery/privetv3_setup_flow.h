@@ -26,7 +26,7 @@ class PrivetV3SetupFlow {
     typedef base::Callback<void(const std::string& ssid,
                                 const std::string& key)> CredentialsCallback;
 
-    typedef base::Callback<void(scoped_ptr<PrivetV3HTTPClient>)>
+    typedef base::Callback<void(scoped_ptr<PrivetHTTPClient>)>
         PrivetClientCallback;
 
     virtual ~Delegate();

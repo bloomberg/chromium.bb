@@ -17,13 +17,4 @@ scoped_ptr<PrivetV1HTTPClient> PrivetV1HTTPClient::CreateDefault(
       new PrivetV1HTTPClientImpl(info_client.Pass())).Pass();
 }
 
-// static
-scoped_ptr<PrivetV3HTTPClient> PrivetV3HTTPClient::CreateDefault(
-    scoped_ptr<PrivetHTTPClient> info_client) {
-  if (!info_client)
-    return scoped_ptr<PrivetV3HTTPClient>();
-  return make_scoped_ptr<PrivetV3HTTPClient>(
-             new PrivetV3HTTPClientImpl(info_client.Pass())).Pass();
-}
-
 }  // namespace local_discovery
