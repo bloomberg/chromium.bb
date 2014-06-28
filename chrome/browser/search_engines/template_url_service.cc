@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/environment.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/scoped_vector.h"
@@ -34,7 +33,6 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/env_vars.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -1497,17 +1495,14 @@ void TemplateURLService::Init(const Initializer* initializers,
   }
 
   // Request a server check for the correct Google URL if Google is the
-  // default search engine and not in headless mode.
+  // default search engine.
   TemplateURL* default_search_provider = GetDefaultSearchProvider();
   if (profile_ && default_search_provider &&
       default_search_provider->HasGoogleBaseURLs(search_terms_data())) {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (!env->HasVar(env_vars::kHeadless)) {
-      GoogleURLTracker* tracker =
-          GoogleURLTrackerFactory::GetForProfile(profile_);
-      if (tracker)
-        tracker->RequestServerCheck(false);
-    }
+    GoogleURLTracker* tracker =
+        GoogleURLTrackerFactory::GetForProfile(profile_);
+    if (tracker)
+      tracker->RequestServerCheck(false);
   }
 }
 
