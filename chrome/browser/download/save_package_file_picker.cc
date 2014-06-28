@@ -76,8 +76,8 @@ void AddHtmlOnlyFileTypeInfo(
       l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_HTML_ONLY));
 
   std::vector<base::FilePath::StringType> extensions;
-  extensions.push_back(FILE_PATH_LITERAL("htm"));
   extensions.push_back(FILE_PATH_LITERAL("html"));
+  extensions.push_back(FILE_PATH_LITERAL("htm"));
   if (!extra_extension.empty())
     extensions.push_back(extra_extension);
   file_type_info->extensions.push_back(extensions);

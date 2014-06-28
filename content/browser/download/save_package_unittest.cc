@@ -19,12 +19,10 @@
 namespace content {
 
 #define FPL FILE_PATH_LITERAL
-#if defined(OS_WIN)
-#define HTML_EXTENSION ".htm"
-// This second define is needed because MSVC is broken.
-#define FPL_HTML_EXTENSION L".htm"
-#else
 #define HTML_EXTENSION ".html"
+#if defined(OS_WIN)
+#define FPL_HTML_EXTENSION L".html"
+#else
 #define FPL_HTML_EXTENSION ".html"
 #endif
 
