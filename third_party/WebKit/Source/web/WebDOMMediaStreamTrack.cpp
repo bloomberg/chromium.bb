@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebDOMMediaStreamTrack.h"
 
-#include "V8MediaStreamTrack.h"
+#include "bindings/modules/v8/V8MediaStreamTrack.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
 namespace blink {

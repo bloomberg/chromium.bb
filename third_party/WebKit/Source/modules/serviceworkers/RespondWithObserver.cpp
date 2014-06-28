@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 
-#include "V8Response.h"
+#include "bindings/modules/v8/V8Response.h"
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptValue.h"

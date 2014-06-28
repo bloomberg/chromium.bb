@@ -42,10 +42,6 @@
 
     'webcore_include_dirs': [
       '..',  # WebKit/Source
-      # FIXME: Remove the following two lines once core scripts generate qualified
-      # includes correctly: http://crbug.com/380054
-      '<(bindings_core_v8_output_dir)',
-      '<(bindings_modules_v8_output_dir)',
       '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
     ],
 

@@ -7,7 +7,7 @@
 #include "{{namespace}}Names.h"
 #include "bindings/v8/CustomElementWrapper.h"
 {% for tag in tags|sort if tag.has_js_interface %}
-#include "V8{{tag.interface}}.h"
+#include "bindings/core/v8/V8{{tag.interface}}.h"
 {% endfor %}
 {% for tag in tags|sort if tag.has_js_interface %}
 #include "core/{{namespace|lower}}/{{tag.js_interface}}.h"

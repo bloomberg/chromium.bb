@@ -31,9 +31,9 @@
 #include "config.h"
 #include "public/web/WebDOMFileSystem.h"
 
-#include "V8DOMFileSystem.h"
-#include "V8DirectoryEntry.h"
-#include "V8FileEntry.h"
+#include "bindings/modules/v8/V8DOMFileSystem.h"
+#include "bindings/modules/v8/V8DirectoryEntry.h"
+#include "bindings/modules/v8/V8FileEntry.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
 #include "modules/filesystem/DOMFileSystem.h"

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "web/WebDevToolsFrontendImpl.h"
 
-#include "V8InspectorFrontendHost.h"
-#include "V8MouseEvent.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8InspectorFrontendHost.h"
+#include "bindings/core/v8/V8MouseEvent.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

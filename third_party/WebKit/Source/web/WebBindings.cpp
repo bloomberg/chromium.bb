@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/web/WebBindings.h"
 
-#include "V8Element.h"
-#include "V8Range.h"
+#include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8Range.h"
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/NPV8Object.h"  // for PrivateIdentifier

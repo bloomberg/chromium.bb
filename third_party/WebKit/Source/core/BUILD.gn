@@ -41,10 +41,6 @@ config("core_include_dirs") {
   include_dirs = [
     "..",
     "../..",
-    # FIXME: Remove two lines below once core scripts generates qualified
-    # includes correctly: http://crbug.com/358074
-    bindings_core_v8_output_dir,
-    bindings_modules_v8_output_dir,
     "$root_gen_dir/blink",
   ]
   if (is_android && use_openmax_dl_fft) {

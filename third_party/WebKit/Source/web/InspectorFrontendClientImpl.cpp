@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/InspectorFrontendClientImpl.h"
 
-#include "V8InspectorFrontendHost.h"
+#include "bindings/core/v8/V8InspectorFrontendHost.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorFrontendHost.h"

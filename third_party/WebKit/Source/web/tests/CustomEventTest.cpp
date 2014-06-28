@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "V8Event.h"
+#include "bindings/core/v8/V8Event.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
