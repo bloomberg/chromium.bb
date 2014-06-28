@@ -3300,6 +3300,30 @@ CompositedLayerMappingPtr RenderLayer::compositedLayerMapping() const
     return m_compositedLayerMapping.get();
 }
 
+GraphicsLayer* RenderLayer::graphicsLayerBacking() const
+{
+    switch (compositingState()) {
+    case NotComposited:
+        return 0;
+    case PaintsIntoGroupedBacking:
+        return groupedMapping()->squashingLayer();
+    default:
+        return compositedLayerMapping()->mainGraphicsLayer();
+    }
+}
+
+GraphicsLayer* RenderLayer::graphicsLayerBackingForScrolling() const
+{
+    switch (compositingState()) {
+    case NotComposited:
+        return 0;
+    case PaintsIntoGroupedBacking:
+        return groupedMapping()->squashingLayer();
+    default:
+        return compositedLayerMapping()->scrollingContentsLayer() ? compositedLayerMapping()->scrollingContentsLayer() : compositedLayerMapping()->mainGraphicsLayer();
+    }
+}
+
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {

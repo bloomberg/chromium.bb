@@ -122,17 +122,14 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         }
     } while (!renderLayer);
 
-    CompositedLayerMappingPtr compositedLayerMapping = renderLayer->compositingState() == PaintsIntoGroupedBacking ? renderLayer->groupedMapping() : renderLayer->compositedLayerMapping();
-    GraphicsLayer* newGraphicsLayer = renderLayer->compositingState() == PaintsIntoGroupedBacking ? compositedLayerMapping->squashingLayer() : compositedLayerMapping->mainGraphicsLayer();
+    ASSERT(renderLayer->compositingState() != NotComposited);
+
+    GraphicsLayer* newGraphicsLayer = renderLayer->graphicsLayerBacking();
+    if (!newGraphicsLayer->drawsContent()) {
+        newGraphicsLayer = renderLayer->graphicsLayerBackingForScrolling();
+    }
 
     m_clipLayer->setTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
-
-    if (!newGraphicsLayer->drawsContent()) {
-        if (renderLayer->scrollableArea() && renderLayer->scrollableArea()->usesCompositedScrolling()) {
-            ASSERT(renderLayer->hasCompositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
-            newGraphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-        }
-    }
 
     if (m_currentGraphicsLayer != newGraphicsLayer) {
         if (m_currentGraphicsLayer)

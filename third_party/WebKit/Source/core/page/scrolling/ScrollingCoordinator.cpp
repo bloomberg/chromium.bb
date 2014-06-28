@@ -456,16 +456,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
             return;
 
         // Find the appropriate GraphicsLayer for the composited RenderLayer.
-        GraphicsLayer* graphicsLayer;
-        if (compositedLayer->compositingState() == PaintsIntoGroupedBacking) {
-            graphicsLayer = compositedLayer->groupedMapping()->squashingLayer();
-        } else {
-            ASSERT(compositedLayer->hasCompositedLayerMapping());
-            CompositedLayerMappingPtr compositedLayerMapping = compositedLayer->compositedLayerMapping();
-            graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-            if (!graphicsLayer)
-                graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
-        }
+        GraphicsLayer* graphicsLayer = compositedLayer->graphicsLayerBackingForScrolling();
 
         GraphicsLayerHitTestRects::iterator glIter = graphicsRects.find(graphicsLayer);
         Vector<LayoutRect>* glRects;
