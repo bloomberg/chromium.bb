@@ -194,26 +194,24 @@ bool ClearException(JNIEnv* env) {
 }
 
 void CheckException(JNIEnv* env) {
-  if (!HasException(env)) return;
+  if (!HasException(env))
+    return;
 
   // Exception has been found, might as well tell breakpad about it.
   jthrowable java_throwable = env->ExceptionOccurred();
-  if (!java_throwable) {
-    // Do nothing but return false.
-    CHECK(false);
+  if (java_throwable) {
+    // Clear the pending exception, since a local reference is now held.
+    env->ExceptionDescribe();
+    env->ExceptionClear();
+
+    // Set the exception_string in BuildInfo so that breakpad can read it.
+    // RVO should avoid any extra copies of the exception string.
+    base::android::BuildInfo::GetInstance()->set_java_exception_info(
+        GetJavaExceptionInfo(env, java_throwable));
   }
 
-  // Clear the pending exception, since a local reference is now held.
-  env->ExceptionDescribe();
-  env->ExceptionClear();
-
-  // Set the exception_string in BuildInfo so that breakpad can read it.
-  // RVO should avoid any extra copies of the exception string.
-  base::android::BuildInfo::GetInstance()->set_java_exception_info(
-      GetJavaExceptionInfo(env, java_throwable));
-
   // Now, feel good about it and die.
-  CHECK(false);
+  CHECK(false) << "Please include Java exception stack in crash report";
 }
 
 }  // namespace android
