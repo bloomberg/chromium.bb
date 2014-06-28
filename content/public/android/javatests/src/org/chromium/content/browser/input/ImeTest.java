@@ -223,28 +223,21 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testShowImeIfNeeded() throws Throwable {
+        // showImeIfNeeded() is now implicitly called by the updated focus
+        // heuristic so no need to call explicitly. http://crbug.com/371927
         DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
 
-        performShowImeIfNeeded();
-        assertWaitForKeyboardStatus(false);
-
         DOMUtils.focusNode(mContentViewCore, "input_text");
-        assertWaitForKeyboardStatus(false);
-
-        performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testFinishComposingText() throws Throwable {
-        // Focus the textarea. We need to do the following steps because we are focusing using JS.
         DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
         DOMUtils.focusNode(mContentViewCore, "textarea");
-        assertWaitForKeyboardStatus(false);
-        performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
@@ -272,12 +265,9 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testEnterKeyEventWhileComposingText() throws Throwable {
-        // Focus the textarea. We need to do the following steps because we are focusing using JS.
         DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
         DOMUtils.focusNode(mContentViewCore, "textarea");
-        assertWaitForKeyboardStatus(false);
-        performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
@@ -300,15 +290,6 @@ public class ImeTest extends ContentShellTestBase {
         // The second new line is not a user visible/editable one, it is a side-effect of Blink
         // using <br> internally.
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hello\n\n", 6, 6, -1, -1);
-    }
-
-    private void performShowImeIfNeeded() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.showImeIfNeeded();
-            }
-        });
     }
 
     private void performGo(final AdapterInputConnection inputConnection,

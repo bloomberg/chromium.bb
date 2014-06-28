@@ -1488,11 +1488,17 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
 
-#if defined(OS_ANDROID)
-void RenderWidget::OnShowImeIfNeeded() {
-  UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+void RenderWidget::showImeIfNeeded() {
+  OnShowImeIfNeeded();
 }
 
+void RenderWidget::OnShowImeIfNeeded() {
+#if defined(OS_ANDROID) || defined(USE_AURA)
+  UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+#endif
+}
+
+#if defined(OS_ANDROID)
 void RenderWidget::IncrementOutstandingImeEventAcks() {
   ++outstanding_ime_acks_;
 }

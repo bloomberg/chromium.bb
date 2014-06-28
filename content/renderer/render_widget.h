@@ -157,6 +157,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void resetInputMethod();
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled);
+  virtual void showImeIfNeeded();
 
   // Begins the compositor's scheduler to start producing frames.
   void StartCompositor();
@@ -369,9 +370,9 @@ class CONTENT_EXPORT RenderWidget
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
-#if defined(OS_ANDROID)
   void OnShowImeIfNeeded();
 
+#if defined(OS_ANDROID)
   // Whenever an IME event that needs an acknowledgement is sent to the browser,
   // the number of outstanding IME events that needs acknowledgement should be
   // incremented. All IME events will be dropped until we receive an ack from
