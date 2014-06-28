@@ -64,7 +64,6 @@ OptInManager.prototype.injectTab_ = function(
   }
 
   if (!hotwordStatus.enabledSet) {
-    chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
     sendResponse(hotwordStatus);
     return;
   }

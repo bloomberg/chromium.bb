@@ -60,7 +60,6 @@
       </if>
       <!-- Hotword Helper extension -->
       <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
-      <include name="IDR_HOTWORD_HELPER_OPTIN_CLIENT_JS" file="hotword_helper/optin_client.js" type="BINDATA" />
       <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
       <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_EVENT_HANDLER_JS" file="feedback/js/event_handler.js" flattenhtml="true" type="BINDATA" />
