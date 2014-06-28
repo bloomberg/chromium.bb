@@ -92,8 +92,10 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
             const RenderLayer* compositingContainer = context.compositingContainer(layer);
             ASSERT(compositingContainer == layer.ancestorCompositingLayer());
 
-            if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer))
+            if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer)) {
+                layersNeedingPaintInvalidation.append(&layer);
                 updateType = ForceUpdate;
+            }
 
             // Note carefully: here we assume that the compositing state of all descendants have been updated already,
             // so it is legitimate to compute and cache the composited bounds for this layer.

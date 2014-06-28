@@ -494,21 +494,6 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
     layer->repainter().repaintIncludingNonCompositingDescendants();
 }
 
-// This method assumes that layout is up-to-date, unlike repaintOnCompositingChange().
-void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, const LayoutRect& rect)
-{
-    RenderLayer* compositedAncestor = layer->enclosingCompositingLayerForPaintInvalidation(ExcludeSelf);
-    if (!compositedAncestor)
-        return;
-    ASSERT(compositedAncestor->compositingState() == PaintsIntoOwnBacking || compositedAncestor->compositingState() == PaintsIntoGroupedBacking);
-
-    LayoutPoint offset;
-    layer->convertToLayerCoords(compositedAncestor, offset);
-    LayoutRect repaintRect = rect;
-    repaintRect.moveBy(offset);
-    compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
-}
-
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
 {
     if (m_overflowControlsHostLayer)

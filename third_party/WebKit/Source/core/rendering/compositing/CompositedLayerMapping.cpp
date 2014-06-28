@@ -1840,10 +1840,12 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(con
     bool canPaintIntoAncestor = compositingAncestorLayer
         && (compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
             || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor());
-    m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
 
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
-        paintsIntoCompositedAncestorChanged();
+        compositor()->repaintOnCompositingChange(&m_owningLayer);
+
+    m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
+
     return m_requiresOwnBackingStoreForAncestorReasons != previousRequiresOwnBackingStoreForAncestorReasons;
 }
 
@@ -1862,18 +1864,10 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
         || renderer->hasFilter();
 
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
-        paintsIntoCompositedAncestorChanged();
+        compositor()->repaintOnCompositingChange(&m_owningLayer);
+
+
     return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
-}
-
-void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
-{
-    // The answer to paintsIntoCompositedAncestor() affects cached clip rects, so when
-    // it changes we have to clear clip rects on descendants.
-    m_owningLayer.clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
-    m_owningLayer.repainter().computeRepaintRectsIncludingNonCompositingDescendants();
-
-    compositor()->repaintInCompositedAncestor(&m_owningLayer, compositedBounds());
 }
 
 void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
