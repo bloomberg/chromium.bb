@@ -85,6 +85,7 @@ def BuildScriptX86(status, context):
       # Extra non-IRT-using test to run for x86-32
       tests.extend(['run_clock_get_test',
                     'run_dup_test',
+                    'run_fork_test',
                     'run_hello_world_test',
                     'run_mmap_test',
                     'run_nanosleep_test',

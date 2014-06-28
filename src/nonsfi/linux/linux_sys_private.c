@@ -21,6 +21,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/nonsfi/linux/abi_conversion.h"
+#include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/nonsfi/linux/linux_syscalls.h"
@@ -224,6 +225,23 @@ int dup(int fd) {
 
 int dup2(int oldfd, int newfd) {
   return errno_value_call(linux_syscall2(__NR_dup2, oldfd, newfd));
+}
+
+int fork(void) {
+  /* Set SIGCHLD as flag so we can wait. */
+  return errno_value_call(
+      linux_syscall5(__NR_clone, LINUX_SIGCHLD,
+                     0 /* stack */, 0 /* ptid */, 0 /* tls */, 0 /* ctid */));
+}
+
+int pipe(int pipefd[2]) {
+  return errno_value_call(linux_syscall1(__NR_pipe, (uintptr_t) pipefd));
+}
+
+pid_t waitpid(pid_t pid, int *status, int options) {
+  return errno_value_call(
+      linux_syscall4(__NR_wait4, pid, (uintptr_t) status, options,
+                     0  /* rusage */));
 }
 
 /*

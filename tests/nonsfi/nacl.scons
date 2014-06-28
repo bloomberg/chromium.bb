@@ -1,0 +1,19 @@
+# -*- python -*-
+# Copyright 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# Tests in this directory are for syscall wrappers required by newlib
+# based non-SFI nacl_helper. The rest of NaCl does not need them.
+if not env.Bit('nonsfi_nacl') or env.Bit('tests_use_irt'):
+  Return()
+
+nexe = env.ComponentProgram('fork_test',
+                            'fork_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('fork_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fork_test')
