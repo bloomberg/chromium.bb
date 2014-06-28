@@ -392,9 +392,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
 
-  skia::RefPtr<GrContext> gr_context_;
-  skia::RefPtr<SkCanvas> sk_canvas_;
-
   TextureMailboxDeleter* texture_mailbox_deleter_;
 
   gfx::Rect swap_buffer_rect_;
