@@ -6,7 +6,6 @@
 
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +16,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/extension_system.h"

@@ -12,10 +12,10 @@
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
+#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 
 #include "base/logging.h"
 #include "chromeos/network/network_handler.h"

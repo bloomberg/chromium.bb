@@ -12,12 +12,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_status_code.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -37,7 +38,7 @@ const NetworkState* DefaultNetwork() {
 }
 
 bool InSession() {
-  return UserManager::IsInitialized() && UserManager::Get()->IsUserLoggedIn();
+  return LoginState::IsInitialized() && LoginState::Get()->IsUserLoggedIn();
 }
 
 void RecordDetectionResult(NetworkPortalDetector::CaptivePortalStatus status) {
@@ -147,6 +148,19 @@ const char NetworkPortalDetectorImpl::kSessionShillOfflineHistogram[] =
     "CaptivePortal.Session.DiscrepancyWithShill_Offline";
 const char NetworkPortalDetectorImpl::kSessionPortalToOnlineHistogram[] =
     "CaptivePortal.Session.PortalToOnlineTransition";
+
+// static
+void NetworkPortalDetectorImpl::Initialize(
+    net::URLRequestContextGetter* url_context) {
+  if (NetworkPortalDetector::set_for_testing())
+    return;
+  CHECK(!NetworkPortalDetector::network_portal_detector())
+      << "NetworkPortalDetector was initialized twice.";
+  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+    set_network_portal_detector(new NetworkPortalDetectorStubImpl());
+  else
+    set_network_portal_detector(new NetworkPortalDetectorImpl(url_context));
+}
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)

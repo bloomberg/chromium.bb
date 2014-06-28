@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace chromeos {
 

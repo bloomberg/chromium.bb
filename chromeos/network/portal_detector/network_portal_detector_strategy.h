@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
-#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
+#ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
+#define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
-class PortalDetectorStrategy {
+class CHROMEOS_EXPORT PortalDetectorStrategy {
  public:
   enum StrategyId {
     STRATEGY_ID_LOGIN_SCREEN,
@@ -110,4 +111,4 @@ class PortalDetectorStrategy {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
+#endif  // CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_

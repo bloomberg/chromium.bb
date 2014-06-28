@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

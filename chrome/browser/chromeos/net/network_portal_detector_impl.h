@@ -17,10 +17,10 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -59,6 +59,9 @@ class NetworkPortalDetectorImpl
   static const char kSessionShillPortalHistogram[];
   static const char kSessionShillOfflineHistogram[];
   static const char kSessionPortalToOnlineHistogram[];
+
+  // Creates an instance of NetworkPortalDetectorImpl.
+  static void Initialize(net::URLRequestContextGetter* url_context);
 
   explicit NetworkPortalDetectorImpl(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);

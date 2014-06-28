@@ -12,7 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace chromeos {
 

@@ -1,12 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_H_
-#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_H_
+#ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
+#define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace chromeos {
@@ -16,7 +17,7 @@ class NetworkState;
 // This class handles all notifications about network changes from
 // NetworkStateHandler and delegates portal detection for the active
 // network to CaptivePortalService.
-class NetworkPortalDetector {
+class CHROMEOS_EXPORT NetworkPortalDetector {
  public:
   enum CaptivePortalStatus {
     CAPTIVE_PORTAL_STATUS_UNKNOWN  = 0,
@@ -106,8 +107,9 @@ class NetworkPortalDetector {
   static void InitializeForTesting(
       NetworkPortalDetector* network_portal_detector);
 
-  // Creates an instance of the NetworkPortalDetector.
-  static void Initialize();
+  // Returns |true| if NetworkPortalDetector was Initialized and it is safe to
+  // call Get.
+  static bool IsInitialized();
 
   // Deletes the instance of the NetworkPortalDetector.
   static void Shutdown();
@@ -120,18 +122,48 @@ class NetworkPortalDetector {
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);
 
-  // Returns |true| if NetworkPortalDetector was Initialized and it is safe to
-  // call Get.
-  static bool IsInitialized();
-
  protected:
   NetworkPortalDetector() {}
   virtual ~NetworkPortalDetector() {}
 
+  static bool set_for_testing() { return set_for_testing_; }
+  static NetworkPortalDetector* network_portal_detector() {
+    return network_portal_detector_;
+  }
+  static void set_network_portal_detector(
+      NetworkPortalDetector* network_portal_detector) {
+    network_portal_detector_ = network_portal_detector;
+  }
+
  private:
+  static bool set_for_testing_;
+  static NetworkPortalDetector* network_portal_detector_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetector);
+};
+
+class CHROMEOS_EXPORT NetworkPortalDetectorStubImpl
+    : public NetworkPortalDetector {
+ public:
+  NetworkPortalDetectorStubImpl();
+  virtual ~NetworkPortalDetectorStubImpl();
+
+ protected:
+  // NetworkPortalDetector
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual CaptivePortalState GetCaptivePortalState(
+      const std::string& service_path) OVERRIDE;
+  virtual bool IsEnabled() OVERRIDE;
+  virtual void Enable(bool start_detection) OVERRIDE;
+  virtual bool StartDetectionIfIdle() OVERRIDE;
+  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStubImpl);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_H_
+#endif  // CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_

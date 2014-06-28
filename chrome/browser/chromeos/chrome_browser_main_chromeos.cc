@@ -57,7 +57,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -657,7 +657,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // active networks. Shoule be called before call to
   // OptionallyRunChromeOSLoginManager, because it depends on
   // NetworkPortalDetector.
-  NetworkPortalDetector::Initialize();
+  NetworkPortalDetectorImpl::Initialize(
+      g_browser_process->system_request_context());
   {
     NetworkPortalDetector* detector = NetworkPortalDetector::Get();
 #if defined(GOOGLE_CHROME_BUILD)
