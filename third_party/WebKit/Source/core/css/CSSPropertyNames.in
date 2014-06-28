@@ -416,8 +416,6 @@ transform-style
 shape-outside
 shape-margin
 shape-image-threshold
--webkit-wrap-flow
--webkit-wrap-through
 max-zoom
 min-zoom
 orientation

@@ -660,11 +660,9 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTransitionProperty:
     case CSSPropertyWebkitTransitionTimingFunction:
     case CSSPropertyWebkitUserDrag:
-    case CSSPropertyWebkitWrapFlow:
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyShapeOutside:
-    case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitAppRegion:
     case CSSPropertyWidth:
     case CSSPropertyWillChange:

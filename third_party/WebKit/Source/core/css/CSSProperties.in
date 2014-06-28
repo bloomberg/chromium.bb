@@ -272,8 +272,6 @@ transform-style name_for_methods=TransformStyle3D
 -webkit-user-drag
 -webkit-user-modify
 -webkit-user-select
--webkit-wrap-flow type_name=WrapFlow
--webkit-wrap-through type_name=WrapThrough
 -webkit-writing-mode custom_value
 
 alignment-baseline svg

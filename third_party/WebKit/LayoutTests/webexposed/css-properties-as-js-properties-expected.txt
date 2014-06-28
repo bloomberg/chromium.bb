@@ -399,8 +399,6 @@ webkitTransitionTimingFunction
 webkitUserDrag
 webkitUserModify
 webkitUserSelect
-webkitWrapFlow
-webkitWrapThrough
 webkitWritingMode
 whiteSpace
 widows

@@ -57,8 +57,7 @@
 namespace WebCore {
 
 InternalSettings::Backup::Backup(Settings* settings)
-    : m_originalCSSExclusionsEnabled(RuntimeEnabledFeatures::cssExclusionsEnabled())
-    , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
+    : m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalCSP(RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
     , m_originalLaxMixedContentCheckingEnabled(RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
     , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
@@ -78,7 +77,6 @@ InternalSettings::Backup::Backup(Settings* settings)
 
 void InternalSettings::Backup::restoreTo(Settings* settings)
 {
-    RuntimeEnabledFeatures::setCSSExclusionsEnabled(m_originalCSSExclusionsEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(m_originalCSP);
     RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(m_originalLaxMixedContentCheckingEnabled);
@@ -302,11 +300,6 @@ void InternalSettings::setAccessibilityFontScaleFactor(float fontScaleFactor, Ex
 {
     InternalSettingsGuardForSettings();
     settings()->setAccessibilityFontScaleFactor(fontScaleFactor);
-}
-
-void InternalSettings::setCSSExclusionsEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setCSSExclusionsEnabled(enabled);
 }
 
 void InternalSettings::setEditingBehavior(const String& editingBehavior, ExceptionState& exceptionState)

@@ -11,14 +11,6 @@ el.style.setProperty('shape-outside', 'circle(10px at 10px 10px)')
 el.style.getPropertyValue('shape-outside') is circle(10px at 10px 10px)
 getComputedStyle(el).getPropertyValue('shape-outside') is circle(10px at 10px 10px)
 
-el.style.setProperty('-webkit-wrap-flow', 'both')
-el.style.getPropertyValue('-webkit-wrap-flow') is null
-getComputedStyle(el).getPropertyValue('-webkit-wrap-flow') is null
-
-el.style.setProperty('-webkit-wrap-through', 'none')
-el.style.getPropertyValue('-webkit-wrap-through') is null
-getComputedStyle(el).getPropertyValue('-webkit-wrap-through') is null
-
 el.style.setProperty('grid-auto-columns', 'auto')
 el.style.getPropertyValue('grid-auto-columns') is null
 getComputedStyle(el).getPropertyValue('grid-auto-columns') is null

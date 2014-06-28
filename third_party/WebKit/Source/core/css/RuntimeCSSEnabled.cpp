@@ -45,11 +45,6 @@ static void setCSSPropertiesEnabled(CSSPropertyID* properties, size_t length, bo
 
 static void setPropertySwitchesFromRuntimeFeatures()
 {
-    CSSPropertyID exclusionProperties[] = {
-        CSSPropertyWebkitWrapFlow,
-        CSSPropertyWebkitWrapThrough,
-    };
-    setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
     CSSPropertyID shapeProperties[] = {
         CSSPropertyShapeMargin,
         CSSPropertyShapeImageThreshold,

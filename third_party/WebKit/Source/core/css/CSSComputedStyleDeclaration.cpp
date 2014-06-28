@@ -330,8 +330,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitUserSelect,
     CSSPropertyWebkitWritingMode,
     CSSPropertyWebkitAppRegion,
-    CSSPropertyWebkitWrapFlow,
-    CSSPropertyWebkitWrapThrough,
     CSSPropertyBufferedRendering,
     CSSPropertyClipPath,
     CSSPropertyClipRule,
@@ -2655,16 +2653,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                     return CSSPrimitiveValue::create(toReferenceClipPathOperation(operation)->url(), CSSPrimitiveValue::CSS_URI);
             }
             return cssValuePool().createIdentifierValue(CSSValueNone);
-        case CSSPropertyWebkitWrapFlow:
-            return cssValuePool().createValue(style->wrapFlow());
         case CSSPropertyShapeMargin:
             return cssValuePool().createValue(style->shapeMargin(), *style);
         case CSSPropertyShapeImageThreshold:
             return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyShapeOutside:
             return valueForShape(*style, style->shapeOutside());
-        case CSSPropertyWebkitWrapThrough:
-            return cssValuePool().createValue(style->wrapThrough());
         case CSSPropertyWebkitFilter:
             return valueForFilter(renderer, *style);
         case CSSPropertyMixBlendMode:

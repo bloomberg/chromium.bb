@@ -518,7 +518,7 @@ row-reverse
 column
 column-reverse
 // nowrap
-// wrap
+wrap
 wrap-reverse
 
 // -internal-marquee-direction
@@ -885,18 +885,6 @@ evenodd
 at
 // closest-side
 // farthest-side
-
-// -webkit-wrap-flow
-// auto
-// both
-// left
-// right
-maximum
-// clear
-
-// -webkit-wrap-through
-wrap
-// none
 
 alphabetic
 
