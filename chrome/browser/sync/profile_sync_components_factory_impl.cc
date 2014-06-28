@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
+#include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -107,6 +108,7 @@ using browser_sync::DataTypeErrorHandler;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
 using browser_sync::DataTypeManagerObserver;
+using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 using browser_sync::PasswordDataTypeController;
@@ -410,19 +412,20 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 #if defined(ENABLE_EXTENSIONS) && defined(ENABLE_NOTIFICATIONS)
   if (enabled_types.Has(syncer::SYNCED_NOTIFICATIONS)) {
     pss->RegisterDataTypeController(
-        new UIDataTypeController(
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-              base::Bind(&ChromeReportUnrecoverableError),
+        new ExtensionBackedDataTypeController(
               MakeDisableCallbackFor(syncer::SYNCED_NOTIFICATIONS),
               syncer::SYNCED_NOTIFICATIONS,
-              this));
+              "",  // TODO(dewittj): pass the extension hash here.
+              this,
+              profile_));
 
-    pss->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        base::Bind(&ChromeReportUnrecoverableError),
-        MakeDisableCallbackFor(syncer::SYNCED_NOTIFICATIONS),
-        syncer::SYNCED_NOTIFICATION_APP_INFO,
-        this));
+    pss->RegisterDataTypeController(
+        new ExtensionBackedDataTypeController(
+              MakeDisableCallbackFor(syncer::SYNCED_NOTIFICATION_APP_INFO),
+              syncer::SYNCED_NOTIFICATION_APP_INFO,
+              "",  // TODO(dewittj): pass the extension hash here.
+              this,
+              profile_));
   }
 #endif
 

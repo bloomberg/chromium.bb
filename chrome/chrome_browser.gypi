@@ -2298,6 +2298,8 @@
       'browser/ssl/ssl_client_auth_observer.h',
       'browser/status_icons/desktop_notification_balloon.cc',
       'browser/status_icons/desktop_notification_balloon.h',
+      'browser/sync/glue/extension_backed_data_type_controller.cc',
+      'browser/sync/glue/extension_backed_data_type_controller.h',
       'browser/sync/glue/extension_data_type_controller.cc',
       'browser/sync/glue/extension_data_type_controller.h',
       'browser/sync/glue/extension_setting_data_type_controller.cc',
