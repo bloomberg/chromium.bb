@@ -542,9 +542,6 @@ protected:
         ApprovedExtension               = 0x00,
         // Extension that is behind the draft extensions runtime flag:
         DraftExtension                  = 0x01,
-        // Extension that is still in draft state, but has been selectively enabled by default under a prefix. Do not use
-        // this for enabling new draft extensions; use the DraftExtension flag instead, and do not use vendor prefixes:
-        EnabledDraftExtension           = 0x04,
     };
 
     class ExtensionTracker {
