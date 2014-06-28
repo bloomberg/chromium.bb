@@ -63,6 +63,8 @@
         'bluetooth_init_win.h',
         'bluetooth_l2cap_channel_mac.mm',
         'bluetooth_l2cap_channel_mac.h',
+        'bluetooth_low_energy_win.cc',
+        'bluetooth_low_energy_win.h',
         'bluetooth_pairing_chromeos.cc',
         'bluetooth_pairing_chromeos.h',
         'bluetooth_remote_gatt_characteristic_chromeos.cc',

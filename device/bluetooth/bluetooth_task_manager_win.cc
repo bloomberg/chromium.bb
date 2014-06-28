@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/win/scoped_handle.h"
 #include "device/bluetooth/bluetooth_init_win.h"
+#include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "net/base/winsock_init.h"
 
@@ -32,6 +32,16 @@ const int kMaxDeviceDiscoveryTimeout = 48;
 
 typedef device::BluetoothTaskManagerWin::ServiceRecordState ServiceRecordState;
 
+std::string BluetoothAddressToString(const BLUETOOTH_ADDRESS& btha) {
+  return base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
+                            btha.rgBytes[5],
+                            btha.rgBytes[4],
+                            btha.rgBytes[3],
+                            btha.rgBytes[2],
+                            btha.rgBytes[1],
+                            btha.rgBytes[0]);
+}
+
 // Populates bluetooth adapter state using adapter_handle.
 void GetAdapterState(HANDLE adapter_handle,
                      device::BluetoothTaskManagerWin::AdapterState* state) {
@@ -43,13 +53,7 @@ void GetAdapterState(HANDLE adapter_handle,
       ERROR_SUCCESS == BluetoothGetRadioInfo(adapter_handle,
                                              &adapter_info)) {
     name = base::SysWideToUTF8(adapter_info.szName);
-    address = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
-        adapter_info.address.rgBytes[5],
-        adapter_info.address.rgBytes[4],
-        adapter_info.address.rgBytes[3],
-        adapter_info.address.rgBytes[2],
-        adapter_info.address.rgBytes[1],
-        adapter_info.address.rgBytes[0]);
+    address = BluetoothAddressToString(adapter_info.address);
     powered = !!BluetoothIsConnectable(adapter_handle);
   }
   state->name = name;
@@ -60,13 +64,7 @@ void GetAdapterState(HANDLE adapter_handle,
 void GetDeviceState(const BLUETOOTH_DEVICE_INFO& device_info,
                     device::BluetoothTaskManagerWin::DeviceState* state) {
   state->name = base::SysWideToUTF8(device_info.szName);
-  state->address = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
-      device_info.Address.rgBytes[5],
-      device_info.Address.rgBytes[4],
-      device_info.Address.rgBytes[3],
-      device_info.Address.rgBytes[2],
-      device_info.Address.rgBytes[1],
-      device_info.Address.rgBytes[0]);
+  state->address = BluetoothAddressToString(device_info.Address);
   state->bluetooth_class = device_info.ulClassofDevice;
   state->visible = true;
   state->connected = !!device_info.fConnected;
@@ -287,6 +285,7 @@ void BluetoothTaskManagerWin::PollAdapter() {
       GetKnownDevices();
       BluetoothFindRadioClose(handle);
     }
+
     PostAdapterStateToUi();
   }
 
@@ -390,6 +389,28 @@ void BluetoothTaskManagerWin::DiscoverDevices(int timeout) {
 void BluetoothTaskManagerWin::GetKnownDevices() {
   ScopedVector<DeviceState>* device_list = new ScopedVector<DeviceState>();
   SearchDevices(1, true, device_list);
+
+  // Search for Bluetooth Low Energy devices
+  if (win::IsBluetoothLowEnergySupported()) {
+    ScopedVector<win::BluetoothLowEnergyDeviceInfo> btle_devices;
+    std::string error;
+    bool success =
+        win::EnumerateKnownBluetoothLowEnergyDevices(&btle_devices, &error);
+    if (success) {
+      for (ScopedVector<win::BluetoothLowEnergyDeviceInfo>::iterator iter =
+               btle_devices.begin();
+           iter != btle_devices.end();
+           ++iter) {
+        win::BluetoothLowEnergyDeviceInfo* device_info = (*iter);
+
+        DeviceState* device_state = new DeviceState();
+        device_state->name = device_info->friendly_name;
+        device_state->address = BluetoothAddressToString(device_info->address);
+        device_list->push_back(device_state);
+      }
+    }
+  }
+
   if (device_list->empty()) {
     delete device_list;
     return;
