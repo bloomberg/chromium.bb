@@ -119,7 +119,6 @@ bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
 }
 
 bool CanPerformEarlyRestart() {
-  LOG(ERROR) << "CanPerformEarlyRestart(): called.";
   const ExistingUserController* controller =
       ExistingUserController::current_controller();
   if (!controller)
