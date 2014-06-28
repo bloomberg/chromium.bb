@@ -569,6 +569,11 @@ void AutofillManager::FillOrPreviewForm(
           // user edits an autofilled field (for metrics).
           autofill_field->is_autofilled = true;
 
+          // Mark the field as autofilled when a non-empty value is assigned to
+          // it. This allows the renderer to distinguish autofilled fields from
+          // fields with non-empty values, such as select-one fields.
+          iter->is_autofilled = true;
+
           if (!is_credit_card && !value.empty())
             client_->DidFillOrPreviewField(value, profile_full_name);
         }
