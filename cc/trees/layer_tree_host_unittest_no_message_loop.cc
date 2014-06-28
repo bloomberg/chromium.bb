@@ -74,6 +74,8 @@ class LayerTreeHostNoMessageLoopTest
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
 
   // LayerTreeHostSingleThreadClient overrides.
+  virtual void ScheduleComposite() OVERRIDE {}
+  virtual void ScheduleAnimation() OVERRIDE {}
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 

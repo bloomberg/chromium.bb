@@ -91,8 +91,8 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_LE(1, num_commits_);
-    EXPECT_LE(1, num_draws_);
+    EXPECT_GE(1, num_commits_);
+    EXPECT_GE(1, num_draws_);
   }
 
  private:
@@ -1967,7 +1967,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_complete_commits_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:

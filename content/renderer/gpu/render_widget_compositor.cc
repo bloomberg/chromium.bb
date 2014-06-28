@@ -320,6 +320,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
     : threaded_(threaded),
+      suppress_schedule_composite_(false),
       widget_(widget) {
 }
 
@@ -331,11 +332,24 @@ RenderWidgetCompositor::GetInputHandler() {
 }
 
 void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
-  layer_tree_host_->SetDeferCommits(suppress);
+  if (suppress_schedule_composite_ == suppress)
+    return;
+
+  if (suppress)
+    TRACE_EVENT_ASYNC_BEGIN0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  else
+    TRACE_EVENT_ASYNC_END0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  suppress_schedule_composite_ = suppress;
 }
 
 bool RenderWidgetCompositor::BeginMainFrameRequested() const {
   return layer_tree_host_->BeginMainFrameRequested();
+}
+
+void RenderWidgetCompositor::UpdateAnimations(base::TimeTicks time) {
+  layer_tree_host_->UpdateClientAnimations(time);
 }
 
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
@@ -430,10 +444,7 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
 }
 
 void RenderWidgetCompositor::setSurfaceReady() {
-  // In tests without a RenderThreadImpl, don't set ready as this kicks
-  // off creating output surfaces that the test can't create.
-  if (RenderThreadImpl::current())
-    layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
@@ -670,6 +681,15 @@ void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
   if (!threaded_)
     widget_->OnSwapBuffersComplete();
+}
+
+void RenderWidgetCompositor::ScheduleComposite() {
+  if (!suppress_schedule_composite_)
+    widget_->scheduleComposite();
+}
+
+void RenderWidgetCompositor::ScheduleAnimation() {
+  widget_->scheduleAnimation();
 }
 
 void RenderWidgetCompositor::DidPostSwapBuffers() {

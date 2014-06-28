@@ -77,11 +77,11 @@ Scheduler::Scheduler(
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& impl_task_runner)
     : settings_(scheduler_settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
-      task_runner_(task_runner),
+      impl_task_runner_(impl_task_runner),
       vsync_interval_(BeginFrameArgs::DefaultInterval()),
       last_set_needs_begin_frame_(false),
       begin_unthrottled_frame_posted_(false),
@@ -126,7 +126,7 @@ Scheduler::~Scheduler() {
 void Scheduler::SetupSyntheticBeginFrames() {
   DCHECK(!synthetic_begin_frame_source_);
   synthetic_begin_frame_source_.reset(
-      new SyntheticBeginFrameSource(this, task_runner_.get()));
+      new SyntheticBeginFrameSource(this, impl_task_runner_.get()));
 }
 
 void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
@@ -272,9 +272,6 @@ base::TimeTicks Scheduler::LastBeginImplFrameTime() {
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
-  if (!task_runner_)
-    return;
-
   bool needs_begin_frame = state_machine_.BeginFrameNeeded();
 
   if (settings_.throttle_frame_production) {
@@ -329,7 +326,7 @@ void Scheduler::SetupNextBeginFrameWhenVSyncThrottlingDisabled(
   }
 
   begin_unthrottled_frame_posted_ = true;
-  task_runner_->PostTask(FROM_HERE, begin_unthrottled_frame_closure_);
+  impl_task_runner_->PostTask(FROM_HERE, begin_unthrottled_frame_closure_);
 }
 
 // BeginUnthrottledFrame is used when we aren't throttling frame production.
@@ -363,7 +360,7 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
       base::TimeDelta delay = begin_impl_frame_args_.IsValid()
                                   ? begin_impl_frame_args_.interval
                                   : BeginFrameArgs::DefaultInterval();
-      task_runner_->PostDelayedTask(
+      impl_task_runner_->PostDelayedTask(
           FROM_HERE, poll_for_draw_triggers_task_.callback(), delay);
     }
   } else {
@@ -388,9 +385,9 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
       // Since we'd rather get a BeginImplFrame by the normal mechanism, we
       // set the interval to twice the interval from the previous frame.
       advance_commit_state_task_.Reset(advance_commit_state_closure_);
-      task_runner_->PostDelayedTask(FROM_HERE,
-                                    advance_commit_state_task_.callback(),
-                                    begin_impl_frame_args_.interval * 2);
+      impl_task_runner_->PostDelayedTask(FROM_HERE,
+                                         advance_commit_state_task_.callback(),
+                                         begin_impl_frame_args_.interval * 2);
     }
   } else {
     advance_commit_state_task_.Cancel();
@@ -492,7 +489,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
     return;
 
   begin_retro_frame_posted_ = true;
-  task_runner_->PostTask(FROM_HERE, begin_retro_frame_closure_);
+  impl_task_runner_->PostTask(FROM_HERE, begin_retro_frame_closure_);
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline
@@ -500,8 +497,8 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 // any asynchronous animation and scroll/pinch updates.
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "Scheduler::BeginImplFrame", "args", ToTrace(args));
-  DCHECK_EQ(state_machine_.begin_impl_frame_state(),
-            SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+  DCHECK(state_machine_.begin_impl_frame_state() ==
+         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
 
   advance_commit_state_task_.Cancel();
@@ -568,7 +565,7 @@ void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
   base::TimeDelta delta = deadline - gfx::FrameTime::Now();
   if (delta <= base::TimeDelta())
     delta = base::TimeDelta();
-  task_runner_->PostDelayedTask(
+  impl_task_runner_->PostDelayedTask(
       FROM_HERE, begin_impl_frame_deadline_task_.callback(), delta);
 }
 

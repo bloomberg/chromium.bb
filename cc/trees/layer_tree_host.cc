@@ -677,8 +677,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(!proxy_->HasImplThread());
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
-  SetLayerTreeHostClientReady();
-
   if (output_surface_lost_)
     proxy->CreateAndInitializeOutputSurface();
   if (output_surface_lost_)

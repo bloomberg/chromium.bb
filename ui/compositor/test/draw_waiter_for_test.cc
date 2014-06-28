@@ -9,25 +9,20 @@
 namespace ui {
 
 // static
-void DrawWaiterForTest::WaitForCompositingStarted(Compositor* compositor) {
-  DrawWaiterForTest waiter(WAIT_FOR_COMPOSITING_STARTED);
-  waiter.WaitImpl(compositor);
-}
-
-void DrawWaiterForTest::WaitForCompositingEnded(Compositor* compositor) {
-  DrawWaiterForTest waiter(WAIT_FOR_COMPOSITING_ENDED);
+void DrawWaiterForTest::Wait(Compositor* compositor) {
+  DrawWaiterForTest waiter;
+  waiter.wait_for_commit_ = false;
   waiter.WaitImpl(compositor);
 }
 
 // static
 void DrawWaiterForTest::WaitForCommit(Compositor* compositor) {
-  DrawWaiterForTest waiter(WAIT_FOR_COMMIT);
+  DrawWaiterForTest waiter;
+  waiter.wait_for_commit_ = true;
   waiter.WaitImpl(compositor);
 }
 
-DrawWaiterForTest::DrawWaiterForTest(WaitEvent wait_event)
-    : wait_event_(wait_event) {
-}
+DrawWaiterForTest::DrawWaiterForTest() {}
 
 DrawWaiterForTest::~DrawWaiterForTest() {}
 
@@ -39,23 +34,19 @@ void DrawWaiterForTest::WaitImpl(Compositor* compositor) {
 }
 
 void DrawWaiterForTest::OnCompositingDidCommit(Compositor* compositor) {
-  if (wait_event_ == WAIT_FOR_COMMIT)
+  if (wait_for_commit_)
     wait_run_loop_->Quit();
 }
 
 void DrawWaiterForTest::OnCompositingStarted(Compositor* compositor,
-                                             base::TimeTicks start_time) {
-  if (wait_event_ == WAIT_FOR_COMPOSITING_STARTED)
-    wait_run_loop_->Quit();
-}
+                                             base::TimeTicks start_time) {}
 
 void DrawWaiterForTest::OnCompositingEnded(Compositor* compositor) {
-  if (wait_event_ == WAIT_FOR_COMPOSITING_ENDED)
+  if (!wait_for_commit_)
     wait_run_loop_->Quit();
 }
 
-void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {
-}
+void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {}
 
 void DrawWaiterForTest::OnCompositingLockStateChanged(Compositor* compositor) {}
 
