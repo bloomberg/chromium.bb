@@ -38,7 +38,7 @@ class LocationIconView : public views::ImageView {
 
   PageInfoHelper page_info_helper_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocationIconView);
+  DISALLOW_COPY_AND_ASSIGN(LocationIconView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
