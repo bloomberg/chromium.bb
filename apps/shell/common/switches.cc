@@ -7,11 +7,14 @@
 namespace apps {
 namespace switches {
 
-// Specifies the path to an app to load at startup.
-const char kApp[] = "app";
+// Path to an app to load at startup.
+const char kAppShellAppPath[] = "app-shell-app-path";
 
-// Specifies the bounds for the host window to create (i.e. "800x600").
-const char kHostWindowBounds[] = "host-window-bounds";
+// Bounds for the host window to create (i.e. "800x600").
+const char kAppShellHostWindowBounds[] = "app-shell-host-window-bounds";
+
+// SSID of the preferred WiFi network.
+const char kAppShellPreferredNetwork[] = "app-shell-preferred-network";
 
 }  // namespace switches
 }  // namespace apps

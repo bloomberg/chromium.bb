@@ -10,8 +10,9 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kApp[];
-extern const char kHostWindowBounds[];
+extern const char kAppShellAppPath[];
+extern const char kAppShellHostWindowBounds[];
+extern const char kAppShellPreferredNetwork[];
 
 }  // namespace switches
 }  // namespace apps

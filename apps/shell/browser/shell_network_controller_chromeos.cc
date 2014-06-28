@@ -20,7 +20,8 @@ namespace apps {
 
 namespace {
 
-// Frequency at which networks should be scanned when not connected.
+// Frequency at which networks should be scanned when not connected to a network
+// or when connected to a non-preferred network.
 const int kScanIntervalSec = 10;
 
 void HandleEnableWifiError(
@@ -29,10 +30,10 @@ void HandleEnableWifiError(
   LOG(WARNING) << "Unable to enable wifi: " << error_name;
 }
 
-// Returns a human-readable name for the network described by |state|.
-std::string GetNetworkName(const chromeos::NetworkState& state) {
-  return !state.name().empty() ? state.name() :
-      base::StringPrintf("[%s]", state.type().c_str());
+// Returns a human-readable name for the network described by |network|.
+std::string GetNetworkName(const chromeos::NetworkState& network) {
+  return !network.name().empty() ? network.name() :
+      base::StringPrintf("[%s]", network.type().c_str());
 }
 
 // Returns true if shill is either connected or connecting to a network.
@@ -47,23 +48,22 @@ bool IsConnectedOrConnecting() {
 
 }  // namespace
 
-ShellNetworkController::ShellNetworkController()
-    : waiting_for_connection_result_(false),
+ShellNetworkController::ShellNetworkController(
+    const std::string& preferred_network_name)
+    : state_(STATE_IDLE),
+      preferred_network_name_(preferred_network_name),
+      preferred_network_is_active_(false),
       weak_ptr_factory_(this) {
   chromeos::NetworkHandler::Initialize();
   chromeos::NetworkStateHandler* state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
-  DCHECK(state_handler);
   state_handler->AddObserver(this, FROM_HERE);
   state_handler->SetTechnologyEnabled(
       chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi),
       true, base::Bind(&HandleEnableWifiError));
 
-  if (!IsConnectedOrConnecting()) {
-    RequestScan();
-    SetScanningEnabled(true);
-    ConnectIfUnconnected();
-  }
+  // If we're unconnected, trigger a connection attempt and start scanning.
+  NetworkConnectionStateChanged(NULL);
 }
 
 ShellNetworkController::~ShellNetworkController() {
@@ -77,23 +77,42 @@ void ShellNetworkController::NetworkListChanged() {
   ConnectIfUnconnected();
 }
 
-void ShellNetworkController::DefaultNetworkChanged(
-    const chromeos::NetworkState* state) {
-  if (state) {
-    VLOG(1) << "Default network state changed:"
-            << " name=" << GetNetworkName(*state)
-            << " path=" << state->path()
-            << " state=" << state->connection_state();
+void ShellNetworkController::NetworkConnectionStateChanged(
+    const chromeos::NetworkState* network) {
+  if (network) {
+    VLOG(1) << "Network connection state changed:"
+            << " name=" << GetNetworkName(*network)
+            << " type=" << network->type()
+            << " path=" << network->path()
+            << " state=" << network->connection_state();
   } else {
-    VLOG(1) << "Default network state changed: [no network]";
+    VLOG(1) << "Network connection state changed: [none]";
   }
 
-  if (IsConnectedOrConnecting()) {
+  const chromeos::NetworkState* wifi_network = GetActiveWiFiNetwork();
+  preferred_network_is_active_ =
+      wifi_network && wifi_network->name() == preferred_network_name_;
+  VLOG(2) << "Active WiFi network is "
+          << (wifi_network ? wifi_network->name() : std::string("[none]"));
+
+  if (preferred_network_is_active_ ||
+      (preferred_network_name_.empty() && wifi_network)) {
     SetScanningEnabled(false);
   } else {
     SetScanningEnabled(true);
     ConnectIfUnconnected();
   }
+}
+
+const chromeos::NetworkState*
+ShellNetworkController::GetActiveWiFiNetwork() {
+  chromeos::NetworkStateHandler* state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* network = state_handler->FirstNetworkByType(
+      chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi));
+  return network &&
+      (network->IsConnectedState() || network->IsConnectingState()) ?
+      network : NULL;
 }
 
 void ShellNetworkController::SetScanningEnabled(bool enabled) {
@@ -103,6 +122,7 @@ void ShellNetworkController::SetScanningEnabled(bool enabled) {
 
   VLOG(1) << (enabled ? "Starting" : "Stopping") << " scanning";
   if (enabled) {
+    RequestScan();
     scan_timer_.Start(FROM_HERE,
                       base::TimeDelta::FromSeconds(kScanIntervalSec),
                       this, &ShellNetworkController::RequestScan);
@@ -116,52 +136,72 @@ void ShellNetworkController::RequestScan() {
   chromeos::NetworkHandler::Get()->network_state_handler()->RequestScan();
 }
 
-// Attempts to connect to an available network if not already connecting or
-// connected.
 void ShellNetworkController::ConnectIfUnconnected() {
-  chromeos::NetworkHandler* handler = chromeos::NetworkHandler::Get();
-  DCHECK(handler);
-  if (waiting_for_connection_result_ || IsConnectedOrConnecting())
+  // Don't do anything if the default network is already the preferred one or if
+  // we have a pending request to connect to it.
+  if (preferred_network_is_active_ ||
+      state_ == STATE_WAITING_FOR_PREFERRED_RESULT)
     return;
 
-  chromeos::NetworkStateHandler::NetworkStateList state_list;
+  const chromeos::NetworkState* best_network = NULL;
+  bool can_connect_to_preferred_network = false;
+
+  chromeos::NetworkHandler* handler = chromeos::NetworkHandler::Get();
+  chromeos::NetworkStateHandler::NetworkStateList network_list;
   handler->network_state_handler()->GetVisibleNetworkListByType(
-      chromeos::NetworkTypePattern::WiFi(), &state_list);
+      chromeos::NetworkTypePattern::WiFi(), &network_list);
   for (chromeos::NetworkStateHandler::NetworkStateList::const_iterator it =
-       state_list.begin(); it != state_list.end(); ++it) {
-    const chromeos::NetworkState* state = *it;
-    DCHECK(state);
-    if (!state->connectable())
+       network_list.begin(); it != network_list.end(); ++it) {
+    const chromeos::NetworkState* network = *it;
+    if (!network->connectable())
       continue;
 
-    VLOG(1) << "Connecting to network " << GetNetworkName(*state)
-            << " with path " << state->path() << " and strength "
-            << state->signal_strength();
-    waiting_for_connection_result_ = true;
-    handler->network_connection_handler()->ConnectToNetwork(
-        state->path(),
-        base::Bind(&ShellNetworkController::HandleConnectionSuccess,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ShellNetworkController::HandleConnectionError,
-                   weak_ptr_factory_.GetWeakPtr()),
-        false /* check_error_state */);
+    if (!preferred_network_name_.empty() &&
+        network->name() == preferred_network_name_) {
+      best_network = network;
+      can_connect_to_preferred_network = true;
+      break;
+    } else if (!best_network) {
+      best_network = network;
+    }
+  }
 
+  // Don't switch networks if we're already connecting/connected and wouldn't be
+  // switching to the preferred network.
+  if ((IsConnectedOrConnecting() || state_ != STATE_IDLE) &&
+      !can_connect_to_preferred_network)
+    return;
+
+  if (!best_network) {
+    VLOG(1) << "Didn't find any connectable networks";
     return;
   }
 
-  VLOG(1) << "Didn't find any connectable networks";
+  VLOG(1) << "Connecting to network " << GetNetworkName(*best_network)
+          << " with path " << best_network->path() << " and strength "
+          << best_network->signal_strength();
+  state_ = can_connect_to_preferred_network ?
+      STATE_WAITING_FOR_PREFERRED_RESULT :
+      STATE_WAITING_FOR_NON_PREFERRED_RESULT;
+  handler->network_connection_handler()->ConnectToNetwork(
+      best_network->path(),
+      base::Bind(&ShellNetworkController::HandleConnectionSuccess,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ShellNetworkController::HandleConnectionError,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false /* check_error_state */);
 }
 
 void ShellNetworkController::HandleConnectionSuccess() {
   VLOG(1) << "Successfully connected to network";
-  waiting_for_connection_result_ = false;
+  state_ = STATE_IDLE;
 }
 
 void ShellNetworkController::HandleConnectionError(
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
   LOG(WARNING) << "Unable to connect to network: " << error_name;
-  waiting_for_connection_result_ = false;
+  state_ = STATE_IDLE;
 }
 
 }  // namespace apps

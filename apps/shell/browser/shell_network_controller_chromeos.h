@@ -22,23 +22,39 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
  public:
   // This class must be instantiated after chromeos::DBusThreadManager and
   // destroyed before it.
-  ShellNetworkController();
+  explicit ShellNetworkController(const std::string& preferred_network_name);
   virtual ~ShellNetworkController();
 
   // chromeos::NetworkStateHandlerObserver overrides:
   virtual void NetworkListChanged() OVERRIDE;
-  virtual void DefaultNetworkChanged(
+  virtual void NetworkConnectionStateChanged(
       const chromeos::NetworkState* state) OVERRIDE;
 
  private:
+  // State of communication with the connection manager.
+  enum State {
+    // No in-progress requests.
+    STATE_IDLE = 0,
+    // Waiting for the result of an attempt to connect to the preferred network.
+    STATE_WAITING_FOR_PREFERRED_RESULT,
+    // Waiting for the result of an attempt to connect to a non-preferred
+    // network.
+    STATE_WAITING_FOR_NON_PREFERRED_RESULT,
+  };
+
+  // Returns the connected or connecting WiFi network or NULL if no network
+  // matches that description.
+  const chromeos::NetworkState* GetActiveWiFiNetwork();
+
   // Controls whether scanning is performed periodically.
   void SetScanningEnabled(bool enabled);
 
-  // Asks shill to scan for networks.
+  // Asks the connection manager to scan for networks.
   void RequestScan();
 
   // If not currently connected or connecting, chooses a wireless network and
-  // asks shill to connect to it.
+  // asks the connection manager to connect to it. Also switches to
+  // |preferred_network_name_| if possible.
   void ConnectIfUnconnected();
 
   // Handles a successful or failed connection attempt.
@@ -47,14 +63,19 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
       const std::string& error_name,
       scoped_ptr<base::DictionaryValue> error_data);
 
-  // True when ConnectIfUnconnected() has asked shill to connect but the attempt
-  // hasn't succeeded or failed yet. This is tracked to avoid sending duplicate
-  // requests before chromeos::NetworkStateHandler has acknowledged the initial
-  // connection attempt.
-  bool waiting_for_connection_result_;
+  // Current status of communication with the chromeos::NetworkStateHandler.
+  // This is tracked to avoid sending duplicate requests before the handler has
+  // acknowledged the initial connection attempt.
+  State state_;
 
   // Invokes RequestScan() periodically.
   base::RepeatingTimer<ShellNetworkController> scan_timer_;
+
+  // Optionally-supplied name of the preferred network.
+  std::string preferred_network_name_;
+
+  // True if the preferred network is connected or connecting.
+  bool preferred_network_is_active_;
 
   base::WeakPtrFactory<ShellNetworkController> weak_ptr_factory_;
 

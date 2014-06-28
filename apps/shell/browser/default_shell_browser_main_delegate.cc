@@ -23,8 +23,9 @@ DefaultShellBrowserMainDelegate::~DefaultShellBrowserMainDelegate() {
 void DefaultShellBrowserMainDelegate::Start(
     content::BrowserContext* browser_context) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kApp)) {
-    base::FilePath app_dir(command_line->GetSwitchValueNative(switches::kApp));
+  if (command_line->HasSwitch(switches::kAppShellAppPath)) {
+    base::FilePath app_dir(
+        command_line->GetSwitchValueNative(switches::kAppShellAppPath));
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
 
     extensions::ShellExtensionSystem* extension_system =
@@ -34,7 +35,8 @@ void DefaultShellBrowserMainDelegate::Start(
       return;
     extension_system->LaunchApp();
   } else {
-    LOG(ERROR) << "--" << switches::kApp << " unset; boredom is in your future";
+    LOG(ERROR) << "--" << switches::kAppShellAppPath
+               << " unset; boredom is in your future";
   }
 }
 

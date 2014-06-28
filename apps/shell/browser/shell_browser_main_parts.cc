@@ -12,6 +12,8 @@
 #include "apps/shell/browser/shell_extensions_browser_client.h"
 #include "apps/shell/browser/shell_omaha_query_params_delegate.h"
 #include "apps/shell/common/shell_extensions_client.h"
+#include "apps/shell/common/switches.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omaha_query_params/omaha_query_params.h"
@@ -66,7 +68,9 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
-  network_controller_.reset(new ShellNetworkController);
+  network_controller_.reset(new ShellNetworkController(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kAppShellPreferredNetwork)));
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();

@@ -43,8 +43,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
-        command_line->HasSwitch(apps::switches::kApp) ?
-        command_line->GetSwitchValueNative(apps::switches::kApp) :
+        command_line->HasSwitch(apps::switches::kAppShellAppPath) ?
+        command_line->GetSwitchValueNative(apps::switches::kAppShellAppPath) :
         kDefaultAppPath);
 
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
