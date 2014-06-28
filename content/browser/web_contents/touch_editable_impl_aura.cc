@@ -293,14 +293,15 @@ bool TouchEditableImplAura::IsCommandIdEnabled(int command_id) const {
   if (!rwhva_)
     return false;
   bool editable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
+  bool readable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
   gfx::Range selection_range;
   rwhva_->GetSelectionRange(&selection_range);
   bool has_selection = !selection_range.is_empty();
   switch (command_id) {
     case IDS_APP_CUT:
-      return editable && has_selection;
+      return editable && readable && has_selection;
     case IDS_APP_COPY:
-      return has_selection;
+      return readable && has_selection;
     case IDS_APP_PASTE: {
       base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
