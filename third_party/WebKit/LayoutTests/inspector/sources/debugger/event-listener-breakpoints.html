@@ -44,6 +44,18 @@ function loadCallback()
     return 0;
 }
 
+function playVideo()
+{
+    var video = document.getElementById("video");
+    video.addEventListener("play", onVideoPlay, false);
+    video.play();
+}
+
+function onVideoPlay()
+{
+    return 0;
+}
+
 function test()
 {
     WebInspector.inspectorView.showPanel("sources");
@@ -103,6 +115,21 @@ function test()
             {
                 InspectorTest.evaluateInPage("addLoadListeners()", next);
             }
+        },
+
+        function testMediaEventBreakpoint(next)
+        {
+            pane._setBreakpoint("listener:play", ["audio", "video"]);
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPageWithTimeout("playVideo()");
+
+            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                printEventTargetName(auxData);
+                pane._removeBreakpoint("listener:play", ["audio", "video"]);
+                InspectorTest.resumeExecution(next);
+            }
         }
     ]);
 
@@ -125,6 +152,7 @@ Tests event listener breakpoints.
 </p>
 
 <input type=button id="test"></input>
+<video id="video" src="../../../media/content/test.ogv"></video>
 
 </body>
 </html>

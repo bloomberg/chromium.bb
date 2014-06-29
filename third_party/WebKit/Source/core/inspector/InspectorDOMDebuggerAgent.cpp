@@ -418,7 +418,7 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject
         m_debuggerAgent->schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::EventListener, eventData);
 }
 
-PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const AtomicString* targetName)
+PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)
 {
     String fullEventName = (targetName ? listenerEventCategoryType : instrumentationEventCategoryType) + eventName;
     if (m_pauseInNextEventListener) {
@@ -476,7 +476,9 @@ void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document*, int)
 
 void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* event, EventListener*, bool)
 {
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &target->interfaceName()), false);
+    Node* node = target->toNode();
+    String targetName = node ? node->nodeName() : target->interfaceName();
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
 }
 
 void InspectorDOMDebuggerAgent::willExecuteCustomElementCallback(Element*)
