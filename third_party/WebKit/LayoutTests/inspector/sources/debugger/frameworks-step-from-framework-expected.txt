@@ -1,0 +1,39 @@
+
+Tests stepping from framework call frames.
+
+Set timer for test function.
+Call stack:
+  * 0) Framework.breakInFramework (framework.js:26)
+  * 1) Framework.safeRun (framework.js:8)
+    2) testFunction (frameworks-step-from-framework.html:10)
+
+Executing StepInto...
+Call stack:
+  * 0) Framework.breakInFramework (framework.js:27)
+  * 1) Framework.safeRun (framework.js:8)
+    2) testFunction (frameworks-step-from-framework.html:10)
+
+Executing StepOver...
+Call stack:
+  * 0) Framework.safeRun (framework.js:9)
+    1) testFunction (frameworks-step-from-framework.html:10)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (frameworks-step-from-framework.html:11)
+
+Executing StepInto...
+Call stack:
+    0) testFunction (frameworks-step-from-framework.html:12)
+
+Executing Resume...
+Call stack:
+  * 0) Framework.sendXHR (framework.js:79)
+    1) testFunction (frameworks-step-from-framework.html:13)
+
+Executing StepInto...
+Call stack:
+  * 0) Framework.sendXHR (framework.js:80)
+    1) testFunction (frameworks-step-from-framework.html:13)
+
+
