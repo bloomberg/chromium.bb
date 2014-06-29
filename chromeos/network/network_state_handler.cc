@@ -697,7 +697,9 @@ void NetworkStateHandler::ManagedStateListChanged(
 }
 
 void NetworkStateHandler::SortNetworkList() {
-  bool listing_active_networks = true;
+  // Note: usually active networks will precede inactive networks, however
+  // this may briefly be untrue during state transitions (e.g. a network may
+  // transition to idle before the list is updated).
   ManagedStateList active, non_wifi_visible, wifi_visible, hidden, new_networks;
   for (ManagedStateList::iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
@@ -708,13 +710,8 @@ void NetworkStateHandler::SortNetworkList() {
     }
     if (network->IsConnectedState() || network->IsConnectingState()) {
       active.push_back(network);
-      if (!listing_active_networks) {
-        NET_LOG_ERROR("Active network follows inactive network",
-                      GetLogName(network));
-      }
       continue;
     }
-    listing_active_networks = false;
     if (network->visible()) {
       if (NetworkTypePattern::WiFi().MatchesType(network->type()))
         wifi_visible.push_back(network);
@@ -869,9 +866,12 @@ void NetworkStateHandler::OnNetworkConnectionStateChanged(
   if (network->path() == default_network_path_) {
     event = "Default" + event;
     if (!network->IsConnectedState()) {
-      NET_LOG_ERROR(
+      NET_LOG_EVENT(
           "DefaultNetwork is not connected: " + network->connection_state(),
           network->path());
+      default_network_path_.clear();
+      SortNetworkList();
+      NotifyDefaultNetworkChanged(NULL);
     }
   }
   NET_LOG_EVENT("NOTIFY:" + event + ": " + network->connection_state(),
