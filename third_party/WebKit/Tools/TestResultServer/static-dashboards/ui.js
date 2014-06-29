@@ -58,13 +58,13 @@ ui.popup.show = function(target, html)
 
     var x = Math.min(targetRect.left - 10, document.documentElement.clientWidth - popup.offsetWidth);
     x = Math.max(0, x);
-    popup.style.left = x + document.body.scrollLeft + 'px';
+    popup.style.left = x + window.pageXOffset + 'px';
 
     var y = targetRect.top + targetRect.height;
     if (y + popup.offsetHeight > document.documentElement.clientHeight)
         y = targetRect.top - popup.offsetHeight;
     y = Math.max(0, y);
-    popup.style.top = y + document.body.scrollTop + 'px';
+    popup.style.top = y + window.pageYOffset + 'px';
 }
 
 ui.popup._handleMouseDown = function(e) {
