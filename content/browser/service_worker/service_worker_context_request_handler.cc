@@ -54,8 +54,12 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     int64 response_id = context_->storage()->NewResourceId();
     if (response_id == kInvalidServiceWorkerResponseId)
       return NULL;
-    return new ServiceWorkerWriteToCacheJob(
-        request, network_delegate, context_, version_, response_id);
+    return new ServiceWorkerWriteToCacheJob(request,
+                                            network_delegate,
+                                            resource_type_,
+                                            context_,
+                                            version_,
+                                            response_id);
   }
 
   int64 response_id = kInvalidServiceWorkerResponseId;

@@ -13,6 +13,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/common/resource_type.h"
 
 namespace content {
 
@@ -34,6 +35,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   ServiceWorkerWriteToCacheJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
+      ResourceType::Type resource_type,
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version,
       int64 response_id);
@@ -95,6 +97,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
 
   void AsyncNotifyDoneHelper(const net::URLRequestStatus& status);
 
+  ResourceType::Type resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

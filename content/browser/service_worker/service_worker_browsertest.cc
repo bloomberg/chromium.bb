@@ -29,6 +29,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/common/blob/blob_data.h"
@@ -154,6 +156,20 @@ class WorkerActivatedObserver
   ServiceWorkerContextWrapper* context_;
   DISALLOW_COPY_AND_ASSIGN(WorkerActivatedObserver);
 };
+
+scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
+    const net::test_server::HttpRequest& request) {
+  EXPECT_EQ(request.relative_url, "/service_worker/generated_sw.js");
+  std::map<std::string, std::string>::const_iterator it =
+      request.headers.find("Service-Worker");
+  EXPECT_TRUE(it != request.headers.end());
+  EXPECT_EQ("script", it->second);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  http_response->set_content_type("text/javascript");
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
 
 }  // namespace
 
@@ -556,6 +572,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithWaitUntil_Fulfilled) {
   InstallTestHelper("/service_worker/worker_install_fulfilled.js",
                     SERVICE_WORKER_OK);
+}
+
+// Check that ServiceWorker script requests set a "Service-Worker: script"
+// header.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       ServiceWorkerScriptHeader) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&VerifyServiceWorkerHeaderInRequest));
+  InstallTestHelper("/service_worker/generated_sw.js", SERVICE_WORKER_OK);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,

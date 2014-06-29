@@ -239,7 +239,6 @@ void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_id,
     const StatusCallback& callback) {
   DCHECK_EQ(NEW, status()) << status();
-  SetStatus(INSTALLING);
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -518,6 +517,8 @@ void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
     const StatusCallback& callback) {
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
+  SetStatus(INSTALLING);
+
   int request_id = install_callbacks_.Add(new StatusCallback(callback));
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_InstallEvent(request_id, active_version_id));
@@ -531,6 +532,7 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
     const StatusCallback& callback) {
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
+
   int request_id = activate_callbacks_.Add(new StatusCallback(callback));
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_ActivateEvent(request_id));

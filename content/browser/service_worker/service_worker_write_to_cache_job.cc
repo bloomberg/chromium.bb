@@ -21,10 +21,12 @@ namespace content {
 ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
+    ResourceType::Type resource_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerVersion* version,
     int64 response_id)
     : net::URLRequestJob(request, network_delegate),
+      resource_type_(resource_type),
       context_(context),
       url_(request->url()),
       response_id_(response_id),
@@ -139,7 +141,12 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest() {
   net_request_->set_first_party_for_cookies(
       request()->first_party_for_cookies());
   net_request_->SetReferrer(request()->referrer());
-  net_request_->SetExtraRequestHeaders(request()->extra_request_headers());
+
+  if (resource_type_ == ResourceType::SERVICE_WORKER) {
+    // This will get copied into net_request_ when URLRequest::StartJob calls
+    // ServiceWorkerWriteToCacheJob::SetExtraRequestHeaders.
+    request()->SetExtraRequestHeaderByName("Service-Worker", "script", true);
+  }
 }
 
 void ServiceWorkerWriteToCacheJob::StartNetRequest() {
