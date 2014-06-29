@@ -37,7 +37,8 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
@@ -2068,12 +2069,10 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   }
 
   if (loaded_ && profile_) {
-    content::Source<Profile> source(profile_);
-    TemplateURLID id = template_url->id();
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
-        source,
-        content::Details<TemplateURLID>(&id));
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
+    if (history)
+      history->DeleteAllSearchTermsForKeyword(template_url->id());
   }
 
   // We own the TemplateURL and need to delete it.

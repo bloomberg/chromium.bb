@@ -322,10 +322,6 @@ enum NotificationType {
 
   // Non-history storage services --------------------------------------------
 
-  // Sent when a TemplateURL is removed from the model. The source is the
-  // Profile, and the details the id of the TemplateURL being removed.
-  NOTIFICATION_TEMPLATE_URL_REMOVED,
-
   // The state of a web resource has been changed. A resource may have been
   // added, removed, or altered. Source is WebResourceService, and the
   // details are NoDetails.

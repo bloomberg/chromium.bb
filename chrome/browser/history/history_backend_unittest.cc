@@ -3371,12 +3371,9 @@ TEST_F(InMemoryHistoryBackendTest, DeleteAllSearchTermsForKeyword) {
   base::string16 term2(base::UTF8ToUTF16(kTestSearchTerm2));
   PopulateTestURLsAndSearchTerms(&row1, &row2, term1, term2);
 
-  // Removing a keyword should cause all corresponding search terms to be
-  // deleted from the in-memory database (and also the main database).
+  // Delete all corresponding search terms from the in-memory database.
   KeywordID id = kTestKeywordId;
-  mem_backend_->Observe(chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
-                        content::Source<HistoryBackendTestBase>(NULL),
-                        content::Details<KeywordID>(&id));
+  mem_backend_->DeleteAllSearchTermsForKeyword(id);
 
   // The typed URL should remain intact.
   // Note: we do not need to guarantee anything about the non-typed URL.

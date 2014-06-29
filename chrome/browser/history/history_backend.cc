@@ -591,7 +591,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // main thread.
   {
     scoped_ptr<InMemoryHistoryBackend> mem_backend(new InMemoryHistoryBackend);
-    if (mem_backend->Init(history_name, db_.get()))
+    if (mem_backend->Init(history_name))
       delegate_->SetInMemoryBackend(mem_backend.Pass());
   }
   db_->BeginExclusiveMode();  // Must be after the mem backend read the data.

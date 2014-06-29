@@ -214,8 +214,6 @@ HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
-                 content::Source<Profile>(profile_));
 }
 
 HistoryService::~HistoryService() {
@@ -347,6 +345,9 @@ void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
 
 void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  in_memory_backend_->DeleteAllSearchTermsForKeyword(keyword_id);
+
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::DeleteAllSearchTermsForKeyword,
                     keyword_id);
@@ -876,11 +877,6 @@ void HistoryService::Observe(int type,
       }
       break;
     }
-
-    case chrome::NOTIFICATION_TEMPLATE_URL_REMOVED:
-      DeleteAllSearchTermsForKeyword(
-          *(content::Details<KeywordID>(details).ptr()));
-      break;
 
     default:
       NOTREACHED();
