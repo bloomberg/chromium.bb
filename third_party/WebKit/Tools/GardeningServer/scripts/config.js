@@ -28,7 +28,6 @@ var config = config || {};
 (function() {
 
 config = {
-    kRelativeTimeUpdateFrequency: 1000 * 60,
     kTreeStatusUpdateFrequency: 1000 * 30,
     kUpdateFrequency: 10 * 60 * 1000,
 

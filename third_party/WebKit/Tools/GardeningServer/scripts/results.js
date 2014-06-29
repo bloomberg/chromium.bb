@@ -50,10 +50,6 @@ var kActualTextSuffix = '-actual.txt';
 var kDiffTextSuffix = '-diff.txt';
 var kCrashLogSuffix = '-crash-log.txt';
 
-var kPNGExtension = 'png';
-var kTXTExtension = 'txt';
-var kWAVExtension = 'wav';
-
 var kPreferredSuffixOrder = [
     kExpectedImageSuffix,
     kActualImageSuffix,
@@ -139,28 +135,7 @@ function possibleSuffixListFor(failureTypeList)
     return base.uniquifyArray(suffixList);
 }
 
-results.failureTypeToExtensionList = function(failureType)
-{
-    switch(failureType) {
-    case IMAGE:
-        return [kPNGExtension];
-    case AUDIO:
-        return [kWAVExtension];
-    case TEXT:
-        return [kTXTExtension];
-    case MISSING:
-    case IMAGE_TEXT:
-        return [kTXTExtension, kPNGExtension];
-    default:
-        // FIXME: Add support for the rest of the result types.
-        // '-expected.html',
-        // '-expected-mismatch.html',
-        // ... and possibly more.
-        return [];
-    }
-};
-
-results.failureTypeList = function(failureBlob)
+function failureTypeList(failureBlob)
 {
     return failureBlob.split(' ');
 };
@@ -182,11 +157,6 @@ function resultsSummaryURL(builderName)
     return resultsDirectoryURL(builderName) + kResultsName;
 }
 
-function resultsSummaryURLForBuildNumber(builderName, buildNumber)
-{
-    return resultsDirectoryURLForBuildNumber(builderName, buildNumber) + kResultsName;
-}
-
 var g_resultsCache = new base.AsynchronousCache(function(key) {
     return net.jsonp(key);
 });
@@ -195,8 +165,8 @@ results.ResultAnalyzer = base.extends(Object, {
     init: function(resultNode)
     {
         this._isUnexpected = resultNode.is_unexpected;
-        this._actual = resultNode ? results.failureTypeList(resultNode.actual) : [];
-        this._expected = resultNode ? this._addImpliedExpectations(results.failureTypeList(resultNode.expected)) : [];
+        this._actual = resultNode ? failureTypeList(resultNode.actual) : [];
+        this._expected = resultNode ? this._addImpliedExpectations(failureTypeList(resultNode.expected)) : [];
     },
     _addImpliedExpectations: function(resultsList)
     {
@@ -232,12 +202,6 @@ results.ResultAnalyzer = base.extends(Object, {
     }
 });
 
-function isExpectedFailure(resultNode)
-{
-    var analyzer = new results.ResultAnalyzer(resultNode);
-    return !analyzer.hasUnexpectedFailures() && !analyzer.succeeded() && !analyzer.flaky() && !analyzer.wontfix();
-}
-
 function isUnexpectedFailure(resultNode)
 {
     var analyzer = new results.ResultAnalyzer(resultNode);
@@ -248,11 +212,6 @@ function isResultNode(node)
 {
     return !!node.actual;
 }
-
-results.expectedFailures = function(resultsTree)
-{
-    return base.filterTree(resultsTree.tests, isResultNode, isExpectedFailure);
-};
 
 results.unexpectedFailures = function(resultsTree)
 {
@@ -273,11 +232,6 @@ function resultsByTest(resultsByBuilder, filter)
     return resultsByTest;
 }
 
-results.expectedFailuresByTest = function(resultsByBuilder)
-{
-    return resultsByTest(resultsByBuilder, results.expectedFailures);
-};
-
 results.unexpectedFailuresByTest = function(resultsByBuilder)
 {
     return resultsByTest(resultsByBuilder, results.unexpectedFailures);
@@ -288,7 +242,7 @@ results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builder
     var failureInfoForTest = {
         'testName': testName,
         'builderName': builderName,
-        'failureTypeList': results.failureTypeList(resultsByTest[testName][builderName].actual),
+        'failureTypeList': failureTypeList(resultsByTest[testName][builderName].actual),
     };
 
     return failureInfoForTest;

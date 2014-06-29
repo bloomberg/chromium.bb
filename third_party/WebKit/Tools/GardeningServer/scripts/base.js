@@ -92,19 +92,6 @@ base.filterDictionary = function(dictionary, predicate)
     return result;
 };
 
-base.mapDictionary = function(dictionary, functor)
-{
-    var result = {};
-
-    for (var key in dictionary) {
-        var value = functor(dictionary[key]);
-        if (typeof value !== 'undefined')
-            result[key] = value;
-    }
-
-    return result;
-};
-
 base.filterTree = function(tree, isLeaf, predicate)
 {
     var filteredTree = {};

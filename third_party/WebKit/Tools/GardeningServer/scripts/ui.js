@@ -41,11 +41,6 @@ ui.displayNameForBuilder = function(builderName)
     return builderName.replace(/Webkit /, '');
 }
 
-ui.urlForTest = function(testName)
-{
-    return 'http://trac.webkit.org/browser/trunk/LayoutTests/' + testName;
-}
-
 ui.urlForCrbug = function(bugID)
 {
     return 'http://crbug.com/' + bugID;
@@ -60,13 +55,6 @@ ui.urlForFlakinessDashboard = function(opt_testNameList)
 ui.urlForEmbeddedFlakinessDashboard = function(opt_testNameList)
 {
     return ui.urlForFlakinessDashboard(opt_testNameList) + '&showChrome=false';
-}
-
-ui.rolloutReasonForTestNameList = function(testNameList)
-{
-    return 'Broke:\n' + testNameList.map(function(testName) {
-        return '* ' + testName;
-    }).join('\n');
 }
 
 ui.setTargetForLink = function(anchor)

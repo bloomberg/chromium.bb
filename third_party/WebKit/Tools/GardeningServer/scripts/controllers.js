@@ -27,16 +27,6 @@ var controllers = controllers || {};
 
 (function(){
 
-// FIXME: This is duplicated from ui/results.js :(.
-function isAnyReftest(testName, resultsByTest)
-{
-    return Object.keys(resultsByTest[testName]).map(function(builder) {
-        return resultsByTest[testName][builder];
-    }).some(function(resultNode) {
-        return resultNode.reftest_type && resultNode.reftest_type.length;
-    });
-}
-
 controllers.ResultsDetails = base.extends(Object, {
     init: function(view, resultsByTest)
     {

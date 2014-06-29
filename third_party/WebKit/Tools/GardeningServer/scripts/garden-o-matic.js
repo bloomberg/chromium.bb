@@ -29,10 +29,8 @@ var g_info = null;
 var g_revisionHint = null;
 
 var g_updateTimerId = 0;
-var g_buildersFailing = null;
 
 var g_unexpectedFailuresController = null;
-
 var g_nonLayoutTestFailureBuilders = null;
 
 var g_updating = false;

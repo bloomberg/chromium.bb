@@ -27,11 +27,7 @@ var builders = builders || {};
 
 (function() {
 
-var kUpdateStepName = 'update';
-var kUpdateScriptsStepName = 'update_scripts';
-var kCompileStepName = 'compile';
 var kWebKitTestsStepNames = ['webkit_tests', 'layout-test'];
-
 var kCrashedOrHungOutputMarker = 'crashed or hung';
 
 function urlForBuildInfo(builderName, buildNumber)

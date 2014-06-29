@@ -95,24 +95,6 @@ test("filterDictionary", 3, function() {
     });
 });
 
-test("mapDictionary", 3, function() {
-    deepEqual(base.mapDictionary({}, function(value) { return value - 10; }), {});
-    var dictionary = {
-        'foo': 43,
-        'bar': 11
-    };
-    deepEqual(base.mapDictionary(dictionary, function(value) { return value - 10; }), {
-        "foo": 33,
-        "bar": 1
-    });
-    deepEqual(base.mapDictionary(dictionary, function(value) {
-        if (value > 20)
-            return value - 20;
-    }), {
-        "foo": 23,
-    });
-});
-
 test("filterTree", 2, function() {
     var tree = {
         'path': {

@@ -27,13 +27,6 @@ var net = net || {};
 
 (function () {
 
-net.get = function(url)
-{
-    return net.ajax({
-        url: url
-    });
-};
-
 net.json = function(url)
 {
     return net.ajax({
@@ -79,16 +72,6 @@ net.ajax = function(options)
             xhr.setRequestHeader("content-type","application/x-www-form-urlencoded");
         xhr.send(data);
     });
-};
-
-net.post = function(url, data)
-{
-    return net.ajax({
-        url: url,
-        type: 'POST',
-        data: data,
-    });
-
 };
 
 net.probe = function(url)
