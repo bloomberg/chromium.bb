@@ -1,0 +1,16 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-commit-list.html">
+
+<polymer-element name="ct-failure-stream" attributes="groups" noscript>
+  <template>
+    <template repeat="{{failures in groups}}">
+      <hr>
+      <template repeat="{{failure in failures}}">{{failure.testName}}<br></template>
+      <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}" last="{{failures[0].oldestFailingRevision}}"></ct-commits>
+    </template>
+</polymer-element>

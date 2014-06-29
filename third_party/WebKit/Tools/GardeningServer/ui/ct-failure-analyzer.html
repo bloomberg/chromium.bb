@@ -1,0 +1,31 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-failure-analyzer" attributes="failures status">
+  <script>
+    Polymer({
+      failures: [],
+
+      pendingFailures: [],
+
+      update: function() {
+        this.pendingFailures = [];
+        var numberOfTestsAnalyzed = 0;
+        this.status = 'Updating ...';
+        Promise.all([model.updateRecentCommits(), model.updateResultsByBuilder()]).then(function() {
+          this.status = 'Analyzing test failures ...';
+          model.analyzeUnexpectedFailures(function(failureAnalysis, total) {
+            this.status = 'Analyzing test failures ... ' + ++numberOfTestsAnalyzed + '/' + total + ' tests analyzed.';
+            this.pendingFailures.push(failureAnalysis);
+          }.bind(this)).then(function() {
+            this.status = 'Done!!!';
+            this.failures = this.pendingFailures;
+          }.bind(this));
+        }.bind(this));
+      },
+    });
+  </script>
+</polymer-element>

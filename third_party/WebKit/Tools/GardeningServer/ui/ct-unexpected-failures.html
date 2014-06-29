@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="ct-failure-analyzer.html">
+<link rel="import" href="ct-failure-grouper.html">
+<link rel="import" href="ct-failure-stream.html">
+
+<polymer-element name="ct-unexpected-failures">
+  <template>
+    <style>
+      paper-toast {
+        bottom: 40px;
+        left: 10px;
+      }
+      #update {
+        background: #4285f4;
+        color: #fff;
+      }
+    </style>
+    <ct-failure-analyzer id="analyzer" status="{{analyzerStatus}}" failures="{{failures}}"></ct-failure-analyzer>
+    <ct-failure-grouper failures="{{failures}}" groups="{{failureGroups}}"></ct-failure-grouper>
+    <paper-button id="update" on-tap="{{update}}">Update</paper-button>
+    <ct-failure-stream groups="{{failureGroups}}"></ct-failure-stream>
+    <paper-toast id="toast" text="{{analyzerStatus}}"></paper-toast>
+  </template>
+  <script>
+    Polymer({
+      attached: function() {
+        this.update();
+      },
+
+      update: function() {
+        this.$.analyzer.update();
+      },
+
+      analyzerStatusChanged: function() {
+        this.$.toast.show();
+      },
+    });
+  </script>
+</polymer-element>

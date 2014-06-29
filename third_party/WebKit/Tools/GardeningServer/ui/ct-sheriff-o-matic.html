@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script src="../scripts/base.js"></script>
+<script src="../scripts/config.js"></script>
+<script src="../scripts/net.js"></script>
+<script src="../scripts/rollbot.js"></script>
+<script src="../scripts/svn-log.js"></script>
+<script src="../scripts/treestatus.js"></script>
+<script src="../scripts/builders.js"></script>
+<script src="../scripts/results.js"></script>
+<script src="../scripts/ui.js"></script>
+<script src="../scripts/model.js"></script>
+
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="ct-unexpected-failures.html">
+
+<polymer-element name="ct-sheriff-o-matic">
+  <template>
+    <style>
+      paper-tabs {
+        background-color: #00bcd4;
+        color: #fff;
+        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Unexpected Failures</paper-tab>
+      <paper-tab>Results</paper-tab>
+    </paper-tabs>
+    <core-pages selected="{{selected}}">
+      <ct-unexpected-failures></ct-unexpected-failures>
+    </core-pages>
+  </template>
+  <script>
+    Polymer({
+      selected: 0,
+    });
+  </script>
+</polymer-element>
