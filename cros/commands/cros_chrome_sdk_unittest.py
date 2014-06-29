@@ -358,9 +358,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
   VERSION_BASE = ('gs://chromeos-image-archive/%s-release/LATEST-%s'
                   % (BOARD, VERSION))
 
-  CAT_ERROR = ('InvalidUriError: Attempt to get key for '
-               '%s failed.' % VERSION_BASE)
-  LS_ERROR = 'CommandException: One or more URIs matched no objects.'
+  CAT_ERROR = 'CommandException: No URLs matched %s' % VERSION_BASE
+  LS_ERROR = 'CommandException: One or more URLs matched no objects.'
 
   def setUp(self):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())

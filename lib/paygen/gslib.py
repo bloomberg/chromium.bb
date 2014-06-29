@@ -5,6 +5,7 @@
 
 """Common Google Storage interface library."""
 
+import base64
 import datetime
 import errno
 import logging
@@ -65,20 +66,6 @@ class GsutilMissingError(GsutilError):
 
 class GSLibError(Exception):
   """Raised when gsutil command runs but gives an error."""
-  GS_CODE_ACCESS_DENIED = 'AccessDenied'
-  GS_CODE_NO_SUCH_KEY = 'NoSuchKey'
-  GS_CODE_INVALID_ACCESS_KEY = 'InvalidAccessKey'
-
-  # Extract "code" from a line like the following somewhere in error message:
-  # GSResponseError: status=403, code=AccessDenied, reason=Forbidden, \
-  #  detail=cros-bkt.
-  GS_ERROR_CODE_RE = re.compile(r'GSResponseError:\s[^$]*code=([^,\s\.$]+)')
-
-  def GetCode(self):
-    """Return GSResponseError code in error message, if available."""
-    match = self.GS_ERROR_CODE_RE.search(str(self))
-    if match:
-      return match.group(1)
 
 
 class CopyFail(GSLibError):
@@ -171,13 +158,7 @@ def RetryGSLib(func):
                            osutils.ReadFile(tracker_file_path))
               osutils.SafeUnlink(tracker_file_path)
         else:
-          code = ex.GetCode()
-          RETRY_WONT_HELP = (ex.GS_CODE_ACCESS_DENIED, ex.GS_CODE_NO_SUCH_KEY)
-          if code and code in RETRY_WONT_HELP:
-            raise
-          elif not code:
-            # Errors other than GSResponseErrors generally do not benefit from
-            # retries.
+          if 'AccessDeniedException' in str(ex) or 'NoSuchKey' in str(ex):
             raise
 
         # Record a warning message to be issued if a retry actually helps.
@@ -401,7 +382,7 @@ def MD5Sum(gs_uri):
     GSLibError if the gsutil command fails.  If there is no object at that path
     that is not considered a failure.
   """
-  gs_md5_regex = re.compile(r'.*?Etag:\s+(.*)', re.IGNORECASE)
+  gs_md5_regex = re.compile(r'.*?Hash \(md5\):\s+(.*)', re.IGNORECASE)
   args = ['ls', '-L', gs_uri]
 
   result = RunGsutilCommand(args, error_ok=True)
@@ -413,7 +394,8 @@ def MD5Sum(gs_uri):
   for line in result.output.splitlines():
     match = gs_md5_regex.match(line)
     if match:
-      return match.group(1)
+      # gsutil now prints the MD5 sum in base64, but we want it in hex.
+      return base64.b16encode(base64.b64decode(match.group(1))).lower()
 
   # This means there was some actual failure in the command.
   raise GSLibError('Unable to determine MD5Sum for %r' % gs_uri)
@@ -513,15 +495,16 @@ def Remove(*paths, **kwargs):
 
   args = ['rm']
 
-  if ignore_no_match:
-    args.append('-f')
-
   if recurse:
     args.append('-R')
 
   args.extend(paths)
 
-  RunGsutilCommand(args, failed_exception=RemoveFail, **kwargs)
+  try:
+    RunGsutilCommand(args, failed_exception=RemoveFail, **kwargs)
+  except RemoveFail as e:
+    if not (ignore_no_match and 'No URLs matched' in str(e.args[0])):
+      raise
 
 
 def RemoveDirContents(gs_dir_uri):
@@ -711,7 +694,7 @@ def ExistsLazy(gs_uri, **kwargs):
     return True
   except GSLibError as e:
     # If the URI was simply not found, the output should be something like:
-    # CommandException: One or more URIs matched no objects.
+    # CommandException: One or more URLs matched no objects.
     msg = str(e).strip()
     if not msg.startswith('CommandException: '):
       raise URIError(e)
@@ -777,10 +760,8 @@ def List(root_uri, recurse=False, filepattern=None, sort=False):
   except GSLibError as e:
     # The ls command will fail under normal operation if there was just
     # nothing to be found. That shows up like this to stderr:
-    # CommandException: One or more URIs matched no objects.
-    # But if there was a real problem it should show up as a GSResponseError,
-    # which will result in a known code in GSLibError.
-    if e.GetCode():
+    # CommandException: One or more URLs matched no objects.
+    if 'CommandException: One or more URLs matched no objects.' not in str(e):
       raise
 
   # Otherwise, assume a normal error.

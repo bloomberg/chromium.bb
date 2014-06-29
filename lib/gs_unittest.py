@@ -448,10 +448,10 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
                  '-rc2/packages/chromeos-base/autotest-tests-0.0.1-r4679.tbz2')
   GSUTIL_TRACKER_DIR = '/foo'
   UPLOAD_TRACKER_FILE = (
-      'upload_TRACKER_e0cae4d515c757f78a6d1f44a37d2f2ee236f3b8.1-r4679.tbz2.url'
+      'upload_TRACKER_9263880a80e4a582aec54eaa697bfcdd9c5621ea.9.tbz2__JSON.url'
       )
   DOWNLOAD_TRACKER_FILE = (
-      'download_TRACKER_1e6cb2935097b207b634d86f91584d0b66de354e.___tmp_file.'
+      'download_TRACKER_5a695131f3ef6e4c903f594783412bb996a7f375._file__JSON.'
       'etag')
   RETURN_CODE = 3
 
@@ -488,12 +488,10 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
 
   def testRaiseGSErrors(self):
     """Test that we raise appropriate exceptions."""
-    self.assertNoSuchKey('GSResponseError: status=404, code=NoSuchKey')
-    self.assertNoSuchKey('InvalidUriError: Unrecognized scheme "http".')
-    self.assertNoSuchKey('Attempt to get key for gs://foo failed')
-    self.assertNoSuchKey('CommandException: No URIs matched.')
+    self.assertNoSuchKey('CommandException: No URLs matched.')
+    self.assertNoSuchKey('NotFoundException: 404')
     self.assertPreconditionFailed(
-        'GSResponseError: code=PreconditionFailed')
+        'PreconditionException: 412 Precondition Failed')
 
   @mock.patch('chromite.lib.osutils.SafeUnlink')
   @mock.patch('chromite.lib.osutils.ReadFile')
@@ -537,7 +535,7 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
   def testNoRemoveTrackerFileOnOtherErrors(self):
     """Test that we do not attempt to delete tracker files for other errors."""
     cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
-    e = self._getException(cmd, 'InvalidUriError:')
+    e = self._getException(cmd, 'One or more URLs matched no objects')
 
     with mock.MagicMock() as self.ctx.GetTrackerFilenames:
       self.assertRaises(gs.GSNoSuchKey, self.ctx._RetryFilter, e)
@@ -653,7 +651,7 @@ class GSContextTest(AbstractGSContextTest):
     """Test for waiting, but not all paths exist so we timeout."""
     self.gs_mock.AddCmdResult(['stat', '/path1'],
                               returncode=1,
-                              error='GSResponseError code=NoSuchKey')
+                              output='No URLs matched')
     ctx = gs.GSContext()
     self.assertRaises(gs.timeout_util.TimeoutError,
                       ctx.WaitForGsPaths, ['/path1', '/path2'],

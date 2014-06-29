@@ -186,7 +186,7 @@ class GSContext(object):
   AUTHORIZATION_ERRORS = ('no configured', 'detail=Authorization')
 
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
-  DEFAULT_GSUTIL_TRACKER_DIR = os.path.expanduser('~/.gsutil')
+  DEFAULT_GSUTIL_TRACKER_DIR = os.path.expanduser('~/.gsutil/tracker-files')
   # This is set for ease of testing.
   DEFAULT_GSUTIL_BIN = None
   DEFAULT_GSUTIL_BUILDER_BIN = '/b/build/third_party/gsutil/gsutil'
@@ -197,8 +197,9 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_TAR = 'gsutil_3.42.tar.gz'
+  GSUTIL_TAR = 'gsutil_4.5.tar.gz'
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
+  GSUTIL_API_SELECTOR = 'JSON'
 
   RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
                             'progress')
@@ -414,12 +415,13 @@ class GSContext(object):
       bucket_name = dest.netloc
       object_name = dest.path.lstrip('/')
       filenames.append(
-          re.sub(r'[/\\]', '_', 'resumable_upload__%s__%s.url' %
-                 (bucket_name, object_name)))
+          re.sub(r'[/\\]', '_', 'resumable_upload__%s__%s__%s.url' %
+                 (bucket_name, object_name, GSContext.GSUTIL_API_SELECTOR)))
     else:
       prefix = 'download'
       filenames.append(
-          re.sub(r'[/\\]', '_', 'resumable_download__%s.etag' % dest.path))
+          re.sub(r'[/\\]', '_', 'resumable_download__%s__%s.etag' %
+                 (dest.path, GSContext.GSUTIL_API_SELECTOR)))
 
     hashed_filenames = []
     for filename in filenames:
@@ -454,20 +456,16 @@ class GSContext(object):
 
     error = e.result.error
     if error:
-      if 'GSResponseError' in error:
-        if 'code=PreconditionFailed' in error:
-          raise GSContextPreconditionFailed(e)
-        if 'code=NoSuchKey' in error:
-          raise GSNoSuchKey(e)
+      if 'PreconditionException' in error:
+        raise GSContextPreconditionFailed(e)
 
-      # If the file does not exist, one of the following errors occurs.
-      if ('InvalidUriError:' in error or
-          'Attempt to get key for' in error or
-          'CommandException: No URIs matched' in error or
-          'CommandException: One or more URIs matched no objects' in error or
-          'CommandException: No such object' in error or
-          'Some files could not be removed' in error or
-          'does not exist' in error):
+      # If the file does not exist, one of the following errors occurs. The
+      # "stat" command leaves off the "CommandException: " prefix, but it also
+      # outputs to stdout instead of stderr and so will not be caught here
+      # regardless.
+      if ('CommandException: No URLs matched' in error or
+          'NotFoundException:' in error or
+          'One or more URLs matched no objects' in error):
         raise GSNoSuchKey(e)
 
       logging.warning('GS_ERROR: %s', error)
@@ -626,7 +624,16 @@ class GSContext(object):
         # Don't retry on local copies.
         kwargs.setdefault('retries', 0)
 
-      return self.DoCommand(cmd, **kwargs)
+      try:
+        return self.DoCommand(cmd, **kwargs)
+      except GSNoSuchKey as e:
+        # If the source was a local file, the error is a quirk of gsutil 4.5
+        # and should be ignored. If the source was remote, there might
+        # legitimately be no such file. See crbug.com/393419.
+        if os.path.isfile(src_path):
+          # pylint: disable=E1101
+          return e.args[0].result
+        raise
 
   # TODO(mtennant): Merge with LS() after it supports returning details.
   def LSWithDetails(self, path, **kwargs):
@@ -755,11 +762,15 @@ class GSContext(object):
       # subject to caching behavior of 'gsutil ls', and it only requires
       # read access to the file, unlike 'gsutil acl get'.
       self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
-    except GSNoSuchKey:
-      # A path that does not exist will result in error output like:
-      # InvalidUriError: Attempt to get key for "gs://foo/bar"
-      # That will result in GSNoSuchKey.
-      return False
+    except cros_build_lib.RunCommandError as e:
+      if e.result.output and 'No URLs matched' in e.result.output:
+        # A path that does not exist will result in output on stdout like:
+        # No URLs matched gs://foo/bar
+        # That behavior is different from any other command and is handled
+        # here specially. See b/16020252.
+        return False
+      else:
+        raise
     return True
 
   def Remove(self, path, recurse=False, ignore_missing=False):

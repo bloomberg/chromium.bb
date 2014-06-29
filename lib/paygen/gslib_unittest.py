@@ -5,6 +5,7 @@
 
 """Test the gslib module."""
 
+import base64
 import datetime
 import errno
 import mox
@@ -27,8 +28,7 @@ from chromite.lib.paygen import utils
 GS_RETRY_FAILURE = ('GSResponseError: status=403, code=InvalidAccessKeyId,'
                     'reason="Forbidden", message="Blah Blah Blah"')
 # Typical output for a failure that we should not retry.
-GS_DONE_FAILURE = ('GSResponseError: status=403, code=AccessDenied,'
-                   'reason="Forbidden", message="Blah Blah Blah"')
+GS_DONE_FAILURE = ('AccessDeniedException:')
 
 
 class TestGsLib(unittest_lib.MoxTestCase):
@@ -226,7 +226,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
-    cmd = [self.gsutil, 'rm', '-f', path]
+    cmd = [self.gsutil, 'rm', path]
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      return_result=True)
     self.mox.ReplayAll()
@@ -472,8 +472,10 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     # Set up the test replay script.
     cmd = [self.gsutil, '-d', 'stat', gs_uri]
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndRaise(utils.CommandFailedException)
+    for _ in xrange(0, gslib.RETRY_ATTEMPTS + 1):
+      utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
+                       return_result=True).AndRaise(
+                           utils.CommandFailedException)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -499,7 +501,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     cmd_result_ok = unittest_lib.EasyAttr(output=output, returncode=0)
 
     # Prepare exception for a run that finds nothing.
-    stderr = 'CommandException: One or more URIs matched no objects.\n'
+    stderr = 'CommandException: One or more URLs matched no objects.\n'
     empty_exception = utils.CommandFailedException(stderr)
 
     # Prepare exception for a run that triggers a GS failure.
@@ -606,16 +608,24 @@ class TestGsLib(unittest_lib.MoxTestCase):
   def testMD5SumAccessError(self):
     self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = 'gs://bucket/foo/bar/somefile'
-    md5_sum = 'cf731103929bde2a6de6b36076be14a8'
+    crc32c = 'c96fd51e'
+    crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
+    md5_sum = 'b026324c6904b2a9cb4b88d6d61c81d1'
+    md5_sum_64 = base64.b64encode(base64.b16decode(md5_sum, casefold=True))
     output = '\n'.join([
       '%s:' % gs_uri,
-      '        Object size:    96',
-      '        Last mod:       Thu, 17 May 2012 14:00:33 GMT',
-      '        Cache control:  private, max-age=0',
-      '        MIME type:      application/octet-stream',
-      '        Etag:   %s' % md5_sum,
-      'GSResponseError:: status=403, code=AccessDenied, reason=Forbidden.',
-      '',
+      '        Creation time:          Tue, 04 Mar 2014 19:55:26 GMT',
+      '        Content-Language:       en',
+      '        Content-Length:         2',
+      '        Content-Type:           application/octet-stream',
+      '        Hash (crc32c):          %s' % crc32c_64,
+      '        Hash (md5):             %s' % md5_sum_64,
+      '        ETag:                   CMi938jU+bwCEAE=',
+      '        Generation:             1393962926989000',
+      '        Metageneration:         1',
+      '        ACL:                    ACCESS DENIED. Note: you need OWNER '
+      'permission',
+      '                                on the object to read its ACL.',
       ])
 
     # Set up the test replay script.
@@ -633,22 +643,32 @@ class TestGsLib(unittest_lib.MoxTestCase):
   def testMD5SumAccessOK(self):
     self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = 'gs://bucket/foo/bar/somefile'
-    md5_sum = 'cf731103929bde2a6de6b36076be14a8'
+    crc32c = 'c96fd51e'
+    crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
+    md5_sum = 'b026324c6904b2a9cb4b88d6d61c81d1'
+    md5_sum_64 = base64.b64encode(base64.b16decode(md5_sum, casefold=True))
     output = '\n'.join([
       '%s:' % gs_uri,
-      '        Object size:    5019983',
-      '        Last mod:       Thu, 17 May 2012 14:00:33 GMT',
-      '        Cache control:  private, max-age=0',
-      '        MIME type:      application/octet-stream',
-      '        Etag:   %s' % md5_sum,
-      ('ACL:    <Owner:00b4903a9756d14fe2dfa3d6fdcd5edda068eb3ceb2'
-       'da44c670d966d929ab248, <<UserById: 00b4903a9756d14fe2dfa3d'
-       "6fdcd5edda068eb3ceb2da44c670d966d929ab248: u'FULL_CONTROL'"
-       '>>'),
-      'TOTAL: 1 objects, 5019983 bytes (4.79 MB)',
-      '',
+      '        Creation time:          Tue, 04 Mar 2014 19:55:26 GMT',
+      '        Content-Language:       en',
+      '        Content-Length:         2',
+      '        Content-Type:           application/octet-stream',
+      '        Hash (crc32c):          %s' % crc32c_64,
+      '        Hash (md5):             %s' % md5_sum_64,
+      '        ETag:                   CMi938jU+bwCEAE=',
+      '        Generation:             1393962926989000',
+      '        Metageneration:         1',
+      '        ACL:            [',
+      '  {',
+      '    "entity": "project-owners-134157665460",',
+      '    "projectTeam": {',
+      '      "projectNumber": "134157665460",',
+      '      "team": "owners"',
+      '    },',
+      '    "role": "OWNER"',
+      '  }',
+      ']',
       ])
-
     # Set up the test replay script.
     cmd = [self.gsutil, 'ls', '-L', gs_uri]
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
