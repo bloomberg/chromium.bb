@@ -68,7 +68,6 @@
         'base/webui/web_ui_util_unittest.cc',
         'gfx/canvas_unittest_mac.mm',
         'gfx/platform_font_mac_unittest.mm',
-        'gfx/render_text_unittest.cc',
       ],
       'includes': [
         'display/display_unittests.gypi',
@@ -163,11 +162,6 @@
             'events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
-        ['OS=="android" or OS=="ios"', {
-          'sources!': [
-            'gfx/render_text_unittest.cc',
-          ],
-        }],
         ['OS!="win" or use_aura==0', {
           'sources!': [
             'base/view_prop_unittest.cc',
@@ -200,11 +194,6 @@
           'sources!': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'gfx/screen_unittest.cc',
-          ],
-        }],
-        ['use_ozone==1 and use_pango==0', {
-          'sources!': [
-            'gfx/render_text_unittest.cc',
           ],
         }],
         ['chromeos==1', {
