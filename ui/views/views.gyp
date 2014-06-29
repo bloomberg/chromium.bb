@@ -120,8 +120,6 @@
         'controls/button/menu_button_listener.h',
         'controls/button/radio_button.cc',
         'controls/button/radio_button.h',
-        'controls/button/text_button.cc',
-        'controls/button/text_button.h',
         'controls/combobox/combobox.cc',
         'controls/combobox/combobox.h',
         'controls/combobox/combobox_listener.h',

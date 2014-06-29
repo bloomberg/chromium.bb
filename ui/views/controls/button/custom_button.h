@@ -18,8 +18,7 @@ namespace views {
 
 class CustomButtonStateChangedDelegate;
 
-// A button with custom rendering. The common base class of ImageButton,
-// LabelButton and TextButton.
+// A button with custom rendering. The base of ImageButton and LabelButton.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain.  Call SetFocusable(true) to make it part of the
 // focus chain.

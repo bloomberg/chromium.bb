@@ -19,7 +19,7 @@ namespace views {
 class LabelButtonBorder;
 class Painter;
 
-// LabelButton is an alternative to TextButton, it's not focusable by default.
+// LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public CustomButton,
                                  public NativeThemeDelegate {
  public:

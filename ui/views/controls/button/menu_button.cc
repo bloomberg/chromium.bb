@@ -253,10 +253,8 @@ void MenuButton::GetAccessibleState(ui::AXViewState* state) {
 void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
 
-  // We can not use the views' mirroring infrastructure for mirroring a
-  // MenuButton control (see TextButton::OnPaint() for a detailed explanation
-  // regarding why we can not flip the canvas). Therefore, we need to
-  // manually mirror the position of the down arrow.
+  // Using the Views mirroring infrastructure incorrectly flips icon content.
+  // Instead, manually mirror the position of the down arrow.
   gfx::Rect arrow_bounds(width() - insets.right() -
                          menu_marker_->width() - kMenuMarkerPaddingRight,
                          height() / 2 - menu_marker_->height() / 2,

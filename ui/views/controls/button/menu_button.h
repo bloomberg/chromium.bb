@@ -76,8 +76,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   gfx::Point menu_offset_;
 
  private:
-  friend class TextButtonBackground;
-
   // Compute the maximum X coordinate for the current screen. MenuButtons
   // use this to make sure a menu is never shown off screen.
   int GetMaximumScreenXCoordinate();
@@ -96,8 +94,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Whether or not we're showing a drop marker.
   bool show_menu_marker_;
 
-  // The down arrow used to differentiate the menu button from normal
-  // text buttons.
+  // The down arrow used to differentiate the menu button from normal buttons.
   const gfx::ImageSkia* menu_marker_;
 
   // If non-null the destuctor sets this to true. This is set while the menu is

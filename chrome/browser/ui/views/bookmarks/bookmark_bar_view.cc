@@ -142,9 +142,6 @@ static const int kOtherFolderButtonTag = 1;
 static const int kAppsShortcutButtonTag = 2;
 
 // Preferred padding between text and edge.
-//
-// Note that the vertical padding is one pixel less than it was in TextButton;
-// we clip the bottom of letters like 'g' or 'p' if we don't.
 static const int kButtonPaddingHorizontal = 6;
 static const int kButtonPaddingVertical = 4;
 
@@ -192,7 +189,6 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const OVERRIDE {
-    // We change the insets on the border to match the previous TextButton.
     scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
     border->set_insets(gfx::Insets(kButtonPaddingVertical,
                                    kButtonPaddingHorizontal,
