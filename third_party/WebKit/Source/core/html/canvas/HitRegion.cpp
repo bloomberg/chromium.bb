@@ -14,6 +14,7 @@ HitRegion::HitRegion(const HitRegionOptions& options)
     : m_id(options.id)
     , m_control(options.control)
     , m_path(options.path)
+    , m_fillRule(options.fillRule)
 {
 }
 
@@ -41,7 +42,7 @@ void HitRegion::updateAccessibility(Element* canvas)
 
 bool HitRegion::contains(const LayoutPoint& point) const
 {
-    return m_path.contains(point, RULE_NONZERO);
+    return m_path.contains(point, m_fillRule);
 }
 
 void HitRegion::removePixels(const Path& clearArea)

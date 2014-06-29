@@ -2394,6 +2394,14 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
     }
 
     passOptions.path = specifiedPath;
+
+    String fillRuleString;
+    options.getWithUndefinedOrNullCheck("fillRule", fillRuleString);
+    if (fillRuleString.isEmpty() || fillRuleString != "evenodd")
+        passOptions.fillRule = RULE_NONZERO;
+    else
+        passOptions.fillRule = RULE_EVENODD;
+
     addHitRegionInternal(passOptions, exceptionState);
 }
 

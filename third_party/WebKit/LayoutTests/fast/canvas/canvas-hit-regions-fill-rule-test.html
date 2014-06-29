@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Canvas Hit Regions: fillRule test</title>
+  <script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+</canvas>
+<script>
+
+  var canvas = document.getElementById("canvas");
+  var context = canvas.getContext("2d");
+
+  function clickCanvas(x, y)
+  {
+    if (!window.eventSender)
+      return "This test requires eventSender";
+
+    var result = null;
+    function listener(event)
+    {
+      result = event.region;
+    }
+
+    var rect = canvas.getBoundingClientRect();
+    canvas.addEventListener("click", listener, false);
+    eventSender.mouseMoveTo(rect.left + x, rect.top + y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    canvas.removeEventListener("click", listener, false);
+
+    return result;
+  }
+
+  context.rect(20, 20, 60, 60);
+  context.rect(0, 0, 100, 100);
+  context.addHitRegion({
+    id : "nonzero"
+    // default fillRule
+  });
+
+  debug("default fillRule(nonzero):");
+  shouldBe("clickCanvas(1, 1)", "'nonzero'");
+  shouldBe("clickCanvas(99, 98)", "'nonzero'");
+  shouldBe("clickCanvas(21, 21)", "'nonzero'");
+  shouldBe("clickCanvas(50, 50)", "'nonzero'");
+  debug("");
+
+  context.removeHitRegion("nonzero");
+
+  context.addHitRegion({
+    id : "evenodd",
+    fillRule : "evenodd"
+  });
+
+  debug("fillRule = evenodd:");
+  shouldBe("clickCanvas(1, 1)", "'evenodd'");
+  shouldBe("clickCanvas(99, 98)", "'evenodd'");
+  shouldBe("clickCanvas(21, 21)", "null");
+  shouldBe("clickCanvas(50, 50)", "null");
+  debug("");
+
+  context.removeHitRegion("evenodd");
+
+  context.addHitRegion({
+    id : "nonzero",
+    fillRule : "nonzero"
+  });
+
+  debug("fillRule = nonzero:");
+  shouldBe("clickCanvas(1, 1)", "'nonzero'");
+  shouldBe("clickCanvas(99, 98)", "'nonzero'");
+  shouldBe("clickCanvas(21, 21)", "'nonzero'");
+  shouldBe("clickCanvas(50, 50)", "'nonzero'");
+  debug("");
+
+  context.removeHitRegion("nonzero");
+
+  context.addHitRegion({
+    id : "nonzero",
+    fillRule : null
+  });
+
+  debug("fillRule = null, falls back to default (nonzero):");
+  shouldBe("clickCanvas(1, 1)", "'nonzero'");
+  shouldBe("clickCanvas(99, 98)", "'nonzero'");
+  shouldBe("clickCanvas(21, 21)", "'nonzero'");
+  shouldBe("clickCanvas(50, 50)", "'nonzero'");
+  debug("");
+
+  context.removeHitRegion("nonzero");
+
+  context.addHitRegion({
+    id : "nonzero",
+    fillRule : undefined
+  });
+
+  debug("fillRule = undefined, falls back to default (nonzero):");
+  shouldBe("clickCanvas(1, 1)", "'nonzero'");
+  shouldBe("clickCanvas(99, 98)", "'nonzero'");
+  shouldBe("clickCanvas(21, 21)", "'nonzero'");
+  shouldBe("clickCanvas(50, 50)", "'nonzero'");
+  debug("");
+
+</script>
+</body>
+</html>
