@@ -5583,14 +5583,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
 }
 {
-   bug_328092
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content16WebURLLoaderImplC1Ev
-   fun:_ZN7content17BlinkPlatformImpl15createURLLoaderEv
-   fun:_ZN7WebCore14ResourceLoader5startEv
-}
-{
    bug_329960
    Memcheck:Leak
    fun:_Znw*
