@@ -21,6 +21,39 @@
 #include "ash/test/app_list_controller_test_api.h"
 #endif
 
+namespace {
+
+app_list::AppListView* GetAppListView(AppListService* service) {
+#if defined(OS_CHROMEOS)
+  return ash::test::AppListControllerTestApi(ash::Shell::GetInstance()).view();
+#else
+  return static_cast<AppListServiceViews*>(service)->shower().app_list();
+#endif
+}
+
+}  // namespace
+
+namespace test {
+
+// Allow access to private variables of the AppListView for testing.
+class AppListViewTestApi {
+ public:
+  explicit AppListViewTestApi(app_list::AppListView* view) : view_(view) {}
+  virtual ~AppListViewTestApi() {}
+
+  bool is_overlay_visible() {
+    DCHECK(view_->overlay_view_);
+    return view_->overlay_view_->visible();
+  }
+
+ private:
+  app_list::AppListView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListViewTestApi);
+};
+
+}  // namespace test
+
 // Browser Test for AppListService on Views platforms.
 typedef InProcessBrowserTest AppListServiceViewsBrowserTest;
 
@@ -94,26 +127,29 @@ IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   ASSERT_TRUE(widget);
 
+  test::AppListViewTestApi test_api(GetAppListView(service));
+
   // Open the app info dialog.
   views::Widget::Widgets owned_widgets;
   widget->GetAllOwnedWidgets(window, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
+  EXPECT_FALSE(test_api.is_overlay_visible());
 
   AppListControllerDelegate* controller = service->GetControllerDelegate();
   ASSERT_TRUE(controller);
   controller->DoShowAppInfoFlow(browser()->profile(), extension->id());
-  base::RunLoop().RunUntilIdle();
 
   owned_widgets.clear();
   widget->GetAllOwnedWidgets(window, &owned_widgets);
   EXPECT_EQ(1U, owned_widgets.size());
+  EXPECT_TRUE(test_api.is_overlay_visible());
 
   // Close the app info dialog.
   views::Widget* app_info_dialog = *owned_widgets.begin();
-  app_info_dialog->Close();
-  base::RunLoop().RunUntilIdle();
+  app_info_dialog->CloseNow();
 
   owned_widgets.clear();
   widget->GetAllOwnedWidgets(window, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
+  EXPECT_FALSE(test_api.is_overlay_visible());
 }

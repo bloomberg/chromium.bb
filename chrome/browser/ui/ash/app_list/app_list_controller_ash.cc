@@ -55,6 +55,20 @@ AppListControllerDelegate::Pinnable
       PIN_FIXED;
 }
 
+void AppListControllerDelegateAsh::OnShowChildDialog() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (app_list_view)
+    app_list_view->SetAppListOverlayVisible(true);
+}
+
+void AppListControllerDelegateAsh::OnCloseChildDialog() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (app_list_view)
+    app_list_view->SetAppListOverlayVisible(false);
+}
+
 bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow() {
   return false;
 }

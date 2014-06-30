@@ -30,10 +30,14 @@ void AppListControllerDelegateViews::ViewClosing() {
 }
 
 void AppListControllerDelegateViews::OnShowChildDialog() {
+  DCHECK(service_->shower().app_list());
+  service_->shower().app_list()->SetAppListOverlayVisible(true);
   service_->set_can_dismiss(false);
 }
 
 void AppListControllerDelegateViews::OnCloseChildDialog() {
+  DCHECK(service_->shower().app_list());
+  service_->shower().app_list()->SetAppListOverlayVisible(false);
   service_->set_can_dismiss(true);
 }
 

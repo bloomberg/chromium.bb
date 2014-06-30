@@ -25,6 +25,8 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual void PinApp(const std::string& extension_id) OVERRIDE;
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
   virtual Pinnable GetPinnable() OVERRIDE;
+  virtual void OnShowChildDialog() OVERRIDE;
+  virtual void OnCloseChildDialog() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) OVERRIDE;
