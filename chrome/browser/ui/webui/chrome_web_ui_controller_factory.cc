@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
+#include "chrome/browser/ui/webui/voicesearch_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -321,6 +322,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UserActionsUI>;
   if (url.host() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
+  if (url.host() == chrome::kChromeUIVoiceSearchHost)
+    return &NewWebUI<VoiceSearchUI>;
 #if defined(ENABLE_WEBRTC)
   if (url.host() == chrome::kChromeUIWebRtcLogsHost)
     return &NewWebUI<WebRtcLogsUI>;
