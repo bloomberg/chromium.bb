@@ -24,6 +24,7 @@ void __libc_init_array(void);
 
 void nacl_irt_init(uint32_t *info) {
   void (*fini)(void) = nacl_startup_fini(info);
+  (void) fini;  /* Suppress unused variable warning in Release builds. */
   char **envp = nacl_startup_envp(info);
 
   environ = envp;

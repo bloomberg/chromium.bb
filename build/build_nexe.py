@@ -239,6 +239,10 @@ class Builder(object):
     self.goma_burst = goma_config.get('burst', False)
     self.goma_threads = goma_config.get('threads', 1)
 
+    # Define NDEBUG for Release builds.
+    if options.build_config == 'Release':
+      self.compile_options.append('-DNDEBUG')
+
     # Use unoptimized native objects for debug IRT builds for faster compiles.
     if (self.is_pnacl_toolchain
         and (self.outtype == 'nlib'
