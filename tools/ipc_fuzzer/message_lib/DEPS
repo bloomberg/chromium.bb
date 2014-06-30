@@ -3,6 +3,10 @@ include_rules = [
   "+components/autofill/content/common",
   "+components/nacl/common",
   "+components/tracing",
+  "+components/translate",
   "+components/visitedlink/common",
+  "+content/child",
   "+content/common",
+  "+extensions/common",
+  "+remoting/host",
 ]

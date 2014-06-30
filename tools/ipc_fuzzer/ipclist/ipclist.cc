@@ -10,11 +10,11 @@
 #include "base/basictypes.h"
 
 // Include once to get the type definitions
-#include "chrome/common/all_messages.h"
-#include "content/common/all_messages.h"
+#include "tools/ipc_fuzzer/message_lib/all_messages.h"
 
 struct msginfo {
   const char* name;
+  const char* file;
   int id;
   int in_count;
   int out_count;
@@ -28,11 +28,10 @@ struct msginfo {
 #include "ipc/ipc_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
 #define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
-  { #name, IPC_MESSAGE_ID(), in, out },
+  { #name, __FILE__, IPC_MESSAGE_ID(), in, out },
 
 static msginfo msgtable[] = {
-#include "chrome/common/all_messages.h"
-#include "content/common/all_messages.h"
+#include "tools/ipc_fuzzer/message_lib/all_messages.h"
 };
 #define MSGTABLE_SIZE (sizeof(msgtable)/sizeof(msgtable[0]))
 COMPILE_ASSERT(MSGTABLE_SIZE, CHECK_YOUR_HEADERS_FOR_AN_EXTRA_SEMICOLON);
@@ -41,6 +40,8 @@ static bool check_msgtable() {
   bool result = true;
   int previous_class_id = 0;
   int highest_class_id = 0;
+  const char* file_name = "NONE";
+  const char* previous_file_name = "NONE";
   std::vector<int> exemptions;
 
   // Exclude test and other non-browser files from consideration.  Do not
@@ -48,24 +49,47 @@ static bool check_msgtable() {
   exemptions.push_back(TestMsgStart);
   exemptions.push_back(FirefoxImporterUnittestMsgStart);
   exemptions.push_back(ShellMsgStart);
+  exemptions.push_back(MetroViewerMsgStart);
+  exemptions.push_back(CCMsgStart);  // Nothing but param traits.
+  exemptions.push_back(CldDataProviderMsgStart); // Conditional build.
+#if !defined(OS_ANDROID)
+  exemptions.push_back(JavaBridgeMsgStart);
+  exemptions.push_back(MediaPlayerMsgStart);
+  exemptions.push_back(EncryptedMediaMsgStart);
+  exemptions.push_back(GinJavaBridgeMsgStart);
+  exemptions.push_back(AndroidWebViewMsgStart);
+#endif  // !defined(OS_ANDROID)
+#if !defined(USE_OZONE)
+  exemptions.push_back(OzoneGpuMsgStart);
+#endif  // !defined(USE_OZONE)
 
   for (size_t i = 0; i < MSGTABLE_SIZE; ++i) {
     int class_id = IPC_MESSAGE_ID_CLASS(msgtable[i].id);
+    file_name = msgtable[i].file;
     if (class_id >= LastIPCMsgStart) {
       std::cout << "Invalid LastIPCMsgStart setting\n";
       result = false;
     }
+    if (class_id == previous_class_id &&
+        strcmp(file_name, previous_file_name) != 0) {
+      std::cerr << "enum used in multiple files: "
+                << file_name << " vs "
+                << previous_file_name << "\n";
+      result = false;
+    }
     while (class_id > previous_class_id + 1) {
       std::vector<int>::iterator iter;
-      iter = find(exemptions.begin(), exemptions.end(), previous_class_id+1);
+      iter = find(exemptions.begin(), exemptions.end(), previous_class_id + 1);
       if (iter == exemptions.end()) {
-        std::cout << "Missing message file: gap before " << class_id << "\n";
+        std::cout << "Missing message file for enum "
+                  << class_id - (previous_class_id + 1)
+                  <<  " before enum used by " << file_name << "\n";
         result = false;
-        break;
       }
       ++previous_class_id;
     }
     previous_class_id = class_id;
+    previous_file_name = file_name;
     if (class_id > highest_class_id)
       highest_class_id = class_id;
   }
@@ -74,15 +98,16 @@ static bool check_msgtable() {
     std::vector<int>::iterator iter;
     iter = find(exemptions.begin(), exemptions.end(), highest_class_id+1);
     if (iter == exemptions.end()) {
-      std::cout << "Missing message file: gap before LastIPCMsgStart\n";
-      result = false;
+      std::cout << "Missing message file for enum "
+                << LastIPCMsgStart - (highest_class_id + 1)
+                << " before enum LastIPCMsgStart\n";
       break;
     }
     ++highest_class_id;
   }
 
   if (!result)
-    std::cout << "Please check {chrome,content}/common/all_messages.h.\n";
+    std::cout << "Please check tools/ipc_fuzzer/message_lib/all_messages.h\n";
 
   return result;
 }
