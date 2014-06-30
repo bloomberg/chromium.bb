@@ -83,6 +83,16 @@ static void createQuad(TracedValue& value, const char* name, const FloatQuad& qu
         .endArray();
 }
 
+static void setGeneratingNodeId(TracedValue& value, const char* fieldName, const RenderObject* renderer)
+{
+    Node* node = 0;
+    for (; renderer && !node; renderer = renderer->parent())
+        node = renderer->generatingNode();
+    if (!node)
+        return;
+    value.setInteger(fieldName, InspectorNodeIds::idForNode(node));
+}
+
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(RenderObject* rootForThisLayout)
 {
     Vector<FloatQuad> quads;
@@ -91,8 +101,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     TracedValue value;
     if (quads.size() >= 1) {
         createQuad(value, "root", quads[0]);
-        int rootNodeId = InspectorNodeIds::idForNode(rootForThisLayout->generatingNode());
-        value.setInteger("rootNode", rootNodeId);
+        setGeneratingNodeId(value, "rootNode", rootForThisLayout);
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -253,8 +262,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(Rende
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
     createQuad(value, "clip", quad);
-    int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
-    value.setInteger("nodeId", nodeId);
+    setGeneratingNodeId(value, "nodeId", renderer);
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     value.setInteger("layerId", graphicsLayerId);
     return value.finish();
@@ -273,8 +281,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data
 {
     TracedValue value;
     value.setString("frame", toHexString(renderer->frame()));
-    int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
-    value.setInteger("nodeId", nodeId);
+    setGeneratingNodeId(value, "nodeId", renderer);
     return value.finish();
 }
 
@@ -301,7 +308,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderImage& renderImage)
 {
     TracedValue value;
-    value.setInteger("nodeId", InspectorNodeIds::idForNode(renderImage.generatingNode()));
+    setGeneratingNodeId(value, "nodeId", &renderImage);
     if (const ImageResource* resource = renderImage.cachedImage())
         value.setString("url", resource->url().string());
     return value.finish();
