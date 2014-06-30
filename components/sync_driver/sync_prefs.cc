@@ -4,7 +4,6 @@
 
 #include "components/sync_driver/sync_prefs.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"

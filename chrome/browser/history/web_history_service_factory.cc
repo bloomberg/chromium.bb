@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/web_history_service_factory.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
