@@ -2940,8 +2940,10 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 
     ASSERT(m_frame->document());
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*m_frame->document())) {
-        if (fullscreen->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(fullscreen, initialKeyEvent))
+        if (fullscreen->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(fullscreen, initialKeyEvent)) {
+            UseCounter::count(*m_frame->document(), UseCounter::KeyEventNotAllowedInFullScreen);
             return false;
+        }
     }
 
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)

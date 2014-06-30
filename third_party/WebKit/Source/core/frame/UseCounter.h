@@ -473,6 +473,7 @@ public:
         // The above items are available in M37 branch.
 
         UseAsm = 473,
+        KeyEventNotAllowedInFullScreen = 474,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/
