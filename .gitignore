@@ -78,6 +78,10 @@ TAGS
 /gnulib/getopt.h
 /gnulib/stdlib.h
 /gnulib/unistd.h
+/gnulib/arg-nonnull.h
+/gnulib/warn-on-use.h
+/gnulib/c++defs.h
+/gnulib/sys/types.h
 
 # /liblouis/
 /liblouis/stamp-h1
