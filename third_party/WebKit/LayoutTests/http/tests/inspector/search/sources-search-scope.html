@@ -3,10 +3,16 @@
 <title>Change inspected iframe's "src" attribute.</title>
 <script src="../inspector-test.js"></script>
 <script src="../resources-test.js"></script>
+<script src="../network-test.js"></script>
 <script>
 function test()
 {
-    InspectorTest.reloadPage(step1);
+    InspectorTest.resetInspectorResourcesData(start);
+
+    function start()
+    {
+        InspectorTest.reloadPage(step1);
+    }
 
     function step1()
     {
