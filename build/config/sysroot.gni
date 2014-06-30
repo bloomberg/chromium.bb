@@ -9,11 +9,11 @@ if (is_android) {
   import("//build/config/android/config.gni")
   if (!is_android_webview_build) {
     if (cpu_arch == "x86") {
-      sysroot = "$android_ndk_root/platforms/android-14/arch-x86"
+      sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
     } else if (cpu_arch == "arm") {
-      sysroot = "$android_ndk_root/platforms/android-14/arch-arm"
+      sysroot = rebase_path("$android_ndk_root/$arm_android_sysroot_subdir")
     } else if (cpu_arch == "mipsel") {
-      sysroot = "$android_ndk_root/platforms/android-14/arch-mips"
+      sysroot = rebase_path("$android_ndk_root/$mips_android_sysroot_subdir")
     } else {
       sysroot = ""
     }
@@ -40,6 +40,7 @@ if (is_android) {
   }
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
+
   sysroot = mac_sdk_path
 } else if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
