@@ -162,6 +162,7 @@ CONTENT_EXPORT extern const char kGpuProcess[];
 CONTENT_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 CONTENT_EXPORT extern const char kGpuSandboxFailuresFatal[];
 CONTENT_EXPORT extern const char kGpuSandboxStartAfterInitialization[];
+CONTENT_EXPORT extern const char kGpuSandboxStartEarly[];
 CONTENT_EXPORT extern const char kGpuStartupDialog[];
 extern const char kGpuVendorID[];
 CONTENT_EXPORT extern const char kHostResolverRules[];

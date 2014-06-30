@@ -562,15 +562,19 @@ const char kGpuLauncher[]                   = "gpu-launcher";
 // Makes this process a GPU sub-process.
 const char kGpuProcess[]                    = "gpu-process";
 
-// Allow shmat system call in GPU sandbox.
+// Allows shmat() system call in the GPU sandbox.
 const char kGpuSandboxAllowSysVShm[]        = "gpu-sandbox-allow-sysv-shm";
 
 // Makes GPU sandbox failures fatal.
 const char kGpuSandboxFailuresFatal[]       = "gpu-sandbox-failures-fatal";
 
-// Allow GPU sandbox to start later
+// TODO(jorgelo): remove this once crbug.com/356959 is fixed.
+// Allows GPU sandbox to start later.
 const char kGpuSandboxStartAfterInitialization[] =
     "gpu-sandbox-start-after-initialization";
+
+// Starts the GPU sandbox before creating a GL context.
+const char kGpuSandboxStartEarly[]          = "gpu-sandbox-start-early";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
