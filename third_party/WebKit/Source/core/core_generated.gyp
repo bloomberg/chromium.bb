@@ -585,7 +585,6 @@
           'variables': {
             'scripts': [
               'css/make-css-file-arrays.pl',
-              '../build/scripts/preprocessor.pm',
             ],
             'stylesheets': [
               'css/html.css',
@@ -595,6 +594,7 @@
               'css/themeChromiumAndroid.css',
               'css/themeChromiumLinux.css',
               'css/themeChromiumSkia.css',
+              'css/themeInputMultipleFields.css',
               'css/themeMac.css',
               'css/themeWin.css',
               'css/themeWinQuirks.css',
@@ -624,8 +624,6 @@
             '--',
             '<@(scripts)',
             '--',
-            '--defines', '<(feature_defines)',
-            '<@(preprocessor)',
             '--perl', '<(perl_exe)',
           ],
         },

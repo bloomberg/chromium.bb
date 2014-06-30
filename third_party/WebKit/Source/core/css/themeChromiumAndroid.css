@@ -54,3 +54,22 @@ input[type="week"]:read-only {
     background-color: ButtonFace;
     color: GrayText;
 }
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="week"] {
+    align-items: center;
+    -webkit-appearance: menulist;
+    background-color: ButtonFace;
+    border: 1px solid #a9a9a9;
+    display: -webkit-inline-flex;
+    overflow: hidden;
+    width: 10em;
+}
+
+input::-webkit-date-and-time-value {
+    margin: 1px 24px 1px 4px;
+    white-space: pre;
+}

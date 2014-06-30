@@ -1038,7 +1038,6 @@ action("make_core_generated_user_agent_style_sheets") {
 
   scripts = [
     "css/make-css-file-arrays.pl",
-    "../build/scripts/preprocessor.pm",
   ]
   stylesheets = [
     "css/html.css",
@@ -1048,6 +1047,7 @@ action("make_core_generated_user_agent_style_sheets") {
     "css/themeChromiumAndroid.css",
     "css/themeChromiumLinux.css",
     "css/themeChromiumSkia.css",
+    "css/themeInputMultipleFields.css",
     "css/themeMac.css",
     "css/themeWin.css",
     "css/themeWinQuirks.css",
@@ -1072,8 +1072,7 @@ action("make_core_generated_user_agent_style_sheets") {
     rebase_path(stylesheets, root_build_dir) +
     [ "--" ] +
     rebase_path(scripts, root_build_dir) +
-    [ "--", "--defines", feature_defines_string ] +
-    [ preprocessor ] +
+    [ "--" ] +
     [ "--perl", perl_exe ]
 
   deps = make_core_generated_deps

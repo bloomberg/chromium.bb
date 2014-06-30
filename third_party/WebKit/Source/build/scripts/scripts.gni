@@ -59,18 +59,10 @@ if (is_win) {
   perl_exe = rebase_path("//third_party/perl/perl/bin/perl.exe", root_build_dir)
   gperf_exe = rebase_path("//third_party/gperf/bin/gperf.exe", root_build_dir)
   bison_exe = rebase_path("//third_party/bison/bin/bison.exe", root_build_dir)
-  # Using cl instead of cygwin gcc cuts the processing time from
-  # 1m58s to 0m52s.
-  preprocessor = "--preprocessor \"cl.exe -nologo -EP -TP\""
 } else {
   perl_exe = "perl"
   gperf_exe = "gperf"
   bison_exe = "bison"
-  # We specify a preprocess so it happens locally and won't get
-  # distributed to goma.
-  # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to
-  # use /usr/bin/clang once we require Xcode 4.x.
-  preprocessor = "--preprocessor \"/usr/bin/gcc -E -P -x c++\""
 }
 
 # Templates --------------------------------------------------------------------

@@ -95,14 +95,6 @@ def main(args):
         if not includeDir in includeDirs:
             includeDirs.append(includeDir)
 
-    # The defines come in as one flat string. Split it up into distinct arguments.
-    if '--defines' in options:
-        definesIndex = options.index('--defines')
-        if definesIndex + 1 < len(options):
-            splitOptions = shlex.split(options[definesIndex + 1])
-            if splitOptions:
-                options[definesIndex + 1] = ' '.join(splitOptions)
-
     perl = 'perl'
     if '--perl' in options:
         perlIndex = options.index('--perl')
