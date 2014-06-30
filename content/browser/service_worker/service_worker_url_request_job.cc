@@ -274,6 +274,10 @@ void ServiceWorkerURLRequestJob::CreateResponseHeader(
       base::StringPrintf("HTTP/1.1 %d %s", status_code, status_text.c_str()));
   status_line.push_back('\0');
   http_response_headers_ = new net::HttpResponseHeaders(status_line);
+  // TODO(gavinp,michaeln): This header should not be exposed to content; we can
+  // either remove it for content or move this data out of a header and in to
+  // the http_response_info_.
+  http_response_headers_->AddHeader("Service-Worker: generated");
   for (std::map<std::string, std::string>::const_iterator it = headers.begin();
        it != headers.end();
        ++it) {
