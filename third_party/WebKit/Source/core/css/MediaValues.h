@@ -76,6 +76,7 @@ protected:
     const String calculateMediaType(LocalFrame*) const;
     bool calculateThreeDEnabled(LocalFrame*) const;
     MediaValues::PointerDeviceType calculateLeastCapablePrimaryPointerDeviceType(LocalFrame*) const;
+    static LocalFrame* frameFrom(Document&);
 
 };
 

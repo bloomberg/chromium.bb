@@ -14,6 +14,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -188,6 +189,13 @@ bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType ty
     ASSERT(factor > 0);
     result = value * factor;
     return true;
+}
+
+LocalFrame* MediaValues::frameFrom(Document& document)
+{
+    Document* executingDocument = document.importsController() ? document.importsController()->master() : &document;
+    ASSERT(executingDocument);
+    return executingDocument->frame();
 }
 
 } // namespace

@@ -28,7 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryMatcher.h"
-#include "core/css/MediaValuesCached.h"
+#include "core/css/MediaValuesDynamic.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
 #include "core/fetch/ImageResource.h"
@@ -250,7 +250,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
                 continue;
         }
 
-        unsigned effectiveSize = SizesAttributeParser::findEffectiveSize(source->fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
+        unsigned effectiveSize = SizesAttributeParser::findEffectiveSize(source->fastGetAttribute(sizesAttr), MediaValuesDynamic::create(document()));
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
         if (candidate.isEmpty())
             continue;
@@ -578,7 +578,7 @@ void HTMLImageElement::selectSourceURL(UpdateFromElementBehavior behavior)
     if (!foundURL) {
         unsigned effectiveSize = 0;
         if (RuntimeEnabledFeatures::pictureSizesEnabled())
-            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
+            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesDynamic::create(document()));
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }

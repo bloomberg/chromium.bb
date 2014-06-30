@@ -8,7 +8,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/imports/HTMLImportsController.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -25,9 +24,7 @@ PassRefPtr<MediaValues> MediaValuesCached::create(MediaValuesCachedData& data)
 
 PassRefPtr<MediaValues> MediaValuesCached::create(Document& document)
 {
-    Document* executingDocument = document.importsController() ? document.importsController()->master() : &document;
-    ASSERT(executingDocument);
-    return MediaValuesCached::create(executingDocument->frame());
+    return MediaValuesCached::create(frameFrom(document));
 }
 
 PassRefPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)

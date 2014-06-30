@@ -8,12 +8,21 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/MediaValuesCached.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
+PassRefPtr<MediaValues> MediaValuesDynamic::create(Document& document)
+{
+    return MediaValuesDynamic::create(frameFrom(document));
+}
+
 PassRefPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame)
 {
+    if (!frame || !frame->view() || !frame->document() || !frame->document()->renderView())
+        return MediaValuesCached::create();
     return adoptRef(new MediaValuesDynamic(frame));
 }
 
