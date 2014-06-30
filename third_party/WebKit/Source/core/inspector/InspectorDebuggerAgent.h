@@ -199,7 +199,6 @@ protected:
 private:
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
-    bool isTopCallFrameInFramework();
 
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
@@ -238,7 +237,6 @@ private:
     RefPtr<JSONObject> m_breakAuxData;
     bool m_javaScriptPauseScheduled;
     bool m_debuggerStepScheduled;
-    bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
     Listener* m_listener;
 
