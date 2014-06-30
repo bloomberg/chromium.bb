@@ -1068,7 +1068,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   if (!base::PostTaskAndReplyWithResult(
           content::BrowserThread::GetBlockingPool(),
           FROM_HERE,
-          base::Bind(OpenNaClExecutableImpl, file_path),
+          base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
           base::Bind(&NaClProcessHost::FileResolved,
                      weak_factory_.GetWeakPtr(),
                      file_path,

@@ -113,15 +113,16 @@ const int64 kCrashesIntervalInSeconds = 120;
 
 namespace nacl {
 
-base::File OpenNaClExecutableImpl(const base::FilePath& file_path) {
+base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
+                                bool is_executable) {
   // Get a file descriptor. On Windows, we need 'GENERIC_EXECUTE' in order to
   // memory map the executable.
   // IMPORTANT: This file descriptor must not have write access - that could
   // allow a NaCl inner sandbox escape.
-  base::File file(file_path,
-                  (base::File::FLAG_OPEN |
-                   base::File::FLAG_READ |
-                   base::File::FLAG_EXECUTE));  // Windows only flag.
+  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  if (is_executable)
+    flags |= base::File::FLAG_EXECUTE;  // Windows only flag.
+  base::File file(file_path, flags);
   if (!file.IsValid())
     return file.Pass();
 

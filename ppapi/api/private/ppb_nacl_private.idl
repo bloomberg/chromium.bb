@@ -219,10 +219,11 @@ interface PPB_NaCl_Private {
                                 [in] uint32_t desired_access,
                                 [in] uint32_t options);
 
-  /* Returns a read-only file descriptor for a url for pnacl translator tools,
-   * or an invalid handle on failure.
+  /* Returns a read-only (but executable) file descriptor / file info for
+   * a url for pnacl translator tools. Returns an invalid handle on failure.
    */
-  PP_FileHandle GetReadonlyPnaclFd([in] str_t url);
+  void GetReadExecPnaclFd([in] str_t url,
+                          [out] PP_NaClFileInfo out_file_info);
 
   /* This creates a temporary file that will be deleted by the time
    * the last handle is closed (or earlier on POSIX systems), and

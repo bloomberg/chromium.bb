@@ -28,15 +28,29 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
                                 LOAD_OK, 1);
 
   // Check validation cache usage:
-  // For the open-web, only the IRT is considered a "safe" and
-  // identity-cachable file. The nexes and .so files are not.
-  // Should have one cache query for the IRT.
-  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_MISS, 1);
-  // TOTAL should then be 1 query so far.
-  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 1);
-  // Should have received a cache setting afterwards for IRT.
-  histograms.ExpectTotalCount("NaCl.ValidationCache.Set", 1);
+  if (IsAPnaclTest()) {
+    // Should have received 3 validation queries:
+    // - One for IRT for actual application
+    // - Two for two translator nexes
+    // The translators don't currently use the IRT, so there is no IRT cache
+    // query for those two loads. The PNaCl main nexe comes from a
+    // delete-on-close temp file, so it doesn't have a stable identity
+    // for validation caching. All three query results should be misses.
+    histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
+                                  nacl::NaClBrowser::CACHE_MISS, 3);
+    // Should have received a cache setting afterwards for IRT and translators.
+    histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
+                                  nacl::NaClBrowser::CACHE_HIT, 3);
+  } else {
+    // For the open-web, only the IRT is considered a "safe" and
+    // identity-cachable file. The nexes and .so files are not.
+    // Should have one cache query for the IRT.
+    histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
+                                  nacl::NaClBrowser::CACHE_MISS, 1);
+    // Should have received a cache setting afterwards for IRT and translators.
+    histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
+                                  nacl::NaClBrowser::CACHE_HIT, 1);
+  }
 
   // Make sure we have other important histograms.
   if (!IsAPnaclTest()) {
@@ -109,6 +123,44 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestVcacheExtension,
   // Still only 2 settings.
   histograms.ExpectTotalCount("NaCl.ValidationCache.Set", 2);
 }
+
+// Test that validation for the 2 PNaCl translator nexes can be cached.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       ValidationCacheOfTranslatorNexes) {
+  // Run a load test w/ one pexe cache identity.
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
+
+  UMAHistogramHelper histograms;
+  histograms.Fetch();
+  // Should have received 3 validation queries:
+  // - One for IRT for actual application
+  // - Two for two translator nexes
+  // The translators don't currently use the IRT, so there is no IRT cache
+  // query for those two loads. The PNaCl main nexe comes from a
+  // delete-on-close temp file, so it doesn't have a stable identity
+  // for validation caching. All three query results should be misses.
+  histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
+                                nacl::NaClBrowser::CACHE_MISS, 3);
+  // Should have received a cache setting afterwards for IRT and translators.
+  histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
+                               nacl::NaClBrowser::CACHE_HIT, 3);
+
+  // Load the same pexe, but with a different cache identity.
+  // This means that translation will actually be redone,
+  // forcing the translators to be loaded a second time (but now with
+  // cache hits!)
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_2"));
+
+  // Should now have 3 more queries on top of the previous ones.
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 6);
+  // With the 3 extra queries being cache hits.
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_HIT, 3);
+  // No extra cache settings.
+  histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
+                               nacl::NaClBrowser::CACHE_HIT, 3);
+}
+
 
 // TODO(ncbray) convert the rest of nacl_uma.py (currently in the NaCl repo.)
 // Test validation failures and crashes.

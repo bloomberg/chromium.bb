@@ -169,10 +169,10 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
 }
 
 void NaClHostMessageFilter::OnGetReadonlyPnaclFd(
-    const std::string& filename, IPC::Message* reply_msg) {
+    const std::string& filename, bool is_executable, IPC::Message* reply_msg) {
   // This posts a task to another thread, but the renderer will
   // block until the reply is sent.
-  nacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
+  nacl_file_host::GetReadonlyPnaclFd(this, filename, is_executable, reply_msg);
 
   // This is the first message we receive from the renderer once it knows we
   // want to use PNaCl, so start the translation cache initialization here.

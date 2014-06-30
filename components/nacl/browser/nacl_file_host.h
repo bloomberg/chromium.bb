@@ -28,9 +28,12 @@ class NaClHostMessageFilter;
 namespace nacl_file_host {
 
 // Open a PNaCl file (readonly) on behalf of the NaCl plugin.
+// If it is executable, registers the executable for validation caching.
+// Otherwise, just opens the file read-only.
 void GetReadonlyPnaclFd(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
+    bool is_executable,
     IPC::Message* reply_msg);
 
 // Return true if the filename requested is valid for opening.

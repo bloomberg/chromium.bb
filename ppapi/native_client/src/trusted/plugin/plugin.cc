@@ -41,12 +41,6 @@ const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
 
-const PP_NaClFileInfo kInvalidNaClFileInfo = {
-  PP_kInvalidFileHandle,
-  0,  // token_lo
-  0,  // token_hi
-};
-
 }  // namespace
 
 void Plugin::ShutDownSubprocesses() {
@@ -72,7 +66,7 @@ void Plugin::HistogramTimeSmall(const std::string& name,
                                       kTimeSmallBuckets);
 }
 
-bool Plugin::LoadHelperNaClModule(PP_FileHandle file_handle,
+bool Plugin::LoadHelperNaClModule(PP_NaClFileInfo file_info,
                                   NaClSubprocess* subprocess,
                                   const SelLdrStartParams& params) {
   CHECK(!pp::Module::Get()->core()->IsMainThread());
@@ -108,11 +102,6 @@ bool Plugin::LoadHelperNaClModule(PP_FileHandle file_handle,
   if (!service_runtime_started)
     return false;
 
-  PP_NaClFileInfo info;
-  info.handle = file_handle;
-  info.token_lo = 0;
-  info.token_hi = 0;
-
   // Now actually load the nexe, which can happen on a background thread.
   //
   // We can't use pp::BlockUntilComplete() inside an in-process plugin, so we
@@ -123,7 +112,7 @@ bool Plugin::LoadHelperNaClModule(PP_FileHandle file_handle,
       callback_factory_.NewCallback(
           &Plugin::LoadNexeAndStart,
           service_runtime,
-          info));
+          file_info));
   return service_runtime->WaitForNexeStart();
 }
 
@@ -239,7 +228,7 @@ bool Plugin::LoadNaClModuleContinuationIntern() {
 }
 
 NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
-                                             PP_FileHandle file_handle,
+                                             PP_NaClFileInfo file_info,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
       new NaClSubprocess("helper module", NULL, NULL));
@@ -255,9 +244,9 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
   // done to save on address space and swap space.
   //
   // Currently, this works only in SFI-mode. So, LoadModule SRPC is still used.
-  // So, pass kInvalidNaClFileInfo here, and instead |file_handle| is passed
+  // So, pass kInvalidNaClFileInfo here, and instead |file_info| is passed
   // to LoadNaClModuleFromBackgroundThread() below.
-  // TODO(teravest, hidehiko): Pass file_handle to params, so that LaunchSelLdr
+  // TODO(teravest, hidehiko): Pass file_info to params, so that LaunchSelLdr
   // will look at the info.
   SelLdrStartParams params(helper_url,
                            kInvalidNaClFileInfo,
@@ -269,7 +258,9 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
 
   // Helper NaCl modules always use the PNaCl manifest, as there is no
   // corresponding NMF.
-  if (!LoadHelperNaClModule(file_handle, nacl_subprocess.get(), params)) {
+  if (!LoadHelperNaClModule(file_info,
+                            nacl_subprocess.get(),
+                            params)) {
     return NULL;
   }
   // We need not wait for the init_done callback.  We can block
@@ -331,9 +322,7 @@ Plugin::Plugin(PP_Instance pp_instance)
   // We call set_exit_status() here to ensure that the 'exitStatus' property is
   // set. This can only be called when nacl_interface_ is not NULL.
   set_exit_status(-1);
-  nexe_file_info_.handle = PP_kInvalidFileHandle;
-  nexe_file_info_.token_lo = 0;
-  nexe_file_info_.token_hi = 0;
+  nexe_file_info_ = kInvalidNaClFileInfo;
 }
 
 

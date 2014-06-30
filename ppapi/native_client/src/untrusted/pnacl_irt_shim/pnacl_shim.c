@@ -3302,9 +3302,9 @@ static int32_t Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle(PP_FileHandle so
   return iface->BrokerDuplicateHandle(source_handle, process_id, target_handle, desired_access, options);
 }
 
-static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_GetReadonlyPnaclFd(const char* url) {
+static void Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd(const char* url, struct PP_NaClFileInfo* out_file_info) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetReadonlyPnaclFd(url);
+  iface->GetReadExecPnaclFd(url, out_file_info);
 }
 
 static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance instance) {
@@ -5224,7 +5224,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .UrandomFD = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_UrandomFD,
     .Are3DInterfacesDisabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_Are3DInterfacesDisabled,
     .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
-    .GetReadonlyPnaclFd = (PP_FileHandle (*)(const char* url))&Pnacl_M25_PPB_NaCl_Private_GetReadonlyPnaclFd,
+    .GetReadExecPnaclFd = (void (*)(const char* url, struct PP_NaClFileInfo* out_file_info))&Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd,
     .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile,
     .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
     .IsNonSFIModeEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsNonSFIModeEnabled,

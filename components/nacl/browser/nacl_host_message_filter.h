@@ -55,6 +55,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
                               IPC::Message* reply_msg,
                               ppapi::PpapiPermissions permissions);
   void OnGetReadonlyPnaclFd(const std::string& filename,
+                            bool is_executable,
                             IPC::Message* reply_msg);
   void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
   void OnNaClGetNumProcessors(int* num_processors);

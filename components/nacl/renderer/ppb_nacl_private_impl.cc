@@ -530,20 +530,31 @@ std::string PnaclComponentURLToFilename(const std::string& url) {
   return r;
 }
 
-PP_FileHandle GetReadonlyPnaclFd(const char* url) {
+PP_FileHandle GetReadonlyPnaclFd(const char* url,
+                                 bool is_executable,
+                                 uint64_t* nonce_lo,
+                                 uint64_t* nonce_hi) {
   std::string filename = PnaclComponentURLToFilename(url);
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
   if (!sender->Send(new NaClHostMsg_GetReadonlyPnaclFD(
-          std::string(filename),
-          &out_fd))) {
+          std::string(filename), is_executable,
+          &out_fd, nonce_lo, nonce_hi))) {
     return PP_kInvalidFileHandle;
   }
   if (out_fd == IPC::InvalidPlatformFileForTransit()) {
     return PP_kInvalidFileHandle;
   }
   return IPC::PlatformFileForTransitToPlatformFile(out_fd);
+}
+
+void GetReadExecPnaclFd(const char* url,
+                        PP_NaClFileInfo* out_file_info) {
+  *out_file_info = kInvalidNaClFileInfo;
+  out_file_info->handle = GetReadonlyPnaclFd(url, true /* is_executable */,
+                                             &out_file_info->token_lo,
+                                             &out_file_info->token_hi);
 }
 
 PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
@@ -1108,7 +1119,10 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   if (!load_manager)
     return PP_FALSE;
 
-  base::File file(GetReadonlyPnaclFd(filename));
+  uint64_t nonce_lo = 0;
+  uint64_t nonce_hi = 0;
+  base::File file(GetReadonlyPnaclFd(filename, false /* is_executable */,
+                                     &nonce_lo, &nonce_hi));
   if (!file.IsValid()) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
@@ -1434,7 +1448,11 @@ void DownloadFile(PP_Instance instance,
   // Handle special PNaCl support files which are installed on the user's
   // machine.
   if (url.find(kPNaClTranslatorBaseUrl, 0) == 0) {
-    PP_FileHandle handle = GetReadonlyPnaclFd(url.c_str());
+    PP_NaClFileInfo file_info = kInvalidNaClFileInfo;
+    PP_FileHandle handle = GetReadonlyPnaclFd(url.c_str(),
+                                              false /* is_executable */,
+                                              &file_info.token_lo,
+                                              &file_info.token_hi);
     if (handle == PP_kInvalidFileHandle) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1443,12 +1461,7 @@ void DownloadFile(PP_Instance instance,
                      kInvalidNaClFileInfo));
       return;
     }
-    // TODO(ncbray): enable the fast loading and validation paths for this type
-    // of file.
-    PP_NaClFileInfo file_info;
     file_info.handle = handle;
-    file_info.token_lo = 0;
-    file_info.token_hi = 0;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, static_cast<int32_t>(PP_OK), file_info));
@@ -1587,7 +1600,7 @@ const PPB_NaCl_Private nacl_interface = {
   &UrandomFD,
   &Are3DInterfacesDisabled,
   &BrokerDuplicateHandle,
-  &GetReadonlyPnaclFd,
+  &GetReadExecPnaclFd,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
   &PPIsNonSFIModeEnabled,

@@ -28,9 +28,10 @@ namespace nacl {
 static const int kGdbDebugStubPortUnknown = -1;
 static const int kGdbDebugStubPortUnused = 0;
 
-// Open an immutable executable file that can be mmapped.
+// Open an immutable executable file that can be mmapped (or a read-only file).
 // This function should only be called on a thread that can perform file IO.
-base::File OpenNaClExecutableImpl(const base::FilePath& file_path);
+base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
+                                bool is_executable);
 
 // Represents shared state for all NaClProcessHost objects in the browser.
 class NaClBrowser {

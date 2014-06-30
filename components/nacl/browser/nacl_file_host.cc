@@ -38,14 +38,37 @@ void NotifyRendererOfError(
   nacl_host_message_filter->Send(reply_msg);
 }
 
-base::File PnaclDoOpenFile(const base::FilePath& file_to_open) {
-  return base::File(file_to_open,
-                    base::File::FLAG_OPEN | base::File::FLAG_READ);
+typedef void (*WriteFileInfoReply)(IPC::Message* reply_msg,
+                                   IPC::PlatformFileForTransit file_desc,
+                                   uint64 file_token_lo,
+                                   uint64 file_token_hi);
+
+void DoRegisterOpenedNaClExecutableFile(
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
+    base::File file,
+    base::FilePath file_path,
+    IPC::Message* reply_msg,
+    WriteFileInfoReply write_reply_message) {
+  // IO thread owns the NaClBrowser singleton.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  uint64 file_token_lo = 0;
+  uint64 file_token_hi = 0;
+  nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
+
+  IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
+      file.Pass(),
+      nacl_host_message_filter->PeerHandle());
+
+  write_reply_message(reply_msg, file_desc, file_token_lo, file_token_hi);
+  nacl_host_message_filter->Send(reply_msg);
 }
 
 void DoOpenPnaclFile(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
+    bool is_executable,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath full_filepath;
@@ -64,46 +87,34 @@ void DoOpenPnaclFile(
     return;
   }
 
-  base::File file_to_open = PnaclDoOpenFile(full_filepath);
+  base::File file_to_open = nacl::OpenNaClReadExecImpl(full_filepath,
+                                                       is_executable);
   if (!file_to_open.IsValid()) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }
 
-  // Send the reply!
-  // Do any DuplicateHandle magic that is necessary first.
-  IPC::PlatformFileForTransit target_desc =
-      IPC::TakeFileHandleForProcess(file_to_open.Pass(),
-                                    nacl_host_message_filter->PeerHandle());
-  if (target_desc == IPC::InvalidPlatformFileForTransit()) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-    return;
+  // This function is running on the blocking pool, but the path needs to be
+  // registered in a structure owned by the IO thread.
+  // Not all PNaCl files are executable. Only register those that are
+  // executable in the NaCl file_path cache.
+  if (is_executable) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&DoRegisterOpenedNaClExecutableFile,
+                   nacl_host_message_filter,
+                   Passed(file_to_open.Pass()), full_filepath, reply_msg,
+                   static_cast<WriteFileInfoReply>(
+                       NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams)));
+  } else {
+    IPC::PlatformFileForTransit target_desc =
+        IPC::TakeFileHandleForProcess(file_to_open.Pass(),
+                                      nacl_host_message_filter->PeerHandle());
+    uint64_t dummy_file_token = 0;
+    NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams(
+        reply_msg, target_desc, dummy_file_token, dummy_file_token);
+    nacl_host_message_filter->Send(reply_msg);
   }
-  NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams(
-      reply_msg, target_desc);
-  nacl_host_message_filter->Send(reply_msg);
-}
-
-void DoRegisterOpenedNaClExecutableFile(
-    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
-    base::File file,
-    base::FilePath file_path,
-    IPC::Message* reply_msg) {
-  // IO thread owns the NaClBrowser singleton.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
-  uint64 file_token_lo = 0;
-  uint64 file_token_hi = 0;
-  nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
-
-  IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
-      file.Pass(),
-      nacl_host_message_filter->PeerHandle());
-
-  NaClHostMsg_OpenNaClExecutable::WriteReplyParams(
-      reply_msg, file_desc, file_token_lo, file_token_hi);
-  nacl_host_message_filter->Send(reply_msg);
 }
 
 // Convert the file URL into a file descriptor.
@@ -125,7 +136,8 @@ void DoOpenNaClExecutableOnThreadPool(
     return;
   }
 
-  base::File file = nacl::OpenNaClExecutableImpl(file_path);
+  base::File file = nacl::OpenNaClReadExecImpl(file_path,
+                                               true /* is_executable */);
   if (file.IsValid()) {
     // This function is running on the blocking pool, but the path needs to be
     // registered in a structure owned by the IO thread.
@@ -134,7 +146,9 @@ void DoOpenNaClExecutableOnThreadPool(
         base::Bind(
             &DoRegisterOpenedNaClExecutableFile,
             nacl_host_message_filter,
-            Passed(file.Pass()), file_path, reply_msg));
+            Passed(file.Pass()), file_path, reply_msg,
+            static_cast<WriteFileInfoReply>(
+                NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
   } else {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
@@ -148,12 +162,14 @@ namespace nacl_file_host {
 void GetReadonlyPnaclFd(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
+    bool is_executable,
     IPC::Message* reply_msg) {
   if (!BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
           base::Bind(&DoOpenPnaclFile,
                      nacl_host_message_filter,
                      filename,
+                     is_executable,
                      reply_msg))) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
   }

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Jun 26 14:23:46 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Jun 27 15:10:18 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -256,10 +256,11 @@ struct PPB_NaCl_Private_1_0 {
                                    PP_FileHandle* target_handle,
                                    uint32_t desired_access,
                                    uint32_t options);
-  /* Returns a read-only file descriptor for a url for pnacl translator tools,
-   * or an invalid handle on failure.
+  /* Returns a read-only (but executable) file descriptor / file info for
+   * a url for pnacl translator tools. Returns an invalid handle on failure.
    */
-  PP_FileHandle (*GetReadonlyPnaclFd)(const char* url);
+  void (*GetReadExecPnaclFd)(const char* url,
+                             struct PP_NaClFileInfo* out_file_info);
   /* This creates a temporary file that will be deleted by the time
    * the last handle is closed (or earlier on POSIX systems), and
    * returns a posix handle to that temporary file.

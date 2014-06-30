@@ -52,6 +52,12 @@ class Manifest;
 
 int32_t ConvertFileDescriptor(PP_FileHandle handle);
 
+const PP_NaClFileInfo kInvalidNaClFileInfo = {
+  PP_kInvalidFileHandle,
+  0,  // token_lo
+  0,  // token_hi
+};
+
 class Plugin : public pp::Instance {
  public:
   explicit Plugin(PP_Instance instance);
@@ -102,12 +108,12 @@ class Plugin : public pp::Instance {
   bool LoadNaClModuleContinuation(int32_t pp_error);
 
   // Load support.
-  // A helper SRPC NaCl module can be loaded given a PP_FileHandle.
+  // A helper SRPC NaCl module can be loaded given a PP_NaClFileInfo.
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
   NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
-                                       PP_FileHandle file_handle,
+                                       PP_NaClFileInfo file_info,
                                        ErrorInfo* error_info);
 
   // Report an error that was encountered while loading a module.
@@ -140,11 +146,11 @@ class Plugin : public pp::Instance {
   // uma_interface_ normally.
   void HistogramTimeSmall(const std::string& name, int64_t ms);
 
-  // Load a nacl module from the file specified in file_handle.
+  // Load a nacl module from the file specified in file_info.
   // Only to be used from a background (non-main) thread for the PNaCl
   // translator. This will fully initialize the |subprocess| if the load was
   // successful.
-  bool LoadHelperNaClModule(PP_FileHandle file_handle,
+  bool LoadHelperNaClModule(PP_NaClFileInfo file_info,
                             NaClSubprocess* subprocess,
                             const SelLdrStartParams& params);
 

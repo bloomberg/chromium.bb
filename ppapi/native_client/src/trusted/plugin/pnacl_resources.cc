@@ -24,11 +24,17 @@ nacl::string GetFullUrl(const nacl::string& partial_url) {
 
 }  // namespace
 
+PnaclResources::PnaclResources(Plugin* plugin)
+    : plugin_(plugin) {
+  llc_file_info_ = kInvalidNaClFileInfo;
+  ld_file_info_ = kInvalidNaClFileInfo;
+}
+
 PnaclResources::~PnaclResources() {
-  if (llc_file_handle_ != PP_kInvalidFileHandle)
-    CloseFileHandle(llc_file_handle_);
-  if (ld_file_handle_ != PP_kInvalidFileHandle)
-    CloseFileHandle(ld_file_handle_);
+  if (llc_file_info_.handle != PP_kInvalidFileHandle)
+    CloseFileHandle(llc_file_info_.handle);
+  if (ld_file_info_.handle != PP_kInvalidFileHandle)
+    CloseFileHandle(ld_file_info_.handle);
 }
 
 bool PnaclResources::ReadResourceInfo() {
@@ -48,15 +54,15 @@ bool PnaclResources::ReadResourceInfo() {
   return true;
 }
 
-PP_FileHandle PnaclResources::TakeLlcFileHandle() {
-  PP_FileHandle to_return = llc_file_handle_;
-  llc_file_handle_ = PP_kInvalidFileHandle;
+PP_NaClFileInfo PnaclResources::TakeLlcFileInfo() {
+  PP_NaClFileInfo to_return = llc_file_info_;
+  llc_file_info_ = kInvalidNaClFileInfo;
   return to_return;
 }
 
-PP_FileHandle PnaclResources::TakeLdFileHandle() {
-  PP_FileHandle to_return = ld_file_handle_;
-  ld_file_handle_ = PP_kInvalidFileHandle;
+PP_NaClFileInfo PnaclResources::TakeLdFileInfo() {
+  PP_NaClFileInfo to_return = ld_file_info_;
+  ld_file_info_ = kInvalidNaClFileInfo;
   return to_return;
 }
 
@@ -64,12 +70,12 @@ bool PnaclResources::StartLoad() {
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
 
   // Do a blocking load of each of the resources.
-  llc_file_handle_ =
-      plugin_->nacl_interface()->GetReadonlyPnaclFd(llc_tool_name_.c_str());
-  ld_file_handle_ =
-      plugin_->nacl_interface()->GetReadonlyPnaclFd(ld_tool_name_.c_str());
-  return (llc_file_handle_ != PP_kInvalidFileHandle &&
-          ld_file_handle_ != PP_kInvalidFileHandle);
+  plugin_->nacl_interface()->GetReadExecPnaclFd(llc_tool_name_.c_str(),
+                                                &llc_file_info_);
+  plugin_->nacl_interface()->GetReadExecPnaclFd(ld_tool_name_.c_str(),
+                                                &ld_file_info_);
+  return (llc_file_info_.handle != PP_kInvalidFileHandle &&
+          ld_file_info_.handle != PP_kInvalidFileHandle);
 }
 
 }  // namespace plugin
