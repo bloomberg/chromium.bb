@@ -31,7 +31,6 @@
 #ifndef WebMediaSource_h
 #define WebMediaSource_h
 
-#include "WebCommon.h"
 #include "WebTimeRange.h"
 #include "WebURL.h"
 
@@ -53,27 +52,8 @@ public:
         EndOfStreamStatusDecodeError,
     };
 
-    enum FrameProcessorChoice {
-        UseLegacyFrameProcessor,
-        UseNewFrameProcessor
-    };
-
     virtual ~WebMediaSource() { }
-    // FIXME: Remove addSourceBuffer() that has FrameProcessorChoice, and remove
-    // the default implementations for addSourceBuffer() once Chromium
-    // implementation of the addSourceBuffer() with no FrameProcessorChoice has
-    // landed. See http://crbug.com/249422.
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, const FrameProcessorChoice, WebSourceBuffer** webSourceBuffer)
-    {
-        // This default implementation should never be called for real.
-        BLINK_ASSERT_NOT_REACHED();
-        return AddStatusReachedIdLimit;
-    }
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer** webSourceBuffer)
-    {
-        return addSourceBuffer(type, codecs, WebMediaSource::UseNewFrameProcessor, webSourceBuffer);
-    }
-
+    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer**) = 0;
     virtual double duration() = 0;
     virtual void setDuration(double) = 0;
     virtual void markEndOfStream(EndOfStreamStatus) = 0;
