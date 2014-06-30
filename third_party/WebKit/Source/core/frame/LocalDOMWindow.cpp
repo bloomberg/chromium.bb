@@ -1812,6 +1812,10 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
     if (!firstFrame)
         return nullptr;
 
+    UseCounter::count(*activeDocument, UseCounter::DOMWindowOpen);
+    if (!windowFeaturesString.isEmpty())
+        UseCounter::count(*activeDocument, UseCounter::DOMWindowOpenFeatures);
+
     if (!enteredWindow->allowPopUp()) {
         // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
         // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
