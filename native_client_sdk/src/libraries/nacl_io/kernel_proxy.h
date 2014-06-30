@@ -56,8 +56,10 @@ class KernelProxy : protected KernelObject {
   bool RegisterFsType(const char* fs_type, fuse_operations* fuse_ops);
   bool UnregisterFsType(const char* fs_type);
 
-  bool RegisterExitHandler(nacl_io_exit_handler_t exit_handler,
-                           void* user_data);
+  void SetExitCallback(nacl_io_exit_callback_t exit_callback, void* user_data);
+
+  void SetMountCallback(nacl_io_mount_callback_t mount_callback,
+                        void* user_data);
 
   virtual int pipe(int pipefds[2]);
 
@@ -228,8 +230,10 @@ class KernelProxy : protected KernelObject {
   PepperInterface* ppapi_;
   static KernelProxy* s_instance_;
   struct sigaction sigwinch_handler_;
-  nacl_io_exit_handler_t exit_handler_;
-  void* exit_handler_user_data_;
+  nacl_io_exit_callback_t exit_callback_;
+  void* exit_callback_user_data_;
+  nacl_io_mount_callback_t mount_callback_;
+  void* mount_callback_user_data_;
 #ifdef PROVIDES_SOCKET_API
   HostResolver host_resolver_;
 #endif

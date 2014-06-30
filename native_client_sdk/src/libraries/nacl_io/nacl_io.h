@@ -8,11 +8,20 @@
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/ppb.h>
 
+#include "nacl_io/ostypes.h"
 #include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 
-typedef void (*nacl_io_exit_handler_t)(int status, void* user_data);
+typedef void (*nacl_io_exit_callback_t)(int status, void* user_data);
+
+typedef void (*nacl_io_mount_callback_t)(const char* source,
+                                         const char* target,
+                                         const char* filesystemtype,
+                                         unsigned long mountflags,
+                                         const void* data,
+                                         dev_t dev,
+                                         void* user_data);
 
 /**
  * Initialize nacl_io.
@@ -42,8 +51,8 @@ void nacl_io_init();
  */
 void nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface);
 
-int nacl_io_register_exit_handler(nacl_io_exit_handler_t exit_handler,
-                                  void* user_data);
+void nacl_io_set_exit_callback(nacl_io_exit_callback_t exit_callback,
+                               void* user_data);
 
 /**
  * Mount a new filesystem type.
@@ -186,6 +195,19 @@ int nacl_io_register_fs_type(const char* fs_type,
  * @return 0 on success, -1 on failure (with errno set).
  */
 int nacl_io_unregister_fs_type(const char* fs_type);
+
+/**
+ * Set a mount callback.
+ *
+ * This callback is called whenever mount() succeeds. This callback can be used
+ * to get the dev number of the newly-mounted filesystem.
+ *
+ * @param[in] callback The callback to set, or NULL.
+ * @param[in] user_data User data that will be passed to the callback.
+ * @return 0 on success, -1 on failure.
+ */
+void nacl_io_set_mount_callback(nacl_io_mount_callback_t callback,
+                                void* user_data);
 
 EXTERN_C_END
 

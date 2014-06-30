@@ -53,7 +53,10 @@ namespace nacl_io {
 KernelProxy::KernelProxy()
     : dev_(0),
       ppapi_(NULL),
-      exit_handler_(NULL),
+      exit_callback_(NULL),
+      exit_callback_user_data_(NULL),
+      mount_callback_(NULL),
+      mount_callback_user_data_(NULL),
       signal_emitter_(new EventEmitter) {
   memset(&sigwinch_handler_, 0, sizeof(sigwinch_handler_));
   sigwinch_handler_.sa_handler = SIG_DFL;
@@ -153,13 +156,16 @@ bool KernelProxy::UnregisterFsType(const char* fs_type) {
   return true;
 }
 
-bool KernelProxy::RegisterExitHandler(nacl_io_exit_handler_t exit_handler,
-                                      void* user_data) {
-  if (exit_handler_ != NULL)
-    return false;
-  exit_handler_ = exit_handler;
-  exit_handler_user_data_ = user_data;
-  return true;
+void KernelProxy::SetExitCallback(nacl_io_exit_callback_t exit_callback,
+                                  void* user_data) {
+  exit_callback_ = exit_callback;
+  exit_callback_user_data_ = user_data;
+}
+
+void KernelProxy::SetMountCallback(nacl_io_mount_callback_t mount_callback,
+                                   void* user_data) {
+  mount_callback_ = mount_callback;
+  mount_callback_user_data_ = user_data;
 }
 
 int KernelProxy::open_resource(const char* path) {
@@ -287,8 +293,8 @@ int KernelProxy::chdir(const char* path) {
 }
 
 void KernelProxy::exit(int status) {
-  if (exit_handler_)
-    exit_handler_(status, exit_handler_user_data_);
+  if (exit_callback_)
+    exit_callback_(status, exit_callback_user_data_);
 }
 
 char* KernelProxy::getcwd(char* buf, size_t size) {
@@ -468,6 +474,17 @@ Error KernelProxy::MountInternal(const char* source,
   }
 
   *out_filesystem = fs;
+
+  if (mount_callback_) {
+    mount_callback_(source,
+                    target,
+                    filesystemtype,
+                    mountflags,
+                    data,
+                    fs->dev(),
+                    mount_callback_user_data_);
+  }
+
   return 0;
 }
 

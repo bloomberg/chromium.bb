@@ -293,7 +293,7 @@ bool PSInstance::ProcessProperties() {
   // If PS_EXIT_MESSAGE is set in the environment then we perform a handshake
   // with JavaScript when program exits.
   if (exit_message_ != NULL)
-    nacl_io_register_exit_handler(HandleExitStatic, this);
+    nacl_io_set_exit_callback(HandleExitStatic, this);
 
   // Set line buffering on stdout and stderr
 #if !defined(WIN32)

@@ -592,7 +592,7 @@ class KernelProxyMountTest : public ::testing::Test {
     ki_uninit();
   }
 
- private:
+ protected:
   KernelProxyMountTest_KernelProxy kp_;
 };
 
@@ -632,6 +632,32 @@ TEST_F(KernelProxyMountTest, MountAndIoctl) {
 
   EXPECT_EQ(0, ki_ioctl_wrapper(fd, 0xdeadbeef));
   EXPECT_EQ(true, g_fs_ioctl_called);
+}
+
+static void mount_callback(const char* source,
+                           const char* target,
+                           const char* filesystemtype,
+                           unsigned long mountflags,
+                           const void* data,
+                           dev_t dev,
+                           void* user_data) {
+  EXPECT_STREQ("/", source);
+  EXPECT_STREQ("/mnt1", target);
+  EXPECT_STREQ("initfs", filesystemtype);
+  EXPECT_EQ(0, mountflags);
+  EXPECT_STREQ("", (const char*) data);
+  EXPECT_EQ(g_fs_dev, dev);
+
+  bool* callback_called = static_cast<bool*>(user_data);
+  *callback_called = true;
+}
+
+TEST_F(KernelProxyMountTest, MountCallback) {
+  bool callback_called = false;
+  kp_.SetMountCallback(&mount_callback, &callback_called);
+  ASSERT_EQ(0, ki_mount("/", "/mnt1", "initfs", 0, ""));
+  ASSERT_NE(-1, g_fs_dev);
+  EXPECT_EQ(true, callback_called);
 }
 
 namespace {
