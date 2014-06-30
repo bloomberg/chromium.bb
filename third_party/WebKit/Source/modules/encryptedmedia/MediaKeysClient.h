@@ -25,8 +25,6 @@ protected:
     virtual ~MediaKeysClient() { }
 };
 
-void provideMediaKeysTo(Page&, MediaKeysClient*);
-
 } // namespace WebCore
 
 #endif // MediaKeysClient_h
