@@ -208,7 +208,6 @@ Gallery.prototype.initDom_ = function() {
   this.mosaicMode_ = new MosaicMode(content,
                                     this.dataModel_,
                                     this.selectionModel_,
-                                    this.metadataCache_,
                                     this.volumeManager_,
                                     this.toggleMode_.bind(this, null));
 

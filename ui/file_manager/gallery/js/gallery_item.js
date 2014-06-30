@@ -28,6 +28,8 @@ Gallery.Item = function(entry, metadata) {
    * @private
    */
   this.original_ = true;
+
+  Object.seal(this);
 };
 
 /**
@@ -39,6 +41,14 @@ Gallery.Item.prototype.getEntry = function() { return this.entry_; };
  * @return {Object} Metadata.
  */
 Gallery.Item.prototype.getMetadata = function() { return this.metadata_;  };
+
+/**
+ * Sets the metadata.
+ * @param {Object} metadata New metadata.
+ */
+Gallery.Item.prototype.setMetadata = function(metadata) {
+  this.metadata_ = Object.freeze(metadata);
+};
 
 /**
  * @return {string} File name.

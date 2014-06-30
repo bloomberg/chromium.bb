@@ -156,8 +156,8 @@ SlideMode.prototype.initDom_ = function() {
   util.createChild(this.arrowRight_);
 
   this.ribbonSpacer_ = util.createChild(this.toolbar_, 'ribbon-spacer');
-  this.ribbon_ = new Ribbon(this.document_,
-      this.metadataCache_, this.dataModel_, this.selectionModel_);
+  this.ribbon_ = new Ribbon(
+      this.document_, this.dataModel_, this.selectionModel_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
   // Error indicator.
@@ -257,12 +257,16 @@ SlideMode.prototype.enter = function(
   // The latest |leave| call might have left the image animating. Remove it.
   this.unloadImage_();
 
-  if (this.getItemCount_() === 0) {
-    this.displayedIndex_ = -1;
-    //TODO(kaznacheev) Show this message in the grid mode too.
-    this.showErrorBanner_('GALLERY_NO_IMAGES');
-    loadDone();
-  } else {
+  new Promise(function(fulfill) {
+    // If the items are empty, just show the error message.
+    if (this.getItemCount_() === 0) {
+      this.displayedIndex_ = -1;
+      //TODO(kaznacheev) Show this message in the grid mode too.
+      this.showErrorBanner_('GALLERY_NO_IMAGES');
+      fulfill();
+      return;
+    }
+
     // Remember the selection if it is empty or multiple. It will be restored
     // in |leave| if the user did not changing the selection manually.
     var currentSelection = this.selectionModel_.selectedIndexes;
@@ -276,17 +280,39 @@ SlideMode.prototype.enter = function(
     this.select(Math.max(0, this.getSelectedIndex()));
     this.displayedIndex_ = this.getSelectedIndex();
 
-    var selectedItem = this.getSelectedItem();
     // Show the selected item ASAP, then complete the initialization
     // (loading the ribbon thumbnails can take some time).
-    this.metadataCache_.getOne(selectedItem.getEntry(), Gallery.METADATA_TYPE,
-        function(metadata) {
-          this.loadItem_(selectedItem.getEntry(), metadata,
-              zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
-              displayCallback, loadDone);
-        }.bind(this));
+    var selectedItem = this.getSelectedItem();
 
-  }
+    // Load the image of the item.
+    this.loadItem_(
+        selectedItem.getEntry(),
+        selectedItem.getMetadata(),
+        zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
+        displayCallback,
+        function(loadType, delay) {
+          fulfill(delay);
+        });
+  }.bind(this)).then(function(delay) {
+    // Turn the mode active.
+    this.active_ = true;
+    ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
+    this.ribbon_.enable();
+
+    // Register handlers.
+    this.selectionModel_.addEventListener('change', this.onSelectionBound_);
+    this.dataModel_.addEventListener('splice', this.onSpliceBound_);
+    this.dataModel_.addEventListener('content', this.onContentBound_);
+
+    // Wait 1000ms after the animation is done, then prefetch the next image.
+    this.requestPrefetch(1, delay + 1000);
+
+    // Call load callback.
+    if (loadCallback)
+      loadCallback();
+  }.bind(this)).catch(function(error) {
+    console.error(error.stack, error);
+  });
 };
 
 /**
@@ -486,24 +512,25 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var selectedItem = this.getSelectedItem();
   this.currentUniqueKey_++;
   var selectedUniqueKey = this.currentUniqueKey_;
-  var onMetadata = function(metadata) {
-    // Discard, since another load has been invoked after this one.
-    if (selectedUniqueKey != this.currentUniqueKey_) return;
-    this.loadItem_(selectedItem.getEntry(), metadata,
-        new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
-        function() {} /* no displayCallback */,
-        function(loadType, delay) {
-          // Discard, since another load has been invoked after this one.
-          if (selectedUniqueKey != this.currentUniqueKey_) return;
-          if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
-            this.requestPrefetch(step, delay);
-          }
-          if (this.isSlideshowPlaying_())
-            this.scheduleNextSlide_();
-        }.bind(this));
-  }.bind(this);
-  this.metadataCache_.getOne(
-      selectedItem.getEntry(), Gallery.METADATA_TYPE, onMetadata);
+
+  // Discard, since another load has been invoked after this one.
+  if (selectedUniqueKey != this.currentUniqueKey_)
+    return;
+
+  this.loadItem_(
+      selectedItem.getEntry(),
+      selectedItem.getMetadata(),
+      new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
+      function() {} /* no displayCallback */,
+      function(loadType, delay) {
+        // Discard, since another load has been invoked after this one.
+        if (selectedUniqueKey != this.currentUniqueKey_)
+          return;
+        if (shouldPrefetch(loadType, step, this.sequenceLength_))
+          this.requestPrefetch(step, delay);
+        if (this.isSlideshowPlaying_())
+          this.scheduleNextSlide_();
+      }.bind(this));
 };
 
 /**
@@ -638,8 +665,6 @@ SlideMode.prototype.selectLast = function() {
  */
 SlideMode.prototype.loadItem_ = function(
     entry, metadata, effect, displayCallback, loadCallback) {
-  this.selectedImageMetadata_ = MetadataCache.cloneMetadata(metadata);
-
   this.showSpinner_(true);
 
   var loadDone = function(loadType, delay, error) {
@@ -872,19 +897,18 @@ SlideMode.prototype.updateThumbnails = function() {
 SlideMode.prototype.saveCurrentImage_ = function(callback) {
   var item = this.getSelectedItem();
   var oldEntry = item.getEntry();
+  var oldMetadata = item.getMetadata();
   var canvas = this.imageView_.getCanvas();
 
   this.showSpinner_(true);
   var metadataEncoder = ImageEncoder.encodeMetadata(
-      this.selectedImageMetadata_.media, canvas, 1 /* quality */);
-  var selectedImageMetadata = ContentProvider.ConvertContentMetadata(
-      metadataEncoder.getMetadata(), this.selectedImageMetadata_);
-  if (selectedImageMetadata.filesystem)
-    selectedImageMetadata.filesystem.modificationTime = new Date();
-  this.selectedImageMetadata_ = selectedImageMetadata;
-  this.metadataCache_.set(oldEntry,
-                          Gallery.METADATA_TYPE,
-                          selectedImageMetadata);
+      item.getMetadata(), canvas, 1 /* quality */);
+  var newMetadata = ContentProvider.ConvertContentMetadata(
+      metadataEncoder.getMetadata(),
+      MetadataCache.cloneMetadata(item.getMetadata()));
+  if (newMetadata.filesystem)
+    newMetadata.filesystem.modificationTime = new Date();
+  item.setMetadata(newMetadata);
 
   item.saveToFile(
       this.context_.saveDirEntry,
@@ -900,7 +924,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         var event = new Event('content');
         event.item = item;
         event.oldEntry = oldEntry;
-        event.metadata = selectedImageMetadata;
+        event.metadata = newMetadata;
         this.dataModel_.dispatchEvent(event);
 
         // Allow changing the 'Overwrite original' setting only if the user
@@ -913,9 +937,16 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
           ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
         }
 
-        if (!util.isSameEntry(oldEntry, item.getEntry())) {
+        if (util.isSameEntry(oldEntry, item.getEntry())) {
+          this.metadataCache_.set(
+              item.getEntry(),
+              Gallery.METADATA_TYPE,
+              newMetadata);
+        } else {
           this.dataModel_.splice(
-              this.getSelectedIndex(), 0, new Gallery.Item(oldEntry));
+              this.getSelectedIndex(),
+              0,
+              new Gallery.Item(oldEntry, oldMetadata));
           // The ribbon will ignore the splice above and redraw after the
           // select call below (while being obscured by the Editor toolbar,
           // so there is no need for nice animation here).
@@ -937,7 +968,6 @@ SlideMode.prototype.onContentChange_ = function(event) {
   var newEntry = event.item.getEntry();
   if (util.isSameEntry(newEntry, event.oldEntry))
     this.imageView_.changeEntry(newEntry);
-  this.metadataCache_.clear(event.oldEntry, Gallery.METADATA_TYPE);
 };
 
 /**

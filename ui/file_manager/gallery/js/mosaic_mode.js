@@ -8,17 +8,14 @@
  * @param {Element} container Content container.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @param {function} toggleMode Function to switch to the Slide mode.
  * @constructor
  */
 function MosaicMode(
-    container, dataModel, selectionModel, metadataCache, volumeManager,
-    toggleMode) {
+    container, dataModel, selectionModel, volumeManager, toggleMode) {
   this.mosaic_ = new Mosaic(
-      container.ownerDocument, dataModel, selectionModel, metadataCache,
-      volumeManager);
+      container.ownerDocument, dataModel, selectionModel, volumeManager);
   container.appendChild(this.mosaic_);
 
   this.toggleMode_ = toggleMode;
@@ -29,28 +26,28 @@ function MosaicMode(
 /**
  * @return {Mosaic} The mosaic control.
  */
-MosaicMode.prototype.getMosaic = function() { return this.mosaic_ };
+MosaicMode.prototype.getMosaic = function() { return this.mosaic_; };
 
 /**
  * @return {string} Mode name.
  */
-MosaicMode.prototype.getName = function() { return 'mosaic' };
+MosaicMode.prototype.getName = function() { return 'mosaic'; };
 
 /**
  * @return {string} Mode title.
  */
-MosaicMode.prototype.getTitle = function() { return 'GALLERY_MOSAIC' };
+MosaicMode.prototype.getTitle = function() { return 'GALLERY_MOSAIC'; };
 
 /**
  * Execute an action (this mode has no busy state).
  * @param {function} action Action to execute.
  */
-MosaicMode.prototype.executeWhenReady = function(action) { action() };
+MosaicMode.prototype.executeWhenReady = function(action) { action(); };
 
 /**
  * @return {boolean} Always true (no toolbar fading in this mode).
  */
-MosaicMode.prototype.hasActiveTool = function() { return true };
+MosaicMode.prototype.hasActiveTool = function() { return true; };
 
 /**
  * Keydown handler.
@@ -78,16 +75,13 @@ MosaicMode.prototype.onKeyDown = function(event) {
  * @param {Document} document Document.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @return {Element} Mosaic element.
  * @constructor
  */
-function Mosaic(document, dataModel, selectionModel, metadataCache,
-    volumeManager) {
+function Mosaic(document, dataModel, selectionModel, volumeManager) {
   var self = document.createElement('div');
-  Mosaic.decorate(
-      self, dataModel, selectionModel, metadataCache, volumeManager);
+  Mosaic.decorate(self, dataModel, selectionModel, volumeManager);
   return self;
 }
 
@@ -117,17 +111,15 @@ Mosaic.ANIMATED_SCROLL_DURATION = 500;
  * @param {Mosaic} self Self pointer.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  */
 Mosaic.decorate = function(
-    self, dataModel, selectionModel, metadataCache, volumeManager) {
+    self, dataModel, selectionModel, volumeManager) {
   self.__proto__ = Mosaic.prototype;
   self.className = 'mosaic';
 
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
-  self.metadataCache_ = metadataCache;
   self.volumeManager_ = volumeManager;
 
   // Initialization is completed lazily on the first call to |init|.
@@ -286,50 +278,12 @@ Mosaic.prototype.scrollIntoView = function(index) {
  * Initializes multiple tiles.
  *
  * @param {Array.<Mosaic.Tile>} tiles Array of tiles.
- * @param {function()=} opt_callback Completion callback.
  * @private
  */
-Mosaic.prototype.initTiles_ = function(tiles, opt_callback) {
-  // We do not want to use tile indices in asynchronous operations because they
-  // do not survive data model splices. Copy tile references instead.
-  tiles = tiles.slice();
-
-  // Throttle the metadata access so that we do not overwhelm the file system.
-  var MAX_CHUNK_SIZE = 10;
-
-  var loadChunk = function() {
-    if (!tiles.length) {
-      if (opt_callback) opt_callback();
-      return;
-    }
-    var chunkSize = Math.min(tiles.length, MAX_CHUNK_SIZE);
-    var loaded = 0;
-    for (var i = 0; i !== chunkSize; i++) {
-      this.initTile_(tiles.shift(), function() {
-        if (++loaded === chunkSize) {
-          this.layout();
-          loadChunk();
-        }
-      }.bind(this));
-    }
-  }.bind(this);
-
-  loadChunk();
-};
-
-/**
- * Initializes a single tile.
- *
- * @param {Mosaic.Tile} tile Tile.
- * @param {function()} callback Completion callback.
- * @private
- */
-Mosaic.prototype.initTile_ = function(tile, callback) {
-  var onImageMeasured = callback;
-  this.metadataCache_.getOne(tile.getItem().getEntry(), Gallery.METADATA_TYPE,
-      function(metadata) {
-        tile.init(metadata, onImageMeasured);
-      });
+Mosaic.prototype.initTiles_ = function(tiles) {
+  for (var i = 0; i < tiles.length; i++) {
+    tiles[i].init();
+  }
 };
 
 /**
@@ -337,7 +291,7 @@ Mosaic.prototype.initTile_ = function(tile, callback) {
  */
 Mosaic.prototype.reload = function() {
   this.layoutModel_.reset_();
-  this.tiles_.forEach(function(t) { t.markUnloaded() });
+  this.tiles_.forEach(function(t) { t.markUnloaded(); });
   this.initTiles_(this.tiles_);
 };
 
@@ -507,12 +461,11 @@ Mosaic.prototype.onContentChange_ = function(event) {
     console.error('Content changed for unselected item');
 
   this.layoutModel_.invalidateFromTile_(index);
-  this.tiles_[index].init(event.metadata, function() {
-        this.tiles_[index].unload();
-        this.tiles_[index].load(
-            Mosaic.Tile.LoadMode.HIGH_DPI,
-            this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
-      }.bind(this));
+  this.tiles_[index].init();
+  this.tiles_[index].unload();
+  this.tiles_[index].load(
+      Mosaic.Tile.LoadMode.HIGH_DPI,
+      this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
 };
 
 /**
@@ -1789,11 +1742,9 @@ Mosaic.Tile.prototype.markUnloaded = function() {
 /**
  * Initializes the thumbnail in the tile. Does not load an image, but sets
  * target dimensions using metadata.
- *
- * @param {Object} metadata Metadata object.
- * @param {function()} onImageMeasured Image measured callback.
  */
-Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
+Mosaic.Tile.prototype.init = function() {
+  var metadata = this.getItem().getMetadata();
   this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
@@ -1806,8 +1757,9 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
-      this.hidpiEmbedded_ ? ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                            ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+      this.hidpiEmbedded_ ?
+          ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+          ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
       priority);
 
   // If no hidpi embedded thumbnail available, then use the low resolution
@@ -1823,37 +1775,38 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
              // are loaded as soon as possible.
   }
 
-  var setDimensions = function(width, height) {
-    if (width > height) {
-      if (width > Mosaic.Tile.MAX_CONTENT_SIZE) {
-        height = Math.round(height * Mosaic.Tile.MAX_CONTENT_SIZE / width);
-        width = Mosaic.Tile.MAX_CONTENT_SIZE;
-      }
-    } else {
-      if (height > Mosaic.Tile.MAX_CONTENT_SIZE) {
-        width = Math.round(width * Mosaic.Tile.MAX_CONTENT_SIZE / height);
-        height = Mosaic.Tile.MAX_CONTENT_SIZE;
-      }
-    }
-    this.maxContentHeight_ = Math.max(Mosaic.Tile.MIN_CONTENT_SIZE, height);
-    this.aspectRatio_ = width / height;
-    onImageMeasured();
-  }.bind(this);
-
   // Dimensions are always acquired from the metadata. For local files, it is
   // extracted from headers. For Drive files, it is received via the Drive API.
   // If the dimensions are not available, then the fallback dimensions will be
   // used (same as for the generic icon).
+  var width;
+  var height;
   if (metadata.media && metadata.media.width) {
-    setDimensions(metadata.media.width, metadata.media.height);
+    width = metadata.media.width;
+    height = metadata.media.height;
   } else if (metadata.drive && metadata.drive.imageWidth &&
              metadata.drive.imageHeight) {
-    setDimensions(metadata.drive.imageWidth, metadata.drive.imageHeight);
+    width = metadata.drive.imageWidth;
+    height = metadata.drive.imageHeight;
   } else {
     // No dimensions in metadata, then use the generic dimensions.
-    setDimensions(Mosaic.Tile.GENERIC_ICON_SIZE,
-                  Mosaic.Tile.GENERIC_ICON_SIZE);
+    width = Mosaic.Tile.GENERIC_ICON_SIZE;
+    height = Mosaic.Tile.GENERIC_ICON_SIZE;
   }
+
+  if (width > height) {
+    if (width > Mosaic.Tile.MAX_CONTENT_SIZE) {
+      height = Math.round(height * Mosaic.Tile.MAX_CONTENT_SIZE / width);
+      width = Mosaic.Tile.MAX_CONTENT_SIZE;
+    }
+  } else {
+    if (height > Mosaic.Tile.MAX_CONTENT_SIZE) {
+      width = Math.round(width * Mosaic.Tile.MAX_CONTENT_SIZE / height);
+      height = Mosaic.Tile.MAX_CONTENT_SIZE;
+    }
+  }
+  this.maxContentHeight_ = Math.max(Mosaic.Tile.MIN_CONTENT_SIZE, height);
+  this.aspectRatio_ = width / height;
 };
 
 /**
