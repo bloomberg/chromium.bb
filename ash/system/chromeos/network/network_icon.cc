@@ -4,15 +4,14 @@
 
 #include "ash/system/chromeos/network/network_icon.h"
 
-#include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -28,6 +27,7 @@
 using chromeos::DeviceState;
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
+using chromeos::NetworkPortalDetector;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
@@ -643,9 +643,10 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
 bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
   bool behind_captive_portal = false;
   if (network) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+    NetworkPortalDetector::CaptivePortalState state =
+        NetworkPortalDetector::Get()->GetCaptivePortalState(network->path());
     behind_captive_portal =
-        delegate->IsNetworkBehindCaptivePortal(network->path());
+        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   }
 
   if (behind_captive_portal == behind_captive_portal_)

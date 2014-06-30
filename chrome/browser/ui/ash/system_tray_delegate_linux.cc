@@ -286,11 +286,6 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
   virtual void ActiveUserWasChanged() OVERRIDE {
   }
 
-  virtual bool IsNetworkBehindCaptivePortal(
-      const std::string& service_path) const OVERRIDE {
-    return false;
-  }
-
   virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE {
     return false;
   }

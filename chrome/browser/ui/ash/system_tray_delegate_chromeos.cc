@@ -900,13 +900,6 @@ void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   GetSystemTrayNotifier()->NotifyUserUpdate();
 }
 
-bool SystemTrayDelegateChromeOS::IsNetworkBehindCaptivePortal(
-    const std::string& service_path) const {
-  NetworkPortalDetector::CaptivePortalState state =
-      NetworkPortalDetector::Get()->GetCaptivePortalState(service_path);
-  return state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-}
-
 bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
   return search_key_mapped_to_ == input_method::kCapsLockKey;
 }
