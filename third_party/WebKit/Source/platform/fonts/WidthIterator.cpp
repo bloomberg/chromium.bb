@@ -42,7 +42,6 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     , m_currentCharacter(0)
     , m_runWidthSoFar(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
-    , m_finalRoundingWidth(0)
     , m_typesettingFeatures(font->fontDescription().typesettingFeatures())
     , m_fallbackFonts(fallbackFonts)
     , m_accountForGlyphBounds(accountForGlyphBounds)
@@ -136,11 +135,6 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
     bool rtl = m_run.rtl();
     bool hasExtraSpacing = (m_font->fontDescription().letterSpacing() || m_font->fontDescription().wordSpacing() || m_expansion) && !m_run.spacingDisabled();
 
-    float widthSinceLastRounding = m_runWidthSoFar;
-    m_runWidthSoFar = floorf(m_runWidthSoFar);
-    widthSinceLastRounding -= m_runWidthSoFar;
-
-    float lastRoundingWidth = m_finalRoundingWidth;
     FloatRect bounds;
 
     const SimpleFontData* primaryFont = m_font->primaryFont();
@@ -161,19 +155,12 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
         // Now that we have a glyph and font data, get its width.
         float width;
         if (character == '\t' && m_run.allowTabs())
-            width = m_font->tabWidth(*fontData, m_run.tabSize(), m_run.xPos() + m_runWidthSoFar + widthSinceLastRounding);
+            width = m_font->tabWidth(*fontData, m_run.tabSize(), m_run.xPos() + m_runWidthSoFar);
         else {
             width = fontData->widthForGlyph(glyph);
 
             // SVG uses horizontalGlyphStretch(), when textLength is used to stretch/squeeze text.
             width *= m_run.horizontalGlyphStretch();
-
-            // We special case spaces in two ways when applying word rounding.
-            // First, we round spaces to an adjusted width in all fonts.
-            // Second, in fixed-pitch fonts we ensure that all characters that
-            // match the width of the space character have the same width as the space character.
-            if (m_run.applyWordRounding() && width == fontData->spaceWidth() && (fontData->pitch() == FixedPitch || glyph == fontData->spaceGlyph()))
-                width = fontData->adjustedSpaceWidth();
         }
 
         if (fontData != lastFontData && width) {
@@ -205,11 +192,10 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
             if (treatAsSpace || (expandAroundIdeographs && Character::isCJKIdeographOrSymbol(character))) {
                 // Distribute the run's total expansion evenly over all expansion opportunities in the run.
                 if (m_expansion) {
-                    float previousExpansion = m_expansion;
                     if (!treatAsSpace && !m_isAfterExpansion) {
                         // Take the expansion opportunity before this ideograph.
                         m_expansion -= m_expansionPerOpportunity;
-                        float expansionAtThisOpportunity = !m_run.applyWordRounding() ? m_expansionPerOpportunity : roundf(previousExpansion) - roundf(m_expansion);
+                        float expansionAtThisOpportunity = m_expansionPerOpportunity;
                         m_runWidthSoFar += expansionAtThisOpportunity;
                         if (glyphBuffer) {
                             if (glyphBuffer->isEmpty()) {
@@ -220,12 +206,11 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
                             } else
                                 glyphBuffer->expandLastAdvance(expansionAtThisOpportunity);
                         }
-                        previousExpansion = m_expansion;
                     }
                     if (m_run.allowsTrailingExpansion() || (m_run.ltr() && textIterator.currentCharacter() + advanceLength < static_cast<size_t>(m_run.length()))
                         || (m_run.rtl() && textIterator.currentCharacter())) {
                         m_expansion -= m_expansionPerOpportunity;
-                        width += !m_run.applyWordRounding() ? m_expansionPerOpportunity : roundf(previousExpansion) - roundf(m_expansion);
+                        width += m_expansionPerOpportunity;
                         m_isAfterExpansion = true;
                     }
                 } else
@@ -257,39 +242,10 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
         // Advance past the character we just dealt with.
         textIterator.advance(advanceLength);
-
-        float oldWidth = width;
-
-        // Force characters that are used to determine word boundaries for the rounding hack
-        // to be integer width, so following words will start on an integer boundary.
-        if (m_run.applyWordRounding() && Character::isRoundingHackCharacter(character)) {
-            width = ceilf(width);
-
-            // Since widthSinceLastRounding can lose precision if we include measurements for
-            // preceding whitespace, we bypass it here.
-            m_runWidthSoFar += width;
-
-            // Since this is a rounding hack character, we should have reset this sum on the previous
-            // iteration.
-            ASSERT(!widthSinceLastRounding);
-        } else {
-            // Check to see if the next character is a "rounding hack character", if so, adjust
-            // width so that the total run width will be on an integer boundary.
-            if ((m_run.applyWordRounding() && textIterator.currentCharacter() < m_run.length() && Character::isRoundingHackCharacter(*(textIterator.characters())))
-                || (m_run.applyRunRounding() && textIterator.currentCharacter() >= m_run.length())) {
-                float totalWidth = widthSinceLastRounding + width;
-                widthSinceLastRounding = ceilf(totalWidth);
-                width += widthSinceLastRounding - totalWidth;
-                m_runWidthSoFar += widthSinceLastRounding;
-                widthSinceLastRounding = 0;
-            } else
-                widthSinceLastRounding += width;
-        }
+        m_runWidthSoFar += width;
 
         if (glyphBuffer)
-            glyphBuffer->add(glyph, fontData, (rtl ? oldWidth + lastRoundingWidth : width));
-
-        lastRoundingWidth = width - oldWidth;
+            glyphBuffer->add(glyph, fontData, width);
 
         if (m_accountForGlyphBounds) {
             m_maxGlyphBoundingBoxY = max(m_maxGlyphBoundingBoxY, bounds.maxY());
@@ -303,8 +259,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
     unsigned consumedCharacters = textIterator.currentCharacter() - m_currentCharacter;
     m_currentCharacter = textIterator.currentCharacter();
-    m_runWidthSoFar += widthSinceLastRounding;
-    m_finalRoundingWidth = lastRoundingWidth;
+
     return consumedCharacters;
 }
 

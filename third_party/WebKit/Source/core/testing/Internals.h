@@ -229,8 +229,6 @@ public:
     void garbageCollectDocumentResources(Document*, ExceptionState&) const;
     void evictAllResources() const;
 
-    void allowRoundingHacks() const;
-
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
     String dumpRefCountedInstanceCounts() const;

@@ -157,7 +157,6 @@ void RenderListBox::updateFromElement()
                 TextRun textRun = constructTextRun(this, itemFont, text, style(), TextRun::AllowTrailingExpansion);
                 if (hasStrongDirectionality)
                     textRun.setDirection(direction);
-                textRun.disableRoundingHacks();
                 float textWidth = itemFont.width(textRun);
                 width = std::max(width, textWidth);
             }
@@ -456,7 +455,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
 
     paintInfo.context->setFillColor(textColor);
 
-    TextRun textRun(itemText, 0, 0, TextRun::AllowTrailingExpansion, itemStyle->direction(), isOverride(itemStyle->unicodeBidi()), true, TextRun::NoRounding);
+    TextRun textRun(itemText, 0, 0, TextRun::AllowTrailingExpansion, itemStyle->direction(), isOverride(itemStyle->unicodeBidi()), true);
     Font itemFont = style()->font();
     LayoutRect r = itemBoundingBoxRectInternal(paintOffset, listIndex);
     r.move(itemOffsetForAlignment(textRun, itemStyle, itemFont, r));

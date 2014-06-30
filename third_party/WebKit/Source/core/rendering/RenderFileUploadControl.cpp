@@ -105,7 +105,6 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
         const String& displayedFilename = fileTextValue();
         const Font& font = style()->font();
         TextRun textRun = constructTextRun(this, font, displayedFilename, style(), TextRun::AllowTrailingExpansion, RespectDirection | RespectDirectionOverride);
-        textRun.disableRoundingHacks();
 
         // Determine where the filename should be placed
         LayoutUnit contentLeft = paintOffset.x() + borderLeft() + paddingLeft();

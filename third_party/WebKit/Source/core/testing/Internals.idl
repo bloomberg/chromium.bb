@@ -186,8 +186,6 @@
     [RaisesException] void garbageCollectDocumentResources(Document document);
     void evictAllResources();
 
-    void allowRoundingHacks();
-
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     DOMString dumpRefCountedInstanceCounts();

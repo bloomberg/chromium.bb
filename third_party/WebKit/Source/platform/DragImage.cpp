@@ -176,14 +176,14 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     // Draw the text
     if (drawURLString) {
         if (clipURLString)
-            urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont, StringTruncator::EnableRoundingHacks);
+            urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
         IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.fontMetrics().descent()));
         TextRun textRun(urlString);
         buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
     }
 
     if (clipLabelString)
-        label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont, StringTruncator::EnableRoundingHacks);
+        label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
 
     bool hasStrongDirectionality;
     TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);

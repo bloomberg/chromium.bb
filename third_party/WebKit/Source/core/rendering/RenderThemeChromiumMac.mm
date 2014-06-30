@@ -1766,10 +1766,10 @@ String RenderThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileLi
         strToTruncate = [[NSFileManager defaultManager] displayNameAtPath:(fileList->item(0)->path())];
     } else {
         // FIXME: Localization of fileList->length().
-        return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font, StringTruncator::EnableRoundingHacks);
+        return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
     }
 
-    return StringTruncator::centerTruncate(strToTruncate, width, font, StringTruncator::EnableRoundingHacks);
+    return StringTruncator::centerTruncate(strToTruncate, width, font);
 }
 
 NSView* FlippedView()

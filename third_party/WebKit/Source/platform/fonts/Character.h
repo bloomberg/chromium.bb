@@ -70,15 +70,8 @@ public:
     static String normalizeSpaces(const LChar*, unsigned length);
     static String normalizeSpaces(const UChar*, unsigned length);
 
-    static bool isRoundingHackCharacter(UChar32 c)
-    {
-        return !(c & ~0xFF) && s_roundingHackCharacterTable[c];
-    }
-
 private:
     Character();
-
-    static const uint8_t s_roundingHackCharacterTable[256];
 };
 
 }

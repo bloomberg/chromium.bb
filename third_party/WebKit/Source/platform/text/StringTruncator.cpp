@@ -92,30 +92,26 @@ static unsigned rightTruncateToBuffer(const String& string, unsigned length, uns
     return truncatedLength;
 }
 
-static float stringWidth(const Font& renderer, const String& string, bool disableRoundingHacks)
+static float stringWidth(const Font& renderer, const String& string)
 {
     TextRun run(string);
-    if (disableRoundingHacks)
-        run.disableRoundingHacks();
     return renderer.width(run);
 }
 
-static float stringWidth(const Font& renderer, const UChar* characters, unsigned length, bool disableRoundingHacks)
+static float stringWidth(const Font& renderer, const UChar* characters, unsigned length)
 {
     TextRun run(characters, length);
-    if (disableRoundingHacks)
-        run.disableRoundingHacks();
     return renderer.width(run);
 }
 
-static String truncateString(const String& string, float maxWidth, const Font& font, TruncationFunction truncateToBuffer, bool disableRoundingHacks)
+static String truncateString(const String& string, float maxWidth, const Font& font, TruncationFunction truncateToBuffer)
 {
     if (string.isEmpty())
         return string;
 
     ASSERT(maxWidth >= 0);
 
-    float currentEllipsisWidth = stringWidth(font, &horizontalEllipsis, 1, disableRoundingHacks);
+    float currentEllipsisWidth = stringWidth(font, &horizontalEllipsis, 1);
 
     UChar stringBuffer[STRING_BUFFER_SIZE];
     unsigned truncatedLength;
@@ -131,7 +127,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
         truncatedLength = length;
     }
 
-    float width = stringWidth(font, stringBuffer, truncatedLength, disableRoundingHacks);
+    float width = stringWidth(font, stringBuffer, truncatedLength);
     if (width <= maxWidth)
         return string;
 
@@ -167,7 +163,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
 
         truncatedLength = truncateToBuffer(string, length, keepCount, stringBuffer);
 
-        width = stringWidth(font, stringBuffer, truncatedLength, disableRoundingHacks);
+        width = stringWidth(font, stringBuffer, truncatedLength);
         if (width <= maxWidth) {
             keepCountForLargestKnownToFit = keepCount;
             widthForLargestKnownToFit = width;
@@ -188,19 +184,19 @@ static String truncateString(const String& string, float maxWidth, const Font& f
     return String(stringBuffer, truncatedLength);
 }
 
-String StringTruncator::centerTruncate(const String& string, float maxWidth, const Font& font, EnableRoundingHacksOrNot enableRoundingHacks)
+String StringTruncator::centerTruncate(const String& string, float maxWidth, const Font& font)
 {
-    return truncateString(string, maxWidth, font, centerTruncateToBuffer, !enableRoundingHacks);
+    return truncateString(string, maxWidth, font, centerTruncateToBuffer);
 }
 
-String StringTruncator::rightTruncate(const String& string, float maxWidth, const Font& font, EnableRoundingHacksOrNot enableRoundingHacks)
+String StringTruncator::rightTruncate(const String& string, float maxWidth, const Font& font)
 {
-    return truncateString(string, maxWidth, font, rightTruncateToBuffer, !enableRoundingHacks);
+    return truncateString(string, maxWidth, font, rightTruncateToBuffer);
 }
 
-float StringTruncator::width(const String& string, const Font& font, EnableRoundingHacksOrNot enableRoundingHacks)
+float StringTruncator::width(const String& string, const Font& font)
 {
-    return stringWidth(font, string, !enableRoundingHacks);
+    return stringWidth(font, string);
 }
 
 } // namespace WebCore

@@ -1073,10 +1073,10 @@ String RenderTheme::fileListNameForWidth(Locale& locale, const FileList* fileLis
         string = fileList->item(0)->name();
     } else {
         // FIXME: Localization of fileList->length().
-        return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font, StringTruncator::EnableRoundingHacks);
+        return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
     }
 
-    return StringTruncator::centerTruncate(string, width, font, StringTruncator::EnableRoundingHacks);
+    return StringTruncator::centerTruncate(string, width, font);
 }
 
 bool RenderTheme::shouldOpenPickerWithF4Key() const

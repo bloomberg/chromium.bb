@@ -2147,7 +2147,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
 
-    TextRun textRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true, TextRun::NoRounding);
+    TextRun textRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true);
     // Draw the item text at the correct point.
     FloatPoint location(x, y + getFontBaseline(fontMetrics));
 

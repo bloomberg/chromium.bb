@@ -186,7 +186,6 @@ void Internals::resetToConsistentState(Page* page)
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
-    TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<AtomicString>());
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
@@ -1807,11 +1806,6 @@ void Internals::garbageCollectDocumentResources(Document* document, ExceptionSta
 void Internals::evictAllResources() const
 {
     memoryCache()->evictResources();
-}
-
-void Internals::allowRoundingHacks() const
-{
-    TextRun::setAllowsRoundingHacks(true);
 }
 
 String Internals::counterValue(Element* element)

@@ -73,7 +73,6 @@ public:
     float m_expansion;
     float m_expansionPerOpportunity;
     bool m_isAfterExpansion;
-    float m_finalRoundingWidth;
 
 #if ENABLE(SVG_FONTS)
     Vector<SVGGlyph::ArabicForm> m_arabicForms;

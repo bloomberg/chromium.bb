@@ -41,13 +41,6 @@ struct ExpectedTextRunSize {
 
 COMPILE_ASSERT(sizeof(TextRun) == sizeof(ExpectedTextRunSize), TextRun_is_not_of_expected_size);
 
-bool TextRun::s_allowsRoundingHacks = false;
-
-void TextRun::setAllowsRoundingHacks(bool allowsRoundingHacks)
-{
-    s_allowsRoundingHacks = allowsRoundingHacks;
-}
-
 void TextRun::setText(const String& string)
 {
     m_len = string.length();
@@ -61,11 +54,6 @@ void TextRun::setText(const String& string)
         m_data.characters8 = string.characters8();
     else
         m_data.characters16 = string.characters16();
-}
-
-bool TextRun::allowsRoundingHacks()
-{
-    return s_allowsRoundingHacks;
 }
 
 }
