@@ -62,12 +62,13 @@ protected:
 
     // To prevent audio glitches when parameters are changed,
     // dezippering is used to slowly change the parameters.
-    // |useSmoothing| implies that we want to update using the
-    // smoothed values. Otherwise the final target values are
-    // used. If |forceUpdate| is true, we update the coefficients even
-    // if they are not dirty. (Used when computing the frequency
-    // response.)
-    void updateCoefficientsIfNecessary(bool useSmoothing, bool forceUpdate);
+    void updateCoefficientsIfNecessary();
+    // Update the biquad cofficients with the given parameters
+    void updateCoefficients(double frequency, double Q, double gain, double detune);
+
+private:
+    // Synchronize process() with getting and setting the filter coefficients.
+    mutable Mutex m_processLock;
 };
 
 } // namespace WebCore

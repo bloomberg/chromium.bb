@@ -40,73 +40,73 @@ namespace WebCore {
 // settings of the Biquad.
 static const double MaxBiquadDelayTime = 0.2;
 
-void BiquadDSPKernel::updateCoefficientsIfNecessary(bool useSmoothing, bool forceUpdate)
+void BiquadDSPKernel::updateCoefficientsIfNecessary()
 {
-    if (forceUpdate || biquadProcessor()->filterCoefficientsDirty()) {
-        double value1;
-        double value2;
+    if (biquadProcessor()->filterCoefficientsDirty()) {
+        double cutoffFrequency;
+        double Q;
         double gain;
         double detune; // in Cents
 
         if (biquadProcessor()->hasSampleAccurateValues()) {
-            value1 = biquadProcessor()->parameter1()->finalValue();
-            value2 = biquadProcessor()->parameter2()->finalValue();
+            cutoffFrequency = biquadProcessor()->parameter1()->finalValue();
+            Q = biquadProcessor()->parameter2()->finalValue();
             gain = biquadProcessor()->parameter3()->finalValue();
             detune = biquadProcessor()->parameter4()->finalValue();
-        } else if (useSmoothing) {
-            value1 = biquadProcessor()->parameter1()->smoothedValue();
-            value2 = biquadProcessor()->parameter2()->smoothedValue();
+        } else {
+            cutoffFrequency = biquadProcessor()->parameter1()->smoothedValue();
+            Q = biquadProcessor()->parameter2()->smoothedValue();
             gain = biquadProcessor()->parameter3()->smoothedValue();
             detune = biquadProcessor()->parameter4()->smoothedValue();
-        } else {
-            value1 = biquadProcessor()->parameter1()->value();
-            value2 = biquadProcessor()->parameter2()->value();
-            gain = biquadProcessor()->parameter3()->value();
-            detune = biquadProcessor()->parameter4()->value();
         }
 
-        // Convert from Hertz to normalized frequency 0 -> 1.
-        double nyquist = this->nyquist();
-        double normalizedFrequency = value1 / nyquist;
+        updateCoefficients(cutoffFrequency, Q, gain, detune);
+    }
+}
 
-        // Offset frequency by detune.
-        if (detune)
-            normalizedFrequency *= pow(2, detune / 1200);
+void BiquadDSPKernel::updateCoefficients(double cutoffFrequency, double Q, double gain, double detune)
+{
+    // Convert from Hertz to normalized frequency 0 -> 1.
+    double nyquist = this->nyquist();
+    double normalizedFrequency = cutoffFrequency / nyquist;
 
-        // Configure the biquad with the new filter parameters for the appropriate type of filter.
-        switch (biquadProcessor()->type()) {
-        case BiquadProcessor::LowPass:
-            m_biquad.setLowpassParams(normalizedFrequency, value2);
-            break;
+    // Offset frequency by detune.
+    if (detune)
+        normalizedFrequency *= pow(2, detune / 1200);
 
-        case BiquadProcessor::HighPass:
-            m_biquad.setHighpassParams(normalizedFrequency, value2);
-            break;
+    // Configure the biquad with the new filter parameters for the appropriate type of filter.
+    switch (biquadProcessor()->type()) {
+    case BiquadProcessor::LowPass:
+        m_biquad.setLowpassParams(normalizedFrequency, Q);
+        break;
 
-        case BiquadProcessor::BandPass:
-            m_biquad.setBandpassParams(normalizedFrequency, value2);
-            break;
+    case BiquadProcessor::HighPass:
+        m_biquad.setHighpassParams(normalizedFrequency, Q);
+        break;
 
-        case BiquadProcessor::LowShelf:
-            m_biquad.setLowShelfParams(normalizedFrequency, gain);
-            break;
+    case BiquadProcessor::BandPass:
+        m_biquad.setBandpassParams(normalizedFrequency, Q);
+        break;
 
-        case BiquadProcessor::HighShelf:
-            m_biquad.setHighShelfParams(normalizedFrequency, gain);
-            break;
+    case BiquadProcessor::LowShelf:
+        m_biquad.setLowShelfParams(normalizedFrequency, gain);
+        break;
 
-        case BiquadProcessor::Peaking:
-            m_biquad.setPeakingParams(normalizedFrequency, value2, gain);
-            break;
+    case BiquadProcessor::HighShelf:
+        m_biquad.setHighShelfParams(normalizedFrequency, gain);
+        break;
 
-        case BiquadProcessor::Notch:
-            m_biquad.setNotchParams(normalizedFrequency, value2);
-            break;
+    case BiquadProcessor::Peaking:
+        m_biquad.setPeakingParams(normalizedFrequency, Q, gain);
+        break;
 
-        case BiquadProcessor::Allpass:
-            m_biquad.setAllpassParams(normalizedFrequency, value2);
-            break;
-        }
+    case BiquadProcessor::Notch:
+        m_biquad.setNotchParams(normalizedFrequency, Q);
+        break;
+
+    case BiquadProcessor::Allpass:
+        m_biquad.setAllpassParams(normalizedFrequency, Q);
+        break;
     }
 }
 
@@ -118,7 +118,14 @@ void BiquadDSPKernel::process(const float* source, float* destination, size_t fr
     // FIXME: as an optimization, implement a way that a Biquad object can simply copy its internal filter coefficients from another Biquad object.
     // Then re-factor this code to only run for the first BiquadDSPKernel of each BiquadProcessor.
 
-    updateCoefficientsIfNecessary(true, false);
+
+    // The audio thread can't block on this lock; skip updating the coefficients for this block if
+    // necessary. We'll get them the next time around.
+    {
+        MutexTryLocker tryLocker(m_processLock);
+        if (tryLocker.locked())
+            updateCoefficientsIfNecessary();
+    }
 
     m_biquad.process(source, destination, framesToProcess);
 }
@@ -142,12 +149,33 @@ void BiquadDSPKernel::getFrequencyResponse(int nFrequencies,
     for (int k = 0; k < nFrequencies; ++k)
         frequency[k] = narrowPrecisionToFloat(frequencyHz[k] / nyquist);
 
-    // We want to get the final values of the coefficients and compute
-    // the response from that instead of some intermediate smoothed
-    // set. Forcefully update the coefficients even if they are not
-    // dirty.
+    double cutoffFrequency;
+    double Q;
+    double gain;
+    double detune; // in Cents
 
-    updateCoefficientsIfNecessary(false, true);
+    {
+        // Get a copy of the current biquad filter coefficients so we can update the biquad with
+        // these values. We need to synchronize with process() to prevent process() from updating
+        // the filter coefficients while we're trying to access them. The process will update it
+        // next time around.
+        //
+        // The BiquadDSPKernel object here (along with it's Biquad object) is for querying the
+        // frequency response and is NOT the same as the one in process() which is used for
+        // performing the actual filtering. This one is is created in
+        // BiquadProcessor::getFrequencyResponse for this purpose. Both, however, point to the same
+        // BiquadProcessor object.
+        //
+        // FIXME: Simplify this: crbug.com/390266
+        MutexLocker processLocker(m_processLock);
+
+        cutoffFrequency = biquadProcessor()->parameter1()->value();
+        Q = biquadProcessor()->parameter2()->value();
+        gain = biquadProcessor()->parameter3()->value();
+        detune = biquadProcessor()->parameter4()->value();
+    }
+
+    updateCoefficients(cutoffFrequency, Q, gain, detune);
 
     m_biquad.getFrequencyResponse(nFrequencies, frequency.data(), magResponse, phaseResponse);
 }
