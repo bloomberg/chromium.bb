@@ -161,6 +161,13 @@ class EventRouter
       bool watcher_error,
       const EntryDefinition& entry_definition);
 
+  // Dispatches the mount completed event.
+  void DispatchMountCompletedEvent(
+      extensions::api::file_browser_private::MountCompletedEventType event_type,
+      chromeos::MountError error,
+      const VolumeInfo& volume_info,
+      bool is_remounting);
+
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out
   // after calling notifying observers by DiskMountManager.

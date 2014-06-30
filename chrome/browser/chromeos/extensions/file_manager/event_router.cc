@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
@@ -54,31 +55,6 @@ namespace file_browser_private = extensions::api::file_browser_private;
 
 namespace file_manager {
 namespace {
-
-void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
-                                   const base::Closure& success_callback,
-                                   const base::Closure& failure_callback) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  if (base::DirectoryExists(directory_path))
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, success_callback);
-  else
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, failure_callback);
-}
-
-void DirectoryExistsOnUIThread(const base::FilePath& directory_path,
-                               const base::Closure& success_callback,
-                               const base::Closure& failure_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&DirectoryExistsOnBlockingPool,
-                 directory_path,
-                 success_callback,
-                 failure_callback));
-}
-
 // Constants for the "transferState" field of onFileTransferUpdated event.
 const char kFileTransferStateStarted[] = "started";
 const char kFileTransferStateInProgress[] = "in_progress";
@@ -119,31 +95,6 @@ void JobInfoToTransferStatus(
       new double(static_cast<double>(job_info.num_completed_bytes)));
   status->total.reset(
       new double(static_cast<double>(job_info.num_total_bytes)));
-}
-
-// Checks for availability of the Google+ Photos app.
-// TODO(mtomasz): Replace with crbug.com/341902 solution.
-bool IsGooglePhotosInstalled(Profile *profile) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return false;
-
-  // Google+ Photos uses several ids for different channels. Therefore, all of
-  // them should be checked.
-  const std::string kGooglePlusPhotosIds[] = {
-      "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
-      "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
-      "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
-  };
-
-  for (size_t i = 0; i < arraysize(kGooglePlusPhotosIds); ++i) {
-    if (service->GetExtensionById(kGooglePlusPhotosIds[i],
-                                  false /* include_disable */) != NULL)
-      return true;
-  }
-
-  return false;
 }
 
 // Checks if the Recovery Tool is running. This is a temporary solution.
@@ -234,25 +185,6 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
   return file_browser_private::MOUNT_COMPLETED_STATUS_NONE;
 }
 
-void BroadcastMountCompletedEvent(
-    Profile* profile,
-    file_browser_private::MountCompletedEventType event_type,
-    chromeos::MountError error,
-    const VolumeInfo& volume_info,
-    bool is_remounting) {
-  file_browser_private::MountCompletedEvent event;
-  event.event_type = event_type;
-  event.status = MountErrorToMountCompletedStatus(error);
-  util::VolumeInfoToVolumeMetadata(
-      profile, volume_info, &event.volume_metadata);
-  event.is_remounting = is_remounting;
-
-  BroadcastEvent(
-      profile,
-      file_browser_private::OnMountCompleted::kEventName,
-      file_browser_private::OnMountCompleted::Create(event));
-}
-
 file_browser_private::CopyProgressStatusType
 CopyProgressTypeToCopyProgressStatusType(
     fileapi::FileSystemOperation::CopyProgressType type) {
@@ -328,6 +260,51 @@ bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
     *last_time = now;
     return true;
   }
+}
+
+// Obtains whether the Files.app should handle the volume or not.
+bool ShouldShowNotificationForVolume(
+    Profile* profile,
+    file_browser_private::MountCompletedEventType event_type,
+    chromeos::MountError error,
+    const VolumeInfo& volume_info,
+    bool is_remounting) {
+  if (event_type != file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT)
+    return false;
+
+  if (volume_info.type != VOLUME_TYPE_MTP &&
+      volume_info.type != VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
+    return false;
+  }
+
+  if (error != chromeos::MOUNT_ERROR_NONE)
+    return false;
+
+  if (is_remounting)
+    return false;
+
+  // Do not attempt to open File Manager while the login is in progress or
+  // the screen is locked or running in kiosk app mode and make sure the file
+  // manager is opened only for the active user.
+  if (chromeos::LoginDisplayHostImpl::default_host() ||
+      chromeos::ScreenLocker::default_screen_locker() ||
+      chrome::IsRunningInForcedAppMode() ||
+      profile != ProfileManager::GetActiveUserProfile()) {
+    return false;
+  }
+
+  // Do not pop-up the File Manager, if the recovery tool is running.
+  if (IsRecoveryToolRunning(profile))
+    return false;
+
+  // If the disable-default-apps flag is on, Files.app is not opened
+  // automatically on device mount not to obstruct the manual test.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDefaultApps)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -759,42 +736,6 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
                  file_browser_private::OnDirectoryChanged::Create(event));
 }
 
-void EventRouter::ShowRemovableDeviceInFileManager(
-    VolumeType type,
-    const base::FilePath& mount_path) {
-  // Do not attempt to open File Manager while the login is in progress or
-  // the screen is locked or running in kiosk app mode and make sure the file
-  // manager is opened only for the active user.
-  if (chromeos::LoginDisplayHostImpl::default_host() ||
-      chromeos::ScreenLocker::default_screen_locker() ||
-      chrome::IsRunningInForcedAppMode() ||
-      profile_ != ProfileManager::GetActiveUserProfile())
-    return;
-
-  // Do not pop-up the File Manager, if the recovery tool is running.
-  if (IsRecoveryToolRunning(profile_))
-    return;
-
-  // Do not pop-up the File Manager, if Google+ Photos may be launched.
-  if (IsGooglePhotosInstalled(profile_)) {
-    // MTP device is handled by Photos app.
-    if (type == VOLUME_TYPE_MTP)
-      return;
-    // According to DCF (Design rule of Camera File system) by JEITA / CP-3461
-    // cameras should have pictures located in the DCIM root directory.
-    // Such removable disks are handled by Photos app.
-    if (type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
-      DirectoryExistsOnUIThread(
-          mount_path.AppendASCII("DCIM"),
-          base::Bind(&base::DoNothing),
-          base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
-      return;
-    }
-  }
-
-  util::OpenRemovableDrive(profile_, mount_path);
-}
-
 void EventRouter::DispatchDeviceEvent(
     file_browser_private::DeviceEventType type,
     const std::string& device_path) {
@@ -865,34 +806,40 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   // the only path to come here after Shutdown is called).
   if (!profile_)
     return;
-
-  BroadcastMountCompletedEvent(
-      profile_,
+  DispatchMountCompletedEvent(
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT,
       error_code,
       volume_info,
       is_remounting);
-
-  if ((volume_info.type == VOLUME_TYPE_MTP ||
-       volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) &&
-      !is_remounting) {
-    // If a new device was mounted, a new File manager window may need to be
-    // opened.
-    if (error_code == chromeos::MOUNT_ERROR_NONE)
-      ShowRemovableDeviceInFileManager(volume_info.type,
-                                       volume_info.mount_path);
-  }
 }
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
                                     const VolumeInfo& volume_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BroadcastMountCompletedEvent(
-      profile_,
+  DispatchMountCompletedEvent(
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
       error_code,
       volume_info,
       false);
+}
+
+void EventRouter::DispatchMountCompletedEvent(
+    file_browser_private::MountCompletedEventType event_type,
+    chromeos::MountError error,
+    const VolumeInfo& volume_info,
+    bool is_remounting) {
+  // Build an event object.
+  file_browser_private::MountCompletedEvent event;
+  event.event_type = event_type;
+  event.status = MountErrorToMountCompletedStatus(error);
+  util::VolumeInfoToVolumeMetadata(
+      profile_, volume_info, &event.volume_metadata);
+  event.is_remounting = is_remounting;
+  event.should_notify = ShouldShowNotificationForVolume(
+      profile_, event_type, error, volume_info, is_remounting);
+  BroadcastEvent(profile_,
+                 file_browser_private::OnMountCompleted::kEventName,
+                 file_browser_private::OnMountCompleted::Create(event));
 }
 
 void EventRouter::OnFormatStarted(const std::string& device_path,
