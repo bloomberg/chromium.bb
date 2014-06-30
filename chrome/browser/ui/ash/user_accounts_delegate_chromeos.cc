@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/ui/inline_login_dialog.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -53,7 +54,7 @@ UserAccountsDelegateChromeOS::GetSecondaryAccountIds() {
 
 std::string UserAccountsDelegateChromeOS::GetAccountDisplayName(
     const std::string& account_id) {
-  User* user = UserManager::Get()->GetUserByProfile(user_profile_);
+  User* user = ProfileHelper::Get()->GetUserByProfile(user_profile_);
   if (gaia::AreEmailsSame(user->email(), account_id) &&
       !user->display_email().empty())
     return user->display_email();

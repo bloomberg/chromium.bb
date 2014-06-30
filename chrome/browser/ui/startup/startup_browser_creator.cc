@@ -330,9 +330,7 @@ bool StartupBrowserCreator::LaunchBrowser(
   profile_launch_observer.Get().AddLaunched(profile);
 
 #if defined(OS_CHROMEOS)
-  g_browser_process->platform_part()->profile_helper()->ProfileStartup(
-      profile,
-      process_startup);
+  chromeos::ProfileHelper::Get()->ProfileStartup(profile, process_startup);
 #endif
   return true;
 }

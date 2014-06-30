@@ -884,7 +884,7 @@ void SigninScreenHandler::ShowUserPodCustomIcon(
     if (!user)
       return;
     PrefService* profile_prefs =
-        user_manager->GetProfileByUser(user)->GetPrefs();
+        ProfileHelper::Get()->GetProfileByUser(user)->GetPrefs();
     if (profile_prefs->GetBoolean(prefs::kEasyUnlockShowTutorial)) {
       CallJS("login.AccountPickerScreen.showEasyUnlockBubble");
       profile_prefs->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
@@ -996,7 +996,7 @@ void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
   if (!unlock_user)
     return;
 
-  Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(unlock_user);
   extensions::ScreenlockPrivateEventRouter* router =
       extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
           profile);

@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -97,8 +96,7 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
 #if defined(OS_CHROMEOS)
   chromeos::User* user = NULL;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    user = user_manager->GetUserByProfile(profile);
+    user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
   }
   user_cloud_policy_manager =

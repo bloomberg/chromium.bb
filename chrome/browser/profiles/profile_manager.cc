@@ -315,8 +315,9 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
     return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
         profile_manager->user_data_dir());
   chromeos::UserManager* manager = chromeos::UserManager::Get();
-  // Note: The user manager will take care of guest profiles.
-  return manager->GetProfileByUser(manager->GetPrimaryUser());
+  // Note: The ProfileHelper will take care of guest profiles.
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(
+      manager->GetPrimaryUser());
 #else
   return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
       profile_manager->user_data_dir());
@@ -340,7 +341,8 @@ Profile* ProfileManager::GetActiveUserProfile() {
   // created we load the profile using the profile directly.
   // TODO: This should be cleaned up with the new profile manager.
   if (user && user->is_profile_created())
-    return manager->GetProfileByUser(user);
+    return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
 #endif
   Profile* profile =
       profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
@@ -472,12 +474,11 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
     // In case of multi-profiles ignore --login-profile switch.
     // TODO(nkostylev): Some cases like Guest mode will have empty username_hash
     // so default kLoginProfile dir will be used.
-    std::string user_id_hash = g_browser_process->platform_part()->
-        profile_helper()->active_user_id_hash();
-    if (!user_id_hash.empty()) {
-      profile_dir = g_browser_process->platform_part()->
-          profile_helper()->GetActiveUserProfileDir();
-    }
+    std::string user_id_hash =
+        chromeos::ProfileHelper::Get()->active_user_id_hash();
+    if (!user_id_hash.empty())
+      profile_dir = chromeos::ProfileHelper::Get()->GetActiveUserProfileDir();
+
     relative_profile_dir = relative_profile_dir.Append(profile_dir);
     return relative_profile_dir;
   }
@@ -502,8 +503,7 @@ Profile* ProfileManager::GetLastUsedProfile(
     // since it may refer to profile that has been in use in previous session.
     // That profile dir may not be mounted in this session so instead return
     // active profile from current session.
-    profile_dir = g_browser_process->platform_part()->
-        profile_helper()->GetActiveUserProfileDir();
+    profile_dir = chromeos::ProfileHelper::Get()->GetActiveUserProfileDir();
 
     base::FilePath profile_path(user_data_dir);
     Profile* profile = GetProfile(profile_path.Append(profile_dir));

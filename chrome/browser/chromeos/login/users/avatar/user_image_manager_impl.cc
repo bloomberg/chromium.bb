@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -724,7 +725,7 @@ int UserImageManagerImpl::GetDesiredImageSideLength() const {
 }
 
 Profile* UserImageManagerImpl::GetBrowserProfile() {
-  return user_manager_->GetProfileByUser(GetUser());
+  return ProfileHelper::Get()->GetProfileByUser(GetUser());
 }
 
 std::string UserImageManagerImpl::GetCachedPictureURL() const {

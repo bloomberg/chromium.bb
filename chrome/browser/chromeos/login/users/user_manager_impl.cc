@@ -49,8 +49,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,8 +58,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -148,17 +144,6 @@ void ParseUserList(const base::ListValue& users_list,
     users_vector->push_back(email);
   }
 }
-
-class UserHashMatcher {
- public:
-  explicit UserHashMatcher(const std::string& h) : username_hash(h) {}
-  bool operator()(const User* user) const {
-    return user->username_hash() == username_hash;
-  }
-
- private:
-  const std::string& username_hash;
-};
 
 // Runs on SequencedWorkerPool thread. Passes resolved locale to
 // |on_resolve_callback| on UI thread.
@@ -353,7 +338,7 @@ UserList UserManagerImpl::GetUnlockUsers() const {
     return UserList();
 
   UserList unlock_users;
-  Profile* profile = GetProfileByUser(primary_user_);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(primary_user_);
   std::string primary_behavior =
       profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
 
@@ -368,7 +353,7 @@ UserList UserManagerImpl::GetUnlockUsers() const {
     for (UserList::const_iterator it = logged_in_users.begin();
          it != logged_in_users.end(); ++it) {
       User* user = (*it);
-      Profile* profile = GetProfileByUser(user);
+      Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
       const std::string behavior =
           profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
       if (behavior == MultiProfileUserController::kBehaviorUnrestricted &&
@@ -651,53 +636,6 @@ const User* UserManagerImpl::GetPrimaryUser() const {
   return primary_user_;
 }
 
-User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (ProfileHelper::IsSigninProfile(profile))
-    return NULL;
-
-  // Special case for non-CrOS tests that do create several profiles
-  // and don't really care about mapping to the real user.
-  // Without multi-profiles on Chrome OS such tests always got active_user_.
-  // Now these tests will specify special flag to continue working.
-  // In future those tests can get a proper CrOS configuration i.e. register
-  // and login several users if they want to work with an additional profile.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreUserProfileMappingForTests)) {
-    return active_user_;
-  }
-
-  const std::string username_hash =
-      ProfileHelper::GetUserIdHashFromProfile(profile);
-  const UserList& users = GetUsers();
-  const UserList::const_iterator pos = std::find_if(
-      users.begin(), users.end(), UserHashMatcher(username_hash));
-  if (pos != users.end())
-    return *pos;
-
-  // Many tests do not have their users registered with UserManager and
-  // runs here. If |active_user_| matches |profile|, returns it.
-  return active_user_ &&
-                 ProfileHelper::GetProfilePathByUserIdHash(
-                     active_user_->username_hash()) == profile->GetPath()
-             ? active_user_
-             : NULL;
-}
-
-Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
-  Profile* profile = NULL;
-  if (user->is_profile_created())
-    profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
-  else
-    profile = ProfileManager::GetActiveUserProfile();
-
-  // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
-  // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
-  if (profile && IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
-  return profile;
-}
-
 void UserManagerImpl::SaveUserOAuthStatus(
     const std::string& user_id,
     User::OAuthTokenStatus oauth_token_status) {
@@ -860,7 +798,7 @@ void UserManagerImpl::Observe(int type,
     }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      User* user = GetUserByProfile(profile);
+      User* user = ProfileHelper::Get()->GetUserByProfile(profile);
       if (user != NULL)
         user->set_profile_is_created();
       // If there is pending user switch, do it now.
@@ -1442,20 +1380,7 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Override user homedir, check for ProfileManager being initialized as
-  // it may not exist in unit tests.
-  if (g_browser_process->profile_manager()) {
-    if (GetLoggedInUsers().size() == 1) {
-      base::FilePath homedir = ProfileHelper::GetProfilePathByUserIdHash(
-          primary_user_->username_hash());
-      // This path has been either created by cryptohome (on real Chrome OS
-      // device) or by ProfileManager (on chromeos=1 desktop builds).
-      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
-                                             homedir,
-                                             true /* path is absolute */,
-                                             false /* don't create */);
-    }
-  }
+  SessionManager::OverrideHomedir();
 
   UpdateNumberOfUsers();
   NotifyActiveUserHashChanged(active_user_->username_hash());
@@ -1732,22 +1657,6 @@ bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
   cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
                              &locally_managed_users_allowed);
   return locally_managed_users_allowed;
-}
-
-base::FilePath UserManagerImpl::GetUserProfileDir(
-    const std::string& user_id) const {
-  // TODO(dpolukhin): Remove Chrome OS specific profile path logic from
-  // ProfileManager and use only this function to construct profile path.
-  // TODO(nkostylev): Cleanup profile dir related code paths crbug.com/294233
-  base::FilePath profile_dir;
-  const User* user = FindUser(user_id);
-  if (user && !user->username_hash().empty())
-    profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_dir = profile_manager->user_data_dir().Append(profile_dir);
-
-  return profile_dir;
 }
 
 UserFlow* UserManagerImpl::GetDefaultUserFlow() const {

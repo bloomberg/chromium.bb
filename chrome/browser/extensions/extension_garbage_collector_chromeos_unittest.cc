@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -64,7 +65,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
 
     GetFakeUserManager()->AddUser(chromeos::UserManager::kStubUser);
     GetFakeUserManager()->LoginUser(chromeos::UserManager::kStubUser);
-    GetFakeUserManager()->SetProfileForUser(
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }
 

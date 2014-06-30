@@ -48,6 +48,9 @@ class SessionManager :
   // Returns SessionManager instance.
   static SessionManager* GetInstance();
 
+  // Called when user is logged in to override base::DIR_HOME path.
+  static void OverrideHomedir();
+
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

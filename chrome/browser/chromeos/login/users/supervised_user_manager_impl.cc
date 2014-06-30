@@ -505,7 +505,7 @@ void SupervisedUserManagerImpl::LoadSupervisedUserToken(
     const LoadTokenCallback& callback) {
   // TODO(antrim): use profile->GetPath() once we sure it is safe.
   base::FilePath profile_dir = ProfileHelper::GetProfilePathByUserIdHash(
-      UserManager::Get()->GetUserByProfile(profile)->username_hash());
+      ProfileHelper::Get()->GetUserByProfile(profile)->username_hash());
   PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -65,7 +66,7 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
 
   // Make sure that we get the real Profile instead of the login Profile.
   user->set_profile_is_created();
-  Profile* profile = UserManager::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                  user_context.GetUserID());
 

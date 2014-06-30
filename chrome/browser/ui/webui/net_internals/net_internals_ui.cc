@@ -80,8 +80,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -1477,7 +1477,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     const std::string& passcode,
     net::NSSCertDatabase* nssdb) {
   std::string error;
-  chromeos::User* user = chromeos::UserManager::Get()->GetUserByProfile(
+  chromeos::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
       Profile::FromWebUI(web_ui()));
 
   if (user) {

@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -58,6 +57,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -648,8 +648,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
 #if defined(OS_CHROMEOS)
     // On Chrome OS, also delete any content protection platform keys.
-    chromeos::User* user = chromeos::UserManager::Get()->
-        GetUserByProfile(profile_);
+    chromeos::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (!user) {
       LOG(WARNING) << "Failed to find user for current profile.";
     } else {

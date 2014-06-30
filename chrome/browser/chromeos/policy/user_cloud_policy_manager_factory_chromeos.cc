@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -123,8 +122,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // |user| should never be NULL except for the signin profile. This object is
   // created as part of the Profile creation, which happens right after
   // sign-in. The just-signed-in User is the active user during that time.
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  chromeos::User* user = user_manager->GetUserByProfile(profile);
+  chromeos::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   CHECK(user);
 
   // Only USER_TYPE_REGULAR users have user cloud policy.

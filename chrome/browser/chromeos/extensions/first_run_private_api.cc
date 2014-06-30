@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/extensions/first_run_private_api.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -18,7 +18,7 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
   chromeos::User* user =
-      chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
+      chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user->GetGivenName().empty()) {
     localized_strings->SetString(
         "greetingHeader",

@@ -52,7 +52,7 @@ base::FilePath GetMountPath(Profile* profile,
                             const std::string& file_system_id) {
   chromeos::User* const user =
       chromeos::UserManager::IsInitialized()
-          ? chromeos::UserManager::Get()->GetUserByProfile(
+          ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
           : NULL;
   const std::string safe_file_system_id = EscapeFileSystemId(file_system_id);

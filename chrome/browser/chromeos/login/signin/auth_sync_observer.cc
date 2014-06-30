@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +47,7 @@ void AuthSyncObserver::OnStateChanged() {
          UserManager::Get()->IsLoggedInAsLocallyManagedUser());
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  User* user = UserManager::Get()->GetUserByProfile(profile_);
+  User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
   GoogleServiceAuthError::State state =
       sync_service->GetAuthError().state();
   if (state != GoogleServiceAuthError::NONE &&

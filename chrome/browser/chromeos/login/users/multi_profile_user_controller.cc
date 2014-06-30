@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -117,7 +118,8 @@ MultiProfileUserController::IsUserAllowedInSession(
   // used them yet then it can become tainted at any time during this session;
   // disable secondary profiles in this case too.
   Profile* primary_user_profile =
-      primary_user ? user_manager->GetProfileByUser(primary_user) : NULL;
+      primary_user ? ProfileHelper::Get()->GetProfileByUser(primary_user)
+                   : NULL;
   policy::PolicyCertService* service =
       primary_user_profile ? policy::PolicyCertServiceFactory::GetForProfile(
                                  primary_user_profile)

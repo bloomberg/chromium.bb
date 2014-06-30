@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,8 +95,8 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
 
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  chromeos::User* user =
-      user_manager->GetUserByProfile(profile->GetOriginalProfile());
+  chromeos::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
+      profile->GetOriginalProfile());
   if (!user)
     return NULL;
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -128,7 +129,7 @@ class SharedOptionsTest : public LoginManagerTest {
 
   // Creates a browser and navigates to the Settings page.
   Browser* CreateBrowserForUser(const User* user) {
-    Profile* profile = UserManager::Get()->GetProfileByUser(user);
+    Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    user->email());
 
@@ -305,8 +306,10 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   const User* user1 = manager->FindUser(kTestOwner);
   const User* user2 = manager->FindUser(kTestNonOwner);
 
-  PrefService* prefs1 = manager->GetProfileByUser(user1)->GetPrefs();
-  PrefService* prefs2 = manager->GetProfileByUser(user2)->GetPrefs();
+  PrefService* prefs1 =
+      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
+  PrefService* prefs2 =
+      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
 
   // Set both users' preference to false, then change the secondary user's to
   // true. We'll do the opposite in the next test. Doesn't provide 100% coverage
@@ -374,8 +377,10 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
   const User* user1 = manager->FindUser(kTestOwner);
   const User* user2 = manager->FindUser(kTestNonOwner);
 
-  PrefService* prefs1 = manager->GetProfileByUser(user1)->GetPrefs();
-  PrefService* prefs2 = manager->GetProfileByUser(user2)->GetPrefs();
+  PrefService* prefs1 =
+      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
+  PrefService* prefs2 =
+      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
 
   // Set both users' preference to true, then change the secondary user's to
   // false.

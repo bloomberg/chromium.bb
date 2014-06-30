@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -263,7 +264,7 @@ void UserImageScreen::Show() {
     return;
 
   DCHECK(!policy_registrar_);
-  Profile* profile = UserManager::Get()->GetProfileByUser(GetUser());
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetUser());
   if (profile) {
     policy::PolicyService* policy_service =
         policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->

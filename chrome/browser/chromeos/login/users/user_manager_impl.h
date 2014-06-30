@@ -84,8 +84,6 @@ class UserManagerImpl
   virtual const User* GetActiveUser() const OVERRIDE;
   virtual User* GetActiveUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;
-  virtual User* GetUserByProfile(Profile* profile) const OVERRIDE;
-  virtual Profile* GetProfileByUser(const User* user) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -131,8 +129,6 @@ class UserManagerImpl
   virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) OVERRIDE;
   virtual void ResetUserFlow(const std::string& user_id) OVERRIDE;
   virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
-  virtual base::FilePath GetUserProfileDir(
-      const std::string& user_id) const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

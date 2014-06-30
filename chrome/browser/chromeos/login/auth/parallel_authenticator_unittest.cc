@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -57,7 +58,9 @@ class ParallelAuthenticatorTest : public testing::Test {
     user_context_.SetKey(Key("fakepass"));
     const User* user = user_manager_->AddUser(user_context_.GetUserID());
     profile_.set_profile_name(user_context_.GetUserID());
-    user_manager_->SetProfileForUser(user, &profile_);
+
+    ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, &profile_);
+
     transformed_key_ = *user_context_.GetKey();
     transformed_key_.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                                SystemSaltGetter::ConvertRawSaltToHexString(

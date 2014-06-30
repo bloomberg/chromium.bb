@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,7 +171,8 @@ void CloudExternalDataPolicyObserver::Observe(
   }
   Profile* profile = content::Details<Profile>(details).ptr();
 
-  const chromeos::User* user = user_manager_->GetUserByProfile(profile);
+  const chromeos::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user) {
     NOTREACHED();
     return;

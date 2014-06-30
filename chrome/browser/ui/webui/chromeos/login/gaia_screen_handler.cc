@@ -387,8 +387,7 @@ void GaiaScreenHandler::OnDnsCleared() {
 void GaiaScreenHandler::StartClearingCookies(
     const base::Closure& on_clear_callback) {
   cookies_cleared_ = false;
-  ProfileHelper* profile_helper =
-      g_browser_process->platform_part()->profile_helper();
+  ProfileHelper* profile_helper = ProfileHelper::Get();
   LOG_ASSERT(Profile::FromWebUI(web_ui()) ==
              profile_helper->GetSigninProfile());
   profile_helper->ClearSigninProfile(
@@ -416,9 +415,9 @@ void GaiaScreenHandler::ShowSigninScreenForCreds(const std::string& username,
   // Submit login form for test if gaia is ready. If gaia is loading, login
   // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
   // reload gaia then follow the loading case.
-  if (FrameState() == GaiaScreenHandler::FRAME_STATE_LOADED)
+  if (FrameState() == GaiaScreenHandler::FRAME_STATE_LOADED) {
     SubmitLoginFormForTest();
-  else if (FrameState() != GaiaScreenHandler::FRAME_STATE_LOADING) {
+  } else if (FrameState() != GaiaScreenHandler::FRAME_STATE_LOADING) {
     DCHECK(signin_screen_handler_);
     signin_screen_handler_->OnShowAddUser();
   }

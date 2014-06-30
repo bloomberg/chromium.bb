@@ -41,7 +41,7 @@ void OwnerSettingsServiceFactory::SetUsername(const std::string& username) {
   const User* user = UserManager::Get()->FindUser(username_);
   if (!user || !user->is_profile_created())
     return;
-  Profile* profile = UserManager::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return;
   OwnerSettingsService* service = GetForProfile(profile);

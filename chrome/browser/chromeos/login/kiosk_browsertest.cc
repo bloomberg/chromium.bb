@@ -238,10 +238,16 @@ class KioskTest : public OobeBaseTest {
   virtual void SetUp() OVERRIDE {
     test_app_id_ = kTestKioskApp;
     mock_user_manager_.reset(new MockUserManager);
+    ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
     AppLaunchController::SkipSplashWaitForTesting();
     AppLaunchController::SetNetworkWaitForTesting(kTestNetworkTimeoutSeconds);
 
     OobeBaseTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
+    OobeBaseTest::TearDown();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

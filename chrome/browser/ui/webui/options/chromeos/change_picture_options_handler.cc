@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -464,7 +465,7 @@ void ChangePictureOptionsHandler::OnDecodeImageFailed(
 
 User* ChangePictureOptionsHandler::GetUser() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  User* user = UserManager::Get()->GetUserByProfile(profile);
+  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return UserManager::Get()->GetActiveUser();
   return user;

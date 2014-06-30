@@ -223,8 +223,7 @@ TEST_F(ProfileListChromeOSTest, ActiveItem) {
   // Initialize ProfileHelper, it will be accessed from GetActiveProfileIndex.
   std::string email_string = base::UTF16ToASCII(name1) + "@example.com";
   std::string hash = email_string + kUserIdHashSuffix;
-  ActiveUserChanged(
-      g_browser_process->platform_part()->profile_helper(), hash);
+  ActiveUserChanged(ProfileHelper::Get(), hash);
 
   AvatarMenu* menu = GetAvatarMenu();
 

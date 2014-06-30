@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
-
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/extension_system.h"
@@ -57,7 +57,8 @@ bool ExtensionGarbageCollectorChromeOS::CanGarbageCollectSharedExtensions() {
 
   const chromeos::UserList& active_users = user_manager->GetLoggedInUsers();
   for (size_t i = 0; i < active_users.size(); i++) {
-    Profile* profile = user_manager->GetProfileByUser(active_users[i]);
+    Profile* profile =
+        chromeos::ProfileHelper::Get()->GetProfileByUser(active_users[i]);
     ExtensionGarbageCollectorChromeOS* gc =
         ExtensionGarbageCollectorChromeOS::Get(profile);
     if (gc && gc->crx_installs_in_progress_ > 0)

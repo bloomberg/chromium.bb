@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service.h"
@@ -41,7 +42,7 @@ SupervisedUserPasswordServiceFactory::
 KeyedService* SupervisedUserPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
-  User* user = UserManager::Get()->GetUserByProfile(profile);
+  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (user->GetType() != User::USER_TYPE_LOCALLY_MANAGED)
     return NULL;
   SupervisedUserPasswordService* result = new SupervisedUserPasswordService();

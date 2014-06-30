@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -51,7 +52,7 @@ content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
   chromeos::User* user =
       chromeos::UserManager::Get()->GetLRULoggedInUsers()[index];
   DCHECK(user);
-  return chromeos::UserManager::Get()->GetProfileByUser(user);
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 }
 
 content::BrowserContext*
@@ -61,7 +62,7 @@ SessionStateDelegateChromeos::GetBrowserContextForWindow(
       chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
   const chromeos::User* user = chromeos::UserManager::Get()->FindUser(user_id);
   DCHECK(user);
-  return chromeos::UserManager::Get()->GetProfileByUser(user);
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 }
 
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
@@ -98,7 +99,7 @@ bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
   for (chromeos::UserList::const_iterator it = logged_in_users.begin();
        it != logged_in_users.end(); ++it) {
     chromeos::User* user = (*it);
-    Profile* profile = chromeos::UserManager::Get()->GetProfileByUser(user);
+    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
     if (profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock))
       return true;
   }
@@ -141,7 +142,7 @@ const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
 const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
     content::BrowserContext* context) const {
   DCHECK(context);
-  return chromeos::UserManager::Get()->GetUserByProfile(
+  return chromeos::ProfileHelper::Get()->GetUserByProfile(
       Profile::FromBrowserContext(context));
 }
 

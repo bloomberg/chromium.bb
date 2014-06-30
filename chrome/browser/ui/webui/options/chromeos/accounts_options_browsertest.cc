@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,7 +62,7 @@ class AccountsOptionsTest : public LoginManagerTest {
 
  protected:
   void CheckAccountsUI(const User* user, bool is_owner) {
-    Profile* profile = UserManager::Get()->GetProfileByUser(user);
+    Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    user->email());
 

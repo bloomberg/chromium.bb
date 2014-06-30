@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -135,6 +136,25 @@ SessionManager* SessionManager::GetInstance() {
 }
 
 // static
+void SessionManager::OverrideHomedir() {
+  // Override user homedir, check for ProfileManager being initialized as
+  // it may not exist in unit tests.
+  if (g_browser_process->profile_manager()) {
+    UserManager* user_manager = UserManager::Get();
+    if (user_manager->GetLoggedInUsers().size() == 1) {
+      base::FilePath homedir = ProfileHelper::GetProfilePathByUserIdHash(
+          user_manager->GetPrimaryUser()->username_hash());
+      // This path has been either created by cryptohome (on real Chrome OS
+      // device) or by ProfileManager (on chromeos=1 desktop builds).
+      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
+                                             homedir,
+                                             true /* path is absolute */,
+                                             false /* don't create */);
+    }
+  }
+}
+
+// static
 void SessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
@@ -204,7 +224,7 @@ void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
     return;
   }
 
-  User* user = user_manager->GetUserByProfile(user_profile);
+  User* user = ProfileHelper::Get()->GetUserByProfile(user_profile);
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
     pending_restore_sessions_.erase(user->email());
@@ -421,7 +441,7 @@ void SessionManager::OnConnectionTypeChanged(
     if (!(*it)->is_profile_created())
       continue;
 
-    Profile* user_profile = user_manager->GetProfileByUser(*it);
+    Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(*it);
     bool should_restore_session =
         pending_restore_sessions_.find((*it)->email()) !=
             pending_restore_sessions_.end();
@@ -471,17 +491,20 @@ void SessionManager::NotifyUserLoggedIn() {
 }
 
 void SessionManager::PrepareProfile() {
-  UserManager* user_manager = UserManager::Get();
   bool is_demo_session =
       DemoAppLauncher::IsDemoAppSession(user_context_.GetUserID());
 
   // TODO(nkostylev): Figure out whether demo session is using the right profile
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
-      user_manager->GetUserProfileDir(user_context_.GetUserID()),
-      base::Bind(&SessionManager::OnProfileCreated, AsWeakPtr(),
-                 user_context_.GetUserID(), is_demo_session),
-      base::string16(), base::string16(), std::string());
+      ProfileHelper::GetUserProfileDirByUserId(user_context_.GetUserID()),
+      base::Bind(&SessionManager::OnProfileCreated,
+                 AsWeakPtr(),
+                 user_context_.GetUserID(),
+                 is_demo_session),
+      base::string16(),
+      base::string16(),
+      std::string());
 }
 
 void SessionManager::OnProfileCreated(const std::string& user_id,
@@ -613,10 +636,9 @@ void SessionManager::FinalizePrepareProfile(Profile* profile) {
   InitializeCertsForPrimaryUser(profile);
 
   // Initialize RLZ only for primary user.
-  if (user_manager->GetPrimaryUser() ==
-      user_manager->GetUserByProfile(profile)) {
+  const User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user_manager->GetPrimaryUser() == user)
     InitRlz(profile);
-  }
 
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
@@ -727,7 +749,7 @@ void SessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
   const User* primary_user = user_manager->GetPrimaryUser();
   if (user_manager->IsUserLoggedIn() &&
       primary_user &&
-      profile == user_manager->GetProfileByUser(primary_user) &&
+      profile == ProfileHelper::Get()->GetProfileByUser(primary_user) &&
       CertLoader::IsInitialized() &&
       base::SysInfo::IsRunningOnChromeOS()) {
     GetNSSCertDatabaseForProfile(profile,

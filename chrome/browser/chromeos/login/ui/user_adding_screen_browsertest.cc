@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -163,12 +164,18 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
                 GetSessionState());
 
   // Now check how unlock policy works for these users.
-  PrefService* prefs1 = user_manager->
-      GetProfileByUser(user_manager->GetLoggedInUsers()[0])->GetPrefs();
-  PrefService* prefs2 = user_manager->
-      GetProfileByUser(user_manager->GetLoggedInUsers()[1])->GetPrefs();
-  PrefService* prefs3 = user_manager->
-      GetProfileByUser(user_manager->GetLoggedInUsers()[2])->GetPrefs();
+  PrefService* prefs1 =
+      ProfileHelper::Get()
+          ->GetProfileByUser(user_manager->GetLoggedInUsers()[0])
+          ->GetPrefs();
+  PrefService* prefs2 =
+      ProfileHelper::Get()
+          ->GetProfileByUser(user_manager->GetLoggedInUsers()[1])
+          ->GetPrefs();
+  PrefService* prefs3 =
+      ProfileHelper::Get()
+          ->GetProfileByUser(user_manager->GetLoggedInUsers()[2])
+          ->GetPrefs();
   ASSERT_TRUE(prefs1 != NULL);
   ASSERT_TRUE(prefs2 != NULL);
   ASSERT_TRUE(prefs3 != NULL);

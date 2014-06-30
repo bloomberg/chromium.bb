@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
@@ -915,7 +916,7 @@ SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
     const std::string& user_id) {
   if (!accounts_delegates_.contains(user_id)) {
     const User* user = UserManager::Get()->FindUser(user_id);
-    Profile* user_profile = UserManager::Get()->GetProfileByUser(user);
+    Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
     CHECK(user_profile);
     accounts_delegates_.set(
         user_id,

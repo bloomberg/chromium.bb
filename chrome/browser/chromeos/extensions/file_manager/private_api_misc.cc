@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/drive/event_logger.h"
@@ -75,7 +76,7 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
       continue;
     original_profiles.insert(profile);
     const chromeos::User* const user =
-        chromeos::UserManager::Get()->GetUserByProfile(profile);
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (!user || !user->is_logged_in())
       continue;
 
@@ -108,7 +109,7 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
 
 bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunSync() {
   chromeos::User* user =
-      chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
+      chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (user) {
     chromeos::UserManager::Get()->SaveUserOAuthStatus(
         user->email(),

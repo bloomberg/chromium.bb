@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -123,7 +124,8 @@ class MultiProfileUserControllerTest
       user_profile->set_profile_name(user_email);
       user_profiles_.push_back(user_profile);
 
-      fake_user_manager_->SetProfileForUser(user, user_profile);
+      ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                              user_profile);
     }
   }
 

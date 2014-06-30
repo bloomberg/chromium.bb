@@ -108,6 +108,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -502,7 +503,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   std::string username = profile->GetProfileName();
   if (username.empty()) {
     chromeos::User* user =
-        chromeos::UserManager::Get()->GetUserByProfile(profile);
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != chromeos::User::USER_TYPE_GUEST))
       username = user->email();
 

@@ -5,14 +5,18 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace chromeos {
 
 MockUserManager::MockUserManager()
     : user_flow_(new DefaultUserFlow()),
-      supervised_user_manager_(new FakeSupervisedUserManager()) {}
+      supervised_user_manager_(new FakeSupervisedUserManager()) {
+  ProfileHelper::SetProfileToUserForTestingEnabled(true);
+}
 
 MockUserManager::~MockUserManager() {
+  ProfileHelper::SetProfileToUserForTestingEnabled(false);
   ClearUserList();
 }
 
@@ -48,10 +52,6 @@ const User* MockUserManager::GetPrimaryUser() const {
   return GetLoggedInUser();
 }
 
-User* MockUserManager::GetUserByProfile(Profile* profile) const {
-  return user_list_.empty() ? NULL : user_list_.front();
-}
-
 MultiProfileUserController* MockUserManager::GetMultiProfileUserController() {
   return NULL;
 }
@@ -81,12 +81,16 @@ UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
 
 User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
   ClearUserList();
-  user_list_.push_back(User::CreatePublicAccountUser(email));
+  User* user = User::CreatePublicAccountUser(email);
+  user_list_.push_back(user);
+  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
   return user_list_.back();
 }
 
 void MockUserManager::AddUser(const std::string& email) {
-  user_list_.push_back(User::CreateRegularUser(email));
+  User* user = User::CreateRegularUser(email);
+  user_list_.push_back(user);
+  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 }
 
 void MockUserManager::ClearUserList() {

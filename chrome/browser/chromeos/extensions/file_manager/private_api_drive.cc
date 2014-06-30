@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/drive/drive_app_registry.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/profiles/profile.h"
@@ -851,7 +851,7 @@ bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
     return false;
 
   const chromeos::User* const user =
-      chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
+      chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user || !user->is_logged_in())
     return false;
 

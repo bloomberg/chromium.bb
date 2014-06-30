@@ -38,8 +38,8 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
     return NULL;
   }
 
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  chromeos::User* user = user_manager->GetUserByProfile(profile);
+  chromeos::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return NULL;
 

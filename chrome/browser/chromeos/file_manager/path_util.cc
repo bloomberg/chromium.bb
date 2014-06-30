@@ -37,7 +37,7 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       chromeos::UserManager::IsInitialized()) {
     const chromeos::User* const user =
-        chromeos::UserManager::Get()->GetUserByProfile(
+        chromeos::ProfileHelper::Get()->GetUserByProfile(
             profile->GetOriginalProfile());
     const chromeos::User* const primary_user =
         chromeos::UserManager::Get()->GetPrimaryUser();
@@ -78,7 +78,7 @@ bool MigratePathFromOldFormat(Profile* profile,
   // some edge cases (crbug.com/356322) that u-<hash> path is temporarily used.
   if (chromeos::UserManager::IsInitialized()) {
     const chromeos::User* const user =
-        chromeos::UserManager::Get()->GetUserByProfile(profile);
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user) {
       const base::FilePath hashed_downloads =
           chromeos::ProfileHelper::GetProfilePathByUserIdHash(
@@ -107,9 +107,10 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   // are not associated with an user account. In that case, no suffix is added
   // because such a profile never belongs to a multi-profile session.
   chromeos::User* const user =
-      chromeos::UserManager::IsInitialized() ?
-          chromeos::UserManager::Get()->GetUserByProfile(
-              profile->GetOriginalProfile()) : NULL;
+      chromeos::UserManager::IsInitialized()
+          ? chromeos::ProfileHelper::Get()->GetUserByProfile(
+                profile->GetOriginalProfile())
+          : NULL;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapePath(kDownloadsFolderName + id);
 }

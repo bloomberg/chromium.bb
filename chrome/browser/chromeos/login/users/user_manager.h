@@ -226,12 +226,6 @@ class UserManager {
   // first signed-in user and does not change thereafter.
   virtual const User* GetPrimaryUser() const = 0;
 
-  // Returns NULL if User is not created.
-  virtual User* GetUserByProfile(Profile* profile) const = 0;
-
-  /// Returns NULL if profile for user is not found or is not fully loaded.
-  virtual Profile* GetProfileByUser(const User* user) const = 0;
-
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
@@ -351,10 +345,6 @@ class UserManager {
 
   // Returns true if locally managed users allowed.
   virtual bool AreLocallyManagedUsersAllowed() const = 0;
-
-  // Returns profile dir for the user identified by |user_id|.
-  virtual base::FilePath GetUserProfileDir(const std::string& user_id)
-      const = 0;
 
  private:
   friend class ScopedUserManagerEnabler;

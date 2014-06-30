@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
@@ -61,7 +62,7 @@ class DialogLauncher : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
     DCHECK(content::Details<const User>(details).ptr() ==
-        UserManager::Get()->GetUserByProfile(profile_));
+           ProfileHelper::Get()->GetUserByProfile(profile_));
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     bool launched_in_test = command_line->HasSwitch(::switches::kTestType);
     bool launched_in_telemetry =
@@ -97,7 +98,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 void MaybeLaunchDialogAfterSessionStart() {
   UserManager* user_manager = UserManager::Get();
   new DialogLauncher(
-      user_manager->GetProfileByUser(user_manager->GetActiveUser()));
+      ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser()));
 }
 
 void LaunchTutorial() {

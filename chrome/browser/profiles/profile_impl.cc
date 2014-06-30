@@ -1172,7 +1172,7 @@ void ProfileImpl::ChangeAppLocale(
   local_state->SetString(prefs::kApplicationLocale, new_locale);
 
   if (chromeos::UserManager::Get()->GetOwnerEmail() ==
-      chromeos::UserManager::Get()->GetUserByProfile(this)->email())
+      chromeos::ProfileHelper::Get()->GetUserByProfile(this)->email())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
 }
 
@@ -1186,7 +1186,7 @@ void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_.reset(new chromeos::Preferences());
   chromeos_preferences_->Init(
       PrefServiceSyncable::FromProfile(this),
-      chromeos::UserManager::Get()->GetUserByProfile(this));
+      chromeos::ProfileHelper::Get()->GetUserByProfile(this));
 }
 
 #endif  // defined(OS_CHROMEOS)

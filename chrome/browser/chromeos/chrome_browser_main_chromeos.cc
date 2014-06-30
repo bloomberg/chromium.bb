@@ -468,7 +468,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   g_browser_process->profile_manager();
 
   // ProfileHelper has to be initialized after UserManager instance is created.
-  g_browser_process->platform_part()->profile_helper()->Initialize();
+  ProfileHelper::Get()->Initialize();
 
   // TODO(abarth): Should this move to InitializeNetworkOptions()?
   // Allow access to file:// on ChromeOS for tests.
@@ -599,13 +599,13 @@ void GuestLanguageSetCallbackData::Callback(
   ime_manager->ChangeInputMethod(login_input_methods[0]);
 }
 
-void SetGuestLocale(UserManager* const user_manager, Profile* const profile) {
+void SetGuestLocale(Profile* const profile) {
   scoped_ptr<GuestLanguageSetCallbackData> data(
       new GuestLanguageSetCallbackData(profile));
   scoped_ptr<locale_util::SwitchLanguageCallback> callback(
       new locale_util::SwitchLanguageCallback(base::Bind(
           &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
-  User* const user = user_manager->GetUserByProfile(profile);
+  User* const user = ProfileHelper::Get()->GetUserByProfile(profile);
   SessionManager::GetInstance()->RespectLocalePreference(
       profile, user, callback.Pass());
 }
@@ -681,9 +681,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Guest user profile is never initialized with locale settings,
   // so we need special handling for Guest session.
-  UserManager* const user_manager = UserManager::Get();
-  if (user_manager->IsLoggedInAsGuest())
-    SetGuestLocale(user_manager, profile());
+  if (UserManager::Get()->IsLoggedInAsGuest())
+    SetGuestLocale(profile());
 
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.

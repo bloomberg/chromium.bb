@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -367,7 +368,7 @@ void ManagedUserTestBase::SigninAsSupervisedUser(
   LoginUser(user->email());
   if (check_homedir_calls)
     ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
-  Profile* profile = UserManager::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
       new ManagedUsersSharedSettingsSyncTestAdapter(profile));
 
@@ -383,7 +384,7 @@ void ManagedUserTestBase::SigninAsManager(int user_index) {
   // Created supervised user have to be first in a list.
   const User* user = UserManager::Get()->GetUsers().at(user_index);
   LoginUser(user->email());
-  Profile* profile = UserManager::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
       new ManagedUsersSharedSettingsSyncTestAdapter(profile));
   managed_users_adapter_.reset(new ManagedUsersSyncTestAdapter(profile));

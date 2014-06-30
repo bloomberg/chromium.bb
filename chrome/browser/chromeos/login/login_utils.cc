@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -305,7 +306,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  User* const user = UserManager::Get()->GetUserByProfile(profile);
+  User* const user = ProfileHelper::Get()->GetUserByProfile(profile);
   scoped_ptr<DoBrowserLaunchOnLocaleLoadedData> data(
       new DoBrowserLaunchOnLocaleLoadedData(this, profile, login_host));
 

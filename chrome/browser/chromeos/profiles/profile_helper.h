@@ -16,9 +16,14 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 
 class Profile;
+class User;
 
 namespace base {
 class FilePath;
+}
+
+namespace extensions {
+class ExtensionGarbageCollectorChromeOSUnitTest;
 }
 
 namespace chromeos {
@@ -41,6 +46,11 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   ProfileHelper();
   virtual ~ProfileHelper();
 
+  // Returns ProfileHelper instance. This class is not singleton and is owned
+  // by BrowserProcess/BrowserProcessPlatformPart. This method keeps that
+  // knowledge in one place.
+  static ProfileHelper* Get();
+
   // Returns Profile instance that corresponds to |user_id_hash|.
   static Profile* GetProfileByUserIdHash(const std::string& user_id_hash);
 
@@ -60,6 +70,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns user_id hash for |profile| instance or empty string if hash
   // could not be extracted from |profile|.
   static std::string GetUserIdHashFromProfile(Profile* profile);
+
+  // Returns profile dir for the user identified by |user_id|.
+  static base::FilePath GetUserProfileDirByUserId(const std::string& user_id);
 
   // Returns user profile dir in a format [u-user_id_hash].
   static base::FilePath GetUserProfileDir(const std::string& user_id_hash);
@@ -90,7 +103,20 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Callback can be empty. Not thread-safe.
   void ClearSigninProfile(const base::Closure& on_clear_callback);
 
+  // Returns NULL if profile for user is not found or is not fully loaded.
+  Profile* GetProfileByUser(const User* user);
+
+  // Returns NULL if User is not created.
+  User* GetUserByProfile(Profile* profile);
+
  private:
+  friend class DeviceSettingsTestBase;
+  friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
+  friend class FakeUserManager;
+  friend class KioskTest;
+  friend class MockUserManager;
+  friend class MultiProfileUserControllerTest;
+  friend class ParallelAuthenticatorTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
 
@@ -105,6 +131,22 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // UserManager::UserSessionStateObserver implementation:
   virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
 
+  // Associates |user| with profile with the same user_id,
+  // for GetUserByProfile() testing.
+  void SetProfileToUserMappingForTesting(User* user);
+
+  // Enables/disables testing code path in GetUserByProfile() like
+  // always return primary user (when always_return_primary_user_for_testing is
+  // set).
+  static void SetProfileToUserForTestingEnabled(bool enabled);
+
+  // Enables/disables testing GetUserByProfile() by always returning
+  // primary user.
+  static void SetAlwaysReturnPrimaryUserForTesting(bool value);
+
+  // Associates |profile| with |user|, for GetProfileByUser() testing.
+  void SetUserToProfileMappingForTesting(const User* user, Profile* profile);
+
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;
 
@@ -113,6 +155,22 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
   // List of callbacks called after signin profile clearance.
   std::vector<base::Closure> on_clear_callbacks_;
+
+  // Used for testing by unit tests and FakeUserManager/MockUserManager.
+  std::map<const User*, Profile*> user_to_profile_for_testing_;
+
+  // When this list is not empty GetUserByProfile() will find user that has
+  // the same user_id as |profile|->GetProfileName().
+  UserList user_list_for_testing_;
+
+  // If true testing code path is used in GetUserByProfile() even if
+  // user_list_for_testing_ list is empty. In that case primary user will always
+  // be returned.
+  static bool enable_profile_to_user_testing;
+
+  // If true and enable_profile_to_user_testing is true then primary user will
+  // always be returned by GetUserByProfile().
+  static bool always_return_primary_user_for_testing;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };

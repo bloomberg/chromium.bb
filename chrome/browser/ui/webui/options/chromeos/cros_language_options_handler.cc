@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -449,7 +450,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
   UserManager* user_manager = UserManager::Get();
 
   // Only the primary user can change the locale.
-  User* user = user_manager->GetUserByProfile(profile);
+  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (user && user->email() == user_manager->GetPrimaryUser()->email()) {
     profile->ChangeAppLocale(language_code,
                              Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);

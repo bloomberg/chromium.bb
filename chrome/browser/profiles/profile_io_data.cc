@@ -108,6 +108,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -227,7 +228,7 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
 //
 //  ProfileIOData::InitializeOnUIThread
 //                   |
-// chromeos::UserManager::GetUserByProfile
+//  ProfileHelper::Get()->GetUserByProfile()
 //                   \---------------------------------------v
 //                                                 StartNSSInitOnIOThread
 //                                                           |
@@ -357,7 +358,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if defined(OS_CHROMEOS)
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   if (user_manager) {
-    chromeos::User* user = user_manager->GetUserByProfile(profile);
+    chromeos::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user) {
       params->username_hash = user->username_hash();
       bool is_primary_user = (user_manager->GetPrimaryUser() == user);

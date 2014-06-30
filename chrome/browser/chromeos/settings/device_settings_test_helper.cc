@@ -10,8 +10,10 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -258,7 +260,9 @@ void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
   if (!user) {
     user = user_manager_->AddUser(user_id);
     profile_->set_profile_name(user_id);
-    user_manager_->SetProfileForUser(user, profile_.get());
+
+    ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                            profile_.get());
   }
   OwnerSettingsService* service =
       OwnerSettingsServiceFactory::GetForProfile(profile_.get());
