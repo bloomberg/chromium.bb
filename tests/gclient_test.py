@@ -611,10 +611,10 @@ class GclientTest(trial_dir.TestCase):
         sorted(self._get_processed()))
 
   def testRecursionOverride(self):
-    """Verifies gclient respects the recursion var syntax.
+    """Verifies gclient respects the |recursion| var syntax.
 
     We check several things here:
-    - recursion = 3 sets recursion on the foo dep to exactly 3
+    - |recursion| = 3 sets recursion on the foo dep to exactly 3
       (we pull /fizz, but not /fuzz)
     - pulling foo/bar at recursion level 1 (in .gclient) is overriden by
       a later pull of foo/bar at recursion level 2 (in the dep tree)
@@ -657,6 +657,155 @@ class GclientTest(trial_dir.TestCase):
           'svn://example.com/foo/bar',
           'svn://example.com/foo/bar/baz',
           'svn://example.com/foo/bar/baz/fizz',
+        ],
+        self._get_processed())
+
+  def testRecurselistOverride(self):
+    """Verifies gclient respects the |recurselist| var syntax.
+
+    This is what we mean to check here:
+    - |recurselist| = [...] on 2 levels means we pull exactly 3 deps
+      (up to /fizz, but not /fuzz)
+    - pulling foo/bar with no recursion (in .gclient) is overriden by
+      a later pull of foo/bar with recursion (in the dep tree)
+    - pulling foo/tar with no recursion (in .gclient) is no recursively
+      pulled (taz is left out)
+    """
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        '  { "name": "foo/bar", "url": "svn://example.com/bar" },\n'
+        '  { "name": "foo/tar", "url": "svn://example.com/tar" },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recurselist = ["bar"]')
+    write(
+        os.path.join('bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}\n'
+        'recurselist = ["baz"]')
+    write(
+        os.path.join('baz', 'DEPS'),
+        'deps = {\n'
+        '  "fizz": "/fizz",\n'
+        '}')
+    write(
+        os.path.join('fizz', 'DEPS'),
+        'deps = {\n'
+        '  "fuzz": "/fuzz",\n'
+        '}')
+    write(
+        os.path.join('tar', 'DEPS'),
+        'deps = {\n'
+        '  "taz": "/taz",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/bar',
+          'svn://example.com/tar',
+          'svn://example.com/foo/bar',
+          'svn://example.com/foo/bar/baz',
+          'svn://example.com/foo/bar/baz/fizz',
+        ],
+        self._get_processed())
+
+  def testRecursionOverridesRecurselist(self):
+    """Verifies gclient respects |recursion| over |recurselist|.
+
+    |recursion| is set in a top-level DEPS file.  That value is meant
+    to affect how many subdeps are parsed via recursion.
+
+    |recurselist| is set in each DEPS file to control whether or not
+    to recurse into the immediate next subdep.
+
+    This test verifies that if both syntaxes are mixed in a DEPS file,
+    we disable |recurselist| support and only obey |recursion|.
+
+    Since this setting is evaluated per DEPS file, recursed DEPS
+    files will each be re-evaluated according to the per DEPS rules.
+    So a DEPS that only contains |recurselist| could then override any
+    previous |recursion| setting.  There is extra processing to ensure
+    this does not happen.
+
+    For this test to work correctly, we need to use a DEPS chain that
+    only contains recursion controls in the top DEPS file.
+
+    In foo, |recursion| and |recurselist| are specified.  When we see
+    |recursion|, we stop trying to use |recurselist|.
+
+    There are 2 constructions of DEPS here that are key to this test:
+
+    (1) In foo, if we used |recurselist| instead of |recursion|, we
+        would also pull in bar.  Since bar's DEPS doesn't contain any
+        recursion statements, we would stop processing at bar.
+
+    (2) In fizz, if we used |recurselist| at all, we should pull in
+        fuzz.
+
+    We expect to keep going past bar (satisfying 1) and we don't
+    expect to pull in fuzz (satisfying 2).
+    """
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        '  { "name": "foo/bar", "url": "svn://example.com/bar" },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recursion = 3\n'
+        'recurselist = ["bar"]')
+    write(
+        os.path.join('bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+    write(
+        os.path.join('baz', 'DEPS'),
+        'deps = {\n'
+        '  "fizz": "/fizz",\n'
+        '}')
+    write(
+        os.path.join('fizz', 'DEPS'),
+        'deps = {\n'
+        '  "fuzz": "/fuzz",\n'
+        '}\n'
+        'recurselist = ["fuzz"]')
+    write(
+        os.path.join('fuzz', 'DEPS'),
+        'deps = {\n'
+        '  "tar": "/tar",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/bar',
+          'svn://example.com/foo/bar',
+          # Deps after this would have been skipped if we were obeying
+          # |recurselist|.
+          'svn://example.com/foo/bar/baz',
+          'svn://example.com/foo/bar/baz/fizz',
+          # And this dep would have been picked up if we were obeying
+          # |recurselist|.
+          # 'svn://example.com/foo/bar/baz/fuzz',
         ],
         self._get_processed())
 

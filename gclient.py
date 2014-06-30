@@ -178,10 +178,6 @@ class DependencySettings(GClientKeywords):
     # recursion limit and controls gclient's behavior so it does not misbehave.
     self._managed = managed
     self._should_process = should_process
-    # This is a mutable value that overrides the normal recursion limit for this
-    # dependency.  It is read from the actual DEPS file so cannot be set on
-    # class instantiation.
-    self.recursion_override = None
     # This is a mutable value which has the list of 'target_os' OSes listed in
     # the current deps file.
     self.local_target_os = None
@@ -259,13 +255,6 @@ class DependencySettings(GClientKeywords):
     return self._url
 
   @property
-  def recursion_limit(self):
-    """Returns > 0 if this dependency is not too recursed to be processed."""
-    if self.recursion_override is not None:
-      return self.recursion_override
-    return max(self.parent.recursion_limit - 1, 0)
-
-  @property
   def target_os(self):
     if self.local_target_os is not None:
       return tuple(set(self.local_target_os).union(self.parent.target_os))
@@ -318,6 +307,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # unavailable
     self._got_revision = None
 
+    # This is a mutable value that overrides the normal recursion limit for this
+    # dependency.  It is read from the actual DEPS file so cannot be set on
+    # class instantiation.
+    self.recursion_override = None
+    # recurselist is a mutable value that selectively overrides the default
+    # 'no recursion' setting on a dep-by-dep basis.  It will replace
+    # recursion_override.
+    self.recurselist = None
+
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
 
@@ -356,6 +354,26 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     requirements = tuple(sorted(requirements))
     logging.info('Dependency(%s).requirements = %s' % (self.name, requirements))
     return requirements
+
+  @property
+  def try_recurselist(self):
+    """Returns False if recursion_override is ever specified."""
+    if self.recursion_override is not None:
+      return False
+    return self.parent.try_recurselist
+
+  @property
+  def recursion_limit(self):
+    """Returns > 0 if this dependency is not too recursed to be processed."""
+    # We continue to support the absence of recurselist until tools and DEPS
+    # using recursion_override are updated.
+    if self.try_recurselist and self.parent.recurselist != None:
+      if self.name in self.parent.recurselist:
+        return 1
+
+    if self.recursion_override is not None:
+      return self.recursion_override
+    return max(self.parent.recursion_limit - 1, 0)
 
   def verify_validity(self):
     """Verifies that this Dependency is fine to add as a child of another one.
@@ -563,6 +581,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
           'Setting %s recursion to %d.', self.name, self.recursion_limit)
+    self.recurselist = local_scope.get('recurselist', None)
+    if 'recurselist' in local_scope:
+      logging.warning('Found recurselist %r.', repr(self.recurselist))
     # If present, save 'target_os' in the local_target_os property.
     if 'target_os' in local_scope:
       self.local_target_os = local_scope['target_os']
@@ -1455,6 +1476,11 @@ want to set 'managed': False in .gclient.
   def recursion_limit(self):
     """How recursive can each dependencies in DEPS file can load DEPS file."""
     return self._recursion_limit
+
+  @property
+  def try_recurselist(self):
+    """Whether to attempt using recurselist-style recursion processing."""
+    return True
 
   @property
   def target_os(self):
