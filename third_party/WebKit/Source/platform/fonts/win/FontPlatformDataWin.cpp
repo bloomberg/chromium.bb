@@ -63,7 +63,14 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
         flags |= SkPaint::kEmbeddedBitmapText_Flag;
 
     if (ts >= m_minSizeForAntiAlias) {
-        if (m_useSubpixelPositioning)
+
+        // Subpixel text positioning looks pretty bad without font smoothing.
+        // Disable it unless some type of font smoothing is used. As most tests
+        // run without font smoothing we enable it for tests to ensure we get
+        // good test coverage matching the more common smoothing enabled
+        // behavior.
+        if (m_useSubpixelPositioning
+            && ((textFlags & SkPaint::kAntiAlias_Flag) || isRunningLayoutTest()))
             flags |= SkPaint::kSubpixelText_Flag;
 
         // Only set painting flags when we're actually painting.
