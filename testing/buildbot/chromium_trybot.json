@@ -24,6 +24,10 @@
     "cc_unittests",
     "chromedriver_unittests",
     {
+      "test": "chromevox_tests",
+      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+    },
+    {
       "test": "chrome_elf_unittests",
       "platforms": ["win"]
     },
