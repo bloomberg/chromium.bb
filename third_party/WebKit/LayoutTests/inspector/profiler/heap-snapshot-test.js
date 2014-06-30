@@ -689,11 +689,11 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     {
         var profile = profileType.profileBeingRecorded();
         if (reportProgress) {
-            profileType.reportHeapSnapshotProgress(50, 100, false);
-            profileType.reportHeapSnapshotProgress(100, 100, true);
+            profileType._reportHeapSnapshotProgress({data: {done: 50, total: 100, finished: false}});
+            profileType._reportHeapSnapshotProgress({data: {done: 100, total: 100, finished: true}});
         }
         snapshot.snapshot.typeId = "HEAP";
-        profileType.addHeapSnapshotChunk(JSON.stringify(snapshot));
+        profileType._addHeapSnapshotChunk({data: JSON.stringify(snapshot)});
         setTimeout(callback, 0);
     }
     InspectorTest.override(HeapProfilerAgent, "takeHeapSnapshot", pushGeneratedSnapshot);

@@ -21,8 +21,8 @@ function test()
         InspectorTest.override(HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
         function takeHeapSnapshotMock(reportProgress, callback) {
             if (reportProgress) {
-                profileType.reportHeapSnapshotProgress(50, 100, false);
-                profileType.reportHeapSnapshotProgress(100, 100, true);
+                profileType._reportHeapSnapshotProgress({data: {done: 50, total: 100, finished: false}});
+                profileType._reportHeapSnapshotProgress({data: {done: 100, total: 100, finished: true}});
             }
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                 dispatcher.addHeapSnapshotChunk(sourceStringified.slice(i, i + partSize));
