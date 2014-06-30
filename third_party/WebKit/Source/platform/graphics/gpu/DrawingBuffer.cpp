@@ -958,7 +958,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
 
     const SkBitmap& canvasBitmap = imageBuffer->bitmap();
     const SkBitmap* readbackBitmap = 0;
-    ASSERT(canvasBitmap.colorType() == kPMColor_SkColorType);
+    ASSERT(canvasBitmap.colorType() == kN32_SkColorType);
     if (canvasBitmap.width() == width && canvasBitmap.height() == height) {
         // This is the fastest and most common case. We read back
         // directly into the canvas's backing store.

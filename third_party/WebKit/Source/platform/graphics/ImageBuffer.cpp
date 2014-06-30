@@ -281,7 +281,7 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
     if (bitmap.isNull())
         return;
 
-    ASSERT(bitmap.colorType() == kPMColor_SkColorType);
+    ASSERT(bitmap.colorType() == kN32_SkColorType);
     IntSize size = m_surface->size();
     SkAutoLockPixels bitmapLock(bitmap);
     for (int y = 0; y < size.height(); ++y) {

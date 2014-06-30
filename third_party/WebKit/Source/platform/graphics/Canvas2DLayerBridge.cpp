@@ -57,11 +57,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     if (!gr)
         return nullptr;
     gr->resetContext();
-    SkImageInfo info;
-    info.fWidth = size.width();
-    info.fHeight = size.height();
-    info.fColorType = kPMColor_SkColorType;
-    info.fAlphaType = kPremul_SkAlphaType;
+    SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
     return adoptRef(SkSurface::NewRenderTarget(gr, info,  msaaSampleCount));
 }
 

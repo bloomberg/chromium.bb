@@ -52,12 +52,7 @@ bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize&
         if (!texture.get())
             return false;
 
-        SkImageInfo info;
-        info.fWidth = desc.fWidth;
-        info.fHeight = desc.fHeight;
-        info.fColorType = kPMColor_SkColorType;
-        info.fAlphaType = kPremul_SkAlphaType;
-
+        SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
         SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
         if (!pixelRef)
             return false;

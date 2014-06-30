@@ -101,7 +101,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
     }
 
     SkBitmap skBitmap;
-    if (!bitmap->bitmap().copyTo(&skBitmap, kPMColor_SkColorType))
+    if (!bitmap->bitmap().copyTo(&skBitmap, kN32_SkColorType))
         return nullptr;
     return adoptPtr(new DragImage(skBitmap, deviceScaleFactor));
 }
