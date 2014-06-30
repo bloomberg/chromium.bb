@@ -102,7 +102,7 @@ class AwStaticCookiePolicy {
   //    then reject third party.
   // If ShouldAcceptCookies and ShouldAcceptThirdPartyCookies
   //    then allow all cookies.
-  net::StaticCookiePolicy::Type GetPolicy() const;
+  net::StaticCookiePolicy::Type GetPolicy(const GURL& url) const;
 
   DISALLOW_COPY_AND_ASSIGN(AwStaticCookiePolicy);
 };

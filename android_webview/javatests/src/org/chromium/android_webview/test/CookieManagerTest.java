@@ -48,16 +48,18 @@ public class CookieManagerTest extends AwTestBase {
         mAwContents.getSettings().setJavaScriptEnabled(true);
         assertNotNull(mCookieManager);
 
-        // All tests start with no cookies.
+        mCookieManager.setAcceptCookie(true);
+        assertTrue(mCookieManager.acceptCookie());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         try {
             clearCookies();
         } catch (Throwable e) {
             throw new RuntimeException("Could not clear cookies.");
         }
-
-        // But setting cookies enabled.
-        mCookieManager.setAcceptCookie(true);
-        assertTrue(mCookieManager.acceptCookie());
+        super.tearDown();
     }
 
     @MediumTest
@@ -504,6 +506,38 @@ public class CookieManagerTest extends AwTestBase {
         } finally {
             if (webServer != null) webServer.shutdown();
         }
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptFileSchemeCookies() throws Throwable {
+        mCookieManager.setAcceptFileSchemeCookies(true);
+        mAwContents.getSettings().setAllowFileAccess(true);
+
+        mAwContents.getSettings().setAcceptThirdPartyCookies(true);
+        assertTrue(fileURLCanSetCookie("1"));
+        mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+        assertTrue(fileURLCanSetCookie("2"));
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testRejectFileSchemeCookies() throws Throwable {
+        mCookieManager.setAcceptFileSchemeCookies(false);
+        mAwContents.getSettings().setAllowFileAccess(true);
+
+        mAwContents.getSettings().setAcceptThirdPartyCookies(true);
+        assertFalse(fileURLCanSetCookie("3"));
+        mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+        assertFalse(fileURLCanSetCookie("4"));
+    }
+
+    private boolean fileURLCanSetCookie(String suffix) throws Throwable {
+        String value = "value" + suffix;
+        String url = "file:///android_asset/cookie_test.html?value=" + value;
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        String cookie = mCookieManager.getCookie(url);
+        return cookie != null && cookie.contains("test=" + value);
     }
 
     class ThirdPartyCookiesTestHelper {

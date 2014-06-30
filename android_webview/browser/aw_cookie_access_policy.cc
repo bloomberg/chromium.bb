@@ -113,24 +113,32 @@ AwStaticCookiePolicy::AwStaticCookiePolicy(bool accept_cookies,
       accept_third_party_cookies_(accept_third_party_cookies) {
 }
 
-StaticCookiePolicy::Type AwStaticCookiePolicy::GetPolicy() const {
+StaticCookiePolicy::Type AwStaticCookiePolicy::GetPolicy(const GURL& url)
+    const {
+  // File URLs are a special case. We want file URLs to be able to set cookies
+  // but (for the purpose of cookies) Chrome considers different file URLs to
+  // come from different origins so we use the 'allow all' cookie policy for
+  // file URLs.
+  bool isFile = url.SchemeIsFile();
   if (!accept_cookies()) {
     return StaticCookiePolicy::BLOCK_ALL_COOKIES;
-  } else if (!accept_third_party_cookies()) {
-    return StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
   }
-  return StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  if (accept_third_party_cookies() || isFile) {
+    return StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  }
+  return StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
 }
 
 bool AwStaticCookiePolicy::AllowSet(const GURL& url,
                                     const GURL& first_party) const {
-  return StaticCookiePolicy(GetPolicy()).CanSetCookie(url, first_party) ==
+
+  return StaticCookiePolicy(GetPolicy(url)).CanSetCookie(url, first_party) ==
          net::OK;
 }
 
 bool AwStaticCookiePolicy::AllowGet(const GURL& url,
                                     const GURL& first_party) const {
-  return StaticCookiePolicy(GetPolicy()).CanGetCookies(url, first_party) ==
+  return StaticCookiePolicy(GetPolicy(url)).CanGetCookies(url, first_party) ==
          net::OK;
 }
 
