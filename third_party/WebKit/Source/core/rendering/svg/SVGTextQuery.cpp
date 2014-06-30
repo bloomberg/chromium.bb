@@ -151,7 +151,7 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
     if (startPosition >= endPosition)
         return false;
 
-    modifyStartEndPositionsRespectingLigatures(queryData, startPosition, endPosition);
+    modifyStartEndPositionsRespectingLigatures(queryData, fragment, startPosition, endPosition);
     if (!queryData->textBox->mapStartEndPositionsIntoFragmentCoordinates(fragment, startPosition, endPosition))
         return false;
 
@@ -159,74 +159,40 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
     return true;
 }
 
-void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, int& startPosition, int& endPosition) const
+void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, const SVGTextFragment& fragment, int& startPosition, int& endPosition) const
 {
     SVGTextLayoutAttributes* layoutAttributes = queryData->textRenderer->layoutAttributes();
     Vector<SVGTextMetrics>& textMetricsValues = layoutAttributes->textMetricsValues();
-    unsigned boxStart = queryData->textBox->start();
-    unsigned boxLength = queryData->textBox->len();
 
-    unsigned textMetricsOffset = 0;
-    unsigned textMetricsSize = textMetricsValues.size();
+    unsigned textMetricsOffset = fragment.metricsListOffset;
 
-    unsigned positionOffset = 0;
-    unsigned positionSize = layoutAttributes->context()->textLength();
+    // Compute the offset of the fragment within the box, since that's the
+    // space <startPosition, endPosition> is in (and that's what we need).
+    int fragmentOffsetInBox = fragment.characterOffset - queryData->textBox->start();
+    int fragmentEndInBox = fragmentOffsetInBox + fragment.length;
 
-    bool alterStartPosition = true;
-    bool alterEndPosition = true;
-
-    int lastPositionOffset = -1;
-    for (; textMetricsOffset < textMetricsSize && positionOffset < positionSize; ++textMetricsOffset) {
+    // Find the text metrics cell that start at or contain the character startPosition.
+    while (fragmentOffsetInBox < fragmentEndInBox) {
         SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
-
-        // Advance to text box start location.
-        if (positionOffset < boxStart) {
-            positionOffset += metrics.length();
-            continue;
-        }
-
-        // Stop if we've finished processing this text box.
-        if (positionOffset >= boxStart + boxLength)
+        int glyphEnd = fragmentOffsetInBox + metrics.length();
+        if (startPosition < glyphEnd)
             break;
-
-        // If the start position maps to a character in the metrics list, we don't need to modify it.
-        if (startPosition == static_cast<int>(positionOffset))
-            alterStartPosition = false;
-
-        // If the start position maps to a character in the metrics list, we don't need to modify it.
-        if (endPosition == static_cast<int>(positionOffset))
-            alterEndPosition = false;
-
-        // Detect ligatures.
-        if (lastPositionOffset != -1 && lastPositionOffset - positionOffset > 1) {
-            if (alterStartPosition && startPosition > lastPositionOffset && startPosition < static_cast<int>(positionOffset)) {
-                startPosition = lastPositionOffset;
-                alterStartPosition = false;
-            }
-
-            if (alterEndPosition && endPosition > lastPositionOffset && endPosition < static_cast<int>(positionOffset)) {
-                endPosition = positionOffset;
-                alterEndPosition = false;
-            }
-        }
-
-        if (!alterStartPosition && !alterEndPosition)
-            break;
-
-        lastPositionOffset = positionOffset;
-        positionOffset += metrics.length();
+        fragmentOffsetInBox = glyphEnd;
+        textMetricsOffset++;
     }
 
-    if (!alterStartPosition && !alterEndPosition)
-        return;
+    startPosition = fragmentOffsetInBox;
 
-    if (lastPositionOffset != -1 && lastPositionOffset - positionOffset > 1) {
-        if (alterStartPosition && startPosition > lastPositionOffset && startPosition < static_cast<int>(positionOffset))
-            startPosition = lastPositionOffset;
-
-        if (alterEndPosition && endPosition > lastPositionOffset && endPosition < static_cast<int>(positionOffset))
-            endPosition = positionOffset;
+    // Find the text metrics cell that contain or ends at the character endPosition.
+    while (fragmentOffsetInBox < fragmentEndInBox) {
+        SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
+        fragmentOffsetInBox += metrics.length();
+        if (fragmentOffsetInBox >= endPosition)
+            break;
+        textMetricsOffset++;
     }
+
+    endPosition = fragmentOffsetInBox;
 }
 
 // numberOfCharacters() implementation

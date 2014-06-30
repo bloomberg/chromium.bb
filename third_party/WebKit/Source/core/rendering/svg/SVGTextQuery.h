@@ -53,7 +53,7 @@ private:
 
     void collectTextBoxesInFlowBox(InlineFlowBox*);
     bool mapStartEndPositionsIntoFragmentCoordinates(Data*, const SVGTextFragment&, int& startPosition, int& endPosition) const;
-    void modifyStartEndPositionsRespectingLigatures(Data*, int& startPosition, int& endPosition) const;
+    void modifyStartEndPositionsRespectingLigatures(Data*, const SVGTextFragment&, int& startPosition, int& endPosition) const;
 
 private:
     bool numberOfCharactersCallback(Data*, const SVGTextFragment&) const;
