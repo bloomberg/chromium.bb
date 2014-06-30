@@ -2246,7 +2246,7 @@ bool CSSPropertyParser::parseQuotes(CSSPropertyID propId, bool important)
         values->append(parsedValue.release());
         m_valueList->next();
     }
-    if (values->length()) {
+    if (values->length() && values->length() % 2 == 0) {
         addProperty(propId, values.release(), important);
         m_valueList->next();
         return true;

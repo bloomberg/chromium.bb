@@ -344,10 +344,7 @@ PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&,
         RefPtr<QuotesData> quotes = QuotesData::create();
         for (size_t i = 0; i < list->length(); i += 2) {
             CSSValue* first = list->item(i);
-            // item() returns null if out of bounds so this is safe.
             CSSValue* second = list->item(i + 1);
-            if (!second)
-                continue;
             String startQuote = toCSSPrimitiveValue(first)->getStringValue();
             String endQuote = toCSSPrimitiveValue(second)->getStringValue();
             quotes->addPair(std::make_pair(startQuote, endQuote));
