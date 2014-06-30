@@ -79,7 +79,8 @@ void ChromeSigninClient::ClearSigninProcess() {
 }
 
 bool ChromeSigninClient::IsSigninProcess(int process_id) const {
-  return process_id == signin_host_id_;
+  return process_id != ChildProcessHost::kInvalidUniqueID &&
+         process_id == signin_host_id_;
 }
 
 bool ChromeSigninClient::HasSigninProcess() const {
