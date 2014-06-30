@@ -28,7 +28,6 @@
 #include <limits>
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -137,16 +136,6 @@ bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
 
 Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("form");
-            argv.append(fastGetAttribute(methodAttr));
-            argv.append(fastGetAttribute(actionAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument())
         this->document().didAssociateFormControl(this);

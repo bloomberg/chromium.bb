@@ -49,10 +49,10 @@
     [PerWorldBindings] readonly attribute Node             nextSibling;
     [PerWorldBindings] readonly attribute Document         ownerDocument;
 
-    [Custom, CustomElementCallbacks, PerWorldBindings, RaisesException] Node insertBefore(Node newChild, Node refChild);
-    [Custom, CustomElementCallbacks, PerWorldBindings, RaisesException] Node replaceChild(Node newChild, Node oldChild);
+    [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node insertBefore(Node newChild, Node refChild);
+    [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node replaceChild(Node newChild, Node oldChild);
     [Custom, CustomElementCallbacks, RaisesException] Node removeChild(Node oldChild);
-    [Custom, CustomElementCallbacks, PerWorldBindings, RaisesException] Node appendChild(Node newChild);
+    [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node appendChild(Node newChild);
 
     [ImplementedAs=hasChildren] boolean hasChildNodes();
     [CustomElementCallbacks] Node cloneNode(optional boolean deep);

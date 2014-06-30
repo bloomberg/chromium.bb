@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/dom/Attribute.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/KeyboardEvent.h"
@@ -356,20 +355,6 @@ bool HTMLAnchorElement::willRespondToMouseClickEvents()
 bool HTMLAnchorElement::isInteractiveContent() const
 {
     return isLink();
-}
-
-Node::InsertionNotificationRequest HTMLAnchorElement::insertedInto(ContainerNode* insertionPoint)
-{
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("a");
-            argv.append(fastGetAttribute(hrefAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
-    return HTMLElement::insertedInto(insertionPoint);
 }
 
 }

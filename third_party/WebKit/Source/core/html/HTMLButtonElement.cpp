@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/html/HTMLButtonElement.h"
 
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"
@@ -212,22 +211,6 @@ bool HTMLButtonElement::isInteractiveContent() const
 bool HTMLButtonElement::supportsAutofocus() const
 {
     return true;
-}
-
-Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode* insertionPoint)
-{
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("button");
-            argv.append(fastGetAttribute(typeAttr));
-            argv.append(fastGetAttribute(formmethodAttr));
-            argv.append(fastGetAttribute(formactionAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
-    return HTMLFormControlElement::insertedInto(insertionPoint);
 }
 
 } // namespace

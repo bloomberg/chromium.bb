@@ -26,7 +26,6 @@
 #include "core/html/HTMLLinkElement.h"
 
 #include "bindings/v8/ScriptEventListener.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -261,16 +260,6 @@ void HTMLLinkElement::enableIfExitTransitionStyle()
 
 Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("link");
-            argv.append(fastGetAttribute(relAttr));
-            argv.append(fastGetAttribute(hrefAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
     HTMLElement::insertedInto(insertionPoint);
     if (!insertionPoint->inDocument())
         return InsertionDone;

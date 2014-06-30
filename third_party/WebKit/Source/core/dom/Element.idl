@@ -92,7 +92,7 @@
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, LogActivity=SetterOnly, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);

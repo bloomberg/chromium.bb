@@ -25,7 +25,6 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptEventListener.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -82,15 +81,6 @@ void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
 Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("script");
-            argv.append(fastGetAttribute(srcAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
     HTMLElement::insertedInto(insertionPoint);
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
