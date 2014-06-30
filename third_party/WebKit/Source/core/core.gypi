@@ -3402,6 +3402,8 @@
             'loader/MixedContentCheckerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
             'rendering/RenderOverflowTest.cpp',
+            'rendering/RenderTableCellTest.cpp',
+            'rendering/RenderTableRowTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
             'testing/UnitTestHelpers.cpp',
             'testing/UnitTestHelpers.h',

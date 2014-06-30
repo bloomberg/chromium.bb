@@ -27,11 +27,7 @@
 
 #include "core/rendering/RenderTableRow.h"
 
-#include "core/frame/LocalFrame.h"
-#include "public/web/WebFrame.h"
-#include "public/web/WebView.h"
-#include "web/WebLocalFrameImpl.h"
-#include "web/tests/FrameTestHelpers.h"
+#include "core/testing/DummyPageHolder.h"
 
 #include <gtest/gtest.h>
 
@@ -43,28 +39,10 @@ namespace {
 
 class RenderTableRowDeathTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        // It's unfortunate that we have to get the whole browser stack to test one RenderObject
-        // but the code needs it.
-        s_webViewHelper = new FrameTestHelpers::WebViewHelper();
-        s_webViewHelper->initializeAndLoad("about:blank");
-        s_webViewHelper->webView()->setFocus(true);
-    }
-
-    static void TearDownTestCase()
-    {
-        delete s_webViewHelper;
-    }
-
-    static Document* document()
-    {
-        return toWebLocalFrameImpl(s_webViewHelper->webView()->mainFrame())->frame()->document();
-    }
-
     virtual void SetUp()
     {
-        m_row = RenderTableRow::createAnonymous(document());
+        m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+        m_row = RenderTableRow::createAnonymous(&m_pageHolder->document());
     }
 
     virtual void TearDown()
@@ -72,13 +50,9 @@ protected:
         m_row->destroy();
     }
 
+    OwnPtr<DummyPageHolder> m_pageHolder;
     RenderTableRow* m_row;
-
-private:
-    static FrameTestHelpers::WebViewHelper* s_webViewHelper;
 };
-
-FrameTestHelpers::WebViewHelper* RenderTableRowDeathTest::s_webViewHelper = 0;
 
 TEST_F(RenderTableRowDeathTest, CanSetRow)
 {
