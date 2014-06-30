@@ -115,18 +115,15 @@ void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyfr
 void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
 {
     const ContainerNode* scopingNode = &m_scopingNode;
-    unsigned behaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary;
+    unsigned contextFlags = SelectorChecker::DefaultBehavior;
 
     if (!applyAuthorStyles)
-        behaviorAtBoundary |= SelectorChecker::ScopeContainsLastMatchedElement;
-
-    if (m_scopingNode.isShadowRoot())
-        behaviorAtBoundary |= SelectorChecker::ScopeIsShadowRoot;
+        contextFlags |= SelectorChecker::ScopeContainsLastMatchedElement;
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, scopingNode, m_authorStyleSheets[i], applyAuthorStyles, i);
-        collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
+        collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::ContextFlags>(contextFlags), cascadeScope, cascadeOrder);
     }
 }
 

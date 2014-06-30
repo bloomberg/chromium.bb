@@ -78,18 +78,11 @@ static bool matchesCustomPseudoElement(const Element* element, const CSSSelector
     return true;
 }
 
-Element* SelectorChecker::parentElement(const SelectorCheckingContext& context, bool allowToCrossBoundary) const
+static Element* parentElement(const SelectorChecker::SelectorCheckingContext& context)
 {
-    // CrossesBoundary means we don't care any context.scope. So we can walk up from a shadow root to its shadow host.
-    if (allowToCrossBoundary)
-        return context.element->parentOrShadowHostElement();
-
     // If context.scope is a shadow root, we should walk up to its shadow host.
-    if ((context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowRoot) && context.scope == context.element->containingShadowRoot())
+    if (context.scope && context.scope == context.element->containingShadowRoot())
         return context.element->parentOrShadowHostElement();
-
-    if ((context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope)
-        return context.element->parentElement();
 
     // If context.scope is some element in some shadow tree and querySelector initialized the context,
     // e.g. shadowRoot.querySelector(':host *'),
@@ -101,26 +94,22 @@ Element* SelectorChecker::parentElement(const SelectorCheckingContext& context, 
     return context.element->parentElement();
 }
 
-bool SelectorChecker::scopeContainsLastMatchedElement(const SelectorCheckingContext& context) const
+static bool scopeContainsLastMatchedElement(const SelectorChecker::SelectorCheckingContext& context)
 {
-    if (!(context.behaviorAtBoundary & SelectorChecker::ScopeContainsLastMatchedElement))
+    if (!(context.contextFlags & SelectorChecker::ScopeContainsLastMatchedElement))
         return true;
 
     ASSERT(context.scope);
-    // If behaviorAtBoundary is not ScopeIsShadowRoot, we can use "contains".
-    if (!(context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowRoot))
+    // If the scope is not a Shadow root, we can use "contains".
+    if (!context.scope->isShadowRoot())
         return context.scope->contains(context.element);
 
     // If a given element is scope, i.e. shadow host, matches.
     if (context.element == context.scope->shadowHost() && (!context.previousElement || context.previousElement->isInDescendantTreeOf(context.element)))
         return true;
 
-    ShadowRoot* root = context.element->containingShadowRoot();
-    if (!root)
-        return false;
-
-    // If a host of the containing shadow root is scope, matches.
-    return root == context.scope;
+    // If the containing shadow root is scope, matches.
+    return context.element->containingShadowRoot() == context.scope;
 }
 
 static inline bool nextSelectorExceedsScope(const SelectorChecker::SelectorCheckingContext& context)
@@ -341,7 +330,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::ShadowPseudo:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
-            if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
+            if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope())
                 return SelectorFailsCompletely;
 
             Element* shadowHost = context.element->shadowHost();
@@ -357,7 +346,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            for (nextContext.element = parentElement(context, true); nextContext.element; nextContext.element = parentElement(nextContext, true)) {
+            for (nextContext.element = context.element->parentOrShadowHostElement(); nextContext.element; nextContext.element = nextContext.element->parentOrShadowHostElement()) {
                 Match match = this->match(nextContext, siblingTraversalStrategy, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
@@ -380,25 +369,11 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
 {
     ASSERT(element);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
-
-    const ContainerNode* scope = nextContext.scope;
-    BehaviorAtBoundary behaviorAtBoundary = nextContext.behaviorAtBoundary;
-
     collectDestinationInsertionPoints(*element, insertionPoints);
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         nextContext.element = insertionPoints[i];
-
-        // If a given scope is a shadow host of an insertion point but behaviorAtBoundary doesn't have ScopeIsShadowRoot,
-        // we need to update behaviorAtBoundary to make selectors like ":host > ::content" work correctly.
-        if (m_mode == SharingRules) {
-            nextContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(behaviorAtBoundary | ScopeIsShadowRoot);
+        if (m_mode == SharingRules)
             nextContext.scope = insertionPoints[i]->containingShadowRoot();
-        } else if (scope == insertionPoints[i]->containingShadowRoot() && !(behaviorAtBoundary & ScopeIsShadowRoot)) {
-            nextContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(behaviorAtBoundary | ScopeIsShadowRoot);
-        } else {
-            nextContext.behaviorAtBoundary = behaviorAtBoundary;
-        }
-
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         if (match(nextContext, siblingTraversalStrategy, result) == SelectorMatches)
@@ -534,11 +509,11 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     ASSERT(context.selector);
     const CSSSelector& selector = *context.selector;
 
-    bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.behaviorAtBoundary, context.scope);
+    bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.scope);
 
     // Only :host and :ancestor should match the host: http://drafts.csswg.org/css-scoping/#host-element
     if (elementIsHostInItsShadowTree && !selector.isHostPseudoClass()
-        && !(context.behaviorAtBoundary & TreatShadowHostAsNormalScope))
+        && !(context.contextFlags & TreatShadowHostAsNormalScope))
         return false;
 
     if (selector.match() == CSSSelector::Tag)
@@ -947,7 +922,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
                 // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
                 for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                    subContext.behaviorAtBoundary = ScopeIsShadowHostInPseudoHostParameter;
+                    subContext.contextFlags = TreatShadowHostAsNormalScope;
                     subContext.scope = context.scope;
                     // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
                     Element* nextElement = &element;
@@ -961,7 +936,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                             maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
                             break;
                         }
-                        hostContext.behaviorAtBoundary = DoesNotCrossBoundary;
+                        hostContext.contextFlags = DefaultBehavior;
                         hostContext.scope = 0;
 
                         if (selector.pseudoType() == CSSSelector::PseudoHost)
@@ -1001,7 +976,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     } else if (selector.match() == CSSSelector::PseudoElement && selector.pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
-        subContext.behaviorAtBoundary = StaysWithinTreeScope;
+        subContext.contextFlags = DefaultBehavior;
 
         const CSSSelector* contextSelector = context.selector;
         ASSERT(contextSelector);
