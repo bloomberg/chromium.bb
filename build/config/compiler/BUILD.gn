@@ -400,8 +400,7 @@ config("runtime_library") {
       android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
 
       cflags += [
-        "-isystem" + rebase_path("$android_stlport_root/stlport",
-                                 root_build_dir)
+        "-I" + rebase_path("$android_stlport_root/stlport", root_build_dir)
       ]
       lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
 
