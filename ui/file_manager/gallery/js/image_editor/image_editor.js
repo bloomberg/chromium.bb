@@ -959,6 +959,7 @@ ImageEditor.Toolbar.prototype.addButton = function(
   label.textContent = this.displayStringFunction_(title);
   button.appendChild(label);
   button.label = this.displayStringFunction_(title);
+  button.title = this.displayStringFunction_(title);
   button.addEventListener('click', handler, false);
   return this.add(button);
 };
