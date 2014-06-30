@@ -109,10 +109,6 @@ bool ContentClient::GetSandboxProfileForSandboxType(
     int* sandbox_profile_resource_id) const {
   return false;
 }
-
-std::string ContentClient::GetCarbonInterposePath() const {
-  return std::string();
-}
 #endif
 
 }  // namespace content

@@ -68,13 +68,6 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
 // menu bar, etc.  We pass the window rect for convenience so that the
 // browser can easily tell if the window is fullscreen.
 
-// Notifies the browser that the plugin has selected a window (i.e., brought
-// it to the front and wants it to have keyboard focus).
-IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_PluginSelectWindow,
-                     uint32 /* window ID */,
-                     gfx::Rect /* window rect */,
-                     bool /* modal */)
-
 // Notifies the browser that the plugin has shown a window.
 IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_PluginShowWindow,
                      uint32 /* window ID */,

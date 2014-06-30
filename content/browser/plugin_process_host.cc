@@ -46,7 +46,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "content/common/plugin_carbon_interpose_constants_mac.h"
 #include "ui/gfx/rect.h"
 #endif
 
@@ -225,25 +224,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
-#if defined(OS_POSIX)
-  base::EnvironmentMap env;
-#if defined(OS_MACOSX) && !defined(__LP64__)
-  if (browser_command_line.HasSwitch(switches::kEnableCarbonInterposing)) {
-    std::string interpose_list = GetContentClient()->GetCarbonInterposePath();
-    if (!interpose_list.empty()) {
-      // Add our interposing library for Carbon. This is stripped back out in
-      // plugin_main.cc, so changes here should be reflected there.
-      const char* existing_list = getenv(kDYLDInsertLibrariesKey);
-      if (existing_list) {
-        interpose_list.insert(0, ":");
-        interpose_list.insert(0, existing_list);
-      }
-    }
-    env[kDYLDInsertLibrariesKey] = interpose_list;
-  }
-#endif
-#endif
-
   process_->Launch(
       new PluginSandboxedProcessLauncherDelegate(process_->GetHost()),
       cmd_line);
@@ -284,8 +264,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginWindowDestroyed)
 #endif
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginSelectWindow,
-                        OnPluginSelectWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginShowWindow,
                         OnPluginShowWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginHideWindow,

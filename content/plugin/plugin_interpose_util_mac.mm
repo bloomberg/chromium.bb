@@ -13,11 +13,9 @@
 
 using content::PluginThread;
 
-namespace mac_plugin_interposing {
+namespace {
 
-// TODO(stuartmorgan): Make this an IPC to order the plugin process above the
-// browser process only if the browser is current frontmost.
-__attribute__((visibility("default")))
+// Brings the plugin process to the front so that the user can see its windows.
 void SwitchToPluginProcess() {
   ProcessSerialNumber this_process, front_process;
   if ((GetCurrentProcess(&this_process) != noErr) ||
@@ -32,24 +30,8 @@ void SwitchToPluginProcess() {
   }
 }
 
-__attribute__((visibility("default")))
-OpaquePluginRef GetActiveDelegate() {
-  return content::WebPluginDelegateImpl::GetActiveDelegate();
-}
-
-__attribute__((visibility("default")))
-void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
-                                       bool modal) {
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    gfx::Rect window_bounds(bounds);
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginSelectWindow(window_id, window_bounds,
-                                                    modal));
-  }
-}
-
-__attribute__((visibility("default")))
+// Sends a message to the browser process to inform it that the given window
+// has been shown.
 void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
                                      bool modal) {
   PluginThread* plugin_thread = PluginThread::current();
@@ -61,7 +43,9 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
   }
 }
 
-__attribute__((visibility("default")))
+// Sends a message to the browser process to inform it that the given window
+// has been hidden, and switches focus back to the browser process if there are
+// no remaining plugin windows.
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
@@ -71,6 +55,7 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
   }
 }
 
+// Informs the host that the plugin has changed the cursor visibility.
 void NotifyPluginOfSetCursorVisibility(bool visibility) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
@@ -78,10 +63,6 @@ void NotifyPluginOfSetCursorVisibility(bool visibility) {
         new PluginProcessHostMsg_PluginSetCursorVisibility(visibility));
   }
 }
-
-}  // namespace mac_plugin_interposing
-
-#pragma mark -
 
 struct WindowInfo {
   uint32 window_id;
@@ -93,16 +74,15 @@ struct WindowInfo {
   }
 };
 
-static void OnPluginWindowClosed(const WindowInfo& window_info) {
+void OnPluginWindowClosed(const WindowInfo& window_info) {
   if (window_info.window_id == 0)
     return;
-  mac_plugin_interposing::NotifyBrowserOfPluginHideWindow(window_info.window_id,
-                                                          window_info.bounds);
+  NotifyBrowserOfPluginHideWindow(window_info.window_id, window_info.bounds);
 }
 
-static BOOL g_waiting_for_window_number = NO;
+BOOL g_waiting_for_window_number = NO;
 
-static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
+void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
   // The window id is 0 if it has never been shown (including while it is the
   // process of being shown for the first time); when that happens, we'll catch
   // it in _setWindowNumber instead.
@@ -118,9 +98,11 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
     is_modal = YES;
     s_pending_display_is_modal = NO;
   }
-  mac_plugin_interposing::NotifyBrowserOfPluginShowWindow(
-    window_info.window_id, window_info.bounds, is_modal);
+  NotifyBrowserOfPluginShowWindow(window_info.window_id, window_info.bounds,
+                                  is_modal);
 }
+
+}  // namespace
 
 @interface NSWindow (ChromePluginUtilities)
 // Returns YES if the window is visible and actually on the screen.
@@ -160,14 +142,14 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 - (void)chromePlugin_orderFront:(id)sender {
   [self chromePlugin_orderFront:sender];
   if ([self chromePlugin_isWindowOnScreen])
-    mac_plugin_interposing::SwitchToPluginProcess();
+    SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
 - (void)chromePlugin_makeKeyAndOrderFront:(id)sender {
   [self chromePlugin_makeKeyAndOrderFront:sender];
   if ([self chromePlugin_isWindowOnScreen])
-    mac_plugin_interposing::SwitchToPluginProcess();
+    SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
@@ -176,7 +158,7 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
     [self chromePlugin_setWindowNumber:num];
     return;
   }
-  mac_plugin_interposing::SwitchToPluginProcess();
+  SwitchToPluginProcess();
   [self chromePlugin_setWindowNumber:num];
   OnPluginWindowShown(WindowInfo(self), NO);
 }
@@ -190,7 +172,7 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 @implementation NSApplication (ChromePluginInterposing)
 
 - (NSInteger)chromePlugin_runModalForWindow:(NSWindow*)window {
-  mac_plugin_interposing::SwitchToPluginProcess();
+  SwitchToPluginProcess();
   // This is out-of-order relative to the other calls, but runModalForWindow:
   // won't return until the window closes, and the order only matters for
   // full-screen windows.
@@ -209,20 +191,21 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 @implementation NSCursor (ChromePluginInterposing)
 
 - (void)chromePlugin_set {
-  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
+  content::WebPluginDelegateImpl* delegate =
+      content::WebPluginDelegateImpl::GetActiveDelegate();
   if (delegate) {
-    static_cast<content::WebPluginDelegateImpl*>(delegate)->SetNSCursor(self);
+    delegate->SetNSCursor(self);
     return;
   }
   [self chromePlugin_set];
 }
 
 + (void)chromePlugin_hide {
-  mac_plugin_interposing::NotifyPluginOfSetCursorVisibility(false);
+  NotifyPluginOfSetCursorVisibility(false);
 }
 
 + (void)chromePlugin_unhide {
-  mac_plugin_interposing::NotifyPluginOfSetCursorVisibility(true);
+  NotifyPluginOfSetCursorVisibility(true);
 }
 
 @end

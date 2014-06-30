@@ -83,7 +83,6 @@ SRC_NAMES=(
     "crash_report_sender.app"
     "exif.so"
     "ffmpegsumo.so"
-    "libplugin_carbon_interpose.dylib"
     "ppGoogleNaClPluginChrome.plugin"
 )
 

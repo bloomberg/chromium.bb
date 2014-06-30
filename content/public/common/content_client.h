@@ -132,10 +132,6 @@ class CONTENT_EXPORT ContentClient {
   virtual bool GetSandboxProfileForSandboxType(
       int sandbox_type,
       int* sandbox_profile_resource_id) const;
-
-  // Gets the Carbon interposing path to give to DYLD. Returns an empty string
-  // if the embedder doesn't bundle it.
-  virtual std::string GetCarbonInterposePath() const;
 #endif
 
  private:

@@ -275,7 +275,6 @@
             '../components/components.gyp:chrome_manifest_bundle',
             'helper_app',
             'infoplist_strings_tool',
-            'interpose_dependency_shim',
             # On Mac, make sure we've built chrome_dll, which contains all of
             # the library code with Chromium functionality.
             'chrome_dll',
@@ -332,7 +331,6 @@
               'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)',
               'files': [
                 '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
-                '<(PRODUCT_DIR)/libplugin_carbon_interpose.dylib',
               ],
             },
           ],

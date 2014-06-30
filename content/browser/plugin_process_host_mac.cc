@@ -19,14 +19,6 @@
 
 namespace content {
 
-void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
-                                             gfx::Rect window_rect,
-                                             bool modal) {
-  plugin_visible_windows_set_.insert(window_id);
-  if (modal)
-    plugin_modal_windows_set_.insert(window_id);
-}
-
 void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
                                            gfx::Rect window_rect,
                                            bool modal) {

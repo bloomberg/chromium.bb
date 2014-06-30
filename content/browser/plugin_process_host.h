@@ -134,8 +134,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
 #endif
 
 #if defined(OS_MACOSX)
-  void OnPluginSelectWindow(uint32 window_id, gfx::Rect window_rect,
-                            bool modal);
   void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect,
                           bool modal);
   void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);

@@ -936,8 +936,6 @@ const char kEnableVaapiAcceleratedVideoEncode[] =
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-const char kEnableCarbonInterposing[]       = "enable-carbon-interposing";
-
 // Disables support for Core Animation plugins. This is triggered when
 // accelerated compositing is disabled. See http://crbug.com/122430 .
 const char kDisableCoreAnimationPlugins[] =

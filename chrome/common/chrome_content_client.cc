@@ -120,11 +120,6 @@ const uint32 kRemotingViewerPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                                 ppapi::PERMISSION_DEV;
 #endif  // defined(ENABLE_REMOTING)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-const char kInterposeLibraryPath[] =
-    "@executable_path/../../../libplugin_carbon_interpose.dylib";
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
 // and some are extra shared libraries distributed with the browser (these are
@@ -542,9 +537,5 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
     return true;
   }
   return false;
-}
-
-std::string ChromeContentClient::GetCarbonInterposePath() const {
-  return std::string(kInterposeLibraryPath);
 }
 #endif

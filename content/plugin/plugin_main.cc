@@ -32,10 +32,6 @@
 namespace content {
 
 #if defined(OS_MACOSX)
-// Removes our Carbon library interposing from the environment so that it
-// doesn't carry into any processes that plugins might start.
-void TrimInterposeEnvironment();
-
 // Initializes the global Cocoa application object.
 void InitializeChromeApplication();
 #endif
@@ -44,9 +40,6 @@ void InitializeChromeApplication();
 int PluginMain(const MainFunctionParams& parameters) {
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
-#if !defined(__LP64__)
-  TrimInterposeEnvironment();
-#endif
   InitializeChromeApplication();
 #endif
   base::MessageLoopForUI main_message_loop;

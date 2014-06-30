@@ -272,7 +272,6 @@ CONTENT_EXPORT extern const char kEnableVaapiAcceleratedVideoEncode[];
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-extern const char kEnableCarbonInterposing[];
 extern const char kDisableCoreAnimationPlugins[];
 #endif
 
