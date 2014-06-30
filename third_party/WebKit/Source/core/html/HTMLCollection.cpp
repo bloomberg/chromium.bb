@@ -32,6 +32,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLTagCollection.h"
 #include "core/html/WindowNameCollection.h"
 #include "wtf/HashSet.h"
 

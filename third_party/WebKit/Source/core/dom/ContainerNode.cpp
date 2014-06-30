@@ -45,6 +45,7 @@
 #include "core/events/MutationEvent.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLTagCollection.h"
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/InlineTextBox.h"

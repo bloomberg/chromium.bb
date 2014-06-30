@@ -24,7 +24,6 @@
 #ifndef TagCollection_h
 #define TagCollection_h
 
-#include "core/dom/Element.h"
 #include "core/html/HTMLCollection.h"
 #include "wtf/text/AtomicString.h"
 
@@ -57,36 +56,6 @@ protected:
 };
 
 DEFINE_TYPE_CASTS(TagCollection, LiveNodeListBase, collection, collection->type() == TagCollectionType, collection.type() == TagCollectionType);
-
-class HTMLTagCollection FINAL : public TagCollection {
-public:
-    static PassRefPtrWillBeRawPtr<HTMLTagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
-    {
-        ASSERT_UNUSED(type, type == HTMLTagCollectionType);
-        return adoptRefWillBeNoop(new HTMLTagCollection(rootNode, localName));
-    }
-
-    bool elementMatches(const Element&) const;
-
-private:
-    HTMLTagCollection(ContainerNode& rootNode, const AtomicString& localName);
-
-    AtomicString m_loweredLocalName;
-};
-
-DEFINE_TYPE_CASTS(HTMLTagCollection, LiveNodeListBase, collection, collection->type() == HTMLTagCollectionType, collection.type() == HTMLTagCollectionType);
-
-inline bool HTMLTagCollection::elementMatches(const Element& testElement) const
-{
-    // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagname
-    if (m_localName != starAtom) {
-        const AtomicString& localName = testElement.isHTMLElement() ? m_loweredLocalName : m_localName;
-        if (localName != testElement.localName())
-            return false;
-    }
-    ASSERT(m_namespaceURI == starAtom);
-    return true;
-}
 
 } // namespace WebCore
 

@@ -2424,6 +2424,8 @@
             'html/HTMLTableRowsCollection.h',
             'html/HTMLTableSectionElement.cpp',
             'html/HTMLTableSectionElement.h',
+            'html/HTMLTagCollection.cpp',
+            'html/HTMLTagCollection.h',
             'html/HTMLTemplateElement.cpp',
             'html/HTMLTemplateElement.h',
             'html/HTMLTextAreaElement.cpp',
