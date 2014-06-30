@@ -33,8 +33,6 @@
 
 #include "../platform/WebCommon.h"
 
-#define SCROLL_RECT_REQUIRES_NO_DELTA 1
-
 struct NPObject;
 
 namespace blink {

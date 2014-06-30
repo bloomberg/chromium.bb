@@ -31,8 +31,6 @@
 #ifndef WebWidgetClient_h
 #define WebWidgetClient_h
 
-#define DID_SCROLL_RECT_DOES_NOT_EXIST 1
-
 #include "WebNavigationPolicy.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebLayerTreeView.h"
