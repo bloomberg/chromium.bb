@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Add &lt;source> after removing failed candidate</title>
+        <script src=video-test.js></script>
+        <script src=media-file.js></script>
+        <script>
+            function error()
+            {
+                findMediaElement();
+                video.removeChild(video.firstChild);
+                var source = document.createElement("source");
+                source.src = findMediaFile("video", "content/test");
+                video.appendChild(source);
+                waitForEventAndEnd("loadedmetadata");
+            }
+        </script>
+    </head>
+
+    <body>
+        <video><source onerror="error()"></video>
+    </body>
+</html>
