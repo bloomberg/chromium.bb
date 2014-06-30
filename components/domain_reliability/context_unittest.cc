@@ -28,6 +28,7 @@ DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
   beacon.status = "ok";
   beacon.chrome_error = net::OK;
   beacon.server_ip = "127.0.0.1";
+  beacon.protocol = "HTTP";
   beacon.http_response_code = 200;
   beacon.elapsed = base::TimeDelta::FromMilliseconds(250);
   beacon.start_time = time->NowTicks() - beacon.elapsed;
@@ -163,6 +164,7 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   const char* kExpectedReport = "{\"config_version\":\"1\","
       "\"reporter\":\"test-reporter\","
       "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
+      "\"protocol\":\"HTTP\","
       "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
       "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"
       "\"resource_name\":\"always_report\",\"successful_requests\":1}]}";

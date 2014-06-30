@@ -32,6 +32,8 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   int chrome_error;
   // IP address of the server the request went to.
   std::string server_ip;
+  // Protocol used to make the request.
+  std::string protocol;
   // HTTP response code returned by the server, or -1 if none was received.
   int http_response_code;
   // Elapsed time between starting and completing the request.

@@ -213,6 +213,9 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
     beacon.server_ip = request.response_info.socket_address.host();
   else
     beacon.server_ip.clear();
+  beacon.protocol = GetDomainReliabilityProtocol(
+      request.response_info.connection_info,
+      request.response_info.ssl_info.is_valid());
   beacon.http_response_code = response_code;
   beacon.start_time = request.load_timing_info.request_start;
   beacon.elapsed = time_->NowTicks() - beacon.start_time;

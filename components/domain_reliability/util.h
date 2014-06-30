@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "net/http/http_response_info.h"
 
 namespace domain_reliability {
 
@@ -26,6 +27,10 @@ bool GetDomainReliabilityBeaconStatus(
     int net_error,
     int http_response_code,
     std::string* beacon_status_out);
+
+std::string GetDomainReliabilityProtocol(
+    net::HttpResponseInfo::ConnectionInfo connection_info,
+    bool ssl_info_populated);
 
 // Mockable wrapper around TimeTicks::Now and Timer. Mock version is in
 // test_util.h.
