@@ -100,7 +100,7 @@ public:
     virtual void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) OVERRIDE;
     virtual void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) OVERRIDE;
     virtual void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) OVERRIDE;
-    virtual void navigate(ErrorString*, const String& url) OVERRIDE;
+    virtual void navigate(ErrorString*, const String& url, String* frameId) OVERRIDE;
     virtual void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) OVERRIDE;
     virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url) OVERRIDE;
     virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) OVERRIDE;

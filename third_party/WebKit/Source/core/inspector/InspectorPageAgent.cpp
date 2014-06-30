@@ -546,12 +546,10 @@ void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCa
     m_page->deprecatedLocalMainFrame()->loader().reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
 }
 
-void InspectorPageAgent::navigate(ErrorString*, const String& url)
+void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)
 {
-    UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
     LocalFrame* frame = m_page->deprecatedLocalMainFrame();
-    FrameLoadRequest request(frame->document(), ResourceRequest(frame->document()->completeURL(url)));
-    frame->loader().load(request);
+    *outFrameId = frameId(frame);
 }
 
 static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)
