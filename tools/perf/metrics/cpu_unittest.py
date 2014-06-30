@@ -31,3 +31,9 @@ class CpuMetricTest(unittest.TestCase):
     self.assertEqual({'Browser': 0.25, 'Renderer': 0.1},
                      cpu._SubtractCpuStats(end, start))
 
+    # Test 32-bit overflow.
+    start = {'Browser': {'CpuProcessTime': 0, 'TotalTime': 2**32 - 20}}
+    end = {'Browser': {'CpuProcessTime': 5, 'TotalTime': 20}}
+    self.assertEqual({'Browser': 0.125}, cpu._SubtractCpuStats(end, start))
+    self.assertRaises(AssertionError, cpu._SubtractCpuStats, start, end)
+
