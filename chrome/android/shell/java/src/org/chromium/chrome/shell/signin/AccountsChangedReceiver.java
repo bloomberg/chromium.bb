@@ -35,7 +35,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                     @Override
                     public void onSuccess(boolean alreadyStarted) {
                         OAuth2TokenService.getForProfile(Profile.getLastUsedProfile())
-                                .validateAccounts(context);
+                                .validateAccounts(context, false);
                     }
 
                     @Override

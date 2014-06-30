@@ -223,14 +223,6 @@ public final class OAuth2TokenService {
         }
     }
 
-    /**
-     * TODO(rogerta): This overload exists until a CL lands in the clank repo to use the
-     * version that takes a boolean second arg.
-     */
-    public void validateAccounts(Context context) {
-      validateAccounts(context, false);
-    }
-
     @CalledByNative
     public void validateAccounts(Context context, boolean forceNotifications) {
         ThreadUtils.assertOnUiThread();

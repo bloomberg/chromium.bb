@@ -161,7 +161,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
     @UiThreadTest
     public void testValidateAccountsNoAccountsRegisteredAndNoSignedInUser() {
         // Run test.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         // Ensure no calls have been made to the observer.
         assertEquals(0, mObserver.getAvailableCallCount());
@@ -176,7 +176,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
 
         // Run test.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         // Ensure no calls have been made to the observer.
         assertEquals(0, mObserver.getAvailableCallCount());
@@ -194,7 +194,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run test.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         // Ensure one call for the signed in account.
         assertEquals(1, mObserver.getAvailableCallCount());
@@ -202,7 +202,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         assertEquals(0, mObserver.getLoadedCallCount());
 
         // Validate again and make sure no new calls are made.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(1, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
@@ -224,13 +224,13 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(1, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
 
         // Re-run validation.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(1, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
@@ -246,7 +246,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(1, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
@@ -255,7 +255,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
 
         // Re-run validation.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
@@ -272,11 +272,11 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getAvailableCallCount());
 
         mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         assertEquals(2, mObserver.getAvailableCallCount());
         assertEquals(1, mObserver.getRevokedCallCount());
@@ -293,7 +293,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         // Mark user as signed in.
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getAvailableCallCount());
 
         // Remove all.
@@ -301,7 +301,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
 
         // Re-validate and run checks.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
     }
@@ -316,7 +316,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         // Mark user as signed in.
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getAvailableCallCount());
 
         // Remove all.
@@ -325,7 +325,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
 
         // Re-validate and run checks.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
         assertEquals(2, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
     }
@@ -341,7 +341,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run test.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         // All accounts will be notified. It is up to the observer
         // to design if any action is needed.
@@ -357,7 +357,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
         // Run test.
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
 
         // Ensure no calls have been made to the observer.
         assertEquals(0, mObserver.getAvailableCallCount());
@@ -379,7 +379,7 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         };
 
         addObserver(ob);
-        mOAuth2TokenService.validateAccounts(mContext);
+        mOAuth2TokenService.validateAccounts(mContext, false);
     }
 
     private static class TestObserver implements OAuth2TokenService.OAuth2TokenServiceObserver {
