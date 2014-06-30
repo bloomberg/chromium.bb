@@ -566,13 +566,12 @@ void FullscreenElementStack::pushFullscreenElementStack(Element& element)
 
 void FullscreenElementStack::addDocumentToFullScreenChangeEventQueue(Document& doc)
 {
-    Node* target = 0;
-    if (FullscreenElementStack* fullscreen = fromIfExists(doc)) {
-        target = fullscreen->webkitFullscreenElement();
-        if (!target)
-            target = fullscreen->webkitCurrentFullScreenElement();
-    }
+    ASSERT(doc.hasFullscreenElementStack());
+    FullscreenElementStack& fullscreen = from(doc);
 
+    Node* target = fullscreen.webkitFullscreenElement();
+    if (!target)
+        target = fullscreen.webkitCurrentFullScreenElement();
     if (!target)
         target = &doc;
     m_fullScreenChangeEventTargetQueue.append(target);
