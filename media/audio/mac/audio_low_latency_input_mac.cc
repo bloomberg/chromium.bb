@@ -11,6 +11,7 @@
 #include "base/mac/mac_logging.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_fifo.h"
 #include "media/base/data_buffer.h"
 
 namespace media {
@@ -34,17 +35,17 @@ static std::ostream& operator<<(std::ostream& os,
 
 AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
                                        const AudioParameters& input_params,
-                                       const AudioParameters& output_params,
                                        AudioDeviceID audio_device_id)
     : manager_(manager),
+      number_of_frames_(input_params.frames_per_buffer()),
       sink_(NULL),
       audio_unit_(0),
       input_device_id_(audio_device_id),
       started_(false),
       hardware_latency_frames_(0),
-      fifo_delay_bytes_(0),
       number_of_channels_in_frame_(0),
-      audio_bus_(media::AudioBus::Create(input_params)) {
+      audio_bus_(media::AudioBus::Create(input_params)),
+      audio_wrapper_(media::AudioBus::Create(input_params)) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -62,12 +63,6 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
 
   DVLOG(1) << "Desired ouput format: " << format_;
 
-  // Set number of sample frames per callback used by the internal audio layer.
-  // An internal FIFO is then utilized to adapt the internal size to the size
-  // requested by the client.
-  number_of_frames_ = output_params.frames_per_buffer();
-  DVLOG(1) << "Size of data buffer in frames : " << number_of_frames_;
-
   // Derive size (in bytes) of the buffers that we will render to.
   UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
   DVLOG(1) << "Size of data buffer in bytes : " << data_byte_size;
@@ -82,38 +77,6 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   audio_buffer->mNumberChannels = input_params.channels();
   audio_buffer->mDataByteSize = data_byte_size;
   audio_buffer->mData = audio_data_buffer_.get();
-
-  // Set up an internal FIFO buffer that will accumulate recorded audio frames
-  // until a requested size is ready to be sent to the client.
-  // It is not possible to ask for less than |kAudioFramesPerCallback| number of
-  // audio frames.
-  size_t requested_size_frames =
-      input_params.GetBytesPerBuffer() / format_.mBytesPerPacket;
-  if (requested_size_frames < number_of_frames_) {
-    // For devices that only support a low sample rate like 8kHz, we adjust the
-    // buffer size to match number_of_frames_.  The value of number_of_frames_
-    // in this case has not been calculated based on hardware settings but
-    // rather our hardcoded defaults (see ChooseBufferSize).
-    requested_size_frames = number_of_frames_;
-  }
-
-  requested_size_bytes_ = requested_size_frames * format_.mBytesPerFrame;
-  DVLOG(1) << "Requested buffer size in bytes : " << requested_size_bytes_;
-  DVLOG_IF(0, requested_size_frames > number_of_frames_) << "FIFO is used";
-
-  const int number_of_bytes = number_of_frames_ * format_.mBytesPerFrame;
-  fifo_delay_bytes_ = requested_size_bytes_ - number_of_bytes;
-
-  // Allocate some extra memory to avoid memory reallocations.
-  // Ensure that the size is an even multiple of |number_of_frames_ and
-  // larger than |requested_size_frames|.
-  // Example: number_of_frames_=128, requested_size_frames=480 =>
-  // allocated space equals 4*128=512 audio frames
-  const int max_forward_capacity = number_of_bytes *
-      ((requested_size_frames / number_of_frames_) + 1);
-  fifo_.reset(new media::SeekableBuffer(0, max_forward_capacity));
-
-  data_ = new media::DataBuffer(requested_size_bytes_);
 }
 
 AUAudioInputStream::~AUAudioInputStream() {}
@@ -132,20 +95,20 @@ bool AUAudioInputStream::Open() {
 
   // Start by obtaining an AudioOuputUnit using an AUHAL component description.
 
-  Component comp;
-  ComponentDescription desc;
-
   // Description for the Audio Unit we want to use (AUHAL in this case).
-  desc.componentType = kAudioUnitType_Output;
-  desc.componentSubType = kAudioUnitSubType_HALOutput;
-  desc.componentManufacturer = kAudioUnitManufacturer_Apple;
-  desc.componentFlags = 0;
-  desc.componentFlagsMask = 0;
-  comp = FindNextComponent(0, &desc);
+  AudioComponentDescription desc = {
+      kAudioUnitType_Output,
+      kAudioUnitSubType_HALOutput,
+      kAudioUnitManufacturer_Apple,
+      0,
+      0
+  };
+
+  AudioComponent comp = AudioComponentFindNext(0, &desc);
   DCHECK(comp);
 
   // Get access to the service provided by the specified Audio Unit.
-  OSStatus result = OpenAComponent(comp, &audio_unit_);
+  OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);
   if (result) {
     HandleError(result);
     return false;
@@ -527,27 +490,45 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   uint8* audio_data = reinterpret_cast<uint8*>(buffer.mData);
   uint32 capture_delay_bytes = static_cast<uint32>
       ((capture_latency_frames + 0.5) * format_.mBytesPerFrame);
-  // Account for the extra delay added by the FIFO.
-  capture_delay_bytes += fifo_delay_bytes_;
   DCHECK(audio_data);
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
 
-  // Accumulate captured audio in FIFO until we can match the output size
-  // requested by the client.
-  fifo_->Append(audio_data, buffer.mDataByteSize);
+  if (number_of_frames != number_of_frames_) {
+    // Create a FIFO on the fly to handle any discrepancies in callback rates.
+    if (!fifo_) {
+      VLOG(1) << "Audio frame size changed from " << number_of_frames_ << " to "
+              << number_of_frames << "; adding FIFO to compensate.";
+      fifo_.reset(new AudioFifo(
+          format_.mChannelsPerFrame, number_of_frames_ + number_of_frames));
+    }
 
-  // Deliver recorded data to the client as soon as the FIFO contains a
-  // sufficient amount.
-  if (fifo_->forward_bytes() >= requested_size_bytes_) {
-    // Read from FIFO into temporary data buffer.
-    fifo_->Read(data_->writable_data(), requested_size_bytes_);
+    if (audio_wrapper_->frames() != static_cast<int>(number_of_frames)) {
+      audio_wrapper_ = media::AudioBus::Create(format_.mChannelsPerFrame,
+                                               number_of_frames);
+    }
+  }
 
-    // Copy captured (and interleaved) data into deinterleaved audio bus.
-    audio_bus_->FromInterleaved(
-        data_->data(), audio_bus_->frames(), format_.mBitsPerChannel / 8);
+  // Copy captured (and interleaved) data into deinterleaved audio bus.
+  audio_wrapper_->FromInterleaved(
+      audio_data, audio_wrapper_->frames(), format_.mBitsPerChannel / 8);
 
-    // Deliver data packet, delay estimation and volume level to the user.
+  // When FIFO does not kick in, data will be directly passed to the callback.
+  if (!fifo_) {
+    CHECK_EQ(audio_wrapper_->frames(), static_cast<int>(number_of_frames_));
+    sink_->OnData(
+        this, audio_wrapper_.get(), capture_delay_bytes, normalized_volume);
+    return noErr;
+  }
+
+  // Compensate the audio delay caused by the FIFO.
+  capture_delay_bytes += fifo_->frames() * format_.mBytesPerFrame;
+  fifo_->Push(audio_wrapper_.get());
+  if (fifo_->frames() >= static_cast<int>(number_of_frames_)) {
+    // Consume the audio from the FIFO.
+    fifo_->Consume(audio_bus_.get(), 0, audio_bus_->frames());
+    DCHECK(fifo_->frames() < static_cast<int>(number_of_frames_));
+
     sink_->OnData(
         this, audio_bus_.get(), capture_delay_bytes, normalized_volume);
   }

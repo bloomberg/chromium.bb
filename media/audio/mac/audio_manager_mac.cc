@@ -625,18 +625,7 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
   AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, device_id);
   AudioInputStream* stream = NULL;
   if (audio_device_id != kAudioObjectUnknown) {
-    // AUAudioInputStream needs to be fed the preferred audio output parameters
-    // of the matching device so that the buffer size of both input and output
-    // can be matched.  See constructor of AUAudioInputStream for more.
-    const std::string associated_output_device(
-        GetAssociatedOutputDeviceID(device_id));
-    const AudioParameters output_params =
-        GetPreferredOutputStreamParameters(
-            associated_output_device.empty() ?
-                AudioManagerBase::kDefaultDeviceId : associated_output_device,
-            params);
-    stream = new AUAudioInputStream(this, params, output_params,
-        audio_device_id);
+    stream = new AUAudioInputStream(this, params, audio_device_id);
     input_streams_.push_back(stream);
   }
 
