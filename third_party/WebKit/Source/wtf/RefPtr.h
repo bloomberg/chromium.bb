@@ -111,7 +111,10 @@ namespace WTF {
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     template<typename T> inline RefPtr<T>& RefPtr<T>::operator=(RefPtr&& o)
     {
-        swap(o);
+        // FIXME: Instead of explicitly casting to RefPtr&& here, we should use std::move, but that requires us to
+        // have a standard library that supports move semantics.
+        RefPtr ptr = static_cast<RefPtr&&>(o);
+        swap(ptr);
         return *this;
     }
 #endif

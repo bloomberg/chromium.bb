@@ -216,6 +216,7 @@
             'ListHashSetTest.cpp',
             'MathExtrasTest.cpp',
             'PartitionAllocTest.cpp',
+            'RefPtrTest.cpp',
             'SaturatedArithmeticTest.cpp',
             'StringExtrasTest.cpp',
             'StringHasherTest.cpp',
