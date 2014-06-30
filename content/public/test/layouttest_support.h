@@ -48,6 +48,10 @@ void EnableWebTestProxyCreation(
 // Sets gamepad provider to be used for layout tests.
 void SetMockGamepadProvider(RendererGamepadProvider* provider);
 
+// Sets a double that should be used when registering
+// a listener through WebKitPlatformSupport::setDeviceLightListener().
+void SetMockDeviceLightData(const double data);
+
 // Sets WebDeviceMotionData that should be used when registering
 // a listener through WebKitPlatformSupport::setDeviceMotionListener().
 void SetMockDeviceMotionData(const blink::WebDeviceMotionData& data);

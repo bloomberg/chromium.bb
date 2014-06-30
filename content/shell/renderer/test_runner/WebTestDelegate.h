@@ -29,6 +29,7 @@ struct WebURLError;
 
 namespace content {
 
+class DeviceLightData;
 class RendererGamepadProvider;
 class WebTask;
 class WebTestProxyBase;
@@ -44,7 +45,11 @@ public:
     // Sets gamepad provider to be used for tests.
     virtual void setGamepadProvider(RendererGamepadProvider*) = 0;
 
-    // Set data to return when registering via Platform::setDeviceMotionListener().
+    // Set data to return when registering via
+    // Platform::setDeviceLightListener().
+    virtual void setDeviceLightData(const double) = 0;
+    // Set data to return when registering via
+    // Platform::setDeviceMotionListener().
     virtual void setDeviceMotionData(const blink::WebDeviceMotionData&) = 0;
     // Set data to return when registering via Platform::setDeviceOrientationListener().
     virtual void setDeviceOrientationData(const blink::WebDeviceOrientationData&) = 0;

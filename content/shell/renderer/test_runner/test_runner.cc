@@ -193,6 +193,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                             int max_width,
                             int max_height);
   bool DisableAutoResizeMode(int new_width, int new_height);
+  void SetMockDeviceLight(double value);
+  void ResetDeviceLight();
   void SetMockDeviceMotion(gin::Arguments* args);
   void SetMockDeviceOrientation(gin::Arguments* args);
   void SetMockScreenOrientation(const std::string& orientation);
@@ -395,6 +397,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::EnableAutoResizeMode)
       .SetMethod("disableAutoResizeMode",
                  &TestRunnerBindings::DisableAutoResizeMode)
+      .SetMethod("setMockDeviceLight", &TestRunnerBindings::SetMockDeviceLight)
+      .SetMethod("resetDeviceLight", &TestRunnerBindings::ResetDeviceLight)
       .SetMethod("setMockDeviceMotion",
                  &TestRunnerBindings::SetMockDeviceMotion)
       .SetMethod("setMockDeviceOrientation",
@@ -820,6 +824,17 @@ bool TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
   if (runner_)
     return runner_->DisableAutoResizeMode(new_width, new_height);
   return false;
+}
+
+void TestRunnerBindings::SetMockDeviceLight(double value) {
+  if (!runner_)
+    return;
+  runner_->SetMockDeviceLight(value);
+}
+
+void TestRunnerBindings::ResetDeviceLight() {
+  if (runner_)
+    runner_->ResetDeviceLight();
 }
 
 void TestRunnerBindings::SetMockDeviceMotion(gin::Arguments* args) {
@@ -1565,6 +1580,7 @@ void TestRunner::Reset() {
     delegate_->deleteAllCookies();
     delegate_->resetScreenOrientation();
     ResetBatteryStatus();
+    ResetDeviceLight();
   }
 
   dump_editting_callbacks_ = false;
@@ -2268,6 +2284,14 @@ bool TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
   WebSize new_size(new_width, new_height);
   delegate_->disableAutoResizeMode(new_size);
   return true;
+}
+
+void TestRunner::SetMockDeviceLight(double value) {
+  delegate_->setDeviceLightData(value);
+}
+
+void TestRunner::ResetDeviceLight() {
+  delegate_->setDeviceLightData(-1);
 }
 
 void TestRunner::SetMockDeviceMotion(

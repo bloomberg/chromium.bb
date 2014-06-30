@@ -86,6 +86,10 @@ void SetMockGamepadProvider(RendererGamepadProvider* provider) {
       set_gamepad_provider(provider);
 }
 
+void SetMockDeviceLightData(const double data) {
+  RendererWebKitPlatformSupportImpl::SetMockDeviceLightDataForTesting(data);
+}
+
 void SetMockDeviceMotionData(const WebDeviceMotionData& data) {
   RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(data);
 }

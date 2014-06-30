@@ -56,6 +56,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setEditCommand(const std::string& name,
                               const std::string& value) OVERRIDE;
   virtual void setGamepadProvider(RendererGamepadProvider*) OVERRIDE;
+  virtual void setDeviceLightData(const double data) OVERRIDE;
   virtual void setDeviceMotionData(
       const blink::WebDeviceMotionData& data) OVERRIDE;
   virtual void setDeviceOrientationData(

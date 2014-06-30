@@ -279,6 +279,8 @@ class TestRunner : public WebTestRunner,
                             int max_height);
   bool DisableAutoResizeMode(int new_width, int new_height);
 
+  void SetMockDeviceLight(double value);
+  void ResetDeviceLight();
   // Device Motion / Device Orientation related functions
   void SetMockDeviceMotion(bool has_acceleration_x, double acceleration_x,
                            bool has_acceleration_y, double acceleration_y,

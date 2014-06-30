@@ -207,6 +207,10 @@ void WebKitTestRunner::setGamepadProvider(
   SetMockGamepadProvider(provider);
 }
 
+void WebKitTestRunner::setDeviceLightData(const double data) {
+  SetMockDeviceLightData(data);
+}
+
 void WebKitTestRunner::setDeviceMotionData(const WebDeviceMotionData& data) {
   SetMockDeviceMotionData(data);
 }
