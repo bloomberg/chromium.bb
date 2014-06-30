@@ -136,17 +136,26 @@ void ManagePasswordsUIController::
 
 void ManagePasswordsUIController::SavePassword() {
   DCHECK(PasswordPendingUserDecision());
+  SavePasswordInternal();
+  state_ = password_manager::ui::MANAGE_STATE;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::SavePasswordInternal() {
   DCHECK(form_manager_.get());
   form_manager_->Save();
-  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsUIController::NeverSavePassword() {
   DCHECK(PasswordPendingUserDecision());
-  DCHECK(form_manager_.get());
-  form_manager_->PermanentlyBlacklist();
+  NeverSavePasswordInternal();
   state_ = password_manager::ui::BLACKLIST_STATE;
   UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::NeverSavePasswordInternal() {
+  DCHECK(form_manager_.get());
+  form_manager_->PermanentlyBlacklist();
 }
 
 void ManagePasswordsUIController::UnblacklistSite() {

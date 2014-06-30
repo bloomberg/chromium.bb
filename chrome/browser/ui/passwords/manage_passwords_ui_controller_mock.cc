@@ -32,10 +32,10 @@ bool ManagePasswordsUIControllerMock::IsInstalled() const {
   return web_contents()->GetUserData(UserDataKey()) == this;
 }
 
-void ManagePasswordsUIControllerMock::SavePassword() {
+void ManagePasswordsUIControllerMock::SavePasswordInternal() {
   saved_password_ = true;
 }
 
-void ManagePasswordsUIControllerMock::NeverSavePassword() {
+void ManagePasswordsUIControllerMock::NeverSavePasswordInternal() {
   never_saved_password_ = true;
 }

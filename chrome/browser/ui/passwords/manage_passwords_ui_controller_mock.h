@@ -34,10 +34,10 @@ class ManagePasswordsUIControllerMock
   }
 
   // We don't have a FormManager in tests, so stub these out.
-  virtual void SavePassword() OVERRIDE;
+  virtual void SavePasswordInternal() OVERRIDE;
   bool saved_password() const { return saved_password_; }
 
-  virtual void NeverSavePassword() OVERRIDE;
+  virtual void NeverSavePasswordInternal() OVERRIDE;
   bool never_saved_password() const { return never_saved_password_; }
 
   virtual const autofill::PasswordForm& PendingCredentials() const OVERRIDE;
