@@ -82,10 +82,11 @@ void ContentPasswordManagerDriver::ClearPreviewedForm() {
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
   DCHECK(web_contents());
+  // TODO(vabr): This is a wrong entry to look at for HTTP basic auth,
+  // http://crbug.com/388246.
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry) {
-    NOTREACHED();
     return false;
   }
 

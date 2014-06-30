@@ -7,13 +7,18 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_prompt_test_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
@@ -26,12 +31,16 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -129,6 +138,30 @@ class NavigationObserver : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
+// Handles |request| to "/basic_auth". If "Authorization" header is present,
+// responds with a non-empty HTTP 200 page (regardless of its value). Otherwise
+// serves a Basic Auth challenge.
+scoped_ptr<net::test_server::HttpResponse> HandleTestAuthRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/basic_auth", true))
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  if (ContainsKey(request.headers, "Authorization")) {
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("Success!");
+    return http_response.PassAs<net::test_server::HttpResponse>();
+  } else {
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_UNAUTHORIZED);
+    http_response->AddCustomHeader("WWW-Authenticate",
+                                   "Basic realm=\"test realm\"");
+    return http_response.PassAs<net::test_server::HttpResponse>();
+  }
+}
+
 }  // namespace
 
 
@@ -148,6 +181,12 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     // PasswordStore has not completed.
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         browser()->profile(), TestPasswordStoreService::Build);
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    InProcessBrowserTest::CleanUpOnMainThread();
   }
 
  protected:
@@ -159,7 +198,7 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     return WebContents()->GetRenderViewHost();
   }
 
-  ManagePasswordsUIController* controller() {
+  ManagePasswordsUIController* ui_controller() {
     return ManagePasswordsUIController::FromWebContents(WebContents());
   }
 
@@ -274,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -294,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -315,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -335,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -355,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
   observer.disable_should_automatically_accept_infobar();
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -366,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
                                      "window.location.href = 'done.html';"));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_removed());
   }
@@ -387,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -411,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -426,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForNavigation) {
                                      "window.location.href = 'done.html';"));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -453,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -481,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -547,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -567,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -587,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_click_link));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -617,8 +656,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   first_observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    ASSERT_TRUE(controller()->PasswordPendingUserDecision());
-    controller()->SavePassword();
+    ASSERT_TRUE(ui_controller()->PasswordPendingUserDecision());
+    ui_controller()->SavePassword();
   } else {
     ASSERT_TRUE(first_observer.infobar_shown());
   }
@@ -649,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_form));
   second_observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(second_observer.infobar_shown());
   }
@@ -685,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -705,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -725,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -748,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -800,8 +839,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PasswordValueAccessible) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   form_submit_observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
-    controller()->SavePassword();
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
+    ui_controller()->SavePassword();
   } else {
     EXPECT_TRUE(form_submit_observer.infobar_shown());
   }
@@ -843,8 +882,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   form_submit_observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
-    controller()->SavePassword();
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
+    ui_controller()->SavePassword();
   } else {
     EXPECT_TRUE(form_submit_observer.infobar_shown());
   }
@@ -875,7 +914,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   NavigateToFile("/password/done.html");
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -894,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
@@ -928,14 +967,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   if (chrome::VersionInfo::GetChannel() ==
       chrome::VersionInfo::CHANNEL_UNKNOWN) {
     if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-      EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+      EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
     } else {
       EXPECT_FALSE(observer.infobar_shown());
     }
     EXPECT_FALSE(password_store->IsEmpty());
   } else {
     if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-      EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+      EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
     } else {
       EXPECT_TRUE(observer.infobar_shown());
     }
@@ -959,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptWhenReloading) {
   ui_test_utils::NavigateToURL(&params);
   observer.Wait();
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    EXPECT_FALSE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_FALSE(observer.infobar_shown());
   }
@@ -981,8 +1020,68 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
 
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
   }
+}
+
+// Test that if there was no previous page load then the PasswordManagerDriver
+// does not think that there were SSL errors on the current page. The test opens
+// a new tab with a URL for which the embedded test server issues a basic auth
+// challenge.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
+  // Teach the embedded server to handle requests by issuing the basic auth
+  // challenge.
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleTestAuthRequest));
+
+  LoginPromptBrowserTestObserver login_observer;
+  // We need to register to all sources, because the navigation observer we are
+  // interested in is for a new tab to be opened, and thus does not exist yet.
+  login_observer.Register(content::NotificationService::AllSources());
+
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                              Profile::IMPLICIT_ACCESS).get());
+  EXPECT_TRUE(password_store->IsEmpty());
+
+  // Navigate to a page requiring HTTP auth. Wait for the tab to get the correct
+  // WebContents, but don't wait for navigation, which only finishes after
+  // authentication.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      embedded_test_server()->GetURL("/basic_auth"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  content::NavigationController* nav_controller =
+      &WebContents()->GetController();
+  NavigationObserver nav_observer(WebContents());
+  WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+  auth_needed_observer.Wait();
+
+  WindowedAuthSuppliedObserver auth_supplied_observer(nav_controller);
+  // Offer valid credentials on the auth challenge.
+  ASSERT_EQ(1u, login_observer.handlers().size());
+  LoginHandler* handler = *login_observer.handlers().begin();
+  ASSERT_TRUE(handler);
+  // Any username/password will work.
+  handler->SetAuth(base::UTF8ToUTF16("user"), base::UTF8ToUTF16("pwd"));
+  auth_supplied_observer.Wait();
+
+  // The password manager should be working correctly.
+  nav_observer.Wait();
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(ui_controller()->PasswordPendingUserDecision());
+    ui_controller()->SavePassword();
+  } else {
+    EXPECT_TRUE(nav_observer.infobar_shown());
+  }
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(password_store->IsEmpty());
 }

@@ -200,6 +200,8 @@
         'browser/ui/fullscreen/fullscreen_controller_state_tests.h',
         'browser/ui/fullscreen/fullscreen_controller_test.cc',
         'browser/ui/fullscreen/fullscreen_controller_test.h',
+        'browser/ui/login/login_prompt_test_utils.cc',
+        'browser/ui/login/login_prompt_test_utils.h',
         'browser/ui/passwords/manage_passwords_ui_controller_mock.cc',
         'browser/ui/passwords/manage_passwords_ui_controller_mock.h',
         'browser/ui/test/test_confirm_bubble_model.cc',
