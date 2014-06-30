@@ -96,7 +96,7 @@ class PermissionBubbleManager
   // Cancel any pending requests. This is called if the WebContents
   // on which permissions calls are pending is destroyed or navigated away
   // from the requesting page.
-  void CancelPendingQueue();
+  void CancelPendingQueues();
 
   // Returns whether or not |request| has already been added to |queue|.
   // |same_object| must be non-null.  It will be set to true if |request|

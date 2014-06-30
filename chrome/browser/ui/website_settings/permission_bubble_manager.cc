@@ -239,14 +239,14 @@ void PermissionBubbleManager::NavigationEntryCommitted(
   if (request_url_ != web_contents()->GetLastCommittedURL() ||
       details.type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
     // Kill off existing bubble and cancel any pending requests.
-    CancelPendingQueue();
+    CancelPendingQueues();
     FinalizeBubble();
   }
 }
 
 void PermissionBubbleManager::WebContentsDestroyed() {
   // If the web contents has been destroyed, treat the bubble as cancelled.
-  CancelPendingQueue();
+  CancelPendingQueues();
   FinalizeBubble();
 
   // The WebContents is going away; be aggressively paranoid and delete
@@ -365,13 +365,20 @@ void PermissionBubbleManager::FinalizeBubble() {
   }
 }
 
-void PermissionBubbleManager::CancelPendingQueue() {
+void PermissionBubbleManager::CancelPendingQueues() {
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = queued_requests_.begin();
        requests_iter != queued_requests_.end();
        requests_iter++) {
     (*requests_iter)->RequestFinished();
   }
+  for (requests_iter = queued_frame_requests_.begin();
+       requests_iter != queued_frame_requests_.end();
+       requests_iter++) {
+    (*requests_iter)->RequestFinished();
+  }
+  queued_requests_.clear();
+  queued_frame_requests_.clear();
 }
 
 bool PermissionBubbleManager::ExistingRequest(
