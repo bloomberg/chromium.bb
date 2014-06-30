@@ -150,11 +150,6 @@ public:
 
 } // namespace WebCore
 
-namespace WTF {
-
-template<>
-struct VectorTraits<WebCore::DocumentMarker> : SimpleClassVectorTraits<WebCore::DocumentMarker> { };
-
-} // namespace WTF
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::DocumentMarker);
 
 #endif // DocumentMarker_h

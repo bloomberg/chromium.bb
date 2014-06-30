@@ -206,11 +206,6 @@ PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
 
 } // namespace WebCore
 
-namespace WTF {
-
-template<>
-struct VectorTraits<WebCore::IntRect> : SimpleClassVectorTraits<WebCore::IntRect> { };
-
-} // namespace WTF
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::IntRect);
 
 #endif // IntRect_h

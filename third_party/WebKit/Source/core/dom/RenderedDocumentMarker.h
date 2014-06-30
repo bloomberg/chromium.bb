@@ -66,11 +66,6 @@ DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
 
 } // namespace
 
-namespace WTF {
-
-template<>
-struct VectorTraits<WebCore::RenderedDocumentMarker> : SimpleClassVectorTraits<WebCore::RenderedDocumentMarker> { };
-
-} // namespace WTF
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::RenderedDocumentMarker);
 
 #endif

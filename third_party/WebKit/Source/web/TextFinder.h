@@ -271,10 +271,6 @@ private:
 
 } // namespace blink
 
-namespace WTF {
-template <> struct VectorTraits<blink::TextFinder::FindMatch> : VectorTraitsBase<blink::TextFinder::FindMatch> {
-    static const bool canInitializeWithMemset = true;
-};
-}
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::TextFinder::FindMatch);
 
 #endif

@@ -161,11 +161,6 @@ inline int IntPoint::distanceSquaredToPoint(const IntPoint& point) const
 
 } // namespace WebCore
 
-namespace WTF {
-
-template<>
-struct VectorTraits<WebCore::IntPoint> : SimpleClassVectorTraits<WebCore::IntPoint> { };
-
-} // namespace WTF
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::IntPoint);
 
 #endif // IntPoint_h

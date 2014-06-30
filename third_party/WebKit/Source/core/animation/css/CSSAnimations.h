@@ -253,10 +253,6 @@ private:
 
 } // namespace WebCore
 
-namespace WTF {
-template<> struct VectorTraits<WebCore::CSSAnimationUpdate::NewAnimation> : VectorTraitsBase<WebCore::CSSAnimationUpdate::NewAnimation> {
-    static const bool canInitializeWithMemset = true;
-};
-}
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(WebCore::CSSAnimationUpdate::NewAnimation);
 
 #endif
