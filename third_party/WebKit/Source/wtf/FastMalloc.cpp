@@ -31,9 +31,15 @@
 #include "config.h"
 #include "wtf/FastMalloc.h"
 
+#include "wtf/PartitionAlloc.h"
+#include "wtf/SpinLock.h"
 #include <string.h>
 
 namespace WTF {
+
+static PartitionAllocatorGeneric gPartition;
+static int gLock = 0;
+static bool gInitialized = false;
 
 void* fastZeroedMalloc(size_t n)
 {
@@ -55,54 +61,6 @@ FastMallocStatistics fastMallocStatistics()
     FastMallocStatistics statistics = { 0, 0, 0 };
     return statistics;
 }
-
-} // namespace WTF
-
-#if USE(SYSTEM_MALLOC)
-
-#include "wtf/Assertions.h"
-
-#include <stdlib.h>
-
-namespace WTF {
-
-void fastMallocShutdown()
-{
-}
-
-void* fastMalloc(size_t n)
-{
-    void* result = malloc(n);
-    ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
-
-    return result;
-}
-
-void fastFree(void* p)
-{
-    free(p);
-}
-
-void* fastRealloc(void* p, size_t n)
-{
-    void* result = realloc(p, n);
-    ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
-
-    return result;
-}
-
-} // namespace WTF
-
-#else // USE(SYSTEM_MALLOC)
-
-#include "wtf/PartitionAlloc.h"
-#include "wtf/SpinLock.h"
-
-namespace WTF {
-
-static PartitionAllocatorGeneric gPartition;
-static int gLock = 0;
-static bool gInitialized = false;
 
 void fastMallocShutdown()
 {
@@ -133,5 +91,3 @@ void* fastRealloc(void* p, size_t n)
 }
 
 } // namespace WTF
-
-#endif // USE(SYSTEM_MALLOC)

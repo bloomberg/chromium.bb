@@ -99,14 +99,6 @@
 #define WTF_USE_RUBBER_BANDING 1
 #endif /* OS(MACOSX) */
 
-// On Mac, the system allocator is the real OS X system allocator.
-// On Android, the system allocator is the libc system allocator.
-// On other platforms, we've overriden the system allocator with tcmalloc.
-// PartitionAlloc seems to be faster than all of these, so on all platforms
-// we use it for a subset of performance sensitive Blink classes (tagged by
-// WTF_MAKE_FAST_ALLOCATED.
-#define WTF_USE_SYSTEM_MALLOC 0
-
 #if OS(POSIX)
 #define HAVE_SIGNAL_H 1
 #define HAVE_SYS_TIME_H 1
