@@ -803,9 +803,12 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
     renderer.SetTypeface(run.skia_face.get());
     renderer.SetTextSize(run.font_size);
 
-    canvas->Save();
     Vector2d origin = line_offset + Vector2d(current_x, lines()[0].baseline);
-    canvas->Translate(origin);
+    scoped_ptr<SkPoint[]> positions(new SkPoint[run.glyph_count]);
+    for (size_t j = 0; j < run.glyph_count; ++j) {
+      positions[j] = run.positions[j];
+      positions[j].offset(SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
+    }
 
     for (BreakList<SkColor>::const_iterator it =
              colors().GetBreak(run.range.start());
@@ -821,17 +824,16 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
         continue;
 
       renderer.SetForegroundColor(it->second);
-      renderer.DrawPosText(&run.positions[colored_glyphs.start()],
+      renderer.DrawPosText(&positions[colored_glyphs.start()],
                            &run.glyphs[colored_glyphs.start()],
                            colored_glyphs.length());
       int width = (colored_glyphs.end() == run.glyph_count ? run.width :
               run.positions[colored_glyphs.end()].x()) -
           run.positions[colored_glyphs.start()].x();
-      renderer.DrawDecorations(0, 0, width, run.underline, run.strike,
-                               run.diagonal_strike);
+      renderer.DrawDecorations(origin.x(), origin.y(), width, run.underline,
+                               run.strike, run.diagonal_strike);
     }
 
-    canvas->Restore();
     current_x += run.width;
   }
 

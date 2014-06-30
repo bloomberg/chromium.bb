@@ -94,7 +94,6 @@ class SkiaTextRenderer {
     typedef std::pair<int, SkColor> Piece;
 
     Canvas* canvas_;
-    SkMatrix matrix_;
     const Point start_;
     SkPaint paint_;
     int total_length_;

@@ -320,7 +320,6 @@ SkiaTextRenderer::DiagonalStrike::DiagonalStrike(Canvas* canvas,
                                                  Point start,
                                                  const SkPaint& paint)
     : canvas_(canvas),
-      matrix_(canvas->sk_canvas()->getTotalMatrix()),
       start_(start),
       paint_(paint),
       total_length_(0) {
@@ -346,23 +345,23 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
   paint_.setAntiAlias(true);
   paint_.setStrokeWidth(thickness);
 
-  ScopedCanvas scoped_canvas(canvas_);
-
-  SkCanvas* sk_canvas = canvas_->sk_canvas();
-  sk_canvas->setMatrix(matrix_);
-
   const bool clipped = pieces_.size() > 1;
+  SkCanvas* sk_canvas = canvas_->sk_canvas();
   int x = start_.x();
+
   for (size_t i = 0; i < pieces_.size(); ++i) {
     paint_.setColor(pieces_[i].second);
 
     if (clipped) {
+      canvas_->Save();
       sk_canvas->clipRect(RectToSkRect(
-          Rect(x, end.y() - thickness, pieces_[i].first, clip_height)),
-          SkRegion::kReplace_Op);
+          Rect(x, end.y() - thickness, pieces_[i].first, clip_height)));
     }
 
     canvas_->DrawLine(start_, end, paint_);
+
+    if (clipped)
+      canvas_->Restore();
 
     x += pieces_[i].first;
   }
