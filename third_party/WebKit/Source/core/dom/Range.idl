@@ -38,7 +38,7 @@
     [RaisesException] void setStartAfter(Node refNode);
     [RaisesException] void setEndBefore(Node refNode);
     [RaisesException] void setEndAfter(Node refNode);
-    void collapse([Default=Undefined] optional boolean toStart);
+    void collapse(optional boolean toStart = false);
     [RaisesException] void selectNode(Node refNode);
     [RaisesException] void selectNodeContents(Node refNode);
 
