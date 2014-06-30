@@ -132,6 +132,8 @@ public:
 
     BLINK_EXPORT static void enableShowModalDialog(bool);
 
+    BLINK_EXPORT static void enableLaxMixedContentChecking(bool);
+
 private:
     WebRuntimeFeatures();
 };

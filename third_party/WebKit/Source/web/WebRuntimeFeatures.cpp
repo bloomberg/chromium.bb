@@ -290,4 +290,9 @@ void WebRuntimeFeatures::enableShowModalDialog(bool enable)
     RuntimeEnabledFeatures::setShowModalDialogEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableLaxMixedContentChecking(bool enable)
+{
+    RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(enable);
+}
+
 } // namespace blink
