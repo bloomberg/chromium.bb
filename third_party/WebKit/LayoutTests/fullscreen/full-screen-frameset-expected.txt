@@ -3,7 +3,7 @@
 --------
 Frame: 'header'
 --------
-Test for bug 58638: Do not allow fullscreen from within a <frame> element, even with the webkitallowfullscreen attribute set.
+Test for bug 58638: Do not allow fullscreen from within a <frame> element, even with the allowfullscreen attribute set.
 
 To test manually, click the "Go full screen" button - the page should not enter full screen mode.
 

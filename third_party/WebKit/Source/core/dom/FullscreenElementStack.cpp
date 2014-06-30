@@ -50,6 +50,8 @@ static bool fullscreenIsAllowedForAllOwners(const Document& document)
     if (!owner)
         return true;
     do {
+        if (!isHTMLIFrameElement(owner))
+            return false;
         if (!owner->hasAttribute(allowfullscreenAttr)) {
             if (owner->hasAttribute(webkitallowfullscreenAttr))
                 UseCounter::count(document, UseCounter::PrefixedAllowFullscreenAttribute);
