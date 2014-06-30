@@ -248,7 +248,8 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
     if (object.get(keys[0], keyValuePair)) {
         // "2. Otherwise, if |object| is a sequence, then for each |header| in
         //     |object|, run these substeps:
-        //    1. If |header| does not contain two items, throw a TypeError.
+        //    1. If |header| does not contain exactly two items, throw a
+        //       TypeError.
         //    2. Append |header|'s first item/|header|'s second item to
         //       |headers|. Rethrow any exception."
         for (size_t i = 0; i < keys.size(); ++i) {
@@ -259,7 +260,7 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
                     return;
                 }
             }
-            if (keyValuePair.size() < 2) {
+            if (keyValuePair.size() != 2) {
                 exceptionState.throwTypeError("Invalid value");
                 return;
             }

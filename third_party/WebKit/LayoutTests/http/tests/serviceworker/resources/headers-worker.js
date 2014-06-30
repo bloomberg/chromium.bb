@@ -184,13 +184,16 @@ test(function() {
 
     assert_throws({name:'TypeError'},
                   function() { var headers = new Headers([[]]); },
-                  'new Headers with an invalid value should throw');
+                  'new Headers with a sequence with less than two strings should throw');
     assert_throws({name:'TypeError'},
                   function() { var headers = new Headers([['a']]); },
-                  'new Headers with an invalid value should throw');
+                  'new Headers with a sequence with less than two strings should throw');
     assert_throws({name:'TypeError'},
                   function() { var headers = new Headers([['a', 'b'], []]); },
-                  'new Headers with an invalid value should throw');
+                  'new Headers with a sequence with less than two strings should throw');
+    assert_throws({name:'TypeError'},
+                  function() { var headers = new Headers([['a', 'b'], ['x', 'y', 'z']]); },
+                  'new Headers with a sequence with more than two strings should throw');
 
     // 'forEach()' with thisArg
     var that = {}, saw_that;
