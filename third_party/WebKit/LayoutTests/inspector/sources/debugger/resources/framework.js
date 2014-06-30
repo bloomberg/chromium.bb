@@ -76,7 +76,7 @@ Framework.sendXHR = function(url)
 {
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
-    request.send();
+    try { request.send(); } catch (e) {}
 }
 
 Framework.addEventListener = function(element, eventType, listener, capture)

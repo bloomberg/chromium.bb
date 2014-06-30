@@ -1,0 +1,98 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+function testFunction()
+{
+    Framework.safeRun(Framework.breakInFramework, Framework.empty)
+    Framework.safeRun(Framework.empty); // should not step inside
+    Framework.empty(); // dummy call
+    Framework.sendXHR('/foo?a=b');
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
+    WebInspector.settings.skipStackFramesSwitch.set(true);
+    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    var xhrPane;
+
+    function step1()
+    {
+        xhrPane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+        xhrPane._setBreakpoint("foo", true);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    var actions = [
+        "Print", // debugger;
+        "StepInto", "Print",
+        "StepOver", "Print",
+        "StepOut", "Print",
+        "StepInto", "Print", // should not step inside
+        "Resume", "Print",   // should stop on XHR.send()
+        "StepInto", "Print", // should step inside framework
+    ];
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        var action = actions.shift();
+        if (action === "Print") {
+            InspectorTest.captureStackTrace(callFrames);
+            InspectorTest.addResult("");
+            while (action === "Print")
+                action = actions.shift();
+        }
+
+        if (!action) {
+            completeTest()
+            return;
+        }
+
+        InspectorTest.addResult("Executing " + action + "...");
+        switch (action) {
+        case "StepInto":
+            WebInspector.panels.sources._stepIntoButton.element.click();
+            break;
+        case "StepOver":
+            WebInspector.panels.sources._stepOverButton.element.click();
+            break;
+        case "StepOut":
+            WebInspector.panels.sources._stepOutButton.element.click();
+            break;
+        case "Resume":
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            break;
+        default:
+            InspectorTest.addResult("FAIL: Unknown action: " + action);
+            completeTest()
+            return;
+        }
+        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+    }
+
+    function completeTest()
+    {
+        xhrPane._removeBreakpoint("foo");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests stepping from framework call frames.
+</p>
+</body>
+</html>
