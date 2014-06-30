@@ -193,11 +193,9 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
 
 void initializeCurrentThreadInternal(const char* threadName)
 {
-#if HAVE(PTHREAD_SETNAME_NP)
-    pthread_setname_np(threadName);
-#endif
-
 #if OS(MACOSX)
+    pthread_setname_np(threadName);
+
     // All threads that potentially use APIs above the BSD layer must be registered with the Objective-C
     // garbage collector in case API implementations use garbage-collected memory.
     objc_registerThreadWithCollector();
