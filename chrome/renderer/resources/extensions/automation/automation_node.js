@@ -53,8 +53,10 @@ AutomationNodeImpl.prototype = {
 
   children: function() {
     var children = [];
-    for (var i = 0, childID; childID = this.childIds[i]; i++)
+    for (var i = 0, childID; childID = this.childIds[i]; i++) {
+      logging.CHECK(this.rootImpl.get(childID));
       children.push(this.rootImpl.get(childID));
+    }
     return children;
   },
 
@@ -134,6 +136,7 @@ AutomationNodeImpl.prototype = {
     return 'node id=' + this.id +
         ' role=' + this.role +
         ' state=' + JSON.stringify(this.state) +
+        ' parentID=' + this.parentID +
         ' childIds=' + JSON.stringify(this.childIds) +
         ' attributes=' + JSON.stringify(this.attributes);
   },
@@ -258,17 +261,108 @@ AutomationRootNodeImpl.prototype = {
   isRootNode: true,
 
   get: function(id) {
+    if (id == undefined)
+      return undefined;
+
     return this.axNodeDataCache_[id];
   },
 
-  invalidate: function(node) {
+  unserialize: function(update) {
+    var updateState = { pendingNodes: {}, newNodes: {} };
+    var oldRootId = this.id;
+
+    if (update.nodeIdToClear < 0) {
+        logging.WARNING('Bad nodeIdToClear: ' + update.nodeIdToClear);
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+    } else if (update.nodeIdToClear > 0) {
+      var nodeToClear = this.axNodeDataCache_[update.nodeIdToClear];
+      if (!nodeToClear) {
+        logging.WARNING('Bad nodeIdToClear: ' + update.nodeIdToClear +
+                        ' (not in cache)');
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+      }
+      if (nodeToClear === this.wrapper) {
+        this.invalidate_(nodeToClear);
+      } else {
+        var children = nodeToClear.children();
+        for (var i = 0; i < children.length; i++)
+          this.invalidate_(children[i]);
+        privates(nodeToClear).impl.childIds = []
+        updateState.pendingNodes[nodeToClear.id] = nodeToClear;
+      }
+    }
+
+    for (var i = 0; i < update.nodes.length; i++) {
+      if (!this.updateNode_(update.nodes[i], updateState))
+        return false;
+    }
+
+    if (Object.keys(updateState.pendingNodes).length > 0) {
+      logging.WARNING('Nodes left pending by the update: ' +
+                   updateState.pendingNodes.join(', '));
+      lastError.set('automation',
+                    'Bad update received on automation tree',
+                    null,
+                    chrome);
+      return false;
+    }
+    return true;
+  },
+
+  destroy: function() {
+    this.dispatchEvent(schema.EventType.destroyed);
+    this.invalidate_(this.wrapper);
+  },
+
+  onAccessibilityEvent: function(eventParams) {
+    if (!this.unserialize(eventParams.update)) {
+      logging.WARNING('unserialization failed');
+      return false;
+    }
+
+    var targetNode = this.get(eventParams.targetID);
+    if (targetNode) {
+      var targetNodeImpl = privates(targetNode).impl;
+      targetNodeImpl.dispatchEvent(eventParams.eventType);
+    } else {
+      logging.WARNING('Got ' + eventParams.eventType +
+                      ' event on unknown node: ' + eventParams.targetID +
+                      '; this: ' + this.toString());
+    }
+    return true;
+  },
+
+  toString: function() {
+    function toStringInternal(node, indent) {
+      if (!node)
+        return '';
+      var output =
+          new Array(indent).join(' ') +
+          AutomationNodeImpl.prototype.toString.call(node) +
+          '\n';
+      indent += 2;
+      for (var i = 0; i < node.children().length; i++)
+        output += toStringInternal(node.children()[i], indent);
+      return output;
+    }
+    return toStringInternal(this, 0);
+  },
+
+  invalidate_: function(node) {
     if (!node)
       return;
-
     var children = node.children();
 
     for (var i = 0, child; child = children[i]; i++)
-      this.invalidate(child);
+      this.invalidate_(child);
 
     // Retrieve the internal AutomationNodeImpl instance for this node.
     // This object is not accessible outside of bindings code, but we can access
@@ -278,102 +372,141 @@ AutomationRootNodeImpl.prototype = {
     for (var key in AutomationAttributeDefaults) {
       nodeImpl[key] = AutomationAttributeDefaults[key];
     }
+    nodeImpl.childIds = [];
     nodeImpl.loaded = false;
     nodeImpl.id = id;
     delete this.axNodeDataCache_[id];
   },
 
-  destroy: function() {
-    this.dispatchEvent(schema.EventType.destroyed);
-    this.invalidate(this.wrapper);
-  },
-
-  update: function(data) {
-    var didUpdateRoot = false;
-
-    if (data.nodes.length == 0)
-      return false;
-
-    for (var i = 0; i < data.nodes.length; i++) {
-      var nodeData = data.nodes[i];
-      var node = this.axNodeDataCache_[nodeData.id];
-      if (!node) {
-        if (nodeData.role == 'rootWebArea' || nodeData.role == 'desktop') {
-          // |this| is an AutomationRootNodeImpl; retrieve the
-          // AutomationRootNode instance instead.
-          node = this.wrapper;
-          didUpdateRoot = true;
-        } else {
-          node = new AutomationNode(this);
-        }
+  deleteOldChildren_: function(node, newChildIds) {
+    // Create a set of child ids in |src| for fast lookup, and return false
+    // if a duplicate is found;
+    var newChildIdSet = {};
+    for (var i = 0; i < newChildIds.length; i++) {
+      var childId = newChildIds[i];
+      if (newChildIdSet[childId]) {
+        logging.WARNING('Node ' + node.id + ' has duplicate child id ' +
+                        childId);
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
       }
-      var nodeImpl = privates(node).impl;
-
-      // Update children.
-      var oldChildIDs = nodeImpl.childIds;
-      var newChildIDs = nodeData.childIds || [];
-      var newChildIDsHash = {};
-
-      for (var j = 0, newId; newId = newChildIDs[j]; j++) {
-        // Hash the new child ids for faster lookup.
-        newChildIDsHash[newId] = newId;
-
-        // We need to update all new children's parent id regardless.
-        var childNode = this.get(newId);
-        if (!childNode) {
-          childNode = new AutomationNode(this);
-          this.axNodeDataCache_[newId] = childNode;
-          privates(childNode).impl.id = newId;
-        }
-        privates(childNode).impl.indexInParent = j;
-        privates(childNode).impl.parentID = nodeData.id;
-      }
-
-      for (var k = 0, oldId; oldId = oldChildIDs[k]; k++) {
-        // However, we must invalidate all old child ids that are no longer
-        // children.
-        if (!newChildIDsHash[oldId]) {
-          this.invalidate(this.get(oldId));
-        }
-      }
-
-      for (var key in AutomationAttributeDefaults) {
-        if (key in nodeData)
-          nodeImpl[key] = nodeData[key];
-        else
-          nodeImpl[key] = AutomationAttributeDefaults[key];
-      }
-      for (var attributeTypeIndex = 0;
-           attributeTypeIndex < AutomationAttributeTypes.length;
-           attributeTypeIndex++) {
-        var attributeType = AutomationAttributeTypes[attributeTypeIndex];
-        for (var attributeID in nodeData[attributeType]) {
-          nodeImpl.attributes[attributeID] =
-              nodeData[attributeType][attributeID];
-        }
-      }
-      nodeImpl.childIds = newChildIDs;
-      nodeImpl.loaded = true;
-      this.axNodeDataCache_[node.id] = node;
+      newChildIdSet[newChildIds[i]] = true;
     }
-    var node = this.get(data.targetID);
-    if (node)
-      nodeImpl.dispatchEvent(data.eventType);
+
+    // Delete the old children.
+    var nodeImpl = privates(node).impl;
+    var oldChildIds = nodeImpl.childIds;
+    for (var i = 0; i < oldChildIds.length;) {
+      var oldId = oldChildIds[i];
+      if (!newChildIdSet[oldId]) {
+        this.invalidate_(this.axNodeDataCache_[oldId]);
+        oldChildIds.splice(i, 1);
+      } else {
+        i++;
+      }
+    }
+    nodeImpl.childIds = oldChildIds;
+
     return true;
   },
 
-  toString: function() {
-    function toStringInternal(node, indent) {
-      if (!node)
-        return '';
-      var output =
-        new Array(indent).join(' ') + privates(node).impl.toString() + '\n';
-      indent += 2;
-      for (var i = 0; i < node.children().length; i++)
-        output += toStringInternal(node.children()[i], indent);
-      return output;
+  createNewChildren_: function(node, newChildIds, updateState) {
+    logging.CHECK(node);
+    var success = true;
+    for (var i = 0; i < newChildIds.length; i++) {
+      var childId = newChildIds[i];
+      var childNode = this.axNodeDataCache_[childId];
+      if (childNode) {
+        if (childNode.parent() != node) {
+          var parentId = 0;
+          if (childNode.parent()) parentId = childNode.parent().id;
+          // This is a serious error - nodes should never be reparented.
+          // If this case occurs, continue so this node isn't left in an
+          // inconsistent state, but return failure at the end.
+          logging.WARNING('Node ' + childId + ' reparented from ' +
+                          parentId + ' to ' + node.id);
+          lastError.set('automation',
+                        'Bad update received on automation tree',
+                        null,
+                        chrome);
+          success = false;
+          continue;
+        }
+      } else {
+        childNode = new AutomationNode(this);
+        this.axNodeDataCache_[childId] = childNode;
+        privates(childNode).impl.id = childId;
+        updateState.pendingNodes[childNode.id] = childNode;
+        updateState.newNodes[childNode.id] = childNode;
+      }
+      privates(childNode).impl.indexInParent = i;
+      privates(childNode).impl.parentID = node.id;
     }
-    return toStringInternal(this, 0);
+
+    return success;
+  },
+
+  setData_: function(node, nodeData) {
+    var nodeImpl = privates(node).impl;
+    for (var key in AutomationAttributeDefaults) {
+      if (key in nodeData)
+        nodeImpl[key] = nodeData[key];
+      else
+        nodeImpl[key] = AutomationAttributeDefaults[key];
+    }
+    for (var i = 0; i < AutomationAttributeTypes.length; i++) {
+      var attributeType = AutomationAttributeTypes[i];
+      for (var attributeName in nodeData[attributeType]) {
+        nodeImpl.attributes[attributeName] =
+          nodeData[attributeType][attributeName];
+      }
+    }
+  },
+
+  updateNode_: function(nodeData, updateState) {
+    var node = this.axNodeDataCache_[nodeData.id];
+    var didUpdateRoot = false;
+    if (node) {
+      delete updateState.pendingNodes[node.id];
+    } else {
+      if (nodeData.role != schema.RoleType.rootWebArea &&
+          nodeData.role != schema.RoleType.desktop) {
+        logging.WARNING(String(nodeData.id) +
+                     ' is not in the cache and not the new root.');
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+      }
+      // |this| is an AutomationRootNodeImpl; retrieve the
+      // AutomationRootNode instance instead.
+      node = this.wrapper;
+      didUpdateRoot = true;
+      updateState.newNodes[this.id] = this.wrapper;
+    }
+    this.setData_(node, nodeData);
+
+    // TODO(aboxhall): send onChanged event?
+    logging.CHECK(node);
+    if (!this.deleteOldChildren_(node, nodeData.childIds)) {
+      if (didUpdateRoot) {
+        this.invalidate_(this.wrapper);
+      }
+      return false;
+    }
+    var nodeImpl = privates(node).impl;
+
+    var success = this.createNewChildren_(node,
+                                          nodeData.childIds,
+                                          updateState);
+    nodeImpl.childIds = nodeData.childIds;
+    this.axNodeDataCache_[node.id] = node;
+
+    return success;
   }
 };
 
@@ -391,13 +524,16 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'makeVisible',
                                                 'setSelection',
                                                 'addEventListener',
-                                                'removeEventListener'],
+                                                'removeEventListener',
+                                                'toString'],
                                     readonly: ['isRootNode',
                                                'id',
                                                'role',
                                                'state',
                                                'location',
-                                               'attributes'] });
+                                               'attributes',
+                                               'root',
+                                               'toString'] });
 
 var AutomationRootNode = utils.expose('AutomationRootNode',
                                       AutomationRootNodeImpl,

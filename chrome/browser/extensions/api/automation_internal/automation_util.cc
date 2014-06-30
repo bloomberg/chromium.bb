@@ -127,18 +127,21 @@ void DispatchAccessibilityEventsToAutomation(
     const std::vector<content::AXEventNotificationDetails>& details,
     content::BrowserContext* browser_context) {
   using api::automation_internal::AXEventParams;
+  using api::automation_internal::AXTreeUpdate;
 
   std::vector<content::AXEventNotificationDetails>::const_iterator iter =
       details.begin();
   for (; iter != details.end(); ++iter) {
     const content::AXEventNotificationDetails& event = *iter;
 
-    AXEventParams ax_tree_update;
-    ax_tree_update.process_id = event.process_id;
-    ax_tree_update.routing_id = event.routing_id;
-    ax_tree_update.event_type = ToString(iter->event_type);
-    ax_tree_update.target_id = event.id;
+    AXEventParams ax_event_params;
+    ax_event_params.process_id = event.process_id;
+    ax_event_params.routing_id = event.routing_id;
+    ax_event_params.event_type = ToString(iter->event_type);
+    ax_event_params.target_id = event.id;
 
+    AXTreeUpdate& ax_tree_update = ax_event_params.update;
+    ax_tree_update.node_id_to_clear = event.node_id_to_clear;
     for (size_t i = 0; i < event.nodes.size(); ++i) {
       linked_ptr<api::automation_internal::AXNodeData> out_node(
           new api::automation_internal::AXNodeData());
@@ -150,9 +153,11 @@ void DispatchAccessibilityEventsToAutomation(
     // should match the behavior from renderer -> browser and send a
     // collection of tree updates over (to the extension); see
     // |AccessibilityHostMsg_EventParams| and |AccessibilityHostMsg_Events|.
-    DispatchEventInternal(browser_context,
+    DispatchEventInternal(
+        browser_context,
         api::automation_internal::OnAccessibilityEvent::kEventName,
-        api::automation_internal::OnAccessibilityEvent::Create(ax_tree_update));
+        api::automation_internal::OnAccessibilityEvent::Create(
+            ax_event_params));
   }
 }
 

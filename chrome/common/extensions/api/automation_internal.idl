@@ -32,6 +32,16 @@ namespace automationInternal {
     long[] childIds;
   };
 
+  dictionary AXTreeUpdate {
+    // ID of the node, if any, which should be invalidated before the new data
+    // is applied.
+    long nodeIdToClear;
+
+    // A vector of nodes to update according to the rules described in
+    // ui/accesibility/ax_tree_update.h.
+    AXNodeData[] nodes;
+  };
+
   // Data for an accessibility event and/or an atomic change to an accessibility
   // tree. See ui/accessibility/ax_tree_update.h for an extended explanation of
   // the tree update format.
@@ -48,9 +58,9 @@ namespace automationInternal {
     // The type of event that this update represents.
     DOMString eventType;
 
-    // A vector of nodes to update according to the rules described in
-    // ui/ax_tree_update.h.
-    AXNodeData[] nodes;
+    // Serialized changes to the tree structure and node data that should be
+    // applied before processing the event.
+    AXTreeUpdate update;
   };
 
   // All possible actions that can be performed on automation nodes.

@@ -9,6 +9,7 @@
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/accessibility/tree_generator.h"
 
 namespace ui {
 namespace {
@@ -45,93 +46,6 @@ std::string TreeToString(const AXTree& tree) {
 }
 
 }  // anonymous namespace
-
-// A class to create all possible trees with <n> nodes and the ids [1...n].
-//
-// There are two parts to the algorithm:
-//
-// The tree structure is formed as follows: without loss of generality,
-// the first node becomes the root and the second node becomes its
-// child. Thereafter, choose every possible parent for every other node.
-//
-// So for node i in (3...n), there are (i - 1) possible choices for its
-// parent, for a total of (n-1)! (n minus 1 factorial) possible trees.
-//
-// The second part is the assignment of ids to the nodes in the tree.
-// There are exactly n! (n factorial) permutations of the sequence 1...n,
-// and each of these is assigned to every node in every possible tree.
-//
-// The total number of trees returned for a given <n>, then, is
-// n! * (n-1)!
-//
-// n = 2: 2 trees
-// n = 3: 12 trees
-// n = 4: 144 trees
-// n = 5: 2880 trees
-//
-// This grows really fast! Luckily it's very unlikely that there'd be
-// bugs that affect trees with >4 nodes that wouldn't affect a smaller tree
-// too.
-class TreeGenerator {
- public:
-  TreeGenerator(int node_count)
-      : node_count_(node_count),
-        unique_tree_count_(1) {
-    // (n-1)! for the possible trees.
-    for (int i = 2; i < node_count_; i++)
-      unique_tree_count_ *= i;
-    // n! for the permutations of ids.
-    for (int i = 2; i <= node_count_; i++)
-      unique_tree_count_ *= i;
-  }
-
-  int UniqueTreeCount() {
-    return unique_tree_count_;
-  }
-
-  void BuildUniqueTree(int tree_index, AXTree* out_tree) {
-    std::vector<int> indices;
-    std::vector<int> permuted;
-    CHECK(tree_index <= unique_tree_count_);
-
-    // Use the first few bits of |tree_index| to permute
-    // the indices.
-    for (int i = 0; i < node_count_; i++)
-      indices.push_back(i + 1);
-    for (int i = 0; i < node_count_; i++) {
-      int p = (node_count_ - i);
-      int index = tree_index % p;
-      tree_index /= p;
-      permuted.push_back(indices[index]);
-      indices.erase(indices.begin() + index);
-    }
-
-    // Build an AXTreeUpdate. The first two nodes of the tree always
-    // go in the same place.
-    AXTreeUpdate update;
-    update.nodes.resize(node_count_);
-    update.nodes[0].id = permuted[0];
-    update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
-    update.nodes[0].child_ids.push_back(permuted[1]);
-    update.nodes[1].id = permuted[1];
-
-    // The remaining nodes are assigned based on their parent
-    // selected from the next bits from |tree_index|.
-    for (int i = 2; i < node_count_; i++) {
-      update.nodes[i].id = permuted[i];
-      int parent_index = (tree_index % i);
-      tree_index /= i;
-      update.nodes[parent_index].child_ids.push_back(permuted[i]);
-    }
-
-    // Unserialize the tree update into the destination tree.
-    CHECK(out_tree->Unserialize(update));
-  }
-
- private:
-  int node_count_;
-  int unique_tree_count_;
-};
 
 // Test the TreeGenerator class by building all possible trees with
 // 3 nodes and the ids [1...3].

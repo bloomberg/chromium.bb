@@ -101,7 +101,8 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
     targetTree = new AutomationRootNode(pid, rid);
     idToAutomationRootNode[id] = targetTree;
   }
-  privates(targetTree).impl.update(data);
+  if (!privates(targetTree).impl.onAccessibilityEvent(data))
+    return;
   var eventType = data.eventType;
   if (eventType == 'loadComplete' || eventType == 'layoutComplete') {
     // If the tree wasn't available when getTree() was called, the callback will
@@ -128,6 +129,7 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(pid, rid) {
   }
   delete idToAutomationRootNode[id];
 });
+
 exports.binding = automation.generate();
 
 // Add additional accessibility bindings not specified in the automation IDL.
