@@ -5,6 +5,16 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_GNOME_X_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_GNOME_X_H_
 
+// libgnome-keyring has been deprecated in favor of libsecret.
+// See: https://mail.gnome.org/archives/commits-list/2013-October/msg08876.html
+//
+// The define below turns off the deprecations, in order to avoid build
+// failures with Gnome 3.12. When we move to libsecret, the define can be
+// removed, together with the include below it.
+//
+// The porting is tracked in http://crbug.com/355223
+#define GNOME_KEYRING_DEPRECATED
+#define GNOME_KEYRING_DEPRECATED_FOR(x)
 #include <gnome-keyring.h>
 
 #include <string>
