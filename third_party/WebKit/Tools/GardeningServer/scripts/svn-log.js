@@ -90,7 +90,7 @@ function parseCommitMessage(message) {
 function parseCommitData(responseXML)
 {
     var commits = Array.prototype.map.call(responseXML.getElementsByTagName('entry'), function(logentry) {
-        var author = $.trim(logentry.getElementsByTagName('author')[0].textContent);
+        var author = logentry.getElementsByTagName('author')[0].textContent.trim();
         var time = logentry.getElementsByTagName('published')[0].textContent;
         var titleElement = logentry.getElementsByTagName('title')[0];
         var title = titleElement ? titleElement.textContent : null;
@@ -120,7 +120,7 @@ trac.changesetURL = function(revision)
         view: 'rev',
         revision: revision,
     };
-    return config.kBlinkRevisionURL + '?' + $.param(queryParameters);
+    return config.kBlinkRevisionURL + '?' + base.queryParam(queryParameters);
 };
 
 trac.recentCommitData = function(path, limit)

@@ -50,15 +50,21 @@ ui.notifications.Notification = base.extends('li', {
         this._what = this.appendChild(document.createElement('div'));
         this._what.className = 'what';
         this._index = 0;
-        $(this).hide().fadeIn('fast');
+        // FIXME: Why is this requestAnimationFrame needed to make the
+        // animation happen?
+        requestAnimationFrame(function() {
+            this.animate([
+              {opacity: '0'},
+              {opacity: '1'},
+            ], 200);
+        }.bind(this));
     },
     dismiss: function()
     {
-        // FIXME: These fade in/out effects are lame.
-        $(this).fadeOut(function()
-        {
-            this.parentNode && this.parentNode.removeChild(this);
-        });
+        this.animate([
+          {opacity: '1'},
+          {opacity: '0'},
+        ], 200).onfinish = this.remove.bind(this);
     },
 });
 
@@ -73,7 +79,7 @@ ui.notifications.Info = base.extends(ui.notifications.Notification, {
     },
     updateWithNode: function(node)
     {
-        $(this._what).empty();
+        this._what.innerHTML = '';
         this._what.appendChild(node);
     }
 });
@@ -123,7 +129,7 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
         span.className = part;
 
         if (linkFunction) {
-            var parts = $.isArray(content) ? content : [content];
+            var parts = Array.isArray(content) ? content : [content];
             parts.forEach(function(item, index) {
                 if (index > 0)
                     span.appendChild(document.createTextNode(', '));
@@ -170,7 +176,7 @@ ui.notifications.FailingTests = base.extends(ui.notifications.Failure, {
         if (this.containsFailureAnalysis(failureAnalysis))
             return false;
         this._testNameList.push(failureAnalysis.testName);
-        $(this._effects).empty();
+        this._effects.innerHTML = '';
         this._forEachTestGroup(function(groupName, testNameList) {
             this._effects.appendChild(new ui.notifications.FailingTestGroup(groupName, testNameList))
         }.bind(this));
@@ -223,12 +229,13 @@ ui.notifications.BuildersFailing = base.extends(ui.notifications.Failure, {
     },
     setFailingBuilders: function(failuresList)
     {
-        $(this._effects).empty().append(Object.keys(failuresList).map(function(builderName) {
+        this._effects.innerHTML = '';
+        Object.keys(failuresList).map(function(builderName) {
             var effect = document.createElement('li');
             effect.className = 'builder';
             effect.appendChild(new ui.failures.Builder(builderName, failuresList[builderName]));
-            return effect;
-        }));
+            this._effects.appendChild(effect);
+        }.bind(this));
     }
 });
 

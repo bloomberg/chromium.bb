@@ -309,4 +309,12 @@ test("parseJSONP", 6, function() {
     deepEqual(base.parseJSONP('{"builder(1)":"data"}'), {"builder(1)":"data"});
 });
 
+test("base.queryParam", 2, function() {
+    equal(base.queryParam({}), '');
+    equal(base.queryParam({
+        'foo bar': 'bar baz',
+        '1 2': '3 4',
+    }), 'foo+bar=bar+baz&1+2=3+4');
+});
+
 })();

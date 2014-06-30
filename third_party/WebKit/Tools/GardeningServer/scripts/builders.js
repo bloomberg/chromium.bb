@@ -106,7 +106,7 @@ builders.buildersFailingNonLayoutTests = function()
 {
     return fetchMostRecentBuildInfoByBuilder().then(function(buildInfoByBuilder) {
         var failureList = {};
-        $.each(buildInfoByBuilder, function(builderName, buildInfo) {
+        Object.keys(buildInfoByBuilder, function(builderName, buildInfo) {
             if (!buildInfo)
                 return;
             var failures = failingSteps(buildInfo);

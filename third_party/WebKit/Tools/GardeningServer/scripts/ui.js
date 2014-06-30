@@ -29,7 +29,7 @@ var ui = ui || {};
 
 ui.displayURLForBuilder = function(builderName)
 {
-    return config.waterfallURL + '?' + $.param({
+    return config.waterfallURL + '?' + base.queryParam({
         'builder': builderName
     });
 }
@@ -75,8 +75,8 @@ ui.setUseNewWindowForLinks = function(enabled)
     else
         delete localStorage[ui.kUseNewWindowForLinksSetting];
 
-    $('a').each(function() {
-        ui.setTargetForLink(this);
+    [].forEach.call(document.querySelectorAll('a'), function(link) {
+        ui.setTargetForLink(link);
     });
 }
 ui.setUseNewWindowForLinks(!!localStorage[ui.kUseNewWindowForLinksSetting]);
@@ -147,8 +147,9 @@ ui.onebar = base.extends('div', {
     },
     _setupLinkSettingHandler: function()
     {
-        $('#new-window-for-links').attr('checked', ui.useNewWindowForLinks);
-        $('#new-window-for-links').change(function(event) {
+        if (ui.useNewWindowForLinks)
+            document.getElementById('new-window-for-links').setAttribute('checked', true);
+        document.getElementById('new-window-for-links').addEventListener('change', function(event) {
             ui.setUseNewWindowForLinks(this.checked);
         });
     },
@@ -278,32 +279,29 @@ ui.revisionDetails = base.extends('span', {
         theSpan.appendChild(revisionsNode);
 
         // This adds a pop-up when we hover over the summary if the details aren't being shown.
-        var revisionsPopUp = $('<span id="revisionPopUp">').appendTo(summaryLinkNode);
-        revisionsPopUp.append($(revisionsTableNode).clone());
-        $(summaryLinkNode).mouseover(function(ev) {
+        var revisionsPopUp = document.createElement('span')
+        revisionsPopUp.id = 'revisionPopUp';
+        summaryLinkNode.appendChild(revisionsPopUp);
+        revisionsPopUp.appendChild(revisionsTableNode.cloneNode(true));
+
+        summaryLinkNode.addEventListener('mouseover', function(event) {
             if (!revisionsNode.open) {
-                var tPosX = $(summaryNode).position().left;
-                var tPosY = $(summaryNode).position().top + 16;
-                $(revisionsPopUp).css({'position': 'absolute', 'top': tPosY, 'left': tPosX});
-                $(revisionsPopUp).addClass('active');
+                revisionsPopUp.style.position = 'absolute';
+                revisionsPopUp.style.left = summaryNode.offsetLeft + 'px';
+                revisionsPopUp.style.top = (summaryNode.offsetTop + summaryNode.offsetHeight) + 'px';
+                revisionsPopUp.classList.add('active');
             }
         });
-        $(summaryLinkNode).mouseout(function(ev) {
+
+        summaryLinkNode.addEventListener('mouseout', function(event) {
             if (!revisionsNode.open) {
-                $(revisionsPopUp).removeClass("active");
+                revisionsPopUp.classList.remove("active");
             }
         });
 
         var totRevision = model.latestRevision();
         theSpan.appendChild(document.createTextNode(', trunk is at '));
         theSpan.appendChild(ui.createLinkNode(trac.changesetURL(totRevision), totRevision));
-
-        // We want this feature, but need to fetch the lastBlinkRollRevision via the interwebs.
-        // Promise.all([checkout.lastBlinkRollRevision(), rollbot.fetchCurrentRoll()]).then(function(results) {
-        //     theSpan.lastRolledRevision = results[0];
-        //     theSpan.roll = results[1];
-        //     theSpan.updateUI(totRevision);
-        // });
     }
 });
 

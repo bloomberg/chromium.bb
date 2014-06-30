@@ -63,7 +63,7 @@ function zoomImageContainer(url)
     container.className = 'zoom-image-container';
 
     var title = url.match(/\-([^\-]*)\.png/)[1];
-    
+
     var label = document.createElement('div');
     label.className = 'label';
     label.appendChild(document.createTextNode(title));
@@ -137,7 +137,9 @@ function handleMouseOut(e)
         return;
 
     // If e.relatedTarget is null, we've moused out of the document.
-    $('pixel-zoom-container').detach();
+    var container = document.querySelector('.pixel-zoom-container');
+    if (container)
+        container.remove();
 }
 
 function handleMouseMove(e)
@@ -153,7 +155,8 @@ function handleMouseMove(e)
     var resultContainer = (e.target.className == 'result-container') ?
         e.target : parentOfType(e.target, '.result-container');
     if (!resultContainer || !resultContainer.querySelector('img')) {
-        $(container).detach();
+        if (container)
+            container.remove();
         return;
     }
 

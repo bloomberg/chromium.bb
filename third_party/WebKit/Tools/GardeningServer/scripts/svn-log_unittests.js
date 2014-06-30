@@ -272,7 +272,7 @@ asyncTest("recentCommitData", 3, function() {
 
     simulator.runTest(function() {
         return trac.recentCommitData('trunk', 10).then(function(commitDataList) {
-            $.each(commitDataList, function(index, commitData) {
+            commitDataList.forEach(function(commitData) {
                 // Including the entire message makes the deepEqual below to unwieldy.
                 delete commitData.message;
             });

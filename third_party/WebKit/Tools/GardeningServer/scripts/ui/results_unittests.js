@@ -188,8 +188,8 @@ test('View with reftests', 2, function() {
     view.setResultsByTest(kExampleReftestResults);
     view.firstResult();
 
-    equals($('.non-action-button', view).length, 0);
-    equals($('.action', view).length, 0);
+    equals(view.querySelectorAll('.non-action-button').length, 0);
+    equals(view.querySelectorAll('.action').length, 0);
 });
 
 asyncTest('View of timeouts', 1, function() {
@@ -202,7 +202,7 @@ asyncTest('View of timeouts', 1, function() {
     view.setResultsByTest(kExampleResultsWithTimeoutByTest);
     view.firstResult();
     emptyPromise.then(function() {
-        equals($('.results-grid', view).html(), 'No results to display.');
+        equals(view.querySelector('.results-grid').innerHTML, 'No results to display.');
         start();
     });
 });

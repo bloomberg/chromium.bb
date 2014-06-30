@@ -87,9 +87,10 @@ ui.failures.FailureGrid = base.extends('table', {
     _rowByResult: function(result)
     {
         var row = this._resultRows[result];
-        $(row).show();
-        if (row)
+        if (row) {
+            row.style.display = '';
             return row;
+        }
 
         row = this._resultRows[result] = this._body.insertRow(0);
         row.className = result;
@@ -126,10 +127,9 @@ ui.failures.FailureGrid = base.extends('table', {
     {
         this._pendingReset = false;
         this._resultRows = {};
-        $(this._body).empty();
+        this._body.innerHTML = '';
         // Add the BUILDING row eagerly so that it appears last.
-        this._rowByResult(kBuildingResult);
-        $(this._resultRows[kBuildingResult]).hide();
+        this._rowByResult(kBuildingResult).style.display = 'none';
     }
 });
 

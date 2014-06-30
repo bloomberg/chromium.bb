@@ -109,7 +109,7 @@ asyncTest("updateRecentCommits", 2, function() {
         model.updateRecentCommits().then(function() {
             var recentCommits = model.state.recentCommits;
             delete model.state.recentCommits;
-            $.each(recentCommits, function(index, commitData) {
+            recentCommits.forEach(function(commitData) {
                 delete commitData.message;
             });
             deepEqual(recentCommits, [{

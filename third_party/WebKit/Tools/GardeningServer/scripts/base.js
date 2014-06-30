@@ -62,7 +62,7 @@ base.uniquifyArray = function(array)
 {
     var seen = {};
     var result = [];
-    $.each(array, function(index, value) {
+    array.forEach(function(value) {
         if (seen[value])
             return;
         seen[value] = true;
@@ -259,6 +259,18 @@ base.getURLParameter = function(name)
 base.underscoredBuilderName = function(builderName)
 {
     return builderName.replace(/[ .()]/g, '_');
+}
+
+base.queryParam = function(params)
+{
+    var result = []
+    Object.keys(params, function(key, value) {
+        result.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+    });
+    // FIXME: Remove the conversion of space to plus. This is just here
+    // to remain compatible with jQuery.param, but there's no reason to
+    // deviate from the built-in encodeURIComponent behavior.
+    return result.join('&').replace(/%20/g, '+');
 }
 
 })();

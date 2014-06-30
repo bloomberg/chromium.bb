@@ -89,7 +89,7 @@ test("controllers.FailingBuilders", 3, function() {
     ok(failingBuilders.hasFailures());
 
     equal(view.outerHTML, '<div>' +
-        '<li style="opacity: 0;">' +
+        '<li>' +
             '<div class="how"></div>' +
             '<div class="what">' +
                 '<div class="problem">dummy message:' +

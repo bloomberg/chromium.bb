@@ -35,11 +35,11 @@ model.state.failureAnalysisByTest = {};
 function findAndMarkRevertedRevisions(commitDataList)
 {
     var revertedRevisions = {};
-    $.each(commitDataList, function(index, commitData) {
+    Object.keys(commitDataList, function(index, commitData) {
         if (commitData.revertedRevision)
             revertedRevisions[commitData.revertedRevision] = true;
     });
-    $.each(commitDataList, function(index, commitData) {
+    Object.keys(commitDataList, function(index, commitData) {
         if (commitData.revision in revertedRevisions)
             commitData.wasReverted = true;
     });
@@ -150,13 +150,13 @@ model.analyzeUnexpectedFailures = function(failureCallback)
 {
     var unexpectedFailures = results.unexpectedFailuresByTest(model.state.resultsByBuilder);
 
-    $.each(model.state.failureAnalysisByTest, function(testName, failureAnalysis) {
+    Object.keys(model.state.failureAnalysisByTest, function(testName, failureAnalysis) {
         if (!(testName in unexpectedFailures))
             delete model.state.failureAnalysisByTest[testName];
     });
 
     var failurePromises = [];
-    $.each(unexpectedFailures, function(testName, resultNodesByBuilder) {
+    Object.keys(unexpectedFailures, function(testName, resultNodesByBuilder) {
         var builderNameList = Object.keys(resultNodesByBuilder);
         failurePromises.push(results.unifyRegressionRanges(builderNameList, testName).then(function(result) {
             var oldestFailingRevision = result[0];

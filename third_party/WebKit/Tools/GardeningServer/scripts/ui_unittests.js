@@ -65,7 +65,7 @@ test("ui.onebar", 2, function() {
     onebar.select('unexpected');
     equal(window.location.hash, '#unexpected');
 
-    $(onebar).detach();
+    onebar.remove();
 });
 
 // FIXME: These three results.* tests should be moved ot ui/results_unittests.js.

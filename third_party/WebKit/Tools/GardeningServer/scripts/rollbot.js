@@ -29,7 +29,7 @@ var rollbot = rollbot || {};
 
 // FIXME: This will need to change once we have a real account for the rollbot.
 var rollBotAccount = "eseidel@chromium.org";
-var issueSearchURL = config.kRietveldURL + "/search?" + $.param({
+var issueSearchURL = config.kRietveldURL + "/search?" + base.queryParam({
     "owner": rollBotAccount,
     "closed": 3, // Only open issues.
     "with_messages": "true",

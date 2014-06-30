@@ -39,9 +39,9 @@ var g_updateButton = null;
 function updatePartyTime()
 {
     if (!g_unexpectedFailuresController.length() && !g_nonLayoutTestFailureBuilders.hasFailures())
-        $('#onebar').addClass('partytime');
+        document.getElementById('onebar').classList.add('partytime');
     else
-        $('#onebar').removeClass('partytime');
+        document.getElementById('onebar').classList.remove('partytime');
 }
 
 function updateTreeStatus()
@@ -104,7 +104,7 @@ function update()
     });
 }
 
-$(document).ready(function() {
+window.addEventListener('DOMContentLoaded', function() {
     g_updateTimerId = window.setInterval(update, config.kUpdateFrequency);
 
     window.setInterval(updateTreeStatus, config.kTreeStatusUpdateFrequency);
@@ -119,7 +119,8 @@ $(document).ready(function() {
         showResults: function(resultsView)
         {
             var resultsContainer = onebar.results();
-            $(resultsContainer).empty().append(resultsView);
+            resultsContainer.innerHTML = '';
+            resultsContainer.appendChild(resultsView)
             onebar.select('results');
         }
     };

@@ -145,7 +145,7 @@ function createBuildersFailing(failingBuilderCount)
     return buildersFailing
 }
 
-$(document).ready(function() {
+window.addEventListener('DOMContentLoaded', function() {
 
     var actions = new ui.notifications.Stream();
     document.body.insertBefore(actions, document.body.firstChild);

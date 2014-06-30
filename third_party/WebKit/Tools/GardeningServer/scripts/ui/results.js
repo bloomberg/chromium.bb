@@ -45,7 +45,7 @@ ui.results.ResultsGrid = base.extends('div', {
             resultsURLsByTypeAndKind[resultType][results.resultKind(url)] = url;
         });
 
-        $.each(resultsURLsByTypeAndKind, function(resultType, resultsURLsByKind) {
+        Object.keys(resultsURLsByTypeAndKind, function(resultType, resultsURLsByKind) {
             if (results.kUnknownKind in resultsURLsByKind) {
                 // This is something like "crash" that isn't a comparison.
                 var result = document.createElement('ct-test-output');
@@ -89,11 +89,13 @@ ui.results.ResultsDetails = base.extends('div', {
             var resultsGrid = new ui.results.ResultsGrid();
             resultsGrid.addResults(resultsURLs);
 
-            $(this).empty().append(
+            this.innerHTML = ''
+            this.appendChild(
                 new ui.actions.List([
                     new ui.actions.Previous(),
                     new ui.actions.Next()
-                ])).append(resultsGrid);
+                ]))
+            this.appendChild(resultsGrid);
         }.bind(this));
     },
 });
@@ -178,8 +180,7 @@ ui.results.TestSelector = base.extends('div', {
 
         var cancelResize = function(event) { this._is_resizing = false; }.bind(this);
         this.addEventListener('mouseup', cancelResize);
-        // FIXME: Use addEventListener once WebKit adds support for mouseleave/mouseenter.
-        $(window).bind('mouseleave', cancelResize);
+        document.body.addEventListener('mouseleave', cancelResize);
 
         this.addEventListener('mousemove', function(event) {
             if (!this._is_resizing)
@@ -269,7 +270,8 @@ ui.results.BuilderSelector = base.extends('div', {
             var builderHash = base.underscoredBuilderName(builderName);
 
             var link = document.createElement('a');
-            $(link).attr('href', "#" + builderHash).text(ui.displayNameForBuilder(builderName));
+            link.href = "#" + builderHash;
+            link.textContent = ui.displayNameForBuilder(builderName);
             tabStrip.appendChild(document.createElement('li')).appendChild(link);
 
             var content = this._delegate.contentForTestAndBuilder(testName, builderName);
@@ -327,7 +329,7 @@ ui.results.View = base.extends('div', {
     },
     setResultsByTest: function(resultsByTest)
     {
-        $(this).empty();
+        this.innerHTML = '';
         this._resultsByTest = resultsByTest;
         this._testSelector = new ui.results.TestSelector(this, resultsByTest);
         this.appendChild(this._testSelector);

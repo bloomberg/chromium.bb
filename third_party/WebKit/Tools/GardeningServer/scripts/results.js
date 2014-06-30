@@ -101,7 +101,7 @@ function possibleSuffixListFor(failureTypeList)
         // '-pretty-diff.html',
     }
 
-    $.each(failureTypeList, function(index, failureType) {
+    failureTypeList.forEach(function(failureType) {
         switch(failureType) {
         case IMAGE:
             pushImageSuffixes();
@@ -222,8 +222,8 @@ function resultsByTest(resultsByBuilder, filter)
 {
     var resultsByTest = {};
 
-    $.each(resultsByBuilder, function(builderName, resultsTree) {
-        $.each(filter(resultsTree), function(testName, resultNode) {
+    Object.keys(resultsByBuilder, function(builderName, resultsTree) {
+        Object.keys(filter(resultsTree), function(testName, resultNode) {
             resultsByTest[testName] = resultsByTest[testName] || {};
             resultsByTest[testName][builderName] = resultNode;
         });
@@ -251,7 +251,7 @@ results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builder
 results.collectUnexpectedResults = function(dictionaryOfResultNodes)
 {
     var collectedResults = [];
-    $.each(dictionaryOfResultNodes, function(key, resultNode) {
+    Object.keys(dictionaryOfResultNodes, function(key, resultNode) {
         var analyzer = new results.ResultAnalyzer(resultNode);
         collectedResults = collectedResults.concat(analyzer.unexpectedResults());
     });
@@ -290,7 +290,7 @@ function walkHistory(builderName, testName, continueCallback)
         var resultsURL = keyList[indexOfNextKeyToFetch].url;
         ++indexOfNextKeyToFetch;
         g_resultsCache.get(resultsURL).then(function(resultsTree) {
-            if ($.isEmptyObject(resultsTree)) {
+            if (!Object.size(resultsTree)) {
                 continueWalk();
                 return;
             }
@@ -351,7 +351,7 @@ function mergeRegressionRanges(regressionRanges)
     mergedRange.oldestFailingRevision = 0;
     mergedRange.newestPassingRevision = 0;
 
-    $.each(regressionRanges, function(builderName, range) {
+    Object.keys(regressionRanges, function(builderName, range) {
         if (!range.oldestFailingRevision && !range.newestPassingRevision)
             return
 
@@ -373,7 +373,7 @@ results.unifyRegressionRanges = function(builderNameList, testName) {
     var regressionRanges = {};
 
     var rangePromises = [];
-    $.each(builderNameList, function(index, builderName) {
+    builderNameList.forEach(function(builderName) {
         rangePromises.push(results.regressionRangeForFailure(builderName, testName)
                            .then(function(result) {
                                var oldestFailingRevision = result[0];
@@ -394,7 +394,7 @@ results.resultNodeForTest = function(resultsTree, testName)
 {
     var testNamePath = testName.split('/');
     var currentNode = resultsTree['tests'];
-    $.each(testNamePath, function(index, segmentName) {
+    testNamePath.forEach(function(segmentName) {
         if (!currentNode)
             return;
         currentNode = (segmentName in currentNode) ? currentNode[segmentName] : null;
@@ -425,8 +425,8 @@ results.resultType = function(url)
 function sortResultURLsBySuffix(urls)
 {
     var sortedURLs = [];
-    $.each(kPreferredSuffixOrder, function(i, suffix) {
-        $.each(urls, function(j, url) {
+    kPreferredSuffixOrder.forEach(function(suffix) {
+        urls.forEach(function(url) {
             if (!base.endsWith(url, suffix))
                 return;
             sortedURLs.push(url);
@@ -445,7 +445,7 @@ results.fetchResultsURLs = function(failureInfo)
     var suffixList = possibleSuffixListFor(failureInfo.failureTypeList);
     var resultURLs = [];
     var probePromises = [];
-    $.each(suffixList, function(index, suffix) {
+    suffixList.forEach(function(suffix) {
         var url = urlStem + testNameStem + suffix;
         probePromises.push(net.probe(url).then(
             function() {
@@ -462,7 +462,7 @@ results.fetchResultsByBuilder = function(builderNameList)
 {
     var resultsByBuilder = {};
     var fetchPromises = [];
-    $.each(builderNameList, function(index, builderName) {
+    builderNameList.forEach(function(builderName) {
         var resultsURL = resultsSummaryURL(builderName);
         fetchPromises.push(net.jsonp(resultsURL).then(function(resultsTree) {
             resultsByBuilder[builderName] = resultsTree;
