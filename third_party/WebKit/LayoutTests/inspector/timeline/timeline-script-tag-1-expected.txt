@@ -6,8 +6,6 @@ ParseHTML
 ParseHTML
 ----> EvaluateScript
 --------> TimeStamp : SCRIPT TAG
---------> UpdateCounters
-----> UpdateCounters
 EvaluateScript Properties:
 {
     children : <object>
@@ -22,16 +20,9 @@ EvaluateScript Properties:
 }
 ParseHTML
 ParseHTML
-----> UpdateCounters
 ----> EventDispatch
 --------> FunctionCall
 ------------> FunctionCall
-------------> UpdateCounters
---------> UpdateCounters
-----> UpdateCounters
 ----> MarkLoad
-----> UpdateCounters
-----> UpdateCounters
 ----> MarkDOMContent
-----> UpdateCounters
 

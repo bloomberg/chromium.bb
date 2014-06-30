@@ -41,7 +41,15 @@ function test()
                         children.push(record.children[i]);
                 }
                 record.children = children;
-                InspectorTest.dumpTimelineRecord(record);
+                InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
+                    "ParseHTML",
+                    "EvaluateScript",
+                    "EventDispatch",
+                    "FunctionCall",
+                    "TimeStamp",
+                    "MarkLoad",
+                    "MarkDOMContent"
+                ]);
             }
         }
         InspectorTest.printTimelineRecords(null, format);
