@@ -882,7 +882,7 @@ template<typename T> T* adoptRefCountedGarbageCollectedWillBeNoop(T* ptr)
 #define DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 
 #define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
-    DEFINE_STATIC_LOCAL(Persistent<type>, name, arguments)
+    static type* name = (new Persistent<type>(arguments))->get();
 
 #else // !ENABLE(OILPAN)
 

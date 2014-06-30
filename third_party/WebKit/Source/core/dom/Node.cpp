@@ -2029,13 +2029,8 @@ typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Node>, OwnPtr<EventTargetData> 
 
 static EventTargetDataMap& eventTargetDataMap()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map, (new EventTargetDataMap()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EventTargetDataMap>, map, (adoptPtrWillBeNoop(new EventTargetDataMap())));
     return *map;
-#else
-    DEFINE_STATIC_LOCAL(EventTargetDataMap, map, ());
-    return map;
-#endif
 }
 
 EventTargetData* Node::eventTargetData()

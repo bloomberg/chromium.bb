@@ -173,24 +173,14 @@ void MutationObserver::observationEnded(MutationObserverRegistration* registrati
 
 static MutationObserverSet& activeMutationObservers()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, activeObservers, (new MutationObserverSet()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MutationObserverSet>, activeObservers, (adoptPtrWillBeNoop(new MutationObserverSet())));
     return *activeObservers;
-#else
-    DEFINE_STATIC_LOCAL(MutationObserverSet, activeObservers, ());
-    return activeObservers;
-#endif
 }
 
 static MutationObserverSet& suspendedMutationObservers()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspendedObservers, (new MutationObserverSet()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MutationObserverSet>, suspendedObservers, (adoptPtrWillBeNoop(new MutationObserverSet())));
     return *suspendedObservers;
-#else
-    DEFINE_STATIC_LOCAL(MutationObserverSet, suspendedObservers, ());
-    return suspendedObservers;
-#endif
 }
 
 static void activateObserver(PassRefPtrWillBeRawPtr<MutationObserver> observer)

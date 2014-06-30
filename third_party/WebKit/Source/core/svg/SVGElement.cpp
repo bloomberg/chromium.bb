@@ -533,13 +533,8 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
 
 static WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& emptyInstances()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement> > >, emptyInstances, (new HeapHashSet<WeakMember<SVGElement> >));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > >, emptyInstances, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >())));
     return *emptyInstances;
-#else
-    DEFINE_STATIC_LOCAL(HashSet<RawPtr<SVGElement> >, emptyInstances, ());
-    return emptyInstances;
-#endif
 }
 
 const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& SVGElement::instancesForElement() const

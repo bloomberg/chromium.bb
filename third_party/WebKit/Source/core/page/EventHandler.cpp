@@ -255,13 +255,8 @@ void EventHandler::trace(Visitor* visitor)
 
 DragState& EventHandler::dragState()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<DragState>, state, (new DragState()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DragState>, state, (adoptPtrWillBeNoop(new DragState())));
     return *state;
-#else
-    DEFINE_STATIC_LOCAL(DragState, state, ());
-    return state;
-#endif
 }
 
 void EventHandler::clear()

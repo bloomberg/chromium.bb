@@ -46,13 +46,8 @@ using namespace HTMLNames;
 
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<CSSDefaultStyleSheets>, cssDefaultStyleSheets, (new CSSDefaultStyleSheets()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CSSDefaultStyleSheets>, cssDefaultStyleSheets, (adoptPtrWillBeNoop(new CSSDefaultStyleSheets())));
     return *cssDefaultStyleSheets;
-#else
-    DEFINE_STATIC_LOCAL(CSSDefaultStyleSheets, cssDefaultStyleSheets, ());
-    return cssDefaultStyleSheets;
-#endif
 }
 
 static const MediaQueryEvaluator& screenEval()

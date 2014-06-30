@@ -34,13 +34,8 @@ namespace WebCore {
 
 CSSValuePool& cssValuePool()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<CSSValuePool>, pool, (new CSSValuePool()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CSSValuePool>, pool, (adoptPtrWillBeNoop(new CSSValuePool())));
     return *pool;
-#else
-    DEFINE_STATIC_LOCAL(CSSValuePool, pool, ());
-    return pool;
-#endif // ENABLE(OILPAN)
 }
 
 CSSValuePool::CSSValuePool()

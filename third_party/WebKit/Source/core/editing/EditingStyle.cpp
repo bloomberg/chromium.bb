@@ -1085,23 +1085,13 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization
 
 static void mergeTextDecorationValues(CSSValueList* mergedValue, const CSSValueList* valueToMerge)
 {
-#if ENABLE_OILPAN
-    DEFINE_STATIC_LOCAL(Persistent<CSSPrimitiveValue>, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-    DEFINE_STATIC_LOCAL(Persistent<CSSPrimitiveValue>, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-    if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
-        mergedValue->append(underline.get());
-
-    if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
-        mergedValue->append(lineThrough.get());
-#else
-    DEFINE_STATIC_REF(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-    DEFINE_STATIC_REF(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
     if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
         mergedValue->append(underline);
 
     if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
         mergedValue->append(lineThrough);
-#endif
 }
 
 void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverrideMode mode)
@@ -1454,13 +1444,8 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
     // Furthermore, text-decoration: none has been trimmed so that text-decoration property is always a CSSValueList.
     RefPtrWillBeRawPtr<CSSValue> textDecoration = style->getPropertyCSSValue(textDecorationPropertyForEditing());
     if (textDecoration && textDecoration->isValueList()) {
-#if ENABLE(OILPAN)
-        DEFINE_STATIC_LOCAL(Persistent<CSSPrimitiveValue>, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-        DEFINE_STATIC_LOCAL(Persistent<CSSPrimitiveValue>, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-#else
-        DEFINE_STATIC_REF(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-        DEFINE_STATIC_REF(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-#endif
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
         RefPtrWillBeRawPtr<CSSValueList> newTextDecoration = toCSSValueList(textDecoration.get())->copy();
         if (newTextDecoration->removeAll(underline))
             m_applyUnderline = true;
