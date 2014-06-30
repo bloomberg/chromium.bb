@@ -79,8 +79,12 @@ int GeolocationPermissionRequest::GetIconID() const {
 }
 
 base::string16 GeolocationPermissionRequest::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
-      net::FormatUrl(requesting_frame_, display_languages_));
+  return l10n_util::GetStringFUTF16(
+      IDS_GEOLOCATION_INFOBAR_QUESTION,
+      net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_,
+                     net::kFormatUrlOmitUsernamePassword |
+                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                     net::UnescapeRule::SPACES, NULL, NULL, NULL));
 }
 
 base::string16 GeolocationPermissionRequest::GetMessageTextFragment() const {
