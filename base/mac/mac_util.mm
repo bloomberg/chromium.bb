@@ -356,24 +356,17 @@ void RemoveFromLoginItems() {
 
 bool WasLaunchedAsLoginOrResumeItem() {
   ProcessSerialNumber psn = { 0, kCurrentProcess };
+  ProcessInfoRec info;
+  info.processInfoLength = sizeof(info);
+  info.processName = NULL;
+  info.processAppSpec = NULL;
 
-  base::scoped_nsobject<NSDictionary> process_info(
-      CFToNSCast(ProcessInformationCopyDictionary(
-          &psn, kProcessDictionaryIncludeAllInformationMask)));
-
-  long long temp = [[process_info objectForKey:@"ParentPSN"] longLongValue];
-  ProcessSerialNumber parent_psn =
-      { (temp >> 32) & 0x00000000FFFFFFFFLL, temp & 0x00000000FFFFFFFFLL };
-
-  base::scoped_nsobject<NSDictionary> parent_info(
-      CFToNSCast(ProcessInformationCopyDictionary(
-          &parent_psn, kProcessDictionaryIncludeAllInformationMask)));
-
-  // Check that creator process code is that of loginwindow.
-  BOOL result =
-      [[parent_info objectForKey:@"FileCreator"] isEqualToString:@"lgnw"];
-
-  return result == YES;
+  if (GetProcessInformation(&psn, &info) == noErr) {
+    ProcessSerialNumber parent_psn = info.processLauncher;
+    if (GetProcessInformation(&parent_psn, &info) == noErr)
+      return info.processSignature == 'lgnw';
+  }
+  return false;
 }
 
 bool WasLaunchedAsLoginItemRestoreState() {
