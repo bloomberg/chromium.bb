@@ -65,11 +65,12 @@ bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
     if (!media)
         return false;
 
+    // Cache the evaluator to avoid allocating one per evaluation.
+    if (!m_evaluator)
+        m_evaluator = createEvaluator();
+
     if (m_evaluator)
         return m_evaluator->eval(media);
-
-    if (OwnPtr<MediaQueryEvaluator> evaluator = createEvaluator())
-        return evaluator->eval(media);
 
     return false;
 }
@@ -104,16 +105,10 @@ void MediaQueryMatcher::mediaFeaturesChanged()
     if (!m_document)
         return;
 
-    // Cache an evaluator so we don't allocate one for each list below.
-    m_evaluator = createEvaluator();
-    if (!m_evaluator)
-        return;
-
     WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
     for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it)
         (*it)->mediaFeaturesChanged(&listenersToNotify);
 
-    m_evaluator = nullptr;
     // FIXME: This should be async! We're running script inside ::layout() or ::updateRenderTree().
     for (size_t i = 0; i < listenersToNotify.size(); ++i)
         listenersToNotify[i]->call();
