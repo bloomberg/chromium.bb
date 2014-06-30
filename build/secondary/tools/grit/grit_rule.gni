@@ -54,6 +54,18 @@ if (enable_extensions) {
 if (enable_plugins) {
   grit_defines += [ "-D", "enable_plugins" ]
 }
+if (enable_task_manager) {
+  grit_defines += [ "-D", "enable_task_manager" ]
+}
+if (enable_app_list) {
+  grit_defines += [ "-D", "enable_app_list" ]
+}
+if (enable_service_discovery) {
+  grit_defines += [ "-D", "enable_service_discovery" ]
+}
+if (enable_wifi_bootstrapping) {
+  grit_defines += [ "-D", "enable_wifi_bootstrapping" ]
+}
 
 # TODO(GYP) the rest of the grit_defines from the gyp build.
 

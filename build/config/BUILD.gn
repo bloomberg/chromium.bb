@@ -33,21 +33,11 @@ config("feature_flags") {
       "CHROMIUM_BUILD",
       "ENABLE_ONE_CLICK_SIGNIN",
       "ENABLE_REMOTING=1",
-      "ENABLE_CONFIGURATION_POLICY",
       "ENABLE_NOTIFICATIONS",
       "ENABLE_EGLIMAGE=1",
-      "ENABLE_TASK_MANAGER=1",
-      "ENABLE_PLUGIN_INSTALLATION=1",
-      "ENABLE_SESSION_SERVICE=1",
-      "ENABLE_THEMES=1",
-      "ENABLE_AUTOFILL_DIALOG=1",
       "ENABLE_BACKGROUND=1",
       "ENABLE_GOOGLE_NOW=1",
-      "ENABLE_CAPTIVE_PORTAL_DETECTION=1",
-      "ENABLE_APP_LIST=1",
       "ENABLE_SETTINGS_APP=1",
-      "ENABLE_MANAGED_USERS=1",
-      "ENABLE_SERVICE_DISCOVERY=1",
       "USE_MOJO=1",
       "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
       # Temporary suppression until Blink code can be removed.
@@ -142,6 +132,45 @@ config("feature_flags") {
   }
   if (enable_extensions) {
     defines += [ "ENABLE_EXTENSIONS=1" ]
+  }
+  if (enable_configuration_policy) {
+    defines += [ "ENABLE_CONFIGURATION_POLICY" ]
+  }
+  if (enable_task_manager) {
+    defines += [ "ENABLE_TASK_MANAGER=1" ]
+  }
+  if (enable_themes) {
+    defines += [ "ENABLE_THEMES=1" ]
+  }
+  if (is_win && win_pdf_metafile_for_printing) {
+    defines += [ "WIN_PDF_METAFILE_FOR_PRINTING=1" ]
+  }
+  if (enable_captive_portal_detection) {
+    defines += [ "ENABLE_CAPTIVE_PORTAL_DETECTION=1" ]
+  }
+  if (enable_session_service) {
+    defines += [ "ENABLE_SESSION_SERVICE=1" ]
+  }
+  if (enable_rlz) {
+    defines += [ "ENABLE_RLZ" ]
+  }
+  if (enable_plugin_installation) {
+    defines += [ "ENABLE_PLUGIN_INSTALLATION=1" ]
+  }
+  if (enable_app_list) {
+    defines += [ "ENABLE_APP_LIST=1" ]
+  }
+  if (enable_managed_users) {
+    defines += [ "ENABLE_MANAGED_USERS=1" ]
+  }
+  if (enable_service_discovery) {
+    defines += [ "ENABLE_SERVICE_DISCOVERY=1" ]
+  }
+  if (enable_autofill_dialog) {
+    defines += [ "ENABLE_AUTOFILL_DIALOG=1" ]
+  }
+  if (enable_wifi_bootstrapping) {
+    defines += [ "ENABLE_WIFI_BOOTSTRAPPING=1" ]
   }
 }
 

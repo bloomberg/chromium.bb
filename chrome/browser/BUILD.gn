@@ -2,11 +2,620 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//tools/grit/grit_rule.gni")
 
 about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
+
+if (false) {
+
+#gypi_values = exec_script(
+#    "//build/gypi_to_gn.py",
+#    [ rebase_path("../chrome_browser.gypi") ],
+#    "scope",
+#    [ "../chrome_browser.gypi" ])
+
+static_library("browser") {
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  defines = []
+  sources = []
+  libs = []
+  ldflags = []
+
+  # iOS/non-iOS shared deps. New dependencies should generally be added in the
+  # non-iOS deps below.
+  deps = [
+    "//base/allocator",
+    "//chrome:extra_resources",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/common",
+    "//chrome/common/net",
+    "//content/public/browser",
+    "//content/public/common",
+    "//crypto",
+    "//skia",
+    "//sql",
+    "//sync",
+    "//third_party/icu",
+    "//third_party/libxml",
+    "//third_party/widevine/cdm:version_h",
+    "//third_party/zlib",
+    "//third_party/zlib:minizip",
+    "//third_party/zlib:zip",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/strings",
+    # TODO(GYP)
+    #"browser_ui",
+    #"cert_logger_proto",
+    #"chrome_resources.gyp:chrome_strings_map",
+    #"chrome_resources.gyp:platform_locale_settings",
+    #"chrome_resources.gyp:theme_resources",
+    #"in_memory_url_index_cache_proto",
+    #"probe_message_proto",
+    #"suggestions_proto",
+    #"../components/components.gyp:autocomplete",
+    #"../components/components.gyp:autofill_core_browser",
+    #"../components/components.gyp:bookmarks_browser",
+    #"../components/components.gyp:captive_portal",
+    #"../components/components.gyp:cloud_devices_common",
+    #"../components/components.gyp:component_metrics_proto",
+    #"../components/components.gyp:data_reduction_proxy_browser",
+    #"../components/components.gyp:domain_reliability",
+    #"../components/components.gyp:favicon_base",
+    #"../components/components.gyp:favicon_core",
+    #"../components/components.gyp:feedback_component",
+    #"../components/components.gyp:gcm_driver",
+    #"../components/components.gyp:google_core_browser",
+    #"../components/components.gyp:history_core_browser",
+    #"../components/components.gyp:history_core_common",
+    #"../components/components.gyp:infobars_core",
+    #"../components/components.gyp:invalidation",
+    #"../components/components.gyp:metrics",
+    #"../components/components.gyp:metrics_net",
+    #"../components/components.gyp:navigation_metrics",
+    #"../components/components.gyp:network_time",
+    #"../components/components.gyp:omaha_query_params",
+    #"../components/components.gyp:os_crypt",
+    #"../components/components.gyp:password_manager_core_browser",
+    #"../components/components.gyp:password_manager_core_common",
+    #"../components/components.gyp:policy_component",
+    #"../components/components.gyp:precache_core",
+    #"../components/components.gyp:query_parser",
+    #"../components/components.gyp:rappor",
+    #"../components/components.gyp:search_engines",
+    #"../components/components.gyp:search_provider_logos",
+    #"../components/components.gyp:signin_core_browser",
+    #"../components/components.gyp:startup_metric_utils",
+    #"../components/components.gyp:sync_driver",
+    #"../components/components.gyp:translate_core_browser",
+    #"../components/components.gyp:translate_core_common",
+    #"../components/components.gyp:url_fixer",
+    #"../components/components.gyp:user_prefs",
+    #"../components/components_strings.gyp:components_strings",
+    ## This depends directly on the variations target, rather than just
+    ## transitively via the common target because the proto sources need to
+    ## be generated before code in this target can start building.
+    #"../components/components.gyp:variations",
+    #"../components/components.gyp:webdata_common",
+    #"../courgette/courgette.gyp:courgette_lib",
+    #"../google_apis/google_apis.gyp:google_apis",
+    #"../jingle/jingle.gyp:notifier",
+    #"../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation",
+    #"../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp",
+    #"../third_party/libjingle/libjingle.gyp:libjingle",
+    #"../ui/message_center/message_center.gyp:message_center",
+    #"../ui/resources/ui_resources.gyp:ui_resources",
+    #"../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs",
+  ]
+
+  forward_dependent_configs_from = [
+    #"../components/components.gyp:autofill_core_browser",  TODO(GYP)
+    "//content/public/browser",
+    "//sql",
+    "//sync",
+  ]
+
+  if (!is_ios) {
+    sources += rebase_path(gypi_values.chrome_browser_non_ios_sources,
+                           ".", "//chrome")
+    #TODO(GYP) Add these sources:
+    #        # These files are generated by GRIT.
+    #        '<(grit_out_dir)/grit/component_extension_resources_map.cc',
+    #        '<(grit_out_dir)/grit/theme_resources_map.cc',
+    #        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/grit/ui_resources_map.cc',
+    #
+    #        # This file is generated by
+    #        # chrome/browser/metrics/variations/generate_resources_map.py
+    #        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
+
+    # TODO(GYP) Also add these nacl_defines to direct dependents.
+    #defines = nacl_defines
+    deps += [
+      "//cc",
+      "//components/visitedlink/browser",
+      "//components/visitedlink/common",
+      "//net:net_with_v8",
+      "//third_party/adobe/flash:flapper_version_h",
+      "//third_party/expat",
+      "//third_party/leveldatabase",
+      "//third_party/libyuv",
+      "//third_party/npapi",
+      "//third_party/re2",
+      "//third_party/smhasher:cityhash",
+      "//ui/gl",
+      "//ui/surface",
+      "//webkit:resources",
+      "//webkit/browser:storage",
+      "//webkit/common",
+      "//webkit/common:storage",
+      # TODO(GYP)
+      #"apps",
+      #"browser/performance_monitor/performance_monitor.gyp:performance_monitor",
+      #"browser_extensions",
+      #"common/extensions/api/api.gyp:chrome_api",
+      #"debugger",
+      #"installer_util",
+      #"sync_file_system_drive_proto",
+      #"sync_file_system_proto",
+      #"../components/components.gyp:autofill_content_browser",
+      #"../components/components.gyp:dom_distiller_content",
+      #"../components/components.gyp:keyed_service_content",
+      #"../components/components.gyp:navigation_interception",
+      #"../components/components.gyp:password_manager_content_browser",
+      #"../components/components.gyp:precache_content",
+      #"../components/components.gyp:sessions",
+      #"../components/components.gyp:storage_monitor",
+      #"../components/components.gyp:translate_content_browser",
+      #"../components/components.gyp:url_matcher",
+      #"../components/components.gyp:usb_service",
+      #"../components/components.gyp:web_modal",
+      #"../media/cast/cast.gyp:cast_transport",
+      #"../media/media.gyp:media",
+      #"../mojo/mojo.gyp:mojo_cpp_bindings",
+      #"../mojo/mojo.gyp:mojo_environment_chromium",
+      #"../mojo/mojo.gyp:mojo_js_bindings",
+      #"../mojo/mojo.gyp:mojo_system_impl",
+      ## TODO(tonyg): Remove this dependency (crbug.com/280157).
+      #"../testing/perf/perf_test.gyp:*",
+      #"../third_party/libaddressinput/libaddressinput.gyp:libaddressinput",
+      #"../third_party/webrtc/modules/modules.gyp:desktop_capture",
+      #"../ui/web_dialogs/web_dialogs.gyp:web_dialogs",
+      #"../v8/tools/gyp/v8.gyp:v8",
+    ]
+  } else {  # iOS
+    sources += rebase_path(gypi_values.chrome_browser_ios_sources,
+                          ".", "//chrome")
+    deps += [
+      "//net",
+    ]
+    libs += [
+      "CoreTelephony.framework",
+      "CoreText.framework",
+      "MobileCoreServices.framework",
+      "QuartzCore.framework",
+    ]
+    ldflags += [ "-weak_framework", "CoreImage" ]
+  }
+
+  if (is_win || is_mac) {
+    sources += rebase_path(gypi_values.chrome_browser_win_mac_sources,
+                           ".", "//chrome")
+  }
+  if (!is_android && !is_ios && !is_chromeos && enable_configuration_policy) {
+    sources += [
+      "net/disk_cache_dir_policy_handler.cc",
+      "net/disk_cache_dir_policy_handler.h",
+    ]
+  }
+  if (!is_android && !is_ios && enable_configuration_policy) {
+    sources += [
+      "download/download_dir_policy_handler.cc",
+      "download/download_dir_policy_handler.h",
+    ]
+  }
+  if (is_mac) {
+    sources += rebase_path(gypi_values.chrome_browser_mac_sources,
+                           ".", "//chrome")
+    deps += [
+      #"app_shim"  TODO(GYP)
+    ]
+  }
+  if (cld2_data_source == "component") {
+    sources += [
+      "component_updater/cld_component_installer.cc",
+      "component_updater/cld_component_installer.h",
+    ]
+  }
+  if (enable_extensions) {
+    sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
+                           ".", "//chrome")
+  }
+  if (enable_background) {
+    sources += rebase_path(gypi_values.chrome_browser_background_sources,
+                           ".", "//chrome")
+    if (!use_aura || is_win) {
+      sources -= [ "background/background_mode_manager_aura.cc" ]
+    }
+  }
+  if (enable_task_manager) {
+    sources += rebase_path(gypi_values.chrome_browser_task_manager_sources,
+                           ".", "//chrome")
+  }
+  if (enable_spellcheck) {
+    sources += rebase_path(gypi_values.chrome_browser_spellchecker_sources,
+                           ".", "//chrome")
+    deps += [ "//third_party/hunspell" ]
+  }
+  if (enable_nacl) {
+    sources += rebase_path(gypi_values.chrome_browser_nacl_sources,
+                           ".", "//chrome")
+    #deps += [ "//components/nacl:nacl_browser" ]  TODO(GYP)
+  }
+  # ["debug_devtools==1", {  TODO(GYP)
+  #   "defines": [
+  #     "DEBUG_DEVTOOLS=1",
+  # ],
+  if (enable_configuration_policy) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_policy_shared_with_ios_sources,
+        ".", "//chrome")
+    deps += [
+      #"../components/components.gyp:cloud_policy_proto",  TODO(GYP)
+      #"../components/components.gyp:policy",  TODO(GYP)
+    ]
+    if (!is_ios) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_policy_non_ios_sources,
+          ".", "//chrome")
+    }
+    if (!is_chromeos) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_policy_shared_with_ios_not_chromeos_sources,
+          ".", "//chrome")
+    }
+    if (is_win || is_mac || is_desktop_linux) {
+      sources += rebase_path(gypi_values.chrome_browser_policy_desktop_sources,
+                             ".", "//chrome")
+    }
+    if (is_android || is_ios) {
+      sources += rebase_path(gypi_values.chrome_browser_mobile_sources,
+                             ".", "//chrome")
+    } else {  # Non-mobile
+      deps += [
+        #"policy_path_parser",  TODO(GYP)
+      ]
+    }
+  } else {
+    # Configuration policy disabled.
+    sources += rebase_path(gypi_values.chrome_browser_policy_disabled_sources,
+                           ".", "//chrome")
+  }
+
+  if (enable_plugins) {
+    sources += rebase_path(gypi_values.chrome_browser_plugins_sources,
+                           ".", "//chrome")
+    deps += [
+      "//ppapi:ppapi_ipc",
+    ]
+  }
+  if (safe_browsing_mode != 0) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_basic_safe_browsing_sources,
+        ".", "//chrome")
+    deps += [
+      #"safe_browsing_chunk_proto",  TODO(GYP)
+      #"safe_browsing_report_proto",  TODO(GYP)
+    ]
+    if (safe_browsing_mode == 1) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_full_safe_browsing_sources,
+          ".", "//chrome")
+      defines += [ "FULL_SAFE_BROWSING" ]
+      deps += [
+        #"safe_browsing_proto",  TODO(GYP)
+      ]
+    } else if (safe_browsing_mode == 2) {
+      defines += [ "MOBILE_SAFE_BROWSING" ]
+    }
+  }
+
+  if (is_linux) {
+    deps += [
+      #"../build/linux/system.gyp:udev",  TODO(GYP)
+      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_file_entry_proto",  TODO(GYP)
+      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_storage_info_proto",  TODO(GYP)
+      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol",  TODO(GYP)
+    ]
+  }
+  if (is_linux && !is_chromeos) {
+    deps += [
+      # "../build/linux/system.gyp:libspeechd",  TODO(GYP)
+    ]
+  }
+
+  if (is_chromeos) {
+    sources += rebase_path(gypi_values.chrome_browser_chromeos_sources,
+                           ".", "//chrome")
+    deps += [
+      #"browser_chromeos",  TODO(GYP)
+    ]
+  } else {
+    # Non-ChromeOS.
+    sources += rebase_path(gypi_values.chrome_browser_non_chromeos_sources,
+                           ".", "//chrome")
+  }
+
+  if (use_cups) {
+    #deps += [ "../printing/printing.gyp:cups" ]  TODO(GYP)
+  }
+  if (is_desktop_linux) {
+    sources += rebase_path(gypi_values.chrome_browser_gnome_keyring_sources,
+                           ".", "//chrome")
+    #deps += [ "../build/linux/system.gyp:gnome_keyring" ]  TODO(GYP)
+  }
+  if (use_aura) {
+    sources += rebase_path(gypi_values.chrome_browser_aura_sources,
+                           ".", "//chrome")
+    deps += [
+      #"../ui/aura/aura.gyp:aura",  TODO(GYP)
+      #"../ui/compositor/compositor.gyp:compositor",  TODO(GYP)
+      #"../ui/keyboard/keyboard.gyp:keyboard",  TODO(GYP)
+    ]
+  }
+  if (ui_compositor_image_transport) {
+    deps += [ "//ui/gl" ]
+  }
+
+  if (use_x11) {
+    sources += rebase_path(gypi_values.chrome_browser_x11_sources,
+                           ".", "//chrome")
+    if (!is_chromeos) {
+      deps += [
+        # "../build/linux/system.gyp:xscrnsaver",  TODO(GYP)
+      ]
+    }
+  }
+  if (is_posix && !is_mac && !is_ios) {
+    sources += [
+      "//chrome/app/chrome_breakpad_client.cc",
+      "//chrome/app/chrome_breakpad_client.h",
+    ]
+    deps += [
+      #"../components/components.gyp:breakpad_component",  TODO(GYP)
+      #"../components/components.gyp:breakpad_host",  TODO(GYP)
+    ]
+  }
+  if (use_nss_certs) {
+    sources += rebase_path(gypi_values.chrome_browser_nss_sources,
+                           ".", "//chrome")
+  }
+  if (enable_notifications) {
+    sources += rebase_path(gypi_values.chrome_browser_notifications_sources,
+                           ".", "//chrome")
+    if (!is_android) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_non_android_notifications_sources,
+          ".", "//chrome")
+    }
+  }
+  if (enable_themes) {
+    sources += rebase_path(gypi_values.chrome_browser_themes_sources,
+                           ".", "//chrome")
+  }
+
+  if (enable_printing != 0) {
+    # Some form of printing support.
+    sources += rebase_path(gypi_values.chrome_browser_basic_printing_sources,
+                           ".", "//chrome")
+    deps += [
+      #"../printing/printing.gyp:printing",  TODO(GYP)
+    ]
+    if (is_win && win_pdf_metafile_for_printing) {
+      sources += rebase_path(gypi_values.chrome_browser_printing_emf_sources,
+                             ".", "//chrome")
+    }
+    if (enable_printing == 1) {
+      # Full printing on top of the above.
+      sources += rebase_path(gypi_values.chrome_browser_full_printing_sources,
+                             ".", "//chrome")
+    } else if (enable_printing == 2) {
+      # Partial-only printing support.
+      sources += rebase_path(
+          gypi_values.chrome_browser_basic_only_printing_sources,
+          ".", "//chrome")
+    }
+  }
+  if (enable_captive_portal_detection) {
+    sources += rebase_path(gypi_values.chrome_browser_captive_portal_sources,
+                           ".", "//chrome")
+  }
+  if (enable_session_service) {
+    sources += rebase_path(gypi_values.chrome_browser_session_service_sources,
+                           ".", "//chrome")
+  }
+
+  if (is_android || is_ios) {
+    # Mobile.
+    sources += rebase_path(gypi_values.chrome_browser_mobile_sources,
+                           ".", "//chrome")
+  } else {
+    # Non-mobile.
+    sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
+                           ".", "//chrome")
+  }
+
+  if (is_android) {
+    sources += rebase_path(gypi_values.chrome_browser_android_sources,
+                           ".", "//chrome")
+    deps += [
+      #"../components/components.gyp:cdm_browser",  TODO(GYP)
+      #"../components/components.gyp:web_contents_delegate_android",  TODO(GYP)
+      #"chrome_browser_jni_headers",  TODO(GYP)
+    ]
+    deps -= [
+      #"../components/components.gyp:feedback_component",  TODO(GYP)
+      #"../components/components.gyp:storage_monitor",  TODO(GYP)
+      #"../components/components.gyp:usb_service",  TODO(GYP)
+      #"../components/components.gyp:web_modal",  TODO(GYP)
+      #"../third_party/libaddressinput/libaddressinput.gyp:libaddressinput",  TODO(GYP)
+    ]
+  } else {
+    sources += rebase_path(gypi_values.chrome_browser_non_android_sources,
+                           ".", "//chrome")
+  }
+
+  if (is_mac) {
+    deps += [
+      #"../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac",  TODO(GYP)
+      #"../third_party/mozilla/mozilla.gyp:mozilla",  TODO(GYP)
+    ]
+    libs += [
+      "Accelerate.framework",
+      "AddressBook.framework",
+      "AudioUnit.framework",
+      "DiskArbitration.framework",
+      "IOKit.framework",
+      "ImageCaptureCore.framework",
+      "OpenGL.framework",
+      "QuartzCore.framework",
+      "SecurityInterface.framework",
+    ]
+  }
+
+  if (enable_rlz) {
+    sources += rebase_path(gypi_values.chrome_browser_rlz_sources,
+                           ".", "//chrome")
+    deps += [ "//rlz:rlz_lib" ]
+  }
+
+  # TODO(GYP)
+  # Temporary fix to break the browser target into smaller chunks so it
+  # will link with goma builds.
+  #["OS=="win" and chromium_win_pch==0", {
+  #  "msvs_shard": 4,
+  #}],
+
+  if (is_win) {
+    sources += rebase_path(gypi_values.chrome_browser_win_sources,
+                           ".", "//chrome")
+    deps += [
+      "//third_party/wtl",
+      #"chrome_process_finder",  TODO(GYP)
+      #"installer_util_strings",  TODO(GYP)
+      #"launcher_support",  TODO(GYP)
+      #"../chrome/chrome.gyp:chrome_version_header",  TODO(GYP)
+      #"../chrome_elf/chrome_elf.gyp:chrome_elf",  TODO(GYP)
+      #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)
+      #"../chrome_elf/chrome_elf.gyp:dll_hash",  TODO(GYP)
+      #"../google_update/google_update.gyp:google_update",  TODO(GYP)
+      #"../third_party/iaccessible2/iaccessible2.gyp:iaccessible2",  TODO(GYP)
+      #"../third_party/isimpledom/isimpledom.gyp:isimpledom",  TODO(GYP)
+      #"../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages",  TODO(GYP)
+      #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
+      #"../ui/views/views.gyp:views",  TODO(GYP)
+      #"../win8/win8.gyp:metro_viewer",  TODO(GYP)
+    ]
+    forward_dependent_configs_from += [
+      #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
+      #"../ui/views/views.gyp:views",  TODO(GYP)
+    ]
+  } else {
+    # Non-Windows.
+    sources += rebase_path(gypi_values.chrome_browser_non_win_sources,
+                           ".", "//chrome")
+    if (use_aura) {
+      deps += [
+        #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
+        #"../ui/views/views.gyp:views",  TODO(GYP)
+      ]
+      # TODO(GYP) why is this needed? Very susicious.
+      #  "include_dirs": [
+      #    "<(INTERMEDIATE_DIR)/chrome",
+      #  ],
+    }
+  }
+
+  if (is_linux) {
+    sources += rebase_path(gypi_values.chrome_browser_linux_sources,
+                           ".", "//chrome")
+    if (use_aura) {
+      configs += [
+        "//build/config/linux:dbus",
+        "//build/config/linux:fontconfig",
+      ]
+      deps += [
+        "//dbus",
+      ]
+    }
+    if (use_x11) {
+      configs += [ "//build/config/linux:x11" ]
+      deps += [ "//ui/gfx/x" ]
+    }
+  }
+
+  if (is_desktop_linux) {
+    sources += rebase_path(gypi_values.chrome_browser_desktop_linux_sources,
+                           ".", "//chrome")
+  }
+  if (enable_plugin_installation) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_plugin_installation_sources,
+        ".", "//chrome")
+  }
+  if (enable_app_list) {
+    deps += [
+      #"../ui/app_list/app_list.gyp:app_list",  TODO(GYP)
+    ]
+  }
+  if (enable_managed_users) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_supervised_user_sources,
+        ".", "//chrome")
+  }
+  if (enable_webrtc) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_webrtc_sources,
+        ".", "//chrome")
+  }
+  if (enable_service_discovery) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_service_discovery_sources,
+        ".", "//chrome")
+  }
+  if (enable_mdns) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_mdns_sources,
+        ".", "//chrome")
+  }
+  if (!enable_autofill_dialog || is_android || is_ios) {
+    sources -= [
+      "autofill/validation_rules_storage_factory.cc",
+      "autofill/validation_rules_storage_factory.h",
+    ]
+  }
+  if (enable_wifi_bootstrapping) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_wifi_bootstrapping_sources,
+        ".", "//chrome")
+    if (is_win || is_mac) {
+      # TODO(brettw) as of this writing wifi bootstrapping is set on Windows
+      # and Mac, so this test is meaningless. Can we merge these lists?
+      sources += rebase_path(
+          gypi_values.chrome_browser_win_mac_wifi_bootstrapping_sources,
+          ".", "//chrome")
+    }
+  }
+}
+
+}  # comment out chrome/browser
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 # (generate_browser_resources action)
