@@ -334,9 +334,13 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   SyncStatusCode ProcessChangesUntilDone() {
+    int task_limit = 100;
     SyncStatusCode local_sync_status;
     SyncStatusCode remote_sync_status;
     while (true) {
+      if (!task_limit--)
+        return SYNC_STATUS_ABORT;
+
       local_sync_status = ProcessLocalChange();
       if (local_sync_status != SYNC_STATUS_OK &&
           local_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&

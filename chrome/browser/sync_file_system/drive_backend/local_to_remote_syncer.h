@@ -32,6 +32,7 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
+class FileDetails;
 class FileTracker;
 class FolderCreator;
 class MetadataDatabase;
@@ -39,6 +40,8 @@ class SyncEngineContext;
 
 class LocalToRemoteSyncer : public SyncTask {
  public:
+  typedef base::Callback<void(scoped_ptr<SyncTaskToken>)> Continuation;
+
   LocalToRemoteSyncer(SyncEngineContext* sync_context,
                       const SyncFileMetadata& local_metadata,
                       const FileChange& local_change,
@@ -46,7 +49,6 @@ class LocalToRemoteSyncer : public SyncTask {
                       const fileapi::FileSystemURL& url);
   virtual ~LocalToRemoteSyncer();
   virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
-  void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const fileapi::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }
@@ -56,11 +58,18 @@ class LocalToRemoteSyncer : public SyncTask {
   }
 
  private:
+  void MoveToBackground(const Continuation& continuation,
+                        scoped_ptr<SyncTaskToken> token);
+  void ContinueAsBackgroundTask(const Continuation& continuation,
+                                scoped_ptr<SyncTaskToken> token);
   void SyncCompleted(scoped_ptr<SyncTaskToken> token,
                      SyncStatusCode status);
 
   void HandleConflict(scoped_ptr<SyncTaskToken> token);
   void HandleExistingRemoteFile(scoped_ptr<SyncTaskToken> token);
+
+  void UpdateTrackerForReusedFolder(const FileDetails& details,
+                                    scoped_ptr<SyncTaskToken> token);
 
   void DeleteRemoteFile(scoped_ptr<SyncTaskToken> token);
   void DidDeleteRemoteFile(scoped_ptr<SyncTaskToken> token,
@@ -112,6 +121,7 @@ class LocalToRemoteSyncer : public SyncTask {
   scoped_ptr<FileTracker> remote_file_tracker_;
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;
   base::FilePath target_path_;
+  int64 remote_file_change_id_;
 
   bool retry_on_success_;
   bool needs_remote_change_listing_;

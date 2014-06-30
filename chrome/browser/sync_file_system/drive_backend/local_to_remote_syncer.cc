@@ -42,6 +42,16 @@ scoped_ptr<FileTracker> FindTrackerByID(MetadataDatabase* metadata_database,
   return scoped_ptr<FileTracker>();
 }
 
+bool GetKnownChangeID(MetadataDatabase* metadata_database,
+                      const std::string& file_id,
+                      int64* change_id) {
+  FileMetadata remote_file_metadata;
+  if (!metadata_database->FindFileByFileID(file_id, &remote_file_metadata))
+    return false;
+  *change_id = remote_file_metadata.details().change_id();
+  return true;
+}
+
 bool IsLocalFileMissing(const SyncFileMetadata& local_metadata,
                         const FileChange& local_change) {
   return local_metadata.file_type == SYNC_FILE_TYPE_UNKNOWN ||
@@ -61,6 +71,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       local_path_(local_path),
       url_(url),
       sync_action_(SYNC_ACTION_NONE),
+      remote_file_change_id_(0),
       retry_on_success_(false),
       needs_remote_change_listing_(false),
       weak_ptr_factory_(this) {
@@ -75,15 +86,6 @@ LocalToRemoteSyncer::~LocalToRemoteSyncer() {
 void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   token->InitializeTaskLog("Local -> Remote");
 
-  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-  blocking_factor->exclusive = true;
-  SyncTaskManager::UpdateBlockingFactor(
-      token.Pass(), blocking_factor.Pass(),
-      base::Bind(&LocalToRemoteSyncer::RunExclusive,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
     token->RecordLog("Context not ready.");
     NOTREACHED();
@@ -169,7 +171,9 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
       token->RecordLog("Detected missing parent folder.");
 
       retry_on_success_ = true;
-      CreateRemoteFolder(token.Pass());
+      MoveToBackground(base::Bind(&LocalToRemoteSyncer::CreateRemoteFolder,
+                                  weak_ptr_factory_.GetWeakPtr()),
+                       token.Pass());
       return;
     }
 
@@ -182,7 +186,9 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     token->RecordLog("Detected non-folder file in its path.");
 
     retry_on_success_ = true;
-    DeleteRemoteFile(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::DeleteRemoteFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -219,12 +225,82 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   DCHECK(target_path_ == active_ancestor_path.Append(missing_components[0]));
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
     token->RecordLog("Detected a new file.");
-    UploadNewFile(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::UploadNewFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
   token->RecordLog("Detected a new folder.");
-  CreateRemoteFolder(token.Pass());
+  MoveToBackground(base::Bind(&LocalToRemoteSyncer::CreateRemoteFolder,
+                              weak_ptr_factory_.GetWeakPtr()),
+                   token.Pass());
+}
+
+void LocalToRemoteSyncer::MoveToBackground(const Continuation& continuation,
+                                           scoped_ptr<SyncTaskToken> token) {
+  scoped_ptr<BlockingFactor> blocker(new BlockingFactor);
+  blocker->app_id = url_.origin().host();
+  blocker->paths.push_back(target_path_);
+
+  if (remote_file_tracker_) {
+    if (!GetKnownChangeID(metadata_database(),
+                          remote_file_tracker_->file_id(),
+                          &remote_file_change_id_)) {
+      NOTREACHED();
+      SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
+      return;
+    }
+
+    blocker->tracker_ids.push_back(remote_file_tracker_->tracker_id());
+    blocker->file_ids.push_back(remote_file_tracker_->file_id());
+  }
+
+  // Run current task as a background task with |blocker|.
+  // After the invocation of ContinueAsBackgroundTask
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(), blocker.Pass(),
+      base::Bind(&LocalToRemoteSyncer::ContinueAsBackgroundTask,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 continuation));
+}
+
+void LocalToRemoteSyncer::ContinueAsBackgroundTask(
+    const Continuation& continuation,
+    scoped_ptr<SyncTaskToken> token) {
+  // The SyncTask runs as a background task beyond this point.
+  // Note that any task can run between MoveToBackground() and
+  // ContinueAsBackgroundTask(), so we need to make sure other tasks didn't
+  // affect to the current LocalToRemoteSyncer task.
+  //
+  // - For RemoteToLocalSyncer, it doesn't actually run beyond
+  //   PrepareForProcessRemoteChange() since it should be blocked in
+  //   LocalFileSyncService.
+  // - For ListChangesTask, it may update FileMetatada together with |change_id|
+  //   and may delete FileTracker.  So, ensure |change_id| is not changed and
+  //   check if FileTracker still exists.
+  // - For UninstallAppTask, it may also delete FileMetadata and FileTracker.
+  //   And also, check if FileTracker still exists.
+  // - Others, SyncEngineInitializer and RegisterAppTask doesn't affect to
+  //   LocalToRemoteSyncer.
+  if (remote_file_tracker_) {
+    int64 latest_change_id = 0;
+    if (!GetKnownChangeID(metadata_database(),
+                          remote_file_tracker_->file_id(),
+                          &latest_change_id) ||
+        latest_change_id > remote_file_change_id_) {
+      SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
+      return;
+    }
+
+    if (!metadata_database()->FindTrackerByTrackerID(
+            remote_file_tracker_->tracker_id(), NULL)) {
+      SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
+      return;
+    }
+  }
+
+  continuation.Run(token.Pass());
 }
 
 void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
@@ -235,12 +311,12 @@ void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
   if (needs_remote_change_listing_)
     status = SYNC_STATUS_FILE_BUSY;
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Local -> Remote]: Finished: action=%s, status=%s for %s@%s",
-            SyncActionToString(sync_action_),
-            SyncStatusCodeToString(status),
-            target_path_.AsUTF8Unsafe().c_str(),
-            url_.origin().host().c_str());
+  token->RecordLog(base::StringPrintf(
+      "Finished: action=%s, status=%s for %s@%s",
+      SyncActionToString(sync_action_),
+      SyncStatusCodeToString(status),
+      target_path_.AsUTF8Unsafe().c_str(),
+      url_.origin().host().c_str()));
 
   SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
@@ -257,7 +333,11 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   }
 
   if (local_change_.IsFile()) {
-    UploadNewFile(token.Pass());
+    // Upload the conflicting file as a new file and let ConflictResolver
+    // resolve it.
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::UploadNewFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -267,7 +347,9 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   if (!metadata_database()->FindFileByFileID(
           remote_file_tracker_->file_id(), &remote_file_metadata)) {
     NOTREACHED();
-    CreateRemoteFolder(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::CreateRemoteFolder,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -278,15 +360,28 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
       remote_details.title() == title.AsUTF8Unsafe() &&
       HasFileAsParent(remote_details,
                       remote_parent_folder_tracker_->file_id())) {
-    metadata_database()->UpdateTracker(
-        remote_file_tracker_->tracker_id(), remote_details,
-        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+
+    MoveToBackground(
+        base::Bind(&LocalToRemoteSyncer::UpdateTrackerForReusedFolder,
                    weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&token)));
+                   remote_details),
+        token.Pass());
     return;
   }
 
-  CreateRemoteFolder(token.Pass());
+  MoveToBackground(base::Bind(&LocalToRemoteSyncer::CreateRemoteFolder,
+                              weak_ptr_factory_.GetWeakPtr()),
+                   token.Pass());
+}
+
+void LocalToRemoteSyncer::UpdateTrackerForReusedFolder(
+    const FileDetails& details,
+    scoped_ptr<SyncTaskToken> token) {
+  metadata_database()->UpdateTracker(
+      remote_file_tracker_->tracker_id(), details,
+      base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::HandleExistingRemoteFile(
@@ -298,7 +393,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
 
   if (local_is_missing_) {
     // Local file deletion for existing remote file.
-    DeleteRemoteFile(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::DeleteRemoteFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -311,7 +408,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   if (local_change_.IsFile()) {
     if (synced_details.file_kind() == FILE_KIND_FILE) {
       // Non-conflicting local file update to existing remote regular file.
-      UploadExistingFile(token.Pass());
+      MoveToBackground(base::Bind(&LocalToRemoteSyncer::UploadExistingFile,
+                                  weak_ptr_factory_.GetWeakPtr()),
+                       token.Pass());
       return;
     }
 
@@ -320,7 +419,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Assuming this case as local folder deletion + local file creation, delete
     // the remote folder and upload the file.
     retry_on_success_ = true;
-    DeleteRemoteFile(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::DeleteRemoteFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -330,7 +431,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Assuming this case as local file deletion + local folder creation, delete
     // the remote file and create a remote folder.
     retry_on_success_ = true;
-    DeleteRemoteFile(token.Pass());
+    MoveToBackground(base::Bind(&LocalToRemoteSyncer::DeleteRemoteFile,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     token.Pass());
     return;
   }
 
@@ -367,7 +470,8 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
   // For PRECONDITION / CONFLICT case, the remote file is modified since the
   // last sync completed.  As our policy for deletion-modification conflict
   // resolution, ignore the local deletion.
-  if (error == google_apis::HTTP_NOT_FOUND) {
+  if (status == SYNC_STATUS_OK ||
+      error == google_apis::HTTP_NOT_FOUND) {
     metadata_database()->UpdateByDeletedRemoteFile(
         remote_file_tracker_->file_id(),
         base::Bind(&LocalToRemoteSyncer::SyncCompleted,
