@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/component_loader.h"
 
-#include <map>
 #include <string>
 
 #include "base/command_line.h"
@@ -12,18 +11,13 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -65,32 +59,6 @@ namespace extensions {
 namespace {
 
 static bool enable_background_extensions_during_testing = false;
-
-int LookupWebstoreNameStringId() {
-  // TODO(sashab): Remove code; this experiment isn't used anymore. See
-  // crbug.com/388143.
-  const char kWebStoreNameFieldTrialName[] = "WebStoreName";
-  const char kStoreControl[] = "StoreControl";
-  const char kWebStore[] = "WebStore";
-  const char kGetApps[] = "GetApps";
-  const char kAddApps[] = "AddApps";
-  const char kMoreApps[] = "MoreApps";
-
-  typedef std::map<std::string, int> NameMap;
-  CR_DEFINE_STATIC_LOCAL(NameMap, names, ());
-  if (names.empty()) {
-    names.insert(std::make_pair(kStoreControl, IDS_WEBSTORE_NAME_STORE));
-    names.insert(std::make_pair(kWebStore, IDS_WEBSTORE_NAME_WEBSTORE));
-    names.insert(std::make_pair(kGetApps, IDS_WEBSTORE_NAME_GET_APPS));
-    names.insert(std::make_pair(kAddApps, IDS_WEBSTORE_NAME_ADD_APPS));
-    names.insert(std::make_pair(kMoreApps, IDS_WEBSTORE_NAME_MORE_APPS));
-  }
-  std::string field_trial_name =
-      base::FieldTrialList::FindFullName(kWebStoreNameFieldTrialName);
-  NameMap::iterator it = names.find(field_trial_name);
-  int string_id = it == names.end() ? names[kStoreControl] : it->second;
-  return string_id;
-}
 
 std::string GenerateId(const base::DictionaryValue* manifest,
                        const base::FilePath& path) {
@@ -438,7 +406,7 @@ void ComponentLoader::AddKeyboardApp() {
 void ComponentLoader::AddWebStoreApp() {
   AddWithNameAndDescription(IDR_WEBSTORE_MANIFEST,
                             base::FilePath(FILE_PATH_LITERAL("web_store")),
-                            LookupWebstoreNameStringId(),
+                            IDS_WEBSTORE_NAME_STORE,
                             IDS_WEBSTORE_APP_DESCRIPTION);
 }
 
