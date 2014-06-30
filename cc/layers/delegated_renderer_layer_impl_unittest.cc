@@ -90,7 +90,7 @@ class DelegatedRendererLayerImplTestSimple
     transform.Translate(1.0, 1.0);
     delegated_renderer_layer->SetTransform(transform);
 
-    ScopedPtrVector<RenderPass> delegated_render_passes;
+    RenderPassList delegated_render_passes;
     TestRenderPass* pass1 = AddRenderPass(&delegated_render_passes,
                                           RenderPass::Id(9, 6),
                                           gfx::Rect(6, 6, 6, 6),
@@ -505,7 +505,7 @@ class DelegatedRendererLayerImplTestTransform
     transform.Translate(8.0, 8.0);
     delegated_renderer_layer->SetTransform(transform);
 
-    ScopedPtrVector<RenderPass> delegated_render_passes;
+    RenderPassList delegated_render_passes;
 
     gfx::Size child_pass_content_bounds(7, 7);
     gfx::Rect child_pass_rect(20, 20, 7, 7);
@@ -952,7 +952,7 @@ class DelegatedRendererLayerImplTestClip
     delegated_renderer_layer->SetContentBounds(gfx::Size(50, 50));
     delegated_renderer_layer->SetDrawsContent(true);
 
-    ScopedPtrVector<RenderPass> delegated_render_passes;
+    RenderPassList delegated_render_passes;
 
     gfx::Size child_pass_content_bounds(7, 7);
     gfx::Rect child_pass_rect(20, 20, 7, 7);
@@ -1350,7 +1350,7 @@ TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
   delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
   delegated_renderer_layer->SetDrawsContent(true);
 
-  ScopedPtrVector<RenderPass> delegated_render_passes;
+  RenderPassList delegated_render_passes;
   TestRenderPass* pass1 = AddRenderPass(
       &delegated_render_passes,
       RenderPass::Id(9, 6),
@@ -1406,7 +1406,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   delegated_renderer_layer_impl->SetContentBounds(layer_size);
   delegated_renderer_layer_impl->SetDrawsContent(true);
 
-  ScopedPtrVector<RenderPass> delegated_render_passes;
+  RenderPassList delegated_render_passes;
   // pass2 is just the size of the quad. It contributes to |pass1| with a
   // translation of (11,0).
   RenderPass::Id pass2_id =

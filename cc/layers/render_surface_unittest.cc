@@ -138,12 +138,12 @@ class TestRenderPassSink : public RenderPassSink {
     render_passes_.push_back(render_pass.Pass());
   }
 
-  const ScopedPtrVector<RenderPass>& RenderPasses() const {
+  const RenderPassList& RenderPasses() const {
     return render_passes_;
   }
 
  private:
-  ScopedPtrVector<RenderPass> render_passes_;
+  RenderPassList render_passes_;
 };
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {

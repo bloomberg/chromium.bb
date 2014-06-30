@@ -52,7 +52,7 @@ void NoopReturnCallback(const ReturnedResourceArray& returned) {}
 
 void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
     float device_scale_factor,
-    ScopedPtrVector<RenderPass>* pass_list) {
+    RenderPassList* pass_list) {
   scoped_ptr<DelegatedFrameData> delegated_frame(new DelegatedFrameData);
   delegated_frame->device_scale_factor = device_scale_factor;
   delegated_frame->render_pass_list.swap(*pass_list);

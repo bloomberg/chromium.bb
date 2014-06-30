@@ -21,13 +21,13 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
       OVERRIDE;
 
   int ChildId() const { return ChildIdForTesting(); }
-  const ScopedPtrVector<RenderPass>& RenderPassesInDrawOrder() const {
+  const RenderPassList& RenderPassesInDrawOrder() const {
     return RenderPassesInDrawOrderForTesting();
   }
   ResourceProvider::ResourceIdSet Resources() const;
 
   void SetFrameDataForRenderPasses(float device_scale_factor,
-                                   ScopedPtrVector<RenderPass>* pass_list);
+                                   RenderPassList* pass_list);
 
  protected:
   FakeDelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);

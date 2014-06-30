@@ -53,7 +53,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   int ChildIdForTesting() const { return child_id_; }
-  const ScopedPtrVector<RenderPass>& RenderPassesInDrawOrderForTesting() const {
+  const RenderPassList& RenderPassesInDrawOrderForTesting() const {
     return render_passes_in_draw_order_;
   }
   const ResourceProvider::ResourceIdArray& ResourcesForTesting() const {
@@ -66,8 +66,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void AppendRainbowDebugBorder(RenderPass* render_pass,
                                 AppendQuadsData* append_quads_data);
 
-  void SetRenderPasses(
-      ScopedPtrVector<RenderPass>* render_passes_in_draw_order);
+  void SetRenderPasses(RenderPassList* render_passes_in_draw_order);
   void ClearRenderPasses();
 
   // Returns |true| if the delegated_render_pass_id is part of the current
@@ -88,7 +87,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   bool have_render_passes_to_push_;
   float inverse_device_scale_factor_;
-  ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
+  RenderPassList render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
   ResourceProvider::ResourceIdArray resources_;
 

@@ -22,7 +22,7 @@ class CC_EXPORT DelegatedFrameData {
   float device_scale_factor;
 
   TransferableResourceArray resource_list;
-  ScopedPtrVector<RenderPass> render_pass_list;
+  RenderPassList render_pass_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameData);
