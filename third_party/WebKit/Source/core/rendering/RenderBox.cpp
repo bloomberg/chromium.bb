@@ -4137,9 +4137,6 @@ void RenderBox::addVisualEffectOverflow()
     if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
         return;
 
-    bool isFlipped = style()->isFlippedBlocksWritingMode();
-    bool isHorizontal = isHorizontalWritingMode();
-
     LayoutRect borderBox = borderBoxRect();
     LayoutUnit overflowMinX = borderBox.x();
     LayoutUnit overflowMaxX = borderBox.maxX();
@@ -4154,23 +4151,21 @@ void RenderBox::addVisualEffectOverflow()
         LayoutUnit shadowBottom;
         style()->getBoxShadowExtent(shadowTop, shadowRight, shadowBottom, shadowLeft);
 
-        // In flipped blocks writing modes such as vertical-rl, the physical right shadow value is actually at the lower x-coordinate.
-        overflowMinX = borderBox.x() + ((!isFlipped || isHorizontal) ? shadowLeft : -shadowRight);
-        overflowMaxX = borderBox.maxX() + ((!isFlipped || isHorizontal) ? shadowRight : -shadowLeft);
-        overflowMinY = borderBox.y() + ((!isFlipped || !isHorizontal) ? shadowTop : -shadowBottom);
-        overflowMaxY = borderBox.maxY() + ((!isFlipped || !isHorizontal) ? shadowBottom : -shadowTop);
+        // Note that box-shadow extent's left and top are negative when extends to left and top, respectively.
+        overflowMinX = borderBox.x() + shadowLeft;
+        overflowMaxX = borderBox.maxX() + shadowRight;
+        overflowMinY = borderBox.y() + shadowTop;
+        overflowMaxY = borderBox.maxY() + shadowBottom;
     }
 
     // Now compute border-image-outset overflow.
     if (style()->hasBorderImageOutsets()) {
         LayoutBoxExtent borderOutsets = style()->borderImageOutsets();
 
-        // In flipped blocks writing modes, the physical sides are inverted. For example in vertical-rl, the right
-        // border is at the lower x coordinate value.
-        overflowMinX = std::min(overflowMinX, borderBox.x() - ((!isFlipped || isHorizontal) ? borderOutsets.left() : borderOutsets.right()));
-        overflowMaxX = std::max(overflowMaxX, borderBox.maxX() + ((!isFlipped || isHorizontal) ? borderOutsets.right() : borderOutsets.left()));
-        overflowMinY = std::min(overflowMinY, borderBox.y() - ((!isFlipped || !isHorizontal) ? borderOutsets.top() : borderOutsets.bottom()));
-        overflowMaxY = std::max(overflowMaxY, borderBox.maxY() + ((!isFlipped || !isHorizontal) ? borderOutsets.bottom() : borderOutsets.top()));
+        overflowMinX = std::min(overflowMinX, borderBox.x() - borderOutsets.left());
+        overflowMaxX = std::max(overflowMaxX, borderBox.maxX() + borderOutsets.right());
+        overflowMinY = std::min(overflowMinY, borderBox.y() - borderOutsets.top());
+        overflowMaxY = std::max(overflowMaxY, borderBox.maxY() + borderOutsets.bottom());
     }
 
     if (style()->hasOutline()) {
