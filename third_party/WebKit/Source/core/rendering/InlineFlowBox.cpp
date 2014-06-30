@@ -1095,59 +1095,52 @@ void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;
 
-    if (paintInfo.phase != PaintPhaseChildOutlines) {
-        if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
-            // Add ourselves to the paint info struct's list of inlines that need to paint their
-            // outlines.
-            if (renderer().style()->visibility() == VISIBLE && renderer().hasOutline() && !isRootInlineBox()) {
-                RenderInline& inlineFlow = toRenderInline(renderer());
+    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
+        // Add ourselves to the paint info struct's list of inlines that need to paint their
+        // outlines.
+        if (renderer().style()->visibility() == VISIBLE && renderer().hasOutline() && !isRootInlineBox()) {
+            RenderInline& inlineFlow = toRenderInline(renderer());
 
-                RenderBlock* cb = 0;
-                bool containingBlockPaintsContinuationOutline = inlineFlow.continuation() || inlineFlow.isInlineElementContinuation();
-                if (containingBlockPaintsContinuationOutline) {
-                    // FIXME: See https://bugs.webkit.org/show_bug.cgi?id=54690. We currently don't reconnect inline continuations
-                    // after a child removal. As a result, those merged inlines do not get seperated and hence not get enclosed by
-                    // anonymous blocks. In this case, it is better to bail out and paint it ourself.
-                    RenderBlock* enclosingAnonymousBlock = renderer().containingBlock();
-                    if (!enclosingAnonymousBlock->isAnonymousBlock())
-                        containingBlockPaintsContinuationOutline = false;
-                    else {
-                        cb = enclosingAnonymousBlock->containingBlock();
-                        for (RenderBoxModelObject* box = boxModelObject(); box != cb; box = box->parent()->enclosingBoxModelObject()) {
-                            if (box->hasSelfPaintingLayer()) {
-                                containingBlockPaintsContinuationOutline = false;
-                                break;
-                            }
+            RenderBlock* cb = 0;
+            bool containingBlockPaintsContinuationOutline = inlineFlow.continuation() || inlineFlow.isInlineElementContinuation();
+            if (containingBlockPaintsContinuationOutline) {
+                // FIXME: See https://bugs.webkit.org/show_bug.cgi?id=54690. We currently don't reconnect inline continuations
+                // after a child removal. As a result, those merged inlines do not get seperated and hence not get enclosed by
+                // anonymous blocks. In this case, it is better to bail out and paint it ourself.
+                RenderBlock* enclosingAnonymousBlock = renderer().containingBlock();
+                if (!enclosingAnonymousBlock->isAnonymousBlock()) {
+                    containingBlockPaintsContinuationOutline = false;
+                } else {
+                    cb = enclosingAnonymousBlock->containingBlock();
+                    for (RenderBoxModelObject* box = boxModelObject(); box != cb; box = box->parent()->enclosingBoxModelObject()) {
+                        if (box->hasSelfPaintingLayer()) {
+                            containingBlockPaintsContinuationOutline = false;
+                            break;
                         }
                     }
                 }
-
-                if (containingBlockPaintsContinuationOutline) {
-                    // Add ourselves to the containing block of the entire continuation so that it can
-                    // paint us atomically.
-                    cb->addContinuationWithOutline(toRenderInline(renderer().node()->renderer()));
-                } else if (!inlineFlow.isInlineElementContinuation()) {
-                    paintInfo.outlineObjects()->add(&inlineFlow);
-                }
             }
-        } else if (paintInfo.phase == PaintPhaseMask) {
-            paintMask(paintInfo, paintOffset);
-            return;
-        } else {
-            // Paint our background, border and box-shadow.
-            paintBoxDecorations(paintInfo, paintOffset);
+
+            if (containingBlockPaintsContinuationOutline) {
+                // Add ourselves to the containing block of the entire continuation so that it can
+                // paint us atomically.
+                cb->addContinuationWithOutline(toRenderInline(renderer().node()->renderer()));
+            } else if (!inlineFlow.isInlineElementContinuation()) {
+                paintInfo.outlineObjects()->add(&inlineFlow);
+            }
         }
+    } else if (paintInfo.phase == PaintPhaseMask) {
+        paintMask(paintInfo, paintOffset);
+        return;
+    } else if (paintInfo.phase == PaintPhaseForeground) {
+        // Paint our background, border and box-shadow.
+        paintBoxDecorations(paintInfo, paintOffset);
     }
 
-    if (paintInfo.phase == PaintPhaseMask)
-        return;
-
-    PaintPhase paintPhase = paintInfo.phase == PaintPhaseChildOutlines ? PaintPhaseOutline : paintInfo.phase;
-
     // Paint our children.
-    if (paintPhase != PaintPhaseSelfOutline) {
+    if (paintInfo.phase != PaintPhaseSelfOutline) {
         PaintInfo childInfo(paintInfo);
-        childInfo.phase = paintPhase;
+        childInfo.phase = paintInfo.phase == PaintPhaseChildOutlines ? PaintPhaseOutline : paintInfo.phase;
 
         if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(&renderer()))
             childInfo.paintingRoot = 0;
@@ -1281,72 +1274,78 @@ static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NineP
 
 void InlineFlowBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&renderer()) || renderer().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseForeground)
+    ASSERT(paintInfo.phase == PaintPhaseForeground);
+    if (!paintInfo.shouldPaintWithinRoot(&renderer()) || renderer().style()->visibility() != VISIBLE)
+        return;
+
+    // You can use p::first-line to specify a background. If so, the root line boxes for
+    // a line may actually have to paint a background.
+    RenderStyle* styleToUse = renderer().style(isFirstLineStyle());
+    bool shouldPaintBoxDecorations;
+    if (parent())
+        shouldPaintBoxDecorations = renderer().hasBoxDecorations();
+    else
+        shouldPaintBoxDecorations = isFirstLineStyle() && styleToUse != renderer().style();
+
+    if (!shouldPaintBoxDecorations)
         return;
 
     // Pixel snap background/border painting.
     LayoutRect frameRect = roundedFrameRect();
-
     constrainToLineTopAndBottomIfNeeded(frameRect);
 
     // Move x/y to our coordinates.
     LayoutRect localRect(frameRect);
     flipForWritingMode(localRect);
-    LayoutPoint adjustedPaintoffset = paintOffset + localRect.location();
+    LayoutPoint adjustedPaintOffset = paintOffset + localRect.location();
 
-    GraphicsContext* context = paintInfo.context;
+    LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    // You can use p::first-line to specify a background. If so, the root line boxes for
-    // a line may actually have to paint a background.
-    RenderStyle* styleToUse = renderer().style(isFirstLineStyle());
-    if ((!parent() && isFirstLineStyle() && styleToUse != renderer().style()) || (parent() && renderer().hasBoxDecorations())) {
-        LayoutRect paintRect = LayoutRect(adjustedPaintoffset, frameRect.size());
-        // Shadow comes first and is behind the background and border.
-        if (!boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, this))
-            paintBoxShadow(paintInfo, styleToUse, Normal, paintRect);
+    // Shadow comes first and is behind the background and border.
+    if (!boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, this))
+        paintBoxShadow(paintInfo, styleToUse, Normal, paintRect);
 
-        Color c = renderer().resolveColor(styleToUse, CSSPropertyBackgroundColor);
-        paintFillLayers(paintInfo, c, styleToUse->backgroundLayers(), paintRect);
-        paintBoxShadow(paintInfo, styleToUse, Inset, paintRect);
+    Color backgroundColor = renderer().resolveColor(styleToUse, CSSPropertyBackgroundColor);
+    paintFillLayers(paintInfo, backgroundColor, styleToUse->backgroundLayers(), paintRect);
+    paintBoxShadow(paintInfo, styleToUse, Inset, paintRect);
 
-        // :first-line cannot be used to put borders on a line. Always paint borders with our
-        // non-first-line style.
-        if (parent() && renderer().style()->hasBorder()) {
-            const NinePieceImage& borderImage = renderer().style()->borderImage();
-            StyleImage* borderImageSource = borderImage.image();
-            bool hasBorderImage = borderImageSource && borderImageSource->canRender(renderer(), styleToUse->effectiveZoom());
-            if (hasBorderImage && !borderImageSource->isLoaded())
-                return; // Don't paint anything while we wait for the image to load.
+    // :first-line cannot be used to put borders on a line. Always paint borders with our
+    // non-first-line style.
+    if (parent() && renderer().style()->hasBorder()) {
+        const NinePieceImage& borderImage = renderer().style()->borderImage();
+        StyleImage* borderImageSource = borderImage.image();
+        bool hasBorderImage = borderImageSource && borderImageSource->canRender(renderer(), styleToUse->effectiveZoom());
+        if (hasBorderImage && !borderImageSource->isLoaded())
+            return; // Don't paint anything while we wait for the image to load.
 
-            // The simple case is where we either have no border image or we are the only box for this object.  In those
-            // cases only a single call to draw is required.
-            if (!hasBorderImage || (!prevLineBox() && !nextLineBox()))
-                boxModelObject()->paintBorder(paintInfo, paintRect, renderer().style(isFirstLineStyle()), BackgroundBleedNone, includeLogicalLeftEdge(), includeLogicalRightEdge());
-            else {
-                // We have a border image that spans multiple lines.
-                // We need to adjust tx and ty by the width of all previous lines.
-                // Think of border image painting on inlines as though you had one long line, a single continuous
-                // strip.  Even though that strip has been broken up across multiple lines, you still paint it
-                // as though you had one single line.  This means each line has to pick up the image where
-                // the previous line left off.
-                // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
-                // but it isn't even clear how this should work at all.
-                LayoutUnit logicalOffsetOnLine = 0;
-                for (InlineFlowBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
-                    logicalOffsetOnLine += curr->logicalWidth();
-                LayoutUnit totalLogicalWidth = logicalOffsetOnLine;
-                for (InlineFlowBox* curr = this; curr; curr = curr->nextLineBox())
-                    totalLogicalWidth += curr->logicalWidth();
-                LayoutUnit stripX = adjustedPaintoffset.x() - (isHorizontal() ? logicalOffsetOnLine : LayoutUnit());
-                LayoutUnit stripY = adjustedPaintoffset.y() - (isHorizontal() ? LayoutUnit() : logicalOffsetOnLine);
-                LayoutUnit stripWidth = isHorizontal() ? totalLogicalWidth : frameRect.width();
-                LayoutUnit stripHeight = isHorizontal() ? frameRect.height() : totalLogicalWidth;
+        // The simple case is where we either have no border image or we are the only box for this object.
+        // In those cases only a single call to draw is required.
+        if (!hasBorderImage || (!prevLineBox() && !nextLineBox())) {
+            boxModelObject()->paintBorder(paintInfo, paintRect, renderer().style(isFirstLineStyle()), BackgroundBleedNone, includeLogicalLeftEdge(), includeLogicalRightEdge());
+        } else {
+            // We have a border image that spans multiple lines.
+            // We need to adjust tx and ty by the width of all previous lines.
+            // Think of border image painting on inlines as though you had one long line, a single continuous
+            // strip. Even though that strip has been broken up across multiple lines, you still paint it
+            // as though you had one single line. This means each line has to pick up the image where
+            // the previous line left off.
+            // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
+            // but it isn't even clear how this should work at all.
+            LayoutUnit logicalOffsetOnLine = 0;
+            for (InlineFlowBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
+                logicalOffsetOnLine += curr->logicalWidth();
+            LayoutUnit totalLogicalWidth = logicalOffsetOnLine;
+            for (InlineFlowBox* curr = this; curr; curr = curr->nextLineBox())
+                totalLogicalWidth += curr->logicalWidth();
+            LayoutUnit stripX = adjustedPaintOffset.x() - (isHorizontal() ? logicalOffsetOnLine : LayoutUnit());
+            LayoutUnit stripY = adjustedPaintOffset.y() - (isHorizontal() ? LayoutUnit() : logicalOffsetOnLine);
+            LayoutUnit stripWidth = isHorizontal() ? totalLogicalWidth : frameRect.width();
+            LayoutUnit stripHeight = isHorizontal() ? frameRect.height() : totalLogicalWidth;
 
-                LayoutRect clipRect = clipRectForNinePieceImageStrip(this, borderImage, paintRect);
-                GraphicsContextStateSaver stateSaver(*context);
-                context->clip(clipRect);
-                boxModelObject()->paintBorder(paintInfo, LayoutRect(stripX, stripY, stripWidth, stripHeight), renderer().style(isFirstLineStyle()));
-            }
+            LayoutRect clipRect = clipRectForNinePieceImageStrip(this, borderImage, paintRect);
+            GraphicsContextStateSaver stateSaver(*paintInfo.context);
+            paintInfo.context->clip(clipRect);
+            boxModelObject()->paintBorder(paintInfo, LayoutRect(stripX, stripY, stripWidth, stripHeight), renderer().style(isFirstLineStyle()));
         }
     }
 }
