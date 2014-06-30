@@ -2554,6 +2554,8 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 	 * will not be drawn either.
 	 */
 	if (!weston_surface_is_mapped(surface)) {
+		struct weston_output *output;
+
 		/* Cannot call weston_surface_update_transform(),
 		 * because that would call it also for the parent surface,
 		 * which might not be mapped yet. That would lead to
@@ -2563,11 +2565,14 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 		 * Instead just assing any output, to make
 		 * weston_surface_is_mapped() return true, so that when the
 		 * parent surface does get mapped, this one will get
-		 * included, too. See surface_list_add().
+		 * included, too. See view_list_add().
 		 */
 		assert(!wl_list_empty(&compositor->output_list));
-		surface->output = container_of(compositor->output_list.next,
-					       struct weston_output, link);
+		output = container_of(compositor->output_list.next,
+				      struct weston_output, link);
+
+		surface->output = output;
+		weston_surface_update_output_mask(surface, 1 << output->id);
 	}
 }
 
