@@ -430,6 +430,27 @@ static void paintTextWithShadows(GraphicsContext* context,
         context->clearDrawLooper();
 }
 
+static void paintEmphasisMark(GraphicsContext* context,
+    const AtomicString& emphasisMark, int emphasisMarkOffset,
+    int startOffset, int endOffset, int paintRunLength,
+    const Font& font, Color emphasisMarkColor, Color textStrokeColor, float textStrokeWidth, const ShadowList* textShadow,
+    RenderCombineText* combinedText, const TextRun& textRun,
+    const FloatPoint& textOrigin, const FloatRect& boxRect, bool horizontal)
+{
+    ASSERT(!emphasisMark.isEmpty());
+    updateGraphicsContext(context, emphasisMarkColor, textStrokeColor, textStrokeWidth);
+
+    if (combinedText) {
+        DEFINE_STATIC_LOCAL(TextRun, objectReplacementCharacterTextRun, (&objectReplacementCharacter, 1));
+        FloatPoint emphasisMarkTextOrigin(boxRect.x() + boxRect.width() / 2, boxRect.y() + font.fontMetrics().ascent());
+        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
+        paintTextWithShadows(context, combinedText->originalFont(), objectReplacementCharacterTextRun, emphasisMark, emphasisMarkOffset, 0, 1, 1, emphasisMarkTextOrigin, boxRect, textShadow, horizontal);
+        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Counterclockwise));
+    } else {
+        paintTextWithShadows(context, font, textRun, emphasisMark, emphasisMarkOffset, startOffset, endOffset, paintRunLength, textOrigin, boxRect, textShadow, horizontal);
+    }
+}
+
 bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosition& emphasisPosition) const
 {
     // This function returns true if there are text emphasis marks and they are suppressed by ruby text.
@@ -673,44 +694,23 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         emphasisMarkOffset = emphasisMarkPosition == TextEmphasisPositionOver ? -font.fontMetrics().ascent() - font.emphasisMarkDescent(emphasisMark) : font.fontMetrics().descent() + font.emphasisMarkAscent(emphasisMark);
 
     if (!paintSelectedTextOnly) {
+        // FIXME: Truncate right-to-left text correctly.
+        int startOffset = 0;
+        int endOffset = length;
+        if (paintSelectedTextSeparately && ePos > sPos) {
+            startOffset = ePos;
+            endOffset = sPos;
+        }
+
         // For stroked painting, we have to change the text drawing mode.  It's probably dangerous to leave that mutated as a side
         // effect, so only when we know we're stroking, do a save/restore.
         GraphicsContextStateSaver stateSaver(*context, textStrokeWidth > 0);
 
         updateGraphicsContext(context, textFillColor, textStrokeColor, textStrokeWidth);
-        if (!paintSelectedTextSeparately || ePos <= sPos) {
-            // FIXME: Truncate right-to-left text correctly.
-            paintTextWithShadows(context, font, textRun, nullAtom, 0, 0, length, length, textOrigin, boxRect, textShadow, isHorizontal());
-        } else {
-            paintTextWithShadows(context, font, textRun, nullAtom, 0, ePos, sPos, length, textOrigin, boxRect, textShadow, isHorizontal());
-        }
+        paintTextWithShadows(context, font, textRun, nullAtom, 0, startOffset, endOffset, length, textOrigin, boxRect, textShadow, isHorizontal());
 
-        if (!emphasisMark.isEmpty()) {
-            updateGraphicsContext(context, emphasisMarkColor, textStrokeColor, textStrokeWidth);
-
-            DEFINE_STATIC_LOCAL(TextRun, objectReplacementCharacterTextRun, (&objectReplacementCharacter, 1));
-            TextRun& emphasisMarkTextRun = combinedText ? objectReplacementCharacterTextRun : textRun;
-            FloatPoint emphasisMarkTextOrigin = combinedText ? FloatPoint(boxOrigin.x() + boxRect.width() / 2, boxOrigin.y() + font.fontMetrics().ascent()) : textOrigin;
-            if (combinedText)
-                context->concatCTM(rotation(boxRect, Clockwise));
-
-            int startOffset = 0;
-            int endOffset = length;
-            int paintRunLength = length;
-            if (combinedText) {
-                startOffset = 0;
-                endOffset = objectReplacementCharacterTextRun.length();
-                paintRunLength = endOffset;
-            } else if (paintSelectedTextSeparately && ePos > sPos) {
-                startOffset = ePos;
-                endOffset = sPos;
-            }
-            // FIXME: Truncate right-to-left text correctly.
-            paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, startOffset, endOffset, paintRunLength, emphasisMarkTextOrigin, boxRect, textShadow, isHorizontal());
-
-            if (combinedText)
-                context->concatCTM(rotation(boxRect, Counterclockwise));
-        }
+        if (!emphasisMark.isEmpty())
+            paintEmphasisMark(context, emphasisMark, emphasisMarkOffset, startOffset, endOffset, length, font, emphasisMarkColor, textStrokeColor, textStrokeWidth, textShadow, combinedText, textRun, textOrigin, boxRect, isHorizontal());
     }
 
     if ((paintSelectedTextOnly || paintSelectedTextSeparately) && sPos < ePos) {
@@ -719,23 +719,9 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
         updateGraphicsContext(context, selectionFillColor, selectionStrokeColor, selectionStrokeWidth);
         paintTextWithShadows(context, font, textRun, nullAtom, 0, sPos, ePos, length, textOrigin, boxRect, selectionShadow, isHorizontal());
-        if (!emphasisMark.isEmpty()) {
-            updateGraphicsContext(context, selectionEmphasisMarkColor, textStrokeColor, textStrokeWidth);
 
-            DEFINE_STATIC_LOCAL(TextRun, objectReplacementCharacterTextRun, (&objectReplacementCharacter, 1));
-            TextRun& emphasisMarkTextRun = combinedText ? objectReplacementCharacterTextRun : textRun;
-            FloatPoint emphasisMarkTextOrigin = combinedText ? FloatPoint(boxOrigin.x() + boxRect.width() / 2, boxOrigin.y() + font.fontMetrics().ascent()) : textOrigin;
-            if (combinedText)
-                context->concatCTM(rotation(boxRect, Clockwise));
-
-            int startOffset = combinedText ? 0 : sPos;
-            int endOffset = combinedText ? objectReplacementCharacterTextRun.length() : ePos;
-            int paintRunLength = combinedText ? endOffset : length;
-            paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, startOffset, endOffset, paintRunLength, emphasisMarkTextOrigin, boxRect, selectionShadow, isHorizontal());
-
-            if (combinedText)
-                context->concatCTM(rotation(boxRect, Counterclockwise));
-        }
+        if (!emphasisMark.isEmpty())
+            paintEmphasisMark(context, emphasisMark, emphasisMarkOffset, sPos, ePos, length, font, selectionEmphasisMarkColor, textStrokeColor, textStrokeWidth, selectionShadow, combinedText, textRun, textOrigin, boxRect, isHorizontal());
     }
 
     // Paint decorations
