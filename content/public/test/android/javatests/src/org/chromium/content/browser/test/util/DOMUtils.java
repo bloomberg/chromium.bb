@@ -169,6 +169,15 @@ public class DOMUtils {
         return getNodeField("value", viewCore, nodeId, String.class);
     }
 
+    /**
+     * Returns the string value of a field of the node by its id.
+     */
+    public static String getNodeField(String fieldName, final ContentViewCore viewCore,
+            String nodeId)
+            throws InterruptedException, TimeoutException {
+        return getNodeField(fieldName, viewCore, nodeId, String.class);
+    }
+
     private static <T> T getNodeField(String fieldName, final ContentViewCore viewCore,
             String nodeId, Class<T> valueType)
             throws InterruptedException, TimeoutException {
