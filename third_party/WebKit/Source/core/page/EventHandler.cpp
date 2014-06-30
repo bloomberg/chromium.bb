@@ -2079,7 +2079,6 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 
     // Hit test across all frames and do touch adjustment as necessary for the event type.
     GestureEventWithHitTestResults targetedEvent = targetGestureEvent(gestureEvent);
-    ASSERT(!targetedEvent.hitTestResult().isOverWidget());
 
     // Route to the correct frame.
     if (LocalFrame* innerFrame = targetedEvent.hitTestResult().innerNodeFrame())
