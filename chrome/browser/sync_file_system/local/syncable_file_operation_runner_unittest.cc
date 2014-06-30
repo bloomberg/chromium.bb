@@ -136,7 +136,6 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     return base::CreateTemporaryFileInDir(dir_.path(), path);
   }
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir dir_;

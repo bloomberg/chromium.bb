@@ -344,8 +344,6 @@ class LocalFileSyncContextTest : public testing::Test {
     file_system.TearDown();
   }
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-
   base::ScopedTempDir dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;
 

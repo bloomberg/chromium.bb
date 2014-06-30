@@ -109,7 +109,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->GetAllChangedURLs(urls);
   }
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::MessageLoopForIO message_loop_;
   scoped_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;

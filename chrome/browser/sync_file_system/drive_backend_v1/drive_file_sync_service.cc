@@ -779,8 +779,6 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     SyncFileType file_type = SYNC_FILE_TYPE_UNKNOWN;
     if (entry.is_file())
       file_type = SYNC_FILE_TYPE_FILE;
-    else if (entry.is_folder() && IsSyncFSDirectoryOperationEnabled())
-      file_type = SYNC_FILE_TYPE_DIRECTORY;
     else
       continue;
 
@@ -858,7 +856,7 @@ bool DriveFileSyncService::AppendRemoteChange(
   if (!entry.is_folder() && !entry.is_file() && !entry.deleted())
     return false;
 
-  if (entry.is_folder() && !IsSyncFSDirectoryOperationEnabled())
+  if (entry.is_folder())
     return false;
 
   SyncFileType file_type = entry.is_file() ?
@@ -959,8 +957,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     if (!remote_resource_id.empty() &&
         !local_resource_id.empty() &&
         remote_resource_id == local_resource_id) {
-      DCHECK(IsSyncFSDirectoryOperationEnabled() ||
-             DriveMetadata::RESOURCE_TYPE_FILE == metadata.type());
+      DCHECK(DriveMetadata::RESOURCE_TYPE_FILE == metadata.type());
       file_type = metadata.type() == DriveMetadata::RESOURCE_TYPE_FILE ?
           SYNC_FILE_TYPE_FILE : SYNC_FILE_TYPE_DIRECTORY;
     }
@@ -1096,19 +1093,12 @@ void DriveFileSyncService::RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> log) {
 
 // static
 std::string DriveFileSyncService::PathToTitle(const base::FilePath& path) {
-  if (!IsSyncFSDirectoryOperationEnabled())
-    return path.AsUTF8Unsafe();
-
-  return fileapi::FilePathToString(
-      base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath(path)));
+  return path.AsUTF8Unsafe();
 }
 
 // static
 base::FilePath DriveFileSyncService::TitleToPath(const std::string& title) {
-  if (!IsSyncFSDirectoryOperationEnabled())
-    return base::FilePath::FromUTF8Unsafe(title);
-
-  return fileapi::StringToFilePath(title).NormalizePathSeparators();
+  return base::FilePath::FromUTF8Unsafe(title);
 }
 
 // static

@@ -22,12 +22,6 @@ namespace sync_file_system {
 
 namespace {
 
-// A command switch to enable syncing directory operations in Sync FileSystem
-// API. (http://crbug.com/161442)
-// TODO(kinuko): this command-line switch should be temporary.
-const char kEnableSyncFSDirectoryOperation[] =
-    "enable-syncfs-directory-operation";
-
 // A command switch to enable V2 Sync FileSystem.
 const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
 
@@ -40,11 +34,8 @@ const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
-const base::FilePath::CharType kSyncFileSystemDirDev[] =
-    FILE_PATH_LITERAL("Sync FileSystem Dev");
 
 // Flags to enable features for testing.
-bool g_is_directory_operation_enabled = false;
 bool g_is_syncfs_v2_enabled = true;
 
 }  // namespace
@@ -120,21 +111,6 @@ bool DeserializeSyncableFileSystemURL(
   return true;
 }
 
-void SetEnableSyncFSDirectoryOperation(bool flag) {
-  g_is_directory_operation_enabled = flag;
-}
-
-bool IsSyncFSDirectoryOperationEnabled() {
-  return IsSyncFSDirectoryOperationEnabled(GURL());
-}
-
-bool IsSyncFSDirectoryOperationEnabled(const GURL& origin) {
-  return g_is_directory_operation_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableSyncFSDirectoryOperation) ||
-      IsV2EnabledForOrigin(origin);
-}
-
 bool IsV2Enabled() {
   return g_is_syncfs_v2_enabled ||
         CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncFileSystemV2);
@@ -171,19 +147,7 @@ bool IsV2EnabledForOrigin(const GURL& origin) {
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
   if (IsV2Enabled())
     return profile_base_dir.Append(kSyncFileSystemDir);
-  if (IsSyncFSDirectoryOperationEnabled())
-    return profile_base_dir.Append(kSyncFileSystemDirDev);
   return profile_base_dir.Append(kSyncFileSystemDir);
-}
-
-ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
-  was_enabled_ = IsSyncFSDirectoryOperationEnabled(GURL());
-  SetEnableSyncFSDirectoryOperation(true);
-}
-
-ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
-  DCHECK(IsSyncFSDirectoryOperationEnabled(GURL()));
-  SetEnableSyncFSDirectoryOperation(was_enabled_);
 }
 
 ScopedDisableSyncFSV2::ScopedDisableSyncFSV2() {

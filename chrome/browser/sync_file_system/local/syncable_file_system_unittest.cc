@@ -97,8 +97,6 @@ class SyncableFileSystemTest : public testing::Test {
     return file_system_.backend()->change_tracker();
   }
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-
   base::ScopedTempDir data_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<leveldb::Env> in_memory_env_;
@@ -253,8 +251,6 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
   ScopedDisableSyncFSV2 scoped_disable_v2;
 
-  bool was_enabled = IsSyncFSDirectoryOperationEnabled();
-  SetEnableSyncFSDirectoryOperation(false);
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.OpenFileSystem());
 
@@ -284,7 +280,6 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
             file_system_.Copy(kSrcDir, URL("dest")));
 
   other_file_system_.TearDown();
-  SetEnableSyncFSDirectoryOperation(was_enabled);
 }
 
 }  // namespace sync_file_system

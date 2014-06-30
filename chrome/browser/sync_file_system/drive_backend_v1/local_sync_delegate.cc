@@ -34,8 +34,7 @@ LocalSyncDelegate::LocalSyncDelegate(
 LocalSyncDelegate::~LocalSyncDelegate() {}
 
 void LocalSyncDelegate::Run(const SyncStatusCallback& callback) {
-  // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-  DCHECK(IsSyncFSDirectoryOperationEnabled() || !local_change_.IsDirectory());
+  DCHECK(!local_change_.IsDirectory());
   operation_ = SYNC_OPERATION_NONE;
 
   has_drive_metadata_ =
@@ -161,7 +160,7 @@ void LocalSyncDelegate::DidUploadNewFile(
 }
 
 void LocalSyncDelegate::CreateDirectory(const SyncStatusCallback& callback) {
-  DCHECK(IsSyncFSDirectoryOperationEnabled());
+  NOTREACHED();
   api_util()->CreateDirectory(
       origin_resource_id_,
       DriveFileSyncService::PathToTitle(url_.path()),
@@ -344,7 +343,7 @@ void LocalSyncDelegate::DidDeleteFileToResolveToLocal(
     return;
   }
 
-  DCHECK(IsSyncFSDirectoryOperationEnabled());
+  NOTREACHED();
   DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_metadata_.file_type);
   CreateDirectory(callback);
 }

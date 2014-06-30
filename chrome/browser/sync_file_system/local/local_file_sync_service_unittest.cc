@@ -196,7 +196,6 @@ class LocalFileSyncServiceTest
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;

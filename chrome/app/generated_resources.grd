@@ -6304,12 +6304,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NUM_RASTER_THREADS_FOUR" desc="">
         4
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME" desc="Name of the flag to enable syncfs direcory support.">
-        Enable Syncfs directory operation.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION" desc="Description of the flag to enable syncfs directory support.">
-        Enables directory support for sync filesystem.
-      </message>
       <if expr="is_macosx">
         <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_NAME" desc="Title for the flag to prevent Chrome from quitting when Chrome Apps are open.">
           Apps keep Chrome alive.

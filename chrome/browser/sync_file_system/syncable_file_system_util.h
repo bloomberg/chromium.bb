@@ -77,23 +77,6 @@ bool SerializeSyncableFileSystemURL(
 bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, fileapi::FileSystemURL* url);
 
-// Enables or disables directory operations in Sync FileSystem API.
-// TODO(nhiroki): This method should be used only for testing and should go
-// away when we fully support directory operations. (http://crbug.com/161442)
-void SetEnableSyncFSDirectoryOperation(bool flag);
-
-// Returns true if we allow directory operations in Sync FileSystem API.
-// It is disabled by default but can be overridden by a command-line switch
-// (--enable-syncfs-directory-operations) or by calling
-// SetEnableSyncFSDirectoryOperation().
-// TODO(nhiroki): This method should be used only for testing and should go
-// away when we fully support directory operations. (http://crbug.com/161442)
-bool IsSyncFSDirectoryOperationEnabled();
-
-// Checks the same as above, but takes |origin| and sees if directory operation
-// is enabled specifically for this |origin|.
-bool IsSyncFSDirectoryOperationEnabled(const GURL& origin);
-
 // Returns true if V2 is enabled.
 bool IsV2Enabled();
 
@@ -102,18 +85,6 @@ bool IsV2EnabledForOrigin(const GURL& origin);
 
 // Returns SyncFileSystem sub-directory path.
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);
-
-// Enables directory operation for syncable filesystems temporarily for testing.
-class ScopedEnableSyncFSDirectoryOperation {
- public:
-  ScopedEnableSyncFSDirectoryOperation();
-  ~ScopedEnableSyncFSDirectoryOperation();
-
- private:
-  bool was_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSDirectoryOperation);
-};
 
 // Disables V2 backend for syncable filesystems temporarily for testing.
 class ScopedDisableSyncFSV2 {

@@ -169,7 +169,7 @@ void RemoteSyncDelegate::DidApplyRemoteChange(
   if (remote_file_change().IsFile()) {
     drive_metadata_.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
   } else {
-    DCHECK(IsSyncFSDirectoryOperationEnabled());
+    NOTREACHED();
     drive_metadata_.set_type(DriveMetadata::RESOURCE_TYPE_FOLDER);
   }
 

@@ -1356,13 +1356,6 @@ const Experiment kExperiments[] = {
     kOsLinux | kOsCrOS | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
   },
-  {
-    "enable-syncfs-directory-operation",
-    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME,
-    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
-  },
 #if defined(ENABLE_SERVICE_DISCOVERY)
   {
     "disable-device-discovery",

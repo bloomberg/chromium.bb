@@ -1192,10 +1192,6 @@ const char kSyncDeferredStartupTimeoutSeconds[] =
 const char kSyncEnableGetUpdateAvoidance[]   =
     "sync-enable-get-update-avoidance";
 
-// Enables directory support for sync filesystem
-const char kSyncfsEnableDirectoryOperation[] =
-    "enable-syncfs-directory-operation";
-
 // Disable data backup when user's not signed in.
 const char kSyncDisableBackup[] = "disable-sync-backup";
 

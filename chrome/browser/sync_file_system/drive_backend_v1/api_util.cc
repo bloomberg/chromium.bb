@@ -638,11 +638,8 @@ void APIUtil::DidGetDriveRootResourceIdForEnsureSyncRoot(
 }
 
 // static
-// TODO(calvinlo): Delete this when Sync Directory Operations are supported by
-// default.
 std::string APIUtil::GetSyncRootDirectoryName() {
-  return IsSyncFSDirectoryOperationEnabled() ? kSyncRootFolderTitleDev
-                                             : kSyncRootFolderTitle;
+  return kSyncRootFolderTitle;
 }
 
 // static

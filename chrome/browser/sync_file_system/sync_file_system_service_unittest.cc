@@ -253,8 +253,6 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->SetSyncEnabledForTesting(true);
   }
 
-  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;

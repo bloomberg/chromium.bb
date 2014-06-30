@@ -370,8 +370,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
   impl_.reset(fileapi::FileSystemOperation::Create(
       url_, file_system_context, operation_context.Pass()));
   operation_runner_ = backend->sync_context()->operation_runner();
-  is_directory_operation_enabled_ = IsSyncFSDirectoryOperationEnabled(
-      url.origin());
+  is_directory_operation_enabled_ = IsV2EnabledForOrigin(url.origin());
 }
 
 void SyncableFileSystemOperation::DidFinish(base::File::Error status) {
