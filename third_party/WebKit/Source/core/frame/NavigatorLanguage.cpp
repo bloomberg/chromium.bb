@@ -14,9 +14,8 @@ NavigatorLanguage::NavigatorLanguage()
 {
 }
 
-AtomicString NavigatorLanguage::language(bool& isNull)
+AtomicString NavigatorLanguage::language()
 {
-    isNull = false;
     return defaultLanguage();
 }
 

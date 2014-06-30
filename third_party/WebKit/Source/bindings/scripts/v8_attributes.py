@@ -77,6 +77,11 @@ def attribute_context(interface, attribute):
         attribute.name == 'onerror'):
         includes.add('bindings/v8/V8ErrorHandler.h')
 
+    # Nullable type where the corresponding C++ type supports a null value.
+    is_nullable_simple = idl_type.is_nullable and (
+        (idl_type.is_string_type or idl_type.is_wrapper_type) and
+        not idl_type.array_or_sequence_type)
+
     context = {
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
@@ -108,7 +113,7 @@ def attribute_context(interface, attribute):
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
         'is_nullable': idl_type.is_nullable,
-        'is_nullable_simple': idl_type.is_nullable and idl_type.is_wrapper_type,  # null value maps to C++ null pointer
+        'is_nullable_simple': is_nullable_simple,
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,

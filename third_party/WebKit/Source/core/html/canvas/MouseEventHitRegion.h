@@ -14,28 +14,25 @@ namespace WebCore {
 
 class MouseEventHitRegion {
 public:
-    static String region(MouseEvent& event, bool& isNull)
+    static String region(MouseEvent& event)
     {
-        if (!event.target() || !isHTMLCanvasElement(event.target()->toNode())) {
-            isNull = true;
+        if (!event.target() || !isHTMLCanvasElement(event.target()->toNode()))
             return String();
-        }
 
         HTMLCanvasElement* canvas = toHTMLCanvasElement(event.target()->toNode());
         CanvasRenderingContext* context = canvas->renderingContext();
-        if (!context || !context->is2d()) {
-            isNull = true;
+        if (!context || !context->is2d())
             return String();
-        }
 
         HitRegion* hitRegion = toCanvasRenderingContext2D(context)->
             hitRegionAtPoint(LayoutPoint(event.offsetX(), event.offsetY()));
 
-        String id;
-        if (hitRegion)
-            id = hitRegion->id();
+        if (!hitRegion)
+            return String();
 
-        isNull = id.isEmpty();
+        String id = hitRegion->id();
+        if (id.isEmpty())
+            return String();
 
         return id;
     }

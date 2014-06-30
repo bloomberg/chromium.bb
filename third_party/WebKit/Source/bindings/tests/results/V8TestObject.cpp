@@ -1520,9 +1520,8 @@ static void stringOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    bool isNull = false;
-    String cppValue(impl->stringOrNullAttribute(isNull));
-    if (isNull) {
+    String cppValue(impl->stringOrNullAttribute());
+    if (!cppValue) {
         v8SetReturnValueNull(info);
         return;
     }

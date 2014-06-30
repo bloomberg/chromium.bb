@@ -13,7 +13,7 @@ class NavigatorLanguage {
 public:
     NavigatorLanguage();
 
-    AtomicString language(bool&);
+    AtomicString language();
     virtual Vector<String> languages() = 0;
     bool hasLanguagesChanged();
     void setLanguagesChanged();
