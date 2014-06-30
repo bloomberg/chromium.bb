@@ -100,6 +100,7 @@ private:
     virtual short tabIndex() const OVERRIDE FINAL;
     virtual bool draggable() const OVERRIDE FINAL;
     virtual bool isInteractiveContent() const OVERRIDE FINAL;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
     void sendPings(const KURL& destinationURL);
     AtomicString target() const;
