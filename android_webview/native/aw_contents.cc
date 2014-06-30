@@ -976,6 +976,12 @@ void AwContents::SetBackgroundColor(JNIEnv* env, jobject obj, jint color) {
   render_view_host_ext_->SetBackgroundColor(color);
 }
 
+void AwContents::SetHasTransparentBackground(
+    JNIEnv* env, jobject obj, bool transparent) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_view_renderer_.SetHasTransparentBackground(transparent);
+}
+
 jlong AwContents::ReleasePopupAwContents(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return reinterpret_cast<intptr_t>(pending_contents_.release());

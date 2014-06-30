@@ -104,6 +104,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       attached_to_window_(false),
       hardware_enabled_(false),
       dip_scale_(0.0),
+      has_transparent_background_(false),
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
       clear_view_(false),
@@ -254,6 +255,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   draw_gl_input->scroll_offset = last_on_draw_scroll_offset_;
   draw_gl_input->width = width_;
   draw_gl_input->height = height_;
+  draw_gl_input->has_transparent_background = has_transparent_background_;
 
   gfx::Transform transform;
   gfx::Size surface_size(width_, height_);
@@ -473,6 +475,10 @@ void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
   dip_scale_ = dip_scale;
   CHECK(dip_scale_ > 0);
+}
+
+void BrowserViewRenderer::SetHasTransparentBackground(bool transparent) {
+  has_transparent_background_ = transparent;
 }
 
 gfx::Vector2d BrowserViewRenderer::max_scroll_offset() const {
@@ -725,6 +731,8 @@ std::string BrowserViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
   base::StringAppendF(&str, "view_visible: %d ", view_visible_);
   base::StringAppendF(&str, "window_visible: %d ", window_visible_);
   base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
+  base::StringAppendF(&str, "has_transparent_background_: %d",
+                      has_transparent_background_);
   base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
   base::StringAppendF(&str,
                       "compositor_needs_continuous_invalidate: %d ",

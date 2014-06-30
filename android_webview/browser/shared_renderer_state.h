@@ -31,6 +31,7 @@ struct DrawGLInput {
   int width;
   int height;
   cc::CompositorFrame frame;
+  bool has_transparent_background;
 
   DrawGLInput();
   ~DrawGLInput();

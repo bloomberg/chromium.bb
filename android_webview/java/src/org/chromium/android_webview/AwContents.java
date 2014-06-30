@@ -175,16 +175,17 @@ public class AwContents {
 
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
-    private final ViewGroup mContainerView;
+    private ViewGroup mContainerView;
+    private final AwLayoutChangeListener mLayoutChangeListener;
     private final Context mContext;
     private ContentViewCore mContentViewCore;
     private final AwContentsClient mContentsClient;
     private final AwContentViewClient mContentViewClient;
     private final AwContentsClientBridge mContentsClientBridge;
-    private final AwWebContentsDelegate mWebContentsDelegate;
+    private final AwWebContentsDelegateAdapter mWebContentsDelegate;
     private final AwContentsIoThreadClient mIoThreadClient;
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
-    private final InternalAccessDelegate mInternalAccessAdapter;
+    private InternalAccessDelegate mInternalAccessAdapter;
     private final NativeGLDelegate mNativeGLDelegate;
     private final AwLayoutSizer mLayoutSizer;
     private final AwZoomControls mZoomControls;
@@ -230,7 +231,8 @@ public class AwContents {
 
     private AwPdfExporter mAwPdfExporter;
 
-    private final AwViewMethods mAwViewMethods;
+    private AwViewMethods mAwViewMethods;
+    private final FullScreenTransitionsState mFullScreenTransitionsState;
 
     // This flag indicates that ShouldOverrideUrlNavigation should be posted
     // through the resourcethrottle. This is only used for popup windows.
@@ -244,6 +246,52 @@ public class AwContents {
         @Override
         public void run() {
             nativeDestroy(mNativeAwContents);
+        }
+    }
+
+    /**
+     * A class that stores the state needed to enter and exit fullscreen.
+     */
+    private static class FullScreenTransitionsState {
+        private final ViewGroup mInitialContainerView;
+        private final InternalAccessDelegate mInitialInternalAccessAdapter;
+        private final AwViewMethods mInitialAwViewMethods;
+        private FullScreenView mFullScreenView;
+
+        private FullScreenTransitionsState(ViewGroup initialContainerView,
+                InternalAccessDelegate initialInternalAccessAdapter,
+                AwViewMethods initialAwViewMethods) {
+            mInitialContainerView = initialContainerView;
+            mInitialInternalAccessAdapter = initialInternalAccessAdapter;
+            mInitialAwViewMethods = initialAwViewMethods;
+        }
+
+        private void enterFullScreen(FullScreenView fullScreenView) {
+            mFullScreenView = fullScreenView;
+        }
+
+        private void exitFullScreen() {
+            mFullScreenView = null;
+        }
+
+        private boolean isFullScreen() {
+            return mFullScreenView != null;
+        }
+
+        private ViewGroup getInitialContainerView() {
+            return mInitialContainerView;
+        }
+
+        private InternalAccessDelegate getInitialInternalAccessDelegate() {
+            return mInitialInternalAccessAdapter;
+        }
+
+        private AwViewMethods getInitialAwViewMethods() {
+            return mInitialAwViewMethods;
+        }
+
+        private FullScreenView getFullScreenView() {
+            return mFullScreenView;
         }
     }
 
@@ -510,7 +558,9 @@ public class AwContents {
         mNativeGLDelegate = nativeGLDelegate;
         mContentsClient = contentsClient;
         mAwViewMethods = new AwViewMethodsImpl();
-        mContentViewClient = new AwContentViewClient(contentsClient, settings);
+        mFullScreenTransitionsState = new FullScreenTransitionsState(
+                mContainerView, mInternalAccessAdapter, mAwViewMethods);
+        mContentViewClient = new AwContentViewClient(contentsClient, settings, this, mContext);
         mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
         mDIPScale = DeviceDisplayInfo.create(mContext).getDIPScale();
@@ -544,12 +594,12 @@ public class AwContents {
 
         setOverScrollMode(mContainerView.getOverScrollMode());
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
-        mContainerView.addOnLayoutChangeListener(new AwLayoutChangeListener());
+        mLayoutChangeListener = new AwLayoutChangeListener();
+        mContainerView.addOnLayoutChangeListener(mLayoutChangeListener);
 
         setNewAwContents(nativeInit(mBrowserContext));
 
-        onVisibilityChanged(mContainerView, mContainerView.getVisibility());
-        onWindowVisibilityChanged(mContainerView.getWindowVisibility());
+        onContainerViewChanged();
     }
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
@@ -568,8 +618,112 @@ public class AwContents {
         return contentViewCore;
     }
 
+    boolean isFullScreen() {
+        return mFullScreenTransitionsState.isFullScreen();
+    }
+
     /**
-     * Common initialization routine for adopting a native AwContents instance into this
+     * Transitions this {@link AwContents} to fullscreen mode and returns the
+     * {@link View} where the contents will be drawn while in fullscreen.
+     */
+    View enterFullScreen() {
+        assert !isFullScreen();
+
+        // Detach to tear down the GL functor if this is still associated with the old
+        // container view. It will be recreated during the next call to onDraw attached to
+        // the new container view.
+        onDetachedFromWindow();
+
+        // In fullscreen mode FullScreenView owns the AwViewMethodsImpl and AwContents
+        // a NullAwViewMethods.
+        FullScreenView fullScreenView = new FullScreenView(mContext, mAwViewMethods);
+        mFullScreenTransitionsState.enterFullScreen(fullScreenView);
+        mAwViewMethods = new NullAwViewMethods(this, mInternalAccessAdapter, mContainerView);
+        mContainerView.removeOnLayoutChangeListener(mLayoutChangeListener);
+        fullScreenView.addOnLayoutChangeListener(mLayoutChangeListener);
+
+        // Associate this AwContents with the FullScreenView.
+        setInternalAccessAdapter(fullScreenView.getInternalAccessAdapter());
+        setContainerView(fullScreenView);
+
+        // Make the background transparent so that the ContentVideoView is visible
+        // behind the FullScreenView.
+        nativeSetHasTransparentBackground(mNativeAwContents, true);
+        return fullScreenView;
+    }
+
+    /**
+     * Returns this {@link AwContents} to embedded mode, where the {@link AwContents} are drawn
+     * in the WebView.
+     */
+    void exitFullScreen() {
+        assert isFullScreen();
+
+        // Detach to tear down the GL functor if this is still associated with the old
+        // container view. It will be recreated during the next call to onDraw attached to
+        // the new container view.
+        // NOTE: we cannot use mAwViewMethods here because its type is NullAwViewMethods.
+        AwViewMethods awViewMethodsImpl = mFullScreenTransitionsState.getInitialAwViewMethods();
+        awViewMethodsImpl.onDetachedFromWindow();
+
+        // Swap the view delegates. In embedded mode the FullScreenView owns a
+        // NullAwViewMethods and AwContents the AwViewMethodsImpl.
+        FullScreenView fullscreenView = mFullScreenTransitionsState.getFullScreenView();
+        fullscreenView.setAwViewMethods(new NullAwViewMethods(
+                this, fullscreenView.getInternalAccessAdapter(), fullscreenView));
+        mAwViewMethods = awViewMethodsImpl;
+        ViewGroup initialContainerView = mFullScreenTransitionsState.getInitialContainerView();
+        initialContainerView.addOnLayoutChangeListener(mLayoutChangeListener);
+        fullscreenView.removeOnLayoutChangeListener(mLayoutChangeListener);
+
+        // Re-associate this AwContents with the WebView.
+        setInternalAccessAdapter(mFullScreenTransitionsState.getInitialInternalAccessDelegate());
+        setContainerView(initialContainerView);
+
+        nativeSetHasTransparentBackground(mNativeAwContents, false);
+        mFullScreenTransitionsState.exitFullScreen();
+    }
+
+    private void setInternalAccessAdapter(InternalAccessDelegate internalAccessAdapter) {
+        mInternalAccessAdapter = internalAccessAdapter;
+        mContentViewCore.setContainerViewInternals(mInternalAccessAdapter);
+    }
+
+    private void setContainerView(ViewGroup newContainerView) {
+        mContainerView = newContainerView;
+        mContentViewCore.setContainerView(mContainerView);
+        if (mAwPdfExporter != null) {
+            mAwPdfExporter.setContainerView(mContainerView);
+        }
+        mWebContentsDelegate.setContainerView(mContainerView);
+
+        onContainerViewChanged();
+    }
+
+    /**
+     * Reconciles the state of this AwContents object with the state of the new container view.
+     */
+    private void onContainerViewChanged() {
+        // NOTE: mAwViewMethods is used by the old container view, the WebView, so it might refer
+        // to a NullAwViewMethods when in fullscreen. To ensure that the state is reconciled with
+        // the new container view correctly, we bypass mAwViewMethods and use the real
+        // implementation directly.
+        AwViewMethods awViewMethodsImpl = mFullScreenTransitionsState.getInitialAwViewMethods();
+        awViewMethodsImpl.onVisibilityChanged(mContainerView, mContainerView.getVisibility());
+        awViewMethodsImpl.onWindowVisibilityChanged(mContainerView.getWindowVisibility());
+        if (mContainerView.isAttachedToWindow()) {
+            awViewMethodsImpl.onAttachedToWindow();
+        } else {
+            awViewMethodsImpl.onDetachedFromWindow();
+        }
+        awViewMethodsImpl.onSizeChanged(
+                mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
+        awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
+        awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
+        mContainerView.requestLayout();
+    }
+
+    /* Common initialization routine for adopting a native AwContents instance into this
      * java instance.
      *
      * TAKE CARE! This method can get called multiple times per java instance. Code accordingly.
@@ -1969,7 +2123,7 @@ public class AwContents {
 
     // --------------------------------------------------------------------------------------------
     // This is the AwViewMethods implementation that does real work. The AwViewMethodsImpl is
-    // hooked up to the WebView in embedded mode and to the FullscreenView in fullscreen mode,
+    // hooked up to the WebView in embedded mode and to the FullScreenView in fullscreen mode,
     // but not to both at the same time.
     private class AwViewMethodsImpl implements AwViewMethods {
         private int mLayerType = View.LAYER_TYPE_NONE;
@@ -2260,6 +2414,8 @@ public class AwContents {
     private native long nativeReleasePopupAwContents(long nativeAwContents);
     private native void nativeFocusFirstNode(long nativeAwContents);
     private native void nativeSetBackgroundColor(long nativeAwContents, int color);
+    private native void nativeSetHasTransparentBackground(
+            long nativeAwContents, boolean transparent);
 
     private native long nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);

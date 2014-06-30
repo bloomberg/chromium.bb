@@ -31,9 +31,14 @@ public class AwPdfExporter {
     // Maintain a reference to the top level object (i.e. WebView) since in a common
     // use case (offscreen webview) application may expect the framework's print manager
     // to own the Webview (via PrintDocumentAdapter).
-    private final ViewGroup mContainerView;
+    // NOTE: it looks unused, but please do not remove this reference.
+    private ViewGroup mContainerView;
 
     AwPdfExporter(ViewGroup containerView) {
+        setContainerView(containerView);
+    }
+
+    public void setContainerView(ViewGroup containerView) {
         mContainerView = containerView;
     }
 

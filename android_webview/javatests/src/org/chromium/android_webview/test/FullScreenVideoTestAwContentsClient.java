@@ -14,7 +14,6 @@ import android.widget.FrameLayout;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.TimeUnit;
@@ -29,7 +28,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
 
     private Activity mActivity;
-    private ContentVideoView mVideoView;
+    private View mCustomView;
     private WebChromeClient.CustomViewCallback mExitCallback;
 
     public FullScreenVideoTestAwContentsClient(Activity activity) {
@@ -38,9 +37,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
 
     @Override
     public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-        if (view instanceof ContentVideoView) {
-            mVideoView = (ContentVideoView)view;
-        }
+        mCustomView = view;
         mExitCallback = callback;
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -64,8 +61,8 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
         return mExitCallback;
     }
 
-    public ContentVideoView getVideoView() {
-        return mVideoView;
+    public View getCustomView() {
+        return mCustomView;
     }
 
     public void waitForCustomViewShown() throws TimeoutException, InterruptedException {

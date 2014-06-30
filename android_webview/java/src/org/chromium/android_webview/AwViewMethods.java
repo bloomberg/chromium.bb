@@ -18,7 +18,7 @@ import android.view.inputmethod.InputConnection;
  * An interface that defines a subset of the {@link View} functionality.
  *
  * <p>This interface allows us to hook up drawing and input related methods to the
- * {@link AwContents}'s consumer in embedded mode, and to the {@link FullscreenView}
+ * {@link AwContents}'s consumer in embedded mode, and to the {@link FullScreenView}
  * in fullscreen mode.
  */
 interface AwViewMethods {

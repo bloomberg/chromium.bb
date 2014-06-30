@@ -22,6 +22,48 @@ import java.util.concurrent.TimeoutException;
 public class DOMUtils {
 
     /**
+     * Returns whether the video with given {@code nodeId} has ended.
+     */
+    public static boolean hasVideoEnded(final ContentViewCore viewCore, final String nodeId)
+            throws InterruptedException, TimeoutException {
+        return getNodeField("ended", viewCore, nodeId, Boolean.class);
+    }
+
+    /**
+     * Wait until the end of the video with given {@code nodeId}.
+     * @return Whether the video has ended.
+     */
+    public static boolean waitForEndOfVideo(final ContentViewCore viewCore, final String nodeId)
+            throws InterruptedException {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.hasVideoEnded(viewCore, nodeId);
+                } catch (InterruptedException e) {
+                    // Intentionally do nothing
+                    return false;
+                } catch (TimeoutException e) {
+                    // Intentionally do nothing
+                    return false;
+                }
+            }
+        });
+    }
+
+    /**
+     * Makes the document exit fullscreen.
+     */
+    public static void exitFullscreen(final ContentViewCore viewCore) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  if (document.webkitExitFullscreen) document.webkitExitFullscreen();");
+        sb.append("})();");
+
+        JavaScriptUtils.executeJavaScript(viewCore, sb.toString());
+    }
+
+    /**
      * Returns the rect boundaries for a node by its id.
      */
     public static Rect getNodeBounds(final ContentViewCore viewCore, String nodeId)
@@ -116,7 +158,7 @@ public class DOMUtils {
      */
     public static String getNodeContents(ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        return getNodeField("textContent", viewCore, nodeId);
+        return getNodeField("textContent", viewCore, nodeId, String.class);
     }
 
     /**
@@ -124,17 +166,16 @@ public class DOMUtils {
      */
     public static String getNodeValue(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        return getNodeField("value", viewCore, nodeId);
+        return getNodeField("value", viewCore, nodeId, String.class);
     }
 
-    public static String getNodeField(String fieldName, final ContentViewCore viewCore,
-            String nodeId)
+    private static <T> T getNodeField(String fieldName, final ContentViewCore viewCore,
+            String nodeId, Class<T> valueType)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
         sb.append("  if (!node) return null;");
-        sb.append("  if (!node." + fieldName + ") return null;");
         sb.append("  return [ node." + fieldName + " ];");
         sb.append("})();");
 
@@ -144,10 +185,10 @@ public class DOMUtils {
                 jsonText.trim().equalsIgnoreCase("null"));
 
         JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
-        String value = null;
+        T value = null;
         try {
             jsonReader.beginArray();
-            if (jsonReader.hasNext()) value = jsonReader.nextString();
+            if (jsonReader.hasNext()) value = readValue(jsonReader, valueType);
             jsonReader.endArray();
             Assert.assertNotNull("Invalid contents returned.", value);
 
@@ -156,6 +197,18 @@ public class DOMUtils {
             Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
         }
         return value;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T readValue(JsonReader jsonReader, Class<T> valueType)
+            throws IOException {
+        if (valueType.equals(String.class)) return ((T) jsonReader.nextString());
+        if (valueType.equals(Boolean.class)) return ((T) ((Boolean) jsonReader.nextBoolean()));
+        if (valueType.equals(Integer.class)) return ((T) ((Integer) jsonReader.nextInt()));
+        if (valueType.equals(Long.class)) return ((T) ((Long) jsonReader.nextLong()));
+        if (valueType.equals(Double.class)) return ((T) ((Double) jsonReader.nextDouble()));
+
+        throw new IllegalArgumentException("Cannot read values of type " + valueType);
     }
 
     /**

@@ -24,11 +24,15 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private static final String TAG = "AwWebContentsDelegateAdapter";
 
     final AwContentsClient mContentsClient;
-    final View mContainerView;
+    View mContainerView;
 
     public AwWebContentsDelegateAdapter(AwContentsClient contentsClient,
             View containerView) {
         mContentsClient = contentsClient;
+        setContainerView(containerView);
+    }
+
+    public void setContainerView(View containerView) {
         mContainerView = containerView;
     }
 
