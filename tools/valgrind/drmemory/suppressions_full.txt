@@ -2175,13 +2175,6 @@ name=bug_387373
 *!content::EmbeddedWorkerDispatcher::OnStartWorker
 *!EmbeddedWorkerMsg_StartWorker::Dispatch<>
 
-UNINITIALIZED READ
-name=bug_389263
-*!BrowserView::ShowAvatarBubbleFromAvatarButton
-*!OpaqueBrowserFrameView::ButtonPressed
-*!views::Button::NotifyClick
-*!ProfileChooserViewBrowserTest::OpenProfileChooserView
-
 UNADDRESSABLE ACCESS
 name=bug_389132
 content.dll!crypto_kernel_do_load_cipher_type
