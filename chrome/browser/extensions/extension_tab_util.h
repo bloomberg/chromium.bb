@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/common/extensions/api/tabs.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -31,8 +30,15 @@ class Rect;
 }
 
 namespace extensions {
+
 class Extension;
 class WindowController;
+
+namespace api {
+namespace tabs {
+struct Tab;
+}
+}
 
 // Provides various utility functions that help manipulate tabs.
 class ExtensionTabUtil {

@@ -20,10 +20,7 @@
       'manifest_types.json',
       'sync_file_system.idl',
       'tab_capture.idl',
-      'tabs.json',
       'types.json',
-      'web_navigation.json',
-      'windows.json',
     ],
 
     # These are used everywhere except Android.
