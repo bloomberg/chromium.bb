@@ -9,11 +9,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace content {
-class ResourceContext;
-}
-
 class PrefService;
+class ProfileIOData;
 
 namespace chrome_browser_net {
 
@@ -37,7 +34,7 @@ void RegisterPredictionOptionsProfilePrefs(
 // actions are enabled, based on preferences and network type.
 
 // To be executed on the IO thread only.
-bool CanPredictNetworkActionsIO(content::ResourceContext* resource_context);
+bool CanPredictNetworkActionsIO(ProfileIOData* profile_io_data);
 
 // To be executed on the UI thread only.
 bool CanPredictNetworkActionsUI(PrefService* prefs);

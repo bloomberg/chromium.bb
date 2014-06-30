@@ -6,12 +6,10 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/network_change_notifier.h"
 
 namespace {
 
@@ -47,14 +45,13 @@ void RegisterPredictionOptionsProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-bool CanPredictNetworkActionsIO(content::ResourceContext* resource_context) {
+bool CanPredictNetworkActionsIO(ProfileIOData* profile_io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  DCHECK(resource_context);
+  DCHECK(profile_io_data);
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   return CanPredictNetworkActions(
-      io_data->network_prediction_options()->GetValue(),
-      io_data->network_prediction_enabled()->GetValue());
+      profile_io_data->network_prediction_options()->GetValue(),
+      profile_io_data->network_prediction_enabled()->GetValue());
 }
 
 bool CanPredictNetworkActionsUI(PrefService* prefs) {
