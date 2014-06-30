@@ -35,6 +35,7 @@ function goFullScreen() {
         }, 0);
     }, 0);
     element.webkitRequestFullScreen();
+    shouldNotBe("document.webkitFullscreenElement", "null");
 }
 </script>
 <body onload="init()">
