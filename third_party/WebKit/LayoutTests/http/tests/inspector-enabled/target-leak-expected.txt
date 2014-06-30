@@ -2,6 +2,5 @@ This test that target doesn't leak when it is removed
 
 Worker target added
 error: "Some arguments of method 'Page.getResourceTree' can't be processed"
-Page reloaded.
 Worker target was collected: true
 

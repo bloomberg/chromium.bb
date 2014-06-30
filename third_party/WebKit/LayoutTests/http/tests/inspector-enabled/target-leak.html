@@ -38,7 +38,11 @@ function test()
 
     function runAfterPendingDispatches(target)
     {
-        target._connection.runAfterPendingDispatches(InspectorTest.safeWrap(InspectorTest.reloadPage.bind(InspectorTest, finish)));
+        WebInspector.targetManager.removeTarget(target);
+        target._connection._close();
+        target = null;
+        WebInspector.workerTargetManager._workerTargetById = {};
+        setTimeout(finish, 0);
     }
 
     function finish()
