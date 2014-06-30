@@ -79,13 +79,16 @@ void NinjaToolchainWriter::WriteRules() {
         out_ << indent << "  " STRINGIZE(name) " = " << tool.name << std::endl;
     WRITE_ARG(command);
     WRITE_ARG(depfile);
-    WRITE_ARG(deps);
     WRITE_ARG(description);
     WRITE_ARG(pool);
     WRITE_ARG(restat);
     WRITE_ARG(rspfile);
     WRITE_ARG(rspfile_content);
     #undef WRITE_ARG
+
+    // Deps is called "depsformat" in GN to avoid confusion with dependencies.
+    if (!tool.depsformat.empty()) \
+      out_ << indent << "  deps = " << tool.depsformat << std::endl;
   }
   out_ << std::endl;
 }

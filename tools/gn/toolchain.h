@@ -61,7 +61,7 @@ class Toolchain : public Item {
 
     std::string command;
     std::string depfile;
-    std::string deps;
+    std::string depsformat;
     std::string description;
     std::string lib_dir_prefix;
     std::string lib_prefix;

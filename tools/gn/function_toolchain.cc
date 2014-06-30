@@ -173,8 +173,11 @@ const char kTool_Help[] =
     "  they work. Don't forget to backslash-escape $ required by Ninja to\n"
     "  prevent GN from doing variable expansion.\n"
     "\n"
-    "    command, depfile, deps, description, pool, restat, rspfile,\n"
+    "    command, depfile, depsformat, description, pool, restat, rspfile,\n"
     "    rspfile_content\n"
+    "\n"
+    "  (Note that GN uses \"depsformat\" for Ninja's \"deps\" variable to\n"
+    "  avoid confusion with dependency lists.)\n"
     "\n"
     "  Additionally, lib_prefix and lib_dir_prefix may be used for the link\n"
     "  tools. These strings will be prepended to the libraries and library\n"
@@ -236,7 +239,11 @@ Value RunTool(Scope* scope,
   Toolchain::Tool t;
   if (!ReadString(block_scope, "command", &t.command, err) ||
       !ReadString(block_scope, "depfile", &t.depfile, err) ||
-      !ReadString(block_scope, "deps", &t.deps, err) ||
+      // TODO(brettw) delete this once we rename "deps" -> "depsformat" in
+      // the toolchain definitions. This will avoid colliding with the
+      // toolchain's "deps" list. For now, accept either.
+      !ReadString(block_scope, "deps", &t.depsformat, err) ||
+      !ReadString(block_scope, "depsformat", &t.depsformat, err) ||
       !ReadString(block_scope, "description", &t.description, err) ||
       !ReadString(block_scope, "lib_dir_prefix", &t.lib_dir_prefix, err) ||
       !ReadString(block_scope, "lib_prefix", &t.lib_prefix, err) ||
