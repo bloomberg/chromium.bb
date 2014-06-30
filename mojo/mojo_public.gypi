@@ -336,7 +336,6 @@
       'sources': [
         'public/c/environment/async_waiter.h',
         'public/c/environment/logger.h',
-        'public/c/environment/logging.h',
         'public/cpp/environment/environment.h',
         'public/cpp/environment/lib/default_async_waiter.cc',
         'public/cpp/environment/lib/default_async_waiter.h',
@@ -344,6 +343,7 @@
         'public/cpp/environment/lib/default_logger.h',
         'public/cpp/environment/lib/environment.cc',
         'public/cpp/environment/lib/logging.cc',
+        'public/cpp/environment/logging.h',
       ],
       'include_dirs': [
         '..',
