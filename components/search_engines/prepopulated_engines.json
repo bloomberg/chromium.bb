@@ -18,6 +18,9 @@
 // NOTES:
 //   - CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
 //   - Make sure you update the int_variables below as required.
+//   - NOTIFY the Chrome Webstore team if you add/delete a search engine or 
+//     change domain of an existing one (send email to webstore-eng@google.com).
+//     They need to know the mapping between an engine's "id" and its URLs.
 
 {
   "int_variables": {

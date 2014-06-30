@@ -524,6 +524,9 @@
     'predictors': {
       'filepath': 'predictors',
     },
+    'prepopulated_engines': {
+      'filepath': 'components/search_engines/prepopulated_engines.json',
+    },
     'prerender': {
       'filepath': 'prerender'
     },
@@ -891,6 +894,7 @@
                'stuartmorgan+watch@chromium.org'],
     'policy_templates': ['joaodasilva+watch@chromium.org'],
     'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
+    'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'gavinp+prer@chromium.org',
                   'davidben+watch@chromium.org',],
