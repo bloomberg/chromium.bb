@@ -374,11 +374,6 @@ bool InspectorController::handleKeyboardEvent(LocalFrame* frame, const PlatformK
     return false;
 }
 
-void InspectorController::requestPageScaleFactor(float scale, const IntPoint& origin)
-{
-    m_inspectorClient->requestPageScaleFactor(scale, origin);
-}
-
 void InspectorController::deviceOrPageScaleFactorChanged()
 {
     m_pageAgent->deviceOrPageScaleFactorChanged();

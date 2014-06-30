@@ -827,6 +827,11 @@ void InspectorPageAgent::clearDeviceMetricsOverride(ErrorString*)
     }
 }
 
+void InspectorPageAgent::resetScrollAndPageScaleFactor(ErrorString*)
+{
+    m_client->resetScrollAndPageScaleFactor();
+}
+
 bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY)
 {
     bool currentEnabled = m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled);

@@ -138,10 +138,9 @@ void InspectorClientImpl::setShowScrollBottleneckRects(bool show)
     m_inspectedWebView->setShowScrollBottleneckRects(show);
 }
 
-void InspectorClientImpl::requestPageScaleFactor(float scale, const IntPoint& origin)
+void InspectorClientImpl::resetScrollAndPageScaleFactor()
 {
-    m_inspectedWebView->setPageScaleFactor(scale);
-    m_inspectedWebView->setMainFrameScrollOffset(origin);
+    m_inspectedWebView->resetScrollAndScaleState();
 }
 
 void InspectorClientImpl::getAllocatedObjects(HashSet<const void*>& set)

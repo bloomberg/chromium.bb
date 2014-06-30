@@ -68,7 +68,7 @@ public:
     virtual void setContinuousPaintingEnabled(bool) { }
     virtual void setShowScrollBottleneckRects(bool) { }
 
-    virtual void requestPageScaleFactor(float scale, const IntPoint& origin) { }
+    virtual void resetScrollAndPageScaleFactor() { }
     virtual void getAllocatedObjects(HashSet<const void*>&) { }
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) { }
 
