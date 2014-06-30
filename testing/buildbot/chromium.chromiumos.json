@@ -1,7 +1,6 @@
 {
   "Linux ChromiumOS Tests (1)": {
     "gtest_tests": [
-      "accessibility_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "chromeos_unittests",
@@ -44,13 +43,11 @@
       "interactive_ui_tests",
       "browser_tests",
       "content_browsertests",
-      "app_shell_browsertests",
-      "chromevox_tests"
+      "app_shell_browsertests"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
     "gtest_tests": [
-      "accessibility_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "chromeos_unittests",
