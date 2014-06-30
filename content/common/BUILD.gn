@@ -269,4 +269,8 @@ mojom("mojo_bindings") {
   sources = [
     "render_frame_setup.mojom",
   ]
+
+  deps = [
+    "//mojo/public/interfaces/service_provider:service_provider",
+  ]
 }

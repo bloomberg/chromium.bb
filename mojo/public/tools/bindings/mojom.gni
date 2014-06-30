@@ -87,5 +87,8 @@ template("mojom") {
       ":$generator_target_name",
       "//mojo/public/cpp/bindings",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 }
