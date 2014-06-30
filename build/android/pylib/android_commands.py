@@ -1335,7 +1335,7 @@ class AndroidCommands(object):
   def GetSubscriberInfo(self):
     """Returns the device subscriber info (e.g. GSM and device ID) as string."""
     iphone_sub = self.RunShellCommand('dumpsys iphonesubinfo')
-    assert iphone_sub
+    # Do not assert here. Devices (e.g. Nakasi on K) may not have iphonesubinfo.
     return '\n'.join(iphone_sub)
 
   def GetBatteryInfo(self):
