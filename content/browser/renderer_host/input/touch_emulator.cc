@@ -54,7 +54,7 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
   bool use_2x = gfx::Screen::GetNativeScreen()->
       GetPrimaryDisplay().device_scale_factor() > 1.5f;
   float cursor_scale_factor = use_2x ? 2.f : 1.f;
-  InitCursorFromResource(&touch_cursor_,
+  cursor_size_ = InitCursorFromResource(&touch_cursor_,
       cursor_scale_factor,
       use_2x ? IDR_DEVTOOLS_TOUCH_CURSOR_ICON_2X :
           IDR_DEVTOOLS_TOUCH_CURSOR_ICON);
@@ -109,7 +109,7 @@ void TouchEmulator::Disable() {
   CancelTouch();
 }
 
-void TouchEmulator::InitCursorFromResource(
+gfx::SizeF TouchEmulator::InitCursorFromResource(
     WebCursor* cursor, float scale, int resource_id) {
   gfx::Image& cursor_image =
       content::GetContentClient()->GetNativeImageNamed(resource_id);
@@ -124,6 +124,7 @@ void TouchEmulator::InitCursorFromResource(
 #endif
 
   cursor->InitFromCursorInfo(cursor_info);
+  return gfx::ScaleSize(cursor_image.Size(), 1.f / scale);
 }
 
 bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
@@ -371,7 +372,8 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
 
   WebTouchPoint& point = touch_event_.touches[0];
   point.id = 0;
-  point.radiusX = point.radiusY = 1.f;
+  point.radiusX = 0.5f * cursor_size_.width();
+  point.radiusY = 0.5f * cursor_size_.height();
   point.force = 1.f;
   point.rotationAngle = 0.f;
   point.position.x = mouse_event.x;

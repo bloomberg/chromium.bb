@@ -10,6 +10,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+#include "ui/gfx/size_f.h"
 
 namespace content {
 
@@ -39,7 +40,9 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // ui::GestureProviderClient implementation.
   virtual void OnGestureEvent(const ui::GestureEventData& gesture) OVERRIDE;
 
-  void InitCursorFromResource(WebCursor* cursor, float scale, int resource_id);
+  // Returns cursor size in DIP.
+  gfx::SizeF InitCursorFromResource(
+      WebCursor* cursor, float scale, int resource_id);
   void ResetState();
   void UpdateCursor();
   bool UpdateShiftPressed(bool shift_pressed);
@@ -69,6 +72,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   WebCursor pointer_cursor_;
   WebCursor touch_cursor_;
   WebCursor pinch_cursor_;
+  gfx::SizeF cursor_size_;
 
   // These are used to drop extra mouse move events coming too quickly, so
   // we don't handle too much touches in gesture provider.
