@@ -5421,13 +5421,12 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     Element* oldActiveElement = activeHoverElement();
     if (oldActiveElement && !request.active()) {
-        // We are clearing the :active chain because the mouse has been released.
-        for (RenderObject* curr = oldActiveElement->renderer(); curr; curr = curr->parent()) {
-            if (curr->node()) {
-                ASSERT(!curr->node()->isTextNode());
-                curr->node()->setActive(false);
-                m_userActionElements.setInActiveChain(curr->node(), false);
-            }
+        // The oldActiveElement renderer is null, dropped on :active by setting display: none,
+        // for instance. We still need to clear the ActiveChain as the mouse is released.
+        for (Node* node = oldActiveElement; node; node = NodeRenderingTraversal::parent(node)) {
+            ASSERT(!node->isTextNode());
+            node->setActive(false);
+            m_userActionElements.setInActiveChain(node, false);
         }
         setActiveHoverElement(nullptr);
     } else {
@@ -5435,11 +5434,10 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         if (!oldActiveElement && newActiveElement && !newActiveElement->isDisabledFormControl() && request.active() && !request.touchMove()) {
             // We are setting the :active chain and freezing it. If future moves happen, they
             // will need to reference this chain.
-            for (RenderObject* curr = newActiveElement->renderer(); curr; curr = curr->parent()) {
-                if (curr->node() && !curr->isText())
-                    m_userActionElements.setInActiveChain(curr->node(), true);
+            for (Node* node = newActiveElement; node; node = NodeRenderingTraversal::parent(node)) {
+                ASSERT(!node->isTextNode());
+                m_userActionElements.setInActiveChain(node, true);
             }
-
             setActiveHoverElement(newActiveElement);
         }
     }
