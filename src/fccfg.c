@@ -2009,17 +2009,15 @@ FcConfigXdgCacheHome (void)
     const char *env = getenv ("XDG_CACHE_HOME");
     FcChar8 *ret = NULL;
 
+    if (!_FcConfigHomeEnabled)
+	return NULL;
     if (env)
 	ret = FcStrCopy ((const FcChar8 *)env);
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len;
+	size_t len = home ? strlen ((const char *)home) : 0;
 
-	if (!home)
-	    return NULL;
-
-	len = strlen ((const char *)home);
 	ret = malloc (len + 7 + 1);
 	if (ret)
 	{
@@ -2038,17 +2036,15 @@ FcConfigXdgConfigHome (void)
     const char *env = getenv ("XDG_CONFIG_HOME");
     FcChar8 *ret = NULL;
 
+    if (!_FcConfigHomeEnabled)
+	return NULL;
     if (env)
 	ret = FcStrCopy ((const FcChar8 *)env);
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len;
+	size_t len = home ? strlen ((const char *)home) : 0;
 
-	if (!home)
-	    return NULL;
-
-	len = strlen ((const char *)home);
 	ret = malloc (len + 8 + 1);
 	if (ret)
 	{
@@ -2067,17 +2063,15 @@ FcConfigXdgDataHome (void)
     const char *env = getenv ("XDG_DATA_HOME");
     FcChar8 *ret = NULL;
 
+    if (!_FcConfigHomeEnabled)
+	return NULL;
     if (env)
 	ret = FcStrCopy ((const FcChar8 *)env);
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len;
+	size_t len = home ? strlen ((const char *)home) : 0;
 
-	if (!home)
-	    return NULL;
-
-	len = strlen ((const char *)home);
 	ret = malloc (len + 13 + 1);
 	if (ret)
 	{
