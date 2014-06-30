@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
@@ -37,7 +37,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,
-      const scoped_refptr<DevToolsNetworkConditions> conditions);
+      scoped_ptr<DevToolsNetworkConditions> conditions);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };

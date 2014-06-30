@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 
 class DevToolsNetworkConditions;
@@ -33,8 +33,7 @@ class DevToolsNetworkInterceptor {
   base::WeakPtr<DevToolsNetworkInterceptor> GetWeakPtr();
 
   // Applies network emulation configuration.
-  void UpdateConditions(
-      const scoped_refptr<DevToolsNetworkConditions> conditions);
+  void UpdateConditions(scoped_ptr<DevToolsNetworkConditions> conditions);
 
   void AddTransaction(DevToolsNetworkTransaction* transaction);
   void RemoveTransaction(DevToolsNetworkTransaction* transaction);
@@ -48,7 +47,7 @@ class DevToolsNetworkInterceptor {
   }
 
  private:
-  scoped_refptr<DevToolsNetworkConditions> conditions_;
+  scoped_ptr<DevToolsNetworkConditions> conditions_;
 
   void UpdateThrottledTransactions(base::TimeTicks now);
   void UpdateSuspendedTransactions(base::TimeTicks now);

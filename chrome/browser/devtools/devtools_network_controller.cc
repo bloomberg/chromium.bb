@@ -50,7 +50,7 @@ DevToolsNetworkController::GetInterceptor(
 
 void DevToolsNetworkController::SetNetworkState(
     const std::string& client_id,
-    const scoped_refptr<DevToolsNetworkConditions> conditions) {
+    scoped_ptr<DevToolsNetworkConditions> conditions) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -59,12 +59,12 @@ void DevToolsNetworkController::SetNetworkState(
           &DevToolsNetworkController::SetNetworkStateOnIO,
           weak_ptr_factory_.GetWeakPtr(),
           client_id,
-          conditions));
+          base::Passed(&conditions)));
 }
 
 void DevToolsNetworkController::SetNetworkStateOnIO(
     const std::string& client_id,
-    const scoped_refptr<DevToolsNetworkConditions> conditions) {
+    scoped_ptr<DevToolsNetworkConditions> conditions) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
@@ -73,16 +73,16 @@ void DevToolsNetworkController::SetNetworkStateOnIO(
     if (!conditions)
       return;
     Interceptor new_interceptor = Interceptor(new DevToolsNetworkInterceptor());
-    new_interceptor->UpdateConditions(conditions);
+    new_interceptor->UpdateConditions(conditions.Pass());
     interceptors_.set(client_id, new_interceptor.Pass());
   } else {
     if (!conditions) {
-      scoped_refptr<DevToolsNetworkConditions> online_conditions(
+      scoped_ptr<DevToolsNetworkConditions> online_conditions(
           new DevToolsNetworkConditions());
-      interceptor->UpdateConditions(online_conditions);
+      interceptor->UpdateConditions(online_conditions.Pass());
       interceptors_.erase(client_id);
     } else {
-      interceptor->UpdateConditions(conditions);
+      interceptor->UpdateConditions(conditions.Pass());
     }
   }
 
@@ -97,8 +97,8 @@ void DevToolsNetworkController::SetNetworkStateOnIO(
 
   bool is_appcache_offline = appcache_interceptor_->conditions()->offline();
   if (is_appcache_offline != has_offline_interceptors) {
-    scoped_refptr<DevToolsNetworkConditions> appcache_conditions(
+    scoped_ptr<DevToolsNetworkConditions> appcache_conditions(
         new DevToolsNetworkConditions(has_offline_interceptors));
-    appcache_interceptor_->UpdateConditions(appcache_conditions);
+    appcache_interceptor_->UpdateConditions(appcache_conditions.Pass());
   }
 }

@@ -62,15 +62,15 @@ void DevToolsNetworkInterceptor::RemoveTransaction(
 }
 
 void DevToolsNetworkInterceptor::UpdateConditions(
-    const scoped_refptr<DevToolsNetworkConditions> conditions) {
+    scoped_ptr<DevToolsNetworkConditions> conditions) {
   DCHECK(conditions);
   base::TimeTicks now = base::TimeTicks::Now();
   if (conditions_->IsThrottling())
     UpdateThrottledTransactions(now);
 
-  conditions_ = conditions;
+  conditions_ = conditions.Pass();
 
-  if (conditions->offline()) {
+  if (conditions_->offline()) {
     timer_.Stop();
     throttled_transactions_.clear();
     suspended_transactions_.clear();
@@ -87,12 +87,12 @@ void DevToolsNetworkInterceptor::UpdateConditions(
     return;
   }
 
-  if (conditions->IsThrottling()) {
-    DCHECK(conditions->download_throughput() != 0);
+  if (conditions_->IsThrottling()) {
+    DCHECK(conditions_->download_throughput() != 0);
     offset_ = now;
     last_tick_ = 0;
     int64_t us_tick_length =
-        (1000000L * kPacketSize) / conditions->download_throughput();
+        (1000000L * kPacketSize) / conditions_->download_throughput();
     DCHECK(us_tick_length != 0);
     if (us_tick_length == 0)
       us_tick_length = 1;

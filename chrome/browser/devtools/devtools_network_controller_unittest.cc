@@ -63,9 +63,9 @@ class DevToolsNetworkControllerHelper {
   }
 
   void SetNetworkState(const std::string id, bool offline) {
-    scoped_refptr<DevToolsNetworkConditions> conditions(
+    scoped_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline));
-    controller_.SetNetworkStateOnIO(id, conditions);
+    controller_.SetNetworkStateOnIO(id, conditions.Pass());
   }
 
   int Start() {

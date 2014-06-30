@@ -9,7 +9,6 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -32,7 +31,7 @@ class DevToolsNetworkController {
   // Applies network emulation configuration.
   void SetNetworkState(
       const std::string& client_id,
-      const scoped_refptr<DevToolsNetworkConditions> conditions);
+      scoped_ptr<DevToolsNetworkConditions> conditions);
 
   base::WeakPtr<DevToolsNetworkInterceptor> GetInterceptor(
       DevToolsNetworkTransaction* transaction);
@@ -46,7 +45,7 @@ class DevToolsNetworkController {
 
   void SetNetworkStateOnIO(
       const std::string& client_id,
-      const scoped_refptr<DevToolsNetworkConditions> conditions);
+      scoped_ptr<DevToolsNetworkConditions> conditions);
 
   typedef scoped_ptr<DevToolsNetworkInterceptor> Interceptor;
   Interceptor default_interceptor_;

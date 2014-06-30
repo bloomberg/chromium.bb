@@ -8,15 +8,16 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/macros.h"
 
 class GURL;
 
 // DevToolsNetworkConditions holds information about desired network conditions.
-class DevToolsNetworkConditions
-    : public base::RefCounted<DevToolsNetworkConditions> {
+class DevToolsNetworkConditions {
  public:
   DevToolsNetworkConditions();
+  ~DevToolsNetworkConditions();
+
   explicit DevToolsNetworkConditions(bool offline);
   DevToolsNetworkConditions(bool offline,
                             double latency,
@@ -31,10 +32,6 @@ class DevToolsNetworkConditions
   double upload_throughput() const { return upload_throughput_; }
 
  private:
-  friend class base::RefCounted<DevToolsNetworkConditions>;
-
-  virtual ~DevToolsNetworkConditions();
-
   const bool offline_;
   const double latency_;
   const double download_throughput_;
