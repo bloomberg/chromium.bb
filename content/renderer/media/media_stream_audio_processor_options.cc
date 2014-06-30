@@ -49,11 +49,11 @@ struct {
 } const kDefaultAudioConstraints[] = {
   { MediaAudioConstraints::kEchoCancellation, true },
   { MediaAudioConstraints::kGoogEchoCancellation, true },
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  // Enable the extended filter mode AEC on platforms with known echo issues.
-  { MediaAudioConstraints::kGoogExperimentalEchoCancellation, true },
-#else
+#if defined(OS_ANDROID) || defined(OS_IOS)
   { MediaAudioConstraints::kGoogExperimentalEchoCancellation, false },
+#else
+  // Enable the extended filter mode AEC on all non-mobile platforms.
+  { MediaAudioConstraints::kGoogExperimentalEchoCancellation, true },
 #endif
   { MediaAudioConstraints::kGoogAutoGainControl, true },
   { MediaAudioConstraints::kGoogExperimentalAutoGainControl, true },
