@@ -4,13 +4,12 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="ct-commit-list.html">
+<link rel="import" href="ct-failure-card.html">
 
 <polymer-element name="ct-failure-stream" attributes="groups" noscript>
   <template>
     <template repeat="{{failures in groups}}">
-      <hr>
-      <template repeat="{{failure in failures}}">{{failure.testName}}<br></template>
-      <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}" last="{{failures[0].oldestFailingRevision}}"></ct-commits>
+      <ct-failure-card failures="{{failures}}"></ct-failure-card>
     </template>
+  </template>
 </polymer-element>

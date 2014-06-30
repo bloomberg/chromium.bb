@@ -1,0 +1,42 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="ct-results-detail.html">
+
+<polymer-element name="ct-results-by-builder" attributes="failure">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <paper-tabs selected="{{selected}}">
+      <template repeat="{{builder in builders}}">
+        <paper-tab>{{builder|displayName}}</paper-tab>
+      </template>
+    </paper-tabs>
+    <ct-results-detail test="{{failure.testName}}" builder="{{builders[selected]}}"></ct-results-detail>
+  </template>
+  <script>
+    Polymer({
+      failure: null,
+      builders: [],
+      selected: 0,
+
+      failureChanged: function() {
+        this.builders = Object.getOwnPropertyNames(this.failure.resultNodesByBuilder);
+        this.selected = 0;
+      },
+
+      displayName: function(builder) {
+        return ui.displayNameForBuilder(builder);
+      },
+    });
+  </script>
+</polymer-element>

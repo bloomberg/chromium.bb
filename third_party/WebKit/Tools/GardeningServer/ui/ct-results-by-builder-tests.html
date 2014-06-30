@@ -1,0 +1,67 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-results-by-builder.html">
+
+<script>
+(function () {
+
+var kExampleFailure = {
+    "testName": "inspector/console/console-viewport-selection.html",
+    "resultNodesByBuilder": {
+        "WebKit Linux (dbg)": {
+            "expected": "SLOW",
+            "is_unexpected": true,
+            "actual": "TEXT",
+            "bugs": ["webkit.org/b/90488"],
+            "time": 5.9
+        },
+        "WebKit Mac10.6 (dbg)": {
+            "actual": "TEXT",
+            "time": 6.5,
+            "bugs": ["webkit.org/b/90488"],
+            "is_unexpected": true,
+            "expected": "SLOW",
+            "has_stderr": true
+        }
+    },
+    "oldestFailingRevision": 177164,
+    "newestPassingRevision": 177165
+};
+
+module("ct-results-by-builder");
+
+asyncTest("basic", 9, function() {
+  var results = document.createElement('ct-results-by-builder');
+
+  results.failure = kExampleFailure;
+
+  Platform.endOfMicrotask(function() {
+    var tabs = results.shadowRoot.querySelectorAll('paper-tab');
+    equal(tabs.length, 2);
+    equal(tabs[0].textContent, 'Linux (dbg)');
+    equal(tabs[1].textContent, 'Mac10.6 (dbg)');
+
+    var detail = results.shadowRoot.querySelectorAll('ct-results-detail');
+    equal(detail.length, 1);
+    equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
+    equal(detail[0].builder, 'WebKit Linux (dbg)');
+
+    results.shadowRoot.querySelector('paper-tabs').selected = 1;
+
+    Platform.endOfMicrotask(function() {
+      var detail = results.shadowRoot.querySelectorAll('ct-results-detail');
+      equal(detail.length, 1);
+      equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
+      equal(detail[0].builder, 'WebKit Mac10.6 (dbg)');
+
+      start();
+    });
+  });
+});
+
+})()
+</script>

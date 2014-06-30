@@ -4,13 +4,41 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-commit" attributes="data" noscript>
+<polymer-element name="ct-commit" attributes="data">
   <template>
     <style>
       :host {
         display: block;
       }
+      a {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+      :host(:hover) a {
+        background-color: #555;
+        color: white;
+      }
+      :host(:hover) a::after {
+        content: '';
+        width: 0;
+        height: 0;
+        margin-top: 5px;
+        position: absolute;
+        margin-left: 10px;
+        border-top: 5px solid white;
+        border-left: 5px solid #555;
+        border-bottom: 5px solid white;
+      }
     </style>
-    {{data.revision}}: {{data.summary}} <em>{{data.author}} ({{data.reviewer}})</em>
+    <a href="{{data.revision|changesetURL}}">{{data.revision}}</a> {{data.summary}} <em>{{data.author}}</em>
   </template>
+  <script>
+    Polymer({
+      changesetURL: function(revision) {
+        return trac.changesetURL(revision);
+      },
+    });
+  </script>
 </polymer-element>

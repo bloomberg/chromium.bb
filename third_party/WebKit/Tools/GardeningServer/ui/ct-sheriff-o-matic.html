@@ -17,9 +17,10 @@ found in the LICENSE file.
 <script src="../scripts/model.js"></script>
 
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="ct-unexpected-failures.html">
+<link rel="import" href="ct-results-panel.html">
 
 <polymer-element name="ct-sheriff-o-matic">
   <template>
@@ -35,12 +36,19 @@ found in the LICENSE file.
       <paper-tab>Results</paper-tab>
     </paper-tabs>
     <core-pages selected="{{selected}}">
-      <ct-unexpected-failures></ct-unexpected-failures>
+      <ct-unexpected-failures on-ct-examine-failures="{{onExamine}}"></ct-unexpected-failures>
+      <ct-results-panel failures="{{currentFailures}}"></ct-results-panel>
     </core-pages>
   </template>
   <script>
     Polymer({
       selected: 0,
+      currentFailures: [],
+
+      onExamine: function(event) {
+        this.currentFailures = event.detail;
+        this.selected = 1;
+      },
     });
   </script>
 </polymer-element>

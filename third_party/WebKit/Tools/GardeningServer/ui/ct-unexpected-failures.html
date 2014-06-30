@@ -17,14 +17,14 @@ found in the LICENSE file.
         bottom: 40px;
         left: 10px;
       }
-      #update {
+      paper-button {
         background: #4285f4;
         color: #fff;
       }
     </style>
     <ct-failure-analyzer id="analyzer" status="{{analyzerStatus}}" failures="{{failures}}"></ct-failure-analyzer>
     <ct-failure-grouper failures="{{failures}}" groups="{{failureGroups}}"></ct-failure-grouper>
-    <paper-button id="update" on-tap="{{update}}">Update</paper-button>
+    <paper-button on-tap="{{update}}">Update</paper-button>
     <ct-failure-stream groups="{{failureGroups}}"></ct-failure-stream>
     <paper-toast id="toast" text="{{analyzerStatus}}"></paper-toast>
   </template>

@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-commit-list.html">
+<link rel="import" href="ct-test-list.html">
+
+<polymer-element name="ct-failure-card" attributes="failures">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        margin: 5px;
+        padding: 5px;
+        border-top: 1px solid lightgrey;
+      }
+
+      paper-button {
+        background: papayawhip;
+      }
+    </style>
+    <div style="flex: 1">
+      <ct-test-list tests="{{failures|testNames}}"></ct-test-list>
+      <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}"
+                      last="{{failures[0].oldestFailingRevision}}"></ct-commit-list>
+    </div>
+    <div>
+      <paper-button id="examine" on-tap="{{examine}}">Examine</paper-button>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      failures: [],
+
+      testNames: function(failures) {
+        return failures.map(function(failureAnalysis) { return failureAnalysis.testName });
+      },
+
+      examine: function() {
+        this.fire('ct-examine-failures', this.failures);
+      },
+    });
+  </script>
+</polymer-element>

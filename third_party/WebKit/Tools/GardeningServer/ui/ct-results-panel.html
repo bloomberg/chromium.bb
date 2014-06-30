@@ -1,0 +1,49 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="ct-results-by-builder.html">
+
+<polymer-element name="ct-results-panel" attributes="failures">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-item.core-selected {
+        font-weight: bold;
+      }
+
+      .message {
+        text-align: center;
+        margin: 20px;
+      }
+    </style>
+    <template if="{{!failures.length}}">
+      <div class="message">No results to display.</div>
+    </template>
+    <template if="{{failures.length}}">
+      <core-menu selected="{{selected}}">
+        <template repeat="{{failure in failures}}">
+          <paper-item label="{{failure.testName}}"></paper-item>
+        </template>
+      </core-menu>
+      <ct-results-by-builder failure="{{failures[selected]}}"></ct-results-by-builder>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      failures: [],
+      selected: 0,
+
+      failuresChanged: function() {
+        this.selected = 0;
+      },
+    });
+  </script>
+</polymer-element>

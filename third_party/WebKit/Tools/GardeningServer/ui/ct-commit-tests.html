@@ -22,7 +22,7 @@ var kExampleCommitData = {
 
 module("ct-commit");
 
-asyncTest("basic", 3, function() {
+asyncTest("basic", 2, function() {
   var grouper = document.createElement('ct-commit');
 
   grouper.data = kExampleCommitData;
@@ -31,7 +31,6 @@ asyncTest("basic", 3, function() {
     var html = grouper.shadowRoot.innerHTML;
 
     equal(html.indexOf('eseidel') != -1, true)
-    equal(html.indexOf('abarth') != -1, true)
     equal(html.indexOf('may not depend on') != -1, true)
 
     start();

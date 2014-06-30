@@ -38,7 +38,7 @@ ui.kUseNewWindowForLinksSetting = 'gardenomatic.use-new-window-for-links';
 
 ui.displayNameForBuilder = function(builderName)
 {
-    return builderName.replace(/Webkit /, '');
+    return builderName.replace(/Webkit /i, '');
 }
 
 ui.urlForCrbug = function(bugID)

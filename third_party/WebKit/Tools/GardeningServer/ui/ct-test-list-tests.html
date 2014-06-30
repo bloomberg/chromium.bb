@@ -1,0 +1,37 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-test-list.html">
+
+<script>
+(function () {
+
+var kExampleTests = [
+  "plugins/gesture-events-scrolled.html",
+  "plugins/transformed-events.html",
+  "plugins/gesture-events.html",
+];
+
+module("ct-test-list");
+
+asyncTest("basic", 4, function() {
+  var list = document.createElement('ct-test-list');
+
+  list.tests = kExampleTests;
+
+  Platform.endOfMicrotask(function() {
+    var tests = list.shadowRoot.querySelectorAll('a');
+    equal(tests.length, 3);
+    equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events-scrolled.html');
+    equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Ftransformed-events.html');
+    equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events.html');
+
+    start();
+  });
+});
+
+})()
+</script>
