@@ -10,6 +10,15 @@ Import('env')
 if not env.Bit('nonsfi_nacl') or env.Bit('tests_use_irt'):
   Return()
 
+nexe = env.ComponentProgram('fcntl_test',
+                            'fcntl_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('fcntl_test.out', nexe,
+                                 args=[env.MakeEmptyFile(prefix='tmp_fcntl')])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fcntl_test')
+
 nexe = env.ComponentProgram('fork_test',
                             'fork_test.cc',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])

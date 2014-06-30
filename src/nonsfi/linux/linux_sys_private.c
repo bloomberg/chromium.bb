@@ -331,6 +331,22 @@ int readlink(const char *path, char *buf, int bufsize) {
                      (uintptr_t) buf, bufsize));
 }
 
+int fcntl(int fd, int cmd, ...) {
+  if (cmd == F_GETFL || cmd == F_GETFD) {
+    return errno_value_call(linux_syscall2(__NR_fcntl64, fd, cmd));
+  }
+  if (cmd == F_SETFL || cmd == F_SETFD) {
+    va_list ap;
+    va_start(ap, cmd);
+    int32_t arg = va_arg(ap, int32_t);
+    va_end(ap);
+    return errno_value_call(linux_syscall3(__NR_fcntl64, fd, cmd, arg));
+  }
+  /* We only support the fcntl commands above. */
+  errno = EINVAL;
+  return -1;
+}
+
 int fork(void) {
   /* Set SIGCHLD as flag so we can wait. */
   return errno_value_call(

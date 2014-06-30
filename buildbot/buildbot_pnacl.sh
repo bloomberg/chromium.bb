@@ -64,6 +64,7 @@ readonly SCONS_NONSFI_TC="\
     ${SCONS_NONSFI} \
     run_clock_get_test \
     run_dup_test \
+    run_fcntl_test \
     run_fork_test \
     run_hello_world_test \
     run_mmap_test \
