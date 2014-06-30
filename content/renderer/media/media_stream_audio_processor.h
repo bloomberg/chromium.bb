@@ -89,6 +89,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                              int* new_volume,
                              int16** out);
 
+  // Stops the audio processor, no more AEC dump or render data after calling
+  // this method.
+  void Stop();
+
   // The audio format of the input to the processor.
   const media::AudioParameters& InputFormat() const;
 
@@ -146,9 +150,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                   int volume,
                   bool key_pressed);
 
-  // Called when the processor is going away.
-  void StopAudioProcessing();
-
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
@@ -175,7 +176,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Raw pointer to the WebRtcPlayoutDataSource, which is valid for the
   // lifetime of RenderThread.
-  WebRtcPlayoutDataSource* const playout_data_source_;
+  WebRtcPlayoutDataSource* playout_data_source_;
 
   // Used to DCHECK that the destructor is called on the main render thread.
   base::ThreadChecker main_thread_checker_;
@@ -199,6 +200,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Communication with browser for AEC dump.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
+
+  // Flag to avoid executing Stop() more than once.
+  bool stopped_;
 };
 
 }  // namespace content

@@ -425,6 +425,9 @@ void WebRtcAudioCapturer::Stop() {
 
   if (source.get())
     source->Stop();
+
+  // Stop the audio processor to avoid feeding render data into the processor.
+  audio_processor_->Stop();
 }
 
 void WebRtcAudioCapturer::SetVolume(int volume) {

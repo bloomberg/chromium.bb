@@ -173,7 +173,8 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
       audio_mirroring_(false),
-      typing_detected_(false) {
+      typing_detected_(false),
+      stopped_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
@@ -189,11 +190,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (aec_dump_message_filter_) {
-    aec_dump_message_filter_->RemoveDelegate(this);
-    aec_dump_message_filter_ = NULL;
-  }
-  StopAudioProcessing();
+  Stop();
 }
 
 void MediaStreamAudioProcessor::OnCaptureFormatChanged(
@@ -240,6 +237,29 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
   *out = capture_frame_.data_;
 
   return true;
+}
+
+void MediaStreamAudioProcessor::Stop() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (stopped_)
+    return;
+
+  stopped_ = true;
+
+  if (aec_dump_message_filter_) {
+    aec_dump_message_filter_->RemoveDelegate(this);
+    aec_dump_message_filter_ = NULL;
+  }
+
+  if (!audio_processing_.get())
+    return;
+
+  StopEchoCancellationDump(audio_processing_.get());
+
+  if (playout_data_source_) {
+    playout_data_source_->RemovePlayoutSink(this);
+    playout_data_source_ = NULL;
+  }
 }
 
 const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
@@ -514,18 +534,6 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
   // volume.
   return (agc->stream_analog_level() == volume) ?
       0 : agc->stream_analog_level();
-}
-
-void MediaStreamAudioProcessor::StopAudioProcessing() {
-  if (!audio_processing_.get())
-    return;
-
-  StopEchoCancellationDump(audio_processing_.get());
-
-  if (playout_data_source_)
-    playout_data_source_->RemovePlayoutSink(this);
-
-  audio_processing_.reset();
 }
 
 }  // namespace content
