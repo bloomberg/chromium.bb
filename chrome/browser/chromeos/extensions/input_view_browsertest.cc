@@ -76,16 +76,14 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
   }
 };
 
-// Disabled for leaking memory: http://crbug.com/380537
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_TypingTest) {
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, TypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),
           InputViewConfig(id, kDefaultLayout));
 }
 
-// Disabled for leaking memory: http://crbug.com/380537
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_CompactTypingTest) {
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactTypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),

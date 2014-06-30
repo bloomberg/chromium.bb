@@ -6,11 +6,21 @@
 
 var mockController;
 var mockTimer;
-var setComposition;
 var realSetTimeout;
-
+var sendMessage;
 var DEFAULT_CONTEXT_ID = 1;
 var LONGPRESS_DELAY = 1100;
+
+/**
+ * The enumeration of message types. This should be kept in sync with the
+ * InputView enums.
+ * @const
+ * @enum {number}
+ */
+var Type = {
+  COMMIT_TEXT: 7,
+};
+
 
 /**
  * Create mocks for the virtualKeyboardPrivate API. Any tests that trigger API
@@ -31,16 +41,15 @@ function setUp() {
                  observedEvent.text,
                  'Mismatched commit text.');
   };
+  sendMessage = chrome.runtime.sendMessage;
+  chrome.runtime.sendMessage = function(msg){
+    // Forward message to the mocked method.
+    if (msg.type == Type.COMMIT_TEXT)
+      chrome.input.ime.commitText(msg)
+    else
+      console.error("Unknown message type: " + msg.type);
+  };
   chrome.input.ime.commitText.validateCall = validateCommit;
-
-  setComposition = chrome.input.ime.setComposition;
-  // Mocks setComposition manually to immediately callback. The mock controller
-  // does not support callback functions.
-  chrome.input.ime.setComposition = function(obj, callback) {
-    callback();
-  }
-  window.setContext({'contextID': DEFAULT_CONTEXT_ID, 'type': 'text'});
-  // TODO(rsadam): Mock additional extension API calls as required.
 }
 
 function RunTest(testFn, testDoneCallback) {
@@ -48,8 +57,10 @@ function RunTest(testFn, testDoneCallback) {
     if (window.isKeyboardReady()) {
       testFn();
       testDoneCallback();
-    } else
+    } else {
+      window.startTest();
       realSetTimeout(pollTillReady, 100);
+    }
   }
   pollTillReady();
 }
@@ -60,8 +71,8 @@ function RunTest(testFn, testDoneCallback) {
 function tearDown() {
   mockController.verifyMocks();
   mockController.reset();
+  chrome.runtime.sendMessage = sendMessage;
   mockTimer.uninstall();
-  chrome.input.ime.setComposition = setComposition;
 }
 
 /**
