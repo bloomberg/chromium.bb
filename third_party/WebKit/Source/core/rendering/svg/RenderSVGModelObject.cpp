@@ -137,9 +137,9 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
 
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    const RenderLayerModelObject& newPaintInvalidationContainer = *containerForPaintInvalidation();
-    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer));
-    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer));
+    ASSERT(&paintInvalidationContainer == containerForPaintInvalidation());
+    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&paintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &paintInvalidationContainer));
 
     // If an ancestor container had its transform changed, then we just
     // need to update the RenderSVGModelObject's repaint rect above. The invalidation
@@ -152,13 +152,13 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
+        RenderObject::invalidateTreeAfterLayout(paintInvalidationContainer);
         return;
     }
 
     invalidatePaintIfNeeded(containerForPaintInvalidation(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer);
 
-    RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
+    RenderObject::invalidateTreeAfterLayout(paintInvalidationContainer);
 }
 
 } // namespace WebCore
