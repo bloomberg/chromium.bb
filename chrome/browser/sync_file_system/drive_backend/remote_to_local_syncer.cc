@@ -17,6 +17,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
+#include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "extensions/common/extension.h"
@@ -87,7 +90,18 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
 RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 }
 
-void RemoteToLocalSyncer::RunExclusive(const SyncStatusCallback& callback) {
+void RemoteToLocalSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+  blocking_factor->exclusive = true;
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(), blocking_factor.Pass(),
+      base::Bind(&RemoteToLocalSyncer::RunExclusive,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
+  SyncStatusCallback callback = SyncTaskToken::WrapToCallback(token.Pass());
+
   if (!drive_service() || !metadata_database() || !remote_change_processor()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Remote -> Local] Context not ready.");

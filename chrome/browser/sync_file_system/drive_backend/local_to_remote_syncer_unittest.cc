@@ -195,7 +195,8 @@ class LocalToRemoteSyncerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer>
         syncer(new RemoteToLocalSyncer(context_.get()));
-    syncer->RunExclusive(CreateResultReceiver(&status));
+    syncer->RunPreflight(SyncTaskToken::CreateForTesting(
+        CreateResultReceiver(&status)));
     base::RunLoop().RunUntilIdle();
     return status;
   }

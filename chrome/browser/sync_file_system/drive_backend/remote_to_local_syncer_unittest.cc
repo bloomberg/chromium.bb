@@ -21,6 +21,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -182,7 +183,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer>
         syncer(new RemoteToLocalSyncer(context_.get()));
-    syncer->RunExclusive(CreateResultReceiver(&status));
+    syncer->RunPreflight(SyncTaskToken::CreateForTesting(
+        CreateResultReceiver(&status)));
     base::RunLoop().RunUntilIdle();
     return status;
   }

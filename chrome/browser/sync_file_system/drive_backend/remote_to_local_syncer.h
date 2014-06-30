@@ -39,14 +39,15 @@ namespace drive_backend {
 class MetadataDatabase;
 class SyncEngineContext;
 
-class RemoteToLocalSyncer : public ExclusiveTask {
+class RemoteToLocalSyncer : public SyncTask {
  public:
   // Conflicting trackers will have low priority for RemoteToLocalSyncer so that
   // it should be resolved by LocatToRemoteSyncer.
   explicit RemoteToLocalSyncer(SyncEngineContext* sync_context);
   virtual ~RemoteToLocalSyncer();
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const fileapi::FileSystemURL& url() const { return url_; }
   SyncAction sync_action() const { return sync_action_; }
