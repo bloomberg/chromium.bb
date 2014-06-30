@@ -366,18 +366,6 @@ String FileInputType::droppedFileSystemId()
     return m_droppedFileSystemId;
 }
 
-void FileInputType::copyNonAttributeProperties(const HTMLInputElement& sourceElement)
-{
-    RefPtrWillBeRawPtr<FileList> fileList(FileList::create());
-    FileList* sourceFileList = sourceElement.files();
-    unsigned size = sourceFileList->length();
-    for (unsigned i = 0; i < size; ++i) {
-        File* file = sourceFileList->item(i);
-        fileList->append(File::createWithRelativePath(file->path(), file->webkitRelativePath()));
-    }
-    setFiles(fileList.release());
-}
-
 String FileInputType::defaultToolTip() const
 {
     FileList* fileList = m_fileList.get();
