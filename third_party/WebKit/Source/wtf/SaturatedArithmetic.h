@@ -31,8 +31,17 @@
 #ifndef SaturatedArithmetic_h
 #define SaturatedArithmetic_h
 
+#include "wtf/CPU.h"
 #include <limits>
 #include <stdint.h>
+
+#if CPU(ARM) && COMPILER(GCC)
+
+// If we're building ARM on GCC we replace the C++ versions with some
+// native ARM assembly for speed.
+#include "wtf/asm/SaturatedArithmeticARM.h"
+
+#else
 
 ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b)
 {
@@ -40,10 +49,11 @@ ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b)
     uint32_t ub = b;
     uint32_t result = ua + ub;
 
-    // Can only overflow if the signed bit of the two values match. If the signed
-    // bit of the result and one of the values differ it did overflow.
-    if (!((ua ^ ub) >> 31) & (result ^ ua) >> 31)
-        result = std::numeric_limits<int>::max() + (ua >> 31);
+    // Can only overflow if the signed bit of the two values match. If the
+    // signed bit of the result and one of the values differ it overflowed.
+
+    if (~(ua ^ ub) & (result ^ ua) & (1 << 31))
+        return std::numeric_limits<int>::max() + (ua >> 31);
 
     return result;
 }
@@ -54,12 +64,56 @@ ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b)
     uint32_t ub = b;
     uint32_t result = ua - ub;
 
-    // Can only overflow if the signed bit of the two values do not match. If the
-    // signed bit of the result and the first value differ it did overflow.
-    if ((ua ^ ub) >> 31 & (result ^ ua) >> 31)
-        result = std::numeric_limits<int>::max() + (ua >> 31);
+    // Can only overflow if the signed bit of the two input values differ. If
+    // the signed bit of the result and the first value differ it overflowed.
+
+    if ((ua ^ ub) & (result ^ ua) & (1 << 31))
+        return std::numeric_limits<int>::max() + (ua >> 31);
 
     return result;
 }
 
+inline int getMaxSaturatedSetResultForTesting(int FractionalShift)
+{
+    // For C version the set function maxes out to max int, this differs from
+    // the ARM asm version, see SaturatedArithmetiARM.h for the equivalent asm
+    // version.
+    return std::numeric_limits<int>::max();
+}
+
+inline int getMinSaturatedSetResultForTesting(int FractionalShift)
+{
+    return std::numeric_limits<int>::min();
+}
+
+ALWAYS_INLINE int saturatedSet(int value, int FractionalShift)
+{
+    const int intMaxForLayoutUnit =
+        std::numeric_limits<int>::max() >> FractionalShift;
+
+    const int intMinForLayoutUnit =
+        std::numeric_limits<int>::min() >> FractionalShift;
+
+    if (value > intMaxForLayoutUnit)
+        return std::numeric_limits<int>::max();
+
+    if (value < intMinForLayoutUnit)
+        return std::numeric_limits<int>::min();
+
+    return value << FractionalShift;
+}
+
+
+ALWAYS_INLINE int saturatedSet(unsigned value, int FractionalShift)
+{
+    const unsigned intMaxForLayoutUnit =
+        std::numeric_limits<int>::max() >> FractionalShift;
+
+    if (value >= intMaxForLayoutUnit)
+        return std::numeric_limits<int>::max();
+
+    return value << FractionalShift;
+}
+
+#endif // CPU(ARM) && COMPILER(GCC)
 #endif // SaturatedArithmetic_h

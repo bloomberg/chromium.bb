@@ -220,21 +220,14 @@ private:
         return ::fabs(value) <= std::numeric_limits<int>::max() / kFixedPointDenominator;
     }
 
-    inline void setValue(int value)
+    ALWAYS_INLINE void setValue(int value)
     {
-        if (value > intMaxForLayoutUnit)
-            m_value = std::numeric_limits<int>::max();
-        else if (value < intMinForLayoutUnit)
-            m_value = std::numeric_limits<int>::min();
-        else
-            m_value = value * kFixedPointDenominator;
+        m_value = saturatedSet(value, kLayoutUnitFractionalBits);
     }
+
     inline void setValue(unsigned value)
     {
-        if (value >= static_cast<unsigned>(intMaxForLayoutUnit))
-            m_value = std::numeric_limits<int>::max();
-        else
-            m_value = value * kFixedPointDenominator;
+        m_value = saturatedSet(value, kLayoutUnitFractionalBits);
     }
 
     int m_value;
