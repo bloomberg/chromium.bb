@@ -188,7 +188,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     }
 
     if (!m_alwaysCreateLineBoxes) {
-        bool alwaysCreateLineBoxes = hasSelfPaintingLayer() || hasBoxDecorations() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
+        bool alwaysCreateLineBoxes = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
         if (oldStyle && alwaysCreateLineBoxes) {
             dirtyLineBoxes(false);
             setNeedsLayoutAndFullPaintInvalidation();

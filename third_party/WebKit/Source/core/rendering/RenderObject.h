@@ -511,14 +511,17 @@ public:
 
     bool hasLayer() const { return m_bitfields.hasLayer(); }
 
-    enum BoxDecorationState {
-        NoBoxDecorations,
-        HasBoxDecorationsAndBackgroundObscurationStatusInvalid,
-        HasBoxDecorationsAndBackgroundIsKnownToBeObscured,
-        HasBoxDecorationsAndBackgroundMayBeVisible,
+    // "Box decoration background" includes all box decorations and backgrounds
+    // that are painted as the background of the object. It includes borders,
+    // box-shadows, background-color and background-image, etc.
+    enum BoxDecorationBackgroundState {
+        NoBoxDecorationBackground,
+        HasBoxDecorationBackgroundObscurationStatusInvalid,
+        HasBoxDecorationBackgroundKnownToBeObscured,
+        HasBoxDecorationBackgroundMayBeVisible,
     };
-    bool hasBoxDecorations() const { return m_bitfields.boxDecorationState() != NoBoxDecorations; }
-    bool backgroundIsKnownToBeObscured();
+    bool hasBoxDecorationBackground() const { return m_bitfields.boxDecorationBackgroundState() != NoBoxDecorationBackground; }
+    bool boxDecorationBackgroundIsKnownToBeObscured();
     bool canRenderBorderImage() const;
     bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
     bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
@@ -646,7 +649,7 @@ public:
     void setFloating(bool isFloating) { m_bitfields.setFloating(isFloating); }
     void setInline(bool isInline) { m_bitfields.setIsInline(isInline); }
 
-    void setHasBoxDecorations(bool);
+    void setHasBoxDecorationBackground(bool);
     void invalidateBackgroundObscurationStatus();
     virtual bool computeBackgroundIsKnownToBeObscured() { return false; }
 
@@ -1170,7 +1173,7 @@ private:
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
-            , m_boxDecorationState(NoBoxDecorations)
+            , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
             , m_hasPendingResourceUpdate(false)
         {
         }
@@ -1218,7 +1221,7 @@ private:
         unsigned m_positionedState : 2; // PositionedState
         unsigned m_selectionState : 3; // SelectionState
         unsigned m_flowThreadState : 2; // FlowThreadState
-        unsigned m_boxDecorationState : 2; // BoxDecorationState
+        unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
 
     public:
 
@@ -1241,8 +1244,8 @@ private:
         ALWAYS_INLINE FlowThreadState flowThreadState() const { return static_cast<FlowThreadState>(m_flowThreadState); }
         ALWAYS_INLINE void setFlowThreadState(FlowThreadState flowThreadState) { m_flowThreadState = flowThreadState; }
 
-        ALWAYS_INLINE BoxDecorationState boxDecorationState() const { return static_cast<BoxDecorationState>(m_boxDecorationState); }
-        ALWAYS_INLINE void setBoxDecorationState(BoxDecorationState boxDecorationState) { m_boxDecorationState = boxDecorationState; }
+        ALWAYS_INLINE BoxDecorationBackgroundState boxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
+        ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) { m_boxDecorationBackgroundState = s; }
     };
 
 #undef ADD_BOOLEAN_BITFIELD
@@ -1400,31 +1403,31 @@ inline void RenderObject::setSelectionStateIfNeeded(SelectionState state)
     setSelectionState(state);
 }
 
-inline void RenderObject::setHasBoxDecorations(bool b)
+inline void RenderObject::setHasBoxDecorationBackground(bool b)
 {
     if (!b) {
-        m_bitfields.setBoxDecorationState(NoBoxDecorations);
+        m_bitfields.setBoxDecorationBackgroundState(NoBoxDecorationBackground);
         return;
     }
-    if (hasBoxDecorations())
+    if (hasBoxDecorationBackground())
         return;
-    m_bitfields.setBoxDecorationState(HasBoxDecorationsAndBackgroundObscurationStatusInvalid);
+    m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
 }
 
 inline void RenderObject::invalidateBackgroundObscurationStatus()
 {
-    if (!hasBoxDecorations())
+    if (!hasBoxDecorationBackground())
         return;
-    m_bitfields.setBoxDecorationState(HasBoxDecorationsAndBackgroundObscurationStatusInvalid);
+    m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
 }
 
-inline bool RenderObject::backgroundIsKnownToBeObscured()
+inline bool RenderObject::boxDecorationBackgroundIsKnownToBeObscured()
 {
-    if (m_bitfields.boxDecorationState() == HasBoxDecorationsAndBackgroundObscurationStatusInvalid) {
-        BoxDecorationState boxDecorationState = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationsAndBackgroundIsKnownToBeObscured : HasBoxDecorationsAndBackgroundMayBeVisible;
-        m_bitfields.setBoxDecorationState(boxDecorationState);
+    if (m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
+        BoxDecorationBackgroundState state = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationBackgroundKnownToBeObscured : HasBoxDecorationBackgroundMayBeVisible;
+        m_bitfields.setBoxDecorationBackgroundState(state);
     }
-    return m_bitfields.boxDecorationState() == HasBoxDecorationsAndBackgroundIsKnownToBeObscured;
+    return m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundKnownToBeObscured;
 }
 
 inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRendering)

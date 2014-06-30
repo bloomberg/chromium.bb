@@ -505,7 +505,7 @@ public:
     void popContentsClip(PaintInfo&, PaintPhase originalPhase, const LayoutPoint& accumulatedOffset);
 
     virtual void paintObject(PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&);
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
     virtual void paintMask(PaintInfo&, const LayoutPoint&);
     virtual void paintClippingMask(PaintInfo&, const LayoutPoint&);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
@@ -631,14 +631,13 @@ protected:
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() OVERRIDE;
 
-    void paintBackgroundWithBorderAndBoxShadow(PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance);
     void paintBackground(const PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone);
 
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer*, const LayoutRect&, BackgroundBleedAvoidance, CompositeOperator, RenderObject* backgroundObject);
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer*, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0);
 
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
-    void paintBoxDecorationsWithRect(PaintInfo&, const LayoutPoint&, const LayoutRect&);
+    void paintBoxDecorationBackgroundWithRect(PaintInfo&, const LayoutPoint&, const LayoutRect&);
 
     BackgroundBleedAvoidance determineBackgroundBleedAvoidance(GraphicsContext*) const;
     bool backgroundHasOpaqueTopLayer() const;

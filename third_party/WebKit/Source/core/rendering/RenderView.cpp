@@ -389,7 +389,7 @@ bool RenderView::rootFillsViewportBackground(RenderBox* rootBox) const
     return rootBox->frameRect().contains(frameRect());
 }
 
-void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint&)
 {
     // Check to see if we are enclosed by a layer that requires complex painting rules.  If so, we cannot blit
     // when scrolling, and we need to use slow repaints.  Examples of layers that require this are transparent layers,

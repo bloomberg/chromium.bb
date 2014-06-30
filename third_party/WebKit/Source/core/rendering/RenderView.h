@@ -84,7 +84,7 @@ public:
     void repaintViewAndCompositedLayers();
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     enum SelectionRepaintMode { RepaintNewXOROld, RepaintNewMinusOld, RepaintNothing };
     void setSelection(RenderObject* start, int startPos, RenderObject* end, int endPos, SelectionRepaintMode = RepaintNewXOROld);

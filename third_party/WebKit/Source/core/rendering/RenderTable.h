@@ -281,7 +281,7 @@ private:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;

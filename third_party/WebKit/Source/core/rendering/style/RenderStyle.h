@@ -1527,6 +1527,8 @@ public:
     void setHasCurrentColor() { noninherited_flags.currentColor = true; }
     bool hasCurrentColor() const { return noninherited_flags.currentColor; }
 
+    bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter(); }
+
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BSEPARATE; }
     static EBorderStyle initialBorderStyle() { return BNONE; }

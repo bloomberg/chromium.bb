@@ -1134,7 +1134,7 @@ void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         return;
     } else if (paintInfo.phase == PaintPhaseForeground) {
         // Paint our background, border and box-shadow.
-        paintBoxDecorations(paintInfo, paintOffset);
+        paintBoxDecorationBackground(paintInfo, paintOffset);
     }
 
     // Paint our children.
@@ -1272,7 +1272,7 @@ static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NineP
     return clipRect;
 }
 
-void InlineFlowBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlineFlowBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
     if (!paintInfo.shouldPaintWithinRoot(&renderer()) || renderer().style()->visibility() != VISIBLE)
@@ -1281,13 +1281,13 @@ void InlineFlowBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&
     // You can use p::first-line to specify a background. If so, the root line boxes for
     // a line may actually have to paint a background.
     RenderStyle* styleToUse = renderer().style(isFirstLineStyle());
-    bool shouldPaintBoxDecorations;
+    bool shouldPaintBoxDecorationBackground;
     if (parent())
-        shouldPaintBoxDecorations = renderer().hasBoxDecorations();
+        shouldPaintBoxDecorationBackground = renderer().hasBoxDecorationBackground();
     else
-        shouldPaintBoxDecorations = isFirstLineStyle() && styleToUse != renderer().style();
+        shouldPaintBoxDecorationBackground = isFirstLineStyle() && styleToUse != renderer().style();
 
-    if (!shouldPaintBoxDecorations)
+    if (!shouldPaintBoxDecorationBackground)
         return;
 
     // Pixel snap background/border painting.

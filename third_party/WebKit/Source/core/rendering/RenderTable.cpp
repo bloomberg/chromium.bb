@@ -630,8 +630,8 @@ void RenderTable::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 void RenderTable::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
-    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && hasBoxDecorations() && style()->visibility() == VISIBLE)
-        paintBoxDecorations(paintInfo, paintOffset);
+    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && hasBoxDecorationBackground() && style()->visibility() == VISIBLE)
+        paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask) {
         paintMask(paintInfo, paintOffset);
@@ -695,14 +695,14 @@ void RenderTable::subtractCaptionRect(LayoutRect& rect) const
     }
 }
 
-void RenderTable::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTable::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(this))
         return;
 
     LayoutRect rect(paintOffset, size());
     subtractCaptionRect(rect);
-    paintBoxDecorationsWithRect(paintInfo, paintOffset, rect);
+    paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 
 void RenderTable::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

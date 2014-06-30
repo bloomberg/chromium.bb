@@ -2036,8 +2036,8 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
     // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && style()->visibility() == VISIBLE) {
-        if (hasBoxDecorations())
-            paintBoxDecorations(paintInfo, paintOffset);
+        if (hasBoxDecorationBackground())
+            paintBoxDecorationBackground(paintInfo, paintOffset);
         if (hasColumns() && !paintInfo.paintRootBackgroundOnly())
             paintColumnRules(paintInfo, scrolledOffset);
     }

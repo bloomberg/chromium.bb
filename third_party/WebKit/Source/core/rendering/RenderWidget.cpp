@@ -196,8 +196,8 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     LayoutPoint adjustedPaintOffset = paintOffset + location();
 
-    if (hasBoxDecorations() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
-        paintBoxDecorations(paintInfo, adjustedPaintOffset);
+    if (hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
+        paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
         paintMask(paintInfo, adjustedPaintOffset);

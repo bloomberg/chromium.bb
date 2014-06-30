@@ -3502,14 +3502,9 @@ bool RenderLayer::hasNonEmptyChildRenderers() const
     return false;
 }
 
-static bool hasBoxDecorations(const RenderStyle* style)
-{
-    return style->hasBorder() || style->hasBorderRadius() || style->hasOutline() || style->hasAppearance() || style->boxShadow() || style->hasFilter();
-}
-
 bool RenderLayer::hasBoxDecorationsOrBackground() const
 {
-    return hasBoxDecorations(renderer()->style()) || renderer()->hasBackground();
+    return renderer()->style()->hasBoxDecorations() || renderer()->style()->hasBackground();
 }
 
 bool RenderLayer::hasVisibleBoxDecorations() const

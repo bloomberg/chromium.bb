@@ -146,7 +146,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (documentBeingDestroyed())
         return;
 
-    if (hasBoxDecorations() || hasMask() || hasShapeOutside())
+    if (hasBoxDecorationBackground() || hasMask() || hasShapeOutside())
         RenderReplaced::imageChanged(newImage, rect);
 
     if (!m_imageResource)
@@ -465,7 +465,7 @@ bool RenderImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance 
     if (!RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
         return false;
 
-    return !const_cast<RenderImage*>(this)->backgroundIsKnownToBeObscured();
+    return !const_cast<RenderImage*>(this)->boxDecorationBackgroundIsKnownToBeObscured();
 }
 
 bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned) const

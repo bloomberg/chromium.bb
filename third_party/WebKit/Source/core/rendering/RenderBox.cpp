@@ -278,7 +278,7 @@ void RenderBox::updateFromStyle()
 
     // The root and the RenderView always paint their backgrounds/borders.
     if (isRootObject || isViewObject)
-        setHasBoxDecorations(true);
+        setHasBoxDecorationBackground(true);
 
     setFloating(!isOutOfFlowPositioned() && styleToUse->isFloating());
 
@@ -1146,17 +1146,17 @@ BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsCo
     return BackgroundBleedClipBackground;
 }
 
-void RenderBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(this))
         return;
 
     LayoutRect paintRect = borderBoxRect();
     paintRect.moveBy(paintOffset);
-    paintBoxDecorationsWithRect(paintInfo, paintOffset, paintRect);
+    paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
 }
 
-void RenderBox::paintBoxDecorationsWithRect(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
+void RenderBox::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
     BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context);
 
@@ -1172,11 +1172,6 @@ void RenderBox::paintBoxDecorationsWithRect(PaintInfo& paintInfo, const LayoutPo
         paintInfo.context->clipRoundedRect(border);
     }
 
-    paintBackgroundWithBorderAndBoxShadow(paintInfo, paintRect, bleedAvoidance);
-}
-
-void RenderBox::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, const LayoutRect& paintRect, BackgroundBleedAvoidance bleedAvoidance)
-{
     // If we have a native theme appearance, paint that before painting our background.
     // The theme will tell us whether or not we should also paint the CSS background.
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
@@ -1205,7 +1200,7 @@ void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& pa
     }
     if (isBody() && skipBodyBackground(this))
         return;
-    if (backgroundIsKnownToBeObscured())
+    if (boxDecorationBackgroundIsKnownToBeObscured())
         return;
     paintFillLayers(paintInfo, resolveColor(CSSPropertyBackgroundColor), style()->backgroundLayers(), paintRect, bleedAvoidance);
 }

@@ -139,7 +139,7 @@ void RenderBoxModelObject::updateFromStyle()
     RenderLayerModelObject::updateFromStyle();
 
     RenderStyle* styleToUse = style();
-    setHasBoxDecorations(calculateHasBoxDecorations());
+    setHasBoxDecorationBackground(calculateHasBoxDecorations());
     setInline(styleToUse->isDisplayInlineType());
     setPositionState(styleToUse->position());
     setHorizontalWritingMode(styleToUse->isHorizontalWritingMode());

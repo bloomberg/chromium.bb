@@ -107,14 +107,9 @@ static inline bool isAcceleratedCanvas(const RenderObject* renderer)
     return false;
 }
 
-static bool hasBoxDecorations(const RenderStyle* style)
-{
-    return style->hasBorder() || style->hasBorderRadius() || style->hasOutline() || style->hasAppearance() || style->boxShadow() || style->hasFilter();
-}
-
 static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle* style)
 {
-    return hasBoxDecorations(style) || style->hasBackgroundImage();
+    return style->hasBoxDecorations() || style->hasBackgroundImage();
 }
 
 static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* renderer)

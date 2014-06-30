@@ -136,7 +136,7 @@ RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
     return 0;
 }
 
-void RenderFieldset::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderFieldset::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(this))
         return;
@@ -144,7 +144,7 @@ void RenderFieldset::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint
     LayoutRect paintRect(paintOffset, size());
     RenderBox* legend = findLegend();
     if (!legend)
-        return RenderBlockFlow::paintBoxDecorations(paintInfo, paintOffset);
+        return RenderBlockFlow::paintBoxDecorationBackground(paintInfo, paintOffset);
 
     // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
     // cases the legend is embedded in the right and bottom borders respectively.

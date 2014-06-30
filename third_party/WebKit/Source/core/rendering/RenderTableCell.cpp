@@ -389,7 +389,7 @@ void RenderTableCell::styleDidChange(StyleDifference diff, const RenderStyle* ol
     ASSERT(!row() || row()->rowIndexWasSet());
 
     RenderBlockFlow::styleDidChange(diff, oldStyle);
-    setHasBoxDecorations(true);
+    setHasBoxDecorationBackground(true);
 
     if (parent() && section() && oldStyle && style()->height() != oldStyle->height())
         section()->rowLogicalHeightChanged(rowIndex());
@@ -1189,7 +1189,7 @@ void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, const Lay
     }
 }
 
-void RenderTableCell::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableCell::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(this))
         return;

@@ -48,7 +48,7 @@ RenderSVGRoot::RenderSVGRoot(SVGElement* node)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
     , m_needsBoundariesOrTransformUpdate(true)
-    , m_hasBoxDecorations(false)
+    , m_hasBoxDecorationBackground(false)
 {
 }
 
@@ -195,7 +195,7 @@ void RenderSVGRoot::layout()
     }
 
     updateLayerTransformAfterLayout();
-    m_hasBoxDecorations = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorations();
+    m_hasBoxDecorationBackground = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorationBackground();
     invalidateBackgroundObscurationStatus();
 
     clearNeedsLayout();
@@ -284,7 +284,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
         setNeedsBoundariesUpdate();
     if (diff.needsRepaint()) {
         // Box decorations may have appeared/disappeared - recompute status.
-        m_hasBoxDecorations = calculateHasBoxDecorations();
+        m_hasBoxDecorationBackground = calculateHasBoxDecorations();
     }
 
     RenderReplaced::styleDidChange(diff, oldStyle);
@@ -368,7 +368,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
 
     LayoutRect repaintRect = enclosingLayoutRect(contentRepaintRect);
     // If the box is decorated or is overflowing, extend it to include the border-box and overflow.
-    if (m_hasBoxDecorations || hasRenderOverflow()) {
+    if (m_hasBoxDecorationBackground || hasRenderOverflow()) {
         // The selectionRect can project outside of the overflowRect, so take their union
         // for repainting to avoid selection painting glitches.
         LayoutRect decoratedRepaintRect = unionRect(localSelectionRect(false), visualOverflowRect());

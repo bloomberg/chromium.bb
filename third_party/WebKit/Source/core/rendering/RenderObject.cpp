@@ -893,7 +893,7 @@ bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
-    if (!hasBoxDecorations())
+    if (!hasBoxDecorationBackground())
         return false;
 
     if (mustInvalidateFillLayersPaintOnWidthChange(*style()->backgroundLayers()))
@@ -912,7 +912,7 @@ bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
-    if (!hasBoxDecorations())
+    if (!hasBoxDecorationBackground())
         return false;
 
     if (mustInvalidateFillLayersPaintOnHeightChange(*style()->backgroundLayers()))

@@ -232,7 +232,7 @@ private:
 
     virtual void updateLogicalWidth() OVERRIDE;
 
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const OVERRIDE;
