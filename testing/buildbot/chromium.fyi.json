@@ -227,7 +227,6 @@
     "gtest_tests": [
       "accessibility_unittests",
       "base_unittests",
-      "browser_tests",
       "cacheinvalidation_unittests",
       "cc_unittests",
       "content_browsertests",
