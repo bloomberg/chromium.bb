@@ -20637,6 +20637,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.Abandoned" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Distribution of actual finished pages, vs abandoned pages, where we needed
@@ -20646,21 +20649,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.Abandoned.NoProxy.http" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="PLT.Abandoned.NoProxy.https" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="PLT.Abandoned.Proxy.http" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="PLT.Abandoned.Proxy.https" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
@@ -20682,6 +20697,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.Abandoned_ExtensionWebRequest" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     The PLT.Abandoned histogram for pages loaded after WebRequest API was used.
@@ -20713,11 +20731,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.Abandoned_SpdyProxy" enum="Abandoned">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="PLT.AbandonType" enum="AbandonType">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Diagnose why a page load was considered abandoned.</summary>
 </histogram>
@@ -21128,6 +21152,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.MissingStart" enum="MissingStartType">
+  <obsolete>
+    Deprecated as of 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Diagnose error conditions in PLT reporting. A start time should always be
