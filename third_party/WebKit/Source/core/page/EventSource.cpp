@@ -146,6 +146,7 @@ void EventSource::connect()
     resourceLoaderOptions.credentialsRequested = m_withCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     resourceLoaderOptions.securityOrigin = origin;
+    resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
 
     m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
 
