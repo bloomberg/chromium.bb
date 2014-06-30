@@ -29,7 +29,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/xml/XMLErrors.h"
+#include "core/xml/parser/XMLErrors.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/HashMap.h"

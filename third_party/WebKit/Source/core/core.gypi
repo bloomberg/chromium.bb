@@ -1828,8 +1828,6 @@
             'xml/DocumentXPathEvaluator.h',
             'xml/NativeXPathNSResolver.cpp',
             'xml/NativeXPathNSResolver.h',
-            'xml/XMLErrors.cpp',
-            'xml/XMLErrors.h',
             'xml/XMLHttpRequest.cpp',
             'xml/XMLHttpRequest.h',
             'xml/XMLHttpRequestEventTarget.h',
@@ -1888,6 +1886,8 @@
             'xml/parser/XMLDocumentParser.h',
             'xml/parser/XMLDocumentParserScope.cpp',
             'xml/parser/XMLDocumentParserScope.h',
+            'xml/parser/XMLErrors.cpp',
+            'xml/parser/XMLErrors.h',
             'xml/parser/XMLParserInput.h',
         ],
         'webcore_dom_files': [

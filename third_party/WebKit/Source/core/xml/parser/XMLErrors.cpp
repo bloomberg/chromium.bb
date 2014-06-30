@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/xml/XMLErrors.h"
+#include "core/xml/parser/XMLErrors.h"
 
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
