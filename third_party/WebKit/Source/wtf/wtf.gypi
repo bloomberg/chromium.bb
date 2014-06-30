@@ -137,7 +137,6 @@
             'WTFThreadData.cpp',
             'WTFThreadData.h',
             'WeakPtr.h',
-            'asm/SaturatedArithmeticARM.h',
             'dtoa.cpp',
             'dtoa.h',
             'dtoa/bignum-dtoa.cc',
