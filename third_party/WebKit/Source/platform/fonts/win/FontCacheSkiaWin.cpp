@@ -235,7 +235,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         unsigned minSize;
     };
     const static FamilyMinSize minAntiAliasSizeForFont[] = {
-        { L"simsun", 16 },
+        { L"simsun", 11 },
         { L"dotum", 12 },
         { L"gulim", 12 },
         { L"pmingliu", 11 }
