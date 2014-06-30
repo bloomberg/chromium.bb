@@ -2014,8 +2014,12 @@ FcConfigXdgCacheHome (void)
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len = home ? strlen ((const char *)home) : 0;
+	size_t len;
 
+	if (!home)
+	    return NULL;
+
+	len = strlen ((const char *)home);
 	ret = malloc (len + 7 + 1);
 	if (ret)
 	{
@@ -2039,8 +2043,12 @@ FcConfigXdgConfigHome (void)
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len = home ? strlen ((const char *)home) : 0;
+	size_t len;
 
+	if (!home)
+	    return NULL;
+
+	len = strlen ((const char *)home);
 	ret = malloc (len + 8 + 1);
 	if (ret)
 	{
@@ -2064,8 +2072,12 @@ FcConfigXdgDataHome (void)
     else
     {
 	const FcChar8 *home = FcConfigHome ();
-	size_t len = home ? strlen ((const char *)home) : 0;
+	size_t len;
 
+	if (!home)
+	    return NULL;
+
+	len = strlen ((const char *)home);
 	ret = malloc (len + 13 + 1);
 	if (ret)
 	{
