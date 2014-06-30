@@ -1,3 +1,7 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 {
   'targets': [
     {
@@ -72,14 +76,69 @@
         'MOJO_GEOMETRY_IMPLEMENTATION',
       ],
       'dependencies': [
+        '../skia/skia.gyp:skia',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_environment_chromium',
         'mojo_geometry_bindings',
         'mojo_system_impl',
       ],
+      'export_dependent_settings': [
+        '../ui/gfx/gfx.gyp:gfx',
+      ],
       'sources': [
         'services/public/cpp/geometry/lib/geometry_type_converters.cc',
         'services/public/cpp/geometry/geometry_type_converters.h',
+        'services/public/cpp/geometry/mojo_geometry_export.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_surfaces_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_SURFACES_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../cc/cc.gyp:cc',
+        '../cc/cc.gyp:cc_surfaces',
+        '../gpu/gpu.gyp:gpu',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_geometry_lib',
+        'mojo_surfaces_bindings',
+        'mojo_system_impl',
+      ],
+      'export_dependent_settings': [
+        'mojo_geometry_lib',
+      ],
+      'sources': [
+        'services/public/cpp/surfaces/lib/surfaces_type_converters.cc',
+        'services/public/cpp/surfaces/surfaces_type_converters.h',
+        'services/public/cpp/surfaces/mojo_surfaces_export.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_surfaces_lib_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../cc/cc.gyp:cc',
+        '../cc/cc.gyp:cc_surfaces',
+        '../gpu/gpu.gyp:gpu',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_geometry_lib',
+        'mojo_run_all_unittests',
+        'mojo_surfaces_bindings',
+        'mojo_surfaces_lib',
+      ],
+      'sources': [
+        'services/public/cpp/surfaces/tests/surface_unittest.cc',
       ],
     },
     {

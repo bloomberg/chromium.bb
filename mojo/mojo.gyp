@@ -58,6 +58,8 @@
         'mojo_shell',
         'mojo_shell_lib',
         'mojo_shell_tests',
+        'mojo_surfaces_lib',
+        'mojo_surfaces_lib_unittests',
         'mojo_system',
         'mojo_system_impl',
         'mojo_system_unittests',

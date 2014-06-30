@@ -18,8 +18,7 @@ enum ResourceFormat {
 };
 
 struct Mailbox {
-  // Should have exactly 64 entries.
-  int8[] name;
+  int8[64] name;
 };
 
 struct MailboxHolder {
@@ -38,18 +37,25 @@ struct TransferableResource {
   bool is_software;
 };
 
+struct ReturnedResource {
+  uint32 id;
+  uint32 sync_point;
+  int32 count;
+  bool lost;
+};
+
 struct Frame {
   TransferableResource[] resources;
   Pass[] passes;
 };
 
 interface SurfaceClient {
-  ReturnResources(TransferableResource[] resources);
+  ReturnResources(ReturnedResource[] resources);
 };
 
-[client=SurfaceClient]
+[Client=SurfaceClient]
 interface Surface {
-  CreateSurface(SurfaceId id, mojo.Size size);
+  CreateSurface(mojo.Size size) => (SurfaceId id);
   SubmitFrame(SurfaceId id, Frame frame);
   DestroySurface(SurfaceId id);
 };

@@ -22,6 +22,7 @@ struct RenderPassQuadState {};
 
 struct SolidColorQuadState {
   Color color;
+  bool force_anti_aliasing_off;
 };
 
 struct SurfaceQuadState {
@@ -34,8 +35,7 @@ struct TextureQuadState {
   mojo.PointF uv_top_left;
   mojo.PointF uv_bottom_right;
   Color background_color;
-  // Should have exactly 4 entries.
-  float[] vertex_opacity;
+  float[4] vertex_opacity;
   bool flipped;
 };
 
@@ -49,6 +49,7 @@ enum Material {
   CHECKERBOARD = 1,
   DEBUG_BORDER,
   IO_SURFACE_CONTENT,
+  PICTURE_CONTENT,
   RENDER_PASS,
   SOLID_COLOR,
   STREAM_VIDEO_CONTENT,
@@ -150,6 +151,7 @@ struct SharedQuadState {
   bool is_clipped;
   float opacity;
   SkXfermode blend_mode;
+  int32 sorting_context_id;
 };
 
 struct Pass {
@@ -157,7 +159,7 @@ struct Pass {
   mojo.Rect output_rect;
   mojo.Rect damage_rect;
   mojo.Transform transform_to_root_target;
-  bool has_transparent_pixels;
+  bool has_transparent_background;
   Quad[] quads;
   SharedQuadState[] shared_quad_states;
 };

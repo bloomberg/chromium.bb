@@ -1,0 +1,9 @@
+include_rules = [
+  "+cc/output",
+  "+cc/quads",
+  "+cc/resources",
+  "+cc/surfaces",
+  "+gpu/command_buffer/common/mailbox.h",
+  "+gpu/command_buffer/common/mailbox_holder.h",
+  "+third_party/skia/include",
+]

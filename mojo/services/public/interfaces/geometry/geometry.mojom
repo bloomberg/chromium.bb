@@ -27,6 +27,7 @@ struct Rect {
 };
 
 struct Transform {
+  // Row major order.
   float[16] matrix;
 };
 
