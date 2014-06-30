@@ -10,6 +10,7 @@ var NetworkUI = (function() {
   // specified then the first non empty value is used.
   var NETWORK_STATE_FIELDS = [
     'GUID',
+    'service_path',
     'Name',
     'Type',
     'ConnectionState',
@@ -26,6 +27,7 @@ var NetworkUI = (function() {
 
   var FAVORITE_STATE_FIELDS = [
     'GUID',
+    'service_path',
     'Name',
     'Type',
     'profile_path',

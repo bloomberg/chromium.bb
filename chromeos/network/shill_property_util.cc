@@ -76,8 +76,11 @@ void SetSSID(const std::string ssid, base::DictionaryValue* properties) {
 
 std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
                                   bool* unknown_encoding) {
-  if (unknown_encoding)
+  bool verbose_logging = false;
+  if (unknown_encoding) {
     *unknown_encoding = false;
+    verbose_logging = true;
+  }
 
   // Get name for debugging.
   std::string name;
@@ -87,7 +90,8 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
-    NET_LOG_DEBUG("GetSSIDFromProperties: No HexSSID set.", name);
+    if (verbose_logging)
+      NET_LOG_DEBUG("GetSSIDFromProperties: No HexSSID set.", name);
     return std::string();
   }
 
@@ -95,15 +99,14 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   std::vector<uint8> raw_ssid_bytes;
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
-    NET_LOG_DEBUG(
-        "GetSSIDFromProperties: " +
-            base::StringPrintf("%s, SSID: %s", hex_ssid.c_str(), ssid.c_str()),
-        name);
+    if (verbose_logging) {
+      NET_LOG_DEBUG(base::StringPrintf("GetSSIDFromProperties: %s, SSID: %s",
+                                       hex_ssid.c_str(), ssid.c_str()), name);
+    }
   } else {
     NET_LOG_ERROR(
-        "GetSSIDFromProperties: " +
-            base::StringPrintf("Error processing: %s", hex_ssid.c_str()),
-        name);
+        base::StringPrintf("GetSSIDFromProperties: Error processing: %s",
+                           hex_ssid.c_str()), name);
     return std::string();
   }
 
@@ -123,20 +126,22 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   if (!encoding.empty() &&
       base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
     if (utf8_ssid != ssid) {
-      NET_LOG_DEBUG(
-          "GetSSIDFromProperties",
-          base::StringPrintf(
-              "Encoding=%s: %s", encoding.c_str(), utf8_ssid.c_str()));
+      if (verbose_logging) {
+        NET_LOG_DEBUG(
+            base::StringPrintf("GetSSIDFromProperties: Encoding=%s: %s",
+                               encoding.c_str(), utf8_ssid.c_str()), name);
+      }
     }
     return utf8_ssid;
   }
 
   if (unknown_encoding)
     *unknown_encoding = true;
-  NET_LOG_DEBUG(
-      "GetSSIDFromProperties: " +
-          base::StringPrintf("Unrecognized Encoding=%s", encoding.c_str()),
-      name);
+  if (verbose_logging) {
+    NET_LOG_DEBUG(
+        base::StringPrintf("GetSSIDFromProperties: Unrecognized Encoding=%s",
+                           encoding.c_str()), name);
+  }
   return ssid;
 }
 
