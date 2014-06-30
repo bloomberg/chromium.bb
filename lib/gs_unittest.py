@@ -535,10 +535,10 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
   def testNoRemoveTrackerFileOnOtherErrors(self):
     """Test that we do not attempt to delete tracker files for other errors."""
     cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
-    e = self._getException(cmd, 'InvalidUriError')
+    e = self._getException(cmd, 'InvalidUriError:')
 
     with mock.MagicMock() as self.ctx._GetTrackerFilenames:
-      self.ctx._RetryFilter(e)
+      self.assertRaises(gs.GSNoSuchKey, self.ctx._RetryFilter, e)
       self.assertFalse(self.ctx._GetTrackerFilenames.called)
 
 
