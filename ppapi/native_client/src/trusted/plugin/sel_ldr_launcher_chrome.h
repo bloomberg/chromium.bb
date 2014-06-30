@@ -15,18 +15,10 @@ namespace plugin {
 class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
  public:
   virtual bool Start(const char* url);
-  virtual void Start(PP_Instance instance,
-                     bool main_service_runtime,
-                     const char* url,
-                     const PP_NaClFileInfo* file_info,
-                     bool uses_irt,
-                     bool uses_ppapi,
-                     bool uses_nonsfi_mode,
-                     bool enable_ppapi_dev,
-                     bool enable_dyncode_syscalls,
-                     bool enable_exception_handling,
-                     bool enable_crash_throttling,
-                     pp::CompletionCallback callback);
+
+  // Provides a way for LaunchSelLdr() to write bootstrap channel information
+  // into this class.
+  void set_channel(NaClHandle channel);
 };
 
 }  // namespace plugin

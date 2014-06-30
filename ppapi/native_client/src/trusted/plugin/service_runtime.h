@@ -36,6 +36,7 @@ namespace plugin {
 
 class ErrorInfo;
 class Plugin;
+class SelLdrLauncherChrome;
 class SrpcClient;
 class ServiceRuntime;
 
@@ -219,7 +220,7 @@ class ServiceRuntime {
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
   nacl::ReverseService* reverse_service_;
-  nacl::scoped_ptr<nacl::SelLdrLauncherBase> subprocess_;
+  nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
 
   nacl::WeakRefAnchor* anchor_;
 
@@ -231,6 +232,8 @@ class ServiceRuntime {
   bool start_sel_ldr_done_;
   bool start_nexe_done_;
   bool nexe_started_ok_;
+
+  NaClHandle bootstrap_channel_;
 };
 
 }  // namespace plugin

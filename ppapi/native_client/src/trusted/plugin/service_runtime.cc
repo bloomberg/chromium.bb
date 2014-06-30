@@ -262,7 +262,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                                 init_done_cb, crash_cb)),
       start_sel_ldr_done_(false),
       start_nexe_done_(false),
-      nexe_started_ok_(false) {
+      nexe_started_ok_(false),
+      bootstrap_channel_(NACL_INVALID_HANDLE) {
   NaClSrpcChannelInitialize(&command_channel_);
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cond_);
@@ -272,6 +273,10 @@ bool ServiceRuntime::SetupCommandChannel() {
   NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
+  // Set up the bootstrap channel in our subprocess so that we can establish
+  // SRPC.
+  subprocess_->set_channel(bootstrap_channel_);
+
   if (uses_nonsfi_mode_) {
     // In non-SFI mode, no SRPC is used. Just skips and returns success.
     return true;
@@ -398,18 +403,20 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
   bool enable_dev_interfaces =
       GetNaClInterface()->DevInterfacesEnabled(pp_instance_);
 
-  tmp_subprocess->Start(pp_instance_,
-                        main_service_runtime_,
-                        params.url.c_str(),
-                        &params.file_info,
-                        params.uses_irt,
-                        params.uses_ppapi,
-                        uses_nonsfi_mode_,
-                        enable_dev_interfaces,
-                        params.enable_dyncode_syscalls,
-                        params.enable_exception_handling,
-                        params.enable_crash_throttling,
-                        callback);
+  GetNaClInterface()->LaunchSelLdr(
+      pp_instance_,
+      PP_FromBool(main_service_runtime_),
+      params.url.c_str(),
+      &params.file_info,
+      PP_FromBool(params.uses_irt),
+      PP_FromBool(params.uses_ppapi),
+      PP_FromBool(uses_nonsfi_mode_),
+      PP_FromBool(enable_dev_interfaces),
+      PP_FromBool(params.enable_dyncode_syscalls),
+      PP_FromBool(params.enable_exception_handling),
+      PP_FromBool(params.enable_crash_throttling),
+      &bootstrap_channel_,
+      callback.pp_completion_callback());
   subprocess_.reset(tmp_subprocess.release());
 }
 
