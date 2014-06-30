@@ -40,7 +40,6 @@ core_config_add += [ "//build/config/compiler:wexit_time_destructors" ]
 config("core_include_dirs") {
   include_dirs = [
     "..",
-    "../..",
     "$root_gen_dir/blink",
   ]
   if (is_android && use_openmax_dl_fft) {
