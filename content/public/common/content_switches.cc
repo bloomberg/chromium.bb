@@ -459,8 +459,8 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 // Enable spatial navigation
 const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
 
-// Enables the synthesis part of the Web Speech API.
-const char kEnableSpeechSynthesis[]         = "enable-speech-synthesis";
+// Disables the synthesis part of the Web Speech API.
+const char kDisableSpeechSynthesis[]         = "disable-speech-synthesis";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
