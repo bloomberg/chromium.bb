@@ -12,7 +12,7 @@ SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
       return kARGB_4444_SkColorType;
     case RGBA_8888:
     case BGRA_8888:
-      return kPMColor_SkColorType;
+      return kN32_SkColorType;
     case ETC1:
     case LUMINANCE_8:
     case RGB_565:
@@ -20,7 +20,7 @@ SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
       break;
   }
   NOTREACHED();
-  return kPMColor_SkColorType;
+  return kN32_SkColorType;
 }
 
 }  // namespace cc

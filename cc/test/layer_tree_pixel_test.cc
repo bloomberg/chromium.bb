@@ -313,7 +313,7 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  DCHECK_EQ(kPMColor_SkColorType, bitmap.colorType());
+  DCHECK_EQ(kN32_SkColorType, bitmap.colorType());
 
   {
     SkAutoLockPixels lock(bitmap);

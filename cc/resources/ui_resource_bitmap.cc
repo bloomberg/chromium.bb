@@ -29,7 +29,7 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
 }
 
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
-  DCHECK_EQ(skbitmap.colorType(), kPMColor_SkColorType);
+  DCHECK_EQ(skbitmap.colorType(), kN32_SkColorType);
   DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
   DCHECK(skbitmap.isImmutable());
 

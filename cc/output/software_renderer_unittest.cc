@@ -162,15 +162,11 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                                           RGBA_8888);
 
   SkBitmap yellow_tile;
-  yellow_tile.setConfig(
-      SkBitmap::kARGB_8888_Config, outer_size.width(), outer_size.height());
-  yellow_tile.allocPixels();
+  yellow_tile.allocN32Pixels(outer_size.width(), outer_size.height());
   yellow_tile.eraseColor(SK_ColorYELLOW);
 
   SkBitmap cyan_tile;
-  cyan_tile.setConfig(
-      SkBitmap::kARGB_8888_Config, inner_size.width(), inner_size.height());
-  cyan_tile.allocPixels();
+  cyan_tile.allocN32Pixels(inner_size.width(), inner_size.height());
   cyan_tile.eraseColor(SK_ColorCYAN);
 
   resource_provider()->SetPixels(
@@ -254,9 +250,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
                                           RGBA_8888);
 
   SkBitmap cyan_tile;  // The lowest five rows are yellow.
-  cyan_tile.setConfig(
-      SkBitmap::kARGB_8888_Config, tile_size.width(), tile_size.height());
-  cyan_tile.allocPixels();
+  cyan_tile.allocN32Pixels(tile_size.width(), tile_size.height());
   cyan_tile.eraseColor(SK_ColorCYAN);
   cyan_tile.eraseArea(
       SkIRect::MakeLTRB(

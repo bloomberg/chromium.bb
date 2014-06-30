@@ -51,8 +51,7 @@ class PicturePileImplPerfTest : public testing::Test {
     gfx::Rect content_rect(0, 0, kTileSize, kTileSize);
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(1, 1);
     SkCanvas canvas(bitmap);
 
     FakeRenderingStatsInstrumentation rendering_stats_instrumentation;

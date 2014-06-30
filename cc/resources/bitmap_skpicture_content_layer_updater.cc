@@ -26,7 +26,7 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
   SkAlphaType at =
       updater_->layer_is_opaque() ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
   bitmap_.allocPixels(SkImageInfo::Make(
-      source_rect.width(), source_rect.height(), kPMColor_SkColorType, at));
+      source_rect.width(), source_rect.height(), kN32_SkColorType, at));
   SkCanvas canvas(bitmap_);
   updater_->PaintContentsRect(&canvas, source_rect);
 

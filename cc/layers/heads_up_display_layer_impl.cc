@@ -177,7 +177,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   const void* pixels = hud_canvas_->peekPixels(&info, &row_bytes);
   DCHECK(pixels);
   gfx::Rect content_rect(content_bounds());
-  DCHECK(info.colorType() == kPMColor_SkColorType);
+  DCHECK(info.colorType() == kN32_SkColorType);
   resource_provider->SetPixels(hud_resource_->id(),
                                static_cast<const uint8_t*>(pixels),
                                content_rect,

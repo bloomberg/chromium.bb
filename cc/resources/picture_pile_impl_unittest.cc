@@ -780,10 +780,7 @@ TEST_P(OverlapTest, NoOverlap) {
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   content_bounds.width(),
-                   content_bounds.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(content_bounds.width(), content_bounds.height());
   SkCanvas canvas(bitmap);
 
   FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
