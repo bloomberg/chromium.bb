@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("keyed_service_core") {
+component("core") {
   output_name = "keyed_service_core"
   sources = [
     "dependency_graph.cc",
@@ -14,12 +14,13 @@ component("keyed_service_core") {
   ]
 
   defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 
   deps = [
     "//base",
   ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
 }

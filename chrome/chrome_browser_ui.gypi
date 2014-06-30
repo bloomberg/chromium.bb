@@ -1136,7 +1136,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
     ],
     # Note that we assume app list is enabled on all views builds, so the
-    # views-specifi app list files are in the views section.
+    # views-specific app list files are in the views section.
     'chrome_browser_ui_app_list_sources': [
       'browser/ui/views/app_list/app_list_dialog_contents_view.cc',
       'browser/ui/views/app_list/app_list_dialog_contents_view.h',
