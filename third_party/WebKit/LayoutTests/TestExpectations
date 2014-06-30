@@ -1092,3 +1092,6 @@ crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-whitelisting-ip-addres
 crbug.com/30536 [ Win7 ] http/tests/security/clipboard/clipboard-file-access.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-only.html [ Failure Pass ]
+
+crbug.com/390204 inspector/console/console-viewport-selection.html [ Pass Failure ]
+
