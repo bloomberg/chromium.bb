@@ -54,7 +54,7 @@ source_set("app") {
   } else {
     deps += [
       "//mojo/environment:chromium",
-      "//mojo/public/interfaces/interface_provider",
+      "//mojo/public/interfaces/service_provider",
       "//mojo/service_manager",
       "//mojo/system",
     ]

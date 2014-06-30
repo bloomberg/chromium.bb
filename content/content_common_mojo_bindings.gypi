@@ -10,7 +10,7 @@
       'dependencies': [
         '../mojo/mojo.gyp:mojo_cpp_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_interface_provider_bindings'
+        '../mojo/mojo.gyp:mojo_service_provider_bindings'
       ],
       'sources': [
         'common/render_frame_setup.mojom',
@@ -19,7 +19,7 @@
       'export_dependent_settings': [
         '../mojo/mojo.gyp:mojo_cpp_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_interface_provider_bindings'
+        '../mojo/mojo.gyp:mojo_service_provider_bindings'
       ],
     },
   ],

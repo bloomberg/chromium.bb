@@ -269,7 +269,7 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
  public:
   virtual void GetServiceProviderForFrame(
       int32_t frame_routing_id,
-      mojo::InterfaceRequest<mojo::IInterfaceProvider> request) OVERRIDE {
+      mojo::InterfaceRequest<mojo::ServiceProvider> request) OVERRIDE {
     RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_routing_id);
     // We can receive a GetServiceProviderForFrame message for a frame not yet
     // created due to a race between the message and a ViewMsg_New IPC that

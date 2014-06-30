@@ -167,8 +167,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   if (GetProcess()->GetServiceRegistry()) {
     RenderFrameSetupPtr setup;
-    GetProcess()->GetServiceRegistry()->GetRemoteInterface(&setup);
-    mojo::IInterfaceProviderPtr service_provider;
+    GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
+    mojo::ServiceProviderPtr service_provider;
     setup->GetServiceProviderForFrame(routing_id_,
                                       mojo::Get(&service_provider));
     service_registry_.BindRemoteServiceProvider(

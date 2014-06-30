@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "../../mojo/public/interfaces/interface_provider/interface_provider.mojom"
+import "../../mojo/public/interfaces/service_provider/service_provider.mojom"
 
 module content {
 
 interface RenderFrameSetup {
   GetServiceProviderForFrame(int32 frame_routing_id,
-                             mojo.IInterfaceProvider& service_provider);
+                             mojo.ServiceProvider& service_provider);
 };
 
 }

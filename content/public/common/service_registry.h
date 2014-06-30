@@ -19,13 +19,14 @@ namespace content {
 
 // A ServiceRegistry exposes local services that have been added using
 // AddService to a paired remote ServiceRegistry and provides local access to
-// services exposed by the remote ServiceRegistry through GetInterface.
+// services exposed by the remote ServiceRegistry through
+// ConnectToRemoteService.
 class CONTENT_EXPORT ServiceRegistry {
  public:
   virtual ~ServiceRegistry() {}
 
   // Make the service created by |service_factory| available to the remote
-  // InterfaceProvider. In response to each request for a service,
+  // ServiceProvider. In response to each request for a service,
   // |service_factory| will be run with an InterfaceRequest<Interface>
   // representing that request.
   template <typename Interface>
@@ -48,15 +49,15 @@ class CONTENT_EXPORT ServiceRegistry {
   }
   virtual void RemoveService(const std::string& service_name) = 0;
 
-  // Connect to an interface provided by the remote interface provider.
+  // Connect to an interface provided by the remote service provider.
   template <typename Interface>
-  void GetRemoteInterface(mojo::InterfacePtr<Interface>* ptr) {
+  void ConnectToRemoteService(mojo::InterfacePtr<Interface>* ptr) {
     mojo::MessagePipe pipe;
     ptr->Bind(pipe.handle0.Pass());
-    GetRemoteInterface(Interface::Name_, pipe.handle1.Pass());
+    ConnectToRemoteService(Interface::Name_, pipe.handle1.Pass());
   }
-  virtual void GetRemoteInterface(const base::StringPiece& name,
-                                  mojo::ScopedMessagePipeHandle handle) = 0;
+  virtual void ConnectToRemoteService(const base::StringPiece& name,
+                                      mojo::ScopedMessagePipeHandle handle) = 0;
 
  private:
   template <typename Interface>

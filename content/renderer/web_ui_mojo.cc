@@ -89,7 +89,7 @@ void WebUIMojo::OnDidFinishDocumentLoad() {
   SetHandleOnContextState(pipe.handle0.Pass());
   RenderFrame::FromWebFrame(render_view()->GetWebView()->mainFrame())->
       GetServiceRegistry()->
-          GetRemoteInterface("webui_controller", pipe.handle1.Pass());
+          ConnectToRemoteService("webui_controller", pipe.handle1.Pass());
 }
 
 void WebUIMojo::SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle) {

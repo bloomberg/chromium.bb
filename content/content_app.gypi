@@ -67,8 +67,8 @@
     }, {  # OS!="ios"
       'dependencies': [
         '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_interface_provider_bindings',
         '../mojo/mojo.gyp:mojo_service_manager',
+        '../mojo/mojo.gyp:mojo_service_provider_bindings',
         '../mojo/mojo.gyp:mojo_system_impl',
      ],
     }],

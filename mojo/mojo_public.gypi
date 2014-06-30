@@ -380,21 +380,6 @@
       ],
     },
     {
-      # GN version: //mojo/public/interfaces/interface_provider:interface_provider
-      'target_name': 'mojo_interface_provider_bindings',
-      'type': 'static_library',
-      'sources': [
-        'public/interfaces/interface_provider/interface_provider.mojom',
-      ],
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'dependencies': [
-        'mojo_cpp_bindings',
-      ],
-      'export_dependent_settings': [
-        'mojo_cpp_bindings',
-      ],
-    },
-    {
       # GN version: //mojo/public/interfaces/service_provider:service_provider
       'target_name': 'mojo_service_provider_bindings',
       'type': 'static_library',
