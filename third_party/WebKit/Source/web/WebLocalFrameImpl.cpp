@@ -1051,50 +1051,18 @@ bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebNode& nod
     if (pluginContainer && pluginContainer->executeEditCommand(name))
         return true;
 
-    bool result = true;
-
-    // Specially handling commands that Editor::execCommand does not directly
-    // support.
-    if (command == "DeleteToEndOfParagraph") {
-        if (!frame()->editor().deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
-            frame()->editor().deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
-    } else if (command == "DeleteBackward") {
-        result = frame()->editor().command(AtomicString("BackwardDelete")).execute();
-    } else if (command == "DeleteForward") {
-        result = frame()->editor().command(AtomicString("ForwardDelete")).execute();
-    } else if (command == "AdvanceToNextMisspelling") {
-        // Wee need to pass false here or else the currently selected word will never be skipped.
-        frame()->spellChecker().advanceToNextMisspelling(false);
-    } else if (command == "ToggleSpellPanel") {
-        frame()->spellChecker().showSpellingGuessPanel();
-    } else {
-        result = frame()->editor().command(command).execute();
-    }
-    return result;
+    return frame()->editor().executeCommand(command);
 }
 
 bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebString& value, const WebNode& node)
 {
     ASSERT(frame());
-    String webName = name;
 
     WebPluginContainerImpl* pluginContainer = pluginContainerFromNode(frame(), node);
     if (pluginContainer && pluginContainer->executeEditCommand(name, value))
         return true;
 
-    // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
-    if (!frame()->editor().canEdit() && webName == "moveToBeginningOfDocument")
-        return viewImpl()->bubblingScroll(ScrollUp, ScrollByDocument);
-
-    if (!frame()->editor().canEdit() && webName == "moveToEndOfDocument")
-        return viewImpl()->bubblingScroll(ScrollDown, ScrollByDocument);
-
-    if (webName == "showGuessPanel") {
-        frame()->spellChecker().showSpellingGuessPanel();
-        return true;
-    }
-
-    return frame()->editor().command(webName).execute(value);
+    return frame()->editor().executeCommand(name, value);
 }
 
 bool WebLocalFrameImpl::isCommandEnabled(const WebString& name) const

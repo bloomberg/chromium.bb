@@ -386,10 +386,6 @@ public:
         const WebImage& dragImage,
         const WebPoint& dragImageOffset);
 
-    // Tries to scroll the currently focused element and bubbles up through the
-    // DOM and frame hierarchies. Returns true if something was scrolled.
-    bool bubblingScroll(WebCore::ScrollDirection, WebCore::ScrollGranularity);
-
     // Notification that a popup was opened/closed.
     void popupOpened(PopupContainer*);
     void popupClosed(PopupContainer*);

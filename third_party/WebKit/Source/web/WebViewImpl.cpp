@@ -1412,7 +1412,11 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
 #endif
     if (!mapKeyCodeForScroll(keyCode, &scrollDirection, &scrollGranularity))
         return false;
-    return bubblingScroll(scrollDirection, scrollGranularity);
+
+    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
+    if (!frame)
+        return false;
+    return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
 }
 
 bool WebViewImpl::mapKeyCodeForScroll(int keyCode,
@@ -1463,15 +1467,6 @@ void WebViewImpl::hideSelectPopup()
 {
     if (m_selectPopup)
         m_selectPopup->hidePopup();
-}
-
-bool WebViewImpl::bubblingScroll(ScrollDirection scrollDirection, ScrollGranularity scrollGranularity)
-{
-    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
-    if (!frame)
-        return false;
-
-    return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
 }
 
 void WebViewImpl::popupOpened(PopupContainer* popupContainer)

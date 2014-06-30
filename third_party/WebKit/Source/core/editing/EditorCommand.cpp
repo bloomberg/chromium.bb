@@ -1675,6 +1675,48 @@ Editor::Command Editor::command(const String& commandName, EditorCommandSource s
     return Command(internalCommand(commandName), source, &m_frame);
 }
 
+bool Editor::executeCommand(const String& commandName)
+{
+    // Specially handling commands that Editor::execCommand does not directly
+    // support.
+    if (commandName == "DeleteToEndOfParagraph") {
+        if (!deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
+            deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
+        return true;
+    }
+    if (commandName == "DeleteBackward")
+        return command(AtomicString("BackwardDelete")).execute();
+    if (commandName == "DeleteForward")
+        return command(AtomicString("ForwardDelete")).execute();
+    if (commandName == "AdvanceToNextMisspelling") {
+        // Wee need to pass false here or else the currently selected word will never be skipped.
+        spellChecker().advanceToNextMisspelling(false);
+        return true;
+    }
+    if (commandName == "ToggleSpellPanel") {
+        spellChecker().showSpellingGuessPanel();
+        return true;
+    }
+    return command(commandName).execute();
+}
+
+bool Editor::executeCommand(const String& commandName, const String& value)
+{
+    // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
+    if (!canEdit() && commandName == "moveToBeginningOfDocument")
+        return m_frame.eventHandler().bubblingScroll(ScrollUp, ScrollByDocument);
+
+    if (!canEdit() && commandName == "moveToEndOfDocument")
+        return m_frame.eventHandler().bubblingScroll(ScrollDown, ScrollByDocument);
+
+    if (commandName == "showGuessPanel") {
+        spellChecker().showSpellingGuessPanel();
+        return true;
+    }
+
+    return command(commandName).execute(value);
+}
+
 Editor::Command::Command()
     : m_command(0)
 {
