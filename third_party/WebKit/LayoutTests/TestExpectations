@@ -1048,8 +1048,6 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost-restored.h
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Failure ]
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
 
-crbug.com/328961 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win7 ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win7 ] http/tests/images/drag-image-to-desktop.html [ Failure ]
