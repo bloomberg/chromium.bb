@@ -593,9 +593,17 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   if (rej.GetTaglist(kRREJ, &reject_reasons,
                      &num_reject_reasons) == QUIC_NO_ERROR) {
 #if defined(DEBUG)
+    uint32 packed_error = 0;
     for (size_t i = 0; i < num_reject_reasons; ++i) {
-      DVLOG(1) << "Reasons for rejection: " << reject_reasons[i];
+      // HANDSHAKE_OK is 0 and don't report that as error.
+      if (reject_reasons[i] == HANDSHAKE_OK || reject_reasons[i] >= 32) {
+        continue;
+      }
+      HandshakeFailureReason reason =
+          static_cast<HandshakeFailureReason>(reject_reasons[i]);
+      packed_error |= 1 << (reason - 1);
     }
+    DVLOG(1) << "Reasons for rejection: " << packed_error;
 #endif
   }
 

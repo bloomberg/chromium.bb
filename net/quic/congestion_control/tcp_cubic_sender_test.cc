@@ -37,6 +37,10 @@ class TcpCubicSenderPeer : public TcpCubicSender {
     return congestion_window_;
   }
 
+  QuicTcpCongestionWindow slowstart_threshold() {
+    return slowstart_threshold_;
+  }
+
   const HybridSlowStart& hybrid_slow_start() const {
     return hybrid_slow_start_;
   }
@@ -236,11 +240,20 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   AckNPackets(2);
   expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  EXPECT_EQ(140u, sender_->slowstart_threshold());
 
   // Now RTO and ensure slow start gets reset.
   EXPECT_TRUE(sender_->hybrid_slow_start().started());
   sender_->OnRetransmissionTimeout(true);
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_EQ(expected_send_window / 2 / kDefaultTCPMSS,
+            sender_->slowstart_threshold());
+
+  // Now revert the RTO and ensure the CWND and slowstart threshold revert.
+  sender_->RevertRetransmissionTimeout();
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  EXPECT_EQ(140u, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
@@ -421,12 +434,20 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
   }
 }
 
-TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
+TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(10000u, sender_->slowstart_threshold());
 
-  // Expect the window to decrease to the minimum once the RTO fires.
+  // Expect the window to decrease to the minimum once the RTO fires
+  // and slow start threshold to be set to 1/2 of the CWND.
   sender_->OnRetransmissionTimeout(true);
   EXPECT_EQ(2 * kDefaultTCPMSS, sender_->SendWindow());
+  EXPECT_EQ(5u, sender_->slowstart_threshold());
+
+  // Now repair the RTO and ensure the slowstart threshold reverts.
+  sender_->RevertRetransmissionTimeout();
+  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(10000u, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {

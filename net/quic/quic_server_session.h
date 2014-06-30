@@ -39,7 +39,7 @@ class QuicServerSessionVisitor {
 
   virtual void OnConnectionClosed(QuicConnectionId connection_id,
                                   QuicErrorCode error) = 0;
-  virtual void OnWriteBlocked(QuicBlockedWriterInterface* writer) = 0;
+  virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;
 };
 
 class QuicServerSession : public QuicSession {
@@ -61,6 +61,9 @@ class QuicServerSession : public QuicSession {
   const QuicCryptoServerStream* crypto_stream() const {
     return crypto_stream_.get();
   }
+
+  // Override base class to process FEC config received from client.
+  virtual void OnConfigNegotiated() OVERRIDE;
 
  protected:
   // QuicSession methods:

@@ -394,7 +394,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
         }
         break;
       case PING_FRAME:
-        if (quic_version_ <= QUIC_VERSION_17) {
+        if (quic_version_ <= QUIC_VERSION_16) {
           LOG(DFATAL) << "Attempt to add a PingFrame in "
                       << QuicVersionToString(quic_version_);
           return kNoPacket;
@@ -1236,7 +1236,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         continue;
       }
       case PING_FRAME: {
-        if (quic_version_ <= QUIC_VERSION_17) {
+        if (quic_version_ <= QUIC_VERSION_16) {
           LOG(DFATAL) << "Trying to read a Ping in "
                       << QuicVersionToString(quic_version_);
           return RaiseError(QUIC_INTERNAL_ERROR);

@@ -46,7 +46,9 @@ TcpCubicSender::TcpCubicSender(
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
       congestion_window_(kInitialCongestionWindow),
+      previous_congestion_window_(0),
       slowstart_threshold_(max_tcp_congestion_window),
+      previous_slowstart_threshold_(0),
       last_cutback_exited_slowstart_(false),
       max_tcp_congestion_window_(max_tcp_congestion_window) {
 }
@@ -274,11 +276,25 @@ void TcpCubicSender::MaybeIncreaseCwnd(
 
 void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   largest_sent_at_last_cutback_ = 0;
-  if (packets_retransmitted) {
-    cubic_.Reset();
-    hybrid_slow_start_.Restart();
-    congestion_window_ = kMinimumCongestionWindow;
+  if (!packets_retransmitted) {
+    return;
   }
+  cubic_.Reset();
+  hybrid_slow_start_.Restart();
+  previous_slowstart_threshold_ = slowstart_threshold_;
+  slowstart_threshold_ = congestion_window_ / 2;
+  previous_congestion_window_ = congestion_window_;
+  congestion_window_ = kMinimumCongestionWindow;
+}
+
+void TcpCubicSender::RevertRetransmissionTimeout() {
+  if (previous_congestion_window_ == 0) {
+    LOG(DFATAL) << "No previous congestion window to revert to.";
+    return;
+  }
+  congestion_window_ = previous_congestion_window_;
+  slowstart_threshold_ = previous_slowstart_threshold_;
+  previous_congestion_window_ = 0;
 }
 
 void TcpCubicSender::PrrOnPacketLost(QuicByteCount bytes_in_flight) {

@@ -238,8 +238,8 @@ void SendAlgorithmSimulator::SendDataNow() {
     // If the number of bytes in flight are less than the bdp, there's
     // no buffering delay.  Bytes lost from the buffer are not counted.
     QuicByteCount bdp = bandwidth_.ToBytesPerPeriod(rtt_);
-    if (sent_packets_.size() * kPacketSize > bdp) {
-      QuicByteCount qsize = sent_packets_.size() * kPacketSize - bdp;
+    if ((sent_packets_.size() + 1) * kPacketSize > bdp) {
+      QuicByteCount qsize = (sent_packets_.size() + 1) * kPacketSize - bdp;
       ack_time = ack_time.Add(bandwidth_.TransferTime(qsize));
     }
     // If the packet is lost, give it an ack time of Zero.

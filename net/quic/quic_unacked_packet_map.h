@@ -77,6 +77,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
                QuicByteCount bytes_sent,
                bool set_in_flight);
 
+  // Restores the in flight status for a packet that was previously sent.
+  void RestoreInFlight(QuicPacketSequenceNumber sequence_number);
+
   // Clears up to |num_to_clear| previous transmissions in order to make room
   // in the ack frame for new acks.
   void ClearPreviousRetransmissions(size_t num_to_clear);

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
@@ -28,6 +29,18 @@ void QuicServerSession::InitializeSession(
 QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
     const QuicCryptoServerConfig& crypto_config) {
   return new QuicCryptoServerStream(crypto_config, this);
+}
+
+void QuicServerSession::OnConfigNegotiated() {
+  QuicSession::OnConfigNegotiated();
+  if (!FLAGS_enable_quic_fec ||
+      !config()->HasReceivedConnectionOptions() ||
+      !net::ContainsQuicTag(config()->ReceivedConnectionOptions(), kFHDR)) {
+    return;
+  }
+  // kFHDR config maps to FEC protection always for headers stream.
+  // TODO(jri): Add crypto stream in addition to headers for kHDR.
+  headers_stream_->set_fec_policy(FEC_PROTECT_ALWAYS);
 }
 
 void QuicServerSession::OnConnectionClosed(QuicErrorCode error,

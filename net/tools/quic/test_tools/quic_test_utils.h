@@ -135,7 +135,8 @@ class MockQuicServerSessionVisitor : public QuicServerSessionVisitor {
   virtual ~MockQuicServerSessionVisitor();
   MOCK_METHOD2(OnConnectionClosed, void(QuicConnectionId connection_id,
                                         QuicErrorCode error));
-  MOCK_METHOD1(OnWriteBlocked, void(QuicBlockedWriterInterface* writer));
+  MOCK_METHOD1(OnWriteBlocked,
+               void(QuicBlockedWriterInterface* blocked_writer));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicServerSessionVisitor);

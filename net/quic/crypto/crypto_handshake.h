@@ -19,6 +19,64 @@ class KeyExchange;
 class QuicDecrypter;
 class QuicEncrypter;
 
+// HandshakeFailureReason enum values are uploaded to UMA, they cannot be
+// changed.
+enum HandshakeFailureReason {
+  HANDSHAKE_OK = 0,
+
+  // Failure reasons for an invalid client nonce in CHLO.
+  //
+  // Client nonce had incorrect length.
+  CLIENT_NONCE_INVALID_FAILURE = 1,
+  // Client nonce is not unique.
+  CLIENT_NONCE_NOT_UNIQUE_FAILURE = 2,
+  // Client orbit is invalid or incorrect.
+  CLIENT_NONCE_INVALID_ORBIT_FAILURE = 3,
+  // Client nonce's timestamp is not in the strike register's valid time range.
+  CLIENT_NONCE_INVALID_TIME_FAILURE = 4,
+  // Client nonce verification has failed because strike register is down.
+  CLIENT_NONCE_NO_STRIKE_REGISTER_FAILURE = 5,
+
+  // Failure reasons for an invalid server nonce in CHLO.
+  //
+  // Unbox of server nonce failed.
+  SERVER_NONCE_DECRYPTION_FAILURE = 6,
+  // Decrypted server nonce had incorrect length.
+  SERVER_NONCE_INVALID_FAILURE = 7,
+  // Server nonce is not unique.
+  SERVER_NONCE_NOT_UNIQUE_FAILURE = 8,
+  // Server nonce's timestamp is not in the strike register's valid time range.
+  SERVER_NONCE_INVALID_TIME_FAILURE = 9,
+
+  // Failure reasons for an invalid server config in CHLO.
+  //
+  // Missing Server config id (kSCID) tag.
+  SERVER_CONFIG_INCHOATE_HELLO_FAILURE = 10,
+  // Couldn't find the Server config id (kSCID).
+  SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE = 11,
+
+  // Failure reasons for an invalid source-address token.
+  //
+  // Missing Source-address token (kSourceAddressTokenTag) tag.
+  SOURCE_ADDRESS_TOKEN_INVALID_FAILURE = 12,
+  // Unbox of Source-address token failed.
+  SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE = 13,
+  // Couldn't parse the unbox'ed Source-address token.
+  SOURCE_ADDRESS_TOKEN_PARSE_FAILURE = 14,
+  // Source-address token is for a different IP address.
+  SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE = 15,
+  // The source-address token has a timestamp in the future.
+  SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE = 16,
+  // The source-address token has expired.
+  SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE = 17,
+
+  MAX_FAILURE_REASON,
+};
+
+// These errors will be packed into an uint32 and we don't want to set the most
+// significant bit, which may be misinterpreted as the sign bit.
+COMPILE_ASSERT(MAX_FAILURE_REASON <= 32, failure_reason_out_of_sync);
+
 // A CrypterPair contains the encrypter and decrypter for an encryption level.
 struct NET_EXPORT_PRIVATE CrypterPair {
   CrypterPair();

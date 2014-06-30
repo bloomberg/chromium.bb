@@ -1484,11 +1484,8 @@ TEST_P(QuicConnectionTest, FECSending) {
           IN_FEC_GROUP, &payload_length);
   creator->set_max_packet_length(length);
 
-  // Enable FEC.
-  creator->set_max_packets_per_fec_group(2);
-
-  // Send 4 protected data packets, which will also trigger 2 FEC packets.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
+  // Send 4 protected data packets, which should also trigger 1 FEC packet.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(5);
   // The first stream frame will have 2 fewer overhead bytes than the other 3.
   const string payload(payload_length * 4 + 2, 'a');
   connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, NULL);
@@ -1506,8 +1503,7 @@ TEST_P(QuicConnectionTest, FECQueueing) {
       connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
       IN_FEC_GROUP, &payload_length);
   creator->set_max_packet_length(length);
-  // Enable FEC.
-  creator->set_max_packets_per_fec_group(1);
+  EXPECT_TRUE(creator->IsFecEnabled());
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   BlockOnNextWrite();
@@ -1520,9 +1516,8 @@ TEST_P(QuicConnectionTest, FECQueueing) {
 }
 
 TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
-  // Enable FEC.
-  QuicConnectionPeer::GetPacketCreator(
-      &connection_)->set_max_packets_per_fec_group(1);
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
@@ -1541,9 +1536,8 @@ TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
 
 TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  // Enable FEC.
-  QuicConnectionPeer::GetPacketCreator(
-      &connection_)->set_max_packets_per_fec_group(1);
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
@@ -1570,9 +1564,8 @@ TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
 
 TEST_P(QuicConnectionTest, AbandonAllFEC) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  // Enable FEC.
-  QuicConnectionPeer::GetPacketCreator(
-      &connection_)->set_max_packets_per_fec_group(1);
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
@@ -1687,9 +1680,8 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
 }
 
 TEST_P(QuicConnectionTest, FramePackingFEC) {
-  // Enable FEC.
-  QuicConnectionPeer::GetPacketCreator(
-      &connection_)->set_max_packets_per_fec_group(6);
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
 
   CongestionBlockWrites();
 
@@ -1997,6 +1989,7 @@ TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   // rare circumstances with write blocked sockets.
   QuicAckFrame ack = InitAckFrame(1, 0);
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   ProcessAckPacket(&ack);
 
   connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
@@ -2682,7 +2675,7 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
-  if (version() > QUIC_VERSION_17) {
+  if (version() >= QUIC_VERSION_18) {
     ASSERT_EQ(1u, writer_->ping_frames().size());
   } else {
     ASSERT_EQ(1u, writer_->stream_frames().size());
@@ -3564,6 +3557,7 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   EXPECT_CALL(visitor_, OnCanWrite()).Times(2);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   ProcessAckPacket(&nack_three);
 
   EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(
@@ -3815,9 +3809,10 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
   // We do not raise the high water mark yet.
   EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
 
-  // Ack the original packet.
+  // Ack the original packet, which will revert the RTO.
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*delegate, OnAckNotification(1, _, 1, _, _));
+  EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   QuicAckFrame ack_frame = InitAckFrame(1, 0);
   ProcessAckPacket(&ack_frame);

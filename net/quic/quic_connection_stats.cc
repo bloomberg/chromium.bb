@@ -29,6 +29,7 @@ QuicConnectionStats::QuicConnectionStats()
       loss_timeout_count(0),
       tlp_count(0),
       rto_count(0),
+      spurious_rto_count(0),
       min_rtt_us(0),
       srtt_us(0),
       estimated_bandwidth(0),
@@ -62,8 +63,9 @@ ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
      << ", packets revived: " << s.packets_revived
      << ", packets dropped:" << s.packets_dropped
      << ", crypto retransmit count: " << s.crypto_retransmit_count
-     << ", rto count: " << s.rto_count
      << ", tlp count: " << s.tlp_count
+     << ", rto count: " << s.rto_count
+     << ", spurious_rto_count:" << s.spurious_rto_count
      << ", min_rtt(us): " << s.min_rtt_us
      << ", srtt(us): " << s.srtt_us
      << ", max packet size: " << s.max_packet_size

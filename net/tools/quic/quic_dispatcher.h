@@ -97,7 +97,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                                   QuicErrorCode error) OVERRIDE;
 
   // Queues the blocked writer for later resumption.
-  virtual void OnWriteBlocked(QuicBlockedWriterInterface* writer) OVERRIDE;
+  virtual void OnWriteBlocked(
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
 
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
@@ -105,8 +106,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void DeleteSessions();
 
   const SessionMap& session_map() const { return session_map_; }
-
-  WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
 
  protected:
   // Instantiates a new low-level packet writer. Caller takes ownership of the

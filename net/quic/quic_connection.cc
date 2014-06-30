@@ -1573,8 +1573,8 @@ void QuicConnection::SendPing() {
   if (retransmission_alarm_->IsSet()) {
     return;
   }
-  if (version() <= QUIC_VERSION_17) {
-    // TODO(rch): remove this when we remove version 17.
+  if (version() <= QUIC_VERSION_16) {
+    // TODO(rch): remove this when we remove version 15 and 16.
     // This is a horrible hideous hack which we should not support.
     IOVector data;
     char c_data[] = "C";

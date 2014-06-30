@@ -8,7 +8,9 @@
 
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +18,9 @@
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::PacketSavingConnection;
+using net::test::QuicSessionPeer;
 using net::test::SupportedVersions;
+using net::test::ValueRestore;
 using testing::_;
 
 namespace net {
@@ -84,6 +88,26 @@ TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
   // streams.
   session_->OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
   EXPECT_EQ(NULL, session_->CreateOutgoingDataStream());
+}
+
+TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
+
+  // Set FEC config in client's connection options.
+  QuicTagVector copt;
+  copt.push_back(kFHDR);
+  session_->config()->SetConnectionOptionsToSend(copt);
+
+  // Doing the handshake should set up FEC config correctly.
+  CompleteCryptoHandshake();
+
+  // Verify that headers stream is always protected and data streams are
+  // optionally protected.
+  EXPECT_EQ(FEC_PROTECT_ALWAYS,
+            QuicSessionPeer::GetHeadersStream(session_.get())->fec_policy());
+  QuicSpdyClientStream* stream = session_->CreateOutgoingDataStream();
+  ASSERT_TRUE(stream);
+  EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
 }  // namespace

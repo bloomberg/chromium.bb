@@ -225,8 +225,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   }
 
   // Sets creator's max number of packets covered by an FEC group.
-  void set_max_packets_per_fec_group(
-      size_t max_packets_per_fec_group) {
+  void set_max_packets_per_fec_group(size_t max_packets_per_fec_group) {
     // To turn off FEC protection, use StopFecProtectingPackets().
     DCHECK_NE(0u, max_packets_per_fec_group);
     max_packets_per_fec_group_ = max_packets_per_fec_group;

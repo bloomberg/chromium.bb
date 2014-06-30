@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/rtt_stats.h"
 
+using std::max;
+
 namespace net {
 
 namespace {
@@ -35,6 +37,11 @@ bool RttStats::HasUpdates() const {
 void RttStats::SampleNewRecentMinRtt(uint32 num_samples) {
   num_min_rtt_samples_remaining_ = num_samples;
   new_min_rtt_ = RttSample();
+}
+
+void RttStats::ExpireSmoothedMetrics() {
+  mean_deviation_ = max(mean_deviation_, latest_rtt_.Subtract(smoothed_rtt_));
+  smoothed_rtt_ = max(smoothed_rtt_, latest_rtt_);
 }
 
 // Updates the RTT based on a new sample.

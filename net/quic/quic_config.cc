@@ -412,6 +412,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
       *error_details = "Missing " + QuicUtils::TagToString(tag_);
       break;
     case QUIC_NO_ERROR:
+      DVLOG(1) << "Received Connection Option tags from receiver.";
       has_receive_values_ = true;
       for (size_t i = 0; i < received_tags_length; ++i) {
         receive_values_.push_back(received_tags[i]);
@@ -434,8 +435,8 @@ QuicConfig::QuicConfig()
       max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
       initial_congestion_window_(kSWND, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
-      // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
-      // QUIC_VERSION_17.
+      // TODO(rjshade): Make this PRESENCE_REQUIRED when QUIC_VERSION_16 and
+      // QUIC_VERSION_15 are retired.
       initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_19.
@@ -468,6 +469,14 @@ bool QuicConfig::HasReceivedConnectionOptions() const {
 
 QuicTagVector QuicConfig::ReceivedConnectionOptions() const {
   return connection_options_.GetReceivedValues();
+}
+
+bool QuicConfig::HasSendConnectionOptions() const {
+  return connection_options_.HasSendValues();
+}
+
+QuicTagVector QuicConfig::SendConnectionOptions() const {
+  return connection_options_.GetSendValues();
 }
 
 void QuicConfig::SetLossDetectionToSend(QuicTag loss_detection) {

@@ -7,9 +7,12 @@
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_data_stream_peer.h"
+#include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
@@ -18,9 +21,12 @@
 
 using __gnu_cxx::vector;
 using net::test::MockConnection;
+using net::test::QuicConfigPeer;
 using net::test::QuicConnectionPeer;
 using net::test::QuicDataStreamPeer;
+using net::test::QuicSessionPeer;
 using net::test::SupportedVersions;
+using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
 using net::test::kClientDataStreamId2;
 using net::test::kClientDataStreamId3;
@@ -180,6 +186,25 @@ TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
   EXPECT_EQ(NULL,
             QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4));
+}
+
+TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
+
+  // Set received config to have FEC connection option.
+  QuicTagVector copt;
+  copt.push_back(kFHDR);
+  QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
+  session_->OnConfigNegotiated();
+
+  // Verify that headers stream is always protected and data streams are
+  // optionally protected.
+  EXPECT_EQ(FEC_PROTECT_ALWAYS,
+            QuicSessionPeer::GetHeadersStream(session_.get())->fec_policy());
+  QuicDataStream* stream = QuicServerSessionPeer::GetIncomingDataStream(
+      session_.get(), kClientDataStreamId1);
+  ASSERT_TRUE(stream);
+  EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
 }  // namespace

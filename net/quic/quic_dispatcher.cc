@@ -292,8 +292,8 @@ void QuicDispatcher::OnCanWrite() {
   // We finished a write: the socket should not be blocked.
   writer_->SetWritable();
 
-  // Let all the blocked writers try to write, until we're blocked again or
-  // there's no work left.
+  // Give all the blocked writers one chance to write, until we're blocked again
+  // or there's no work left.
   while (!write_blocked_list_.empty() && !writer_->IsWriteBlocked()) {
     QuicBlockedWriterInterface* blocked_writer =
         write_blocked_list_.begin()->first;
@@ -337,9 +337,16 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
   CleanUpSession(it);
 }
 
-void QuicDispatcher::OnWriteBlocked(QuicBlockedWriterInterface* writer) {
-  DCHECK(writer_->IsWriteBlocked());
-  write_blocked_list_.insert(make_pair(writer, true));
+void QuicDispatcher::OnWriteBlocked(
+    QuicBlockedWriterInterface* blocked_writer) {
+  if (!writer_->IsWriteBlocked()) {
+    LOG(DFATAL) <<
+        "QuicDispatcher::OnWriteBlocked called when the writer is not blocked.";
+    // Return without adding the connection to the blocked list, to avoid
+    // infinite loops in OnCanWrite.
+    return;
+  }
+  write_blocked_list_.insert(make_pair(blocked_writer, true));
 }
 
 QuicSession* QuicDispatcher::CreateQuicSession(

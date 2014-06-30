@@ -39,3 +39,8 @@ bool FLAGS_use_early_return_when_verifying_chlo = true;
 
 // If true, QUIC crypto reject message will include the reasons for rejection.
 bool FLAGS_send_quic_crypto_reject_reason = false;
+
+// If true, QUIC connections will support FEC protection of data while sending
+// packets, to reduce latency of data delivery to the application. The client
+// must also request FEC protection for the server to use FEC.
+bool FLAGS_enable_quic_fec = false;

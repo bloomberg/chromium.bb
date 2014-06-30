@@ -252,6 +252,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return max_open_streams_;
   }
 
+  scoped_ptr<QuicHeadersStream> headers_stream_;
+
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
@@ -281,8 +283,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       locally_closed_streams_highest_offset_;
 
   scoped_ptr<QuicConnection> connection_;
-
-  scoped_ptr<QuicHeadersStream> headers_stream_;
 
   // A shim to stand between the connection and the session, to handle stream
   // deletions.

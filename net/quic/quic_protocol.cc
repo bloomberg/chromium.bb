@@ -163,8 +163,6 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '5');
     case QUIC_VERSION_16:
       return MakeQuicTag('Q', '0', '1', '6');
-    case QUIC_VERSION_17:
-      return MakeQuicTag('Q', '0', '1', '7');
     case QUIC_VERSION_18:
       return MakeQuicTag('Q', '0', '1', '8');
     case QUIC_VERSION_19:
@@ -199,7 +197,6 @@ string QuicVersionToString(const QuicVersion version) {
   switch (version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_15);
     RETURN_STRING_LITERAL(QUIC_VERSION_16);
-    RETURN_STRING_LITERAL(QUIC_VERSION_17);
     RETURN_STRING_LITERAL(QUIC_VERSION_18);
     RETURN_STRING_LITERAL(QUIC_VERSION_19);
     RETURN_STRING_LITERAL(QUIC_VERSION_20);
@@ -291,7 +288,7 @@ QuicRstStreamErrorCode AdjustErrorForVersion(
     QuicVersion version) {
   switch (error_code) {
     case QUIC_RST_FLOW_CONTROL_ACCOUNTING:
-      if (version <= QUIC_VERSION_17) {
+      if (version < QUIC_VERSION_18) {
         return QUIC_STREAM_NO_ERROR;
       }
       break;

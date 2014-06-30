@@ -423,6 +423,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
   ExpectUpdatedRtt(1);
+  EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is kept for RTT.
@@ -1203,6 +1204,8 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
 
   SendDataPacket(1);
   SendDataPacket(2);
+  SendDataPacket(3);
+  SendDataPacket(4);
 
   QuicTime::Delta expected_rto_delay = QuicTime::Delta::FromMilliseconds(500);
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay())
@@ -1214,9 +1217,12 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   clock_.AdvanceTime(expected_rto_delay);
   manager_.OnRetransmissionTimeout();
-  RetransmitNextPacket(3);
-  RetransmitNextPacket(4);
-  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  RetransmitNextPacket(5);
+  RetransmitNextPacket(6);
+  EXPECT_EQ(2 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
   // The delay should double the second time.
   expected_time = clock_.Now().Add(expected_rto_delay).Add(expected_rto_delay);
@@ -1227,9 +1233,15 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
   ExpectUpdatedRtt(2);
+  EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_EQ(4 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 
-  expected_time = clock_.Now().Add(expected_rto_delay);
+  // Wait 2RTTs from now for the RTO, since it's the max of the RTO time
+  // and the TLP time.  In production, there would always be two TLP's first.
+  expected_time = clock_.Now().Add(QuicTime::Delta::FromMilliseconds(200));
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 

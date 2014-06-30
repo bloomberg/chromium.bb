@@ -67,6 +67,7 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
           SendAlgorithmInterface::Create(clock, &rtt_stats_, type, stats)),
       loss_algorithm_(LossDetectionInterface::Create(loss_type)),
       largest_observed_(0),
+      first_rto_transmission_(0),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
       consecutive_crypto_retransmission_count_(0),
@@ -295,6 +296,22 @@ void QuicSentPacketManager::MarkForRetransmission(
 void QuicSentPacketManager::RecordSpuriousRetransmissions(
     const SequenceNumberSet& all_transmissions,
     QuicPacketSequenceNumber acked_sequence_number) {
+  if (acked_sequence_number < first_rto_transmission_) {
+    // Cancel all pending RTO transmissions and restore their in flight status.
+    // Replace SRTT with latest_rtt and increase the variance to prevent
+    // a spurious RTO from happening again.
+    rtt_stats_.ExpireSmoothedMetrics();
+    for (PendingRetransmissionMap::const_iterator it =
+             pending_retransmissions_.begin();
+         it != pending_retransmissions_.end(); ++it) {
+      DCHECK_EQ(it->second, RTO_RETRANSMISSION);
+      unacked_packets_.RestoreInFlight(it->first);
+    }
+    pending_retransmissions_.clear();
+    send_algorithm_->RevertRetransmissionTimeout();
+    first_rto_transmission_ = 0;
+    ++stats_->spurious_rto_count;
+  }
   for (SequenceNumberSet::const_iterator
            it = all_transmissions.upper_bound(acked_sequence_number),
            end = all_transmissions.end();
@@ -573,6 +590,9 @@ void QuicSentPacketManager::RetransmitAllPackets() {
 
   send_algorithm_->OnRetransmissionTimeout(packets_retransmitted);
   if (packets_retransmitted) {
+    if (consecutive_rto_count_ == 0) {
+      first_rto_transmission_ = unacked_packets_.largest_sent_packet() + 1;
+    }
     ++consecutive_rto_count_;
   }
 }
@@ -705,12 +725,11 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       // The RTO is based on the first outstanding packet.
       const QuicTime sent_time =
           unacked_packets_.GetFirstInFlightPacketSentTime();
-      QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
-      // Always wait at least 1.5 * RTT from now.
-      QuicTime min_timeout = clock_->ApproximateNow().Add(
-          rtt_stats_.SmoothedRtt().Multiply(1.5));
-
-      return QuicTime::Max(min_timeout, rto_timeout);
+      QuicTime rto_time = sent_time.Add(GetRetransmissionDelay());
+      // Wait for TLP packets to be acked before an RTO fires.
+      QuicTime tlp_time =
+          unacked_packets_.GetLastPacketSentTime().Add(GetTailLossProbeDelay());
+      return QuicTime::Max(tlp_time, rto_time);
     }
   }
   DCHECK(false);

@@ -469,7 +469,7 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
   QuicVersion version = connection()->version();
-  if (version < QUIC_VERSION_17) {
+  if (version <= QUIC_VERSION_16) {
     return;
   }
 
@@ -743,7 +743,7 @@ void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
   // with a different version.
   for (DataStreamMap::iterator it = stream_map_.begin();
        it != stream_map_.end(); ++it) {
-    if (version < QUIC_VERSION_17) {
+    if (version <= QUIC_VERSION_16) {
       it->second->flow_controller()->Disable();
     }
   }

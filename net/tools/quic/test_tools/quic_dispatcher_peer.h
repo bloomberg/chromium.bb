@@ -36,6 +36,9 @@ class QuicDispatcherPeer {
       const IPEndPoint& server,
       const IPEndPoint& client);
 
+  static QuicDispatcher::WriteBlockedList* GetWriteBlockedList(
+      QuicDispatcher* dispatcher);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);
 };

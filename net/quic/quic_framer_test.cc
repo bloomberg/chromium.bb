@@ -2936,7 +2936,7 @@ TEST_P(QuicFramerTest, BlockedFrame) {
 }
 
 TEST_P(QuicFramerTest, PingFrame) {
-  if (version_ <= QUIC_VERSION_17) {
+  if (version_ <= QUIC_VERSION_16) {
     return;
   }
 
@@ -4413,7 +4413,7 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
     0x07,
   };
 
-  if (version_ > QUIC_VERSION_17) {
+  if (version_ >= QUIC_VERSION_18) {
     scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
     ASSERT_TRUE(data != NULL);
 

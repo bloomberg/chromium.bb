@@ -109,6 +109,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       2 * kInitialSessionFlowControlWindowForTest);
   QuicTagVector copt;
   copt.push_back(kTBBR);
+  copt.push_back(kFHDR);
   client_config.SetConnectionOptionsToSend(copt);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
@@ -127,8 +128,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
             config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_FALSE(config_.HasReceivedLossDetection());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
-  EXPECT_EQ(1u, config_.ReceivedConnectionOptions().size());
+  EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
+  EXPECT_EQ(config_.ReceivedConnectionOptions()[1], kFHDR);
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),

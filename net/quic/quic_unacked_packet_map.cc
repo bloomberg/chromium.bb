@@ -320,4 +320,21 @@ void QuicUnackedPacketMap::SetSent(QuicPacketSequenceNumber sequence_number,
   }
 }
 
+void QuicUnackedPacketMap::RestoreInFlight(
+    QuicPacketSequenceNumber sequence_number) {
+  DCHECK_LT(0u, sequence_number);
+  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
+  if (it == unacked_packets_.end()) {
+    LOG(DFATAL) << "OnPacketSent called for packet that is not unacked: "
+                << sequence_number;
+    return;
+  }
+  DCHECK(!it->second.in_flight);
+  DCHECK_NE(0u, it->second.bytes_sent);
+  DCHECK(it->second.sent_time.IsInitialized());
+
+  bytes_in_flight_ += it->second.bytes_sent;
+  it->second.in_flight = true;
+}
+
 }  // namespace net

@@ -90,6 +90,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void set_fin_sent(bool fin_sent) { fin_sent_ = fin_sent; }
   void set_rst_sent(bool rst_sent) { rst_sent_ = rst_sent; }
 
+  void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
+  FecPolicy fec_policy() const { return fec_policy_; }
+
   // Adjust our flow control windows according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
@@ -152,8 +155,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool HasBufferedData() const;
 
   bool fin_buffered() const { return fin_buffered_; }
-
-  void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
 
   const QuicSession* session() const { return session_; }
   QuicSession* session() { return session_; }

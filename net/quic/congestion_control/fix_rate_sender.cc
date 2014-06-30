@@ -65,7 +65,9 @@ bool FixRateSender::OnPacketSent(
   return true;
 }
 
-void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) { }
+void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) {}
+
+void FixRateSender::RevertRetransmissionTimeout() {}
 
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,

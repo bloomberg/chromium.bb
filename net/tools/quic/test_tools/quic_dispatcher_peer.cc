@@ -47,6 +47,12 @@ QuicConnection* QuicDispatcherPeer::CreateQuicConnection(
                                           client);
 }
 
+// static
+QuicDispatcher::WriteBlockedList* QuicDispatcherPeer::GetWriteBlockedList(
+    QuicDispatcher* dispatcher) {
+  return &dispatcher->write_blocked_list_;
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

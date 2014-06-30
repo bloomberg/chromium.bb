@@ -296,21 +296,13 @@ void QuicDispatcher::OnCanWrite() {
   // We got an EPOLLOUT: the socket should not be blocked.
   writer_->SetWritable();
 
-  // Give each writer one attempt to write.
-  int num_writers = write_blocked_list_.size();
-  for (int i = 0; i < num_writers; ++i) {
-    if (write_blocked_list_.empty()) {
-      return;
-    }
+  // Give all the blocked writers one chance to write, until we're blocked again
+  // or there's no work left.
+  while (!write_blocked_list_.empty() && !writer_->IsWriteBlocked()) {
     QuicBlockedWriterInterface* blocked_writer =
         write_blocked_list_.begin()->first;
     write_blocked_list_.erase(write_blocked_list_.begin());
     blocked_writer->OnCanWrite();
-    if (writer_->IsWriteBlocked()) {
-      // We were unable to write.  Wait for the next EPOLLOUT. The writer is
-      // responsible for adding itself to the blocked list via OnWriteBlocked().
-      return;
-    }
   }
 }
 
@@ -352,9 +344,16 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
   CleanUpSession(it);
 }
 
-void QuicDispatcher::OnWriteBlocked(QuicBlockedWriterInterface* writer) {
-  DCHECK(writer_->IsWriteBlocked());
-  write_blocked_list_.insert(make_pair(writer, true));
+void QuicDispatcher::OnWriteBlocked(
+    QuicBlockedWriterInterface* blocked_writer) {
+  if (!writer_->IsWriteBlocked()) {
+    LOG(DFATAL) <<
+        "QuicDispatcher::OnWriteBlocked called when the writer is not blocked.";
+    // Return without adding the connection to the blocked list, to avoid
+    // infinite loops in OnCanWrite.
+    return;
+  }
+  write_blocked_list_.insert(make_pair(blocked_writer, true));
 }
 
 QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {

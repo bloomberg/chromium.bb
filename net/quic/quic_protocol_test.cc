@@ -18,10 +18,10 @@ TEST(QuicProtocolTest, AdjustErrorForVersion) {
 
   EXPECT_EQ(QUIC_STREAM_NO_ERROR,
             AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING,
-                                  QUIC_VERSION_17));
+                                  QUIC_VERSION_16));
   EXPECT_EQ(QUIC_RST_FLOW_CONTROL_ACCOUNTING, AdjustErrorForVersion(
       QUIC_RST_FLOW_CONTROL_ACCOUNTING,
-      static_cast<QuicVersion>(QUIC_VERSION_17 + 1)));
+      QUIC_VERSION_18));
 }
 
 TEST(QuicProtocolTest, MakeQuicTag) {

@@ -117,7 +117,7 @@ vector<TestParams> GetTestParams() {
     for (size_t i = 1; i < all_supported_versions.size(); ++i) {
       QuicVersionVector server_supported_versions;
       server_supported_versions.push_back(all_supported_versions[i]);
-      if (all_supported_versions[i] >= QUIC_VERSION_17) {
+      if (all_supported_versions[i] >= QUIC_VERSION_18) {
         // Until flow control is globally rolled out and we remove
         // QUIC_VERSION_16, the server MUST support at least one QUIC version
         // that does not use flow control.
@@ -633,11 +633,11 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  if (client_supported_versions_[0] >= QUIC_VERSION_17 &&
-      negotiated_version_ < QUIC_VERSION_17) {
+  if (client_supported_versions_[0] >= QUIC_VERSION_18 &&
+      negotiated_version_ <= QUIC_VERSION_16) {
     // If the version negotiation has resulted in a downgrade, then the client
     // must wait for the handshake to complete before sending any data.
-    // Otherwise it may have queued QUIC_VERSION_17 frames which will trigger a
+    // Otherwise it may have queued frames which will trigger a
     // DFATAL when they are serialized after the downgrade.
     client_->client()->WaitForCryptoHandshakeConfirmed();
   }
@@ -654,11 +654,11 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
   StartServer();
 
   client_->Connect();
-  if (client_supported_versions_[0] >= QUIC_VERSION_17 &&
-      negotiated_version_ < QUIC_VERSION_17) {
+  if (client_supported_versions_[0] >= QUIC_VERSION_18 &&
+      negotiated_version_ <= QUIC_VERSION_16) {
     // If the version negotiation has resulted in a downgrade, then the client
     // must wait for the handshake to complete before sending any data.
-    // Otherwise it may have queued QUIC_VERSION_17 frames which will trigger a
+    // Otherwise it may have queued frames which will trigger a
     // DFATAL when they are serialized after the downgrade.
     client_->client()->WaitForCryptoHandshakeConfirmed();
   }
@@ -668,7 +668,9 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
   VerifyCleanConnection(false);
 }
 
-TEST_P(EndToEndTest, LargePostFEC) {
+TEST_P(EndToEndTest, LargePostFec) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
+
   // Connect without packet loss to avoid issues with losing handshake packets,
   // and then up the packet loss rate (b/10126687).
   ASSERT_TRUE(Initialize());
@@ -677,10 +679,12 @@ TEST_P(EndToEndTest, LargePostFEC) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   SetPacketLossPercentage(30);
 
-  // Enable FEC protection.
+  // Verify that FEC is enabled.
   QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
       client_->client()->session()->connection());
-  creator->set_max_packets_per_fec_group(3);
+  EXPECT_TRUE(creator->IsFecEnabled());
+  EXPECT_EQ(kMaxPacketsPerFecGroup, creator->max_packets_per_fec_group());
+
   // Set FecPolicy to always protect data on all streams.
   client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
 
@@ -692,6 +696,43 @@ TEST_P(EndToEndTest, LargePostFEC) {
   request.AddBody(body, true);
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   VerifyCleanConnection(true);
+}
+
+TEST_P(EndToEndTest, ClientSpecifiedFecProtectionForHeaders) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
+
+  // Set FEC config in client's connection options and in client session.
+  QuicTagVector copt;
+  copt.push_back(kFHDR);
+  client_config_.SetConnectionOptionsToSend(copt);
+
+  // Connect without packet loss to avoid issues with losing handshake packets,
+  // and then up the packet loss rate (b/10126687).
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Verify that FEC is enabled.
+  QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
+      client_->client()->session()->connection());
+  EXPECT_TRUE(creator->IsFecEnabled());
+  EXPECT_EQ(kMaxPacketsPerFecGroup, creator->max_packets_per_fec_group());
+
+  // Verify that server headers stream is FEC protected.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  EXPECT_EQ(FEC_PROTECT_ALWAYS,
+            QuicSessionPeer::GetHeadersStream(session)->fec_policy());
+  server_thread_->Resume();
+
+  // Verify that at the client, headers stream is protected and other data
+  // streams are optionally protected.
+  EXPECT_EQ(FEC_PROTECT_ALWAYS, QuicSessionPeer::GetHeadersStream(
+      client_->client()->session())->fec_policy());
+  EXPECT_EQ(FEC_PROTECT_OPTIONAL, client_->GetOrCreateStream()->fec_policy());
 }
 
 // TODO(shess): This is flaky on ChromiumOS bots.

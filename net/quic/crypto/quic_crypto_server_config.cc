@@ -152,9 +152,9 @@ class VerifyNonceIsValidAndUniqueCallback
     DVLOG(1) << "Using client nonce, unique: " << nonce_is_valid_and_unique;
     result_->info.unique = nonce_is_valid_and_unique;
     // TODO(rtenneti): Implement capturing of error from strike register.
-    // Temporarily treat them as CLIENT_NONCE_UNKNOWN_FAILURE.
+    // Temporarily treat them as CLIENT_NONCE_INVALID_FAILURE.
     if (!nonce_is_valid_and_unique) {
-      result_->info.reject_reasons.push_back(CLIENT_NONCE_UNKNOWN_FAILURE);
+      result_->info.reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
     }
     done_cb_->Run(result_);
   }

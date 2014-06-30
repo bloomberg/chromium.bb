@@ -32,6 +32,10 @@ class NET_EXPORT_PRIVATE RttStats {
                  QuicTime::Delta ack_delay,
                  QuicTime now);
 
+  // Causes the smoothed_rtt to be increased to the latest_rtt and the
+  // mean_variance to be increased to the most recent variance.
+  void ExpireSmoothedMetrics();
+
   // Forces RttStats to sample a new recent min rtt within the next
   // |num_samples| UpdateRtt calls.
   void SampleNewRecentMinRtt(uint32 num_samples);

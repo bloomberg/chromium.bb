@@ -154,7 +154,25 @@ TEST_F(RttStatsTest, WindowedRecentMinRtt) {
   EXPECT_EQ(rtt_sample, rtt_stats_.recent_min_rtt());
 }
 
+TEST_F(RttStatsTest, ExpireSmoothedMetrics) {
+  QuicTime::Delta initial_rtt = QuicTime::Delta::FromMilliseconds(10);
+  rtt_stats_.UpdateRtt(initial_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(initial_rtt, rtt_stats_.min_rtt());
+  EXPECT_EQ(initial_rtt, rtt_stats_.recent_min_rtt());
+  EXPECT_EQ(initial_rtt, rtt_stats_.SmoothedRtt());
 
+  EXPECT_EQ(initial_rtt.Multiply(0.5), rtt_stats_.mean_deviation());
+
+  // Update once with a 20ms RTT.
+  QuicTime::Delta doubled_rtt = initial_rtt.Multiply(2);
+  rtt_stats_.UpdateRtt(doubled_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(initial_rtt.Multiply(1.125), rtt_stats_.SmoothedRtt());
+
+  // Expire the smoothed metrics, increasing smoothed rtt and mean deviation.
+  rtt_stats_.ExpireSmoothedMetrics();
+  EXPECT_EQ(doubled_rtt, rtt_stats_.SmoothedRtt());
+  EXPECT_EQ(initial_rtt.Multiply(0.875), rtt_stats_.mean_deviation());
+}
 
 }  // namespace test
 }  // namespace net

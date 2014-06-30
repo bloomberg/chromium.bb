@@ -54,6 +54,9 @@ const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag kNACK = TAG('N', 'A', 'C', 'K');   // TCP style nack counting
 const QuicTag kTIME = TAG('T', 'I', 'M', 'E');   // Time based
 
+// FEC options
+const QuicTag kFHDR = TAG('F', 'H', 'D', 'R');   // FEC protect headers
+
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.

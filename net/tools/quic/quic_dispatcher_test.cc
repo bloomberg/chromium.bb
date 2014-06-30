@@ -55,7 +55,6 @@ class TestDispatcher : public QuicDispatcher {
       QuicConnectionId connection_id,
       const IPEndPoint& server_address,
       const IPEndPoint& client_address));
-  using QuicDispatcher::write_blocked_list;
 
   using QuicDispatcher::current_server_address;
   using QuicDispatcher::current_client_address;
@@ -301,7 +300,7 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
                       &dispatcher_, 2, client_address, &session2_)));
     ProcessPacket(client_address, 2, true, "bar");
 
-    blocked_list_ = dispatcher_.write_blocked_list();
+    blocked_list_ = QuicDispatcherPeer::GetWriteBlockedList(&dispatcher_);
   }
 
   virtual void TearDown() {
