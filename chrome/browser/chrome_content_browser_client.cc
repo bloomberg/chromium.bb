@@ -33,7 +33,6 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -236,6 +235,7 @@
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
 #endif
 
@@ -2197,14 +2197,10 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     return true;
   }
 
-  ExtensionRendererState* renderer_state =
-      ExtensionRendererState::GetInstance();
-  ExtensionRendererState::WebViewInfo webview_info;
-  bool is_guest = renderer_state->GetWebViewInfo(render_process_id,
-                                                 opener_id,
-                                                 &webview_info);
-  if (is_guest)
+#if defined(ENABLE_EXTENSIONS)
+  if (WebViewRendererState::GetInstance()->IsGuest(render_process_id))
     return true;
+#endif
 
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();

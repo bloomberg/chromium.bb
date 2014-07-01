@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/web_request.h"
@@ -181,12 +182,12 @@ void ExtractRequestRoutingInfo(net::URLRequest* request,
 // then |web_view_info| is returned with information about the instance ID
 // that uniquely identifies the <webview> and its embedder.
 bool GetWebViewInfo(net::URLRequest* request,
-                    ExtensionRendererState::WebViewInfo* web_view_info) {
+                    WebViewRendererState::WebViewInfo* web_view_info) {
   int render_process_host_id = -1;
   int routing_id = -1;
   ExtractRequestRoutingInfo(request, &render_process_host_id, &routing_id);
-  return ExtensionRendererState::GetInstance()->
-      GetWebViewInfo(render_process_host_id, routing_id, web_view_info);
+  return WebViewRendererState::GetInstance()->
+      GetInfo(render_process_host_id, routing_id, web_view_info);
 }
 
 void ExtractRequestInfoDetails(net::URLRequest* request,
@@ -401,7 +402,7 @@ void SendOnMessageEventOnUI(
     void* profile_id,
     const std::string& extension_id,
     bool is_web_view_guest,
-    const ExtensionRendererState::WebViewInfo& web_view_info,
+    const WebViewRendererState::WebViewInfo& web_view_info,
     scoped_ptr<base::DictionaryValue> event_argument) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -1466,9 +1467,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
   std::string web_request_event_name(event_name);
-  ExtensionRendererState::WebViewInfo web_view_info;
-  bool is_web_view_guest = ExtensionRendererState::GetInstance()->
-      GetWebViewInfo(render_process_host_id, routing_id, &web_view_info);
+  WebViewRendererState::WebViewInfo web_view_info;
+  bool is_web_view_guest = WebViewRendererState::GetInstance()->
+      GetInfo(render_process_host_id, routing_id, &web_view_info);
   if (is_web_view_guest) {
     web_request_event_name.replace(
         0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
@@ -1842,7 +1843,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
          message != messages.end(); ++message) {
       scoped_ptr<base::DictionaryValue> argument(new base::DictionaryValue);
       ExtractRequestInfo(blocked_request.request, argument.get());
-      ExtensionRendererState::WebViewInfo web_view_info;
+      WebViewRendererState::WebViewInfo web_view_info;
       bool is_web_view_guest = GetWebViewInfo(blocked_request.request,
                                               &web_view_info);
       argument->SetString(keys::kMessageKey, *message);
@@ -1971,7 +1972,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     net::URLRequest* request,
     extensions::RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
-  ExtensionRendererState::WebViewInfo web_view_info;
+  WebViewRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = GetWebViewInfo(request, &web_view_info);
 
   RulesRegistryService::WebViewKey webview_key(

@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/info_map.h"
@@ -487,14 +487,12 @@ bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   int process_id = info ? info->GetChildID() : 0;
-  int route_id = info ? info->GetRouteID() : 0;
-  ExtensionRendererState::WebViewInfo webview_info;
+
   // The embedder can always access all hosts from within a <webview>.
   // The same is not true of extensions.
-  if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
-          process_id, route_id, &webview_info)) {
+  if (WebViewRendererState::GetInstance()->IsGuest(process_id))
     return true;
-  }
+
   WebRequestPermissions::HostPermissionsCheck permission_check =
       WebRequestPermissions::REQUIRE_ALL_URLS;
   switch (host_permissions_strategy()) {

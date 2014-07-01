@@ -388,8 +388,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                     const GURL& new_url,
                     bool is_top_level);
 
-  void AddWebViewToExtensionRendererState();
-  static void RemoveWebViewFromExtensionRendererState(
+  void PushWebViewStateToIOThread();
+  static void RemoveWebViewStateFromIOThread(
       content::WebContents* web_contents);
 
 #if defined(OS_CHROMEOS)

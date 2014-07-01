@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
@@ -514,7 +514,7 @@ void WebViewGuest::GuestDestroyed() {
   menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
       embedder_extension_id(), view_instance_id()));
 
-  RemoveWebViewFromExtensionRendererState(web_contents());
+  RemoveWebViewStateFromIOThread(web_contents());
 }
 
 bool WebViewGuest::IsDragAndDropEnabled() const {
@@ -1141,7 +1141,7 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
       new GuestViewBase::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
-void WebViewGuest::AddWebViewToExtensionRendererState() {
+void WebViewGuest::PushWebViewStateToIOThread() {
   const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
   std::string partition_domain;
   std::string partition_id;
@@ -1153,7 +1153,7 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   }
   DCHECK(embedder_extension_id() == partition_domain);
 
-  ExtensionRendererState::WebViewInfo web_view_info;
+  WebViewRendererState::WebViewInfo web_view_info;
   web_view_info.embedder_process_id = embedder_render_process_id();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
@@ -1162,21 +1162,21 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&ExtensionRendererState::AddWebView,
-                 base::Unretained(ExtensionRendererState::GetInstance()),
+      base::Bind(&WebViewRendererState::AddGuest,
+                 base::Unretained(WebViewRendererState::GetInstance()),
                  guest_web_contents()->GetRenderProcessHost()->GetID(),
                  guest_web_contents()->GetRoutingID(),
                  web_view_info));
 }
 
 // static
-void WebViewGuest::RemoveWebViewFromExtensionRendererState(
+void WebViewGuest::RemoveWebViewStateFromIOThread(
     WebContents* web_contents) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &ExtensionRendererState::RemoveWebView,
-          base::Unretained(ExtensionRendererState::GetInstance()),
+          &WebViewRendererState::RemoveGuest,
+          base::Unretained(WebViewRendererState::GetInstance()),
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetRoutingID()));
 }
@@ -1264,7 +1264,7 @@ void WebViewGuest::WillAttachToEmbedder() {
   // We must install the mapping from guests to WebViews prior to resuming
   // suspended resource loads so that the WebRequest API will catch resource
   // requests.
-  AddWebViewToExtensionRendererState();
+  PushWebViewStateToIOThread();
 }
 
 content::JavaScriptDialogManager*

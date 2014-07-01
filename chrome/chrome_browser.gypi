@@ -1722,6 +1722,8 @@
       'browser/guest_view/web_view/web_view_guest.cc',
       'browser/guest_view/web_view/web_view_guest.h',
       'browser/guest_view/web_view/web_view_permission_types.h',
+      'browser/guest_view/web_view/web_view_renderer_state.cc',
+      'browser/guest_view/web_view/web_view_renderer_state.h',
       'browser/infobars/infobar_extension_api.cc',
       'browser/infobars/infobar_extension_api.h',
       'browser/renderer_host/chrome_extension_message_filter.cc',

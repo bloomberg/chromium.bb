@@ -11,7 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
+
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -203,12 +207,13 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     // NPAPI plugins are not supported inside <webview> guests.
-    if (ExtensionRendererState::GetInstance()->IsWebViewRenderer(
-            render_process_id_)) {
+#if defined(ENABLE_EXTENSIONS)
+    if (WebViewRendererState::GetInstance()->IsGuest(render_process_id_)) {
       status->value =
           ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
       return;
     }
+#endif
   }
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
@@ -280,10 +285,11 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     // the guest. In order to do this, set the status to 'Unauthorized' here,
     // and update the status as appropriate depending on the response from the
     // embedder.
-    if (ExtensionRendererState::GetInstance()->IsWebViewRenderer(
-            render_process_id_)) {
+#if defined(ENABLE_EXTENSIONS)
+    if (WebViewRendererState::GetInstance()->IsGuest(render_process_id_))
       status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
-    }
+
+#endif
   }
 }
 

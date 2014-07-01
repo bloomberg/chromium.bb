@@ -12,10 +12,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
 
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -205,8 +205,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
 
 #if defined(ENABLE_EXTENSIONS)
   bool is_web_view_guest =
-      ExtensionRendererState::GetInstance()->IsWebViewRenderer(
-          render_process_id_);
+      WebViewRendererState::GetInstance()->IsGuest(render_process_id_);
   if (is_web_view_guest) {
     // Record access to file system for potential display in UI.
     BrowserThread::PostTask(BrowserThread::UI,
@@ -246,8 +245,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
 
 #if defined(ENABLE_EXTENSIONS)
   bool is_web_view_guest =
-      ExtensionRendererState::GetInstance()->IsWebViewRenderer(
-          render_process_id_);
+      WebViewRendererState::GetInstance()->IsGuest(render_process_id_);
   if (is_web_view_guest) {
     // Record access to file system for potential display in UI.
     BrowserThread::PostTask(BrowserThread::UI,
