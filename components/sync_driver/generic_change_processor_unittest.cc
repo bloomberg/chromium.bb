@@ -87,6 +87,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
 
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) OVERRIDE {
     EXPECT_TRUE(attachment_service_ != NULL);
     return attachment_service_.Pass();

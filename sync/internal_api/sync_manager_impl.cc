@@ -323,6 +323,7 @@ void SyncManagerImpl::Init(
   DCHECK(post_factory.get());
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
+  DCHECK(!credentials.scope_set.empty());
   DCHECK(cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
 
@@ -359,7 +360,6 @@ void SyncManagerImpl::Init(
           credentials.email, absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
-  const std::string& username = credentials.email;
   share_.directory.reset(
       new syncable::Directory(
           backing_store.release(),
@@ -367,7 +367,13 @@ void SyncManagerImpl::Init(
           report_unrecoverable_error_function_,
           sync_encryption_handler_.get(),
           sync_encryption_handler_->GetCryptographerUnsafe()));
+  share_.sync_credentials = credentials;
 
+  // UserShare is accessible to a lot of code that doesn't need access to the
+  // sync token so clear sync_token from the UserShare.
+  share_.sync_credentials.sync_token = "";
+
+  const std::string& username = credentials.email;
   DVLOG(1) << "Username: " << username;
   if (!OpenDirectory(username)) {
     NotifyInitializationFailure();
@@ -576,6 +582,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(initialized_);
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
+  DCHECK(!credentials.scope_set.empty());
 
   observing_network_connectivity_changes_ = true;
   if (!connection_manager_->SetAuthToken(credentials.sync_token))

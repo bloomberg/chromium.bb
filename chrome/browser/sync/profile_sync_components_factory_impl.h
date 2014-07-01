@@ -30,10 +30,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   //
   // |sync_service_url| is the base URL of the sync server.
   //
-  // |account_id| is the sync user's account id.
-  //
-  // |scope_set| is the set of scopes to use for sync.
-  //
   // |token_service| must outlive the ProfileSyncComponentsFactoryImpl.
   //
   // |url_request_context_getter| must outlive the
@@ -42,8 +38,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       Profile* profile,
       base::CommandLine* command_line,
       const GURL& sync_service_url,
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scope_set,
       OAuth2TokenService* token_service,
       net::URLRequestContextGetter* url_request_context_getter);
   virtual ~ProfileSyncComponentsFactoryImpl();
@@ -70,6 +64,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) OVERRIDE;
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) OVERRIDE;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
@@ -111,8 +106,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 
   const GURL sync_service_url_;
-  const std::string account_id_;
-  const OAuth2TokenService::ScopeSet scope_set_;
   OAuth2TokenService* const token_service_;
   net::URLRequestContextGetter* const url_request_context_getter_;
 

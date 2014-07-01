@@ -26,8 +26,6 @@
 
 using browser_sync::DataTypeController;
 
-const char kAccountId[] = "testuser@test.com";
-
 class ProfileSyncComponentsFactoryImplTest : public testing::Test {
  protected:
   ProfileSyncComponentsFactoryImplTest()
@@ -112,8 +110,6 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             profile_.get(),
             command_line_.get(),
             ProfileSyncService::GetSyncServiceURL(*command_line_),
-            kAccountId,
-            scope_set_,
             token_service,
             profile_->GetRequestContext()),
         profile_.get(),
@@ -141,8 +137,6 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
           profile_.get(),
           command_line_.get(),
           ProfileSyncService::GetSyncServiceURL(*command_line_),
-          kAccountId,
-          scope_set_,
           token_service,
           profile_->GetRequestContext()),
       profile_.get(),

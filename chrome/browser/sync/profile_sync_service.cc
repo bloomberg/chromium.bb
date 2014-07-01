@@ -510,6 +510,8 @@ SyncCredentials ProfileSyncService::GetCredentials() {
 
     if (credentials.sync_token.empty())
       credentials.sync_token = "credentials_lost";
+
+    credentials.scope_set.insert(signin_->GetSyncScopeToUse());
   }
 
   return credentials;

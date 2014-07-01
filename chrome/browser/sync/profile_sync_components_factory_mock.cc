@@ -31,6 +31,7 @@ ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
 
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryMock::CreateAttachmentService(
+    const syncer::UserShare& user_share,
     syncer::AttachmentService::Delegate* delegate) {
   return syncer::AttachmentServiceImpl::CreateForTest();
 }

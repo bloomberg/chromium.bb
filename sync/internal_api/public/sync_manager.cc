@@ -6,6 +6,10 @@
 
 namespace syncer {
 
+SyncCredentials::SyncCredentials() {}
+
+SyncCredentials::~SyncCredentials() {}
+
 SyncManager::ChangeDelegate::~ChangeDelegate() {}
 
 SyncManager::ChangeObserver::~ChangeObserver() {}

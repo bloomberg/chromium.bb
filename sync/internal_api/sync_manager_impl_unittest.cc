@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
@@ -794,6 +795,9 @@ class SyncManagerTest : public testing::Test,
     SyncCredentials credentials;
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
+    OAuth2TokenService::ScopeSet scope_set;
+    scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
+    credentials.scope_set = scope_set;
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _)).

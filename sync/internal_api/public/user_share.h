@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/sync_manager.h"
 
 namespace syncer {
 
@@ -26,6 +27,11 @@ struct SYNC_EXPORT_PRIVATE UserShare {
 
   // The Directory itself, which is the parent of Transactions.
   scoped_ptr<syncable::Directory> directory;
+
+  // The credentials used by sync when talking to the sync server.
+  //
+  // Note: some or all of the sync_credentials fields may be empty.
+  SyncCredentials sync_credentials;
 };
 
 }  // namespace syncer

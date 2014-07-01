@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
@@ -66,11 +67,18 @@ enum ConnectionStatus {
 };
 
 // Contains everything needed to talk to and identify a user account.
-struct SyncCredentials {
+struct SYNC_EXPORT SyncCredentials {
+  SyncCredentials();
+  ~SyncCredentials();
+
   // The email associated with this account.
   std::string email;
+
   // The raw authentication token's bytes.
   std::string sync_token;
+
+  // The set of scopes to use when talking to sync server.
+  OAuth2TokenService::ScopeSet scope_set;
 };
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all

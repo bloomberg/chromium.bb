@@ -47,6 +47,7 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) OVERRIDE;
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,

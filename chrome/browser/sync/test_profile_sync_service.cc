@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/user_share.h"
@@ -51,6 +52,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
       new syncer::SyncManagerFactoryForProfileSyncTest(callback_));
   options->credentials.email = "testuser@gmail.com";
   options->credentials.sync_token = "token";
+  options->credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   options->restored_key_for_bootstrapping = "";
 
   // It'd be nice if we avoided creating the InternalComponentsFactory in the

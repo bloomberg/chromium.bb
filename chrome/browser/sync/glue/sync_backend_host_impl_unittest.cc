@@ -28,6 +28,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "google/cacheinvalidation/include/types.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -166,6 +167,7 @@ class SyncBackendHostTest : public testing::Test {
         base::FilePath(kTestSyncDir)));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
+    credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
     fake_manager_factory_.reset(new FakeSyncManagerFactory(&fake_manager_));
 

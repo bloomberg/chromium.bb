@@ -150,8 +150,6 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile,
     CommandLine* command_line,
     const GURL& sync_service_url,
-    const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scope_set,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* url_request_context_getter)
     : profile_(profile),
@@ -160,8 +158,6 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       web_data_service_(WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_, Profile::EXPLICIT_ACCESS)),
       sync_service_url_(sync_service_url),
-      account_id_(account_id),
-      scope_set_(scope_set),
       token_service_(token_service),
       url_request_context_getter_(url_request_context_getter),
       weak_factory_(this) {
@@ -626,6 +622,7 @@ OAuth2TokenService* TokenServiceProvider::GetTokenService() {
 
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
+    const syncer::UserShare& user_share,
     syncer::AttachmentService::Delegate* delegate) {
   scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(
@@ -639,8 +636,8 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
       new syncer::AttachmentUploaderImpl(sync_service_url_,
                                          url_request_context_getter_,
-                                         account_id_,
-                                         scope_set_,
+                                         user_share.sync_credentials.email,
+                                         user_share.sync_credentials.scope_set,
                                          token_service_provider.Pass()));
 
   token_service_provider.reset(new TokenServiceProvider(
@@ -648,11 +645,12 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
           content::BrowserThread::UI),
       token_service_));
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader(
-      syncer::AttachmentDownloader::Create(sync_service_url_,
-                                           url_request_context_getter_,
-                                           account_id_,
-                                           scope_set_,
-                                           token_service_provider.Pass()));
+      syncer::AttachmentDownloader::Create(
+          sync_service_url_,
+          url_request_context_getter_,
+          user_share.sync_credentials.email,
+          user_share.sync_credentials.scope_set,
+          token_service_provider.Pass()));
 
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(

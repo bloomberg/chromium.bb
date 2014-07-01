@@ -132,8 +132,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       new ProfileSyncComponentsFactoryImpl(profile,
                                            CommandLine::ForCurrentProcess(),
                                            sync_service_url,
-                                           account_id,
-                                           scope_set,
                                            token_service,
                                            url_request_context_getter),
       profile,
