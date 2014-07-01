@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/client_util.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
@@ -97,7 +98,11 @@ int main() {
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
 
-  gfx::EnableHighDPISupport();
+  // We don't want to set DPI awareness on Vista because we don't support
+  // DirectWrite there. GDI fonts are kerned very badly, so better to leave
+  // DPI-unaware and at effective 1.0. See also ShouldUseDirectWrite().
+  if (base::win::GetVersion() > base::win::VERSION_VISTA)
+    gfx::EnableHighDPISupport();
 
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
