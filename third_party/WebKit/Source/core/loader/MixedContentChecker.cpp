@@ -62,6 +62,18 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
 
 bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
+    // Check the top frame if it differs from MixedContentChecker's m_frame.
+    if (!m_frame->tree().top()->isLocalFrame()) {
+        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
+        // is in a different process from the current frame. Until that is done, we always allow
+        // loads in remote frames.
+        return false;
+    }
+    Frame* top = m_frame->tree().top();
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+        return false;
+
+    // Then check the current frame:
     if (!isMixedContent(securityOrigin, url))
         return true;
 
@@ -77,6 +89,18 @@ bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* secu
 
 bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
+    // Check the top frame if it differs from MixedContentChecker's m_frame.
+    if (!m_frame->tree().top()->isLocalFrame()) {
+        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
+        // is in a different process from the current frame. Until that is done, we always allow
+        // loads in remote frames.
+        return false;
+    }
+    Frame* top = m_frame->tree().top();
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+        return false;
+
+    // Then check the current frame:
     if (!isMixedContent(securityOrigin, url))
         return true;
 

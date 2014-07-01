@@ -122,9 +122,6 @@ void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchI
 {
     if (!frame->loader().mixedContentChecker()->canRunInsecureContent(frame->document()->securityOrigin(), request.url()))
         return;
-    Frame* top = frame->tree().top();
-    if (top != frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), request.url()))
-        return;
 
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
 

@@ -437,40 +437,27 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             break;
         }
     }
-    // FIXME: We need a way to access the top-level frame's mixedContentChecker when that frame
-    // is in a different process from the current frame. Until that is done, we always allow
-    // loads in remote frames.
-    if (frame() && !frame()->tree().top()->isLocalFrame())
-        return true;
     if (treatment == TreatAsActiveContent) {
         if (LocalFrame* f = frame()) {
             if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
-            Frame* top = f->tree().top();
-            if (top != f && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
-                return false;
         }
     } else if (treatment == TreatAsPassiveContent) {
         if (LocalFrame* f = frame()) {
-            Frame* top = f->tree().top();
-            if (!toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+            if (!f->loader().mixedContentChecker()->canDisplayInsecureContent(m_document->securityOrigin(), url))
                 return false;
-            if (MixedContentChecker::isMixedContent(toLocalFrame(top)->document()->securityOrigin(), url)) {
+            if (MixedContentChecker::isMixedContent(f->document()->securityOrigin(), url) || MixedContentChecker::isMixedContent(toLocalFrame(frame()->tree().top())->document()->securityOrigin(), url)) {
                 switch (type) {
-                case Resource::TextTrack:
-                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentTextTrack);
-                    break;
-
                 case Resource::Raw:
-                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentRaw);
+                    UseCounter::count(f->document(), UseCounter::MixedContentRaw);
                     break;
 
                 case Resource::Image:
-                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentImage);
+                    UseCounter::count(f->document(), UseCounter::MixedContentImage);
                     break;
 
                 case Resource::Media:
-                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentMedia);
+                    UseCounter::count(f->document(), UseCounter::MixedContentMedia);
                     break;
 
                 default:
