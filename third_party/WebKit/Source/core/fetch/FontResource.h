@@ -57,6 +57,9 @@ public:
     virtual bool stillNeedsLoad() const OVERRIDE { return !m_loadInitiated; }
     bool exceedsFontLoadWaitLimit() const { return m_exceedsFontLoadWaitLimit; }
 
+    void setCORSFailed() { m_corsFailed = true; }
+    bool isCORSFailed() const { return m_corsFailed; }
+
     bool ensureCustomFontData();
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
@@ -75,6 +78,7 @@ private:
     OwnPtr<FontCustomPlatformData> m_fontData;
     bool m_loadInitiated;
     bool m_exceedsFontLoadWaitLimit;
+    bool m_corsFailed;
     Timer<FontResource> m_fontLoadWaitLimitTimer;
 
 #if ENABLE(SVG_FONTS)

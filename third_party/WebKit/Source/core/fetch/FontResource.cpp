@@ -78,6 +78,7 @@ FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
     , m_loadInitiated(false)
     , m_exceedsFontLoadWaitLimit(false)
+    , m_corsFailed(false)
     , m_fontLoadWaitLimitTimer(this, &FontResource::fontLoadWaitLimitCallback)
 {
 }

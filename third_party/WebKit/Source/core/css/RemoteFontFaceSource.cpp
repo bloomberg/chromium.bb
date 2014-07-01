@@ -170,6 +170,10 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
             : font->response().wasCached() ? Hit
             : Miss;
         blink::Platform::current()->histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
+
+        enum { CORSFail, CORSSuccess, CORSEnumMax };
+        int corsValue = font->isCORSFailed() ? CORSFail : CORSSuccess;
+        blink::Platform::current()->histogramEnumeration("WebFont.CORSSuccess", corsValue, CORSEnumMax);
     }
 }
 
