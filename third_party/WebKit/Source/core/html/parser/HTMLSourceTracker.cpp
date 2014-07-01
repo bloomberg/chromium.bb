@@ -32,24 +32,28 @@
 namespace WebCore {
 
 HTMLSourceTracker::HTMLSourceTracker()
+    : m_isStarted(false)
 {
 }
 
 void HTMLSourceTracker::start(SegmentedString& currentInput, HTMLTokenizer* tokenizer, HTMLToken& token)
 {
-    if (token.type() == HTMLToken::Uninitialized) {
+    if (token.type() == HTMLToken::Uninitialized && !m_isStarted) {
         m_previousSource.clear();
         if (tokenizer->numberOfBufferedCharacters())
             m_previousSource = tokenizer->bufferedCharacters();
     } else
         m_previousSource.append(m_currentSource);
 
+    m_isStarted = true;
     m_currentSource = currentInput;
     token.setBaseOffset(m_currentSource.numberOfCharactersConsumed() - m_previousSource.length());
 }
 
 void HTMLSourceTracker::end(SegmentedString& currentInput, HTMLTokenizer* tokenizer, HTMLToken& token)
 {
+    m_isStarted = false;
+
     m_cachedSourceForToken = String();
 
     // FIXME: This work should really be done by the HTMLTokenizer.

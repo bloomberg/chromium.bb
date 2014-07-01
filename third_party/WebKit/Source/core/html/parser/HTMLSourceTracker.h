@@ -51,6 +51,8 @@ private:
     SegmentedString m_currentSource;
 
     String m_cachedSourceForToken;
+
+    bool m_isStarted;
 };
 
 }
