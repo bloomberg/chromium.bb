@@ -163,6 +163,7 @@ interface TestObject {
     [LogActivity=SetterOnly, LogAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CachedAttribute=isArrayDirty] attribute DOMString[] cachedArrayAttribute;
+    [CachedAttribute=isStringDirty] attribute DOMString? cachedStringOrNoneAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
     [CallWith=ExecutionContext|ScriptState] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
@@ -242,6 +243,7 @@ interface TestObject {
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
+    [TreatReturnedNullStringAs=Undefined, CachedAttribute=isStringDirty] attribute DOMString cachedTreatReturnedNullStringAsUndefinedStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute ByteString treatReturnedNullStringAsNullByteStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute ByteString treatReturnedNullStringAsUndefinedByteStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute ScalarValueString treatReturnedNullStringAsNullScalarValueStringAttribute;
@@ -252,7 +254,7 @@ interface TestObject {
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
-    [LogActivity=SetterOnly, LogPreviousValue] attribute long activityLoggingSetterOnlyLogPreviousValueAttribute;
+    [LogActivity=SetterOnly, LogPreviousValue] attribute DOMString? activityLoggingSetterOnlyLogPreviousValueAttribute;
     [LogActivity, LogPreviousValue] attribute TestInterfaceEmpty activityLoggingLogPreviousValueInterfaceAttribute;
 
 

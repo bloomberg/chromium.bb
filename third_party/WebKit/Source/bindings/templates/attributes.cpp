@@ -69,12 +69,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
                          attribute.cpp_value)
       | indent}}
     {% endif %}
-    {% if attribute.is_nullable %}
-    {% if attribute.is_nullable_simple %}
-    if (!{{attribute.cpp_value}}) {
-    {% else %}
+    {% if attribute.is_nullable and not attribute.is_nullable_simple %}
     if (isNull) {
-    {% endif %}
         v8SetReturnValueNull(info);
         return;
     }
@@ -315,9 +311,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
         {% if attribute.activity_logging_include_old_value_for_setter %}
         {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
         {% if attribute.cpp_value_original %}
-        {{attribute.cpp_type}} original = {{attribute.cpp_value_original}};
-        {% else %}
-        {{attribute.cpp_type}} original = {{attribute.cpp_value}};
+        {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
         {% endif %}
         v8::Handle<v8::Value> originalValue = {{attribute.cpp_value_to_v8_value}};
         contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value, originalValue);

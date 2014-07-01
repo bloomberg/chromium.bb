@@ -1372,12 +1372,7 @@ static void readonlyEventTargetOrNullAttributeAttributeGetter(const v8::Property
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtrWillBeRawPtr<EventTarget> cppValue(impl->readonlyEventTargetOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->readonlyEventTargetOrNullAttribute()), impl);
 }
 
 static void readonlyEventTargetOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1520,12 +1515,7 @@ static void stringOrNullAttributeAttributeGetter(const v8::PropertyCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    String cppValue(impl->stringOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueString(info, cppValue, info.GetIsolate());
+    v8SetReturnValueStringOrNull(info, impl->stringOrNullAttribute(), info.GetIsolate());
 }
 
 static void stringOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1590,12 +1580,7 @@ static void testInterfaceOrNullAttributeAttributeGetter(const v8::PropertyCallba
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> cppValue(impl->testInterfaceOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceOrNullAttribute()), impl);
 }
 
 static void testInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1918,6 +1903,46 @@ static void cachedArrayAttributeAttributeSetterCallback(v8::Local<v8::String>, v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestObjectV8Internal::cachedArrayAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void cachedStringOrNoneAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedStringOrNoneAttribute");
+    TestObject* impl = V8TestObject::toNative(holder);
+    if (!impl->isStringDirty()) {
+        v8::Handle<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
+        if (!v8Value.IsEmpty()) {
+            v8SetReturnValue(info, v8Value);
+            return;
+        }
+    }
+    String cppValue(impl->cachedStringOrNoneAttribute());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8::Handle<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue));
+    v8SetReturnValueStringOrNull(info, cppValue, info.GetIsolate());
+}
+
+static void cachedStringOrNoneAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
+    impl->setCachedStringOrNoneAttribute(cppValue);
+    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedStringOrNoneAttribute")); // Invalidate the cached value.
+}
+
+static void cachedStringOrNoneAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -4253,6 +4278,46 @@ static void treatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCall
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedTreatReturnedNullStringAsUndefinedStringAttribute");
+    TestObject* impl = V8TestObject::toNative(holder);
+    if (!impl->isStringDirty()) {
+        v8::Handle<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
+        if (!v8Value.IsEmpty()) {
+            v8SetReturnValue(info, v8Value);
+            return;
+        }
+    }
+    String cppValue(impl->cachedTreatReturnedNullStringAsUndefinedStringAttribute());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8Undefined() : v8String(info.GetIsolate(), cppValue));
+    v8SetReturnValueStringOrUndefined(info, cppValue, info.GetIsolate());
+}
+
+static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    impl->setCachedTreatReturnedNullStringAsUndefinedStringAttribute(cppValue);
+    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedTreatReturnedNullStringAsUndefinedStringAttribute")); // Invalidate the cached value.
+}
+
+static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void treatReturnedNullStringAsNullByteStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
@@ -4441,12 +4506,7 @@ static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetter(con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtr<TestInterfaceImplementation> cppValue(impl->typeCheckingInterfaceTestInterfaceOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->typeCheckingInterfaceTestInterfaceOrNullAttribute()), impl);
 }
 
 static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4573,7 +4633,8 @@ static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetter(co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    v8SetReturnValueInt(info, impl->activityLoggingSetterOnlyLogPreviousValueAttribute());
+    String cppValue(impl->activityLoggingSetterOnlyLogPreviousValueAttribute());
+    v8SetReturnValueStringOrNull(info, cppValue, info.GetIsolate());
 }
 
 static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4586,9 +4647,8 @@ static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetterCal
 static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingSetterOnlyLogPreviousValueAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
     impl->setActivityLoggingSetterOnlyLogPreviousValueAttribute(cppValue);
 }
 
@@ -4599,8 +4659,8 @@ static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetterCal
     V8PerContextData* contextData = scriptState->perContextData();
     if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger()) {
         TestObject* impl = V8TestObject::toNative(info.Holder());
-        int original = impl->activityLoggingSetterOnlyLogPreviousValueAttribute();
-        v8::Handle<v8::Value> originalValue = v8::Integer::New(info.GetIsolate(), impl->activityLoggingSetterOnlyLogPreviousValueAttribute());
+        String cppValue(impl->activityLoggingSetterOnlyLogPreviousValueAttribute());
+        v8::Handle<v8::Value> originalValue = cppValue.isNull() ? v8::Handle<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue);
         contextData->activityLogger()->logSetter("TestObject.activityLoggingSetterOnlyLogPreviousValueAttribute", v8Value, originalValue);
     }
     TestObjectV8Internal::activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetter(v8Value, info);
@@ -4611,7 +4671,8 @@ static void activityLoggingLogPreviousValueInterfaceAttributeAttributeGetter(con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->activityLoggingLogPreviousValueInterfaceAttribute()), impl);
+    RefPtr<TestInterfaceEmpty> cppValue(impl->activityLoggingLogPreviousValueInterfaceAttribute());
+    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
 }
 
 static void activityLoggingLogPreviousValueInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4640,8 +4701,8 @@ static void activityLoggingLogPreviousValueInterfaceAttributeAttributeSetterCall
     V8PerContextData* contextData = scriptState->perContextData();
     if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger()) {
         TestObject* impl = V8TestObject::toNative(info.Holder());
-        RefPtr<TestInterfaceEmpty> original = impl->activityLoggingLogPreviousValueInterfaceAttribute();
-        v8::Handle<v8::Value> originalValue = toV8(impl->activityLoggingLogPreviousValueInterfaceAttribute(), info.Holder(), info.GetIsolate());
+        RefPtr<TestInterfaceEmpty> cppValue(impl->activityLoggingLogPreviousValueInterfaceAttribute());
+        v8::Handle<v8::Value> originalValue = toV8(cppValue, info.Holder(), info.GetIsolate());
         contextData->activityLogger()->logSetter("TestObject.activityLoggingLogPreviousValueInterfaceAttribute", v8Value, originalValue);
     }
     TestObjectV8Internal::activityLoggingLogPreviousValueInterfaceAttributeAttributeSetter(v8Value, info);
@@ -4710,12 +4771,7 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(const v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->testInterfaceGarbageCollectedOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceGarbageCollectedOrNullAttribute()), impl);
 }
 
 static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4773,12 +4829,7 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetter(co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute()), impl);
 }
 
 static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -9705,6 +9756,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttributeAnyAttribute", TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedArrayAttribute", TestObjectV8Internal::cachedArrayAttributeAttributeGetterCallback, TestObjectV8Internal::cachedArrayAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"cachedStringOrNoneAttribute", TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetterCallback, TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithExecutionContextAnyAttribute", TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithScriptStateAnyAttribute", TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithExecutionContextAndScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -9781,6 +9833,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"treatNullAsNullStringStringAttribute", TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsUndefinedStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"cachedTreatReturnedNullStringAsUndefinedStringAttribute", TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback, TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullByteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsUndefinedByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullScalarValueStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

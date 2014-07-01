@@ -180,10 +180,6 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     RefPtr<TestInterfaceEmpty> cppValue(impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute());
-    if (!cppValue) {
-        v8SetReturnValueNull(info);
-        return;
-    }
     if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), cppValue.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());

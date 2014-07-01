@@ -558,6 +558,8 @@ def v8_conversion_type(idl_type, extended_attributes):
     if base_idl_type in CPP_UNSIGNED_TYPES:
         return 'unsigned'
     if idl_type.is_string_type:
+        if idl_type.is_nullable:
+            return 'StringOrNull'
         if 'TreatReturnedNullStringAs' not in extended_attributes:
             return base_idl_type
         treat_returned_null_string_as = extended_attributes['TreatReturnedNullStringAs']
@@ -676,6 +678,9 @@ CPP_VALUE_TO_V8_VALUE = {
     'double': 'v8::Number::New({isolate}, {cpp_value})',
     'unrestricted double': 'v8::Number::New({isolate}, {cpp_value})',
     'void': 'v8Undefined()',
+    # [TreatNullReturnValueAs]
+    'StringOrNull': '{cpp_value}.isNull() ? v8::Handle<v8::Value>(v8::Null({isolate})) : v8String({isolate}, {cpp_value})',
+    'StringOrUndefined': '{cpp_value}.isNull() ? v8Undefined() : v8String({isolate}, {cpp_value})',
     # Special cases
     'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
     'ScriptValue': '{cpp_value}.v8Value()',

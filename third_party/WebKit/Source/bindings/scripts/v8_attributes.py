@@ -94,7 +94,6 @@ def attribute_context(interface, attribute):
                             if is_constructor_attribute(attribute) else None,
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
-        'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(cpp_value='original', creation_context='info.Holder()'),
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
@@ -170,9 +169,10 @@ def getter_context(interface, attribute, context):
     # FIXME: check if compilers are smart enough to inline this, and if so,
     # always use a local variable (for readability and CG simplicity).
     release = False
-    if (idl_type.is_nullable or
+    if ((idl_type.is_nullable and not context['is_nullable_simple']) or
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
+        'LogPreviousValue' in extended_attributes or
         'ReflectOnly' in extended_attributes or
         context['is_keep_alive_for_gc'] or
         context['is_getter_raises_exception']):
@@ -189,7 +189,9 @@ def getter_context(interface, attribute, context):
 
     context.update({
         'cpp_value': cpp_value,
-        'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(cpp_value=cpp_value, creation_context='info.Holder()'),
+        'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
+            cpp_value=cpp_value, creation_context='info.Holder()',
+            extended_attributes=extended_attributes),
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
         'v8_set_return_value': v8_set_return_value_statement(),
     })
