@@ -237,10 +237,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kRegisterFontFiles));
   }
-
-  // Speech Synthesis backend lives in chrome/. See crbug.com/347045
-  // tracking moving it to content/.
-  command_line->AppendSwitch(switches::kDisableSpeechSynthesis);
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(

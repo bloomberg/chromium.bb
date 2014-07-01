@@ -75,10 +75,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // WebRTC hardware decoding is not supported, internal bug 15075307
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
-
-  // Speech Synthesis backend resides in the chrome layer, not used by WebView.
-  // http://crbug.com/347045 tracks moving the backend to the content layer.
-  cl->AppendSwitch(switches::kDisableSpeechSynthesis);
   return false;
 }
 
