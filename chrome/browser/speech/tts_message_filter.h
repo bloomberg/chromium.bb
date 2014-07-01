@@ -26,6 +26,7 @@ class TtsMessageFilter
       content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
 
   // UtteranceEventDelegate implementation.
   virtual void OnTtsEvent(Utterance* utterance,
@@ -37,6 +38,9 @@ class TtsMessageFilter
   virtual void OnVoicesChanged() OVERRIDE;
 
  private:
+  friend class content::BrowserThread;
+  friend class base::DeleteHelper<TtsMessageFilter>;
+
   virtual ~TtsMessageFilter();
 
   void OnInitializeVoiceList();

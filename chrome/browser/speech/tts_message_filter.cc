@@ -54,6 +54,10 @@ void TtsMessageFilter::OnChannelClosing() {
       base::Bind(&TtsMessageFilter::OnChannelClosingInUIThread, this));
 }
 
+void TtsMessageFilter::OnDestruct() const {
+  BrowserThread::DeleteOnUIThread::Destruct(this);
+}
+
 void TtsMessageFilter::OnInitializeVoiceList() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TtsController* tts_controller = TtsController::GetInstance();
@@ -159,4 +163,6 @@ void TtsMessageFilter::OnChannelClosingInUIThread() {
 }
 
 TtsMessageFilter::~TtsMessageFilter() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
 }
