@@ -166,6 +166,25 @@
             ],
         },
         {
+          'action_name': 'generatePrivateScriptForTesting',
+           'private_script_files': [
+              'testing/Internals.js',
+           ],
+           'inputs': [
+              '../build/scripts/make_private_script_source.py',
+              '<@(_private_script_files)',
+            ],
+            'outputs': [
+              '<(blink_core_output_dir)/PrivateScriptSourcesForTesting.h',
+            ],
+            'action': [
+              'python',
+              '../build/scripts/make_private_script_source.py',
+              '<@(_outputs)',
+              '<@(_private_script_files)'
+            ],
+        },
+        {
           'action_name': 'generateXMLViewerCSS',
           'inputs': [
             'xml/XMLViewer.css',

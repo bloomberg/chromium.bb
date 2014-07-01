@@ -60,6 +60,7 @@ GarbageCollected
 Global=|*
 Immutable
 ImplementedAs=*
+ImplementedInPrivateScript
 InitializedByEventConstructor
 LegacyTreatAsPartialInterface
 LogActivity=|GetterOnly|SetterOnly

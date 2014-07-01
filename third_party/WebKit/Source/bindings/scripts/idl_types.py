@@ -332,6 +332,10 @@ class IdlUnionType(object):
         return True
 
     @property
+    def may_raise_exception_on_conversion(self):
+        return False
+
+    @property
     def name(self):
         return 'Or'.join(member_type.name for member_type in self.member_types)
 

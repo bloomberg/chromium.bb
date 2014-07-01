@@ -936,6 +936,9 @@ make_token_matcher("make_core_generated_make_token_matcher_for_viewport") {
 # One-off scripts --------------------------------------------------------------
 
 # "generatePrivateScript" in make_core_generated from GYP.
+# FIXME: The implementation of Blink-in-JS is not yet mature.
+# You can use Blink-in-JS in your local experiment, but don't ship it.
+# crbug.com/341031
 action("make_core_generated_private_script") {
   visibility = ":make_core_generated"
   script = "../build/scripts/make_private_script_source.py"
@@ -945,6 +948,23 @@ action("make_core_generated_private_script") {
   ]
   outputs = [
     "$blink_core_output_dir/PrivateScriptSources.h",
+  ]
+
+  args = rebase_path(outputs, root_build_dir)
+  args += rebase_path(source_prereqs, root_build_dir)
+
+  deps = make_core_generated_deps
+}
+
+action("make_core_generated_private_script_for_testing") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/make_private_script_source.py"
+
+  source_prereqs = [
+    "testing/Internals.js",
+  ]
+  outputs = [
+    "$blink_core_output_dir/PrivateScriptSourcesForTesting.h",
   ]
 
   args = rebase_path(outputs, root_build_dir)

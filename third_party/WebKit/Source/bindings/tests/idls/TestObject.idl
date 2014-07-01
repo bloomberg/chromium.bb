@@ -528,4 +528,13 @@ interface TestObject {
     attribute TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullAttribute; // [GarbageCollected]
     attribute TestInterfaceWillBeGarbageCollected testInterfaceWillBeGarbageCollectedAttribute; // [WillBeGarbageCollected]
     attribute TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullAttribute; // [WillBeGarbageCollected]
+
+    // Private scripts
+    [ImplementedInPrivateScript] void voidMethodImplementedInPrivateScript();
+    [ImplementedInPrivateScript] short shortMethodImplementedInPrivateScript();
+    [ImplementedInPrivateScript] short shortMethodWithShortArgumentImplementedInPrivateScript(short value);
+    [ImplementedInPrivateScript] DOMString stringMethodWithStringArgumentImplementedInPrivateScript(DOMString value);
+    [ImplementedInPrivateScript] Node nodeMethodWithNodeArgumentImplementedInPrivateScript(Node value);
+    [ImplementedInPrivateScript] Node nodeMethodWithVariousArgumentsImplementedInPrivateScript(Document document, Node node, short value1, double value2, DOMString string);
+
 };

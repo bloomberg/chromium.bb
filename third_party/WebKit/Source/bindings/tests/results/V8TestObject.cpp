@@ -10,6 +10,7 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -53,6 +54,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormControlsCollection.h"
@@ -9677,6 +9679,318 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethodCallback(
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static bool voidMethodImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> *argv = 0;
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
+    if (block.HasCaught())
+        return false;
+    return true;
+}
+
+static void voidMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    voidMethodImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl);
+}
+
+static void voidMethodImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, int* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> *argv = 0;
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    int cppValue = toInt16(v8Value, exceptionState);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void shortMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    int result;
+    if (!shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueInt(info, result);
+}
+
+static void shortMethodImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::shortMethodImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, int value, int* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
+    v8::Handle<v8::Value> argv[] = { valueHandle };
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    int cppValue = toInt16(v8Value, exceptionState);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    int value;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
+    }
+    int result;
+    if (!shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
+        return;
+    v8SetReturnValueInt(info, result);
+}
+
+static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool stringMethodWithStringArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, String value, String* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> valueHandle = v8String(scriptState->isolate(), value);
+    v8::Handle<v8::Value> argv[] = { valueHandle };
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    V8StringResource<> cppValue = v8Value;
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void stringMethodWithStringArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeErrorForMethod("stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", 1, info.Length(), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> value;
+    {
+        TOSTRING_VOID_INTERNAL(value, info[0]);
+    }
+    String result;
+    if (!stringMethodWithStringArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
+        return;
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+static void stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, PassRefPtrWillBeRawPtr<Node> value, RefPtrWillBeRawPtr<Node>* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> valueHandle = toV8(value, scriptState->context()->Global(), scriptState->isolate());
+    v8::Handle<v8::Value> argv[] = { valueHandle };
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    Node* cppValue = V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeErrorForMethod("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", 1, info.Length(), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    Node* value;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_INTERNAL(value, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
+    RefPtrWillBeRawPtr<Node> result;
+    if (!nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
+        return;
+    v8SetReturnValue(info, result.release());
+}
+
+static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, PassRefPtrWillBeRawPtr<Document> document, PassRefPtrWillBeRawPtr<Node> node, int value1, double value2, String string, RefPtrWillBeRawPtr<Node>* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> documentHandle = toV8(document, scriptState->context()->Global(), scriptState->isolate());
+    v8::Handle<v8::Value> nodeHandle = toV8(node, scriptState->context()->Global(), scriptState->isolate());
+    v8::Handle<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
+    v8::Handle<v8::Value> value2Handle = v8::Number::New(scriptState->isolate(), value2);
+    v8::Handle<v8::Value> stringHandle = v8String(scriptState->isolate(), string);
+    v8::Handle<v8::Value> argv[] = { documentHandle, nodeHandle, value1Handle, value2Handle, stringHandle };
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    Node* cppValue = V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 5)) {
+        throwMinimumArityTypeError(exceptionState, 5, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    Document* document;
+    Node* node;
+    int value1;
+    double value2;
+    V8StringResource<> string;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_INTERNAL(document, V8Document::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        TONATIVE_VOID_INTERNAL(node, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value1, toInt16(info[2], exceptionState), exceptionState);
+        TONATIVE_VOID_INTERNAL(value2, static_cast<double>(info[3]->NumberValue()));
+        TOSTRING_VOID_INTERNAL(string, info[4]);
+    }
+    RefPtrWillBeRawPtr<Node> result;
+    if (!nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, document, node, value1, value2, string, &result))
+        return;
+    v8SetReturnValue(info, result.release());
+}
+
+static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -10050,6 +10364,12 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTestInterfaceGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethodCallback, 0, 1},
+    {"voidMethodImplementedInPrivateScript", TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethodCallback, 0, 0},
+    {"shortMethodImplementedInPrivateScript", TestObjectV8Internal::shortMethodImplementedInPrivateScriptMethodCallback, 0, 0},
+    {"shortMethodWithShortArgumentImplementedInPrivateScript", TestObjectV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1},
+    {"stringMethodWithStringArgumentImplementedInPrivateScript", TestObjectV8Internal::stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallback, 0, 1},
+    {"nodeMethodWithNodeArgumentImplementedInPrivateScript", TestObjectV8Internal::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback, 0, 1},
+    {"nodeMethodWithVariousArgumentsImplementedInPrivateScript", TestObjectV8Internal::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallback, 0, 5},
     {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0},
 };
 

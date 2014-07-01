@@ -74,6 +74,7 @@ TYPED_ARRAYS = {
 
 IdlType.is_typed_array_type = property(
     lambda self: self.base_type in TYPED_ARRAYS)
+IdlUnionType.is_typed_array_type = False
 
 
 IdlType.is_wrapper_type = property(
@@ -191,7 +192,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
     return base_idl_type + '*'
 
 
-def cpp_type_union(idl_type, extended_attributes=None):
+def cpp_type_union(idl_type, extended_attributes=None, raw_type=False):
     return (member_type.cpp_type for member_type in idl_type.member_types)
 
 

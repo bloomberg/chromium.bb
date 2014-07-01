@@ -125,6 +125,8 @@ def scoped_name(interface, definition, base_name):
     if (definition.is_static or
         definition.name in ('Constructor', 'NamedConstructor')):
         return '%s::%s' % (cpp_name(interface), base_name)
+    if 'ImplementedInPrivateScript' in definition.extended_attributes:
+        return base_name
     return 'impl->%s' % base_name
 
 

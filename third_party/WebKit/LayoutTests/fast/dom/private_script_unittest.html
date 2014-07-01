@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Unittests for private scripts.');
+if (internals)
+    debug('This test needs window.internals.');
+
+internals.doNothing();
+shouldBe('internals.return123()', '123');
+shouldBe('internals.echoInteger(111)', '111');
+shouldBeEqualToString('internals.echoString("foo")', 'foo')
+shouldBe('internals.addInteger(111, 222)', '333');
+shouldBeEqualToString('internals.addString("foo", "bar")', 'foobar')
+
+shouldBe('internals.getIntegerFromPrototype()', '0');
+internals.setIntegerToPrototype(123);
+shouldBe('internals.getIntegerFromPrototype()', '123');
+
+shouldBe('internals.getIntegerFromDocument(document)', '0');
+internals.setIntegerToDocument(document, 123);
+shouldBe('internals.getIntegerFromDocument(document)', '123');
+
+var node1 = internals.createElement(document);
+var node2 = internals.createElement(document);
+var node3 = internals.createElement(document);
+var node4 = internals.createElement(document);
+internals.appendChild(node1, node2);
+internals.appendChild(node1, node3);
+internals.appendChild(node1, node4);
+shouldBe('internals.firstChild(node1)', 'node2');
+shouldBe('internals.nextSibling(node2)', 'node3');
+shouldBe('internals.nextSibling(node3)', 'node4');
+shouldBe('internals.nextSibling(node4)', 'null');
+
+var node5 = internals.createElement(document);
+shouldBeEqualToString('internals.innerHTML(node5)', '')
+internals.setInnerHTML(node5, '<div>foo</div>');
+shouldBeEqualToString('internals.innerHTML(node5)', '<div>foo</div>')
+var node6 = internals.firstChild(node5);
+shouldBeEqualToString('internals.innerHTML(node6)', 'foo');
+
+var node7 = internals.createElement(document);
+shouldBeEqualToString('internals.innerHTML(node7)', '')
+internals.addClickListener(node7);
+internals.clickNode(document, node7);
+shouldBeEqualToString('internals.innerHTML(node7)', 'clicked')
+
+</script>
+</body>
+</html>

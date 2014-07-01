@@ -83,9 +83,13 @@ template <typename T> void V8_USE(T) { }
 {% block security_check_functions %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
-       method_callback, origin_safe_method_getter, generate_constructor
+       method_callback, origin_safe_method_getter, generate_constructor,
+       method_implemented_in_private_script
        with context %}
 {% for method in methods %}
+{% if method.is_implemented_in_private_script %}
+{{method_implemented_in_private_script(method)}}
+{% endif %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
 {{generate_method(method, world_suffix)}}

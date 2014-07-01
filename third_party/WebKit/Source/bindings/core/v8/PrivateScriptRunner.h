@@ -14,7 +14,7 @@ class ScriptState;
 
 class PrivateScriptRunner {
 public:
-    static v8::Handle<v8::Value> run(ScriptState*, String className, String functionName, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[]);
+    static v8::Handle<v8::Value> runDOMMethod(ScriptState*, String className, String operationName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);
 };
 
 } // namespace WebCore

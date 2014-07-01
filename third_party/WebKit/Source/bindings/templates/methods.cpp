@@ -238,6 +238,10 @@ RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(script
 {# Call #}
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
+{% elif method.is_implemented_in_private_script %}
+{{method.cpp_type}} result;
+if (!{{method.cpp_value}})
+    return;
 {% elif method.is_constructor %}
 {{method.cpp_type}} impl = {{cpp_value}};
 {% elif method.is_call_with_script_state or method.is_raises_exception %}
@@ -478,6 +482,52 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro method_implemented_in_private_script(method) %}
+static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_declarations_for_private_script | join(', ')}})
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    {% for argument in method.arguments %}
+    v8::Handle<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
+    {% endfor %}
+    {% if method.arguments %}
+    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
+    {% else %}
+    {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
+    v8::Handle<v8::Value> *argv = 0;
+    {% endif %}
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    {% if method.returned_v8_value_to_local_cpp_value %}
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
+    {{method.raw_cpp_type}} cppValue = {{method.returned_v8_value_to_local_cpp_value}};
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    {% else %}{# void return type #}
+    PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
+    if (block.HasCaught())
+        return false;
+    {% endif %}
+    return true;
 }
 {% endmacro %}
 

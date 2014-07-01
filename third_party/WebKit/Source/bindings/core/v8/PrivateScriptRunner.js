@@ -7,7 +7,7 @@
 var installedClasses = {};
 
 function installClass(className, implementation) {
-    installedClasses[className] = implementation();
+    installedClasses[className] = implementation(window);
 }
 
 // A parenthesis is needed, because the caller of this script (PrivateScriptRunner.cpp)

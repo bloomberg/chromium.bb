@@ -803,6 +803,8 @@ crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint
 
 crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
 
+crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
+
 # Temporary until the Web Notification API test-runner changes finished.
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
 
