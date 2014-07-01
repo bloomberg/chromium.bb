@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,6 +32,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
@@ -143,6 +146,7 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
 class ExtensionDisabledGlobalError
     : public GlobalErrorWithStandardBubble,
       public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver,
       public extensions::ExtensionUninstallDialog::Delegate {
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
@@ -189,6 +193,13 @@ class ExtensionDisabledGlobalError
     UNINSTALL,
     EXTENSION_DISABLED_UI_BUCKET_BOUNDARY
   };
+
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension) OVERRIDE;
+
+  void InvalidateError(UserResponse response);
+
   UserResponse user_response_;
 
   scoped_ptr<extensions::ExtensionUninstallDialog> uninstall_dialog_;
@@ -197,6 +208,10 @@ class ExtensionDisabledGlobalError
   int menu_command_id_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+             extensions::ExtensionRegistryObserver>
+     extension_registry_observer_;
 };
 
 // TODO(yoz): create error at startup for disabled extensions.
@@ -210,7 +225,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       is_remote_install_(is_remote_install),
       icon_(icon),
       user_response_(IGNORED),
-      menu_command_id_(GetMenuCommandID()) {
+      menu_command_id_(GetMenuCommandID()),
+      extension_registry_observer_(this) {
   if (icon_.IsEmpty()) {
     icon_ = gfx::Image(
         gfx::ImageSkiaOperations::CreateResizedImage(
@@ -220,11 +236,10 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
             skia::ImageOperations::RESIZE_BEST,
             gfx::Size(kIconSize, kIconSize)));
   }
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(service->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(service->profile()));
 }
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
@@ -376,19 +391,23 @@ void ExtensionDisabledGlobalError::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == chrome::NOTIFICATION_EXTENSION_REMOVED);
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_REMOVED, type);
   const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (extension != extension_)
-    return;
-  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
-      RemoveGlobalError(this);
+  if (extension == extension_)
+    InvalidateError(UNINSTALL);
+}
 
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED)
-    user_response_ = REENABLE;
-  else if (type == chrome::NOTIFICATION_EXTENSION_REMOVED)
-    user_response_ = UNINSTALL;
+void ExtensionDisabledGlobalError::OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension) {
+  if (extension == extension_)
+    InvalidateError(REENABLE);
+}
+
+void ExtensionDisabledGlobalError::InvalidateError(UserResponse response) {
+  GlobalErrorServiceFactory::GetForProfile(service_->profile())
+    ->RemoveGlobalError(this);
+  user_response_ = response;
   delete this;
 }
 
