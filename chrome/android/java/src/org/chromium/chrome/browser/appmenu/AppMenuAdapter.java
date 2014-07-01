@@ -209,7 +209,11 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     private void setupImageButton(ImageButton button, final MenuItem item) {
+        // Store and recover the level of image as button.setimageDrawable
+        // resets drawable to default level.
+        int currentLevel = item.getIcon().getLevel();
         button.setImageDrawable(item.getIcon());
+        item.getIcon().setLevel(currentLevel);
         button.setContentDescription(item.getTitle());
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());
