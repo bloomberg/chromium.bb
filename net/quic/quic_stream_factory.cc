@@ -87,7 +87,7 @@ bool IsEcdsaSupported() {
 
 QuicConfig InitializeQuicConfig(bool enable_pacing,
                                 bool enable_time_based_loss_detection,
-                                QuicTagVector connection_options) {
+                                const QuicTagVector& connection_options) {
   QuicConfig config;
   config.SetDefaults();
   config.EnablePacing(enable_pacing);
@@ -463,7 +463,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_port_selection,
     bool enable_pacing,
     bool enable_time_based_loss_detection,
-    QuicTagVector connection_options)
+    const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),

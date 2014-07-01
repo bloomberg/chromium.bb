@@ -102,7 +102,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_port_selection,
       bool enable_pacing,
       bool enable_time_based_loss_detection,
-      QuicTagVector connection_options);
+      const QuicTagVector& connection_options);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be

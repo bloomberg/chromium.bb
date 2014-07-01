@@ -32,8 +32,7 @@ class QuicConfigPeer {
                                                          uint32 window_bytes);
 
   static void SetReceivedConnectionOptions(QuicConfig* config,
-                                           const QuicTagVector options);
-
+                                           const QuicTagVector& options);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
