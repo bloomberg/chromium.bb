@@ -57,11 +57,11 @@ void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
 void MediaSourceRegistry::unregisterURL(const KURL& url)
 {
     ASSERT(isMainThread());
-    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSource> >::iterator iter = m_mediaSources.find(url.string());
+    PersistentHeapHashMap<String, Member<MediaSource> >::iterator iter = m_mediaSources.find(url.string());
     if (iter == m_mediaSources.end())
         return;
 
-    RefPtrWillBeRawPtr<MediaSource> source = iter->value;
+    MediaSource* source = iter->value;
     m_mediaSources.remove(iter);
     source->removedFromRegistry();
 }

@@ -72,11 +72,11 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
+SourceBuffer* SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
-    RefPtrWillBeRawPtr<SourceBuffer> sourceBuffer(adoptRefWillBeRefCountedGarbageCollected(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
+    SourceBuffer* sourceBuffer(adoptRefCountedGarbageCollected(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
     sourceBuffer->suspendIfNeeded();
-    return sourceBuffer.release();
+    return sourceBuffer;
 }
 
 SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)

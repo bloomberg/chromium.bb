@@ -40,7 +40,6 @@
 #include "modules/mediasource/SourceBufferList.h"
 #include "public/platform/WebMediaSource.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -53,19 +52,19 @@ class ExceptionState;
 class GenericEventQueue;
 
 class MediaSource FINAL
-    : public RefCountedWillBeRefCountedGarbageCollected<MediaSource>
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
     , public HTMLMediaSource
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public ScriptWrappable {
-    REFCOUNTED_EVENT_TARGET(MediaSource);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
     static const AtomicString& endedKeyword();
 
-    static PassRefPtrWillBeRawPtr<MediaSource> create(ExecutionContext*);
+    static MediaSource* create(ExecutionContext*);
     virtual ~MediaSource();
 
     // MediaSource.idl methods
@@ -132,8 +131,8 @@ private:
     // FIXME: oilpan: This should become a Member. For now, m_attachedElement will be cleared by the HTMLMediaElement destructor.
     HTMLMediaElement* m_attachedElement;
 
-    RefPtrWillBeMember<SourceBufferList> m_sourceBuffers;
-    RefPtrWillBeMember<SourceBufferList> m_activeSourceBuffers;
+    Member<SourceBufferList> m_sourceBuffers;
+    Member<SourceBufferList> m_activeSourceBuffers;
 };
 
 } // namespace WebCore

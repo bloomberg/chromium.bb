@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -42,20 +41,20 @@ namespace WebCore {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCollected<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SourceBufferList);
+class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBufferList>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 public:
-    static PassRefPtrWillBeRawPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    static SourceBufferList* create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
+        return adoptRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
     }
     virtual ~SourceBufferList();
 
     unsigned long length() const { return m_list.size(); }
     SourceBuffer* item(unsigned long index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
 
-    void add(PassRefPtrWillBeRawPtr<SourceBuffer>);
+    void add(SourceBuffer*);
     void remove(SourceBuffer*);
     bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != kNotFound; }
     void clear();
@@ -74,7 +73,7 @@ private:
     ExecutionContext* m_executionContext;
     GenericEventQueue* m_asyncEventQueue;
 
-    WillBeHeapVector<RefPtrWillBeMember<SourceBuffer> > m_list;
+    HeapVector<Member<SourceBuffer> > m_list;
 };
 
 } // namespace WebCore

@@ -40,7 +40,7 @@ HTMLVideoElementMediaSource::HTMLVideoElementMediaSource() { }
 
 HTMLVideoElementMediaSource::~HTMLVideoElementMediaSource() { }
 
-PassRefPtrWillBeRawPtr<VideoPlaybackQuality> HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLVideoElement& videoElement)
+VideoPlaybackQuality* HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLVideoElement& videoElement)
 {
     unsigned total = 0;
     unsigned dropped = 0;
