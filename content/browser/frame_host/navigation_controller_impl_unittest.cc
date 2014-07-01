@@ -44,8 +44,7 @@ namespace {
 // Creates an image with a 1x1 SkBitmap of the specified |color|.
 gfx::Image CreateImage(SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(color);
   return gfx::Image::CreateFrom1xBitmap(bitmap);
 }
@@ -79,8 +78,7 @@ class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
 
   void TakeScreenshotFor(content::NavigationEntryImpl* entry) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(1, 1);
     bitmap.eraseARGB(0, 0, 0, 0);
     encoding_screenshot_in_progress_ = true;
     OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);

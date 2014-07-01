@@ -1694,10 +1694,9 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
 
   DCHECK(bitmap->pixels());
 
+  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   SkBitmap zoomed_bitmap;
-  zoomed_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-      size.width(), size.height());
-  zoomed_bitmap.setPixels(bitmap->pixels());
+  zoomed_bitmap.installPixels(info, bitmap->pixels(), info.minRowBytes());
 
 #if defined(OS_ANDROID)
   if (view_)

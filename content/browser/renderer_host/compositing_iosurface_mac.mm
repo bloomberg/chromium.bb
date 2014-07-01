@@ -385,13 +385,8 @@ void CompositingIOSurfaceMac::CopyTo(
       const gfx::Size& dst_pixel_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback) {
   scoped_ptr<SkBitmap> output(new SkBitmap());
-  output->setConfig(SkBitmap::kARGB_8888_Config,
-                    dst_pixel_size.width(),
-                    dst_pixel_size.height(),
-                    0,
-                    kOpaque_SkAlphaType);
-
-  if (!output->allocPixels()) {
+  if (!output->allocN32Pixels(
+          dst_pixel_size.width(), dst_pixel_size.height(), true)) {
     DLOG(ERROR) << "Failed to allocate SkBitmap pixels!";
     callback.Run(false, *output);
     return;

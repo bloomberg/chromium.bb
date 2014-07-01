@@ -965,10 +965,10 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   }
 
   SkBitmap bitmap;
-  bitmap.setConfig(config,
-                   dst_size_in_pixel.width(),
-                   dst_size_in_pixel.height());
-  bitmap.allocPixels();
+  bitmap.allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
+                                       dst_size_in_pixel.height(),
+                                       SkBitmapConfigToColorType(config),
+                                       kPremul_SkAlphaType));
   SkCanvas canvas(bitmap);
   canvas.scale(
       (float)dst_size_in_pixel.width() / (float)src_subrect_in_pixel.width(),
@@ -1379,11 +1379,11 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     return;
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(bitmap_config,
-                    dst_size_in_pixel.width(),
-                    dst_size_in_pixel.height(),
-                    0, kOpaque_SkAlphaType);
-  if (!bitmap->allocPixels())
+  SkColorType color_type = SkBitmapConfigToColorType(bitmap_config);
+  if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
+                                             dst_size_in_pixel.height(),
+                                             color_type,
+                                             kOpaque_SkAlphaType)))
     return;
 
   ImageTransportFactoryAndroid* factory =

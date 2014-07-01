@@ -647,9 +647,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   // Sets up |bitmap| to have size |copy_size|. It floods the left half with
   // #0ff and the right half with #ff0.
   void SetupLeftRightBitmap(const gfx::Size& copy_size, SkBitmap* bitmap) {
-    bitmap->setConfig(
-        SkBitmap::kARGB_8888_Config, copy_size.width(), copy_size.height());
-    bitmap->allocPixels();
+    bitmap->allocN32Pixels(copy_size.width(), copy_size.height());
     // Left half is #0ff.
     bitmap->eraseARGB(255, 0, 255, 255);
     // Right half is #ff0.

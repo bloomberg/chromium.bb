@@ -561,9 +561,7 @@ class GLHelperTest : public testing::Test {
     }
 
     SkBitmap tmp;
-    tmp.setConfig(SkBitmap::kARGB_8888_Config, xtmp, ytmp);
-    tmp.allocPixels();
-    SkAutoLockPixels lock(tmp);
+    tmp.allocN32Pixels(xtmp, ytmp);
 
     ScaleSlowRecursive(input, &tmp, quality);
     ScaleSlowRecursive(&tmp, output, quality);
@@ -581,9 +579,7 @@ class GLHelperTest : public testing::Test {
     WebGLId src_texture = context_->createTexture();
     WebGLId framebuffer = context_->createFramebuffer();
     SkBitmap input_pixels;
-    input_pixels.setConfig(SkBitmap::kARGB_8888_Config, xsize, ysize);
-    input_pixels.allocPixels();
-    SkAutoLockPixels lock(input_pixels);
+    input_pixels.allocN32Pixels(xsize, ysize);
 
     for (int x = 0; x < xsize; ++x) {
       for (int y = 0; y < ysize; ++y) {
@@ -651,10 +647,7 @@ class GLHelperTest : public testing::Test {
                                      kQualities[quality]);
 
     SkBitmap output_pixels;
-    output_pixels.setConfig(
-        SkBitmap::kARGB_8888_Config, scaled_xsize, scaled_ysize);
-    output_pixels.allocPixels();
-    SkAutoLockPixels output_lock(output_pixels);
+    output_pixels.allocN32Pixels(scaled_xsize, scaled_ysize);
 
     helper_->ReadbackTextureSync(
         dst_texture,
@@ -674,10 +667,7 @@ class GLHelperTest : public testing::Test {
               message + " comparing against input");
     }
     SkBitmap truth_pixels;
-    truth_pixels.setConfig(
-        SkBitmap::kARGB_8888_Config, scaled_xsize, scaled_ysize);
-    truth_pixels.allocPixels();
-    SkAutoLockPixels truth_lock(truth_pixels);
+    truth_pixels.allocN32Pixels(scaled_xsize, scaled_ysize);
 
     ScaleSlowRecursive(&input_pixels, &truth_pixels, kQualities[quality]);
     Compare(&truth_pixels,
@@ -998,16 +988,18 @@ class GLHelperTest : public testing::Test {
   bool TestTextureFormatReadback(const gfx::Size& src_size,
                          SkBitmap::Config bitmap_config,
                          bool async) {
+    SkImageInfo info =
+        SkImageInfo::Make(src_size.width(),
+                          src_size.height(),
+                          SkBitmapConfigToColorType(bitmap_config),
+                          kPremul_SkAlphaType);
     if (!helper_->IsReadbackConfigSupported(bitmap_config)) {
       LOG(INFO) << "Skipping test format not supported" << bitmap_config;
       return true;
     }
     WebGLId src_texture = context_->createTexture();
     SkBitmap input_pixels;
-    input_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    input_pixels.allocPixels();
-    SkAutoLockPixels lock1(input_pixels);
+    input_pixels.allocPixels(info);
     // Test Pattern-1, Fill with Plain color pattern.
     // Erase the input bitmap with red color.
     input_pixels.eraseColor(SK_ColorRED);
@@ -1016,10 +1008,7 @@ class GLHelperTest : public testing::Test {
                                    src_size,
                                    input_pixels);
     SkBitmap output_pixels;
-    output_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    output_pixels.allocPixels();
-    SkAutoLockPixels lock2(output_pixels);
+    output_pixels.allocPixels(info);
     // Initialize the output bitmap with Green color.
     // When the readback is over output bitmap should have the red color.
     output_pixels.eraseColor(SK_ColorGREEN);
@@ -1084,9 +1073,7 @@ class GLHelperTest : public testing::Test {
                        content::GLHelper::ScalerQuality quality) {
     WebGLId src_texture = context_->createTexture();
     SkBitmap input_pixels;
-    input_pixels.setConfig(SkBitmap::kARGB_8888_Config, xsize, ysize);
-    input_pixels.allocPixels();
-    SkAutoLockPixels lock(input_pixels);
+    input_pixels.allocN32Pixels(xsize, ysize);
 
     for (int x = 0; x < xsize; ++x) {
       for (int y = 0; y < ysize; ++y) {

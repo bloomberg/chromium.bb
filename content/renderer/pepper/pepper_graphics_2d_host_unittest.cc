@@ -85,8 +85,7 @@ class PepperGraphics2DHostTest : public testing::Test {
     int height = plugin_rect.point.y + plugin_rect.size.height;
     if (bitmap->isNull() || bitmap->width() != width ||
         bitmap->height() != height) {
-      bitmap->setConfig(SkBitmap::kARGB_8888_Config, width, height);
-      bitmap->allocPixels();
+      bitmap->allocN32Pixels(width, height);
     }
     bitmap->eraseColor(0);
   }

@@ -85,8 +85,7 @@ TEST(IPCMessageTest, Pair) {
 TEST(IPCMessageTest, Bitmap) {
   SkBitmap bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 5);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(10, 5);
   memset(bitmap.getPixels(), 'A', bitmap.getSize());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);

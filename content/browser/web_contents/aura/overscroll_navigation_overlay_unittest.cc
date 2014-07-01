@@ -24,16 +24,14 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
   gfx::Image CreateDummyScreenshot() {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(SK_ColorWHITE);
     return gfx::Image::CreateFrom1xBitmap(bitmap);
   }
 
   void SetDummyScreenshotOnNavEntry(NavigationEntry* entry) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(SK_ColorWHITE);
     std::vector<unsigned char> png_data;
     gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);

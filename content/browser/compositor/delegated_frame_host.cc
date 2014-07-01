@@ -479,10 +479,11 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
       base::Bind(callback, false, SkBitmap()));
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(config,
-                    dst_size_in_pixel.width(), dst_size_in_pixel.height(),
-                    0, kOpaque_SkAlphaType);
-  if (!bitmap->allocPixels())
+  SkColorType color_type = SkBitmapConfigToColorType(config);
+  if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
+                                             dst_size_in_pixel.height(),
+                                             color_type,
+                                             kOpaque_SkAlphaType)))
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();

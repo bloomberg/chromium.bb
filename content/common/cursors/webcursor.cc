@@ -243,10 +243,7 @@ void WebCursor::ImageFromCustomData(SkBitmap* image) const {
   if (custom_data_.empty())
     return;
 
-  image->setConfig(SkBitmap::kARGB_8888_Config,
-                   custom_size_.width(),
-                   custom_size_.height());
-  if (!image->allocPixels())
+  if (!image->allocN32Pixels(custom_size_.width(), custom_size_.height()))
     return;
   memcpy(image->getPixels(), &custom_data_[0], custom_data_.size());
 }

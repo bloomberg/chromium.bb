@@ -25,9 +25,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
     return 0;
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   custom_size_.width(), custom_size_.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(custom_size_.width(), custom_size_.height());
   memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
   gfx::Point hotspot = hotspot_;
   ui::ScaleAndRotateCursorBitmapAndHotpoint(

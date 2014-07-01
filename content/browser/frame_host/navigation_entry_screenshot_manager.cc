@@ -55,11 +55,7 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
     std::vector<unsigned char> data;
     // Paint |bitmap| to a kA8_Config SkBitmap
     SkBitmap a8Bitmap;
-    a8Bitmap.setConfig(SkBitmap::kA8_Config,
-                       bitmap.width(),
-                       bitmap.height(),
-                       0);
-    a8Bitmap.allocPixels();
+    a8Bitmap.allocPixels(SkImageInfo::MakeA8(bitmap.width(), bitmap.height()));
     SkCanvas canvas(a8Bitmap);
     SkPaint paint;
     SkColorFilter* filter = SkLumaColorFilter::Create();

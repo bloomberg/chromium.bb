@@ -141,18 +141,10 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
         const gfx::Size dst_size(output_sizes[outsize],
                                  output_sizes[outsize + 1]);
         SkBitmap input;
-        input.setConfig(SkBitmap::kARGB_8888_Config,
-                        src_size.width(),
-                        src_size.height());
-        input.allocPixels();
-        SkAutoLockPixels lock(input);
+        input.allocN32Pixels(src_size.width(), src_size.height());
 
         SkBitmap output_pixels;
-        input.setConfig(SkBitmap::kARGB_8888_Config,
-                        dst_size.width(),
-                        dst_size.height());
-        output_pixels.allocPixels();
-        SkAutoLockPixels output_lock(output_pixels);
+        output_pixels.allocN32Pixels(dst_size.width(), dst_size.height());
 
         context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         context_->bindTexture(GL_TEXTURE_2D, dst_texture);
@@ -278,11 +270,7 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
         kQualities[q]);
 
       SkBitmap output_pixels;
-      input.setConfig(SkBitmap::kARGB_8888_Config,
-                      dst_size.width(),
-                      dst_size.height());
-      output_pixels.allocPixels();
-      SkAutoLockPixels lock(output_pixels);
+      output_pixels.allocN32Pixels(dst_size.width(), dst_size.height());
 
       helper_->ReadbackTextureSync(
           dst_texture,

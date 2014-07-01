@@ -259,8 +259,8 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
                                   int width,
                                   int height,
                                   bool init_to_zero) {
-  skia_bitmap_.setConfig(
-      SkBitmap::kARGB_8888_Config, impl->width(), impl->height());
+  skia_bitmap_.setInfo(
+      SkImageInfo::MakeN32Premul(impl->width(), impl->height()));
   shared_memory_.reset(
       RenderThread::Get()
           ->HostAllocateSharedMemoryBuffer(skia_bitmap_.getSize())

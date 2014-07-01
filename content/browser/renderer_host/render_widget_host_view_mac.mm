@@ -1239,22 +1239,18 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
         src_subrect,
         software_frame_manager_->GetCurrentFrameDeviceScaleFactor()));
     SkBitmap source_bitmap;
-    source_bitmap.setConfig(
-        SkBitmap::kARGB_8888_Config,
+    SkImageInfo source_info = SkImageInfo::MakeN32(
         software_frame_manager_->GetCurrentFrameSizeInPixels().width(),
         software_frame_manager_->GetCurrentFrameSizeInPixels().height(),
-        0,
         kOpaque_SkAlphaType);
-    source_bitmap.setPixels(software_frame_manager_->GetCurrentFramePixels());
+    source_bitmap.installPixels(
+        source_info,
+        software_frame_manager_->GetCurrentFramePixels(),
+        source_info.minRowBytes());
 
     SkBitmap target_bitmap;
-    target_bitmap.setConfig(
-        SkBitmap::kARGB_8888_Config,
-        dst_pixel_size.width(),
-        dst_pixel_size.height(),
-        0,
-        kOpaque_SkAlphaType);
-    if (!target_bitmap.allocPixels())
+    if (!target_bitmap.allocN32Pixels(
+            dst_pixel_size.width(), dst_pixel_size.height(), true))
       return;
 
     SkCanvas target_canvas(target_bitmap);

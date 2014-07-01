@@ -166,11 +166,10 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(
 
     // Copy over the damage region.
     if (!region.isEmpty()) {
+      SkImageInfo info = SkImageInfo::MakeN32Premul(
+          viewport_pixel_size_.width(), viewport_pixel_size_.height());
       SkBitmap back_bitmap;
-      back_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                            viewport_pixel_size_.width(),
-                            viewport_pixel_size_.height());
-      back_bitmap.setPixels(previous->memory());
+      back_bitmap.installPixels(info, previous->memory(), info.minRowBytes());
 
       for (SkRegion::Iterator it(region); !it.done(); it.next()) {
         const SkIRect& src_rect = it.rect();
