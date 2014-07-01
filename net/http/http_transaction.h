@@ -36,9 +36,11 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Provides an opportunity to add proxy-specific request headers. Called after
   // it is determined that a proxy is being used and before the request headers
-  // are sent. |proxy_info| contains information about the proxy being used.
+  // are sent. |proxy_info| contains information about the proxy being used,
+  // and additional headers may be added to |request_headers|.
   typedef base::Callback<void(
-      const ProxyInfo& proxy_info)> BeforeProxyHeadersSentCallback;
+      const ProxyInfo& proxy_info,
+      HttpRequestHeaders* request_headers)> BeforeProxyHeadersSentCallback;
 
   // Stops any pending IO and destroys the transaction object.
   virtual ~HttpTransaction() {}

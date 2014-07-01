@@ -288,13 +288,15 @@ void URLRequestHttpJob::Kill() {
 }
 
 void URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback(
-    const ProxyInfo& proxy_info) {
+    const ProxyInfo& proxy_info,
+    HttpRequestHeaders* request_headers) {
+  DCHECK(request_headers);
   DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
   if (network_delegate()) {
     network_delegate()->NotifyBeforeSendProxyHeaders(
         request_,
         proxy_info,
-        &request_info_.extra_headers);
+        request_headers);
   }
 }
 

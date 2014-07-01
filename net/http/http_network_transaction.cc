@@ -884,10 +884,11 @@ void HttpNetworkTransaction::BuildRequestHeaders(bool using_proxy) {
     auth_controllers_[HttpAuth::AUTH_SERVER]->AddAuthorizationHeader(
         &request_headers_);
 
-  if (using_proxy && !before_proxy_headers_sent_callback_.is_null())
-    before_proxy_headers_sent_callback_.Run(proxy_info_);
-
   request_headers_.MergeFrom(request_->extra_headers);
+
+  if (using_proxy && !before_proxy_headers_sent_callback_.is_null())
+    before_proxy_headers_sent_callback_.Run(proxy_info_, &request_headers_);
+
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||
       request_headers_.HasHeader(HttpRequestHeaders::kProxyAuthorization);

@@ -23,6 +23,7 @@
 
 namespace net {
 
+class HttpRequestHeaders;
 class HttpResponseHeaders;
 class HttpResponseInfo;
 class HttpTransaction;
@@ -91,7 +92,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
   void NotifyBeforeSendHeadersCallback(int result);
-  void NotifyBeforeSendProxyHeadersCallback(const ProxyInfo& proxy_info);
+  void NotifyBeforeSendProxyHeadersCallback(
+      const ProxyInfo& proxy_info,
+      HttpRequestHeaders* request_headers);
 
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 
