@@ -22,6 +22,23 @@ MESSAGE_ASK = "Message: Decision: ASK the user"
 MESSAGE_SAVE = "Message: Decision: SAVE the password"
 
 
+class TestResult:
+  """Stores the information related to a test result. """
+  def __init__(self, name, test_type, successful, message):
+    """Creates a new TestResult.
+
+    Args:
+      name: The tested website name.
+      test_type: The test type.
+      successful: Whether or not the test was successful.
+      message: The error message of the test.
+    """
+    self.name = name
+    self.test_type = test_type
+    self.successful = successful
+    self.message = message
+
+
 class Environment:
   """Sets up the testing Environment. """
 
@@ -76,6 +93,7 @@ class Environment:
     # we don't need to initilize the webdriver.
     if chrome_path:
       options = Options()
+      self.enable_automatic_password_saving = enable_automatic_password_saving
       if enable_automatic_password_saving:
         options.add_argument("enable-automatic-password-saving")
       # Chrome path.
@@ -110,6 +128,8 @@ class Environment:
     # GoTo. This is why we store here whether or not it's the first time to
     # execute GoTo.
     self.first_go_to = True
+    # List of all tests results.
+    self.tests_results = []
 
   def AddWebsiteTest(self, websitetest, disabled=False):
     """Adds a WebsiteTest to the testing Environment.
@@ -312,13 +332,20 @@ class Environment:
     self.RemoveAllPasswords()
 
     for websitetest in websitetests:
-      websitetest.WrongLoginTest()
-      websitetest.SuccessfulLoginTest()
-      websitetest.SuccessfulLoginWithAutofilledPasswordTest()
-
-    self.RemoveAllPasswords()
-    for websitetest in websitetests:
-      websitetest.SuccessfulLoginTest()
+      successful = True
+      error = ""
+      try:
+        websitetest.was_run = True
+        websitetest.WrongLoginTest()
+        websitetest.SuccessfulLoginTest()
+        websitetest.SuccessfulLoginWithAutofilledPasswordTest()
+        self.RemoveAllPasswords()
+        websitetest.SuccessfulLoginTest()
+      except Exception:
+        successful = False
+        error = traceback.format_exc()
+      self.tests_results.append(TestResult(websitetest.name, "normal",
+          successful, escape(error)))
 
   def PromptTestList(self, websitetests):
     """Runs the prompt tests on the websites in |websitetests|.
@@ -332,7 +359,16 @@ class Environment:
     self.RemoveAllPasswords()
 
     for websitetest in websitetests:
-      websitetest.PromptTest()
+      successful = True
+      error = ""
+      try:
+        websitetest.was_run = True
+        websitetest.PromptTest()
+      except Exception:
+        successful = False
+        error = traceback.format_exc()
+      self.tests_results.append(TestResult(websitetest.name, "prompt",
+          successful, escape(error)))
 
   def Quit(self):
     """Closes the tests."""

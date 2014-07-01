@@ -57,6 +57,8 @@ python tests.py --log DEBUG|INFO|WARNING|ERROR|CRITICAL --log-screen
 To save debugging messages into a file, use:
 python tests.py --log DEBUG|INFO|WARNING|ERROR|CRITICAL --log-file LOG_FILE
 
+To save the result of the tests as an xml file, use:
+python tests.py --save-path SAVERESULTPATH
 
 =====Creating new test=====
 
