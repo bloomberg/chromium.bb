@@ -1029,9 +1029,7 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
       GtkStyle* style = gtk_rc_get_style(fake_window_);
       GdkColor* color = &style->bg[GTK_STATE_NORMAL];
       SkBitmap bitmap;
-      bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                       kToolbarImageWidth, kToolbarImageHeight);
-      bitmap.allocPixels();
+      bitmap.allocN32Pixels(kToolbarImageWidth, kToolbarImageHeight);
       bitmap.eraseARGB(0xff, color->red >> 8, color->green >> 8,
                        color->blue >> 8);
       return bitmap;
@@ -1201,10 +1199,7 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
   }
 
   SkBitmap retval;
-  retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap.width(),
-                   default_bitmap.height());
-  retval.allocPixels();
+  retval.allocN32Pixels(default_bitmap.width(), default_bitmap.height());
   retval.eraseColor(0);
 
   const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
@@ -1234,10 +1229,7 @@ SkBitmap Gtk2UI::GenerateToolbarBezel(int gtk_state, int sizing_idr) const {
       rb.GetImageNamed(sizing_idr).AsBitmap();
 
   SkBitmap retval;
-  retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap.width(),
-                   default_bitmap.height());
-  retval.allocPixels();
+  retval.allocN32Pixels(default_bitmap.width(), default_bitmap.height());
   retval.eraseColor(0);
 
   SkCanvas canvas(retval);

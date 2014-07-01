@@ -47,8 +47,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
 
   virtual void UpdateWallpaper(bool clear_cache) OVERRIDE {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(16, 16);
     bitmap.eraseARGB(255, kBackgroundRed, kBackgroundGreen, kBackgroundBlue);
 #if !defined(NDEBUG)
     // In debug builds we generate a simple pattern that allows visually

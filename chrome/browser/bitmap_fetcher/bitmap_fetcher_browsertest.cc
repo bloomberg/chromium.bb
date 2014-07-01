@@ -96,8 +96,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
   SkBitmap image;
 
   // Put a real bitmap into "image".  2x2 bitmap of green 32 bit pixels.
-  image.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  image.allocPixels();
+  image.allocN32Pixels(2, 2);
   image.eraseColor(SK_ColorGREEN);
 
   // Encode the bits as a PNG.
@@ -138,8 +137,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnImageDecodedTest) {
   SkBitmap image;
 
   // Put a real bitmap into "image".  2x2 bitmap of green 16 bit pixels.
-  image.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  image.allocPixels();
+  image.allocN32Pixels(2, 2);
   image.eraseColor(SK_ColorGREEN);
 
   BitmapFetcherTestDelegate delegate(kSyncCall);

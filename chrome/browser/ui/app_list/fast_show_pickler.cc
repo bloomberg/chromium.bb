@@ -25,25 +25,25 @@ enum ImageFormat {
   ARGB_8888,
 };
 
-bool FormatToConfig(ImageFormat format, SkBitmap::Config* out) {
+bool FormatToColorType(ImageFormat format, SkColorType* out) {
   switch (format) {
     case NONE:
-      *out = SkBitmap::kNo_Config;
+      *out = kUnknown_SkColorType;
       break;
     case A8:
-      *out = SkBitmap::kA8_Config;
+      *out = kAlpha_8_SkColorType;
       break;
     case INDEX_8:
-      *out = SkBitmap::kIndex8_Config;
+      *out = kIndex_8_SkColorType;
       break;
     case RGB_565:
-      *out = SkBitmap::kRGB_565_Config;
+      *out = kRGB_565_SkColorType;
       break;
     case ARGB_4444:
-      *out = SkBitmap::kARGB_4444_Config;
+      *out = kARGB_4444_SkColorType;
       break;
     case ARGB_8888:
-      *out = SkBitmap::kARGB_8888_Config;
+      *out = kN32_SkColorType;
       break;
     default: return false;
   }
@@ -119,8 +119,8 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
     if (!it->ReadInt(&format_int))
       return false;
     ImageFormat format = static_cast<ImageFormat>(format_int);
-    SkBitmap::Config config = SkBitmap::kNo_Config;
-    if (!FormatToConfig(format, &config))
+    SkColorType color_type = kUnknown_SkColorType;
+    if (!FormatToColorType(format, &color_type))
       return false;
 
     int size = 0;
@@ -132,13 +132,11 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
       return false;
 
     SkBitmap bitmap;
-    bitmap.setConfig(static_cast<SkBitmap::Config>(config), width, height);
-    if (!bitmap.allocPixels())
+    if (!bitmap.allocPixels(SkImageInfo::Make(
+        width, height, color_type, kPremul_SkAlphaType)))
       return false;
-    {
-      SkAutoLockPixels lock(bitmap);
-      memcpy(bitmap.getPixels(), pixels, bitmap.getSize());
-    }
+
+    memcpy(bitmap.getPixels(), pixels, bitmap.getSize());
     result.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
 

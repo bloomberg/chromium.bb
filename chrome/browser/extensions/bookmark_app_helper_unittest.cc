@@ -75,8 +75,7 @@ class BookmarkAppHelperExtensionServiceTest
 
 SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size, size);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(size, size);
   bitmap.eraseColor(color);
   return bitmap;
 }

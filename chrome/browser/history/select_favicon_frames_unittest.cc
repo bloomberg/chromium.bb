@@ -42,8 +42,7 @@ vector<gfx::Size> SizesFromBitmaps(const vector<SkBitmap>& bitmaps) {
 
 SkBitmap MakeBitmap(SkColor color, int w, int h) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(w, h);
   bitmap.eraseColor(color);
   return bitmap;
 }

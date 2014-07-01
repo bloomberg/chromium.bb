@@ -1902,8 +1902,7 @@ void WallpaperManager::SetDefaultWallpaperPath(
 void WallpaperManager::CreateSolidDefaultWallpaper() {
   loaded_wallpapers_++;
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1, 0);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(kDefaultWallpaperColor);
   const gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   default_wallpaper_image_.reset(new UserImage(image));

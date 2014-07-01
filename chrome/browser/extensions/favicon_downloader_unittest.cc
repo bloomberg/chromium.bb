@@ -20,10 +20,7 @@ std::vector<SkBitmap> CreateTestBitmaps(const std::vector<gfx::Size>& sizes) {
   std::vector<SkBitmap> bitmaps(sizes.size());
   for (size_t i = 0; i < sizes.size(); ++i) {
     SkBitmap& bitmap = bitmaps[i];
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     sizes[i].width(),
-                     sizes[i].height());
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(sizes[i].width(), sizes[i].height());
     bitmap.eraseColor(SK_ColorRED);
   }
   return bitmaps;

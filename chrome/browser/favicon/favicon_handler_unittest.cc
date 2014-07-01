@@ -22,8 +22,7 @@ namespace {
 
 // Fill the given bmp with valid png data.
 void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   unsigned char* src_data =
       reinterpret_cast<unsigned char*>(bmp->getAddr32(0, 0));

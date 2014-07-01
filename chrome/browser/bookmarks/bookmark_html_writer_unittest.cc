@@ -36,8 +36,7 @@ const int kIconWidth = 16;
 const int kIconHeight = 16;
 
 void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   uint32_t* src_data = bmp->getAddr32(0, 0);
   for (int i = 0; i < w * h; i++) {

@@ -52,8 +52,7 @@ void FakeDesktopMediaList::StartUpdating(DesktopMediaListObserver* observer) {
   observer_ = observer;
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 150, 150);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(150, 150);
   bitmap.eraseARGB(255, 0, 255, 0);
   thumbnail_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }

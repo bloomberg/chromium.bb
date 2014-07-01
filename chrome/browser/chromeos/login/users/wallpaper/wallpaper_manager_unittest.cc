@@ -57,8 +57,7 @@ class WallpaperManagerCacheTest : public test::AshTestBase {
   // Creates a test image of size 1x1.
   gfx::ImageSkia CreateTestImage(SkColor color) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(color);
     return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   }

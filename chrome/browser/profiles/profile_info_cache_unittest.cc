@@ -523,8 +523,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(2, 2);
   bitmap.eraseColor(SK_ColorGREEN);
 
   avatar_downloader.OnFetchComplete(

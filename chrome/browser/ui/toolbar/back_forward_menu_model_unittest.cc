@@ -36,8 +36,7 @@ namespace {
 // Creates a bitmap of the specified color.
 SkBitmap CreateBitmap(SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(16, 16);
   bitmap.eraseColor(color);
   return bitmap;
 }

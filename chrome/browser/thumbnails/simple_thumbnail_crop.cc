@@ -235,7 +235,7 @@ SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
   // the pixels, hence we check result size == clipped_bitmap size here.
   if (clipped_bitmap.width() == result.width() &&
       clipped_bitmap.height() == result.height())
-    clipped_bitmap.copyTo(&result, kPMColor_SkColorType);
+    clipped_bitmap.copyTo(&result, kN32_SkColorType);
 #endif
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,

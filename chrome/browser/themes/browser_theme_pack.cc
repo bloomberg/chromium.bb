@@ -457,10 +457,7 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
                      ui::GetScaleForScaleFactor(desired_scale_factor) /
                      ui::GetScaleForScaleFactor(source_scale_factor)));
   SkBitmap scaled_bitmap;
-  scaled_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                          scaled_size.width(),
-                          scaled_size.height());
-  if (!scaled_bitmap.allocPixels())
+  if (!scaled_bitmap.allocN32Pixels(scaled_size.width(), scaled_size.height()))
     SK_CRASH();
   scaled_bitmap.eraseARGB(0, 0, 0, 0);
   SkCanvas canvas(scaled_bitmap);

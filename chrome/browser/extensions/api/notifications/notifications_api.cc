@@ -86,12 +86,9 @@ bool NotificationBitmapToGfxImage(
   if (rgba_data_length != rgba_area * BYTES_PER_PIXEL)
     return false;
 
-  // Now configure the bitmap with the sanitized dimensions.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-
-  // Allocate the actual backing store.
-  if (!bitmap.allocPixels())
+  // Allocate the actual backing store with the sanitized dimensions.
+  if (!bitmap.allocN32Pixels(width, height))
     return false;
 
   // Ensure that our bitmap and our data now refer to the same number of pixels.

@@ -64,8 +64,7 @@ class AppListModelPicklerUnitTest : public testing::Test {
     const int kWidth = 10;
     const int kHeight = 10;
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, kWidth, kHeight);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(kWidth, kHeight);
     bitmap.eraseARGB(255, 1, 2, 3);
     return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   }

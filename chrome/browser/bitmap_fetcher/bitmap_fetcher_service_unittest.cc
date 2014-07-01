@@ -75,8 +75,7 @@ class BitmapFetcherServiceTest : public testing::Test,
 
     // Create a non-empty bitmap.
     SkBitmap image;
-    image.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-    image.allocPixels();
+    image.allocN32Pixels(2, 2);
     image.eraseColor(SK_ColorGREEN);
 
     const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(NULL, image);

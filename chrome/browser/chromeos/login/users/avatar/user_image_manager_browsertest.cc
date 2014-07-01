@@ -421,8 +421,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
   ASSERT_TRUE(user);
 
   SkBitmap custom_image_bitmap;
-  custom_image_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  custom_image_bitmap.allocPixels();
+  custom_image_bitmap.allocN32Pixels(10, 10);
   custom_image_bitmap.setImmutable();
   const gfx::ImageSkia custom_image =
       gfx::ImageSkia::CreateFrom1xBitmap(custom_image_bitmap);

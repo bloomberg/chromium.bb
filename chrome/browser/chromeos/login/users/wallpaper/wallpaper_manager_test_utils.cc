@@ -78,8 +78,7 @@ bool CreateJPEGImage(int width,
                      SkColor color,
                      std::vector<unsigned char>* output) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseColor(color);
 
   const int kQuality = 80;
@@ -99,8 +98,7 @@ bool CreateJPEGImage(int width,
 
 gfx::ImageSkia CreateTestImage(int width, int height, SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }

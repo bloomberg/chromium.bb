@@ -65,8 +65,7 @@ TEST_F(WebAppsTableTest, WebAppImages) {
 
   // Add an image.
   SkBitmap image;
-  image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  image.allocPixels();
+  image.allocN32Pixels(16, 16);
   image.eraseColor(SK_ColorBLACK);
   ASSERT_TRUE(table_->SetWebAppImage(url, image));
 
@@ -77,8 +76,7 @@ TEST_F(WebAppsTableTest, WebAppImages) {
   ASSERT_EQ(16, images[0].height());
 
   // Add another 16x16 image and make sure it replaces the original.
-  image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  image.allocPixels();
+  image.allocN32Pixels(16, 16);
   image.eraseColor(SK_ColorBLACK);
 
   // Set some random pixels so that we can identify the image. We don't use
@@ -104,8 +102,7 @@ TEST_F(WebAppsTableTest, WebAppImages) {
   images[0].unlockPixels();
 
   // Add another image at a bigger size.
-  image.setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
-  image.allocPixels();
+  image.allocN32Pixels(32, 32);
   image.eraseColor(SK_ColorBLACK);
   ASSERT_TRUE(table_->SetWebAppImage(url, image));
 

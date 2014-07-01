@@ -46,10 +46,7 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
       gfx::Size(frame->size().width(), frame->size().height()));
 
   SkBitmap result;
-  result.setConfig(SkBitmap::kARGB_8888_Config,
-                   scaled_rect.width(), scaled_rect.height(), 0,
-                   kOpaque_SkAlphaType);
-  result.allocPixels();
+  result.allocN32Pixels(scaled_rect.width(), scaled_rect.height(), true);
   result.lockPixels();
 
   uint8* pixels_data = reinterpret_cast<uint8*>(result.getPixels());

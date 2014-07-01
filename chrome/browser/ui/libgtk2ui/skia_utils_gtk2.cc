@@ -44,8 +44,7 @@ const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {
   int h = gdk_pixbuf_get_height(pixbuf);
 
   SkBitmap ret;
-  ret.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  ret.allocPixels();
+  ret.allocN32Pixels(w, h);
   ret.eraseColor(0);
 
   uint32_t* skia_data = static_cast<uint32_t*>(ret.getAddr(0, 0));

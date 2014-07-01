@@ -105,8 +105,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   // This calls for exercising two distinct paths: with prior clipping and
   // without.
   SkBitmap source;
-  source.setConfig(SkBitmap::kARGB_8888_Config, 800, 600);
-  source.allocPixels();
+  source.allocN32Pixels(800, 600);
   source.eraseARGB(255, 50, 150, 200);
   SkBitmap result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
       source, thumbnail_size, context.get());

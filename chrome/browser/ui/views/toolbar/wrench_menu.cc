@@ -525,9 +525,7 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
     const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
     SkBitmap bitmap = rep.sk_bitmap();
     SkBitmap white;
-    white.setConfig(SkBitmap::kARGB_8888_Config,
-                    bitmap.width(), bitmap.height(), 0);
-    white.allocPixels();
+    white.allocN32Pixels(bitmap.width(), bitmap.height());
     white.eraseARGB(0, 0, 0, 0);
     bitmap.lockPixels();
     for (int y = 0; y < bitmap.height(); ++y) {

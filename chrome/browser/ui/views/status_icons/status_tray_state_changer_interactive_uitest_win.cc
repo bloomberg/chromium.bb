@@ -25,8 +25,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
     SkBitmap bitmap;
 
     // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(16, 16);
     bitmap.eraseColor(SK_ColorGREEN);
     status_icon_win_ = (StatusIconWin*)status_tray_->CreateStatusIcon(
         StatusTray::OTHER_ICON,

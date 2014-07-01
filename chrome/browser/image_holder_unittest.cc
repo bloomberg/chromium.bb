@@ -48,8 +48,7 @@ TEST_F(ImageHolderTest, OnFetchCompleteTest) {
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(2, 2);
   bitmap.eraseColor(SK_ColorGREEN);
 
   image_holder.OnFetchComplete(GURL(kIconUrl1), &bitmap);
@@ -76,8 +75,7 @@ TEST_F(ImageHolderTest, IsFetchingDoneTest) {
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(2, 2);
   bitmap.eraseColor(SK_ColorGREEN);
 
   // Add the first icon, and image holder 2 should now also report done.

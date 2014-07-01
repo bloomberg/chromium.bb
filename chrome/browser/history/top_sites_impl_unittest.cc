@@ -164,8 +164,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Creates a bitmap of the specified color. Caller takes ownership.
   gfx::Image CreateBitmap(SkColor color) {
     SkBitmap thumbnail;
-    thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
-    thumbnail.allocPixels();
+    thumbnail.allocN32Pixels(4, 4);
     thumbnail.eraseColor(color);
     return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
   }

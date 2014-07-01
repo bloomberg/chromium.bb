@@ -94,8 +94,7 @@ views::Link* CreateLink(const base::string16& link_text,
 
 gfx::ImageSkia CreateSquarePlaceholderImage(int size) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kA8_Config, size, size);
-  bitmap.allocPixels();
+  bitmap.allocPixels(SkImageInfo::MakeA8(size, size));
   bitmap.eraseARGB(0, 0, 0, 0);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }

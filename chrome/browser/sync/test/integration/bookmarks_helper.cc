@@ -775,8 +775,7 @@ gfx::Image CreateFavicon(SkColor color) {
     int pixel_width = dip_width * scale;
     int pixel_height = dip_height * scale;
     SkBitmap bmp;
-    bmp.setConfig(SkBitmap::kARGB_8888_Config, pixel_width, pixel_height);
-    bmp.allocPixels();
+    bmp.allocN32Pixels(pixel_width, pixel_height);
     bmp.eraseColor(color);
     favicon.AddRepresentation(gfx::ImageSkiaRep(bmp, scale));
   }
