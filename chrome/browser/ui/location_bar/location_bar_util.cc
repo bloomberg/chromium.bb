@@ -1,18 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/location_bar_util.h"
+#include "chrome/browser/ui/location_bar/location_bar_util.h"
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/text_elider.h"
 
 namespace location_bar_util {

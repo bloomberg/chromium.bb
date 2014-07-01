@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
