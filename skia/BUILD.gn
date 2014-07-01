@@ -538,7 +538,7 @@ source_set("skia_opts") {
       "//third_party/skia/src/opts/SkUtils_opts_SSE2.cpp",
       "//third_party/skia/src/opts/SkXfermode_opts_SSE2.cpp",
 
-      # SSE 3
+      # SSSE 3
       "//third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp",
 
       # Chrome-specific.
@@ -549,8 +549,15 @@ source_set("skia_opts") {
       "//third_party/skia/include/core/SkTypes.h",
     ]
 
+    # SSE 4
+    if (cpu_arch == "x86") {
+      sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S" ]
+    } else {  # x64
+      sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_x64_asm.S" ]
+    }
+
     if (is_linux || is_mac) {
-      cflags += [ "-mssse3" ]  # Note third 's'.
+      cflags += [ "-msse4" ]
     }
   } else if (cpu_arch == "arm") {
     sources = [

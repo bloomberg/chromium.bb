@@ -58,6 +58,7 @@
           ],
           'dependencies': [
             'skia_opts_ssse3',
+            'skia_opts_sse4',
           ],
         }],
         [ 'target_arch == "arm"', {
@@ -202,6 +203,43 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp',
           ],
         }],
+      ],
+    },
+    # For the same lame reasons as what is done for skia_opts, we also have to
+    # create another target specifically for SSE4 code as we would not want
+    # to compile the SSE2 code with -msse4 which would potentially allow
+    # gcc to generate SSE4 code.
+    {
+      'target_name': 'skia_opts_sse4',
+      'type': 'static_library',
+      'includes': [
+        'skia_common.gypi',
+      ],
+      'include_dirs': [
+        '../third_party/skia/include/core',
+        '../third_party/skia/src/core',
+      ],
+      'conditions': [
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
+          'cflags': [
+            '-msse4',
+          ],
+        }],
+        [ 'OS == "mac"', {
+          'xcode_settings': {
+            'GCC_ENABLE_SSE41_EXTENSIONS': 'YES',
+          },
+        }],
+        [ 'target_arch == "x64"', {
+          'sources': [
+            '../third_party/skia/src/opts/SkBlitRow_opts_SSE4_x64_asm.S',
+          ],
+        }],
+        [ 'target_arch == "ia32"', {
+          'sources': [
+            '../third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S',
+          ],
+       }],
       ],
     },
     {
