@@ -31,12 +31,14 @@
 # define __NR_symlink            83
 # define __NR_readlink           85
 # define __NR_munmap             91
+# define __NR_socketcall         102
 # define __NR_wait4              114
 # define __NR_clone              120
 # define __NR_mprotect           125
 # define __NR__llseek            140
 # define __NR_sched_yield        158
 # define __NR_nanosleep          162
+# define __NR_poll               168
 # define __NR_pread64            180
 # define __NR_pwrite64           181
 # define __NR_getcwd             183
@@ -74,12 +76,14 @@
 # define __NR_symlink            83
 # define __NR_readlink           85
 # define __NR_munmap             91
+# define __NR_socketcall         102
 # define __NR_wait4              114
 # define __NR_clone              120
 # define __NR_mprotect           125
 # define __NR__llseek            140
 # define __NR_sched_yield        158
 # define __NR_nanosleep          162
+# define __NR_poll               168
 # define __NR_pread64            180
 # define __NR_pwrite64           181
 # define __NR_getcwd             183
@@ -98,5 +102,10 @@
 #else
 # error Unsupported architecture
 #endif
+
+#define SYS_SOCKETPAIR 8
+#define SYS_SHUTDOWN   13
+#define SYS_SENDMSG    16
+#define SYS_RECVMSG    17
 
 #endif

@@ -25,6 +25,8 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/nonsfi/linux/linux_syscalls.h"
+#include "native_client/src/public/linux_syscalls/poll.h"
+#include "native_client/src/public/linux_syscalls/sys/socket.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
 
@@ -356,6 +358,36 @@ int fork(void) {
 
 int pipe(int pipefd[2]) {
   return errno_value_call(linux_syscall1(__NR_pipe, (uintptr_t) pipefd));
+}
+
+int poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+  return errno_value_call(
+      linux_syscall3(__NR_poll, (uintptr_t) fds, nfds, timeout));
+}
+
+static uintptr_t socketcall(int op, void *args) {
+  return errno_value_call(
+      linux_syscall2(__NR_socketcall, op, (uintptr_t) args));
+}
+
+ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
+  uint32_t args[] = { sockfd, (uintptr_t) msg, flags };
+  return socketcall(SYS_RECVMSG, args);
+}
+
+ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
+  uint32_t args[] = { sockfd, (uintptr_t) msg, flags };
+  return socketcall(SYS_SENDMSG, args);
+}
+
+int shutdown(int sockfd, int how) {
+  uint32_t args[] = { sockfd, how };
+  return socketcall(SYS_SHUTDOWN, args);
+}
+
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+  uint32_t args[] = { domain, type, protocol, (uintptr_t) sv };
+  return socketcall(SYS_SOCKETPAIR, args);
 }
 
 pid_t waitpid(pid_t pid, int *status, int options) {

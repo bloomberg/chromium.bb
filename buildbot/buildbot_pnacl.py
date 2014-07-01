@@ -96,6 +96,7 @@ def BuildScriptX86(status, context):
                     'run_nanosleep_test',
                     'run_printf_test',
                     'run_pwrite_test',
+                    'run_socket_test',
                     'run_syscall_test',
                     'run_thread_test'])
       SCons(context, parallel=True, mode=irt_mode,
