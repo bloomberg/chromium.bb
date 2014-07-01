@@ -281,9 +281,6 @@ def ParseArgs():
   return options
 
 def GenerateV14Resources(res_dir, res_v14_dir, verify_only):
-  build_utils.DeleteDirectory(res_v14_dir)
-  build_utils.MakeDirectory(res_v14_dir)
-
   for name in os.listdir(res_dir):
     if not os.path.isdir(os.path.join(res_dir, name)):
       continue
@@ -337,8 +334,12 @@ def GenerateV14Resources(res_dir, res_v14_dir, verify_only):
 def main():
   options = ParseArgs()
 
-  GenerateV14Resources(
-      options.res_dir, options.res_v14_compatibility_dir, options.verify_only)
+  res_v14_dir = options.res_v14_compatibility_dir
+
+  build_utils.DeleteDirectory(res_v14_dir)
+  build_utils.MakeDirectory(res_v14_dir)
+
+  GenerateV14Resources(options.res_dir, res_v14_dir, options.verify_only)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

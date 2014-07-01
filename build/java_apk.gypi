@@ -516,7 +516,7 @@
 
         '--proguard-file', '<(generated_proguard_file)',
 
-        '--resource-dir', '<(resource_dir)',
+        '--resource-dirs', '<(resource_dir)',
         '--resource-zip-out', '<(resource_zip_path)',
 
         '--R-dir', '<(intermediate_dir)/gen',
