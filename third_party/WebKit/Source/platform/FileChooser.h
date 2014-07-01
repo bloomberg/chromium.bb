@@ -56,9 +56,7 @@ struct FileChooserSettings {
     Vector<String> acceptMIMETypes;
     Vector<String> acceptFileExtensions;
     Vector<String> selectedFiles;
-#if ENABLE(MEDIA_CAPTURE)
     bool useMediaCapture;
-#endif
 
     // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
     Vector<String> PLATFORM_EXPORT acceptTypes() const;

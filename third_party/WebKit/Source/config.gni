@@ -63,14 +63,9 @@ if (use_concatenated_impulse_responses) {
   feature_defines_list += [ "WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1" ]
 }
 
-if (is_android) {
-  feature_defines_list += [
-    "ENABLE_MEDIA_CAPTURE=1",
-  ]
-} else {
+if (!is_android) {
   feature_defines_list += [
     "ENABLE_INPUT_MULTIPLE_FIELDS_UI=1",
-    "ENABLE_MEDIA_CAPTURE=0",
     "ENABLE_WEB_AUDIO=1",
   ]
 }

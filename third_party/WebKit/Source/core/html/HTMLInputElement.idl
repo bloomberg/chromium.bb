@@ -97,5 +97,5 @@ interface HTMLInputElement : HTMLElement {
     [Reflect, MeasureAs=IncrementalAttribute] attribute boolean incremental;
 
     // See http://www.w3.org/TR/html-media-capture/
-    [Conditional=MEDIA_CAPTURE, Reflect] attribute boolean capture;
+    [RuntimeEnabled=MediaCapture, Reflect] attribute boolean capture;
 };
