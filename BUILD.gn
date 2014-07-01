@@ -67,6 +67,7 @@ group("root") {
     "//third_party/libyuv",
     "//third_party/lzma_sdk",
     "//third_party/mesa",
+    "//third_party/opus",
     "//third_party/ots",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/qcms",

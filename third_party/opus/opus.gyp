@@ -38,6 +38,7 @@
         ],
       },
       'includes': ['opus_srcs.gypi', ],
+      'sources': ['<@(opus_common_sources)'],
       'conditions': [
         ['OS!="win"', {
           'defines': [
@@ -71,9 +72,7 @@
           'include_dirs': [
             'src/silk/float',
           ],
-          'sources/': [
-            ['exclude', '/fixed/[^/]*_FIX.(h|c)$'],
-          ],
+          'sources': ['<@(opus_float_sources)'],
         }, {
           'defines': [
             'FIXED_POINT',
@@ -81,9 +80,7 @@
           'include_dirs': [
             'src/silk/fixed',
           ],
-          'sources/': [
-            ['exclude', '/float/[^/]*_FLP.(h|c)$'],
-          ],
+          'sources': ['<@(opus_fixed_sources)'],
           'conditions': [
             ['use_opus_arm_optimization==1', {
               'defines': [

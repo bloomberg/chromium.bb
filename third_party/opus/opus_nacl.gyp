@@ -36,8 +36,9 @@
         'src/silk/float',
       ],
       'includes': ['opus_srcs.gypi', ],
-      'sources/': [
-        ['exclude', '/fixed/[^/]*_FIX.(h|c)$'],
+      'sources': [
+        '<@(opus_common_sources)',
+        '<@(opus_float_sources)',
       ],
     },  # end of target 'opus_nacl'
   ],
