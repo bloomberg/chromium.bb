@@ -453,16 +453,6 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   // Destroy any existing bubble so that it will be rebuilt correctly.
   message_center_tray_->HideMessageCenterBubble();
   message_center_tray_->HidePopupBubble();
-
-  // Reset the popup alignment.
-  uint32 popup_alignment = (alignment == SHELF_ALIGNMENT_TOP) ?
-      message_center::POPUP_ALIGNMENT_TOP :
-      message_center::POPUP_ALIGNMENT_BOTTOM;
-
-  popup_alignment |= ((alignment == SHELF_ALIGNMENT_LEFT) ?
-                      message_center::POPUP_ALIGNMENT_LEFT :
-                      message_center::POPUP_ALIGNMENT_RIGHT);
-  popup_collection_->set_alignment(popup_alignment);
 }
 
 void WebNotificationTray::AnchorUpdated() {
