@@ -91,6 +91,7 @@ public:
         m_style.hintStyle = style;
     }
 #endif
+    bool fontContainsCharacter(UChar32 character);
 
 #if ENABLE(OPENTYPE_VERTICAL)
     PassRefPtr<OpenTypeVerticalData> verticalData() const;

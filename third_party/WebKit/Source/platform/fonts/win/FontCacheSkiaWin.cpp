@@ -73,16 +73,6 @@ FontCache::FontCache()
     m_fontManager = adoptPtr(fontManager);
 }
 
-static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_t* family, UChar32 character)
-{
-    SkPaint paint;
-    fontData->setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
-
-    uint16_t glyph;
-    paint.textToGlyphs(&character, sizeof(character), &glyph);
-    return glyph;
-}
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
@@ -165,7 +155,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     // critical enough for non-Latin scripts (especially Han) to
     // warrant an additional (real coverage) check with fontCotainsCharacter.
     int i;
-    for (i = 0; (!data || !fontContainsCharacter(data, family, character)) && i < numFonts; ++i) {
+    for (i = 0; (!data || !data->fontContainsCharacter(character)) && i < numFonts; ++i) {
         family = panUniFonts[i];
         FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
         data = getFontPlatformData(fontDescription, createByFamily);

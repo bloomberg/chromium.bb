@@ -65,17 +65,6 @@ void FontCache::platformInit()
 {
 }
 
-static bool fontContainsCharacter(const FontPlatformData* fontData, UChar32 character)
-{
-    SkPaint paint;
-    fontData->setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
-
-    uint16_t glyph;
-    paint.textToGlyphs(&character, sizeof(character), &glyph);
-    return glyph;
-}
-
 PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
     const FontDescription& fontDescription, UChar32 character)
 {
@@ -85,7 +74,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
 
     FontFaceCreationParams creationParams(substituteDescription.family().family());
     FontPlatformData* substitutePlatformData = getFontPlatformData(substituteDescription, creationParams);
-    if (substitutePlatformData && fontContainsCharacter(substitutePlatformData, character)) {
+    if (substitutePlatformData && substitutePlatformData->fontContainsCharacter(character)) {
         FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
         platformData.setSyntheticBold(fontDescription.weight() >= FontWeightBold);
         platformData.setSyntheticItalic(fontDescription.style() == FontStyleItalic);

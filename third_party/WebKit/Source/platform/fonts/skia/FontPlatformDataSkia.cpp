@@ -53,6 +53,17 @@ unsigned FontPlatformData::hash() const
     return h;
 }
 
+bool FontPlatformData::fontContainsCharacter(UChar32 character)
+{
+    SkPaint paint;
+    setupPaint(&paint);
+    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+
+    uint16_t glyph;
+    paint.textToGlyphs(&character, sizeof(character), &glyph);
+    return glyph;
+}
+
 #endif
 
 #if ENABLE(OPENTYPE_VERTICAL)
