@@ -221,7 +221,6 @@ void ShowExamplesWindow(Operation operation,
     params.delegate = new ExamplesWindowContents(operation, examples.Pass());
     params.context = window_context;
     params.bounds = gfx::Rect(0, 0, 850, 300);
-    params.remove_standard_frame = true;
     widget->Init(params);
     widget->Show();
   }
