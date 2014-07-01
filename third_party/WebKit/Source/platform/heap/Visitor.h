@@ -322,48 +322,17 @@ public:
         OffHeapCollectionTraceTrait<HashMap<T, U, V, W, X, WTF::DefaultAllocator> >::trace(this, map);
     }
 
-    // OwnPtrs that are traced are treated as part objects and the
-    // trace method of the owned object is called.
-    template<typename T>
-    void trace(const OwnPtr<T>& t)
-    {
-        if (t)
-            t->trace(this);
-    }
-
-    // This trace method is to trace a RefPtrWillBeMember when ENABLE(OILPAN)
-    // is not enabled.
-    // Remove this once we remove RefPtrWillBeMember.
-    template<typename T>
-    void trace(const RefPtr<T>&)
-    {
-#if ENABLE(OILPAN)
-        // RefPtrs should never be traced.
-        ASSERT_NOT_REACHED();
-#endif
-    }
-
 #if !ENABLE(OILPAN)
-    // Similarly, this trace method is to trace a RawPtrWillBeMember
-    // when ENABLE(OILPAN) is not enabled.
-    // Remove this once we remove RawPtrWillBeMember.
-    template<typename T>
-    void trace(const RawPtr<T>&)
-    {
-    }
+    // These trace methods are needed to allow compiling and calling trace on
+    // transition types. We need to support calls in the non-oilpan build
+    // because a fully transitioned type (which will have its trace method
+    // called) might trace a field that is in transition. Once transition types
+    // are removed these can be removed.
+    template<typename T> void trace(const OwnPtr<T>&) { }
+    template<typename T> void trace(const RefPtr<T>&) { }
+    template<typename T> void trace(const RawPtr<T>&) { }
+    template<typename T> void trace(const WeakPtr<T>&) { }
 #endif
-
-    // This trace method is to trace a WeakPtrWillBeMember when ENABLE(OILPAN)
-    // is not enabled.
-    // Remove this once we remove WeakPtrWillBeMember.
-    template<typename T>
-    void trace(const WeakPtr<T>&)
-    {
-#if ENABLE(OILPAN)
-        // WeakPtrs should never be traced.
-        ASSERT_NOT_REACHED();
-#endif
-    }
 
     // This method marks an object and adds it to the set of objects
     // that should have their trace method called. Since not all
