@@ -116,10 +116,7 @@ SkBitmap ResizeBitmapByDownsamplingIfPossible(
     // Use nearest neighbour resampling if upsampling by an integer. This
     // makes the result look similar to the result of SelectFaviconFrames().
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     desired_size_in_pixel,
-                     desired_size_in_pixel);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(desired_size_in_pixel, desired_size_in_pixel);
     if (!best_bitmap.isOpaque())
       bitmap.eraseARGB(0, 0, 0, 0);
 

@@ -68,8 +68,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   }
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  if (!bitmap.allocPixels()) {
+  if (!bitmap.allocN32Pixels(width, height)) {
     isolate->ThrowException(
         v8::Exception::Error(v8::String::NewFromUtf8(isolate, kNoMemory)));
     return false;

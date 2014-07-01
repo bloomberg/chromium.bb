@@ -35,8 +35,7 @@ size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
 
 SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, desired_size, desired_size);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(desired_size, desired_size);
   if (!contents.isOpaque())
     bitmap.eraseARGB(0, 0, 0, 0);
 

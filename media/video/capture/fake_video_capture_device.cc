@@ -104,12 +104,10 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
   memset(fake_frame_.get(), 0, frame_size);
 
+  SkImageInfo info = SkImageInfo::MakeA8(capture_format_.frame_size.width(),
+                                         capture_format_.frame_size.height());
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kA8_Config,
-                   capture_format_.frame_size.width(),
-                   capture_format_.frame_size.height(),
-                   capture_format_.frame_size.width()),
-      bitmap.setPixels(fake_frame_.get());
+  bitmap.installPixels(info, fake_frame_.get(), info.width());
   SkCanvas canvas(bitmap);
 
   // Draw a sweeping circle to show an animation.

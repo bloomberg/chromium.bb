@@ -239,7 +239,7 @@ void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
 
 SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
                                                    Usage /*usage*/) {
-  SkASSERT(info.colorType() == kPMColor_SkColorType);
+  SkASSERT(info.colorType() == kN32_SkColorType);
   return BitmapPlatformDevice::CreateAndClear(info.width(), info.height(),
                                                 info.isOpaque());
 }

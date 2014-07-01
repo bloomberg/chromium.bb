@@ -56,10 +56,8 @@ static void ConvertVideoFrameToBitmap(
   if (bitmap->isNull() ||
       bitmap->width() != video_frame->visible_rect().width() ||
       bitmap->height() != video_frame->visible_rect().height()) {
-    bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                      video_frame->visible_rect().width(),
-                      video_frame->visible_rect().height());
-    bitmap->allocPixels();
+    bitmap->allocN32Pixels(video_frame->visible_rect().width(),
+                           video_frame->visible_rect().height());
     bitmap->setIsVolatile(true);
   }
 
