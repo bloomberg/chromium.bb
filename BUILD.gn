@@ -59,6 +59,7 @@ group("root") {
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libpng",
+    "//third_party/libsrtp",
     "//third_party/libusb",
     "//third_party/libwebm",
     "//third_party/libwebp",
