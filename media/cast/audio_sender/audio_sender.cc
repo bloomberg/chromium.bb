@@ -14,6 +14,7 @@
 
 namespace media {
 namespace cast {
+namespace {
 
 const int kNumAggressiveReportsSentAtStart = 100;
 const int kMinSchedulingDelayMs = 1;
@@ -23,17 +24,25 @@ const int kMinSchedulingDelayMs = 1;
 // well.
 const int kAudioFrameRate = 100;
 
+// Helper function to compute the maximum unacked audio frames that is sent.
+int GetMaxUnackedFrames(base::TimeDelta target_delay) {
+  // As long as it doesn't go over |kMaxUnackedFrames|, it is okay to send more
+  // audio data than the target delay would suggest. Audio packets are tiny and
+  // receiver has the ability to drop any one of the packets.
+  // We send up to three times of the target delay of audio frames.
+  int frames =
+      1 + 3 * target_delay * kAudioFrameRate / base::TimeDelta::FromSeconds(1);
+  return std::min(kMaxUnackedFrames, frames);
+}
+}  // namespace
+
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          transport::CastTransportSender* const transport_sender)
     : cast_environment_(cast_environment),
       target_playout_delay_(audio_config.target_playout_delay),
       transport_sender_(transport_sender),
-      max_unacked_frames_(
-          std::min(kMaxUnackedFrames,
-                   1 + static_cast<int>(target_playout_delay_ *
-                                        kAudioFrameRate /
-                                        base::TimeDelta::FromSeconds(1)))),
+      max_unacked_frames_(GetMaxUnackedFrames(target_playout_delay_)),
       configured_encoder_bitrate_(audio_config.bitrate),
       rtcp_(cast_environment,
             this,
