@@ -157,6 +157,7 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
 }
 
 SyncStatusCode MigrateDatabaseIfNeeded(leveldb::DB* db) {
+  // See metadata_database_index.cc for the database schema.
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db);
   std::string value;

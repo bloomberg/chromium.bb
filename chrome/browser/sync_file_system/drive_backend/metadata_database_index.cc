@@ -15,6 +15,32 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
+// LevelDB database schema
+// =======================
+//
+// NOTE
+// - Entries are sorted by keys.
+// - int64 value is serialized as a string by base::Int64ToString().
+// - ServiceMetadata, FileMetadata, and FileTracker values are serialized
+//   as a string by SerializeToString() of protocol buffers.
+//
+// Version 3
+//   # Version of this schema
+//   key: "VERSION"
+//   value: "3"
+//
+//   # Metadata of the SyncFS service
+//   key: "SERVICE"
+//   value: <ServiceMetadata 'service_metadata'>
+//
+//   # Metadata of remote files
+//   key: "FILE: " + <string 'file_id'>
+//   value: <FileMetadata 'metadata'>
+//
+//   # Trackers of local file updates
+//   key: "TRACKER: " + <int64 'tracker_id'>
+//   value: <FileTracker 'tracker'>
+
 namespace sync_file_system {
 namespace drive_backend {
 
