@@ -144,7 +144,7 @@ static PassRefPtrWillBeRawPtr<MutableStylePropertySet> editingStyleFromComputedS
 
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> getPropertiesNotIn(StylePropertySet* styleWithRedundantProperties, CSSStyleDeclaration* baseStyle);
 enum LegacyFontSizeMode { AlwaysUseLegacyFontSize, UseLegacyFontSizeOnlyIfPixelValuesMatch };
-static int legacyFontSizeFromCSSValue(Document*, CSSPrimitiveValue*, bool shouldUseFixedFontDefaultSize, LegacyFontSizeMode);
+static int legacyFontSizeFromCSSValue(Document*, CSSPrimitiveValue*, FixedPitchFontType, LegacyFontSizeMode);
 static bool isTransparentColorValue(CSSValue*);
 static bool hasTransparentBackgroundColor(CSSStyleDeclaration*);
 static bool hasTransparentBackgroundColor(StylePropertySet*);
@@ -343,20 +343,20 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLFontSizeEquivalent::attributeValueAsCSSValu
 float EditingStyle::NoFontDelta = 0.0f;
 
 EditingStyle::EditingStyle()
-    : m_shouldUseFixedDefaultFontSize(false)
+    : m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
 }
 
 EditingStyle::EditingStyle(Node* node, PropertiesToInclude propertiesToInclude)
-    : m_shouldUseFixedDefaultFontSize(false)
+    : m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     init(node, propertiesToInclude);
 }
 
 EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propertiesToInclude)
-    : m_shouldUseFixedDefaultFontSize(false)
+    : m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     init(position.deprecatedNode(), propertiesToInclude);
@@ -364,7 +364,7 @@ EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propert
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
     : m_mutableStyle(style ? style->mutableCopy() : nullptr)
-    , m_shouldUseFixedDefaultFontSize(false)
+    , m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     extractFontSizeDelta();
@@ -372,7 +372,7 @@ EditingStyle::EditingStyle(const StylePropertySet* style)
 
 EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     : m_mutableStyle(nullptr)
-    , m_shouldUseFixedDefaultFontSize(false)
+    , m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     setProperty(propertyID, value);
@@ -472,7 +472,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
         replaceFontSizeByKeywordIfPossible(renderStyle, computedStyleAtPosition.get());
     }
 
-    m_shouldUseFixedDefaultFontSize = computedStyleAtPosition->useFixedFontDefaultSize();
+    m_fixedPitchFontType = computedStyleAtPosition->fixedPitchFontType();
     extractFontSizeDelta();
 }
 
@@ -575,7 +575,7 @@ void EditingStyle::overrideWithStyle(const StylePropertySet* style)
 void EditingStyle::clear()
 {
     m_mutableStyle.clear();
-    m_shouldUseFixedDefaultFontSize = false;
+    m_fixedPitchFontType = NonFixedPitchFont;
     m_fontSizeDelta = NoFontDelta;
 }
 
@@ -584,7 +584,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::copy() const
     RefPtrWillBeRawPtr<EditingStyle> copy = EditingStyle::create();
     if (m_mutableStyle)
         copy->m_mutableStyle = m_mutableStyle->mutableCopy();
-    copy->m_shouldUseFixedDefaultFontSize = m_shouldUseFixedDefaultFontSize;
+    copy->m_fixedPitchFontType = m_fixedPitchFontType;
     copy->m_fontSizeDelta = m_fontSizeDelta;
     return copy;
 }
@@ -1237,7 +1237,7 @@ int EditingStyle::legacyFontSize(Document* document) const
     if (!cssValue || !cssValue->isPrimitiveValue())
         return 0;
     return legacyFontSizeFromCSSValue(document, toCSSPrimitiveValue(cssValue.get()),
-        m_shouldUseFixedDefaultFontSize, AlwaysUseLegacyFontSize);
+        m_fixedPitchFontType, AlwaysUseLegacyFontSize);
 }
 
 PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect)
@@ -1400,7 +1400,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
 
     reconcileTextDecorationProperties(mutableStyle.get());
     if (!document->frame()->editor().shouldStyleWithCSS())
-        extractTextStyles(document, mutableStyle.get(), computedStyle->useFixedFontDefaultSize());
+        extractTextStyles(document, mutableStyle.get(), computedStyle->fixedPitchFontType());
 
     // Changing the whitespace style in a tab span would collapse the tab into a space.
     if (isTabSpanTextNode(position.deprecatedNode()) || isTabSpanNode((position.deprecatedNode())))
@@ -1425,7 +1425,7 @@ static void setTextDecorationProperty(MutableStylePropertySet* style, const CSSV
     }
 }
 
-void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet* style, bool shouldUseFixedFontDefaultSize)
+void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet* style, FixedPitchFontType fixedPitchFontType)
 {
     ASSERT(style);
 
@@ -1479,10 +1479,9 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
     style->removeProperty(CSSPropertyFontFamily);
 
     if (RefPtrWillBeRawPtr<CSSValue> fontSize = style->getPropertyCSSValue(CSSPropertyFontSize)) {
-        if (!fontSize->isPrimitiveValue())
+        if (!fontSize->isPrimitiveValue()) {
             style->removeProperty(CSSPropertyFontSize); // Can't make sense of the number. Put no font size.
-        else if (int legacyFontSize = legacyFontSizeFromCSSValue(document, toCSSPrimitiveValue(fontSize.get()),
-                shouldUseFixedFontDefaultSize, UseLegacyFontSizeOnlyIfPixelValuesMatch)) {
+        } else if (int legacyFontSize = legacyFontSizeFromCSSValue(document, toCSSPrimitiveValue(fontSize.get()), fixedPitchFontType, UseLegacyFontSizeOnlyIfPixelValuesMatch)) {
             m_applyFontSize = String::number(legacyFontSize);
             style->removeProperty(CSSPropertyFontSize);
         }
@@ -1599,14 +1598,14 @@ static bool isCSSValueLength(CSSPrimitiveValue* value)
     return value->isFontIndependentLength();
 }
 
-int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, bool shouldUseFixedFontDefaultSize, LegacyFontSizeMode mode)
+int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, FixedPitchFontType fixedPitchFontType, LegacyFontSizeMode mode)
 {
     if (isCSSValueLength(value)) {
         int pixelFontSize = value->getIntValue(CSSPrimitiveValue::CSS_PX);
-        int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, shouldUseFixedFontDefaultSize);
+        int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, fixedPitchFontType);
         // Use legacy font size only if pixel value matches exactly to that of legacy font size.
-        int cssPrimitiveEquivalent = legacyFontSize - 1 + CSSValueXSmall;
-        if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, cssPrimitiveEquivalent, shouldUseFixedFontDefaultSize) == pixelFontSize)
+        CSSValueID cssPrimitiveEquivalent = static_cast<CSSValueID>(legacyFontSize - 1 + CSSValueXSmall);
+        if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, cssPrimitiveEquivalent, fixedPitchFontType) == pixelFontSize)
             return legacyFontSize;
 
         return 0;

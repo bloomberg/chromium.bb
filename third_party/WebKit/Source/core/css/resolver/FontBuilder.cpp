@@ -102,7 +102,7 @@ void FontBuilder::setInitial(float effectiveZoom)
     scope.reset();
     setFontFamilyToStandard(scope.fontDescription(), m_document);
     scope.fontDescription().setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueMedium, false));
+    setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueMedium, NonFixedPitchFont));
 }
 
 void FontBuilder::inheritFrom(const FontDescription& fontDescription)
@@ -166,7 +166,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value)
     FontFamily* currFamily = 0;
 
     // Before mapping in a new font-family property, we should reset the generic family.
-    bool oldFamilyUsedFixedDefaultSize = scope.fontDescription().useFixedDefaultSize();
+    FixedPitchFontType oldFixedPitchFontType = scope.fontDescription().fixedPitchFontType();
     scope.fontDescription().setGenericFamily(FontDescription::NoFamily);
 
     for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
@@ -232,15 +232,17 @@ void FontBuilder::setFontFamilyValue(CSSValue* value)
     if (!currFamily)
         return;
 
-    if (scope.fontDescription().keywordSize() && scope.fontDescription().useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
-        scope.fontDescription().setSpecifiedSize(FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
+    if (scope.fontDescription().keywordSize() && scope.fontDescription().fixedPitchFontType() != oldFixedPitchFontType) {
+        scope.fontDescription().setSpecifiedSize(FontSize::fontSizeForKeyword(m_document,
+        static_cast<CSSValueID>(CSSValueXxSmall + scope.fontDescription().keywordSize() - 1), scope.fontDescription().fixedPitchFontType()));
+    }
 }
 
 void FontBuilder::setFontSizeInitial()
 {
     FontDescriptionChangeScope scope(this);
 
-    float size = FontSize::fontSizeForKeyword(m_document, CSSValueMedium, scope.fontDescription().useFixedDefaultSize());
+    float size = FontSize::fontSizeForKeyword(m_document, CSSValueMedium, scope.fontDescription().fixedPitchFontType());
 
     if (size < 0)
         return;
@@ -305,7 +307,7 @@ void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, co
         case CSSValueXLarge:
         case CSSValueXxLarge:
         case CSSValueWebkitXxxLarge:
-            size = FontSize::fontSizeForKeyword(m_document, valueID, scope.fontDescription().useFixedDefaultSize());
+            size = FontSize::fontSizeForKeyword(m_document, valueID, scope.fontDescription().fixedPitchFontType());
             scope.fontDescription().setKeywordSize(valueID - CSSValueXxSmall + 1);
             break;
         case CSSValueLarger:
@@ -598,7 +600,7 @@ void FontBuilder::checkForGenericFamilyChange(RenderStyle* style, const RenderSt
         return;
 
     const FontDescription& parentFontDescription = parentStyle->fontDescription();
-    if (scope.fontDescription().useFixedDefaultSize() == parentFontDescription.useFixedDefaultSize())
+    if (scope.fontDescription().fixedPitchFontType() == parentFontDescription.fixedPitchFontType())
         return;
 
     // For now, lump all families but monospace together.
@@ -612,13 +614,13 @@ void FontBuilder::checkForGenericFamilyChange(RenderStyle* style, const RenderSt
     // multiplying by our scale factor.
     float size;
     if (scope.fontDescription().keywordSize()) {
-        size = FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, scope.fontDescription().useFixedDefaultSize());
+        size = FontSize::fontSizeForKeyword(m_document, static_cast<CSSValueID>(CSSValueXxSmall + scope.fontDescription().keywordSize() - 1), scope.fontDescription().fixedPitchFontType());
     } else {
         Settings* settings = m_document->settings();
         float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
             ? static_cast<float>(settings->defaultFixedFontSize()) / settings->defaultFontSize()
             : 1;
-        size = parentFontDescription.useFixedDefaultSize() ?
+        size = parentFontDescription.fixedPitchFontType() == FixedPitchFont ?
             scope.fontDescription().specifiedSize() / fixedScaleFactor :
             scope.fontDescription().specifiedSize() * fixedScaleFactor;
     }
@@ -653,7 +655,7 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
 
     setFontFamilyToStandard(fontDescription, m_document);
     fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    int size = FontSize::fontSizeForKeyword(m_document, CSSValueMedium, false);
+    int size = FontSize::fontSizeForKeyword(m_document, CSSValueMedium, NonFixedPitchFont);
     fontDescription.setSpecifiedSize(size);
     fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(fontDescription, documentStyle->effectiveZoom(), size));
 

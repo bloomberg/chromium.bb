@@ -22,6 +22,9 @@
 #ifndef FontSize_h
 #define FontSize_h
 
+#include "core/CSSValueKeywords.h"
+#include "platform/fonts/FixedPitchFontType.h"
+
 namespace WebCore {
 
 class Document;
@@ -39,10 +42,10 @@ public:
 
     // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function will return
     // the correct font size scaled relative to the user's default (medium).
-    static float fontSizeForKeyword(const Document*, int keyword, bool shouldUseFixedDefaultSize);
+    static float fontSizeForKeyword(const Document*, CSSValueID keyword, FixedPitchFontType);
 
     // Given a font size in pixel, this function will return legacy font size between 1 and 7.
-    static int legacyFontSize(const Document*, int pixelFontSize, bool shouldUseFixedDefaultSize);
+    static int legacyFontSize(const Document*, int pixelFontSize, FixedPitchFontType);
 };
 
 } // namespace WebCore

@@ -1199,16 +1199,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
     return zoomAdjustedPixelValue(style->fontDescription().computedPixelSize(), *style);
 }
 
-bool CSSComputedStyleDeclaration::useFixedFontDefaultSize() const
+FixedPitchFontType CSSComputedStyleDeclaration::fixedPitchFontType() const
 {
     if (!m_node)
-        return false;
+        return NonFixedPitchFont;
 
     RefPtr<RenderStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
-        return false;
+        return NonFixedPitchFont;
 
-    return style->fontDescription().useFixedDefaultSize();
+    return style->fontDescription().fixedPitchFontType();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const ShadowData& shadow, const RenderStyle& style, bool useSpread) const
