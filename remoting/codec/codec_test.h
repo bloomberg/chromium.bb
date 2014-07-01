@@ -5,9 +5,12 @@
 #ifndef REMOTING_CODEC_CODEC_TEST_H_
 #define REMOTING_CODEC_CODEC_TEST_H_
 
+#include <list>
+
 #include "base/memory/ref_counted.h"
 
 namespace webrtc {
+class DesktopFrame;
 class DesktopSize;
 }
 
@@ -39,6 +42,16 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      const webrtc::DesktopSize& view_size,
                                      double max_error_limit,
                                      double mean_error_limit);
+
+// Run sufficient encoding iterations to measure the FPS of the specified
+// encoder. The caller may supply one or more DesktopFrames to encode, which
+// will be cycled through until timing is complete. If the caller does not
+// supply any frames then a single full-frame of randomized pixels is used.
+float MeasureVideoEncoderFpsWithSize(VideoEncoder* encoder,
+                                     const webrtc::DesktopSize& size);
+float MeasureVideoEncoderFpsWithFrames(
+    VideoEncoder* encoder,
+    const std::list<webrtc::DesktopFrame*>& frames);
 
 }  // namespace remoting
 

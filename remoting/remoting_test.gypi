@@ -244,6 +244,49 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
+    # Remoting performance tests
+    {
+      'target_name': 'remoting_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+        'remoting_base',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
+      'include_dirs': [
+        '../testing/gmock/include',
+      ],
+      'sources': [
+        '../chrome/test/base/run_all_remoting_unittests.cc',
+        'codec/codec_test.cc',
+        'codec/codec_test.h',
+        'codec/video_encoder_vpx_perftest.cc',
+      ],
+      'conditions': [
+        [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
+          # RunAllTests calls chrome::RegisterPathProvider() under Mac and
+          # Linux, so we need the chrome_common.gypi dependency.
+          'dependencies': [
+            '../chrome/common_constants.gyp:common_constants',
+          ],
+        }],
+        [ 'OS=="android"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+        [ 'OS == "linux" and use_allocator!="none"', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ],  # end of 'conditions'
+    },  # end of target 'remoting_perftests'
     {
       'target_name': 'remoting_browser_test_resources',
       'type': 'none',

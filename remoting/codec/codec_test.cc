@@ -16,6 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
+using webrtc::BasicDesktopFrame;
+using webrtc::DesktopFrame;
 using webrtc::DesktopRect;
 using webrtc::DesktopRegion;
 using webrtc::DesktopSize;
@@ -64,7 +66,7 @@ class VideoDecoderTester {
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
     decoder_->Initialize(
-        webrtc::DesktopSize(screen_size_.width(), screen_size_.height()));
+        DesktopSize(screen_size_.width(), screen_size_.height()));
   }
 
   void Reset() {
@@ -85,8 +87,8 @@ class VideoDecoderTester {
 
   void RenderFrame() {
     decoder_->RenderFrame(
-        webrtc::DesktopSize(view_size_.width(), view_size_.height()),
-        webrtc::DesktopRect::MakeWH(view_size_.width(), view_size_.height()),
+        DesktopSize(view_size_.width(), view_size_.height()),
+        DesktopRect::MakeWH(view_size_.width(), view_size_.height()),
         image_data_.get(), view_size_.width() * kBytesPerPixel,
         &update_region_);
   }
@@ -99,7 +101,7 @@ class VideoDecoderTester {
     strict_ = strict;
   }
 
-  void set_frame(webrtc::DesktopFrame* frame) {
+  void set_frame(DesktopFrame* frame) {
     frame_ = frame;
   }
 
@@ -109,7 +111,7 @@ class VideoDecoderTester {
     }
   }
 
-  void AddRegion(const webrtc::DesktopRegion& region) {
+  void AddRegion(const DesktopRegion& region) {
     expected_region_.AddRegion(region);
   }
 
@@ -122,7 +124,7 @@ class VideoDecoderTester {
     // Test the content of the update region.
     EXPECT_TRUE(expected_region_.Equals(update_region_));
 
-    for (webrtc::DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
+    for (DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
          i.Advance()) {
       const int stride = view_size_.width() * kBytesPerPixel;
       EXPECT_EQ(stride, frame_->stride());
@@ -148,7 +150,7 @@ class VideoDecoderTester {
     double max_error = 0.0;
     double sum_error = 0.0;
     int error_num = 0;
-    for (webrtc::DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
+    for (DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
          i.Advance()) {
       const int stride = view_size_.width() * kBytesPerPixel;
       const int offset =  stride * i.rect().top() +
@@ -190,11 +192,11 @@ class VideoDecoderTester {
   DesktopSize screen_size_;
   DesktopSize view_size_;
   bool strict_;
-  webrtc::DesktopRegion expected_region_;
-  webrtc::DesktopRegion update_region_;
+  DesktopRegion expected_region_;
+  DesktopRegion update_region_;
   VideoDecoder* decoder_;
   scoped_ptr<uint8[]> image_data_;
-  webrtc::DesktopFrame* frame_;
+  DesktopFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
 };
@@ -231,8 +233,8 @@ class VideoEncoderTester {
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderTester);
 };
 
-scoped_ptr<webrtc::DesktopFrame> PrepareFrame(const DesktopSize& size) {
-  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(size));
+scoped_ptr<DesktopFrame> PrepareFrame(const DesktopSize& size) {
+  scoped_ptr<DesktopFrame> frame(new BasicDesktopFrame(size));
 
   srand(0);
   int memory_size = size.width() * size.height() * kBytesPerPixel;
@@ -280,7 +282,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 static void TestEncodeDecodeRects(VideoEncoder* encoder,
                                   VideoEncoderTester* encoder_tester,
                                   VideoDecoderTester* decoder_tester,
-                                  webrtc::DesktopFrame* frame,
+                                  DesktopFrame* frame,
                                   const DesktopRect* rects, int count) {
   frame->mutable_updated_region()->Clear();
   for (int i = 0; i < count; ++i) {
@@ -292,10 +294,10 @@ static void TestEncodeDecodeRects(VideoEncoder* encoder,
   srand(0);
   for (int i = 0; i < count; ++i) {
     const int row_size =
-        webrtc::DesktopFrame::kBytesPerPixel * rects[i].width();
+        DesktopFrame::kBytesPerPixel * rects[i].width();
     uint8* memory = frame->data() +
       frame->stride() * rects[i].top() +
-      webrtc::DesktopFrame::kBytesPerPixel * rects[i].left();
+      DesktopFrame::kBytesPerPixel * rects[i].left();
     for (int y = 0; y < rects[i].height(); ++y) {
       for (int x = 0; x < row_size; ++x)
         memory[x] = rand() % 256;
@@ -315,7 +317,7 @@ void TestVideoEncoderDecoder(
 
   VideoEncoderTester encoder_tester;
 
-  scoped_ptr<webrtc::DesktopFrame> frame = PrepareFrame(kSize);
+  scoped_ptr<DesktopFrame> frame = PrepareFrame(kSize);
 
   VideoDecoderTester decoder_tester(decoder, kSize, kSize);
   decoder_tester.set_strict(strict);
@@ -331,7 +333,7 @@ void TestVideoEncoderDecoder(
   }
 }
 
-static void FillWithGradient(webrtc::DesktopFrame* frame) {
+static void FillWithGradient(DesktopFrame* frame) {
   for (int j = 0; j < frame->size().height(); ++j) {
     uint8* p = frame->data() + j * frame->stride();
     for (int i = 0; i < frame->size().width(); ++i) {
@@ -350,13 +352,13 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      const DesktopSize& view_size,
                                      double max_error_limit,
                                      double mean_error_limit) {
-  scoped_ptr<webrtc::BasicDesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(screen_size));
+  scoped_ptr<BasicDesktopFrame> frame(
+      new BasicDesktopFrame(screen_size));
   FillWithGradient(frame.get());
   frame->mutable_updated_region()->SetRect(DesktopRect::MakeSize(screen_size));
 
-  scoped_ptr<webrtc::BasicDesktopFrame> expected_result(
-      new webrtc::BasicDesktopFrame(view_size));
+  scoped_ptr<BasicDesktopFrame> expected_result(
+      new BasicDesktopFrame(view_size));
   FillWithGradient(expected_result.get());
 
   VideoDecoderTester decoder_tester(decoder, screen_size, view_size);
@@ -373,12 +375,56 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
   // invalidates the frame.
   decoder_tester.ResetRenderedData();
   decoder->Invalidate(
-      webrtc::DesktopSize(view_size.width(), view_size.height()),
-      webrtc::DesktopRegion(
-          webrtc::DesktopRect::MakeWH(view_size.width(), view_size.height())));
+      DesktopSize(view_size.width(), view_size.height()),
+      DesktopRegion(
+          DesktopRect::MakeWH(view_size.width(), view_size.height())));
   decoder_tester.RenderFrame();
   decoder_tester.VerifyResultsApprox(expected_result->data(),
                                      max_error_limit, mean_error_limit);
+}
+
+float MeasureVideoEncoderFpsWithSize(VideoEncoder* encoder,
+                                     const DesktopSize& size) {
+  scoped_ptr<DesktopFrame> frame(PrepareFrame(size));
+  frame->mutable_updated_region()->SetRect(DesktopRect::MakeSize(size));
+  std::list<DesktopFrame*> frames;
+  frames.push_back(frame.get());
+  return MeasureVideoEncoderFpsWithFrames(encoder, frames);
+}
+
+float MeasureVideoEncoderFpsWithFrames(VideoEncoder* encoder,
+                                       const std::list<DesktopFrame*>& frames) {
+  const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(1);
+
+  // Encode some frames to "warm up" the encoder (i.e. to let it set up initial
+  // structures, establish a stable working set, etc), then encode at least
+  // kMinimumFrameCount frames to measure the encoder's performance.
+  const int kWarmUpFrameCount = 10;
+  const int kMinimumFrameCount = 10;
+  base::TimeTicks start_time;
+  base::TimeDelta elapsed;
+  std::list<DesktopFrame*> test_frames;
+  int frame_count;
+  for (frame_count = 0;
+       (frame_count < kMinimumFrameCount + kWarmUpFrameCount ||
+            elapsed < kTestTime);
+       ++frame_count) {
+    if (frame_count == kWarmUpFrameCount) {
+      start_time = base::TimeTicks::Now();
+    }
+
+    if (test_frames.empty()) {
+      test_frames = frames;
+    }
+    scoped_ptr<VideoPacket> packet = encoder->Encode(*test_frames.front());
+    test_frames.pop_front();
+
+    if (frame_count >= kWarmUpFrameCount) {
+      elapsed = base::TimeTicks::Now() - start_time;
+    }
+  }
+
+  return (frame_count * base::TimeDelta::FromSeconds(1)) / elapsed;
 }
 
 }  // namespace remoting
