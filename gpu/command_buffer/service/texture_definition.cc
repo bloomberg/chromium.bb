@@ -26,8 +26,8 @@ namespace {
 
 class GLImageSync : public gfx::GLImage {
  public:
-  explicit GLImageSync(
-      const scoped_refptr<NativeImageBuffer>& buffer);
+  explicit GLImageSync(const scoped_refptr<NativeImageBuffer>& buffer,
+                       const gfx::Size& size);
 
   // Implement GLImage.
   virtual void Destroy() OVERRIDE;
@@ -46,12 +46,14 @@ class GLImageSync : public gfx::GLImage {
 
  private:
   scoped_refptr<NativeImageBuffer> buffer_;
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageSync);
 };
 
-GLImageSync::GLImageSync(const scoped_refptr<NativeImageBuffer>& buffer)
-    : buffer_(buffer) {
+GLImageSync::GLImageSync(const scoped_refptr<NativeImageBuffer>& buffer,
+                         const gfx::Size& size)
+    : buffer_(buffer), size_(size) {
   if (buffer)
     buffer->AddClient(this);
 }
@@ -64,8 +66,7 @@ GLImageSync::~GLImageSync() {
 void GLImageSync::Destroy() {}
 
 gfx::Size GLImageSync::GetSize() {
-  NOTREACHED();
-  return gfx::Size();
+  return size_;
 }
 
 bool GLImageSync::BindTexImage(unsigned target) {
@@ -365,7 +366,10 @@ TextureDefinition::TextureDefinition(
   DCHECK(texture->level_infos_[0][0].width);
   DCHECK(texture->level_infos_[0][0].height);
 
-  scoped_refptr<gfx::GLImage> gl_image(new GLImageSync(image_buffer_));
+  scoped_refptr<gfx::GLImage> gl_image(
+      new GLImageSync(image_buffer_,
+                      gfx::Size(texture->level_infos_[0][0].width,
+                                texture->level_infos_[0][0].height)));
   texture->SetLevelImage(NULL, target, 0, gl_image);
 
   // TODO: all levels
@@ -383,7 +387,6 @@ TextureDefinition::TextureDefinition(
   std::vector<LevelInfo> infos;
   infos.push_back(info);
   level_infos_.push_back(infos);
-
 }
 
 TextureDefinition::~TextureDefinition() {
@@ -440,8 +443,15 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
                             info.cleared);
     }
   }
-  if (image_buffer_)
-    texture->SetLevelImage(NULL, target_, 0, new GLImageSync(image_buffer_));
+  if (image_buffer_) {
+    texture->SetLevelImage(
+        NULL,
+        target_,
+        0,
+        new GLImageSync(
+            image_buffer_,
+            gfx::Size(level_infos_[0][0].width, level_infos_[0][0].height)));
+  }
 
   texture->target_ = target_;
   texture->SetImmutable(immutable_);
