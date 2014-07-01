@@ -59,27 +59,30 @@
             <div class="request-timeline-padding"
                 style="min-height: {{rows.length * ROW_HEIGHT}}px">
               <div class="request-timeline-scroller">
-              <template id="request-timeline-request"
-                  repeat="{{request in chart}}">
-                <div class="request-timeline-request"
-                    title="{{request.id}}"
-                    data-state="{{request.state}}"
-                    data-request-type="{{request.requestType}}"
-                    style="-webkit-margin-start: {{request.left * scale}}px;
-                        top: {{request.row * ROW_HEIGHT}}px;
-                        width: {{request.length * scale}}px">
-                  <div class="request-timeline-request-overhead"
-                      style="width: 
-                      {{(request.length - request.executionTime) * scale}}px">
-                  </div>
-                  <template
-                      if="{{request.valueSize && request.length * scale > 50}}">
-                    <div class="request-timeline-request-value-size">
-                      {{request.valueSize | formatSize}}
+                <template id="request-timeline-request"
+                    repeat="{{request in chart}}">
+                  <button class="request-timeline-request"
+                      on-click="{{elementClicked}}"
+                      title="{{request.id}}"
+                      data-id="{{request.id}}"
+                      data-state="{{request.state}}"
+                      data-request-type="{{request.requestType}}"
+                      style="-webkit-margin-start: {{request.left * scale}}px;
+                          top: {{request.row * ROW_HEIGHT}}px;
+                          width: {{request.length * scale}}px">
+                    <div class="request-timeline-request-overhead"
+                        style="width: 
+                        {{(request.length - request.executionTime) * scale}}px">
                     </div>
-                  </template>
-                </div>
-              </template>
+                    <template if=
+                        "{{request.valueSize && request.length * scale > 50}}">
+                      <div class="request-timeline-request-value-size">
+                        {{request.valueSize | formatSize}}
+                      </div>
+                    </template>
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
         </div>
@@ -98,6 +101,7 @@
                 <th>Request ID</th>
                 <th>Request Type</th>
                 <th>Size</th>
+                <th>JS Time</th>
                 <th>Event Type</th>
                 <th>Error</th>
                 <th>Has Next</th>
@@ -117,6 +121,11 @@
                   <td>
                     <template if={{item.valueSize}}>
                       {{item.valueSize | formatSize}}
+                    </template>
+                  </td>
+                  <td>
+                    <template if={{item.valueSize}}>
+                      {{item.executionTime | formatExecutionTime}}
                     </template>
                   </td>
                   <td>{{item.eventType}}</td>

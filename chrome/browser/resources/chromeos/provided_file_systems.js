@@ -94,6 +94,18 @@ Polymer('request-events', {
   },
 
   /**
+   * Formats execution time to human-readable form.
+   * @param {boolean=} opt_executionTime Input value.
+   * @return {string} Output string in a human-readable format.
+   */
+  formatExecutionTime: function(opt_executionTime) {
+    if (opt_executionTime == undefined)
+      return '';
+
+    return opt_executionTime + ' ms';
+  },
+
+  /**
    * List of events.
    * @type {Array.<Object>}
    */
@@ -166,6 +178,31 @@ Polymer('request-timeline', {
   },
 
   /**
+   * Selects or deselects an element on the timeline.
+   * @param {Event} event Event.
+   * @param {number} detail Detail.
+   * @param {HTMLElement} sender Sender.
+   */
+  elementClicked: function(event, detail, sender) {
+    if (sender.dataset.id in this.selected) {
+      delete this.selected[sender.dataset.id];
+      sender.classList.remove('selected');
+    } else {
+      this.selected[sender.dataset.id] = true;
+      sender.classList.add('selected');
+    }
+
+    var requestEventsNode = document.querySelector('#request-events');
+    requestEventsNode.hidden = false;
+
+    requestEventsNode.model = [];
+    for (var i = 0; i < this.model.length; i++) {
+      if (this.model[i].id in this.selected)
+        requestEventsNode.model.push(this.model[i]);
+    }
+  },
+
+  /**
    * Updates chart elements of active requests, so they grow with time.
    */
   activeUpdate: function() {
@@ -190,6 +227,7 @@ Polymer('request-timeline', {
       this.timeStart = null;
       this.idleStart = null;
       this.idleTotal = 0;
+      this.selected = [];
       return;
     }
 
@@ -279,6 +317,12 @@ Polymer('request-timeline', {
   },
 
   /**
+   * Map of selected requests.
+   * @type {Object.<number, boolean>}
+   */
+  selected: {},
+
+  /**
    * Map of requests which has started, but are not completed yet, from
    * a request id to the chart element index.
    * @type {Object.<number, number>}}
@@ -345,12 +389,8 @@ function updateFileSystems(fileSystems) {
  */
 function onRequestEvent(event) {
   event.time = new Date(event.time);  // Convert to a real Date object.
-
   var requestTimelineNode = document.querySelector('#request-timeline');
   requestTimelineNode.model.push(event);
-
-  var requestEventsNode = document.querySelector('#request-events');
-  requestEventsNode.model.push(event);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

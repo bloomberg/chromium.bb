@@ -97,7 +97,13 @@ body {
   height: 8px;
   margin: 3px 0;
   min-width: 1px;
+  padding: 0;
   position: absolute;
+  text-align: start;
+}
+
+#requestTimeline .request-timeline-request.selected {
+  box-shadow: 0 0 3px 1px deepskyblue;
 }
 
 #requestTimeline .request-timeline-request-overhead {
