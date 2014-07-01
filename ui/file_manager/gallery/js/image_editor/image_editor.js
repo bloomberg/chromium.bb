@@ -105,15 +105,14 @@ ImageEditor.prototype.onContentUpdate_ = function() {
 /**
  * Open the editing session for a new image.
  *
- * @param {string} url Image url.
- * @param {Object} metadata Metadata.
+ * @param {Gallery.Item} item Gallery item.
  * @param {Object} effect Transition effect object.
  * @param {function(function)} saveFunction Image save function.
  * @param {function} displayCallback Display callback.
  * @param {function} loadCallback Load callback.
  */
 ImageEditor.prototype.openSession = function(
-    url, metadata, effect, saveFunction, displayCallback, loadCallback) {
+    item, effect, saveFunction, displayCallback, loadCallback) {
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
@@ -121,7 +120,7 @@ ImageEditor.prototype.openSession = function(
 
   var self = this;
   this.imageView_.load(
-      url, metadata, effect, displayCallback, function(loadType, delay, error) {
+      item, effect, displayCallback, function(loadType, delay, error) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument,

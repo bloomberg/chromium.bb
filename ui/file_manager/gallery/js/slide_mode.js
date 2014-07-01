@@ -286,8 +286,7 @@ SlideMode.prototype.enter = function(
 
     // Load the image of the item.
     this.loadItem_(
-        selectedItem.getEntry(),
-        selectedItem.getMetadata(),
+        selectedItem,
         zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
         displayCallback,
         function(loadType, delay) {
@@ -488,13 +487,14 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     this.sequenceLength_ = 1;
   }
 
+  this.displayedIndex_ = index;
+  var selectedItem = this.getSelectedItem();
+
   if (this.sequenceLength_ <= 1) {
     // We have just broke the sequence. Touch the current image so that it stays
     // in the cache longer.
-    this.imageView_.prefetch(this.imageView_.contentEntry_);
+    this.imageView_.prefetch(selectedItem);
   }
-
-  this.displayedIndex_ = index;
 
   function shouldPrefetch(loadType, step, sequenceLength) {
     // Never prefetch when selecting out of sequence.
@@ -509,7 +509,6 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     return sequenceLength >= 3;
   }
 
-  var selectedItem = this.getSelectedItem();
   this.currentUniqueKey_++;
   var selectedUniqueKey = this.currentUniqueKey_;
 
@@ -518,8 +517,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     return;
 
   this.loadItem_(
-      selectedItem.getEntry(),
-      selectedItem.getMetadata(),
+      selectedItem,
       new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
       function() {} /* no displayCallback */,
       function(loadType, delay) {
@@ -655,8 +653,7 @@ SlideMode.prototype.selectLast = function() {
 /**
  * Load and display an item.
  *
- * @param {FileEntry} entry Item entry to be loaded.
- * @param {Object} metadata Item metadata.
+ * @param {Gallery.Item} item Item.
  * @param {Object} effect Transition effect object.
  * @param {function} displayCallback Called when the image is displayed
  *     (which can happen before the image load due to caching).
@@ -664,7 +661,9 @@ SlideMode.prototype.selectLast = function() {
  * @private
  */
 SlideMode.prototype.loadItem_ = function(
-    entry, metadata, effect, displayCallback, loadCallback) {
+    item, effect, displayCallback, loadCallback) {
+  var entry = item.getEntry();
+  var metadata = item.getMetadata();
   this.showSpinner_(true);
 
   var loadDone = function(loadType, delay, error) {
@@ -734,8 +733,8 @@ SlideMode.prototype.loadItem_ = function(
     displayCallback();
   }.bind(this);
 
-  this.editor_.openSession(entry, metadata, effect,
-      this.saveCurrentImage_.bind(this), displayDone, loadDone);
+  this.editor_.openSession(
+      item, effect, this.saveCurrentImage_.bind(this), displayDone, loadDone);
 };
 
 /**
@@ -762,8 +761,7 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
   if (this.getItemCount_() <= 1) return;
 
   var index = this.getNextSelectedIndex_(direction);
-  var nextItemEntry = this.getItem(index).getEntry();
-  this.imageView_.prefetch(nextItemEntry, delay);
+  this.imageView_.prefetch(this.getItem(index), delay);
 };
 
 // Event handlers.

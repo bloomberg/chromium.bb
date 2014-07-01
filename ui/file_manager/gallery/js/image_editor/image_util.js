@@ -405,13 +405,10 @@ ImageUtil.setClass = function(element, className, on) {
  *    account.
  *
  * @param {HTMLDocument} document Owner document.
- * @param {MetadataCache=} opt_metadataCache Metadata cache. Required for
- *     caching. If not passed, caching will be disabled.
  * @constructor
  */
-ImageUtil.ImageLoader = function(document, opt_metadataCache) {
+ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
-  this.metadataCache_ = opt_metadataCache || null;
   this.image_ = new Image();
   this.generation_ = 0;
 };
@@ -430,9 +427,10 @@ ImageUtil.ImageLoader = function(document, opt_metadataCache) {
  *     animations play out before the computation heavy image loading starts.
  */
 ImageUtil.ImageLoader.prototype.load = function(
-    entry, transformFetcher, callback, opt_delay) {
-  this.cancel();
+    item, transformFetcher, callback, opt_delay) {
+  var entry = item.getEntry();
 
+  this.cancel();
   this.entry_ = entry;
   this.callback_ = callback;
 
@@ -478,11 +476,7 @@ ImageUtil.ImageLoader.prototype.load = function(
 
   // Loads the image. If already loaded, then forces a reload.
   var startLoad = this.resetImage_.bind(this, function() {
-    // Fetch metadata to detect last modification time for the caching purpose.
-    if (this.metadataCache_)
-      this.metadataCache_.getOne(entry, 'filesystem', loadImage);
-    else
-      loadImage();
+    loadImage(item.getMetadata());
   }.bind(this), onError);
 
   if (opt_delay) {
