@@ -1,0 +1,25 @@
+{
+  "name": "Fake Archive Handler",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Demonstrate File System Provider API usage for archives.",
+  "permissions": [
+    "fileSystemProvider",
+    {"fileSystem": ["retainEntries"]},
+    "storage"
+  ],
+  "file_handlers": {
+    "fake": {
+      "types": ["application/fake"],
+      "extensions": ["fake"],
+      "title": "Open fake archive"
+    }
+  },
+  "app": {
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    }
+  }
+}
