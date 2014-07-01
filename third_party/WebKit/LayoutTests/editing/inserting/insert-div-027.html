@@ -1,17 +1,17 @@
-<html> 
+<html>
 <head>
 
 <style>
 body {
-    font-size: 24px; 
+    font-size: 24px;
 }
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
+.editing {
+    border: 2px solid red;
+    padding: 12px;
 }
 div {
-    border: 2px solid blue; 
-    padding: 12px; 
+    border: 2px solid blue;
+    padding: 12px;
 }
 
 </style>
@@ -27,16 +27,16 @@ function editingTest() {
 
 </script>
 
-<title>Editing Test</title> 
-</head> 
-<body contenteditable id="root">
+<title>Editing Test</title>
+</head>
+<body contenteditable id="root" spellcheck="false">
 
 Test inserting paragraphs: should see two blue boxes, where the second blue box starts with an empty line.
 
 <div style="border: none; height: 12px"></div>
 
 <div>
-<div class="editing" id="test">baz</div>bar<div class="editing">foo</div>
+<div class="editing" id="test" spellcheck="true">baz</div>bar<div class="editing">foo</div>
 <div class="editing"><br class="khtml-block-placeholder"></div>
 </div>
 

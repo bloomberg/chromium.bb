@@ -329,6 +329,30 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingS
     markMisspellingsAndBadGrammar(movingSelection, isContinuousSpellCheckingEnabled() && isGrammarCheckingEnabled(), movingSelection);
 }
 
+void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
+{
+    if (unifiedTextCheckerEnabled()) {
+        TextCheckingTypeMask textCheckingOptions = 0;
+
+        if (isContinuousSpellCheckingEnabled())
+            textCheckingOptions |= TextCheckingTypeSpelling;
+
+        if (isGrammarCheckingEnabled())
+            textCheckingOptions |= TextCheckingTypeGrammar;
+
+        VisibleSelection wholeParagraph(
+            startOfParagraph(wordSelection.visibleStart()),
+            endOfParagraph(wordSelection.visibleEnd()));
+
+        markAllMisspellingsAndBadGrammarInRanges(
+            textCheckingOptions, wordSelection.toNormalizedRange().get(),
+            wholeParagraph.toNormalizedRange().get());
+    } else {
+        RefPtrWillBeRawPtr<Range> misspellingRange = wordSelection.firstRange();
+        markMisspellings(wordSelection, misspellingRange);
+    }
+}
+
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
 {
     if (unifiedTextCheckerEnabled()) {

@@ -1,16 +1,16 @@
-<html> 
+<html>
 <head>
 
 <style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
+.editing {
+    border: 2px solid red;
+    padding: 12px;
+    font-size: 24px;
 }
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
+.explanation {
+    border: 2px solid blue;
+    padding: 12px;
+    font-size: 24px;
     margin-bottom: 24px;
 }
 </style>
@@ -26,16 +26,16 @@ function editingTest() {
 
 </script>
 
-<title>Editing Test</title> 
-</head> 
+<title>Editing Test</title>
+</head>
 <body>
 <div class="explanation">
-Should see "foo" and "bar" each in a separate red box. Note that the "foo" text is really "foo ". 
+Should see "foo" and "bar" each in a separate red box. Note that the "foo" text is really "foo ".
 There <b>must</b> be a space at the end of the line.
 </div>
 
 <div contenteditable="true" id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">foo bar</div>
+<div id="test" class="editing" spellcheck="false">foo bar</div>
 </div>
 
 <script>

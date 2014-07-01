@@ -1,15 +1,15 @@
-<html> 
+<html>
 <head>
 
 <style>
-.editing { 
-    border: 2px solid red; 
-    font-size: 24px; 
+.editing {
+    border: 2px solid red;
+    font-size: 24px;
 }
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
+.explanation {
+    border: 2px solid blue;
+    padding: 12px;
+    font-size: 24px;
     margin-bottom: 24px;
 }
 .scenario { margin-bottom: 16px;}
@@ -29,15 +29,15 @@ function editingTest() {
 
 </script>
 
-<title>Editing Test</title> 
-</head> 
+<title>Editing Test</title>
+</head>
 <body>
 
 <div class="explanation">
 <div class="scenario">
-Tests: 
+Tests:
 <br>
-A scenario I thought of based on my experiences with this bug: 
+A scenario I thought of based on my experiences with this bug:
 <a href="rdar://problem/4045521">&lt;rdar://problem/4045521&gt;</a> Hitting return key with full line selected does not add blank line as it should
 </div>
 <div class="expected-results">
@@ -49,8 +49,8 @@ Should see this content in the red box below (note that there should be two blan
 </div>
 
 <div contenteditable id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">
-<div>foo</div><div>bar</div><div>baz</div>
+<div id="test" class="editing" spellcheck="false">
+<div spellcheck="true">foo</div><div>bar</div><div>baz</div>
 </div>
 </div>
 
