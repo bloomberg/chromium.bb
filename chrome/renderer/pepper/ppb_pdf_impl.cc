@@ -4,12 +4,10 @@
 
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
@@ -35,11 +33,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-using ppapi::PpapiGlobals;
-using blink::WebElement;
-using blink::WebView;
-using content::RenderThread;
 
 namespace {
 
@@ -189,7 +182,7 @@ PP_Resource GetFontFileWithFallback(
 
   scoped_refptr<ppapi::StringVar> face_name(
       ppapi::StringVar::FromPPVar(description->face));
-  if (!face_name.get())
+  if (!face_name)
     return 0;
 
   int fd = content::MatchFontWithFallback(
@@ -217,7 +210,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     uint32_t* output_length) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   ppapi::Resource* resource =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(font_file);
+      ppapi::PpapiGlobals::Get()->GetResourceTracker()->GetResource(font_file);
   if (!resource)
     return false;
 
@@ -244,7 +237,7 @@ void SearchString(PP_Instance instance,
                    -1,
                    string,
                    -1,
-                   RenderThread::Get()->GetLocale().c_str(),
+                   content::RenderThread::Get()->GetLocale().c_str(),
                    0,
                    &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
@@ -317,8 +310,8 @@ void HistogramPDFPageCount(PP_Instance instance, int count) {
 void UserMetricsRecordAction(PP_Instance instance, PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
-  if (action_str.get())
-    RenderThread::Get()->RecordComputedAction(action_str->value());
+  if (action_str)
+    content::RenderThread::Get()->RecordComputedAction(action_str->value());
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
@@ -331,7 +324,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   if (!instance->IsFullPagePlugin())
     return;
 
-  WebView* view =
+  blink::WebView* view =
       instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
