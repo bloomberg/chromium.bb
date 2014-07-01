@@ -1131,7 +1131,14 @@ void CdmAdapter::ReportOutputProtectionQueryResult() {
     return;
   }
 
-  if ((output_protection_mask_ & external_links) == external_links) {
+  const uint32_t kProtectableLinks =
+      cdm::kLinkTypeHDMI | cdm::kLinkTypeDVI | cdm::kLinkTypeDisplayPort;
+  bool is_unprotectable_link_connected = external_links & ~kProtectableLinks;
+  bool is_hdcp_enabled_on_all_protectable_links =
+      output_protection_mask_ & cdm::kProtectionHDCP;
+
+  if (!is_unprotectable_link_connected &&
+      is_hdcp_enabled_on_all_protectable_links) {
     ReportOutputProtectionUMA(
         OUTPUT_PROTECTION_ALL_EXTERNAL_LINKS_PROTECTED);
     uma_for_output_protection_positive_result_reported_ = true;
