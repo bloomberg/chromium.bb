@@ -243,8 +243,8 @@ class NewTabButton : public views::ImageButton {
  protected:
   // Overridden from views::View:
   virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(HitTestSource source,
-                              gfx::Path* path) const OVERRIDE;
+  virtual void GetHitTestMaskDeprecated(HitTestSource source,
+                                        gfx::Path* path) const OVERRIDE;
 #if defined(OS_WIN)
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
@@ -295,7 +295,8 @@ bool NewTabButton::HasHitTestMask() const {
   return !tab_strip_->SizeTabButtonToTopOfTabStrip();
 }
 
-void NewTabButton::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
+void NewTabButton::GetHitTestMaskDeprecated(HitTestSource source,
+                                            gfx::Path* path) const {
   DCHECK(path);
 
   SkScalar w = SkIntToScalar(width());

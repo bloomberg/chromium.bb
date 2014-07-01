@@ -78,8 +78,8 @@ class MicButton : public views::ImageButton {
  private:
   // Overridden from views::View:
   virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(views::View::HitTestSource source,
-                              gfx::Path* mask) const OVERRIDE;
+  virtual void GetHitTestMaskDeprecated(views::View::HitTestSource source,
+                                        gfx::Path* mask) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MicButton);
 };
@@ -93,8 +93,8 @@ bool MicButton::HasHitTestMask() const {
   return true;
 }
 
-void MicButton::GetHitTestMask(views::View::HitTestSource source,
-                               gfx::Path* mask) const {
+void MicButton::GetHitTestMaskDeprecated(views::View::HitTestSource source,
+                                         gfx::Path* mask) const {
   DCHECK(mask);
 
   // The mic button icon is a circle. |source| doesn't matter.

@@ -1154,7 +1154,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Called by HitTestRect() to retrieve a mask for hit-testing against.
   // Subclasses override to provide custom shaped hit test regions.
-  virtual void GetHitTestMask(HitTestSource source, gfx::Path* mask) const;
+  // TODO(tdanderson): Remove this method once Tab, TabCloseButton,
+  //                   NewTabButton, and MicButton all implement
+  //                   MaskedViewTargeter.
+  virtual void GetHitTestMaskDeprecated(HitTestSource source,
+                                        gfx::Path* mask) const;
 
   virtual DragInfo* GetDragInfo();
 

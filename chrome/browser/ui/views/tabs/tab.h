@@ -183,8 +183,8 @@ class Tab : public gfx::AnimationDelegate,
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(HitTestSource source,
-                              gfx::Path* path) const OVERRIDE;
+  virtual void GetHitTestMaskDeprecated(HitTestSource source,
+                                        gfx::Path* path) const OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,

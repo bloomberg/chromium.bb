@@ -101,7 +101,7 @@ class TabStripTest : public testing::Test {
   // coordinate space.
   gfx::Rect GetTabHitTestMask(Tab* tab) {
     gfx::Path mask;
-    tab->GetHitTestMask(views::View::HIT_TEST_SOURCE_TOUCH, &mask);
+    tab->GetHitTestMaskDeprecated(views::View::HIT_TEST_SOURCE_TOUCH, &mask);
     return gfx::ToEnclosingRect((gfx::SkRectToRectF(mask.getBounds())));
   }
 

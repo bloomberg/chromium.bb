@@ -6,14 +6,17 @@
 
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/path.h"
+#include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_targeter.h"
+#include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
 
 // A derived class of View used for testing purposes.
-class TestingView : public View {
+class TestingView : public View, public ViewTargeterDelegate {
  public:
   TestingView() : can_process_events_within_subtree_(true) {}
   virtual ~TestingView() {}
@@ -23,6 +26,11 @@ class TestingView : public View {
 
   void set_can_process_events_within_subtree(bool can_process) {
     can_process_events_within_subtree_ = can_process;
+  }
+
+  // A call-through function to ViewTargeterDelegate::DoesIntersectRect().
+  bool TestDoesIntersectRect(const View* target, const gfx::Rect& rect) const {
+    return DoesIntersectRect(target, rect);
   }
 
   // View:
@@ -35,6 +43,35 @@ class TestingView : public View {
   bool can_process_events_within_subtree_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingView);
+};
+
+// A derived class of View having a triangular-shaped hit test mask.
+class TestMaskedView : public View, public MaskedTargeterDelegate {
+ public:
+  TestMaskedView() {}
+  virtual ~TestMaskedView() {}
+
+  // A call-through function to MaskedTargeterDelegate::DoesIntersectRect().
+  bool TestDoesIntersectRect(const View* target, const gfx::Rect& rect) const {
+    return DoesIntersectRect(target, rect);
+  }
+
+ private:
+  // MaskedTargeterDelegate:
+  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+    DCHECK(mask);
+    SkScalar w = SkIntToScalar(width());
+    SkScalar h = SkIntToScalar(height());
+
+    // Create a triangular mask within the bounds of this View.
+    mask->moveTo(w / 2, 0);
+    mask->lineTo(w, h);
+    mask->lineTo(0, h);
+    mask->close();
+    return true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestMaskedView);
 };
 
 namespace test {
@@ -290,6 +327,54 @@ TEST_F(ViewTargeterTest, CanProcessEventsWithinSubtree) {
 
   // TODO(tdanderson): We should also test that targeting works correctly
   //                   with gestures. See crbug.com/375822.
+}
+
+// Tests that the functions ViewTargeterDelegate::DoesIntersectRect()
+// and MaskedTargeterDelegate::DoesIntersectRect() work as intended when
+// called on views which are derived from ViewTargeterDelegate.
+TEST_F(ViewTargeterTest, DoesIntersectRect) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 650, 650);
+  widget.Init(params);
+
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+
+  // The coordinates used for SetBounds() are in the parent coordinate space.
+  TestingView v2;
+  TestMaskedView v1, v3;
+  v1.SetBounds(0, 0, 200, 200);
+  v2.SetBounds(300, 0, 300, 300);
+  v3.SetBounds(0, 0, 100, 100);
+  root_view->AddChildView(&v1);
+  root_view->AddChildView(&v2);
+  v2.AddChildView(&v3);
+
+  // The coordinates used below are in the local coordinate space of the
+  // view that is passed in as an argument.
+
+  // Hit tests against |v1|, which has a hit test mask.
+  EXPECT_TRUE(v1.TestDoesIntersectRect(&v1, gfx::Rect(0, 0, 200, 200)));
+  EXPECT_TRUE(v1.TestDoesIntersectRect(&v1, gfx::Rect(-10, -10, 110, 12)));
+  EXPECT_TRUE(v1.TestDoesIntersectRect(&v1, gfx::Rect(112, 142, 1, 1)));
+  EXPECT_FALSE(v1.TestDoesIntersectRect(&v1, gfx::Rect(0, 0, 20, 20)));
+  EXPECT_FALSE(v1.TestDoesIntersectRect(&v1, gfx::Rect(-10, -10, 90, 12)));
+  EXPECT_FALSE(v1.TestDoesIntersectRect(&v1, gfx::Rect(150, 49, 1, 1)));
+
+  // Hit tests against |v2|, which does not have a hit test mask.
+  EXPECT_TRUE(v2.TestDoesIntersectRect(&v2, gfx::Rect(0, 0, 200, 200)));
+  EXPECT_TRUE(v2.TestDoesIntersectRect(&v2, gfx::Rect(-10, 250, 60, 60)));
+  EXPECT_TRUE(v2.TestDoesIntersectRect(&v2, gfx::Rect(250, 250, 1, 1)));
+  EXPECT_FALSE(v2.TestDoesIntersectRect(&v2, gfx::Rect(-10, 250, 7, 7)));
+  EXPECT_FALSE(v2.TestDoesIntersectRect(&v2, gfx::Rect(-1, -1, 1, 1)));
+
+  // Hit tests against |v3|, which has a hit test mask and is a child of |v2|.
+  EXPECT_TRUE(v3.TestDoesIntersectRect(&v3, gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(v3.TestDoesIntersectRect(&v3, gfx::Rect(90, 90, 1, 1)));
+  EXPECT_FALSE(v3.TestDoesIntersectRect(&v3, gfx::Rect(10, 125, 50, 50)));
+  EXPECT_FALSE(v3.TestDoesIntersectRect(&v3, gfx::Rect(110, 110, 1, 1)));
 }
 
 }  // namespace test

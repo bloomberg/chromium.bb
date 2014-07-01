@@ -293,13 +293,13 @@ class Tab::TabCloseButton : public views::ImageButton {
     return true;
   }
 
-  virtual void GetHitTestMask(HitTestSource source,
-                              gfx::Path* path) const OVERRIDE {
+  virtual void GetHitTestMaskDeprecated(HitTestSource source,
+                                        gfx::Path* path) const OVERRIDE {
     // Use the button's contents bounds (which does not include padding)
     // and the hit test mask of our parent |tab_| to determine if the
     // button is hidden behind another tab.
     gfx::Path tab_mask;
-    tab_->GetHitTestMask(source, &tab_mask);
+    tab_->GetHitTestMaskDeprecated(source, &tab_mask);
 
     gfx::Rect button_bounds(GetContentsBounds());
     button_bounds.set_x(GetMirroredXForRect(button_bounds));
@@ -807,7 +807,8 @@ bool Tab::HasHitTestMask() const {
   return true;
 }
 
-void Tab::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
+void Tab::GetHitTestMaskDeprecated(HitTestSource source,
+                                   gfx::Path* path) const {
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.

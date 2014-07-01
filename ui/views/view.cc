@@ -954,7 +954,7 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
       HitTestSource source = HIT_TEST_SOURCE_MOUSE;
       if (!views::UsePointBasedTargeting(rect))
         source = HIT_TEST_SOURCE_TOUCH;
-      GetHitTestMask(source, &mask);
+      GetHitTestMaskDeprecated(source, &mask);
       SkRegion clip_region;
       clip_region.setRect(0, 0, width(), height());
       SkRegion mask_region;
@@ -1585,7 +1585,8 @@ bool View::HasHitTestMask() const {
   return false;
 }
 
-void View::GetHitTestMask(HitTestSource source, gfx::Path* mask) const {
+void View::GetHitTestMaskDeprecated(HitTestSource source,
+                                    gfx::Path* mask) const {
   DCHECK(mask);
 }
 
