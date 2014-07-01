@@ -8,6 +8,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
@@ -749,24 +750,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   factory_.Destroy(child_surface_id);
 }
 
-class ResourceTestDrawQuad : public DrawQuad {
- public:
-  explicit ResourceTestDrawQuad(unsigned resource) : resource_(resource) {
-    material = DrawQuad::TEXTURE_CONTENT;
-  }
-  virtual ~ResourceTestDrawQuad() {}
-
-  virtual void IterateResources(
-      const ResourceIteratorCallback& callback) OVERRIDE {
-    callback.Run(resource_);
-  }
-
-  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE {}
-
- private:
-  unsigned resource_;
-};
-
 class SurfaceAggregatorWithResourcesTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -827,9 +810,32 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
     resource.id = resource_ids[i];
     resource.is_software = true;
     frame_data->resource_list.push_back(resource);
-    scoped_ptr<DrawQuad> quad(new ResourceTestDrawQuad(resource_ids[i]));
+    scoped_ptr<TextureDrawQuad> quad(TextureDrawQuad::Create());
+    const gfx::Rect rect;
+    const gfx::Rect opaque_rect;
+    const gfx::Rect visible_rect;
+    bool needs_blending = false;
+    bool premultiplied_alpha = false;
+    const gfx::PointF uv_top_left;
+    const gfx::PointF uv_bottom_right;
+    SkColor background_color = SK_ColorGREEN;
+    const float vertex_opacity[4] = {0.f, 0.f, 1.f, 1.f};
+    bool flipped = false;
+    quad->SetAll(sqs,
+                 rect,
+                 opaque_rect,
+                 visible_rect,
+                 needs_blending,
+                 resource_ids[i],
+                 premultiplied_alpha,
+                 uv_top_left,
+                 uv_bottom_right,
+                 background_color,
+                 vertex_opacity,
+                 flipped);
+
     quad->shared_quad_state = sqs;
-    pass->quad_list.push_back(quad.Pass());
+    pass->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
