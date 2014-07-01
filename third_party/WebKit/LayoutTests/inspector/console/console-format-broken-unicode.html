@@ -1,0 +1,72 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var str = "  \uD835\uDC14\uD835\uDC0D\uD835\uDC08\uD835\uDC02\uD835\uDC0E\uD835\uDC03\uD835\uDC04"; // "  UNICODE"
+var brokenSurrogate = str.substring(0, str.length - 1);
+var obj = { foo: brokenSurrogate };
+obj[brokenSurrogate] = "foo";
+
+function test()
+{
+    InspectorTest.evaluateInConsole("obj");
+    InspectorTest.evaluateInConsole("[obj]");
+    InspectorTest.evaluateInConsole("obj.foo");
+    InspectorTest.evaluateInConsole("[obj.foo]");
+    InspectorTest.runAfterPendingDispatches(step1);
+
+    function step1()
+    {
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.expandConsoleMessages(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.evaluateInPage("obj.foo", step4);
+    }
+
+    function step4(result)
+    {
+        var text = result.description;
+        InspectorTest.assertEquals(15, text.length, "text length");
+        InspectorTest.assertEquals(6, countTextNodes(text), "nodes count");
+        InspectorTest.addResult("PASS: Found all nodes with the broken text");
+        InspectorTest.completeTest();
+    }
+
+    function countTextNodes(textContent)
+    {
+        WebInspector.inspectorView.panel("console");
+        InspectorTest.disableConsoleViewport();
+
+        var count = 0;
+        var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+        for (var i = 0; i < viewMessages.length; ++i) {
+            var node = viewMessages[i].contentElement();
+            var currentNode = node;
+            while (currentNode = currentNode.traverseNextNode(node)) {
+                if (currentNode.nodeType === Node.TEXT_NODE && currentNode.nodeValue === textContent)
+                    ++count;
+            }
+        }
+        return count;
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that console logging dumps proper messages with broken Unicode.
+</p>
+
+</body>
+</html>
