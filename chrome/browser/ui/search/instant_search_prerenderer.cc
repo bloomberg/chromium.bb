@@ -129,7 +129,8 @@ bool InstantSearchPrerenderer::UsePrerenderedPage(
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (search_terms.empty() || !params->target_contents ||
       !prerender_contents() || !prerender_manager ||
-      !QueryMatchesPrefetch(search_terms)) {
+      !QueryMatchesPrefetch(search_terms) ||
+      params->disposition != CURRENT_TAB) {
     Cancel();
     return false;
   }

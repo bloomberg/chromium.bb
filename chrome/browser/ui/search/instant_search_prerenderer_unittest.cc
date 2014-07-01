@@ -410,6 +410,23 @@ TEST_F(InstantSearchPrerendererTest,
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
 
+TEST_F(InstantSearchPrerendererTest,
+       CancelPrerenderRequest_UnsupportedDispositions) {
+  PrerenderSearchQuery(ASCIIToUTF16("pen"));
+
+  // Open a search results page. Make sure the InstantSearchPrerenderer cancels
+  // the active prerender request for unsupported window dispositions.
+  GURL url("https://www.google.com/alt#quux=pen&strk");
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(), NEW_FOREGROUND_TAB,
+                                            content::PAGE_TRANSITION_TYPED,
+                                            false));
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_NE(GetPrerenderURL(), new_tab->GetURL());
+  EXPECT_EQ(url, new_tab->GetURL());
+  EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
+}
+
 class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
   public:
    ReuseInstantSearchBasePageTest() {}
