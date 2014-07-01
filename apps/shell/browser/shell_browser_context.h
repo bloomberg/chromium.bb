@@ -6,9 +6,13 @@
 #define APPS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace apps {
+
+class ShellSpecialStoragePolicy;
 
 // The BrowserContext used by the content, apps and extensions systems in
 // app_shell.
@@ -16,6 +20,9 @@ class ShellBrowserContext : public content::ShellBrowserContext {
  public:
   ShellBrowserContext();
   virtual ~ShellBrowserContext();
+
+  // content::BrowserContext implementation.
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   // HACK: Pad the virtual function table so we trip an assertion if someone
   // tries to use |this| as a Profile.
@@ -36,6 +43,8 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext15();
 
  private:
+  scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };
 

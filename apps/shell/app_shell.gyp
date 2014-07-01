@@ -134,6 +134,8 @@
         'browser/shell_omaha_query_params_delegate.h',
         'browser/shell_runtime_api_delegate.cc',
         'browser/shell_runtime_api_delegate.h',
+        'browser/shell_special_storage_policy.cc',
+        'browser/shell_special_storage_policy.h',
         'common/shell_content_client.cc',
         'common/shell_content_client.h',
         'common/shell_extensions_client.cc',

@@ -3,16 +3,22 @@
 // found in the LICENSE file.
 
 #include "apps/shell/browser/shell_browser_context.h"
+#include "apps/shell/browser/shell_special_storage_policy.h"
 
 namespace apps {
 
 // Create a normal recording browser context. If we used an incognito context
 // then app_shell would also have to create a normal context and manage both.
 ShellBrowserContext::ShellBrowserContext()
-    : content::ShellBrowserContext(false, NULL) {
+    : content::ShellBrowserContext(false, NULL),
+      storage_policy_(new ShellSpecialStoragePolicy) {
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
+}
+
+quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
+  return storage_policy_.get();
 }
 
 void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext1() {
