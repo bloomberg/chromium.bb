@@ -294,7 +294,7 @@ config("wexit_time_destructors") {
 # add back the one you want to override it with:
 #
 #   configs -= default_optimization_config
-#   configs += [ "//build/config/compiler/optimize_max" ]
+#   configs += [ "//native_client/build/config/compiler/optimize_max" ]
 
 # Default "optimization on" config. On Windows, this favors size over speed.
 #

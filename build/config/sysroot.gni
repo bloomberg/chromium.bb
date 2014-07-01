@@ -6,7 +6,7 @@
 # of the sysroot. If no sysroot applies, the variable will be an empty string.
 
 if (is_android) {
-  import("//build/config/android/config.gni")
+  import("//native_client/build/config/android/config.gni")
   if (!is_android_webview_build) {
     if (cpu_arch == "x86") {
       sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
@@ -39,11 +39,11 @@ if (is_android) {
     sysroot = ""
   }
 } else if (is_mac) {
-  import("//build/config/mac/mac_sdk.gni")
+  import("//native_client/build/config/mac/mac_sdk.gni")
 
   sysroot = mac_sdk_path
 } else if (is_ios) {
-  import("//build/config/ios/ios_sdk.gni")
+  import("//native_client/build/config/ios/ios_sdk.gni")
   sysroot = ios_sdk_path
 } else {
   sysroot = ""

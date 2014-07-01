@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/linux/pkg_config.gni")
-import("//build/config/sysroot.gni")
-import("//build/config/ui.gni")
+import("//native_client/build/config/linux/pkg_config.gni")
+import("//native_client/build/config/sysroot.gni")
+import("//native_client/build/config/ui.gni")
 
 config("sdk") {
   if (sysroot != "") {
@@ -13,7 +13,7 @@ config("sdk") {
 
     # Need to get some linker flags out of the sysroot.
     ldflags += [ exec_script("sysroot_ld_path.py",
-        [ rebase_path("//build/linux/sysroot_ld_path.sh", root_build_dir),
+        [ rebase_path("//native_client/build/linux/sysroot_ld_path.sh", root_build_dir),
           sysroot ],
         "value") ]
   }

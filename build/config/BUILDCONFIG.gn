@@ -21,6 +21,12 @@ declare_args() {
   nacl_libc = "none"
   nacl_prep = "none"
 
+  use_newlib = true
+  use_glibc = false
+  use_pnacl = false
+
+  is_android_webview_build = false
+
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
@@ -28,7 +34,8 @@ declare_args() {
   #   0 means no symbols.
   symbol_level = 2
 
-
+  # Component build.
+  is_component_build = false
   # Debug build.
   is_debug = true
 
@@ -36,24 +43,37 @@ declare_args() {
   # to configure warnings.
   is_clang = false
 
-  # These are not used by NativeClient, but added for compatiblity with
-  # Chrome build files.
-  is_android = false
+  # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
+  # we build 32-bit on Windows regardless of the current host OS bit depth.
+  # Setting this flag will override this logic and generate 64-bit toolchains.
+  #
+  # Normally this would get set automatically when you specify a target using
+  # the 64-bit toolchain. You can also set this on the command line to convert
+  # the default toolchain to 64-bit.
+  force_win64 = false
+
+  # Selects the desired build flavor. Official builds get additional
+  # processing to prepare for release. Normally you will want to develop and
+  # test with this flag off.
+  is_official_build = false
+
+  # Select the desired branding flavor. False means normal Chromium branding,
+  # true means official Google Chrome branding (requires extra Google-internal
+  # resources).
   is_chrome_branded = false
-  is_chromeos = false
-  is_ios = false
-  is_android_webview_build = false
 
+  # Compile for Address Sanitizer to find memory bugs.
   is_asan = false
+
+  # Compile for Leak Sanitizer to find leaks.
   is_lsan = false
+
+  # Compile for Memory Sanitizer to find uninitialized reads.
   is_msan = false
+
+  # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
-
-  use_newlib = true
-  use_glibc = false
-  use_pnacl = false
 }
-
 
 # =============================================================================
 # OS DEFINITIONS
@@ -62,33 +82,234 @@ declare_args() {
 # We set these various is_FOO booleans for convenience in writing OS-based
 # conditions.
 #
+# - is_android, is_chromeos, is_ios, and is_win should be obvious.
+# - is_mac is set only for desktop Mac. It is not set on iOS.
+# - is_posix is true for mac and any Unix-like system (basically everything
+#   except Windows).
+# - is_linux is true for desktop Linux and ChromeOS, but not Android (which is
+#   generally too different despite being based on the Linux kernel).
+#
 # Do not add more is_* variants here for random lesser-used Unix systems like
 # aix or one of the BSDs. If you need to check these, just check the os value
 # directly.
 
 if (os == "win") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
   is_linux = false
   is_mac = false
+  is_nacl = false
   is_posix = false
   is_win = true
 } else if (os == "mac") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
   is_linux = false
   is_mac = true
+  is_nacl = false
   is_posix = true
   is_win = false
   if (!is_clang) {
     is_clang = true  # Always use clang on Mac.
   }
-} else if (os == "linux") {
-  is_linux = true
+} else if (os == "android") {
+  is_android = true
+  is_chromeos = false
+  is_ios = false
+  is_linux = false
   is_mac = false
+  is_nacl = false
   is_posix = true
   is_win = false
-} else {
-  is_win = false
+} else if (os == "chromeos") {
+  is_android = false
+  is_chromeos = true
+  is_ios = false
+  is_linux = true
   is_mac = false
-  is_posix = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+} else if (os == "nacl") {
+  # os == "nacl" will be passed by the nacl toolchain definition. It is not
+  # set by default or on the command line. We treat is as a Posix variant.
+  is_android = false
+  is_chromeos = false
+  is_ios = false
   is_linux = false
+  is_mac = false
+  is_nacl = true
+  is_posix = true
+  is_win = false
+} else if (os == "ios") {
+  is_android = false
+  is_chromeos = false
+  is_ios = true
+  is_linux = false
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+  if (!is_gyp_xcode_generator) {
+    # Always use clang on iOS when using ninja
+    is_clang = true
+  }
+} else if (os == "linux") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = true
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+}
+
+is_desktop_linux = is_linux && !is_chromeos
+
+# =============================================================================
+# CPU ARCHITECTURE
+# =============================================================================
+
+if (is_win) {
+  # Always use 32-bit on Windows, even when compiling on a 64-bit host OS,
+  # unless the override flag is specified.
+  if (force_win64) {
+    cpu_arch = "x64"
+  } else {
+    cpu_arch = "x86"
+  }
+}
+
+# =============================================================================
+# SOURCES FILTERS
+# =============================================================================
+#
+# These patterns filter out platform-specific files when assigning to the
+# sources variable. The magic variable |sources_assignment_filter| is applied
+# to each assignment or appending to the sources variable and matches are
+# automatcally removed.
+#
+# Note that the patterns are NOT regular expressions. Only "*" and "\b" (path
+# boundary = end of string or slash) are supported, and the entire string
+# muct match the pattern (so you need "*.cc" to match all .cc files, for
+# example).
+
+# DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
+# below.
+sources_assignment_filter = []
+if (!is_posix) {
+  sources_assignment_filter += [
+    "*_posix.h",
+    "*_posix.cc",
+    "*_posix_unittest.h",
+    "*_posix_unittest.cc",
+    "*\bposix/*",
+  ]
+}
+if (!is_win) {
+  sources_assignment_filter += [
+    "*_win.cc",
+    "*_win.h",
+    "*_win_unittest.cc",
+    "*\bwin/*",
+    "*.rc",
+  ]
+}
+if (!is_mac) {
+  sources_assignment_filter += [
+    "*_mac.h",
+    "*_mac.cc",
+    "*_mac.mm",
+    "*_mac_unittest.h",
+    "*_mac_unittest.cc",
+    "*_mac_unittest.mm",
+    "*\bmac/*",
+    "*_cocoa.h",
+    "*_cocoa.cc",
+    "*_cocoa.mm",
+    "*_cocoa_unittest.h",
+    "*_cocoa_unittest.cc",
+    "*_cocoa_unittest.mm",
+    "*\bcocoa/*",
+  ]
+}
+if (!is_ios) {
+  sources_assignment_filter += [
+    "*_ios.h",
+    "*_ios.cc",
+    "*_ios.mm",
+    "*_ios_unittest.h",
+    "*_ios_unittest.cc",
+    "*_ios_unittest.mm",
+    "*\bios/*",
+  ]
+}
+if (!is_mac && !is_ios) {
+  sources_assignment_filter += [
+    "*.mm",
+  ]
+}
+if (!is_linux) {
+  sources_assignment_filter += [
+    "*_linux.h",
+    "*_linux.cc",
+    "*_linux_unittest.h",
+    "*_linux_unittest.cc",
+    "*\blinux/*",
+  ]
+}
+if (!is_android) {
+  sources_assignment_filter += [
+    "*_android.h",
+    "*_android.cc",
+    "*_android_unittest.h",
+    "*_android_unittest.cc",
+    "*\bandroid/*",
+  ]
+}
+if (!is_chromeos) {
+  sources_assignment_filter += [
+    "*_chromeos.h",
+    "*_chromeos.cc",
+    "*_chromeos_unittest.h",
+    "*_chromeos_unittest.cc",
+    "*\bchromeos/*",
+  ]
+}
+# DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
+# below.
+
+# Actually save this list.
+#
+# These patterns are executed for every file in the source tree of every run.
+# Therefore, adding more patterns slows down the build for everybody. We should
+# only add automatic patterns for configurations affecting hundreds of files
+# across many projects in the tree.
+#
+# Therefore, we only add rules to this list corresponding to platforms on the
+# Chromium waterfall.  This is not for non-officially-supported platforms
+# (FreeBSD, etc.) toolkits, (X11, GTK, etc.), or features. For these cases,
+# write a conditional in the target to remove the file(s) from the list when
+# your platform/toolkit/feature doesn't apply.
+set_sources_assignment_filter(sources_assignment_filter)
+
+# =============================================================================
+# BUILD OPTIONS
+# =============================================================================
+
+if (is_component_build) {
+  component_mode = "shared_library"
+} else {
+  component_mode = "source_set"
+}
+
+# These Sanitizers all imply using the Clang compiler. On Windows they either
+# don't work or work differently.
+if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
+  is_clang = true
 }
 
 # ==============================================================================
@@ -100,8 +321,14 @@ if (os == "win") {
 # doing cross-compiles. When not cross-compiling, this will be the same as the
 # default toolchain.
 
-host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
-if (is_win) {
+if (is_nacl) {
+  if (build_os == "mac") {
+    host_toolchain = "//native_client/build/toolchain/mac:clang"
+  }
+  else {
+    host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
+  }
+} else if (is_win) {
   # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
   # to eliminate these conditionals.
   if (build_cpu_arch == "x64") {
@@ -202,10 +429,20 @@ native_compiler_configs += [ default_symbols_config ]
 
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
-  windows_linker_configs = [
-    default_incremental_linking_config,
+  if (is_debug) {
+    _default_incremental_linking_config =
+      "//native_client/build/config/win:incremental_linking"
+  } else {
+    _default_incremental_linking_config =
+      "//native_client/build/config/win:no_incremental_linking"
+  }
+  _windows_linker_configs = [
+    _default_incremental_linking_config,
     "//native_client/build/config/win:sdk_link",
     "//native_client/build/config/win:common_linker_setup",
+    # Default to console-mode apps. Most of our targets are tests and such
+    # that shouldn't use the windows subsystem.
+    "//native_client/build/config/win:console",
   ]
 }
 
@@ -216,7 +453,7 @@ set_defaults("executable") {
       "//native_client/build/config:default_libs",
     ]
     if (is_win) {
-      configs += windows_linker_configs
+      configs += _windows_linker_configs
     } else if (is_mac) {
   #    configs += [
   #      "///native_clientbuild/config/mac:mac_dynamic_flags",
@@ -265,7 +502,7 @@ set_defaults("shared_library") {
       "//native_client/build/config:default_libs",
     ]
     if (is_win) {
-      configs += windows_linker_configs
+      configs += _windows_linker_configs
     } else if (is_mac) {
       configs += [ "//native_client/build/config/mac:mac_dynamic_flags" ]
     }

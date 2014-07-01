@@ -165,6 +165,30 @@ def BuildScript(status, context):
     with Step('gclient_runhooks', status):
       CommandGclientRunhooks(context)
 
+  # Make sure our GN build is working.
+  gn_path = None
+  if context.Linux() and context['arch'] != 'arm':
+    gn_path = '../buildtools/linux32/gn'
+    targets = ['trusted_' + context['arch'], 'untrusted']
+
+  # TODO(noelallen) Disable Mac and Windows build, but
+  # check in so we can debug on the bots.
+  if 0:
+    if context.Mac():
+      gn_path = '../buildtools/mac/gn'
+      targets = ['trusted_' + context['arch'], 'untrusted']
+    if context.Windows():
+      gn_path = '../buildtools/win/gn.exe'
+      targets = ['trusted_' + context['arch'], 'untrusted']
+
+  if gn_path:
+    with Step('gn_compile', status):
+      Command(context,
+              cmd=[gn_path, '--dotfile=../native_client/.gn',
+                   '--root=..', 'gen', '../out'])
+      Command(context, cmd=['ninja', '-C', '../out', '-j10', 'prep_toolchains'])
+      Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
+
   if context['clang']:
     with Step('update_clang', status):
       Command(context, cmd=['../tools/clang/scripts/update.sh'])
@@ -216,20 +240,6 @@ def BuildScript(status, context):
   # Run checkdeps script to vet #includes.
   with Step('checkdeps', status):
     Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
-
-  # Make sure our GN build is working.
-  gn_path = None
-  if context.Linux() and context['arch'] != 'arm':
-    gn_path = '../buildtools/linux32/gn'
-    targets = ['trusted_' + context['arch'], 'untrusted']
-
-  if gn_path:
-    with Step('gn_compile', status):
-      Command(context,
-              cmd=[gn_path, '--dotfile=../native_client/.gn',
-                   '--root=..', 'gen', '../out'])
-      Command(context, cmd=['ninja', '-C', '../out', '-j10', 'prep_toolchains'])
-      Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
 
   # Make sure our Gyp build is working.
   if not context['no_gyp']:

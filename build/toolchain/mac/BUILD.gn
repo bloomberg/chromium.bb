@@ -11,8 +11,8 @@ import("../goma.gni")
 # Should only be running on Mac.
 assert(is_mac || is_ios)
 
-import("//build/toolchain/clang.gni")
-import("//build/toolchain/goma.gni")
+import("//native_client/build/toolchain/clang.gni")
+import("//native_client/build/toolchain/goma.gni")
 
 if (is_clang) {
   cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang",
