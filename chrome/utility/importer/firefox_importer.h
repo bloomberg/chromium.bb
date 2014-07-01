@@ -47,6 +47,8 @@ class FirefoxImporter : public Importer {
   // defined in browserconfig.properties.
   void ImportHomepage();
   void GetSearchEnginesXMLData(std::vector<std::string>* search_engine_data);
+  void GetSearchEnginesXMLDataFromJSON(
+      std::vector<std::string>* search_engine_data);
 
   // The struct stores the information about a bookmark item.
   struct BookmarkItem;

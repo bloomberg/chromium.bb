@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -383,12 +384,13 @@ void FirefoxImporter::ImportHomepage() {
 
 void FirefoxImporter::GetSearchEnginesXMLData(
     std::vector<std::string>* search_engine_data) {
-  // TODO(mpawlowski): This may no longer work, search engines are stored in
-  // search.json since Firefox 3.5, not in search.sqlite. XML definitions are
-  // still necessary. http://crbug.com/329175
   base::FilePath file = source_path_.AppendASCII("search.sqlite");
-  if (!base::PathExists(file))
+  if (!base::PathExists(file)) {
+    // Since Firefox 3.5, search engines are no longer stored in search.sqlite.
+    // Instead, search.json is used for storing search engines.
+    GetSearchEnginesXMLDataFromJSON(search_engine_data);
     return;
+  }
 
   sql::Connection db;
   if (!db.Open(file))
@@ -473,6 +475,90 @@ void FirefoxImporter::GetSearchEnginesXMLData(
     std::string file_data;
     base::ReadFileToString(file, &file_data);
     search_engine_data->push_back(file_data);
+  }
+}
+
+void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
+    std::vector<std::string>* search_engine_data) {
+  base::FilePath search_json_file = source_path_.AppendASCII("search.json");
+  if (!base::PathExists(search_json_file))
+    return;
+
+  JSONFileValueSerializer serializer(search_json_file);
+  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
+  const base::DictionaryValue* search_root = NULL;
+  if (!root || !root->GetAsDictionary(&search_root))
+    return;
+
+  const std::string kDirectories("directories");
+  const base::DictionaryValue* search_directories = NULL;
+  if (!search_root->GetDictionary(kDirectories, &search_directories))
+    return;
+
+  // Dictionary |search_directories| contains a list of search engines
+  // (default and installed). The list can be found from key <engines>
+  // of the dictionary. Key <engines> is a grandchild of key <directories>.
+  // However, key <engines> parent's key is dynamic which depends on
+  // operating systems. For example,
+  //   Ubuntu (for default search engine):
+  //     /usr/lib/firefox/distribution/searchplugins/locale/en-US
+  //   Ubuntu (for installed search engines):
+  //     /home/<username>/.mozilla/firefox/lcd50n4n.default/searchplugins
+  //   Windows (for default search engine):
+  //     C:\\Program Files (x86)\\Mozilla Firefox\\browser\\searchplugins
+  // Therefore, it needs to be retrieved by searching.
+
+  for (base::DictionaryValue::Iterator it(*search_directories); !it.IsAtEnd();
+       it.Advance()) {
+    // The key of |it| may contains dot (.) which cannot be used as <key>
+    // for retrieving <engines>. Hence, it is needed to get |it| as dictionary.
+    // The resulted dictionary can be used for retrieving <engines>.
+    const std::string kEngines("engines");
+    const base::DictionaryValue* search_directory = NULL;
+    if (!it.value().GetAsDictionary(&search_directory))
+      continue;
+
+    const base::ListValue* search_engines = NULL;
+    if (!search_directory->GetList(kEngines, &search_engines))
+      continue;
+
+    const std::string kFilePath("filePath");
+    const std::string kHidden("_hidden");
+    for (size_t i = 0; i < search_engines->GetSize(); ++i) {
+      const base::DictionaryValue* engine_info = NULL;
+      if (!search_engines->GetDictionary(i, &engine_info))
+        continue;
+
+      bool is_hidden = false;
+      std::string file_path;
+      if (!engine_info->GetBoolean(kHidden, &is_hidden) ||
+          !engine_info->GetString(kFilePath, &file_path))
+        continue;
+
+      if (!is_hidden) {
+        const std::string kAppPrefix("[app]/");
+        const std::string kProfilePrefix("[profile]/");
+        base::FilePath xml_file = base::FilePath::FromUTF8Unsafe(file_path);
+
+        // If |file_path| contains [app] or [profile] then they need to be
+        // replaced with the actual app or profile path.
+        size_t index = file_path.find(kAppPrefix);
+        if (index != std::string::npos) {
+          // Replace '[app]/' with actual app path.
+          xml_file = app_path_.AppendASCII("searchplugins").AppendASCII(
+              file_path.substr(index + kAppPrefix.length()));
+        } else if ((index = file_path.find(kProfilePrefix)) !=
+                   std::string::npos) {
+          // Replace '[profile]/' with actual profile path.
+          xml_file = source_path_.AppendASCII("searchplugins").AppendASCII(
+              file_path.substr(index + kProfilePrefix.length()));
+        }
+
+        std::string file_data;
+        base::ReadFileToString(xml_file, &file_data);
+        search_engine_data->push_back(file_data);
+      }
+    }
   }
 }
 

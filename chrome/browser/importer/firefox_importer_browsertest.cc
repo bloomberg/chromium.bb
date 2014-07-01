@@ -98,15 +98,11 @@ class FirefoxObserver : public ProfileWriter,
                         public importer::ImporterProgressObserver {
  public:
   FirefoxObserver()
-      : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
-        password_count_(0), keyword_count_(0), import_search_engines_(true) {
-  }
-
-  explicit FirefoxObserver(bool import_search_engines)
-      : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
-        password_count_(0), keyword_count_(0),
-        import_search_engines_(import_search_engines) {
-  }
+      : ProfileWriter(NULL),
+        bookmark_count_(0),
+        history_count_(0),
+        password_count_(0),
+        keyword_count_(0) {}
 
   // importer::ImporterProgressObserver:
   virtual void ImportStarted() OVERRIDE {}
@@ -117,8 +113,7 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kFirefoxBookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefoxPasswords), password_count_);
-    if (import_search_engines_)
-      EXPECT_EQ(arraysize(kFirefoxKeywords), keyword_count_);
+    EXPECT_EQ(arraysize(kFirefoxKeywords), keyword_count_);
   }
 
   virtual bool BookmarkModelIsLoaded() const OVERRIDE {
@@ -201,7 +196,6 @@ class FirefoxObserver : public ProfileWriter,
   size_t history_count_;
   size_t password_count_;
   size_t keyword_count_;
-  bool import_search_engines_;
 };
 
 }  // namespace
@@ -225,32 +219,39 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void Firefox3xImporterBrowserTest(
-      std::string profile_dir,
-      importer::ImporterProgressObserver* observer,
-      ProfileWriter* writer,
-      bool import_search_plugins) {
+  void FirefoxImporterBrowserTest(std::string profile_dir,
+                                  importer::ImporterProgressObserver* observer,
+                                  ProfileWriter* writer) {
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII(profile_dir);
     ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, true));
+
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("firefox3_nss");
     ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, false));
 
-    base::FilePath search_engine_path = app_path_;
-    search_engine_path = search_engine_path.AppendASCII("searchplugins");
-    base::CreateDirectory(search_engine_path);
-    if (import_search_plugins) {
-      ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-      data_path = data_path.AppendASCII("firefox3_searchplugins");
-      if (!base::PathExists(data_path)) {
-        // TODO(maruel):  Create search test data that we can open source!
-        LOG(ERROR) << "Missing internal test data";
-        return;
-      }
-      ASSERT_TRUE(base::CopyDirectory(data_path, search_engine_path, false));
-    }
+    // Create a directory to house default search engines.
+    base::FilePath default_search_engine_path =
+        app_path_.AppendASCII("searchplugins");
+    base::CreateDirectory(default_search_engine_path);
+
+    // Create a directory to house custom/installed search engines.
+    base::FilePath custom_search_engine_path =
+        profile_path_.AppendASCII("searchplugins");
+    base::CreateDirectory(custom_search_engine_path);
+
+    // Copy over search engines.
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    data_path = data_path.AppendASCII("firefox_searchplugins");
+    base::FilePath default_search_engine_source_path =
+        data_path.AppendASCII("default");
+    base::FilePath custom_search_engine_source_path =
+        data_path.AppendASCII("custom");
+    ASSERT_TRUE(base::CopyDirectory(
+        default_search_engine_source_path, default_search_engine_path, false));
+    ASSERT_TRUE(base::CopyDirectory(
+        custom_search_engine_source_path, custom_search_engine_path, false));
 
     importer::SourceProfile source_profile;
     source_profile.importer_type = importer::TYPE_FIREFOX;
@@ -258,17 +259,14 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     source_profile.source_path = profile_path_;
     source_profile.locale = "en-US";
 
-    int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
-    if (import_search_plugins)
-      items = items | importer::SEARCH_ENGINES;
+    int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES |
+                importer::SEARCH_ENGINES;
 
     // Deletes itself.
     ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
     host->set_observer(observer);
-    host->StartImportSettings(source_profile,
-                              browser()->profile(),
-                              items,
-                              make_scoped_refptr(writer).get());
+    host->StartImportSettings(
+        source_profile, browser()->profile(), items, writer);
     base::MessageLoop::current()->Run();
   }
 
@@ -280,15 +278,19 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox30Importer)) {
   scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
-  Firefox3xImporterBrowserTest("firefox3_profile", observer.get(),
-                               observer.get(), true);
+  FirefoxImporterBrowserTest(
+      "firefox3_profile", observer.get(), observer.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox35Importer)) {
-  bool import_search_engines = false;
-  scoped_refptr<FirefoxObserver> observer(
-      new FirefoxObserver(import_search_engines));
-  Firefox3xImporterBrowserTest("firefox35_profile", observer.get(),
-                               observer.get(), import_search_engines);
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
+  FirefoxImporterBrowserTest(
+      "firefox35_profile", observer.get(), observer.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
+                       MAYBE_IMPORTER(FirefoxImporter)) {
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
+  FirefoxImporterBrowserTest("firefox_profile", observer.get(), observer.get());
 }
