@@ -47,7 +47,7 @@ class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCol
 public:
     static SourceBufferList* create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new SourceBufferList(context, asyncEventQueue));
     }
     virtual ~SourceBufferList();
 
