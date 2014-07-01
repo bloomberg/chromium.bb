@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/environment/environment.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "mojo/public/c/environment/logger.h"
@@ -45,15 +46,19 @@ Environment::~Environment() {
 
   // TODO(vtl): Maybe we should allow nesting, and restore previous default
   // async waiters and loggers?
+  g_default_async_waiter = NULL;
+  g_default_logger = NULL;
 }
 
 // static
 const MojoAsyncWaiter* Environment::GetDefaultAsyncWaiter() {
+  assert(g_default_async_waiter);  // Fails if not "inside" |Environment|.
   return g_default_async_waiter;
 }
 
 // static
 const MojoLogger* Environment::GetDefaultLogger() {
+  assert(g_default_logger);  // Fails if not "inside" |Environment|.
   return g_default_logger;
 }
 
