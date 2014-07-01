@@ -192,16 +192,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
 // Disabled on MacOS because it doesn't support touch input.
-// Flaky on OS_CHROMEOS http://crbug.com/376695.
-// Also flaky on Linux Tests (TSan v2) http://crbug.com/376668.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_TouchActionNone DISABLED_TouchActionNone
-#elif defined(THREAD_SANITIZER) && defined(OS_LINUX)
-#define MAYBE_TouchActionNone DISABLED_TouchActionNone
-#else
-#define MAYBE_TouchActionNone TouchActionNone
-#endif
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
+// It's just flaky everywhere.
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_TouchActionNone) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45));
