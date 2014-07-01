@@ -30,7 +30,7 @@ function test()
 
     function checkReverseMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, mapping)
     {
-        var entry = mapping.findEntryReversed(sourceURL, sourceLineNumber);
+        var entry = mapping.findEntryReversed(sourceURL, sourceLineNumber, 5);
         InspectorTest.addResult(compiledLineNumber + " === " + entry[0]);
         InspectorTest.addResult(compiledColumnNumber + " === " + entry[1]);
     }
