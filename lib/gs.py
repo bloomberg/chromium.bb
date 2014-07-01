@@ -593,7 +593,12 @@ class GSContext(object):
       RunCommandError if the command failed despite retries.
     """
     cmd = ['cp']
-    if recursive:
+    # Certain versions of gsutil (at least 4.3) assume the source of a copy is
+    # a directory if the -r option is used. If it's really a file, gsutil will
+    # look like it's uploading it but not actually do anything. We'll work
+    # around that problem by surpressing the -r flag if we detect the source
+    # is a local file.
+    if recursive and not os.path.isfile(src_path):
       cmd.append('-r')
       if skip_symlinks:
         cmd.append('-e')

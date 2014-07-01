@@ -215,12 +215,15 @@ class LSTest(AbstractGSContextTest):
     self.assertEqual(self.DETAILED_LS_RESULT, result)
 
 
-class CopyTest(AbstractGSContextTest):
+class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
   """Tests GSContext.Copy() functionality."""
 
-  LOCAL_PATH = '/tmp/file'
   GIVEN_REMOTE = EXPECTED_REMOTE = 'gs://test/path/file'
   ACL = 'public-read'
+
+  def setUp(self):
+    self.local_path = os.path.join(self.tempdir, 'file')
+    osutils.WriteFile(self.local_path, '')
 
   def _Copy(self, ctx, src, dst, **kwargs):
     return ctx.Copy(src, dst, **kwargs)
@@ -228,13 +231,13 @@ class CopyTest(AbstractGSContextTest):
   def Copy(self, ctx=None, **kwargs):
     if ctx is None:
       ctx = self.ctx
-    return self._Copy(ctx, self.LOCAL_PATH, self.GIVEN_REMOTE, **kwargs)
+    return self._Copy(ctx, self.local_path, self.GIVEN_REMOTE, **kwargs)
 
   def testBasic(self):
     """Simple copy test."""
     self.Copy()
     self.gs_mock.assertCommandContains(
-        ['cp', '--', self.LOCAL_PATH, self.EXPECTED_REMOTE])
+        ['cp', '--', self.local_path, self.EXPECTED_REMOTE])
 
   def testWithACL(self):
     """ACL specified during init."""
@@ -273,6 +276,8 @@ class CopyTest(AbstractGSContextTest):
   def testRecursive(self):
     """Test recursive copy."""
     self.Copy(recursive=True)
+    self.gs_mock.assertCommandContains(['-r'], expected=False)
+    self._Copy(self.ctx, self.tempdir, self.GIVEN_REMOTE, recursive=True)
     self.gs_mock.assertCommandContains(['cp', '-r'])
 
 
