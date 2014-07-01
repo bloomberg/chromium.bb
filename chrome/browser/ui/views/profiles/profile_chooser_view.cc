@@ -580,6 +580,13 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     DCHECK(active_item.signed_in);
   }
 
+  if (browser_->profile()->IsSupervised() &&
+      (view_to_display == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+       view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL)) {
+    LOG(WARNING) << "Supervised user attempted to add/remove account";
+    return;
+  }
+
   // Records the last tutorial mode.
   profiles::TutorialMode last_tutorial_mode = tutorial_mode_;
   ResetView();
@@ -1279,15 +1286,19 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   for (size_t i = 0; i < accounts.size(); ++i)
     CreateAccountButton(layout, accounts[i], false,
                         error_account_id == accounts[i], kFixedMenuWidth);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  add_account_link_ = CreateLink(l10n_util::GetStringFUTF16(
-      IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, avatar_item.name), this);
-  add_account_link_->SetBorder(views::Border::CreateEmptyBorder(
-      0, views::kButtonVEdgeMarginNew,
-      views::kRelatedControlVerticalSpacing, 0));
-  layout->StartRow(1, 0);
-  layout->AddView(add_account_link_);
+  if (!profile->IsSupervised()) {
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    add_account_link_ = CreateLink(l10n_util::GetStringFUTF16(
+        IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, avatar_item.name), this);
+    add_account_link_->SetBorder(views::Border::CreateEmptyBorder(
+        0, views::kButtonVEdgeMarginNew,
+        views::kRelatedControlVerticalSpacing, 0));
+    layout->StartRow(1, 0);
+    layout->AddView(add_account_link_);
+  }
+
   return view;
 }
 
@@ -1316,27 +1327,30 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   layout->StartRow(1, 0);
   layout->AddView(email_button);
 
-  // Delete button.
-  views::ImageButton* delete_button = new views::ImageButton(this);
-  delete_button->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                                   views::ImageButton::ALIGN_MIDDLE);
-  delete_button->SetImage(views::ImageButton::STATE_NORMAL,
-                          delete_default_image);
-  delete_button->SetImage(views::ImageButton::STATE_HOVERED,
-                          rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
-  delete_button->SetImage(views::ImageButton::STATE_PRESSED,
-                          rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
-  delete_button->SetBounds(
-      width - views::kButtonHEdgeMarginNew - kDeleteButtonWidth,
-      0, kDeleteButtonWidth, kButtonHeight);
-
-  email_button->set_notify_enter_exit_on_child(true);
-  email_button->AddChildView(delete_button);
-
-  // Save the original email address, as the button text could be elided.
-  delete_account_button_map_[delete_button] = account;
   if (reauth_required)
     reauth_account_button_map_[email_button] = account;
+
+  // Delete button.
+  if (!browser_->profile()->IsSupervised()) {
+    views::ImageButton* delete_button = new views::ImageButton(this);
+    delete_button->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                                     views::ImageButton::ALIGN_MIDDLE);
+    delete_button->SetImage(views::ImageButton::STATE_NORMAL,
+                            delete_default_image);
+    delete_button->SetImage(views::ImageButton::STATE_HOVERED,
+                            rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
+    delete_button->SetImage(views::ImageButton::STATE_PRESSED,
+                            rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
+    delete_button->SetBounds(
+        width - views::kButtonHEdgeMarginNew - kDeleteButtonWidth,
+        0, kDeleteButtonWidth, kButtonHeight);
+
+    email_button->set_notify_enter_exit_on_child(true);
+    email_button->AddChildView(delete_button);
+
+    // Save the original email address, as the button text could be elided.
+    delete_account_button_map_[delete_button] = account;
+  }
 }
 
 views::View* ProfileChooserView::CreateGaiaSigninView() {

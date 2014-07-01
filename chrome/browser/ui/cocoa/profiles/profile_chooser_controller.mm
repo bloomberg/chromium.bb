@@ -963,6 +963,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay {
+  if (browser_->profile()->IsSupervised() &&
+      (viewToDisplay == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+       viewToDisplay == profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL)) {
+    LOG(WARNING) << "Supervised user attempted to add/remove account";
+    return;
+  }
   viewMode_ = viewToDisplay;
   NSView* contentView = [[self window] contentView];
   [contentView setSubviews:[NSArray array]];
@@ -1517,23 +1523,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       initWithFrame:rect
           withColor:backgroundColor]);
 
-  // Manually elide the button text so that the contents fit inside the bubble.
-  // This is needed because the BlueLabelButton cell resets the style on
-  // every call to -cellSize, which prevents setting a custom lineBreakMode.
-  NSString* elidedButtonText = base::SysUTF16ToNSString(gfx::ElideText(
-      l10n_util::GetStringFUTF16(
-          IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name),
-      gfx::FontList(), rect.size.width, gfx::ELIDE_TAIL));
+  rect.origin.y = 0;
+  if (!browser_->profile()->IsSupervised()) {
+    // Manually elide the button text so the contents fit inside the bubble.
+    // This is needed because the BlueLabelButton cell resets the style on
+    // every call to -cellSize, which prevents setting a custom lineBreakMode.
+    NSString* elidedButtonText = base::SysUTF16ToNSString(gfx::ElideText(
+        l10n_util::GetStringFUTF16(
+            IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name),
+        gfx::FontList(), rect.size.width, gfx::ELIDE_TAIL));
 
-  NSButton* addAccountsButton =
-      [self linkButtonWithTitle:elidedButtonText
-                    frameOrigin:NSMakePoint(
-          kHorizontalSpacing, kSmallVerticalSpacing)
-                         action:@selector(addAccount:)];
-  [container addSubview:addAccountsButton];
+    NSButton* addAccountsButton =
+        [self linkButtonWithTitle:elidedButtonText
+                      frameOrigin:NSMakePoint(
+            kHorizontalSpacing, kSmallVerticalSpacing)
+                           action:@selector(addAccount:)];
+    [container addSubview:addAccountsButton];
+    rect.origin.y += kAccountButtonHeight;
+  }
 
   NSView* accountEmails = [self createAccountsListWithRect:NSMakeRect(
-      0, kAccountButtonHeight, rect.size.width, kAccountButtonHeight)];
+      0, rect.origin.y, rect.size.width, kAccountButtonHeight)];
   [container addSubview:accountEmails];
 
   [container setFrameSize:NSMakeSize(rect.size.width,
@@ -1858,24 +1868,26 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // Delete button.
-  NSRect buttonRect;
-  NSDivideRect(rect, &buttonRect, &rect,
-      deleteImageWidth + kHorizontalSpacing, NSMaxXEdge);
-  buttonRect.origin.y = 0;
+  if (!browser_->profile()->IsSupervised()) {
+    NSRect buttonRect;
+    NSDivideRect(rect, &buttonRect, &rect,
+        deleteImageWidth + kHorizontalSpacing, NSMaxXEdge);
+    buttonRect.origin.y = 0;
 
-  base::scoped_nsobject<HoverImageButton> deleteButton(
-      [[HoverImageButton alloc] initWithFrame:buttonRect]);
-  [deleteButton setBordered:NO];
-  [deleteButton setDefaultImage:deleteImage];
-  [deleteButton setHoverImage:rb->GetNativeImageNamed(
-      IDR_CLOSE_1_H).ToNSImage()];
-  [deleteButton setPressedImage:rb->GetNativeImageNamed(
-      IDR_CLOSE_1_P).ToNSImage()];
-  [deleteButton setTarget:self];
-  [deleteButton setAction:@selector(showAccountRemovalView:)];
-  [deleteButton setTag:tag];
+    base::scoped_nsobject<HoverImageButton> deleteButton(
+        [[HoverImageButton alloc] initWithFrame:buttonRect]);
+    [deleteButton setBordered:NO];
+    [deleteButton setDefaultImage:deleteImage];
+    [deleteButton setHoverImage:rb->GetNativeImageNamed(
+        IDR_CLOSE_1_H).ToNSImage()];
+    [deleteButton setPressedImage:rb->GetNativeImageNamed(
+        IDR_CLOSE_1_P).ToNSImage()];
+    [deleteButton setTarget:self];
+    [deleteButton setAction:@selector(showAccountRemovalView:)];
+    [deleteButton setTag:tag];
 
-  [button addSubview:deleteButton];
+    [button addSubview:deleteButton];
+  }
 
   return button.autorelease();
 }
