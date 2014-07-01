@@ -403,7 +403,7 @@
         'environment/environment.cc',
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
         "public/cpp/environment/logging.h",
-        "public/cpp/environment/lib/logging.h",
+        "public/cpp/environment/lib/logging.cc",
       ],
       'include_dirs': [
         '..',
