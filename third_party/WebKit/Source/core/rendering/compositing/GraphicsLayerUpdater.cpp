@@ -90,7 +90,7 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
 
         if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
             const RenderLayer* compositingContainer = context.compositingContainer(layer);
-            ASSERT(compositingContainer == layer.ancestorCompositingLayer());
+            ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
             if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer)) {
                 layersNeedingPaintInvalidation.append(&layer);

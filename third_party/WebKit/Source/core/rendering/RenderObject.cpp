@@ -1410,7 +1410,7 @@ const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
         // FIXME: CompositingState is not necessarily up to date for many callers of this function.
         DisableCompositingQueryAsserts disabler;
 
-        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingCompositingLayerForPaintInvalidation())
+        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidation())
             container = compositingLayer->renderer();
     }
     return container;

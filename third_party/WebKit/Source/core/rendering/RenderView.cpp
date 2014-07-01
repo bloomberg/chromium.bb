@@ -404,7 +404,7 @@ void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layout
             break;
         }
 
-        if (layer->enclosingCompositingLayerForPaintInvalidation()) {
+        if (layer->enclosingLayerForPaintInvalidation()) {
             frameView()->setCannotBlitToWindow();
             break;
         }

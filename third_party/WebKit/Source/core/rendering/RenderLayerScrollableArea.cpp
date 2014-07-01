@@ -1010,7 +1010,7 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, 
 
         RenderView* renderView = box().view();
 
-        RenderLayer* paintingRoot = layer()->enclosingCompositingLayer();
+        RenderLayer* paintingRoot = layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
         if (!paintingRoot)
             paintingRoot = renderView->layer();
 

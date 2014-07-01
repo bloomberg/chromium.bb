@@ -114,7 +114,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     RenderObject* renderer = m_node->renderer();
     RenderLayer* renderLayer;
     do {
-        renderLayer = renderer->enclosingLayer()->enclosingCompositingLayerForPaintInvalidation();
+        renderLayer = renderer->enclosingLayer()->enclosingLayerForPaintInvalidation();
         if (!renderLayer) {
             renderer = renderer->frame()->ownerRenderer();
             if (!renderer)

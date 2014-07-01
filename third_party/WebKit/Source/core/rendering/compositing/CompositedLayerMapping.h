@@ -395,6 +395,9 @@ private:
     // m_squashingContainmentLayer
     //   + m_graphicsLayer
     //   + m_squashingLayer
+    //
+    // Stacking children of a squashed layer receive graphics layers that are parented to the compositd ancestor of the
+    // squashed layer (i.e. nearest enclosing composited layer that is not squashed).
     OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist and m_squashingContainmentLayer is not present, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
     OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.
     Vector<GraphicsLayerPaintInfo> m_squashedLayers;

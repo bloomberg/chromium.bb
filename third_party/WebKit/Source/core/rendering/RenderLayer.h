@@ -220,11 +220,14 @@ public:
     RenderLayer* enclosingOverflowClipLayer(IncludeSelfOrNot = IncludeSelf) const;
 
     bool isPaintInvalidationContainer() const;
-    // Enclosing compositing layer; if includeSelf is true, may return this.
-    RenderLayer* enclosingCompositingLayer(IncludeSelfOrNot = IncludeSelf) const;
-    RenderLayer* enclosingCompositingLayerForPaintInvalidation(IncludeSelfOrNot = IncludeSelf) const;
-    // Ancestor compositing layer, excluding this.
-    RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(ExcludeSelf); }
+
+    // Do *not* call this method unless you know what you are dooing. You probably want to call enclosingCompositingLayerForPaintInvalidation() instead.
+    // If includeSelf is true, may return this.
+    RenderLayer* enclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot) const;
+
+    // Returns the enclosing layer root into which this layer paints, inclusive of this one. Note that the enclosing layer may or may not have its own
+    // GraphicsLayer backing, but is nevertheless the root for a call to the RenderLayer::paint*() methods.
+    RenderLayer* enclosingLayerForPaintInvalidation() const;
 
     RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
     bool hasAncestorWithFilterOutsets() const;

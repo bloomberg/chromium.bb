@@ -689,7 +689,7 @@ bool FrameView::isEnclosedInCompositingLayer() const
     DisableCompositingQueryAsserts disabler;
 
     RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();
-    if (frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingCompositingLayerForPaintInvalidation())
+    if (frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingLayerForPaintInvalidation())
         return true;
 
     if (FrameView* parentView = parentFrameView())

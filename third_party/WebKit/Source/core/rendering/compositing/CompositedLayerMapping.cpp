@@ -345,7 +345,7 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     if (!m_owningLayer.parent())
         return false;
 
-    const RenderLayer* compositingAncestor = m_owningLayer.ancestorCompositingLayer();
+    const RenderLayer* compositingAncestor = m_owningLayer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
     if (!compositingAncestor)
         return false;
 
@@ -1502,8 +1502,11 @@ void CompositedLayerMapping::updateClipParent()
 {
     RenderLayer* clipParent = 0;
     if (m_owningLayer.compositingReasons() & CompositingReasonOutOfFlowClipping && !owningLayerClippedByLayerNotAboveCompositedAncestor()) {
+        // Go to the containing block and then find the next compositing layer, including the containing block itsef. We don't just call
+        // enclosingCompositingLayer(ExcludeSelf) because containingBlock has special magic to jump up the hierarchy for fixed position elements
+        // (e.g. the containing block of a fixed position element is usually the document; see RenderObject::canContainFixedPositionObjects).
         if (RenderObject* containingBlock = m_owningLayer.renderer()->containingBlock())
-            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer();
+            clipParent = containingBlock->enclosingLayer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
     }
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))

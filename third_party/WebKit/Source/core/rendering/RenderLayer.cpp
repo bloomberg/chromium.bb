@@ -986,12 +986,9 @@ bool RenderLayer::isPaintInvalidationContainer() const
     return compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking;
 }
 
-// FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
-// is error-prone and misleading for reading code that uses these functions - especially compounded with
-// the includeSelf option. It is very likely that we don't even want either of these functions; A layer
-// should be told explicitly which GraphicsLayer is the paint invalidation container for a RenderLayer, and
-// any other use cases should probably have an API between the non-compositing and compositing sides of code.
-RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf) const
+// Note: enclosingCompositingLayer does not include squashed layers. Compositing stacking children of squashed layers
+// receive graphics layers that are parented to the compositing ancestor of the squashed layer.
+RenderLayer* RenderLayer::enclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot includeSelf) const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
@@ -1006,11 +1003,11 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf
     return 0;
 }
 
-RenderLayer* RenderLayer::enclosingCompositingLayerForPaintInvalidation(IncludeSelfOrNot includeSelf) const
+RenderLayer* RenderLayer::enclosingLayerForPaintInvalidation() const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
-    if ((includeSelf == IncludeSelf) && isPaintInvalidationContainer())
+    if (isPaintInvalidationContainer())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
@@ -3342,7 +3339,7 @@ void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
         // we could call setNeedsGraphicsLayerUpdate on our children, but that would
         // require walking the z-order lists to find them. Instead, we over-invalidate
         // by marking our parent as needing a geometry update.
-        if (RenderLayer* compositingParent = enclosingCompositingLayer(ExcludeSelf))
+        if (RenderLayer* compositingParent = enclosingLayerWithCompositedLayerMapping(ExcludeSelf))
             compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
