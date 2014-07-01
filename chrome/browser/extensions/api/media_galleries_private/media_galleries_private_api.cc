@@ -194,6 +194,10 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
 
   MediaGalleriesPrivateEventRouter* router =
       MediaGalleriesPrivateAPI::Get(GetProfile())->GetEventRouter();
+
+  // TODO(tommycli): The new GalleryWatchManager no longer checks that there is
+  // an event listener attached. There should be a check for that here.
+
   DCHECK(router);
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,

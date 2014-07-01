@@ -767,6 +767,9 @@
       # TODO(brettw) should this go with the webrtc sources?
       'browser/media/webrtc_log_list.cc',
       'browser/media/webrtc_log_list.h',
+      'browser/media_galleries/gallery_watch_manager.cc',
+      'browser/media_galleries/gallery_watch_manager.h',
+      'browser/media_galleries/gallery_watch_manager_observer.h',
       'browser/memory_details.cc',
       'browser/memory_details.h',
       'browser/memory_details_android.cc',
