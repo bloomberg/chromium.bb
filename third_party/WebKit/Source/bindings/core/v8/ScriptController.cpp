@@ -474,14 +474,20 @@ void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& n
     windowShell(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
 }
 
+static bool isInPrivateScriptIsolateWorld(v8::Isolate* isolate)
+{
+    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+    return !context.IsEmpty() && toDOMWindow(context) && DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld();
+}
+
 bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reason)
 {
-    v8::Handle<v8::Context> context = m_isolate->GetCurrentContext();
-    if (!context.IsEmpty() && toDOMWindow(context) && DOMWrapperWorld::current(m_isolate).isPrivateScriptIsolatedWorld()) {
-        return true;
-    }
+    // For performance reasons, we check isInPrivateScriptIsolateWorld() only if
+    // canExecuteScripts is going to return false.
 
     if (m_frame->document() && m_frame->document()->isSandboxed(SandboxScripts)) {
+        if (isInPrivateScriptIsolateWorld(m_isolate))
+            return true;
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
         if (reason == AboutToExecuteScript)
             m_frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked script execution in '" + m_frame->document()->url().elidedString() + "' because the document's frame is sandboxed and the 'allow-scripts' permission is not set.");
@@ -494,7 +500,8 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
     }
 
     Settings* settings = m_frame->settings();
-    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->scriptEnabled());
+    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->scriptEnabled())
+        || isInPrivateScriptIsolateWorld(m_isolate);
     if (!allowed && reason == AboutToExecuteScript)
         m_frame->loader().client()->didNotAllowScript();
     return allowed;
