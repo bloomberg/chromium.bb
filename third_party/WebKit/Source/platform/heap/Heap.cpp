@@ -464,16 +464,20 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
     if (gcInfo->hasFinalizer()) {
         gcInfo->m_finalize(object);
     }
+
 #if !defined(NDEBUG) || defined(LEAK_SANITIZER)
-    // Zap freed memory with a recognizable zap value in debug mode.
-    // Also zap when using leak sanitizer because the heap is used as
-    // a root region for lsan and therefore pointers in unreachable
-    // memory could hide leaks.
+    // In Debug builds, memory is zapped when it's freed, and the zapped memory is
+    // zeroed out when the memory is reused. Memory is also zapped when using Leak
+    // Sanitizer because the heap is used as a root region for LSan and therefore
+    // pointers in unreachable memory could hide leaks.
     for (size_t i = 0; i < objectSize; i++)
         object[i] = finalizedZapValue;
-#endif
-    // Zap the primary vTable entry (secondary vTable entries are not zapped)
+
+    // Zap the primary vTable entry (secondary vTable entries are not zapped).
     *(reinterpret_cast<uintptr_t*>(object)) = zappedVTable;
+#endif
+    // In Release builds, the entire object is zeroed out when it is added to the free list.
+    // This happens right after sweeping the page and before the thread commences execution.
 }
 
 NO_SANITIZE_ADDRESS
@@ -658,6 +662,9 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
     // from them we are 8 byte aligned due to the header size).
     ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(Header)) & allocationMask));
     ASSERT(!(size & allocationMask));
+#if defined(NDEBUG) && !defined(LEAK_SANITIZER)
+    memset(address, 0, size);
+#endif
     ASAN_POISON_MEMORY_REGION(address, size);
     FreeListEntry* entry;
     if (size < sizeof(*entry)) {

@@ -1373,7 +1373,9 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     // Unpoison the memory used for the object (payload).
     ASAN_UNPOISON_MEMORY_REGION(result, payloadSize);
+#if !defined(NDEBUG) || defined(LEAK_SANITIZER)
     memset(result, 0, payloadSize);
+#endif
     ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
     return result;
 }
