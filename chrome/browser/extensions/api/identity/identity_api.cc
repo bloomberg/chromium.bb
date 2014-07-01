@@ -37,7 +37,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -674,7 +674,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
     std::string app_client_secret;
-    if (chromeos::SessionManager::GetInstance()->
+    if (chromeos::UserSessionManager::GetInstance()->
             GetAppModeChromeClientOAuthInfo(&app_client_id,
                                             &app_client_secret)) {
       login_token_request_ =

@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -368,9 +368,9 @@ void Preferences::Init(PrefServiceSyncable* prefs, const User* user) {
 
   // If a guest is logged in, initialize the prefs as if this is the first
   // login. For a regular user this is done in
-  // SessionManager::InitProfilePreferences().
+  // UserSessionManager::InitProfilePreferences().
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
-    SessionManager::SetFirstLoginPrefs(prefs);
+    UserSessionManager::SetFirstLoginPrefs(prefs);
 }
 
 void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs,

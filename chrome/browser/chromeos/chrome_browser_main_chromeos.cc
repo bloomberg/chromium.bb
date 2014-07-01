@@ -50,7 +50,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -236,7 +236,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
       // We did not log in (we crashed or are debugging), so we need to
       // restore Sync.
-      SessionManager::GetInstance()->RestoreAuthenticationSession(profile);
+      UserSessionManager::GetInstance()->RestoreAuthenticationSession(profile);
     }
   }
 }
@@ -606,7 +606,7 @@ void SetGuestLocale(Profile* const profile) {
       new locale_util::SwitchLanguageCallback(base::Bind(
           &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
   User* const user = ProfileHelper::Get()->GetUserByProfile(profile);
-  SessionManager::GetInstance()->RespectLocalePreference(
+  UserSessionManager::GetInstance()->RespectLocalePreference(
       profile, user, callback.Pass());
 }
 
@@ -634,7 +634,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     }
 
     // This is done in SessionManager::OnProfileCreated during normal login.
-    SessionManager::GetInstance()->InitRlz(profile());
+    UserSessionManager::GetInstance()->InitRlz(profile());
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.

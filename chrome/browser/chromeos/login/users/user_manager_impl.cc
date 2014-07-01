@@ -32,7 +32,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer_factory.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
@@ -986,7 +986,7 @@ bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
   //    - or -
   // b) The browser is restarting after a crash.
   return AreEphemeralUsersEnabled() ||
-      SessionManager::GetInstance()->HasBrowserRestarted();
+      UserSessionManager::GetInstance()->HasBrowserRestarted();
 }
 
 void UserManagerImpl::AddObserver(UserManager::Observer* obs) {
@@ -1027,7 +1027,7 @@ void UserManagerImpl::OnProfilePrepared(Profile* profile) {
     // users once it is fully multi-profile aware. http://crbug.com/238987
     // For now if we have other user pending sessions they'll override OAuth
     // session restore for previous users.
-    SessionManager::GetInstance()->RestoreAuthenticationSession(profile);
+    UserSessionManager::GetInstance()->RestoreAuthenticationSession(profile);
   }
 
   // Restore other user sessions if any.
@@ -1380,7 +1380,7 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SessionManager::OverrideHomedir();
+  UserSessionManager::OverrideHomedir();
 
   UpdateNumberOfUsers();
   NotifyActiveUserHashChanged(active_user_->username_hash());
@@ -1394,7 +1394,7 @@ void UserManagerImpl::NotifyOnLogin() {
       content::Source<UserManager>(this),
       content::Details<const User>(active_user_));
 
-  SessionManager::GetInstance()->PerformPostUserLoggedInActions();
+  UserSessionManager::GetInstance()->PerformPostUserLoggedInActions();
 }
 
 User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(

@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -139,7 +139,7 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
   // Override chrome client_id and secret that will be used for identity
   // API token minting.
   if (!auth_params_.client_id.empty() && !auth_params_.client_secret.empty()) {
-    SessionManager::GetInstance()->SetAppModeChromeClientOAuthInfo(
+    UserSessionManager::GetInstance()->SetAppModeChromeClientOAuthInfo(
             auth_params_.client_id,
             auth_params_.client_secret);
   }

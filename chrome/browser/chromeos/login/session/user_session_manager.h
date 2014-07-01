@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_SESSION_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_SESSION_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 
 #include <string>
 
@@ -22,15 +22,15 @@ class Profile;
 
 namespace chromeos {
 
-// SessionManager is responsible for starting user session which includes:
+// UserSessionManager is responsible for starting user session which includes:
 // load and initialize Profile (including custom Profile preferences),
 // mark user as logged in and notify observers,
 // initialize OAuth2 authentication session,
 // initialize and launch user session based on the user type.
-class SessionManager :
+class UserSessionManager :
     public OAuth2LoginManager::Observer,
     public net::NetworkChangeNotifier::ConnectionTypeObserver,
-    public base::SupportsWeakPtr<SessionManager> {
+    public base::SupportsWeakPtr<UserSessionManager> {
  public:
   class Delegate {
    public:
@@ -45,8 +45,8 @@ class SessionManager :
     virtual ~Delegate() {}
   };
 
-  // Returns SessionManager instance.
-  static SessionManager* GetInstance();
+  // Returns UserSessionManager instance.
+  static UserSessionManager* GetInstance();
 
   // Called when user is logged in to override base::DIR_HOME path.
   static void OverrideHomedir();
@@ -106,12 +106,12 @@ class SessionManager :
       scoped_ptr<locale_util::SwitchLanguageCallback> callback) const;
 
  private:
-  friend struct DefaultSingletonTraits<SessionManager>;
+  friend struct DefaultSingletonTraits<UserSessionManager>;
 
   typedef std::set<std::string> SessionRestoreStateSet;
 
-  SessionManager();
-  virtual ~SessionManager();
+  UserSessionManager();
+  virtual ~UserSessionManager();
 
   // OAuth2LoginManager::Observer overrides:
   virtual void OnSessionRestoreStateChanged(
@@ -199,9 +199,9 @@ class SessionManager :
   std::string chrome_client_id_;
   std::string chrome_client_secret_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionManager);
+  DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_SESSION_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_

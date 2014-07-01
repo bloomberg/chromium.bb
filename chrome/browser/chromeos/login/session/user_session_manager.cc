@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/session/session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 
 #include <string>
 
@@ -130,13 +130,13 @@ void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
 }  // namespace
 
 // static
-SessionManager* SessionManager::GetInstance() {
-  return Singleton<SessionManager,
-      DefaultSingletonTraits<SessionManager> >::get();
+UserSessionManager* UserSessionManager::GetInstance() {
+  return Singleton<UserSessionManager,
+      DefaultSingletonTraits<UserSessionManager> >::get();
 }
 
 // static
-void SessionManager::OverrideHomedir() {
+void UserSessionManager::OverrideHomedir() {
   // Override user homedir, check for ProfileManager being initialized as
   // it may not exist in unit tests.
   if (g_browser_process->profile_manager()) {
@@ -155,12 +155,12 @@ void SessionManager::OverrideHomedir() {
 }
 
 // static
-void SessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
+void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }
 
-SessionManager::SessionManager()
+UserSessionManager::UserSessionManager()
     : delegate_(NULL),
       has_auth_cookies_(false),
       exit_after_session_restore_(false),
@@ -169,11 +169,11 @@ SessionManager::SessionManager()
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
-SessionManager::~SessionManager() {
+UserSessionManager::~UserSessionManager() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-void SessionManager::StartSession(const UserContext& user_context,
+void UserSessionManager::StartSession(const UserContext& user_context,
                                   scoped_refptr<Authenticator> authenticator,
                                   bool has_auth_cookies,
                                   bool has_active_session,
@@ -195,7 +195,7 @@ void SessionManager::StartSession(const UserContext& user_context,
   PrepareProfile();
 }
 
-void SessionManager::PerformPostUserLoggedInActions() {
+void UserSessionManager::PerformPostUserLoggedInActions() {
   UserManager* user_manager = UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
     // Owner must be first user in session. DeviceSettingsService can't deal
@@ -210,7 +210,7 @@ void SessionManager::PerformPostUserLoggedInActions() {
   }
 }
 
-void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
+void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   UserManager* user_manager = UserManager::Get();
   // We need to restore session only for logged in regular (GAIA) users.
   // Note: stub user is a special case that is used for tests, running
@@ -238,23 +238,23 @@ void SessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   }
 }
 
-void SessionManager::InitRlz(Profile* profile) {
+void UserSessionManager::InitRlz(Profile* profile) {
 #if defined(ENABLE_RLZ)
   if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
     google_brand::chromeos::InitBrand(
-        base::Bind(&SessionManager::InitRlz, AsWeakPtr(), profile));
+        base::Bind(&UserSessionManager::InitRlz, AsWeakPtr(), profile));
     return;
   }
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false),
       FROM_HERE,
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
-      base::Bind(&SessionManager::InitRlzImpl, AsWeakPtr(), profile));
+      base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
 }
 
-bool SessionManager::HasBrowserRestarted() const {
+bool UserSessionManager::HasBrowserRestarted() const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::SysInfo::IsRunningOnChromeOS() &&
          command_line->HasSwitch(switches::kLoginUser) &&
@@ -262,17 +262,17 @@ bool SessionManager::HasBrowserRestarted() const {
 }
 
 OAuth2LoginManager::SessionRestoreStrategy
-SessionManager::GetSigninSessionRestoreStrategy() {
+UserSessionManager::GetSigninSessionRestoreStrategy() {
   return session_restore_strategy_;
 }
 
 // static
-void SessionManager::SetFirstLoginPrefs(PrefService* prefs) {
+void UserSessionManager::SetFirstLoginPrefs(PrefService* prefs) {
   VLOG(1) << "Setting first login prefs";
   InitLocaleAndInputMethodsForNewUser(prefs);
 }
 
-bool SessionManager::GetAppModeChromeClientOAuthInfo(
+bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
     std::string* chrome_client_id, std::string* chrome_client_secret) {
   if (!chrome::IsRunningInForcedAppMode() ||
       chrome_client_id_.empty() ||
@@ -285,7 +285,7 @@ bool SessionManager::GetAppModeChromeClientOAuthInfo(
   return true;
 }
 
-void SessionManager::SetAppModeChromeClientOAuthInfo(
+void UserSessionManager::SetAppModeChromeClientOAuthInfo(
     const std::string& chrome_client_id,
     const std::string& chrome_client_secret) {
   if (!chrome::IsRunningInForcedAppMode())
@@ -295,7 +295,7 @@ void SessionManager::SetAppModeChromeClientOAuthInfo(
   chrome_client_secret_ = chrome_client_secret;
 }
 
-bool SessionManager::RespectLocalePreference(
+bool UserSessionManager::RespectLocalePreference(
     Profile* profile,
     const User* user,
     scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
@@ -368,7 +368,7 @@ bool SessionManager::RespectLocalePreference(
   return true;
 }
 
-void SessionManager::OnSessionRestoreStateChanged(
+void UserSessionManager::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
   User::OAuthTokenStatus user_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
@@ -404,7 +404,7 @@ void SessionManager::OnSessionRestoreStateChanged(
   login_manager->RemoveObserver(this);
 }
 
-void SessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
+void UserSessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
   // Check if we were waiting to restart chrome.
   if (!exit_after_session_restore_)
     return;
@@ -425,7 +425,7 @@ void SessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
   chrome::AttemptRestart();
 }
 
-void SessionManager::OnConnectionTypeChanged(
+void UserSessionManager::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   UserManager* user_manager = UserManager::Get();
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
@@ -459,20 +459,20 @@ void SessionManager::OnConnectionTypeChanged(
   }
 }
 
-void SessionManager::CreateUserSession(const UserContext& user_context,
+void UserSessionManager::CreateUserSession(const UserContext& user_context,
                                        bool has_auth_cookies) {
   user_context_ = user_context;
   has_auth_cookies_ = has_auth_cookies;
   InitSessionRestoreStrategy();
 }
 
-void SessionManager::PreStartSession() {
+void UserSessionManager::PreStartSession() {
   // Switch log file as soon as possible.
   if (base::SysInfo::IsRunningOnChromeOS())
     logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
 }
 
-void SessionManager::StartCrosSession() {
+void UserSessionManager::StartCrosSession() {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
   DBusThreadManager::Get()->GetSessionManagerClient()->
@@ -480,7 +480,7 @@ void SessionManager::StartCrosSession() {
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
-void SessionManager::NotifyUserLoggedIn() {
+void UserSessionManager::NotifyUserLoggedIn() {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager* user_manager = UserManager::Get();
@@ -490,7 +490,7 @@ void SessionManager::NotifyUserLoggedIn() {
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 }
 
-void SessionManager::PrepareProfile() {
+void UserSessionManager::PrepareProfile() {
   bool is_demo_session =
       DemoAppLauncher::IsDemoAppSession(user_context_.GetUserID());
 
@@ -498,7 +498,7 @@ void SessionManager::PrepareProfile() {
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileHelper::GetUserProfileDirByUserId(user_context_.GetUserID()),
-      base::Bind(&SessionManager::OnProfileCreated,
+      base::Bind(&UserSessionManager::OnProfileCreated,
                  AsWeakPtr(),
                  user_context_.GetUserID(),
                  is_demo_session),
@@ -507,7 +507,7 @@ void SessionManager::PrepareProfile() {
       std::string());
 }
 
-void SessionManager::OnProfileCreated(const std::string& user_id,
+void UserSessionManager::OnProfileCreated(const std::string& user_id,
                                       bool is_incognito_profile,
                                       Profile* profile,
                                       Profile::CreateStatus status) {
@@ -533,7 +533,7 @@ void SessionManager::OnProfileCreated(const std::string& user_id,
   }
 }
 
-void SessionManager::InitProfilePreferences(Profile* profile,
+void UserSessionManager::InitProfilePreferences(Profile* profile,
                                             const std::string& user_id) {
   if (UserManager::Get()->IsCurrentUserNew())
     SetFirstLoginPrefs(profile->GetPrefs());
@@ -555,7 +555,7 @@ void SessionManager::InitProfilePreferences(Profile* profile,
   }
 }
 
-void SessionManager::UserProfileInitialized(Profile* profile,
+void UserSessionManager::UserProfileInitialized(Profile* profile,
                                             bool is_incognito_profile) {
   if (is_incognito_profile) {
     profile->OnLogin();
@@ -587,7 +587,7 @@ void SessionManager::UserProfileInitialized(Profile* profile,
         authenticator_->authentication_profile(),
         profile,
         has_auth_cookies_,  // transfer_auth_cookies_and_server_bound_certs
-        base::Bind(&SessionManager::CompleteProfileCreateAfterAuthTransfer,
+        base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
                    AsWeakPtr(),
                    profile));
     return;
@@ -596,12 +596,13 @@ void SessionManager::UserProfileInitialized(Profile* profile,
   FinalizePrepareProfile(profile);
 }
 
-void SessionManager::CompleteProfileCreateAfterAuthTransfer(Profile* profile) {
+void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
+    Profile* profile) {
   RestoreAuthSessionImpl(profile, has_auth_cookies_);
   FinalizePrepareProfile(profile);
 }
 
-void SessionManager::FinalizePrepareProfile(Profile* profile) {
+void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
   // Own TPM device if, for any reason, it has not been done in EULA screen.
@@ -642,15 +643,15 @@ void SessionManager::FinalizePrepareProfile(Profile* profile) {
 
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
-  // SessionManager::PrepareProfile() has set |delegate_| when Chrome is killed
-  // during shutdown in tests -- see http://crosbug.com/18269.  Replace this
-  // 'if' statement with a CHECK(delegate_) once the underlying issue is
+  // UserSessionManager::PrepareProfile() has set |delegate_| when Chrome is
+  // killed during shutdown in tests -- see http://crosbug.com/18269.  Replace
+  // this 'if' statement with a CHECK(delegate_) once the underlying issue is
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile);
 }
 
-void SessionManager::InitSessionRestoreStrategy() {
+void UserSessionManager::InitSessionRestoreStrategy() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool in_app_mode = chrome::IsRunningInForcedAppMode();
 
@@ -689,7 +690,7 @@ void SessionManager::InitSessionRestoreStrategy() {
   }
 }
 
-void SessionManager::RestoreAuthSessionImpl(Profile* profile,
+void UserSessionManager::RestoreAuthSessionImpl(Profile* profile,
                                             bool restore_from_auth_cookies) {
   CHECK((authenticator_.get() && authenticator_->authentication_profile()) ||
         !restore_from_auth_cookies);
@@ -717,7 +718,7 @@ void SessionManager::RestoreAuthSessionImpl(Profile* profile,
       user_context_.GetAuthCode());
 }
 
-void SessionManager::InitRlzImpl(Profile* profile, bool disabled) {
+void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
 #if defined(ENABLE_RLZ)
   PrefService* local_state = g_browser_process->local_state();
   if (disabled) {
@@ -742,7 +743,7 @@ void SessionManager::InitRlzImpl(Profile* profile, bool disabled) {
 #endif
 }
 
-void SessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
+void UserSessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
   // Now that the user profile has been initialized
   // |GetNSSCertDatabaseForProfile| is safe to be used.
   UserManager* user_manager = UserManager::Get();
