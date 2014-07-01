@@ -189,7 +189,7 @@ bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupCl
 
     resize(m_popupClient->contentSize());
 
-    if (!initializePage())
+    if (!m_widgetClient || !initializePage())
         return false;
     m_widgetClient->show(WebNavigationPolicy());
     setFocus(true);
