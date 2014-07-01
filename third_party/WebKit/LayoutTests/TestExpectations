@@ -52,8 +52,6 @@ crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
-crbug.com/316604 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
-
 crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
@@ -127,7 +125,6 @@ crbug.com/360889 fast/sub-pixel/scroll-offset-precision.html  [ ImageOnlyFailure
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Failure ]
 crbug.com/360889 fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
-crbug.com/360889 virtual/gpu/fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
 crbug.com/360889 media/video-scales-in-media-document.html [ Failure ]
 crbug.com/360889 fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/360889 fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
@@ -897,13 +894,10 @@ crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
-crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
-crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
-crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
