@@ -944,7 +944,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       scroll_buffer_(20),
       pinch_guess_start_(-1.0),
       pinch_locked_(false),
-      finger_seen_since_button_down_(false),
+      finger_seen_shortly_after_button_down_(false),
       scroll_manager_(prop_reg),
       tap_enable_(prop_reg, "Tap Enable", true),
       tap_paused_(prop_reg, "Tap Paused", false),
@@ -2080,12 +2080,13 @@ void ImmediateInterpreter::UpdateTapState(
   // Fingers that were gesturing, but now aren't
   set<short, kMaxFingers> dead_fingers;
 
-  const bool phys_button_down = hwstate && hwstate->buttons_down != 0;
+  const bool phys_click_in_progress = hwstate && hwstate->buttons_down != 0 &&
+    (zero_finger_click_enable_.val_ || finger_seen_shortly_after_button_down_);
 
   bool is_timeout = (now - tap_to_click_state_entered_ >
                      TimeoutForTtcState(tap_to_click_state_));
 
-  if (phys_button_down) {
+  if (phys_click_in_progress) {
     // Don't allow any current fingers to tap ever
     for (size_t i = 0; i < hwstate->finger_cnt; i++)
       tap_dead_fingers_.insert(hwstate->fingers[i].tracking_id);
@@ -2169,7 +2170,7 @@ void ImmediateInterpreter::UpdateTapState(
     Log("TTC State: %s", TapToClickStateName(tap_to_click_state_));
   if (!hwstate)
     Log("TTC: This is a timer callback");
-  if (phys_button_down || KeyboardRecentlyUsed(now) ||
+  if (phys_click_in_progress || KeyboardRecentlyUsed(now) ||
       prev_result_.type == kGestureTypeScroll ||
       cancel_tapping) {
     Log("TTC: Forced to idle");
@@ -2488,15 +2489,17 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
   bool phys_down_edge = button_down && !prev_button_down;
   bool phys_up_edge = !button_down && prev_button_down;
   if (phys_down_edge) {
-    finger_seen_since_button_down_ = false;
+    finger_seen_shortly_after_button_down_ = false;
     sent_button_down_ = false;
     button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_.val_;
   }
 
-  // If we haven't seen a finger on the pad yet we shouldn't do anything
-  finger_seen_since_button_down_ =
-      finger_seen_since_button_down_ || (hwstate.finger_cnt > 0);
-  if (!finger_seen_since_button_down_ && !zero_finger_click_enable_.val_)
+  // If we haven't seen a finger on the pad shortly after the click, do nothing
+  if (!finger_seen_shortly_after_button_down_ &&
+      hwstate.timestamp <= button_down_timeout_)
+    finger_seen_shortly_after_button_down_ = (hwstate.finger_cnt > 0);
+  if (!finger_seen_shortly_after_button_down_ &&
+      !zero_finger_click_enable_.val_)
     return;
 
   if (!sent_button_down_) {

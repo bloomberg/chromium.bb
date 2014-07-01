@@ -645,7 +645,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   bool pinch_locked_;
 
   // Keeps track of if there was a finger seen during a physical click
-  bool finger_seen_since_button_down_;
+  bool finger_seen_shortly_after_button_down_;
 
   ScrollManager scroll_manager_;
 
