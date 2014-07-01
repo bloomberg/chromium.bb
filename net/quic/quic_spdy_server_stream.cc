@@ -5,14 +5,16 @@
 #include "net/quic/quic_spdy_server_stream.h"
 
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_in_memory_cache.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_framer.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/spdy/spdy_header_block.h"
+#include "net/spdy/spdy_http_utils.h"
 
 using base::StringPiece;
 using std::string;
-using net::tools::SpdyUtils;
 
 namespace net {
 
@@ -23,26 +25,26 @@ QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
     : QuicDataStream(id, session),
       read_buf_(new GrowableIOBuffer()),
       request_headers_received_(false) {
+  read_buf_->SetCapacity(kHeaderBufInitialSize);
 }
 
 QuicSpdyServerStream::~QuicSpdyServerStream() {
 }
 
 uint32 QuicSpdyServerStream::ProcessData(const char* data, uint32 data_len) {
-  uint32 total_bytes_processed = 0;
-
   // Are we still reading the request headers.
   if (!request_headers_received_) {
     // Grow the read buffer if necessary.
-    if (read_buf_->RemainingCapacity() < (int)data_len) {
-      read_buf_->SetCapacity(read_buf_->capacity() + kHeaderBufInitialSize);
+    while (read_buf_->RemainingCapacity() < (int)data_len) {
+      read_buf_->SetCapacity(read_buf_->capacity() * 2);
     }
     memcpy(read_buf_->data(), data, data_len);
     read_buf_->set_offset(read_buf_->offset() + data_len);
+    // Try parsing the request headers. This will set request_headers_received_
+    // if successful; if not, it will be tried again with more data.
     ParseRequestHeaders();
   } else {
-    body_.append(data + total_bytes_processed,
-                 data_len - total_bytes_processed);
+    body_.append(data, data_len);
   }
   return data_len;
 }
@@ -55,44 +57,57 @@ void QuicSpdyServerStream::OnFinRead() {
 
   if (!request_headers_received_) {
     SendErrorResponse();  // We're not done reading headers.
-  } else if ((headers_.content_length_status() ==
-              BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
-             body_.size() != headers_.content_length()) {
-    SendErrorResponse();  // Invalid content length
-  } else {
-    SendResponse();
+    return;
   }
+
+  SpdyHeaderBlock::const_iterator it = headers_.find("content-length");
+  size_t content_length;
+  if (it != headers_.end() &&
+      (!base::StringToSizeT(it->second, &content_length) ||
+       body_.size() != content_length)) {
+    SendErrorResponse();  // Invalid content length
+    return;
+  }
+
+  SendResponse();
 }
 
-size_t QuicSpdyServerStream::ParseRequestHeaders() {
-  size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
-  SpdyFramer framer(SPDY3);
-  SpdyHeaderBlock headers;
+// Try parsing the request headers. If successful, sets
+// request_headers_received_. If not successful, it can just be tried again once
+// there's more data.
+void QuicSpdyServerStream::ParseRequestHeaders() {
+  SpdyFramer framer((kDefaultSpdyMajorVersion));
   char* data = read_buf_->StartOfBuffer();
-  size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
-                                               &headers);
+  size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
+  size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_len, &headers_);
   if (len == 0) {
-    return -1;
+    // Not enough data yet, presumably. (If we still don't succeed by the end of
+    // the stream, then we'll error above.)
+    return;
   }
 
-  if (!SpdyUtils::FillBalsaRequestHeaders(headers, &headers_)) {
+  // Headers received and parsed: extract the request URL.
+  request_url_ = GetUrlFromHeaderBlock(headers_,
+                                       kDefaultSpdyMajorVersion,
+                                       false);
+  if (!request_url_.is_valid()) {
     SendErrorResponse();
-    return -1;
+    return;
   }
 
+  // Add any data past the headers to the request body.
   size_t delta = read_buf_len - len;
   if (delta > 0) {
     body_.append(data + len, delta);
   }
 
   request_headers_received_ = true;
-  return len;
 }
 
 void QuicSpdyServerStream::SendResponse() {
   // Find response in cache. If not found, send error response.
   const QuicInMemoryCache::Response* response =
-      QuicInMemoryCache::GetInstance()->GetResponse(headers_);
+      QuicInMemoryCache::GetInstance()->GetResponse(request_url_);
   if (response == NULL) {
     SendErrorResponse();
     return;
@@ -115,23 +130,24 @@ void QuicSpdyServerStream::SendResponse() {
 
 void QuicSpdyServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
-  BalsaHeaders headers;
-  headers.SetResponseFirstlineFromStringPieces(
-      "HTTP/1.1", "500", "Server Error");
-  headers.ReplaceOrAppendHeader("content-length", "3");
-  SendHeadersAndBody(headers, "bad");
+  scoped_refptr<HttpResponseHeaders> headers
+      = new HttpResponseHeaders(string("HTTP/1.1 500 Server Error") + '\0' +
+                                "content-length: 3" + '\0' + '\0');
+  SendHeadersAndBody(*headers, "bad");
 }
 
 void QuicSpdyServerStream::SendHeadersAndBody(
-    const BalsaHeaders& response_headers,
+    const HttpResponseHeaders& response_headers,
     StringPiece body) {
   // We only support SPDY and HTTP, and neither handles bidirectional streaming.
   if (!read_side_closed()) {
     CloseReadSide();
   }
 
-  SpdyHeaderBlock header_block =
-      SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
+  SpdyHeaderBlock header_block;
+  CreateSpdyHeadersFromHttpResponse(response_headers,
+                                    kDefaultSpdyMajorVersion,
+                                    &header_block);
 
   WriteHeaders(header_block, body.empty(), NULL);
 

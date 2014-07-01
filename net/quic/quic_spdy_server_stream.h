@@ -11,10 +11,11 @@
 #include "net/base/io_buffer.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/balsa/balsa_headers.h"
+#include "url/gurl.h"
 
 namespace net {
 
+class HttpResponseHeaders;
 class QuicSession;
 
 namespace test {
@@ -33,7 +34,7 @@ class QuicSpdyServerStream : public QuicDataStream {
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
   virtual void OnFinRead() OVERRIDE;
 
-  size_t ParseRequestHeaders();
+  void ParseRequestHeaders();
 
  private:
   friend class test::QuicSpdyServerStreamPeer;
@@ -46,11 +47,12 @@ class QuicSpdyServerStream : public QuicDataStream {
   // for the body
   void SendErrorResponse();
 
-  void SendHeadersAndBody(const BalsaHeaders& response_headers,
+  void SendHeadersAndBody(const HttpResponseHeaders& response_headers,
                           base::StringPiece body);
 
-  BalsaHeaders headers_;
+  SpdyHeaderBlock headers_;
   string body_;
+  GURL request_url_;
 
   // Buffer into which response header data is read.
   scoped_refptr<GrowableIOBuffer> read_buf_;

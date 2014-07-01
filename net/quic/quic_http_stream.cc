@@ -112,7 +112,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   stream_->set_priority(priority);
   // Store the serialized request headers.
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   &request_headers_, SPDY3, /*direct=*/true);
+                                   SPDY3, /*direct=*/true, &request_headers_);
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;

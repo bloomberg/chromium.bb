@@ -12,6 +12,8 @@
 
 namespace net {
 
+const SpdyMajorVersion kDefaultSpdyMajorVersion = SPDY3;
+
 class NET_EXPORT_PRIVATE SpdyUtils {
  public:
   static std::string SerializeUncompressedHeaders(

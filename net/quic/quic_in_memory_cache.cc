@@ -7,7 +7,9 @@
 #include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/tools/balsa/balsa_headers.h"
+#include "base/strings/string_util.h"
+#include "net/http/http_util.h"
+#include "url/gurl.h"
 
 using base::FilePath;
 using base::StringPiece;
@@ -21,45 +23,11 @@ namespace net {
 
 FilePath::StringType g_quic_in_memory_cache_dir = FILE_PATH_LITERAL("");
 
-namespace {
+QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {
+}
 
-// BalsaVisitor implementation (glue) which caches response bodies.
-class CachingBalsaVisitor : public NoOpBalsaVisitor {
- public:
-  CachingBalsaVisitor() : done_framing_(false) {}
-  virtual void ProcessBodyData(const char* input, size_t size) OVERRIDE {
-    AppendToBody(input, size);
-  }
-  virtual void MessageDone() OVERRIDE {
-    done_framing_ = true;
-  }
-  virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE {
-    UnhandledError();
-  }
-  virtual void HandleHeaderWarning(BalsaFrame* framer) OVERRIDE {
-    UnhandledError();
-  }
-  virtual void HandleChunkingError(BalsaFrame* framer) OVERRIDE {
-    UnhandledError();
-  }
-  virtual void HandleBodyError(BalsaFrame* framer) OVERRIDE {
-    UnhandledError();
-  }
-  void UnhandledError() {
-    LOG(DFATAL) << "Unhandled error framing HTTP.";
-  }
-  void AppendToBody(const char* input, size_t size) {
-    body_.append(input, size);
-  }
-  bool done_framing() const { return done_framing_; }
-  const string& body() const { return body_; }
-
- private:
-  bool done_framing_;
-  string body_;
-};
-
-}  // namespace
+QuicInMemoryCache::Response::~Response() {
+}
 
 // static
 QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
@@ -67,58 +35,56 @@ QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
 }
 
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
-    const BalsaHeaders& request_headers) const {
-  ResponseMap::const_iterator it = responses_.find(GetKey(request_headers));
+    const GURL& url) const {
+  ResponseMap::const_iterator it = responses_.find(GetKey(url));
   if (it == responses_.end()) {
     return NULL;
   }
   return it->second;
 }
 
-void QuicInMemoryCache::AddSimpleResponse(StringPiece method,
-                                          StringPiece path,
+void QuicInMemoryCache::AddSimpleResponse(StringPiece path,
                                           StringPiece version,
                                           StringPiece response_code,
                                           StringPiece response_detail,
                                           StringPiece body) {
-  BalsaHeaders request_headers, response_headers;
-  request_headers.SetRequestFirstlineFromStringPieces(method,
-                                                      path,
-                                                      version);
-  response_headers.SetRequestFirstlineFromStringPieces(version,
-                                                       response_code,
-                                                       response_detail);
-  response_headers.AppendHeader(
-      "content-length",
-      base::Uint64ToString(static_cast<uint64>(body.length())));
+  GURL url("http://" + path.as_string());
 
-  AddResponse(request_headers, response_headers, body);
+  string status_line = version.as_string() + " " +
+                       response_code.as_string() + " " +
+                       response_detail.as_string();
+
+  string header = "content-length: " +
+                  base::Uint64ToString(static_cast<uint64>(body.length()));
+
+  scoped_refptr<HttpResponseHeaders> response_headers =
+      new HttpResponseHeaders(status_line + '\0' + header + '\0' + '\0');
+
+  AddResponse(url, response_headers, body);
 }
 
-void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
-                                    const BalsaHeaders& response_headers,
-                                    StringPiece response_body) {
-  VLOG(1) << "Adding response for: " << GetKey(request_headers);
-  if (ContainsKey(responses_, GetKey(request_headers))) {
+void QuicInMemoryCache::AddResponse(
+    const GURL& url,
+    scoped_refptr<HttpResponseHeaders> response_headers,
+    StringPiece response_body) {
+  string key = GetKey(url);
+  VLOG(1) << "Adding response for: " << key;
+  if (ContainsKey(responses_, key)) {
     LOG(DFATAL) << "Response for given request already exists!";
     return;
   }
   Response* new_response = new Response();
   new_response->set_headers(response_headers);
   new_response->set_body(response_body);
-  responses_[GetKey(request_headers)] = new_response;
+  responses_[key] = new_response;
 }
 
-void QuicInMemoryCache::AddSpecialResponse(StringPiece method,
-                                           StringPiece path,
-                                           StringPiece version,
+void QuicInMemoryCache::AddSpecialResponse(StringPiece path,
                                            SpecialResponseType response_type) {
-  BalsaHeaders request_headers, response_headers;
-  request_headers.SetRequestFirstlineFromStringPieces(method,
-                                                      path,
-                                                      version);
-  AddResponse(request_headers, response_headers, "");
-  responses_[GetKey(request_headers)]->response_type_ = response_type;
+  GURL url("http://" + path.as_string());
+
+  AddResponse(url, NULL, string());
+  responses_[GetKey(url)]->response_type_ = response_type;
 }
 
 QuicInMemoryCache::QuicInMemoryCache() {
@@ -145,78 +111,63 @@ void QuicInMemoryCache::Initialize() {
                                  base::FileEnumerator::FILES);
 
   FilePath file = file_list.Next();
-  while (!file.empty()) {
+  for (; !file.empty(); file = file_list.Next()) {
     // Need to skip files in .svn directories
-    if (file.value().find(FILE_PATH_LITERAL("/.svn/")) != std::string::npos) {
-      file = file_list.Next();
+    if (file.value().find(FILE_PATH_LITERAL("/.svn/")) != string::npos) {
       continue;
     }
-
-    BalsaHeaders request_headers, response_headers;
 
     string file_contents;
     base::ReadFileToString(file, &file_contents);
 
-    // Frame HTTP.
-    CachingBalsaVisitor caching_visitor;
-    BalsaFrame framer;
-    framer.set_balsa_headers(&response_headers);
-    framer.set_balsa_visitor(&caching_visitor);
-    size_t processed = 0;
-    while (processed < file_contents.length() &&
-           !caching_visitor.done_framing()) {
-      processed += framer.ProcessInput(file_contents.c_str() + processed,
-                                       file_contents.length() - processed);
+    if (file_contents.length() > INT_MAX) {
+      LOG(WARNING) << "File '" << file.value() << "' too large: "
+                   << file_contents.length();
+      continue;
+    }
+    int file_len = static_cast<int>(file_contents.length());
+
+    int headers_end = HttpUtil::LocateEndOfHeaders(file_contents.data(),
+                                                   file_len);
+    if (headers_end < 1) {
+      LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file.value();
+      continue;
     }
 
-    string response_headers_str;
-    response_headers.DumpToString(&response_headers_str);
-    if (!caching_visitor.done_framing()) {
-      LOG(DFATAL) << "Did not frame entire message from file: " << file.value()
-                  << " (" << processed << " of " << file_contents.length()
-                  << " bytes).";
-    }
-    if (processed < file_contents.length()) {
-      // Didn't frame whole file. Assume remainder is body.
-      // This sometimes happens as a result of incompatibilities between
-      // BalsaFramer and wget's serialization of HTTP sans content-length.
-      caching_visitor.AppendToBody(file_contents.c_str() + processed,
-                                   file_contents.length() - processed);
-      processed += file_contents.length();
-    }
+    string raw_headers =
+        HttpUtil::AssembleRawHeaders(file_contents.data(), headers_end);
 
-    string utf8_file = file.AsUTF8Unsafe();
-    StringPiece base = utf8_file;
-    if (response_headers.HasHeader("X-Original-Url")) {
-      base = response_headers.GetHeader("X-Original-Url");
-      response_headers.RemoveAllOfHeader("X-Original-Url");
-      // Remove the protocol so that the string is of the form host + path,
-      // which is parsed properly below.
-      if (StringPieceUtils::StartsWithIgnoreCase(base, "https://")) {
-        base.remove_prefix(8);
-      } else if (StringPieceUtils::StartsWithIgnoreCase(base, "http://")) {
-        base.remove_prefix(7);
+    scoped_refptr<HttpResponseHeaders> response_headers =
+        new HttpResponseHeaders(raw_headers);
+
+    string base;
+    if (response_headers->GetNormalizedHeader("X-Original-Url", &base)) {
+      response_headers->RemoveHeader("X-Original-Url");
+      // Remove the protocol so we can add it below.
+      if (StartsWithASCII(base, "https://", false)) {
+        base = base.substr(8);
+      } else if (StartsWithASCII(base, "http://", false)) {
+        base = base.substr(7);
       }
+    } else {
+      base = file.AsUTF8Unsafe();
     }
-    size_t path_start = base.find_first_of('/');
-    DCHECK_LT(0U, path_start);
-    StringPiece host(base.substr(0, path_start));
-    StringPiece path(base.substr(path_start));
-    if (path[path.length() - 1] == ',') {
-      path.remove_suffix(1);
+    if (base.length() == 0 || base[0] == '/') {
+      LOG(DFATAL) << "Invalid path, ignoring: " << base;
+      continue;
     }
-    // Set up request headers. Assume method is GET and protocol is HTTP/1.1.
-    request_headers.SetRequestFirstlineFromStringPieces("GET",
-                                                        path,
-                                                        "HTTP/1.1");
-    request_headers.ReplaceOrAppendHeader("host", host);
+    if (base[base.length() - 1] == ',') {
+      base = base.substr(0, base.length() - 1);
+    }
 
-    VLOG(1) << "Inserting 'http://" << GetKey(request_headers)
-            << "' into QuicInMemoryCache.";
+    GURL url("http://" + base);
 
-    AddResponse(request_headers, response_headers, caching_visitor.body());
+    VLOG(1) << "Inserting '" << GetKey(url) << "' into QuicInMemoryCache.";
 
-    file = file_list.Next();
+    StringPiece body(file_contents.data() + headers_end,
+                     file_contents.size() - headers_end);
+
+    AddResponse(url, response_headers, body);
   }
 }
 
@@ -224,20 +175,9 @@ QuicInMemoryCache::~QuicInMemoryCache() {
   STLDeleteValues(&responses_);
 }
 
-string QuicInMemoryCache::GetKey(const BalsaHeaders& request_headers) const {
-  StringPiece uri = request_headers.request_uri();
-  if (uri.size() == 0) {
-    return "";
-  }
-  StringPiece host;
-  if (uri[0] == '/') {
-    host = request_headers.GetHeader("host");
-  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "https://")) {
-    uri.remove_prefix(8);
-  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "http://")) {
-    uri.remove_prefix(7);
-  }
-  return host.as_string() + uri.as_string();
+string QuicInMemoryCache::GetKey(const GURL& url) const {
+  // Take everything but the scheme portion of the URL.
+  return url.host() + url.PathForRequest();
 }
 
 }  // namespace net

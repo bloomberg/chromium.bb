@@ -11,12 +11,10 @@
 #include "base/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
-#include "net/tools/balsa/balsa_frame.h"
-#include "net/tools/balsa/balsa_headers.h"
-#include "net/tools/balsa/noop_balsa_visitor.h"
+#include "net/http/http_response_headers.h"
 
 template <typename T> struct DefaultSingletonTraits;
+class GURL;
 
 namespace net {
 
@@ -42,25 +40,25 @@ class QuicInMemoryCache {
   // Container for response header/body pairs.
   class Response {
    public:
-    Response() : response_type_(REGULAR_RESPONSE) {}
-    ~Response() {}
+    Response();
+    ~Response();
 
     SpecialResponseType response_type() const { return response_type_; }
-    const BalsaHeaders& headers() const { return headers_; }
+    const HttpResponseHeaders& headers() const { return *headers_; }
     const base::StringPiece body() const { return base::StringPiece(body_); }
 
    private:
     friend class QuicInMemoryCache;
 
-    void set_headers(const BalsaHeaders& headers) {
-      headers_.CopyFrom(headers);
+    void set_headers(scoped_refptr<HttpResponseHeaders> headers) {
+      headers_ = headers;
     }
     void set_body(base::StringPiece body) {
       body.CopyToString(&body_);
     }
 
     SpecialResponseType response_type_;
-    BalsaHeaders headers_;
+    scoped_refptr<HttpResponseHeaders> headers_;
     std::string body_;
 
     DISALLOW_COPY_AND_ASSIGN(Response);
@@ -72,26 +70,23 @@ class QuicInMemoryCache {
   // Retrieve a response from this cache for a given request.
   // If no appropriate response exists, NULL is returned.
   // Currently, responses are selected based on request URI only.
-  const Response* GetResponse(const BalsaHeaders& request_headers) const;
+  const Response* GetResponse(const GURL& url) const;
 
   // Adds a simple response to the cache.  The response headers will
-  // only contain the "content-length" header with the lenght of |body|.
-  void AddSimpleResponse(base::StringPiece method,
-                         base::StringPiece path,
+  // only contain the "content-length" header with the length of |body|.
+  void AddSimpleResponse(base::StringPiece path,
                          base::StringPiece version,
                          base::StringPiece response_code,
                          base::StringPiece response_detail,
                          base::StringPiece body);
 
   // Add a response to the cache.
-  void AddResponse(const BalsaHeaders& request_headers,
-                   const BalsaHeaders& response_headers,
+  void AddResponse(const GURL& url,
+                   scoped_refptr<HttpResponseHeaders> response_headers,
                    base::StringPiece response_body);
 
   // Simulate a special behavior at a particular path.
-  void AddSpecialResponse(base::StringPiece method,
-                          base::StringPiece path,
-                          base::StringPiece version,
+  void AddSpecialResponse(base::StringPiece path,
                           SpecialResponseType response_type);
 
  private:
@@ -106,7 +101,7 @@ class QuicInMemoryCache {
 
   void Initialize();
 
-  std::string GetKey(const BalsaHeaders& response_headers) const;
+  std::string GetKey(const GURL& url) const;
 
   // Cached responses.
   ResponseMap responses_;

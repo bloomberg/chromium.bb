@@ -17,6 +17,7 @@ namespace net {
 class HttpResponseInfo;
 struct HttpRequestInfo;
 class HttpRequestHeaders;
+class HttpResponseHeaders;
 
 // Convert a SpdyHeaderBlock into an HttpResponseInfo.
 // |headers| input parameter with the SpdyHeaderBlock.
@@ -27,14 +28,19 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
                                SpdyMajorVersion protocol_version,
                                HttpResponseInfo* response);
 
-// Create a SpdyHeaderBlock for a Spdy SYN_STREAM Frame from
-// HttpRequestInfo and HttpRequestHeaders.
-void NET_EXPORT_PRIVATE CreateSpdyHeadersFromHttpRequest(
+// Create a SpdyHeaderBlock from HttpRequestInfo and HttpRequestHeaders.
+NET_EXPORT_PRIVATE void CreateSpdyHeadersFromHttpRequest(
     const HttpRequestInfo& info,
     const HttpRequestHeaders& request_headers,
-    SpdyHeaderBlock* headers,
     SpdyMajorVersion protocol_version,
-    bool direct);
+    bool direct,
+    SpdyHeaderBlock* headers);
+
+// Create a SpdyHeaderBlock from HttpResponseHeaders.
+NET_EXPORT_PRIVATE void CreateSpdyHeadersFromHttpResponse(
+    const HttpResponseHeaders& response_headers,
+    SpdyMajorVersion protocol_version,
+    SpdyHeaderBlock* headers);
 
 // Returns the URL associated with the |headers| by assembling the
 // scheme, host and path from the protocol specific keys.
