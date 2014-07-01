@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "chrome/browser/ui/cocoa/version_independent_window.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/theme_provider.h"
 
@@ -86,7 +87,7 @@
 - (void)addTabStripToWindow {
   // The frame doesn't matter. This class relies on subclasses to do tab strip
   // layout.
-  NSView* contentParent = [[[self window] contentView] superview];
+  NSView* contentParent = [[self window] cr_windowView];
   [contentParent addSubview:tabStripView_];
 }
 
@@ -141,7 +142,7 @@
     // window. The content view is added as a subview of the overlay window's
     // content view (rather than using setContentView:) because the overlay
     // window has a different content size (due to it being borderless).
-    [[[overlayWindow_ contentView] superview] addSubview:[self tabStripView]];
+    [[overlayWindow_ cr_windowView] addSubview:[self tabStripView]];
     [[overlayWindow_ contentView] addSubview:originalContentView_];
 
     [overlayWindow_ orderFront:nil];
@@ -153,8 +154,8 @@
     // content view and therefore it should always be added after the content
     // view is set.
     [window setContentView:originalContentView_];
-    [[[window contentView] superview] addSubview:[self tabStripView]];
-    [[[window contentView] superview] updateTrackingAreas];
+    [[window cr_windowView] addSubview:[self tabStripView]];
+    [[window cr_windowView] updateTrackingAreas];
 
     [focusBeforeOverlay_ restoreFocusInWindow:window];
     focusBeforeOverlay_.reset();

@@ -36,6 +36,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/version_independent_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -592,13 +593,13 @@ willPositionSheet:(NSWindow*)sheet
 
     [avatarButtonView removeFromSuperview];
     [avatarButtonView setHidden:YES];  // Will be shown in layout.
-    [[[destWindow contentView] superview] addSubview: avatarButtonView];
+    [[destWindow cr_windowView] addSubview:avatarButtonView];
   }
 
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
   if ([self hasTabStrip])
-    [[[destWindow contentView] superview] addSubview:tabStripView];
+    [[destWindow cr_windowView] addSubview:tabStripView];
 
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];

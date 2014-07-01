@@ -1668,8 +1668,7 @@ using web_modal::WebContentsModalDialogManager;
 }
 
 - (void)userChangedTheme {
-  NSView* contentView = [[self window] contentView];
-  [[contentView superview] cr_recursivelySetNeedsDisplay:YES];
+  [[[[self window] contentView] superview] cr_recursivelySetNeedsDisplay:YES];
 }
 
 - (ui::ThemeProvider*)themeProvider {
@@ -1830,7 +1829,7 @@ using web_modal::WebContentsModalDialogManager;
   [view setHidden:![self shouldShowAvatar]];
 
   // Install the view.
-  [[[[self window] contentView] superview] addSubview:view];
+  [[[self window] cr_windowView] addSubview:view];
 }
 
 // Called when we get a three-finger swipe.

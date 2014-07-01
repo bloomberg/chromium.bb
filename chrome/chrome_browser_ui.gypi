@@ -725,6 +725,8 @@
       'browser/ui/cocoa/url_drop_target.mm',
       'browser/ui/cocoa/validation_message_bubble_cocoa.mm',
       'browser/ui/cocoa/validation_message_bubble_controller.h',
+      'browser/ui/cocoa/version_independent_window.h',
+      'browser/ui/cocoa/version_independent_window.mm',
       'browser/ui/cocoa/vertical_gradient_view.h',
       'browser/ui/cocoa/vertical_gradient_view.mm',
       'browser/ui/cocoa/view_id_util.h',
