@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
 
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "net/base/net_util.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -206,8 +207,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   views::Button* allow_;
   views::Button* deny_;
   views::Combobox* allow_combobox_;
-  base::string16 title_;
-  std::string hostname_;
+  base::string16 hostname_;
   scoped_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
 
@@ -235,8 +235,12 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
-  // TODO(gbillock): account for different requests from different hosts.
-  hostname_ = requests[0]->GetRequestingHostname().host();
+  // TODO(gbillock): support other languages than English.
+  hostname_ = net::FormatUrl(requests[0]->GetRequestingHostname(),
+                             "en",
+                             net::kFormatUrlOmitUsernamePassword |
+                             net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                             net::UnescapeRule::SPACES, NULL, NULL, NULL);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   for (size_t index = 0; index < requests.size(); index++) {
@@ -366,12 +370,8 @@ const gfx::FontList& PermissionsBubbleDelegateView::GetTitleFontList() const {
 }
 
 base::string16 PermissionsBubbleDelegateView::GetWindowTitle() const {
-  if (!title_.empty()) {
-    return title_;
-  }
-
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
-                                    base::UTF8ToUTF16(hostname_));
+                                    hostname_);
 }
 
 void PermissionsBubbleDelegateView::SizeToContents() {
