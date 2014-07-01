@@ -300,7 +300,7 @@ void AppListViewDelegate::GetShortcutPathForApp(
                                       extension->id(),
                                       GURL()));
 
-  web_app::UpdateShortcutInfoAndIconForApp(
+  web_app::GetShortcutInfoForApp(
       extension,
       profile_,
       base::Bind(CreateShortcutInWebAppDir, app_data_dir, callback));

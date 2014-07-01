@@ -100,7 +100,7 @@ enum ShortcutCreationReason {
 typedef base::Callback<void(const ShortcutInfo&,
                             const extensions::FileHandlersInfo&)> InfoCallback;
 
-// Called by UpdateShortcutInfoAndIconForApp after loading the icon.
+// Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
 typedef base::Callback<void(const ShortcutInfo&)> ShortcutInfoCallback;
 
 #if defined(TOOLKIT_VIEWS)
@@ -120,11 +120,19 @@ ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile);
 
-// Fetches the icon for |extension| and calls |callback| with shortcut info
-// filled out as by UpdateShortcutInfoForApp.
-void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
-                                     Profile* profile,
-                                     const ShortcutInfoCallback& callback);
+// Populates a ShortcutInfo and FileHandlersInfo for the given |extension| in
+// |profile| and passes them to |callback| after asynchronously loading all icon
+// representations.
+void GetInfoForApp(const extensions::Extension* extension,
+                   Profile* profile,
+                   const InfoCallback& callback);
+
+// Populates a ShortcutInfo for the given |extension| in |profile| and passes
+// it to |callback| after asynchronously loading all icon representations. This
+// is equivalent to GetInfoForApp, but it throws away the FileHandlersInfo.
+void GetShortcutInfoForApp(const extensions::Extension* extension,
+                           Profile* profile,
+                           const ShortcutInfoCallback& callback);
 
 // Whether to create a shortcut for this type of extension.
 bool ShouldCreateShortcutFor(Profile* profile,
@@ -208,11 +216,6 @@ std::string GetWMClassFromAppName(std::string app_name);
 #endif
 
 namespace internals {
-
-// Loads relevant info structs for the app and calls |callback|.
-void GetInfoForApp(const extensions::Extension* extension,
-                   Profile* profile,
-                   const InfoCallback& callback);
 
 #if defined(OS_WIN)
 // Returns the Windows user-level shortcut paths that are specified in

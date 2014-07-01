@@ -294,8 +294,7 @@ void RebuildAppAndLaunch(const web_app::ShortcutInfo& shortcut_info) {
   if (!extension || !extension->is_platform_app())
     return;
 
-  web_app::internals::GetInfoForApp(
-      extension, profile, base::Bind(&UpdateAndLaunchShim));
+  web_app::GetInfoForApp(extension, profile, base::Bind(&UpdateAndLaunchShim));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -1086,7 +1085,7 @@ void ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback) {
-  web_app::UpdateShortcutInfoAndIconForApp(
+  web_app::GetShortcutInfoForApp(
       app,
       profile,
       base::Bind(&web_app::CreateAppShortcutInfoLoaded,

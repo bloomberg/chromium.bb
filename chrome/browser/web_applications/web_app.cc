@@ -135,61 +135,6 @@ static const char kCrxAppPrefix[] = "_crx_";
 
 namespace internals {
 
-void GetInfoForApp(const extensions::Extension* extension,
-                   Profile* profile,
-                   const InfoCallback& callback) {
-  web_app::ShortcutInfo shortcut_info =
-      web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
-  const std::vector<extensions::FileHandlerInfo>* file_handlers =
-      extensions::FileHandlers::GetFileHandlers(extension);
-  extensions::FileHandlersInfo file_handlers_info =
-      file_handlers ? *file_handlers : extensions::FileHandlersInfo();
-
-  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
-    int size = kDesiredSizes[i];
-    extensions::ExtensionResource resource =
-        extensions::IconsInfo::GetIconResource(
-            extension, size, ExtensionIconSet::MATCH_EXACTLY);
-    if (!resource.empty()) {
-      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-          resource,
-          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-          gfx::Size(size, size),
-          ui::SCALE_FACTOR_100P));
-    }
-  }
-
-  if (info_list.empty()) {
-    size_t i = kNumDesiredSizes - 1;
-    int size = kDesiredSizes[i];
-
-    // If there is no icon at the desired sizes, we will resize what we can get.
-    // Making a large icon smaller is preferred to making a small icon larger,
-    // so look for a larger icon first:
-    extensions::ExtensionResource resource =
-        extensions::IconsInfo::GetIconResource(
-            extension, size, ExtensionIconSet::MATCH_BIGGER);
-    if (resource.empty()) {
-      resource = extensions::IconsInfo::GetIconResource(
-          extension, size, ExtensionIconSet::MATCH_SMALLER);
-    }
-    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-        resource,
-        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-        gfx::Size(size, size),
-        ui::SCALE_FACTOR_100P));
-  }
-
-  // |info_list| may still be empty at this point, in which case
-  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
-  // image and exit immediately.
-  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
-      extension,
-      info_list,
-      base::Bind(&OnImageLoaded, shortcut_info, file_handlers_info, callback));
-}
-
 base::FilePath GetSanitizedFileName(const base::string16& name) {
 #if defined(OS_WIN)
   base::string16 file_name = name;
@@ -259,10 +204,65 @@ ShortcutInfo ShortcutInfoForExtensionAndProfile(
   return shortcut_info;
 }
 
-void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
-                                     Profile* profile,
-                                     const ShortcutInfoCallback& callback) {
-  web_app::internals::GetInfoForApp(
+void GetInfoForApp(const extensions::Extension* extension,
+                   Profile* profile,
+                   const InfoCallback& callback) {
+  web_app::ShortcutInfo shortcut_info =
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
+  const std::vector<extensions::FileHandlerInfo>* file_handlers =
+      extensions::FileHandlers::GetFileHandlers(extension);
+  extensions::FileHandlersInfo file_handlers_info =
+      file_handlers ? *file_handlers : extensions::FileHandlersInfo();
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
+    int size = kDesiredSizes[i];
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_EXACTLY);
+    if (!resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          resource,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
+    }
+  }
+
+  if (info_list.empty()) {
+    size_t i = kNumDesiredSizes - 1;
+    int size = kDesiredSizes[i];
+
+    // If there is no icon at the desired sizes, we will resize what we can get.
+    // Making a large icon smaller is preferred to making a small icon larger,
+    // so look for a larger icon first:
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_BIGGER);
+    if (resource.empty()) {
+      resource = extensions::IconsInfo::GetIconResource(
+          extension, size, ExtensionIconSet::MATCH_SMALLER);
+    }
+    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+        resource,
+        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+        gfx::Size(size, size),
+        ui::SCALE_FACTOR_100P));
+  }
+
+  // |info_list| may still be empty at this point, in which case
+  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
+  // image and exit immediately.
+  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
+      extension,
+      info_list,
+      base::Bind(&OnImageLoaded, shortcut_info, file_handlers_info, callback));
+}
+
+void GetShortcutInfoForApp(const extensions::Extension* extension,
+                           Profile* profile,
+                           const ShortcutInfoCallback& callback) {
+  GetInfoForApp(
       extension, profile, base::Bind(&IgnoreFileHandlersInfo, callback));
 }
 
@@ -363,7 +363,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
   if (!ShouldCreateShortcutFor(profile, app))
     return;
 
-  internals::GetInfoForApp(
+  GetInfoForApp(
       app, profile, base::Bind(&CreateShortcutsWithInfo, reason, locations));
 }
 
@@ -384,10 +384,9 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
                         const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  internals::GetInfoForApp(
-      app,
-      profile,
-      base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
+  GetInfoForApp(app,
+                profile,
+                base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
 }
 
 bool IsValidUrl(const GURL& url) {

@@ -407,7 +407,7 @@ base::FilePath CreateShortcutInWebAppDir(const base::FilePath& web_app_dir,
 void UpdateRelaunchDetailsForApp(Profile* profile,
                                  const extensions::Extension* extension,
                                  HWND hwnd) {
-  web_app::UpdateShortcutInfoAndIconForApp(
+  web_app::GetShortcutInfoForApp(
       extension,
       profile,
       base::Bind(&OnShortcutInfoLoadedForSetRelaunchDetails, hwnd));

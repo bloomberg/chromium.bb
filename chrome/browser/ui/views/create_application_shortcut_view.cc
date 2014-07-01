@@ -524,7 +524,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 
   // Get shortcut information and icon; they are needed for creating the
   // shortcut.
-  web_app::UpdateShortcutInfoAndIconForApp(
+  web_app::GetShortcutInfoForApp(
       app,
       profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
