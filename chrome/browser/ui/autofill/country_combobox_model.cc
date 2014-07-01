@@ -19,9 +19,15 @@
 
 namespace autofill {
 
-CountryComboboxModel::CountryComboboxModel(
+CountryComboboxModel::CountryComboboxModel() {}
+
+CountryComboboxModel::~CountryComboboxModel() {}
+
+void CountryComboboxModel::SetCountries(
     const PersonalDataManager& manager,
     const base::Callback<bool(const std::string&)>& filter) {
+  countries_.clear();
+
   // Insert the default country at the top as well as in the ordered list.
   std::string default_country_code =
       manager.GetDefaultCountryCodeForNewAddress();
@@ -57,8 +63,6 @@ CountryComboboxModel::CountryComboboxModel(
                     sorted_countries.begin(),
                     sorted_countries.end());
 }
-
-CountryComboboxModel::~CountryComboboxModel() {}
 
 int CountryComboboxModel::GetItemCount() const {
   return countries_.size();

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_ITEMS_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_ITEMS_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -228,6 +229,9 @@ class WalletItems {
     DCHECK(legal_document);
     legal_documents_.push_back(legal_document.release());
   }
+  void AddAllowedShippingCountry(const std::string& country_code) {
+    allowed_shipping_countries_.insert(country_code);
+  }
 
   // Return the corresponding instrument for |id| or NULL if it doesn't exist.
   const WalletItems::MaskedInstrument* GetInstrumentById(
@@ -264,6 +268,9 @@ class WalletItems {
   size_t active_account_index() const { return active_account_index_; }
   const std::vector<LegalDocument*>& legal_documents() const {
     return legal_documents_.get();
+  }
+  const std::set<std::string>& allowed_shipping_countries() const {
+    return allowed_shipping_countries_;
   }
 
  private:
@@ -313,6 +320,9 @@ class WalletItems {
 
   // Legal documents the user must accept before using Online Wallet.
   ScopedVector<LegalDocument> legal_documents_;
+
+  // Country codes for allowed Wallet shipping destinations.
+  std::set<std::string> allowed_shipping_countries_;
 
   // Whether Google Wallet allows American Express card for this merchant.
   AmexPermission amex_permission_;

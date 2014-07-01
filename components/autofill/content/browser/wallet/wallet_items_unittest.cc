@@ -359,6 +359,12 @@ const char kWalletItems[] =
     "      \"avatar_url_48x48\":\"https://lh3.googleusercontent.com/48.jpg\","
     "      \"avatar_url_96x96\":\"https://lh3.googleusercontent.com/96.jpg\""
     "    }"
+    "  ],"
+    "  \"allowed_shipping_spec_by_country\":"
+    "  ["
+    "    {\"country_code\":\"AC\"},"
+    "    {\"country_code\":\"AD\"},"
+    "    {\"country_code\":\"US\"}"
     "  ]";
 
 const char kRequiredLegalDocument[] =
@@ -592,6 +598,11 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                   "id",
                   "language_code"));
   expected.AddAddress(shipping_address.Pass());
+
+  expected.AddAllowedShippingCountry("AC");
+  expected.AddAllowedShippingCountry("AD");
+  expected.AddAllowedShippingCountry("US");
+
   EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
   // Now try with a legal document as well.

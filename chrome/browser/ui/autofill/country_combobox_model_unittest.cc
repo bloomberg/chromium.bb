@@ -20,8 +20,8 @@ class CountryComboboxModelTest : public testing::Test {
   CountryComboboxModelTest() {
     manager_.Init(NULL, profile_.GetPrefs(), false);
     manager_.set_timezone_country_code("KR");
-    model_.reset(new CountryComboboxModel(
-        manager_, base::Callback<bool(const std::string&)>()));
+    model_.reset(new CountryComboboxModel());
+    model_->SetCountries(manager_, base::Callback<bool(const std::string&)>());
   }
 
   TestPersonalDataManager* manager() { return &manager_; }

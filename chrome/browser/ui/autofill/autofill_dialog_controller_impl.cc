@@ -664,10 +664,28 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   GetMetricLogger().LogDialogInitialUserState(initial_user_state_);
 }
 
-bool CountryFilter(const std::set<base::string16>& possible_values,
-                   const std::string& country_code) {
-  if (!possible_values.empty() &&
-      !possible_values.count(base::ASCIIToUTF16(country_code))) {
+// Checks the country code against the values the form structure enumerates.
+bool AutofillCountryFilter(
+    const std::set<base::string16>& form_structure_values,
+    const std::string& country_code) {
+  if (!form_structure_values.empty() &&
+      !form_structure_values.count(base::ASCIIToUTF16(country_code))) {
+    return false;
+  }
+
+  return true;
+}
+
+// Checks the country code against the values the form structure enumerates and
+// against the ones Wallet allows.
+bool WalletCountryFilter(
+    const std::set<base::string16>& form_structure_values,
+    const std::set<std::string>& wallet_allowed_values,
+    const std::string& country_code) {
+  if ((!form_structure_values.empty() &&
+       !form_structure_values.count(base::ASCIIToUTF16(country_code))) ||
+      (!wallet_allowed_values.empty() &&
+       !wallet_allowed_values.count(country_code))) {
     return false;
   }
 
@@ -767,14 +785,18 @@ void AutofillDialogControllerImpl::Show() {
     return;
   }
 
-  billing_country_combobox_model_.reset(new CountryComboboxModel(
+  billing_country_combobox_model_.reset(new CountryComboboxModel());
+  billing_country_combobox_model_->SetCountries(
       *GetManager(),
-      base::Bind(CountryFilter,
-                 form_structure_.PossibleValues(ADDRESS_BILLING_COUNTRY))));
-  shipping_country_combobox_model_.reset(new CountryComboboxModel(
+      base::Bind(AutofillCountryFilter,
+                 form_structure_.PossibleValues(ADDRESS_BILLING_COUNTRY)));
+  shipping_country_combobox_model_.reset(new CountryComboboxModel());
+  acceptable_shipping_countries_ =
+      form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY);
+  shipping_country_combobox_model_->SetCountries(
       *GetManager(),
-      base::Bind(CountryFilter,
-                 form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY))));
+      base::Bind(AutofillCountryFilter,
+                 base::ConstRef(acceptable_shipping_countries_)));
 
   // If the form has a country <select> but none of the options are valid, bail.
   if (billing_country_combobox_model_->GetItemCount() == 0 ||
@@ -2656,6 +2678,20 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
         usernames, wallet_items_->active_account_index());
   }
 
+  if (wallet_items_) {
+    shipping_country_combobox_model_->SetCountries(
+        *GetManager(),
+        base::Bind(WalletCountryFilter,
+                   acceptable_shipping_countries_,
+                   wallet_items_->allowed_shipping_countries()));
+
+    // If the site doesn't ship to any of the countries Wallet allows shipping
+    // to, the merchant is not supported. (Note we generally shouldn't get here
+    // as such a merchant wouldn't make it onto the Wallet whitelist.)
+    if (shipping_country_combobox_model_->GetItemCount() == 0)
+      DisableWallet(wallet::WalletClient::UNSUPPORTED_MERCHANT);
+  }
+
   ConstructLegalDocumentsText();
   OnWalletOrSigninUpdate();
 }
@@ -3032,6 +3068,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         suggested_cc_billing_.SetCheckedItem(kAddNewItemKey);
     }
   } else {
+    shipping_country_combobox_model_->SetCountries(
+        *GetManager(),
+        base::Bind(AutofillCountryFilter, acceptable_shipping_countries_));
+
     if (IsAutofillEnabled()) {
       PersonalDataManager* manager = GetManager();
       const std::vector<CreditCard*>& cards = manager->GetCreditCards();

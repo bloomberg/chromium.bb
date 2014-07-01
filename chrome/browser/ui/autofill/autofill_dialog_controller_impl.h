@@ -761,6 +761,9 @@ class AutofillDialogControllerImpl
   // A NotificationRegistrar for tracking the completion of sign-in.
   content::NotificationRegistrar signin_registrar_;
 
+  // The countries the form structure can accept for shipping.
+  std::set<base::string16> acceptable_shipping_countries_;
+
   // Set to true when the user presses the sign in link, until we're ready to
   // show the normal dialog again. This is used to hide the buttons while
   // the spinner is showing after an explicit sign in.

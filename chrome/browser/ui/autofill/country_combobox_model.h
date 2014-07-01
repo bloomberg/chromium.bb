@@ -22,13 +22,14 @@ class PersonalDataManager;
 // A model for countries to be used to enter addresses.
 class CountryComboboxModel : public ui::ComboboxModel {
  public:
-  // When |country_filter| is non-empty, it provides the set of country values
-  // (both 2-letter codes and display names) that are available to choose from.
-  // |filter| is passed each potential item's country code. If |filter| returns
-  // true, an item for that country is added to the model (else it's omitted).
-  CountryComboboxModel(const PersonalDataManager& manager,
-                       const base::Callback<bool(const std::string&)>& filter);
+  CountryComboboxModel();
   virtual ~CountryComboboxModel();
+
+  // |filter| is passed each known country's country code. If |filter| returns
+  // true, an item for that country is added to the model (else it's omitted).
+  // |manager| determines the default choice.
+  void SetCountries(const PersonalDataManager& manager,
+                    const base::Callback<bool(const std::string&)>& filter);
 
   // ui::ComboboxModel implementation:
   virtual int GetItemCount() const OVERRIDE;

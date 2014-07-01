@@ -3447,6 +3447,66 @@ TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
             billing_country_model->GetItemCount());
 }
 
+TEST_F(AutofillDialogControllerTest, WalletUnsupportedCountries) {
+  // Create a form data that simulates:
+  //   <select autocomplete="billing country">
+  //     <option value="IQ">Iraq</option>
+  //     <option value="MX">Mexico</option>
+  //   </select>
+  // i.e. contains a mix of supported and unsupported countries.
+  FormData form_data;
+  FormFieldData field;
+  field.autocomplete_attribute = "shipping country";
+  field.option_contents.push_back(ASCIIToUTF16("Iraq"));
+  field.option_values.push_back(ASCIIToUTF16("IQ"));
+  field.option_contents.push_back(ASCIIToUTF16("Mexico"));
+  field.option_values.push_back(ASCIIToUTF16("MX"));
+
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
+
+  form_data.fields.push_back(field);
+  form_data.fields.push_back(cc_field);
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+
+  ui::ComboboxModel* shipping_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  ASSERT_EQ(2, shipping_country_model->GetItemCount());
+  EXPECT_EQ(shipping_country_model->GetItemAt(0), ASCIIToUTF16("Iraq"));
+  EXPECT_EQ(shipping_country_model->GetItemAt(1), ASCIIToUTF16("Mexico"));
+
+  // Switch to Wallet, add limitations.
+  SetUpControllerWithFormData(form_data);
+  SwitchToWallet();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddAllowedShippingCountry("MX");
+  wallet_items->AddAllowedShippingCountry("GB");
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  // Only the intersection is available.
+  EXPECT_TRUE(controller()->IsPayingWithWallet());
+  shipping_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  ASSERT_EQ(1, shipping_country_model->GetItemCount());
+  EXPECT_EQ(shipping_country_model->GetItemAt(0), ASCIIToUTF16("Mexico"));
+
+  // Empty intersection; Wallet's automatically disabled.
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddAllowedShippingCountry("CA");
+  wallet_items->AddAllowedShippingCountry("GB");
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  EXPECT_FALSE(controller()->IsPayingWithWallet());
+
+  // Since it's disabled, we revert to accepting all the countries.
+  shipping_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  ASSERT_EQ(2, shipping_country_model->GetItemCount());
+  EXPECT_EQ(shipping_country_model->GetItemAt(0), ASCIIToUTF16("Iraq"));
+  EXPECT_EQ(shipping_country_model->GetItemAt(1), ASCIIToUTF16("Mexico"));
+}
+
 // http://crbug.com/388018
 TEST_F(AutofillDialogControllerTest, NoCountryChoices) {
   // Create a form data that simulates:

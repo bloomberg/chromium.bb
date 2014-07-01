@@ -539,6 +539,22 @@ scoped_ptr<WalletItems>
     DVLOG(1) << "Response from Google wallet missing addresses";
   }
 
+  const base::ListValue* allowed_shipping_countries;
+  if (dictionary.GetList("allowed_shipping_spec_by_country",
+                         &allowed_shipping_countries)) {
+    for (size_t i = 0; i < allowed_shipping_countries->GetSize(); ++i) {
+      const base::DictionaryValue* country_spec;
+      std::string country_code;
+      if (allowed_shipping_countries->GetDictionary(i, &country_spec) &&
+          country_spec->GetString("country_code", &country_code)) {
+        wallet_items->AddAllowedShippingCountry(country_code);
+      }
+    }
+  } else {
+    DVLOG(1) << "Response from Google wallet missing allowed shipping"
+                " countries";
+  }
+
   return wallet_items.Pass();
 }
 
@@ -568,7 +584,8 @@ bool WalletItems::operator==(const WalletItems& other) const {
                                             other.instruments()) &&
          VectorsAreEqual<Address>(addresses(), other.addresses()) &&
          VectorsAreEqual<LegalDocument>(legal_documents(),
-                                         other.legal_documents());
+                                         other.legal_documents()) &&
+         allowed_shipping_countries() == other.allowed_shipping_countries();
 }
 
 bool WalletItems::operator!=(const WalletItems& other) const {
