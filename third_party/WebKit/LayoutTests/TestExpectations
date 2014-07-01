@@ -607,7 +607,6 @@ crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
-crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 
 crbug.com/267888 [ Android ] crypto [ Skip ]

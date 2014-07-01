@@ -3,7 +3,7 @@
     <head>
         <script>
             var runPixelTests = true;
-            
+
             function init() {
                 // Bail out early if the full screen API is not enabled or is missing:
                 if (Element.prototype.webkitRequestFullScreen == undefined) {
@@ -16,7 +16,7 @@
                     runWithKeyDown(goFullScreen);
                 }
             }
-            
+
             function goFullScreen() {
                var iframe = document.getElementById('block1');
                var element = iframe.contentDocument.documentElement;
@@ -49,5 +49,6 @@
              After entering full screen mode, only a white box should be visible.
              Click <button onclick="goFullScreen()">go full screen</button> to run the test.</div>
         <div id="block2"></div>
-        <iframe webkitallowfullscreen src="resources/inner.html" id="block1"></iframe>
+        <iframe allowfullscreen src="resources/inner.html" id="block1"></iframe>
     </body>
+</html>

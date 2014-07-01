@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <p>Test for <a href="http://bugs.webkit.org/show_bug.cgi?id=90327">bug 90327</a>: 
 webkitCancelFullScreen for iframes</p>
 <p>To test manually, click the "Go full screen" button - the page should enter full screen mode and immediately exit again, without crashing.</p>
@@ -21,5 +22,5 @@ function runTest() {
     });
 }
 </script>
-<iframe id="frame" src="resources/inner.html" width="300" height="100" onload="runTest()" webkitallowfullscreen>
+<iframe id="frame" src="resources/inner.html" width="300" height="100" onload="runTest()" allowfullscreen>
 </iframe>
