@@ -978,7 +978,8 @@ def MarkChromeAsStable(buildroot,
              '--tracking_branch=%s' % tracking_branch,
              '--boards=%s' % ':'.join(boards), ]
   if chrome_version:
-    command.append('--force_revision=%s' % chrome_version)
+    command.append('--force_version=%s' % chrome_version)
+    chrome_rev = constants.CHROME_REV_SPEC
 
   portage_atom_string = cros_build_lib.RunCommand(
       command + [chrome_rev],

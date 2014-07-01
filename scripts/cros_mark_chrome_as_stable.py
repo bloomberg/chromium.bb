@@ -421,7 +421,8 @@ def main(_argv):
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--boards', default='x86-generic')
   parser.add_option('-c', '--chrome_url', default=gclient.GetBaseURLs()[0])
-  parser.add_option('-f', '--force_revision', default=None)
+  parser.add_option('-f', '--force_version', default=None,
+                    help='Chrome version or SVN revision number to use')
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
                     help='Path to the src directory')
@@ -432,6 +433,10 @@ def main(_argv):
   if len(args) != 1 or args[0] not in constants.VALID_CHROME_REVISIONS:
     parser.error('Commit requires arg set to one of %s.'
                  % constants.VALID_CHROME_REVISIONS)
+
+  if options.force_version and args[0] != constants.CHROME_REV_SPEC:
+    parser.error('--force_version is not compatible with the %r '
+                 'option.' % (args[0],))
 
   overlay_dir = os.path.abspath(_CHROME_OVERLAY_DIR %
                                 {'srcroot': options.srcroot})
@@ -452,11 +457,14 @@ def main(_argv):
     commit_to_use = 'Unknown'
     cros_build_lib.Info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
-    commit_to_use = options.force_revision
-    if '@' in commit_to_use:
-      commit_to_use = ParseMaxRevision(commit_to_use)
-    version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
-                                              commit_to_use)
+    if '.' in options.force_version:
+      version_to_uprev = options.force_version
+    else:
+      commit_to_use = options.force_version
+      if '@' in commit_to_use:
+        commit_to_use = ParseMaxRevision(commit_to_use)
+      version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
+                                                commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
     commit_to_use = gclient.GetTipOfTrunkSvnRevision(options.chrome_url)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
