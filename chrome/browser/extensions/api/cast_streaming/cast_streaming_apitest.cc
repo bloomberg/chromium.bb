@@ -22,12 +22,15 @@
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/in_process_receiver.h"
+#include "media/cast/test/utility/net_utility.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/rand_callback.h"
 #include "net/udp/udp_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using media::cast::test::GetFreeLocalPort;
 
 namespace extensions {
 
@@ -38,6 +41,7 @@ class CastStreamingApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
+    command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
   }
 };
 
@@ -286,31 +290,25 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
   }
 };
 
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_EndToEnd DISABLED_TabsApi
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif  // defined(OS_WIN) && !defined(NDEBUG)
 // Tests the Cast streaming API and its basic functionality end-to-end.  An
 // extension subtest is run to generate test content, capture that content, and
 // use the API to send it out.  At the same time, this test launches an
 // in-process Cast receiver, listening on a localhost UDP socket, to receive the
 // content and check whether it matches expectations.
-//
-// Note: This test is disabled until outstanding bugs are fixed and the
-// media/cast library has achieved sufficient stability.
-// http://crbug.com/349599
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
-  // Determine a unused UDP port for the in-process receiver to listen on.
-  // Method: Bind a UDP socket on port 0, and then check which port the
-  // operating system assigned to it.
-  net::IPAddressNumber localhost;
-  localhost.push_back(127);
-  localhost.push_back(0);
-  localhost.push_back(0);
-  localhost.push_back(1);
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   scoped_ptr<net::UDPSocket> receive_socket(
       new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                          net::RandIntCallback(),
                          NULL,
                          net::NetLog::Source()));
   receive_socket->AllowAddressReuse();
-  ASSERT_EQ(net::OK, receive_socket->Bind(net::IPEndPoint(localhost, 0)));
+  ASSERT_EQ(net::OK, receive_socket->Bind(GetFreeLocalPort()));
   net::IPEndPoint receiver_end_point;
   ASSERT_EQ(net::OK, receive_socket->GetLocalAddress(&receiver_end_point));
   receive_socket.reset();
@@ -321,7 +319,6 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
       new media::cast::StandaloneCastEnvironment());
   TestPatternReceiver* const receiver =
       new TestPatternReceiver(cast_environment, receiver_end_point);
-  receiver->Start();
 
   // Launch the page that: 1) renders the source content; 2) uses the
   // chrome.tabCapture and chrome.cast.streaming APIs to capture its content and
@@ -333,6 +330,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
 
   // Examine the Cast receiver for expected audio/video test patterns.  The
   // colors and tones specified here must match those in end_to_end_sender.js.
+  receiver->Start();
   const uint8 kRedInYUV[3] = {82, 90, 240};    // rgb(255, 0, 0)
   const uint8 kGreenInYUV[3] = {145, 54, 34};  // rgb(0, 255, 0)
   const uint8 kBlueInYUV[3] = {41, 240, 110};  // rgb(0, 0, 255)
@@ -340,8 +338,9 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
   receiver->WaitForColorAndTone(kRedInYUV, 200 /* Hz */, kOneHalfSecond);
   receiver->WaitForColorAndTone(kGreenInYUV, 500 /* Hz */, kOneHalfSecond);
   receiver->WaitForColorAndTone(kBlueInYUV, 1800 /* Hz */, kOneHalfSecond);
-
   receiver->Stop();
+
+  delete receiver;
   cast_environment->Shutdown();
 }
 
