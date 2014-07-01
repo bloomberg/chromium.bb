@@ -110,7 +110,7 @@ private:
     TestActivityLogger* m_activityLogger;
 };
 
-TEST_F(ActivityLoggerTest, EventHandler)
+TEST_F(ActivityLoggerTest, DISABLED_EventHandler)
 {
     const char* code =
         "document.body.innerHTML = '<a onclick=\\\'do()\\\'>test</a>';"
@@ -129,7 +129,7 @@ TEST_F(ActivityLoggerTest, EventHandler)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, ScriptElement)
+TEST_F(ActivityLoggerTest, DISABLED_ScriptElement)
 {
     const char* code =
         "document.body.innerHTML = '<script src=\\\'data:text/html;charset=utf-8,\\\'></script>';"
@@ -152,7 +152,7 @@ TEST_F(ActivityLoggerTest, ScriptElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, IFrameElement)
+TEST_F(ActivityLoggerTest, DISABLED_IFrameElement)
 {
     const char* code =
         "document.body.innerHTML = '<iframe src=\\\'data:text/html;charset=utf-8,\\\'></iframe>';"
@@ -175,7 +175,7 @@ TEST_F(ActivityLoggerTest, IFrameElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, AnchorElement)
+TEST_F(ActivityLoggerTest, DISABLED_AnchorElement)
 {
     const char* code =
         "document.body.innerHTML = '<a href=\\\'data:text/css;charset=utf-8,\\\'></a>';"
@@ -198,7 +198,7 @@ TEST_F(ActivityLoggerTest, AnchorElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, LinkElement)
+TEST_F(ActivityLoggerTest, DISABLED_LinkElement)
 {
     const char* code =
         "document.body.innerHTML = '<link rel=\\\'stylesheet\\\' href=\\\'data:text/css;charset=utf-8,\\\'></link>';"
@@ -222,7 +222,7 @@ TEST_F(ActivityLoggerTest, LinkElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, InputElement)
+TEST_F(ActivityLoggerTest, DISABLED_InputElement)
 {
     const char* code =
         "document.body.innerHTML = '<input type=\\\'submit\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></input>';"
@@ -246,7 +246,7 @@ TEST_F(ActivityLoggerTest, InputElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, ButtonElement)
+TEST_F(ActivityLoggerTest, DISABLED_ButtonElement)
 {
     const char* code =
         "document.body.innerHTML = '<button type=\\\'submit\\\' formmethod=\\\'post\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></input>';"
@@ -271,7 +271,7 @@ TEST_F(ActivityLoggerTest, ButtonElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, FormElement)
+TEST_F(ActivityLoggerTest, DISABLED_FormElement)
 {
     const char* code =
         "document.body.innerHTML = '<form method=\\\'post\\\' action=\\\'data:text/html;charset=utf-8,\\\'></form>';"
@@ -295,7 +295,7 @@ TEST_F(ActivityLoggerTest, FormElement)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, IFrameSrcAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_IFrameSrcAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<iframe src=\\\'data:text/html;charset=utf-8,A\\\'></iframe>';"
@@ -318,7 +318,7 @@ TEST_F(ActivityLoggerTest, IFrameSrcAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, AnchorHrefAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_AnchorHrefAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<a href=\\\'data:text/html;charset=utf-8,A\\\'></a>';"
@@ -341,7 +341,7 @@ TEST_F(ActivityLoggerTest, AnchorHrefAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, LinkHrefAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_LinkHrefAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<link rel=\\\'stylesheet\\\' href=\\\'data:text/css;charset=utf-8,A\\\'></link>';"
@@ -364,7 +364,7 @@ TEST_F(ActivityLoggerTest, LinkHrefAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, InputFormActionAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_InputFormActionAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<input type=\\\'button\\\' formaction=\\\'data:text/html;charset=utf-8,A\\\'></input>';"
@@ -387,7 +387,7 @@ TEST_F(ActivityLoggerTest, InputFormActionAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, ButtonFormActionAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_ButtonFormActionAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<button type=\\\'submit\\\' formmethod=\\\'post\\\' formaction=\\\'data:text/html;charset=utf-8,A\\\'></input>';"
@@ -410,7 +410,7 @@ TEST_F(ActivityLoggerTest, ButtonFormActionAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, FormActionAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_FormActionAttribute)
 {
     const char* code =
         "document.body.innerHTML = '<form action=\\\'data:text/html;charset=utf-8,A\\\'></form>';"
@@ -433,7 +433,7 @@ TEST_F(ActivityLoggerTest, FormActionAttribute)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-TEST_F(ActivityLoggerTest, LocalDOMWindowAttribute)
+TEST_F(ActivityLoggerTest, DISABLED_LocalDOMWindowAttribute)
 {
     const char* code =
         "location.href = 'data:text/html;charset=utf-8,A';"
