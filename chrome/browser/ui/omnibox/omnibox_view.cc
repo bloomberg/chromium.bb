@@ -125,6 +125,12 @@ int OmniboxView::GetIcon() const {
 }
 
 base::string16 OmniboxView::GetHintText() const {
+  // If the user is in keyword mode (the "Search <some site>:" chip is showing)
+  // then it doesn't make sense to show the "Search <default search engine>"
+  // hint text.
+  if (model_->is_keyword_selected())
+    return base::string16();
+
   // Attempt to determine the default search provider and use that in the hint
   // text.
   TemplateURLService* template_url_service =

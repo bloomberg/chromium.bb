@@ -230,6 +230,9 @@ class OmniboxEditModel {
   // is_keyword_hint_).
   const base::string16& keyword() const { return keyword_; }
   bool is_keyword_hint() const { return is_keyword_hint_; }
+  bool is_keyword_selected() const {
+    return !is_keyword_hint_ && !keyword_.empty();
+  }
 
   // Accepts the current keyword hint as a keyword. It always returns true for
   // caller convenience. |entered_method| indicates how the use entered
@@ -375,9 +378,6 @@ class OmniboxEditModel {
 
   // Called whenever user_text_ should change.
   void InternalSetUserText(const base::string16& text);
-
-  // Returns true if a keyword is selected.
-  bool KeywordIsSelected() const;
 
   // Turns off keyword mode for the current match.
   void ClearPopupKeywordMode() const;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
+#include <set>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -217,8 +219,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  if (chrome::ShouldDisplayOriginChip())
-    set_placeholder_text(GetHintText());
+  UpdatePlaceholderText();
 
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
@@ -252,6 +253,11 @@ void OmniboxViewViews::Update() {
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
+}
+
+void OmniboxViewViews::UpdatePlaceholderText() {
+  if (chrome::ShouldDisplayOriginChip())
+    set_placeholder_text(GetHintText());
 }
 
 base::string16 OmniboxViewViews::GetText() const {
@@ -386,24 +392,25 @@ void OmniboxViewViews::OnPaste() {
 bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   // This must run before acclerator handling invokes a focus change on tab.
   // Note the parallel with SkipDefaultKeyEventProcessing above.
-  if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
-    if (model()->is_keyword_hint() && !event.IsShiftDown()) {
-      model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
-      return true;
-    }
-    if (model()->popup_model()->IsOpen()) {
-      if (event.IsShiftDown() &&
-          model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::KEYWORD) {
-        model()->ClearKeyword(text());
-      } else {
-        model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
-      }
-      return true;
-    }
+  if (!views::FocusManager::IsTabTraversalKeyEvent(event))
+    return false;
+
+  if (model()->is_keyword_hint() && !event.IsShiftDown()) {
+    model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
+    return true;
   }
 
-  return false;
+  if (!model()->popup_model()->IsOpen())
+    return false;
+
+  if (event.IsShiftDown() &&
+      (model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::KEYWORD))
+    model()->ClearKeyword(text());
+  else
+    model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
+
+  return true;
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,

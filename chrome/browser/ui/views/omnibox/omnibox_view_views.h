@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_VIEWS_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -67,6 +68,7 @@ class OmniboxViewViews
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;
   virtual void Update() OVERRIDE;
+  virtual void UpdatePlaceholderText() OVERRIDE;
   virtual base::string16 GetText() const OVERRIDE;
   virtual void SetUserText(const base::string16& text,
                            const base::string16& display_text,
