@@ -23,8 +23,7 @@
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -46,14 +45,14 @@ class SyncFileSystemService
     : public KeyedService,
       public ProfileSyncServiceObserver,
       public FileStatusObserver,
-      public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
   typedef base::Callback<void(const base::ListValue&)> DumpFilesCallback;
   typedef base::Callback<void(const RemoteFileSyncService::OriginStatusMap&)>
       ExtensionStatusMapCallback;
 
-  // KeyedService overrides.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   void InitializeForApp(
@@ -132,23 +131,25 @@ class SyncFileSystemService
   void OnRemoteServiceStateUpdated(RemoteServiceState state,
                                    const std::string& description);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver implementations.
+  virtual void OnExtensionInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
-  void HandleExtensionInstalled(const content::NotificationDetails& details);
-  void HandleExtensionUnloaded(int type,
-                               const content::NotificationDetails& details);
-  void HandleExtensionUninstalled(int type,
-                                  const content::NotificationDetails& details);
-  void HandleExtensionEnabled(int type,
-                              const content::NotificationDetails& details);
-
-  // ProfileSyncServiceObserver:
+  // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
-  // SyncFileStatusObserver:
+  // SyncFileStatusObserver implementation.
   virtual void OnFileStatusChanged(
       const fileapi::FileSystemURL& url,
       SyncFileStatus sync_status,
@@ -169,7 +170,6 @@ class SyncFileSystemService
   RemoteFileSyncService* GetRemoteService(const GURL& origin);
 
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
 
   scoped_ptr<LocalFileSyncService> local_service_;
   scoped_ptr<RemoteFileSyncService> remote_service_;

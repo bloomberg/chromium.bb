@@ -12,6 +12,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 namespace sync_file_system {
 
@@ -38,6 +39,7 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   typedef std::set<BrowserContextKeyedServiceFactory*> FactorySet;
   FactorySet factories;
+  factories.insert(extensions::ExtensionRegistryFactory::GetInstance());
   RemoteFileSyncService::AppendDependsOnFactories(
       RemoteFileSyncService::V1, &factories);
   RemoteFileSyncService::AppendDependsOnFactories(

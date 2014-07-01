@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,10 +27,9 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "url/gurl.h"
@@ -40,6 +38,7 @@
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 
@@ -69,43 +68,30 @@ SyncServiceState RemoteStateToSyncServiceState(
   return SYNC_SERVICE_DISABLED;
 }
 
-void DidHandleOriginForExtensionUnloadedEvent(
-    int type,
-    const GURL& origin,
-    SyncStatusCode code) {
-  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED == type ||
-         chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED == type);
-  if (code != SYNC_STATUS_OK &&
-      code != SYNC_STATUS_UNKNOWN_ORIGIN) {
-    switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-        util::Log(logging::LOG_WARNING,
-                  FROM_HERE,
-                  "Disabling origin for UNLOADED(DISABLE) failed: %s",
-                  origin.spec().c_str());
-        break;
-      case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-        util::Log(logging::LOG_WARNING,
-                  FROM_HERE,
-                  "Uninstall origin for UNINSTALLED failed: %s",
-                  origin.spec().c_str());
-        break;
-      default:
-        break;
-    }
+void DidHandleUninstalledEvent(const GURL& origin, SyncStatusCode code) {
+  if (code != SYNC_STATUS_OK && code != SYNC_STATUS_UNKNOWN_ORIGIN) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "Failed to uninstall origin for uninstall event: %s",
+              origin.spec().c_str());
   }
 }
 
-void DidHandleOriginForExtensionEnabledEvent(
-    int type,
+void DidHandleUnloadedEvent(const GURL& origin, SyncStatusCode code) {
+  if (code != SYNC_STATUS_OK && code != SYNC_STATUS_UNKNOWN_ORIGIN) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "Failed to disable origin for unload event: %s",
+              origin.spec().c_str());
+  }
+}
+
+void DidHandleLoadEvent(
     const GURL& origin,
     SyncStatusCode code) {
-  DCHECK(chrome::NOTIFICATION_EXTENSION_ENABLED == type);
-  if (code != SYNC_STATUS_OK)
-    util::Log(logging::LOG_WARNING,
-              FROM_HERE,
-              "Enabling origin for ENABLED failed: %s",
+  if (code != SYNC_STATUS_OK) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "Failed to enable origin for load event: %s",
               origin.spec().c_str());
+  }
 }
 
 std::string SyncFileStatusToString(SyncFileStatus sync_file_status) {
@@ -274,6 +260,8 @@ void SyncFileSystemService::Shutdown() {
   if (profile_sync_service)
     profile_sync_service->RemoveObserver(this);
 
+  ExtensionRegistry::Get(profile_)->RemoveObserver(this);
+
   profile_ = NULL;
 }
 
@@ -405,16 +393,7 @@ void SyncFileSystemService::Initialize(
     profile_sync_service->AddObserver(this);
   }
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
-                 content::Source<Profile>(profile_));
+  ExtensionRegistry::Get(profile_)->AddObserver(this);
 }
 
 void SyncFileSystemService::DidInitializeFileSystem(
@@ -632,45 +611,9 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
   RunForEachSyncRunners(&SyncProcessRunner::Schedule);
 }
 
-void SyncFileSystemService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  // Event notification sequence.
-  //
-  // (User action)    (Notification type)
-  // Install:         INSTALLED.
-  // Update:          INSTALLED.
-  // Uninstall:       UNINSTALLED.
-  // Launch, Close:   No notification.
-  // Enable:          ENABLED.
-  // Disable:         UNLOADED(DISABLE).
-  // Reload, Restart: UNLOADED(DISABLE) -> INSTALLED -> ENABLED.
-  //
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
-      HandleExtensionInstalled(details);
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      HandleExtensionUnloaded(type, details);
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      HandleExtensionUninstalled(type, details);
-      break;
-    case chrome::NOTIFICATION_EXTENSION_ENABLED:
-      HandleExtensionEnabled(type, details);
-      break;
-    default:
-      NOTREACHED() << "Unknown notification.";
-      break;
-  }
-}
-
-void SyncFileSystemService::HandleExtensionInstalled(
-    const content::NotificationDetails& details) {
-  const Extension* extension =
-      content::Details<const extensions::InstalledExtensionInfo>(details)->
-          extension;
+void SyncFileSystemService::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for INSTALLED: " << app_origin;
   // NOTE: When an app is uninstalled and re-installed in a sequence,
@@ -678,18 +621,17 @@ void SyncFileSystemService::HandleExtensionInstalled(
   local_service_->SetOriginEnabled(app_origin, true);
 }
 
-void SyncFileSystemService::HandleExtensionUnloaded(
-    int type,
-    const content::NotificationDetails& details) {
-  content::Details<const extensions::UnloadedExtensionInfo> info(details);
-  if (info->reason != extensions::UnloadedExtensionInfo::REASON_DISABLE)
+void SyncFileSystemService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (reason != extensions::UnloadedExtensionInfo::REASON_DISABLE)
     return;
 
-  std::string extension_id = info->extension->id();
-  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
-
-  int reasons = ExtensionPrefs::Get(profile_)->GetDisableReasons(extension_id);
-  if (reasons & Extension::DISABLE_RELOAD) {
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
+  int disable_reasons =
+      ExtensionPrefs::Get(profile_)->GetDisableReasons(extension->id());
+  if (disable_reasons & Extension::DISABLE_RELOAD) {
     // Bypass disabling the origin since the app will be re-enabled soon.
     // NOTE: If re-enabling the app fails, the app is disabled while it is
     // handled as enabled origin in the SyncFS. This should be safe and will be
@@ -704,17 +646,13 @@ void SyncFileSystemService::HandleExtensionUnloaded(
            << app_origin;
   GetRemoteService(app_origin)->DisableOrigin(
       app_origin,
-      base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
-                 type, app_origin));
+      base::Bind(&DidHandleUnloadedEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, false);
 }
 
-void SyncFileSystemService::HandleExtensionUninstalled(
-    int type,
-    const content::NotificationDetails& details) {
-  const Extension* extension = content::Details<const Extension>(details).ptr();
-  DCHECK(extension);
-
+void SyncFileSystemService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
   RemoteFileSyncService::UninstallFlag flag =
       RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE;
   // If it's loaded from an unpacked package and with key: field,
@@ -730,20 +668,18 @@ void SyncFileSystemService::HandleExtensionUninstalled(
            << app_origin;
   GetRemoteService(app_origin)->UninstallOrigin(
       app_origin, flag,
-      base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
-                 type, app_origin));
+      base::Bind(&DidHandleUninstalledEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, false);
 }
 
-void SyncFileSystemService::HandleExtensionEnabled(
-    int type,
-    const content::NotificationDetails& details) {
-  std::string extension_id = content::Details<const Extension>(details)->id();
-  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
-  DVLOG(1) << "Handle extension notification for ENABLED: " << app_origin;
+void SyncFileSystemService::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
+  DVLOG(1) << "Handle extension notification for LOADED: " << app_origin;
   GetRemoteService(app_origin)->EnableOrigin(
       app_origin,
-      base::Bind(&DidHandleOriginForExtensionEnabledEvent, type, app_origin));
+      base::Bind(&DidHandleLoadEvent, app_origin));
   local_service_->SetOriginEnabled(app_origin, true);
 }
 
