@@ -691,8 +691,6 @@ crbug.com/317742 [ Win7 ] fast/css-grid-layout/grid-item-z-index-stacking-contex
 
 crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
 
-crbug.com/311487 [ Debug ] svg/custom/acid3-test-77.html [ Pass Timeout ]
-
 crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Pass Timeout ]
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
