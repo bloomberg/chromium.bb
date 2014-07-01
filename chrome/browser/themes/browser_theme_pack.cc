@@ -96,6 +96,9 @@ struct PersistingImagesTable {
 
 // IDR_* resource names change whenever new resources are added; use persistent
 // IDs when storing to a cached pack.
+//
+// TODO(erg): The cocoa port is the last user of the IDR_*_[HP] variants. These
+// should be removed once the cocoa port no longer uses them.
 PersistingImagesTable kPersistingImages[] = {
   { PRS_THEME_FRAME, IDR_THEME_FRAME,
     "theme_frame" },

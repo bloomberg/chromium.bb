@@ -25,8 +25,6 @@ class WrenchToolbarButton : public views::MenuButton,
   virtual void ScheduleWrenchIconPaint() OVERRIDE;
 
  private:
-  WrenchIconPainter::BezelType GetCurrentBezelType() const;
-
   scoped_ptr<WrenchIconPainter> wrench_icon_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchToolbarButton);

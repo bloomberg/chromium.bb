@@ -168,38 +168,24 @@ struct IDRGtkMapping {
 } const kGtkIcons[] = {
   { IDR_BACK,      GTK_STOCK_GO_BACK,    GTK_STATE_NORMAL },
   { IDR_BACK_D,    GTK_STOCK_GO_BACK,    GTK_STATE_INSENSITIVE },
-  { IDR_BACK_H,    GTK_STOCK_GO_BACK,    GTK_STATE_PRELIGHT },
-  { IDR_BACK_P,    GTK_STOCK_GO_BACK,    GTK_STATE_ACTIVE },
 
   { IDR_FORWARD,   GTK_STOCK_GO_FORWARD, GTK_STATE_NORMAL },
   { IDR_FORWARD_D, GTK_STOCK_GO_FORWARD, GTK_STATE_INSENSITIVE },
-  { IDR_FORWARD_H, GTK_STOCK_GO_FORWARD, GTK_STATE_PRELIGHT },
-  { IDR_FORWARD_P, GTK_STOCK_GO_FORWARD, GTK_STATE_ACTIVE },
 
   { IDR_HOME,      GTK_STOCK_HOME,       GTK_STATE_NORMAL },
-  { IDR_HOME_H,    GTK_STOCK_HOME,       GTK_STATE_PRELIGHT },
-  { IDR_HOME_P,    GTK_STOCK_HOME,       GTK_STATE_ACTIVE },
 
   { IDR_RELOAD,    GTK_STOCK_REFRESH,    GTK_STATE_NORMAL },
   { IDR_RELOAD_D,  GTK_STOCK_REFRESH,    GTK_STATE_INSENSITIVE },
-  { IDR_RELOAD_H,  GTK_STOCK_REFRESH,    GTK_STATE_PRELIGHT },
-  { IDR_RELOAD_P,  GTK_STOCK_REFRESH,    GTK_STATE_ACTIVE },
 
   { IDR_STOP,      GTK_STOCK_STOP,       GTK_STATE_NORMAL },
   { IDR_STOP_D,    GTK_STOCK_STOP,       GTK_STATE_INSENSITIVE },
-  { IDR_STOP_H,    GTK_STOCK_STOP,       GTK_STATE_PRELIGHT },
-  { IDR_STOP_P,    GTK_STOCK_STOP,       GTK_STATE_ACTIVE },
 };
 
 // The image resources that will be tinted by the 'button' tint value.
 const int kOtherToolbarButtonIDs[] = {
   IDR_TOOLBAR_BEZEL_HOVER,
   IDR_TOOLBAR_BEZEL_PRESSED,
-  IDR_BROWSER_ACTION_H,
-  IDR_BROWSER_ACTION_P,
   IDR_BROWSER_ACTIONS_OVERFLOW,
-  IDR_BROWSER_ACTIONS_OVERFLOW_H,
-  IDR_BROWSER_ACTIONS_OVERFLOW_P,
   IDR_THROBBER,
   IDR_THROBBER_WAITING,
   IDR_THROBBER_LIGHT,
@@ -1099,33 +1085,19 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     // In GTK mode, we need to manually render several icons.
     case IDR_BACK:
     case IDR_BACK_D:
-    case IDR_BACK_H:
-    case IDR_BACK_P:
     case IDR_FORWARD:
     case IDR_FORWARD_D:
-    case IDR_FORWARD_H:
-    case IDR_FORWARD_P:
     case IDR_HOME:
-    case IDR_HOME_H:
-    case IDR_HOME_P:
     case IDR_RELOAD:
     case IDR_RELOAD_D:
-    case IDR_RELOAD_H:
-    case IDR_RELOAD_P:
     case IDR_STOP:
-    case IDR_STOP_D:
-    case IDR_STOP_H:
-    case IDR_STOP_P: {
+    case IDR_STOP_D: {
       return GenerateGTKIcon(id);
     }
     case IDR_TOOLBAR_BEZEL_HOVER:
       return GenerateToolbarBezel(GTK_STATE_PRELIGHT, IDR_TOOLBAR_BEZEL_HOVER);
     case IDR_TOOLBAR_BEZEL_PRESSED:
       return GenerateToolbarBezel(GTK_STATE_ACTIVE, IDR_TOOLBAR_BEZEL_PRESSED);
-    case IDR_BROWSER_ACTION_H:
-      return GenerateToolbarBezel(GTK_STATE_PRELIGHT, IDR_BROWSER_ACTION_H);
-    case IDR_BROWSER_ACTION_P:
-      return GenerateToolbarBezel(GTK_STATE_ACTIVE, IDR_BROWSER_ACTION_P);
     default: {
       return GenerateTintedIcon(id, button_tint_);
     }

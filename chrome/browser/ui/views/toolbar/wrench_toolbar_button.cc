@@ -28,22 +28,13 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
 }
 
 void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
-  wrench_icon_painter_->Paint(
-      canvas, GetThemeProvider(), gfx::Rect(size()), GetCurrentBezelType());
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
+  views::MenuButton::OnPaint(canvas);
+  wrench_icon_painter_->Paint(canvas,
+                              GetThemeProvider(),
+                              gfx::Rect(size()),
+                              WrenchIconPainter::BEZEL_NONE);
 }
 
 void WrenchToolbarButton::ScheduleWrenchIconPaint() {
   SchedulePaint();
-}
-
-WrenchIconPainter::BezelType WrenchToolbarButton::GetCurrentBezelType() const {
-  switch (state()) {
-    case STATE_HOVERED:
-      return WrenchIconPainter::BEZEL_HOVER;
-    case STATE_PRESSED:
-      return WrenchIconPainter::BEZEL_PRESSED;
-    default:
-      return WrenchIconPainter::BEZEL_NONE;
-  }
 }

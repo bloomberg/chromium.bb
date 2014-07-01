@@ -112,6 +112,9 @@ const char* kTilingRepeat = "repeat";
 // browser_theme_pack.cc, and you should assign persistent IDs to the
 // data table at the start of said file or else tinted versions of
 // these resources will not be created.
+//
+// TODO(erg): The cocoa port is the last user of the IDR_*_[HP] variants. These
+// should be removed once the cocoa port no longer uses them.
 const int kToolbarButtonIDs[] = {
   IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
   IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,

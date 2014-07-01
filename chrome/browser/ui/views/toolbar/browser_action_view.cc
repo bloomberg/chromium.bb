@@ -101,7 +101,6 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       context_menu_(NULL),
       called_registered_extension_command_(false),
       icon_observer_(NULL) {
-  SetBorder(views::Border::NullBorder());
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_context_menu_controller(this);
 
@@ -223,14 +222,6 @@ void BrowserActionButton::UpdateState() {
     gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
     SetImage(views::Button::STATE_NORMAL,
              gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
-
-    gfx::ImageSkia bg_h = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
-    SetImage(views::Button::STATE_HOVERED,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
-
-    gfx::ImageSkia bg_p = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
-    SetImage(views::Button::STATE_PRESSED,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
   }
 
   // If the browser action name is empty, show the extension name instead.
