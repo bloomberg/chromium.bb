@@ -131,6 +131,10 @@ const char kCryptohomeRemoveKeyEx[] = "RemoveKeyEx";
 const char kCryptohomeSignBootLockbox[] = "SignBootLockbox";
 const char kCryptohomeVerifyBootLockbox[] = "VerifyBootLockbox";
 const char kCryptohomeFinalizeBootLockbox[] = "FinalizeBootLockbox";
+const char kCryptohomeGetBootAttribute[] = "GetBootAttribute";
+const char kCryptohomeSetBootAttribute[] = "SetBootAttribute";
+const char kCryptohomeFlushAndSignBootAttributes[] =
+    "FlushAndSignBootAttributes";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";

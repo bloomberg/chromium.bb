@@ -44,6 +44,8 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_KEY_NOT_FOUND = 15;
   CRYPTOHOME_ERROR_LOCKBOX_SIGNATURE_INVALID = 16;
   CRYPTOHOME_ERROR_LOCKBOX_CANNOT_SIGN = 17;
+  CRYPTOHOME_ERROR_BOOT_ATTRIBUTE_NOT_FOUND = 18;
+  CRYPTOHOME_ERROR_BOOT_ATTRIBUTES_CANNOT_SIGN = 19;
 }
 
 message AccountIdentifier {
@@ -167,4 +169,23 @@ message GetKeyDataReply {
     optional GetKeyDataReply reply = 1002;
   }
   repeated KeyData key_data = 1;
+}
+
+message GetBootAttributeRequest {
+  optional string name = 1;
+}
+
+message GetBootAttributeReply {
+  extend BaseReply {
+    optional GetBootAttributeReply reply = 1003;
+  }
+  optional bytes value = 1;
+}
+
+message SetBootAttributeRequest {
+  optional string name = 1;
+  optional bytes value = 2;
+}
+
+message FlushAndSignBootAttributesRequest {
 }
