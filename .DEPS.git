@@ -108,7 +108,7 @@ deps = {
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@36fa2621472ebf5b859fd16bbdb749019c68cc69',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@52c48f7ae423c497de8f2268f7c41490b9882a6f',
+        Var('git_url') + '/external/ots.git@98897009f3ea8a5fa3e20a4a74977da7aaa8e61a',
     'src/third_party/pdfium':
         'https://pdfium.googlesource.com/pdfium.git@9d319f0cb5e0850447dbd95b07fed28245fb0b31',
     'src/third_party/pyftpdlib/src':
