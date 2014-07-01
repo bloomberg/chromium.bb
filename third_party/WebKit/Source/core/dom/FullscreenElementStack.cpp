@@ -174,10 +174,14 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
         // The context object's node document fullscreen element stack is not empty and its top element
         // is not an ancestor of the context object. (NOTE: Ignore this requirement if the request was
         // made via the legacy Mozilla-style API.)
-        if (!m_fullScreenElementStack.isEmpty() && !inLegacyMozillaMode) {
+        if (!m_fullScreenElementStack.isEmpty()) {
             Element* lastElementOnStack = m_fullScreenElementStack.last().get();
-            if (lastElementOnStack == &element || !lastElementOnStack->contains(&element))
-                break;
+            if (lastElementOnStack == &element || !lastElementOnStack->contains(&element)) {
+                if (inLegacyMozillaMode)
+                    UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
+                else
+                    break;
+            }
         }
 
         // A descendant browsing context's document has a non-empty fullscreen element stack.
@@ -191,8 +195,12 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
                 break;
             }
         }
-        if (descendentHasNonEmptyStack && !inLegacyMozillaMode)
-            break;
+        if (descendentHasNonEmptyStack) {
+            if (inLegacyMozillaMode)
+                UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
+            else
+                break;
+        }
 
         // This algorithm is not allowed to show a pop-up:
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
