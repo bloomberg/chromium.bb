@@ -11574,6 +11574,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="NaCl.Perf.ShutdownTime.Total" units="milliseconds">
+  <owner>jvoung@chromium.org</owner>
+  <owner>mackinlay@google.com</owner>
+  <owner>ncbray@chromium.org</owner>
+  <summary>The time it took the NaCl module to shut down.</summary>
+</histogram>
+
 <histogram name="NaCl.Perf.Size.Manifest" units="KB">
   <owner>jvoung@chromium.org</owner>
   <owner>mackinlay@google.com</owner>
@@ -11710,13 +11717,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     the NaCl module is ready to be used.  Normalized by the size of the .nexe,
     in megabytes.
   </summary>
-</histogram>
-
-<histogram name="NaCl.ShutdownTime.Total" units="milliseconds">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
-  <summary>The time it took the NaCl module to shut down.</summary>
 </histogram>
 
 <histogram name="NaCl.Startups" enum="NaClStartupEnum">
