@@ -1728,6 +1728,9 @@ void WebViewImpl::layout()
 
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
+
+    if (m_devToolsAgent)
+        m_devToolsAgent->didLayout();
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)

@@ -82,6 +82,7 @@ public:
     // WebDevToolsAgentPrivate implementation.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) OVERRIDE;
+    virtual void didLayout() OVERRIDE;
 
     // WebDevToolsAgent implementation.
     virtual void attach(const WebString& hostId) OVERRIDE;
@@ -146,6 +147,8 @@ private:
     WebViewImpl* m_webViewImpl;
     bool m_attached;
     bool m_generatingEvent;
+
+    bool m_webViewDidLayoutOnceAfterLoad;
 
     bool m_deviceMetricsEnabled;
     bool m_emulateViewportEnabled;
