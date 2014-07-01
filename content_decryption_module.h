@@ -541,8 +541,10 @@ class ContentDecryptionModule_4 {
       const PlatformChallengeResponse& response) = 0;
 
   // Called by the host after a call to Host::QueryOutputProtectionStatus(). The
-  // |link_mask| is a bit mask of OutputLinkTypes and |output_protection_mask|
-  // is a bit mask of OutputProtectionMethods.
+  // |link_mask| is a bit mask of OutputLinkTypes. The |output_protection_mask|
+  // is a bit mask of OutputProtectionMethods, indicating whether all
+  // protectable links in |link_mask| are protected. Protectable links include
+  // HDMI, DVI and DisplayPort.
   virtual void OnQueryOutputProtectionStatus(
       uint32_t link_mask, uint32_t output_protection_mask) = 0;
 
