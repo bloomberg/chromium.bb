@@ -419,26 +419,6 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     }
 }
 
-// Return the enclosingCompositedLayerForPaintInvalidation for the given RenderLayer
-// including crossing frame boundaries.
-static const RenderLayer* enclosingCompositedLayer(const RenderLayer* layer)
-{
-    RenderLayer* compositedLayer = 0;
-    while (!compositedLayer) {
-        compositedLayer = layer->enclosingLayerForPaintInvalidation();
-        if (!compositedLayer) {
-            RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
-            if (!owner)
-                break;
-            layer = owner->enclosingLayer();
-        }
-    }
-    // Since this machinery is used only when accelerated compositing is enabled, we expect
-    // that every layer should have an enclosing composited layer.
-    ASSERT(compositedLayer);
-    return compositedLayer;
-}
-
 static void projectRectsToGraphicsLayerSpaceRecursive(
     const RenderLayer* curLayer,
     const LayerHitTestRects& layerRects,
@@ -451,9 +431,8 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     LayerHitTestRects::const_iterator layerIter = layerRects.find(curLayer);
     if (layerIter != layerRects.end()) {
         // Find the enclosing composited layer when it's in another document (for non-composited iframes).
-        const RenderLayer* compositedLayer = enclosingCompositedLayer(layerIter->key);
-        if (!compositedLayer)
-            return;
+        const RenderLayer* compositedLayer = layerIter->key->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+        ASSERT(compositedLayer);
 
         // Find the appropriate GraphicsLayer for the composited RenderLayer.
         GraphicsLayer* graphicsLayer = compositedLayer->graphicsLayerBackingForScrolling();
@@ -585,9 +564,9 @@ void ScrollingCoordinator::setTouchEventTargetRects(LayerHitTestRects& layerRect
     m_layersWithTouchRects.swap(oldLayersWithTouchRects);
     for (LayerHitTestRects::iterator it = layerRects.begin(); it != layerRects.end(); ++it) {
         if (!it->value.isEmpty()) {
-            const RenderLayer* compositedLayer = enclosingCompositedLayer(it->key);
-            if (compositedLayer)
-                m_layersWithTouchRects.add(compositedLayer);
+            const RenderLayer* compositedLayer = it->key->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+            ASSERT(compositedLayer);
+            m_layersWithTouchRects.add(compositedLayer);
         }
     }
 

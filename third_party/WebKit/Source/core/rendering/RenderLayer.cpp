@@ -1003,6 +1003,24 @@ RenderLayer* RenderLayer::enclosingLayerWithCompositedLayerMapping(IncludeSelfOr
     return 0;
 }
 
+// Return the enclosingCompositedLayerForPaintInvalidation for the given RenderLayer
+// including crossing frame boundaries.
+RenderLayer* RenderLayer::enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const
+{
+    const RenderLayer* layer = this;
+    RenderLayer* compositedLayer = 0;
+    while (!compositedLayer) {
+        compositedLayer = layer->enclosingLayerForPaintInvalidation();
+        if (!compositedLayer) {
+            RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
+            if (!owner)
+                break;
+            layer = owner->enclosingLayer();
+        }
+    }
+    return compositedLayer;
+}
+
 RenderLayer* RenderLayer::enclosingLayerForPaintInvalidation() const
 {
     ASSERT(isAllowedToQueryCompositingState());

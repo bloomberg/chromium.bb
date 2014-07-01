@@ -229,6 +229,8 @@ public:
     // GraphicsLayer backing, but is nevertheless the root for a call to the RenderLayer::paint*() methods.
     RenderLayer* enclosingLayerForPaintInvalidation() const;
 
+    RenderLayer* enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
+
     RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
     bool hasAncestorWithFilterOutsets() const;
 
