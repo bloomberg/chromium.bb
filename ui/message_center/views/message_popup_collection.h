@@ -128,6 +128,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Used by ToastContentsView to locate itself.
   gfx::NativeView parent() const { return parent_; }
 
+  void set_alignment(uint32 alignment) { alignment_ = alignment; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
                            ManyPopupNotifications);
@@ -193,7 +195,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Specifies which corner of the screen popups should show up. This should
   // ideally be the same corner the notification area (systray) is at.
-  PopupAlignment alignment_;
+  uint32 alignment_;
 
   int defer_counter_;
 

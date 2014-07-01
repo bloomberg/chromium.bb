@@ -339,6 +339,17 @@ void MessagePopupCollection::RepositionWidgetsWithTarget() {
 
 void MessagePopupCollection::ComputePopupAlignment(gfx::Rect work_area,
                                                    gfx::Rect screen_bounds) {
+#if defined(USE_ASH)
+  // In Ash, the shelf alignment is already in Chrome, so Ash should set the
+  // alignment directly rather than estimating the alignment based on the
+  // region. Other misleading features like docked window may confuse this
+  // logic.
+  if (screen_ &&
+      screen_ == gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE)) {
+    return;
+  }
+#endif
+
   // If the taskbar is at the top, render notifications top down. Some platforms
   // like Gnome can have taskbars at top and bottom. In this case it's more
   // likely that the systray is on the top one.
@@ -351,11 +362,10 @@ void MessagePopupCollection::ComputePopupAlignment(gfx::Rect work_area,
   // Since on some platforms like Ubuntu Unity there's also a launcher along
   // with a taskbar (panel), we need to check that there is really nothing at
   // the top before concluding that the taskbar is at the left.
-  alignment_ = static_cast<PopupAlignment>(
-      alignment_ |
+  alignment_ |=
       ((work_area.x() > screen_bounds.x() && work_area.y() == screen_bounds.y())
            ? POPUP_ALIGNMENT_LEFT
-           : POPUP_ALIGNMENT_RIGHT));
+           : POPUP_ALIGNMENT_RIGHT);
 }
 
 int MessagePopupCollection::GetBaseLine(ToastContentsView* last_toast) const {
