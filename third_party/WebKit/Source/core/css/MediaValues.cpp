@@ -99,7 +99,9 @@ int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const
 
 const String MediaValues::calculateMediaType(LocalFrame* frame) const
 {
-    ASSERT(frame && frame->view());
+    ASSERT(frame);
+    if (!frame->view())
+        return emptyAtom;
     return frame->view()->mediaType();
 }
 
