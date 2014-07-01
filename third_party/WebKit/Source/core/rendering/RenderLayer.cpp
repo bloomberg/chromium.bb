@@ -352,10 +352,7 @@ void RenderLayer::updateLayerPositionsAfterOverflowScroll()
 
 void RenderLayer::updateLayerPositionsAfterScrollRecursive()
 {
-    updateLayerPosition();
-
-    // FIXME: We could track the repaint container as we walk down the tree.
-    if (!renderer()->isTableCell())
+    if (updateLayerPosition())
         m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
