@@ -37,7 +37,7 @@ public:
     virtual const char* renderName() const OVERRIDE { return "RenderButton"; }
     virtual bool isRenderButton() const OVERRIDE { return true; }
 
-    virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->rendererIsEditable(); }
+    virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->hasEditableStyle(); }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return true; }
 
     virtual void addChild(RenderObject* newChild, RenderObject *beforeChild = 0) OVERRIDE;

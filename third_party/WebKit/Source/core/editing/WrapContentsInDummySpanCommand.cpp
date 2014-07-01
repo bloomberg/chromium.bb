@@ -63,7 +63,7 @@ void WrapContentsInDummySpanCommand::doUnapply()
 {
     ASSERT(m_element);
 
-    if (!m_dummySpan || !m_element->rendererIsEditable())
+    if (!m_dummySpan || !m_element->hasEditableStyle())
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<Node> > children;
@@ -81,7 +81,7 @@ void WrapContentsInDummySpanCommand::doReapply()
 {
     ASSERT(m_element);
 
-    if (!m_dummySpan || !m_element->rendererIsEditable())
+    if (!m_dummySpan || !m_element->hasEditableStyle())
         return;
 
     executeApply();

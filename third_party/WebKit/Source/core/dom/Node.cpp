@@ -535,16 +535,16 @@ const AtomicString& Node::namespaceURI() const
 bool Node::isContentEditable(UserSelectAllTreatment treatment)
 {
     document().updateRenderTreeIfNeeded();
-    return rendererIsEditable(Editable, treatment);
+    return hasEditableStyle(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable()
 {
     document().updateRenderTreeIfNeeded();
-    return rendererIsEditable(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
+    return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 
-bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatment treatment) const
+bool Node::hasEditableStyle(EditableLevel editableLevel, UserSelectAllTreatment treatment) const
 {
     if (isPseudoElement())
         return false;
@@ -577,7 +577,7 @@ bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatmen
 
 bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
 {
-    if (rendererIsEditable(editableLevel))
+    if (hasEditableStyle(editableLevel))
         return true;
 
     // FIXME: Respect editableLevel for ARIA editable elements.
@@ -1119,7 +1119,7 @@ int Node::maxCharacterOffset() const
 // is obviously misplaced.
 bool Node::canStartSelection() const
 {
-    if (rendererIsEditable())
+    if (hasEditableStyle())
         return true;
 
     if (renderer()) {
@@ -1219,7 +1219,7 @@ Element *Node::enclosingBlockFlowElement() const
 
 bool Node::isRootEditableElement() const
 {
-    return rendererIsEditable() && isElementNode() && (!parentNode() || !parentNode()->rendererIsEditable()
+    return hasEditableStyle() && isElementNode() && (!parentNode() || !parentNode()->hasEditableStyle()
         || !parentNode()->isElementNode() || isHTMLBodyElement((*this)));
 }
 
@@ -1236,7 +1236,7 @@ Element* Node::rootEditableElement(EditableType editableType) const
 Element* Node::rootEditableElement() const
 {
     Element* result = 0;
-    for (Node* n = const_cast<Node*>(this); n && n->rendererIsEditable(); n = n->parentNode()) {
+    for (Node* n = const_cast<Node*>(this); n && n->hasEditableStyle(); n = n->parentNode()) {
         if (n->isElementNode())
             result = toElement(n);
         if (isHTMLBodyElement(*n))

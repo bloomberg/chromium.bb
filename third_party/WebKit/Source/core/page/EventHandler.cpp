@@ -783,7 +783,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
         VisibleSelection newSelection;
         Node* node = event.targetNode();
         bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-        if (node && node->renderer() && (caretBrowsing || node->rendererIsEditable())) {
+        if (node && node->renderer() && (caretBrowsing || node->hasEditableStyle())) {
             VisiblePosition pos = VisiblePosition(node->renderer()->positionForPoint(event.localPoint()));
             newSelection = VisibleSelection(pos);
         }
@@ -980,7 +980,7 @@ bool EventHandler::useHandCursor(Node* node, bool isOverLink)
     if (!node)
         return false;
 
-    return ((isOverLink || isSubmitImage(node)) && !node->rendererIsEditable());
+    return ((isOverLink || isSubmitImage(node)) && !node->hasEditableStyle());
 }
 
 void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
@@ -1161,7 +1161,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
 
 OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node* node, const Cursor& iBeam)
 {
-    bool editable = (node && node->rendererIsEditable());
+    bool editable = (node && node->hasEditableStyle());
 
     if (useHandCursor(node, result.isOverLink()))
         return handCursor();

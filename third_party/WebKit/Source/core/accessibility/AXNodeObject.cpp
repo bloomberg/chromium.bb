@@ -283,7 +283,7 @@ void AXNodeObject::elementsFromAttribute(Vector<Element*>& elements, const Quali
     }
 }
 
-// If you call node->rendererIsEditable() since that will return true if an ancestor is editable.
+// If you call node->hasEditableStyle() since that will return true if an ancestor is editable.
 // This only returns true if this is the element that actually has the contentEditable attribute set.
 bool AXNodeObject::hasContentEditableAttributeSet() const
 {
@@ -718,7 +718,7 @@ bool AXNodeObject::isReadOnly() const
             return input.isReadOnly();
     }
 
-    return !node->rendererIsEditable();
+    return !node->hasEditableStyle();
 }
 
 bool AXNodeObject::isRequired() const

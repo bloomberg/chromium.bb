@@ -488,7 +488,7 @@ RenderBlockFlow& RootInlineBox::block() const
 
 static bool isEditableLeaf(InlineBox* leaf)
 {
-    return leaf && leaf->renderer().node() && leaf->renderer().node()->rendererIsEditable();
+    return leaf && leaf->renderer().node() && leaf->renderer().node()->hasEditableStyle();
 }
 
 InlineBox* RootInlineBox::closestLeafChildForPoint(const IntPoint& pointInContents, bool onlyEditableLeaves)

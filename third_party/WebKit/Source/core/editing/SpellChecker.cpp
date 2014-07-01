@@ -405,7 +405,7 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
 
     // If we're not in an editable node, bail.
     Node* editableNode = searchRange->startContainer();
-    if (!editableNode || !editableNode->rendererIsEditable())
+    if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
     if (!isSpellCheckingEnabledFor(editableNode))
@@ -456,7 +456,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
 
     // If we're not in an editable node, bail.
     Node* editableNode = spellingRange->startContainer();
-    if (!editableNode || !editableNode->rendererIsEditable())
+    if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
     if (!isSpellCheckingEnabledFor(editableNode))

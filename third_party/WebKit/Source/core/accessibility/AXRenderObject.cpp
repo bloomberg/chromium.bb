@@ -495,10 +495,10 @@ bool AXRenderObject::isReadOnly() const
     if (isWebArea()) {
         Document& document = m_renderer->document();
         HTMLElement* body = document.body();
-        if (body && body->rendererIsEditable())
+        if (body && body->hasEditableStyle())
             return false;
 
-        return !document.rendererIsEditable();
+        return !document.hasEditableStyle();
     }
 
     return AXNodeObject::isReadOnly();
@@ -663,7 +663,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     // Anything that is content editable should not be ignored.
-    // However, one cannot just call node->rendererIsEditable() since that will ask if its parents
+    // However, one cannot just call node->hasEditableStyle() since that will ask if its parents
     // are also editable. Only the top level content editable region should be exposed.
     if (hasContentEditableAttributeSet())
         return false;

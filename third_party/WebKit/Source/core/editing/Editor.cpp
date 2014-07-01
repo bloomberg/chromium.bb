@@ -254,7 +254,7 @@ bool Editor::canDeleteRange(Range* range) const
     if (!startContainer || !endContainer)
         return false;
 
-    if (!startContainer->rendererIsEditable() || !endContainer->rendererIsEditable())
+    if (!startContainer->hasEditableStyle() || !endContainer->hasEditableStyle())
         return false;
 
     if (range->collapsed()) {

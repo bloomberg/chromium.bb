@@ -1995,7 +1995,7 @@ static inline bool caretBrowsingEnabled(const Frame* frame)
 
 static inline bool hasCursorCaret(const FrameSelection& selection, const RenderBlock* block, bool caretBrowsing)
 {
-    return selection.caretRenderer() == block && (selection.rendererIsEditable() || caretBrowsing);
+    return selection.caretRenderer() == block && (selection.hasEditableStyle() || caretBrowsing);
 }
 
 static inline bool hasDragCaret(const DragCaretController& dragCaretController, const RenderBlock* block, bool caretBrowsing)
@@ -3004,7 +3004,7 @@ static inline bool isEditingBoundary(RenderObject* ancestor, RenderObject* child
     ASSERT(!ancestor || ancestor->nonPseudoNode());
     ASSERT(child && child->nonPseudoNode());
     return !ancestor || !ancestor->parent() || (ancestor->hasLayer() && ancestor->parent()->isRenderView())
-        || ancestor->nonPseudoNode()->rendererIsEditable() == child->nonPseudoNode()->rendererIsEditable();
+        || ancestor->nonPseudoNode()->hasEditableStyle() == child->nonPseudoNode()->hasEditableStyle();
 }
 
 // FIXME: This function should go on RenderObject as an instance method. Then

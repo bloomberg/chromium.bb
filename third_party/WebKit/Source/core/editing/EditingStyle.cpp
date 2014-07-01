@@ -708,7 +708,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
     TriState state = FalseTriState;
     bool nodeIsStart = true;
     for (Node* node = selection.start().deprecatedNode(); node; node = NodeTraversal::next(*node)) {
-        if (node->renderer() && node->rendererIsEditable()) {
+        if (node->renderer() && node->hasEditableStyle()) {
             RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(node);
             if (nodeStyle) {
                 TriState nodeState = triStateOfStyle(nodeStyle.get(), node->isTextNode() ? EditingStyle::DoNotIgnoreTextOnlyProperties : EditingStyle::IgnoreTextOnlyProperties);

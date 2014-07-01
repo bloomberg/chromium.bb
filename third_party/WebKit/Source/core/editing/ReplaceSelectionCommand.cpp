@@ -647,7 +647,7 @@ void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node>
     RefPtrWillBeRawPtr<Node> node = prpNode;
     RefPtrWillBeRawPtr<Node> ancestor = prpAncestor;
 
-    if (!ancestor->parentNode()->rendererIsEditable())
+    if (!ancestor->parentNode()->hasEditableStyle())
         return;
 
     VisiblePosition positionAtEndOfNode(lastPositionInOrAfterNode(node.get()));

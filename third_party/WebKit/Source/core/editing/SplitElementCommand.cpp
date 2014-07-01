@@ -56,7 +56,7 @@ void SplitElementCommand::executeApply()
     TrackExceptionState exceptionState;
 
     ContainerNode* parent = m_element2->parentNode();
-    if (!parent || !parent->rendererIsEditable())
+    if (!parent || !parent->hasEditableStyle())
         return;
     parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
     if (exceptionState.hadException())
@@ -79,7 +79,7 @@ void SplitElementCommand::doApply()
 
 void SplitElementCommand::doUnapply()
 {
-    if (!m_element1 || !m_element1->rendererIsEditable() || !m_element2->rendererIsEditable())
+    if (!m_element1 || !m_element1->hasEditableStyle() || !m_element2->hasEditableStyle())
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<Node> > children;

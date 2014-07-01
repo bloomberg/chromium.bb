@@ -633,7 +633,7 @@ Node* FocusController::previousFocusableNode(FocusNavigationScope scope, Node* s
 static bool relinquishesEditingFocus(Node *node)
 {
     ASSERT(node);
-    ASSERT(node->rendererIsEditable());
+    ASSERT(node->hasEditableStyle());
     return node->document().frame() && node->rootEditableElement();
 }
 

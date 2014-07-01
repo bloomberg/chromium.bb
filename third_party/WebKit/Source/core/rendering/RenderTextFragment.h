@@ -39,7 +39,7 @@ public:
 
     virtual bool isTextFragment() const OVERRIDE { return true; }
 
-    virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->rendererIsEditable(); }
+    virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->hasEditableStyle(); }
 
     unsigned start() const { return m_start; }
     unsigned end() const { return m_end; }

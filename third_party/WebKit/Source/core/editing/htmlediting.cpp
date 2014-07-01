@@ -128,7 +128,7 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
 
     node = highestRoot->parentNode();
     while (node) {
-        if (node->rendererIsEditable(editableType))
+        if (node->hasEditableStyle(editableType))
             highestRoot = node;
         if (isHTMLBodyElement(*node))
             break;
@@ -141,7 +141,7 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
 Node* lowestEditableAncestor(Node* node)
 {
     while (node) {
-        if (node->rendererIsEditable())
+        if (node->hasEditableStyle())
             return node->rootEditableElement();
         if (isHTMLBodyElement(*node))
             break;
@@ -164,7 +164,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     if (isRenderedTableElement(node))
         node = node->parentNode();
 
-    return node->rendererIsEditable(editableType);
+    return node->hasEditableStyle(editableType);
 }
 
 bool isAtUnsplittableElement(const Position& pos)
@@ -261,7 +261,7 @@ Position previousVisuallyDistinctCandidate(const Position& position)
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, Node* highestRoot)
 {
     // position falls before highestRoot.
-    if (comparePositions(position, firstPositionInNode(highestRoot)) == -1 && highestRoot->rendererIsEditable())
+    if (comparePositions(position, firstPositionInNode(highestRoot)) == -1 && highestRoot->hasEditableStyle())
         return VisiblePosition(firstPositionInNode(highestRoot));
 
     Position editablePosition = position;
@@ -555,7 +555,7 @@ Node* enclosingNodeWithTag(const Position& p, const QualifiedName& tagName)
 
     Node* root = highestEditableRoot(p);
     for (Node* n = p.deprecatedNode(); n; n = n->parentNode()) {
-        if (root && !n->rendererIsEditable())
+        if (root && !n->hasEditableStyle())
             continue;
         if (n->hasTagName(tagName))
             return n;
@@ -577,7 +577,7 @@ Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), 
     for (Node* n = p.deprecatedNode(); n; n = n->parentNode()) {
         // Don't return a non-editable node if the input position was editable, since
         // the callers from editing will no doubt want to perform editing inside the returned node.
-        if (root && !n->rendererIsEditable())
+        if (root && !n->hasEditableStyle())
             continue;
         if (nodeIsOfType(n))
             return n;
@@ -593,7 +593,7 @@ Node* highestEnclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const N
     Node* highest = 0;
     Node* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : 0;
     for (Node* n = p.containerNode(); n && n != stayWithin; n = n->parentNode()) {
-        if (root && !n->rendererIsEditable())
+        if (root && !n->hasEditableStyle())
             continue;
         if (nodeIsOfType(n))
             highest = n;
@@ -722,7 +722,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
         return false;
 
     return firstList->hasTagName(secondList->tagQName()) // make sure the list types match (ol vs. ul)
-    && firstList->rendererIsEditable() && secondList->rendererIsEditable() // both lists are editable
+    && firstList->hasEditableStyle() && secondList->hasEditableStyle() // both lists are editable
     && firstList->rootEditableElement() == secondList->rootEditableElement() // don't cross editing boundaries
     && isVisiblyAdjacent(positionInParentAfterNode(*firstList), positionInParentBeforeNode(*secondList));
     // Make sure there is no visible content between this li and the previous list

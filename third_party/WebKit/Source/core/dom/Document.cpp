@@ -308,7 +308,7 @@ static Widget* widgetForElement(const Element& focusedElement)
 
 static bool acceptsEditingFocus(const Element& element)
 {
-    ASSERT(element.rendererIsEditable());
+    ASSERT(element.hasEditableStyle());
 
     return element.document().frame() && element.rootEditableElement();
 }

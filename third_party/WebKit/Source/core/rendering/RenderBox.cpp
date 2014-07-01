@@ -702,7 +702,7 @@ bool RenderBox::canBeProgramaticallyScrolled() const
     if (scrollsOverflow() && hasScrollableOverflow)
         return true;
 
-    return node && node->rendererIsEditable();
+    return node && node->hasEditableStyle();
 }
 
 bool RenderBox::usesCompositedScrolling() const

@@ -179,7 +179,7 @@ short SVGAElement::tabIndex() const
 
 bool SVGAElement::supportsFocus() const
 {
-    if (rendererIsEditable())
+    if (hasEditableStyle())
         return SVGGraphicsElement::supportsFocus();
     // If not a link we should still be able to focus the element if it has tabIndex.
     return isLink() || Element::supportsFocus();
@@ -214,7 +214,7 @@ bool SVGAElement::canStartSelection() const
 {
     if (!isLink())
         return SVGElement::canStartSelection();
-    return rendererIsEditable();
+    return hasEditableStyle();
 }
 
 bool SVGAElement::willRespondToMouseClickEvents()

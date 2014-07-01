@@ -94,7 +94,7 @@ public:
     Element* rootEditableElementOrDocumentElement() const;
     Node* rootEditableElementOrTreeScopeRootNode() const;
 
-    bool rendererIsEditable() const { return m_selection.rendererIsEditable(); }
+    bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
     bool isContentEditable() const { return m_selection.isContentEditable(); }
     bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
 

@@ -51,7 +51,7 @@ void InsertIntoTextNodeCommand::doApply()
     if (passwordEchoEnabled)
         document().updateLayoutIgnorePendingStylesheets();
 
-    if (!m_node->rendererIsEditable())
+    if (!m_node->hasEditableStyle())
         return;
 
     if (passwordEchoEnabled) {
@@ -65,7 +65,7 @@ void InsertIntoTextNodeCommand::doApply()
 
 void InsertIntoTextNodeCommand::doUnapply()
 {
-    if (!m_node->rendererIsEditable())
+    if (!m_node->hasEditableStyle())
         return;
 
     m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);

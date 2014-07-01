@@ -929,7 +929,7 @@ bool HTMLElement::matchesReadWritePseudoClass() const
         // All other values should be treated as "inherit".
     }
 
-    return parentElement() && parentElement()->rendererIsEditable();
+    return parentElement() && parentElement()->hasEditableStyle();
 }
 
 void HTMLElement::handleKeypressEvent(KeyboardEvent* event)

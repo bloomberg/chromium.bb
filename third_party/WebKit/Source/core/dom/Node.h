@@ -415,11 +415,11 @@ public:
     bool isContentEditable(UserSelectAllTreatment = UserSelectAllDoesNotAffectEditability);
     bool isContentRichlyEditable();
 
-    bool rendererIsEditable(EditableType editableType = ContentIsEditable, UserSelectAllTreatment treatment = UserSelectAllIsAlwaysNonEditable) const
+    bool hasEditableStyle(EditableType editableType = ContentIsEditable, UserSelectAllTreatment treatment = UserSelectAllIsAlwaysNonEditable) const
     {
         switch (editableType) {
         case ContentIsEditable:
-            return rendererIsEditable(Editable, treatment);
+            return hasEditableStyle(Editable, treatment);
         case HasEditableAXRole:
             return isEditableToAccessibility(Editable);
         }
@@ -431,7 +431,7 @@ public:
     {
         switch (editableType) {
         case ContentIsEditable:
-            return rendererIsEditable(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
+            return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
         case HasEditableAXRole:
             return isEditableToAccessibility(RichlyEditable);
         }
@@ -804,7 +804,7 @@ private:
     bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }
 
     enum EditableLevel { Editable, RichlyEditable };
-    bool rendererIsEditable(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;
+    bool hasEditableStyle(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;
     bool isEditableToAccessibility(EditableLevel) const;
 
     bool isUserActionElementActive() const;

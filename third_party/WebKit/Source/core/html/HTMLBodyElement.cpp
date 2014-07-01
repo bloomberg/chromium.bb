@@ -194,7 +194,7 @@ bool HTMLBodyElement::supportsFocus() const
 {
     // This override is needed because the inherited method bails if the parent is editable.
     // The <body> should be focusable even if <html> is editable.
-    return rendererIsEditable() || HTMLElement::supportsFocus();
+    return hasEditableStyle() || HTMLElement::supportsFocus();
 }
 
 static int adjustForZoom(int value, Document* document)

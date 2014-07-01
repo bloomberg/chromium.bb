@@ -1290,7 +1290,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     // FIXME: Can't we do something better when the immediate parent wasn't a list node?
     if (!listNode
         || (!isHTMLUListElement(*listNode) && !isHTMLOListElement(*listNode))
-        || !listNode->rendererIsEditable()
+        || !listNode->hasEditableStyle()
         || listNode == emptyListItem->rootEditableElement())
         return false;
 

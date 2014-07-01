@@ -39,12 +39,12 @@ AppendNodeCommand::AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> paren
     ASSERT(m_node);
     ASSERT(!m_node->parentNode());
 
-    ASSERT(m_parent->rendererIsEditable() || !m_parent->inActiveDocument());
+    ASSERT(m_parent->hasEditableStyle() || !m_parent->inActiveDocument());
 }
 
 void AppendNodeCommand::doApply()
 {
-    if (!m_parent->rendererIsEditable() && m_parent->inActiveDocument())
+    if (!m_parent->hasEditableStyle() && m_parent->inActiveDocument())
         return;
 
     m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION);
@@ -52,7 +52,7 @@ void AppendNodeCommand::doApply()
 
 void AppendNodeCommand::doUnapply()
 {
-    if (!m_parent->rendererIsEditable())
+    if (!m_parent->hasEditableStyle())
         return;
 
     m_node->remove(IGNORE_EXCEPTION);

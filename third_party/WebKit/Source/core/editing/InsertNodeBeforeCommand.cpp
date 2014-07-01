@@ -42,7 +42,7 @@ InsertNodeBeforeCommand::InsertNodeBeforeCommand(PassRefPtrWillBeRawPtr<Node> in
     ASSERT(m_refChild);
     ASSERT(m_refChild->parentNode());
 
-    ASSERT(m_refChild->parentNode()->rendererIsEditable() || !m_refChild->parentNode()->inActiveDocument());
+    ASSERT(m_refChild->parentNode()->hasEditableStyle() || !m_refChild->parentNode()->inActiveDocument());
 }
 
 void InsertNodeBeforeCommand::doApply()

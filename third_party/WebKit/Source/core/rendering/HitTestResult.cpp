@@ -408,7 +408,7 @@ bool HitTestResult::isContentEditable() const
     if (isHTMLInputElement(*m_innerNonSharedNode))
         return toHTMLInputElement(*m_innerNonSharedNode).isTextField();
 
-    return m_innerNonSharedNode->rendererIsEditable();
+    return m_innerNonSharedNode->hasEditableStyle();
 }
 
 bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const LayoutRect& rect)
