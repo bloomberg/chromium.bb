@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/gpu_raster_worker_pool.h"
 
 #include "base/debug/trace_event.h"
 #include "cc/output/context_provider.h"
@@ -14,18 +14,17 @@
 namespace cc {
 
 // static
-scoped_ptr<RasterWorkerPool> DirectRasterWorkerPool::Create(
+scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(new DirectRasterWorkerPool(
+  return make_scoped_ptr<RasterWorkerPool>(new GpuRasterWorkerPool(
       task_runner, resource_provider, context_provider));
 }
 
-DirectRasterWorkerPool::DirectRasterWorkerPool(
-    base::SequencedTaskRunner* task_runner,
-    ResourceProvider* resource_provider,
-    ContextProvider* context_provider)
+GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                                         ResourceProvider* resource_provider,
+                                         ContextProvider* context_provider)
     : task_runner_(task_runner),
       task_graph_runner_(new TaskGraphRunner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
@@ -35,28 +34,32 @@ DirectRasterWorkerPool::DirectRasterWorkerPool(
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(context_provider_);
+}
 
-DirectRasterWorkerPool::~DirectRasterWorkerPool() {
+GpuRasterWorkerPool::~GpuRasterWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
 }
 
-Rasterizer* DirectRasterWorkerPool::AsRasterizer() { return this; }
+Rasterizer* GpuRasterWorkerPool::AsRasterizer() {
+  return this;
+}
 
-void DirectRasterWorkerPool::SetClient(RasterizerClient* client) {
+void GpuRasterWorkerPool::SetClient(RasterizerClient* client) {
   client_ = client;
 }
 
-void DirectRasterWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "DirectRasterWorkerPool::Shutdown");
+void GpuRasterWorkerPool::Shutdown() {
+  TRACE_EVENT0("cc", "GpuRasterWorkerPool::Shutdown");
 
   TaskGraph empty;
   task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
 }
 
-void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
-  TRACE_EVENT0("cc", "DirectRasterWorkerPool::ScheduleTasks");
+void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
+  TRACE_EVENT0("cc", "GpuRasterWorkerPool::ScheduleTasks");
 
   DCHECK_EQ(queue->required_for_activation_count,
             static_cast<size_t>(
@@ -79,13 +82,13 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
           CreateRasterRequiredForActivationFinishedTask(
               queue->required_for_activation_count,
               task_runner_.get(),
-              base::Bind(&DirectRasterWorkerPool::
-                             OnRasterRequiredForActivationFinished,
-                         raster_finished_weak_ptr_factory_.GetWeakPtr())));
+              base::Bind(
+                  &GpuRasterWorkerPool::OnRasterRequiredForActivationFinished,
+                  raster_finished_weak_ptr_factory_.GetWeakPtr())));
   scoped_refptr<RasterizerTask> new_raster_finished_task(
       CreateRasterFinishedTask(
           task_runner_.get(),
-          base::Bind(&DirectRasterWorkerPool::OnRasterFinished,
+          base::Bind(&GpuRasterWorkerPool::OnRasterFinished,
                      raster_finished_weak_ptr_factory_.GetWeakPtr())));
 
   for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
@@ -125,8 +128,8 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       new_raster_required_for_activation_finished_task;
 }
 
-void DirectRasterWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "DirectRasterWorkerPool::CheckForCompletedTasks");
+void GpuRasterWorkerPool::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "GpuRasterWorkerPool::CheckForCompletedTasks");
 
   task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                             &completed_tasks_);
@@ -144,72 +147,67 @@ void DirectRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-SkCanvas* DirectRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
-  return resource_provider_->MapDirectRasterBuffer(task->resource()->id());
+SkCanvas* GpuRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
+  return resource_provider_->MapGpuRasterBuffer(task->resource()->id());
 }
 
-void DirectRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
-  resource_provider_->UnmapDirectRasterBuffer(task->resource()->id());
+void GpuRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
+  resource_provider_->UnmapGpuRasterBuffer(task->resource()->id());
 }
 
-void DirectRasterWorkerPool::OnRasterFinished() {
-  TRACE_EVENT0("cc", "DirectRasterWorkerPool::OnRasterFinished");
+void GpuRasterWorkerPool::OnRasterFinished() {
+  TRACE_EVENT0("cc", "GpuRasterWorkerPool::OnRasterFinished");
 
   DCHECK(raster_tasks_pending_);
   raster_tasks_pending_ = false;
   client_->DidFinishRunningTasks();
 }
 
-void DirectRasterWorkerPool::OnRasterRequiredForActivationFinished() {
+void GpuRasterWorkerPool::OnRasterRequiredForActivationFinished() {
   TRACE_EVENT0("cc",
-               "DirectRasterWorkerPool::OnRasterRequiredForActivationFinished");
+               "GpuRasterWorkerPool::OnRasterRequiredForActivationFinished");
 
   DCHECK(raster_tasks_required_for_activation_pending_);
   raster_tasks_required_for_activation_pending_ = false;
   client_->DidFinishRunningTasksRequiredForActivation();
 }
 
-void DirectRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
+void GpuRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
   if (run_tasks_on_origin_thread_pending_)
     return;
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DirectRasterWorkerPool::RunTasksOnOriginThread,
+      base::Bind(&GpuRasterWorkerPool::RunTasksOnOriginThread,
                  weak_ptr_factory_.GetWeakPtr()));
   run_tasks_on_origin_thread_pending_ = true;
 }
 
-void DirectRasterWorkerPool::RunTasksOnOriginThread() {
-  TRACE_EVENT0("cc", "DirectRasterWorkerPool::RunTasksOnOriginThread");
+void GpuRasterWorkerPool::RunTasksOnOriginThread() {
+  TRACE_EVENT0("cc", "GpuRasterWorkerPool::RunTasksOnOriginThread");
 
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;
 
-  if (context_provider_) {
-    DCHECK(context_provider_->ContextGL());
-    // TODO(alokp): Use a trace macro to push/pop markers.
-    // Using push/pop functions directly incurs cost to evaluate function
-    // arguments even when tracing is disabled.
-    context_provider_->ContextGL()->PushGroupMarkerEXT(
-        0, "DirectRasterWorkerPool::RunTasksOnOriginThread");
+  DCHECK(context_provider_->ContextGL());
+  // TODO(alokp): Use a trace macro to push/pop markers.
+  // Using push/pop functions directly incurs cost to evaluate function
+  // arguments even when tracing is disabled.
+  context_provider_->ContextGL()->PushGroupMarkerEXT(
+      0, "GpuRasterWorkerPool::RunTasksOnOriginThread");
 
-    GrContext* gr_context = context_provider_->GrContext();
-    // TODO(alokp): Implement TestContextProvider::GrContext().
-    if (gr_context)
-      gr_context->resetContext();
-  }
+  GrContext* gr_context = context_provider_->GrContext();
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (gr_context)
+    gr_context->resetContext();
 
   task_graph_runner_->RunUntilIdle();
 
-  if (context_provider_) {
-    GrContext* gr_context = context_provider_->GrContext();
-    // TODO(alokp): Implement TestContextProvider::GrContext().
-    if (gr_context)
-      gr_context->flush();
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (gr_context)
+    gr_context->flush();
 
-    context_provider_->ContextGL()->PopGroupMarkerEXT();
-  }
+  context_provider_->ContextGL()->PopGroupMarkerEXT();
 }
 
 }  // namespace cc

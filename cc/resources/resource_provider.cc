@@ -429,67 +429,55 @@ bool ResourceProvider::RasterBuffer::UnlockForWrite() {
   return DoUnlockForWrite();
 }
 
-ResourceProvider::DirectRasterBuffer::DirectRasterBuffer(
+ResourceProvider::GpuRasterBuffer::GpuRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider,
-    bool use_distance_field_text )
+    bool use_distance_field_text)
     : RasterBuffer(resource, resource_provider),
       surface_generation_id_(0u),
-      use_distance_field_text_(use_distance_field_text) {}
+      use_distance_field_text_(use_distance_field_text) {
+}
 
-ResourceProvider::DirectRasterBuffer::~DirectRasterBuffer() {}
+ResourceProvider::GpuRasterBuffer::~GpuRasterBuffer() {
+}
 
-SkCanvas* ResourceProvider::DirectRasterBuffer::DoLockForWrite() {
+SkCanvas* ResourceProvider::GpuRasterBuffer::DoLockForWrite() {
   if (!surface_)
     surface_ = CreateSurface();
   surface_generation_id_ = surface_ ? surface_->generationID() : 0u;
   return surface_ ? surface_->getCanvas() : NULL;
 }
 
-bool ResourceProvider::DirectRasterBuffer::DoUnlockForWrite() {
+bool ResourceProvider::GpuRasterBuffer::DoUnlockForWrite() {
   // generationID returns a non-zero, unique value corresponding to the content
   // of surface. Hence, a change since DoLockForWrite was called means the
   // surface has changed.
   return surface_ ? surface_generation_id_ != surface_->generationID() : false;
 }
 
-skia::RefPtr<SkSurface> ResourceProvider::DirectRasterBuffer::CreateSurface() {
-  skia::RefPtr<SkSurface> surface;
-  switch (resource()->type) {
-    case GLTexture: {
-      DCHECK(resource()->gl_id);
-      class GrContext* gr_context = resource_provider()->GrContext();
-      if (gr_context) {
-        GrBackendTextureDesc desc;
-        desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-        desc.fWidth = resource()->size.width();
-        desc.fHeight = resource()->size.height();
-        desc.fConfig = ToGrPixelConfig(resource()->format);
-        desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-        desc.fTextureHandle = resource()->gl_id;
-        skia::RefPtr<GrTexture> gr_texture =
-            skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-        SkSurface::TextRenderMode text_render_mode =
-            use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
-                                     : SkSurface::kStandard_TextRenderMode;
-        surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-            gr_texture->asRenderTarget(), text_render_mode));
-      }
-      break;
-    }
-    case Bitmap: {
-      DCHECK(resource()->pixels);
-      DCHECK_EQ(RGBA_8888, resource()->format);
-      SkImageInfo image_info = SkImageInfo::MakeN32Premul(
-          resource()->size.width(), resource()->size.height());
-      surface = skia::AdoptRef(SkSurface::NewRasterDirect(
-          image_info, resource()->pixels, image_info.minRowBytes()));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-  return surface;
+skia::RefPtr<SkSurface> ResourceProvider::GpuRasterBuffer::CreateSurface() {
+  DCHECK_EQ(GLTexture, resource()->type);
+  DCHECK(resource()->gl_id);
+
+  class GrContext* gr_context = resource_provider()->GrContext();
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (!gr_context)
+    return skia::RefPtr<SkSurface>();
+
+  GrBackendTextureDesc desc;
+  desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+  desc.fWidth = resource()->size.width();
+  desc.fHeight = resource()->size.height();
+  desc.fConfig = ToGrPixelConfig(resource()->format);
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fTextureHandle = resource()->gl_id;
+  skia::RefPtr<GrTexture> gr_texture =
+      skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+  SkSurface::TextRenderMode text_render_mode =
+      use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
+                               : SkSurface::kStandard_TextRenderMode;
+  return skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+      gr_texture->asRenderTarget(), text_render_mode));
 }
 
 ResourceProvider::BitmapRasterBuffer::BitmapRasterBuffer(
@@ -842,7 +830,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (style == ForShutdown && resource->exported_count > 0)
     lost_resource = true;
 
-  resource->direct_raster_buffer.reset();
+  resource->gpu_raster_buffer.reset();
   resource->image_raster_buffer.reset();
   resource->pixel_raster_buffer.reset();
 
@@ -1753,22 +1741,22 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 }
 
-SkCanvas* ResourceProvider::MapDirectRasterBuffer(ResourceId id) {
-  // Resource needs to be locked for write since DirectRasterBuffer writes
+SkCanvas* ResourceProvider::MapGpuRasterBuffer(ResourceId id) {
+  // Resource needs to be locked for write since GpuRasterBuffer writes
   // directly to it.
   LockForWrite(id);
   Resource* resource = GetResource(id);
-  if (!resource->direct_raster_buffer.get()) {
-    resource->direct_raster_buffer.reset(
-        new DirectRasterBuffer(resource, this, use_distance_field_text_));
+  if (!resource->gpu_raster_buffer.get()) {
+    resource->gpu_raster_buffer.reset(
+        new GpuRasterBuffer(resource, this, use_distance_field_text_));
   }
-  return resource->direct_raster_buffer->LockForWrite();
+  return resource->gpu_raster_buffer->LockForWrite();
 }
 
-void ResourceProvider::UnmapDirectRasterBuffer(ResourceId id) {
+void ResourceProvider::UnmapGpuRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(resource->direct_raster_buffer.get());
-  resource->direct_raster_buffer->UnlockForWrite();
+  DCHECK(resource->gpu_raster_buffer.get());
+  resource->gpu_raster_buffer->UnlockForWrite();
   UnlockForWrite(id);
 }
 

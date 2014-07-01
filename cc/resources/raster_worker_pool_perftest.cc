@@ -7,7 +7,7 @@
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/output/context_provider.h"
-#include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/gpu_raster_worker_pool.h"
 #include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
@@ -79,7 +79,7 @@ enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
   RASTER_WORKER_POOL_TYPE_IMAGE,
   RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
-  RASTER_WORKER_POOL_TYPE_DIRECT
+  RASTER_WORKER_POOL_TYPE_GPU
 };
 
 static const int kTimeLimitMillis = 2000;
@@ -234,11 +234,11 @@ class RasterWorkerPoolPerfTest
             resource_provider_.get(),
             staging_resource_pool_.get());
         break;
-      case RASTER_WORKER_POOL_TYPE_DIRECT:
-        raster_worker_pool_ = DirectRasterWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            resource_provider_.get(),
-            context_provider_.get());
+      case RASTER_WORKER_POOL_TYPE_GPU:
+        raster_worker_pool_ =
+            GpuRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
+                                        resource_provider_.get(),
+                                        context_provider_.get());
         break;
     }
 
@@ -379,8 +379,8 @@ class RasterWorkerPoolPerfTest
         return std::string("_image_raster_worker_pool");
       case RASTER_WORKER_POOL_TYPE_IMAGE_COPY:
         return std::string("_image_copy_raster_worker_pool");
-      case RASTER_WORKER_POOL_TYPE_DIRECT:
-        return std::string("_direct_raster_worker_pool");
+      case RASTER_WORKER_POOL_TYPE_GPU:
+        return std::string("_gpu_raster_worker_pool");
     }
     NOTREACHED();
     return std::string();
@@ -421,7 +421,7 @@ INSTANTIATE_TEST_CASE_P(RasterWorkerPoolPerfTests,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
                                           RASTER_WORKER_POOL_TYPE_IMAGE,
                                           RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
-                                          RASTER_WORKER_POOL_TYPE_DIRECT));
+                                          RASTER_WORKER_POOL_TYPE_GPU));
 
 class RasterWorkerPoolCommonPerfTest : public RasterWorkerPoolPerfTestBase,
                                        public testing::Test {

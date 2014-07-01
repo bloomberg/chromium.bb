@@ -43,7 +43,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/gpu_raster_worker_pool.h"
 #include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/memory_history.h"
@@ -1882,9 +1882,9 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              resource_provider_->best_texture_format());
 
     raster_worker_pool_ =
-        DirectRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                       resource_provider_.get(),
-                                       context_provider);
+        GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                    resource_provider_.get(),
+                                    context_provider);
     on_demand_task_graph_runner_ = &synchronous_task_graph_runner_;
   } else if (UseZeroCopyTextureUpload()) {
     resource_pool_ =

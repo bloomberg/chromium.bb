@@ -319,11 +319,11 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(Fence);
   };
 
-  // Returns a canvas for direct rasterization.
+  // Returns a canvas for gpu rasterization.
   // Call Unmap before the resource can be read or used for compositing.
   // It is used for direct gpu rasterization.
-  SkCanvas* MapDirectRasterBuffer(ResourceId id);
-  void UnmapDirectRasterBuffer(ResourceId id);
+  SkCanvas* MapGpuRasterBuffer(ResourceId id);
+  void UnmapGpuRasterBuffer(ResourceId id);
 
   // Returns a canvas backed by an image buffer. UnmapImageRasterBuffer
   // returns true if canvas was written to while mapped.
@@ -375,7 +375,7 @@ class CC_EXPORT ResourceProvider {
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
  private:
-  class DirectRasterBuffer;
+  class GpuRasterBuffer;
   class ImageRasterBuffer;
   class PixelRasterBuffer;
 
@@ -445,7 +445,7 @@ class CC_EXPORT ResourceProvider {
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
-    linked_ptr<DirectRasterBuffer> direct_raster_buffer;
+    linked_ptr<GpuRasterBuffer> gpu_raster_buffer;
     linked_ptr<ImageRasterBuffer> image_raster_buffer;
     linked_ptr<PixelRasterBuffer> pixel_raster_buffer;
   };
@@ -474,12 +474,12 @@ class CC_EXPORT ResourceProvider {
     int canvas_save_count_;
   };
 
-  class DirectRasterBuffer : public RasterBuffer {
+  class GpuRasterBuffer : public RasterBuffer {
    public:
-    DirectRasterBuffer(const Resource* resource,
-                       ResourceProvider* resource_provider,
-                       bool use_distance_field_text);
-    virtual ~DirectRasterBuffer();
+    GpuRasterBuffer(const Resource* resource,
+                    ResourceProvider* resource_provider,
+                    bool use_distance_field_text);
+    virtual ~GpuRasterBuffer();
 
    protected:
     virtual SkCanvas* DoLockForWrite() OVERRIDE;
@@ -491,7 +491,7 @@ class CC_EXPORT ResourceProvider {
     uint32_t surface_generation_id_;
     const bool use_distance_field_text_;
 
-    DISALLOW_COPY_AND_ASSIGN(DirectRasterBuffer);
+    DISALLOW_COPY_AND_ASSIGN(GpuRasterBuffer);
   };
 
   class BitmapRasterBuffer : public RasterBuffer {

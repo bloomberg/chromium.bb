@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/gpu_raster_worker_pool.h"
 #include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/picture_pile.h"
@@ -31,7 +31,7 @@ enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
   RASTER_WORKER_POOL_TYPE_IMAGE,
   RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
-  RASTER_WORKER_POOL_TYPE_DIRECT
+  RASTER_WORKER_POOL_TYPE_GPU
 };
 
 class TestRasterTaskImpl : public RasterTask {
@@ -140,11 +140,11 @@ class RasterWorkerPoolTest
             resource_provider_.get(),
             staging_resource_pool_.get());
         break;
-      case RASTER_WORKER_POOL_TYPE_DIRECT:
-        raster_worker_pool_ = DirectRasterWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            resource_provider_.get(),
-            context_provider_.get());
+      case RASTER_WORKER_POOL_TYPE_GPU:
+        raster_worker_pool_ =
+            GpuRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
+                                        resource_provider_.get(),
+                                        context_provider_.get());
         break;
     }
 
@@ -327,7 +327,7 @@ INSTANTIATE_TEST_CASE_P(RasterWorkerPoolTests,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
                                           RASTER_WORKER_POOL_TYPE_IMAGE,
                                           RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
-                                          RASTER_WORKER_POOL_TYPE_DIRECT));
+                                          RASTER_WORKER_POOL_TYPE_GPU));
 
 }  // namespace
 }  // namespace cc

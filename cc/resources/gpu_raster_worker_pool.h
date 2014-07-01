@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_
-#define CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_
+#ifndef CC_RESOURCES_GPU_RASTER_WORKER_POOL_H_
+#define CC_RESOURCES_GPU_RASTER_WORKER_POOL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/raster_worker_pool.h"
@@ -13,11 +13,11 @@ namespace cc {
 class ContextProvider;
 class ResourceProvider;
 
-class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
-                                         public Rasterizer,
-                                         public RasterizerTaskClient {
+class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
+                                      public Rasterizer,
+                                      public RasterizerTaskClient {
  public:
-  virtual ~DirectRasterWorkerPool();
+  virtual ~GpuRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
@@ -38,9 +38,9 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   virtual void ReleaseCanvasForRaster(RasterTask* task) OVERRIDE;
 
  private:
-  DirectRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                         ResourceProvider* resource_provider,
-                         ContextProvider* context_provider);
+  GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                      ResourceProvider* resource_provider,
+                      ContextProvider* context_provider);
 
   void OnRasterFinished();
   void OnRasterRequiredForActivationFinished();
@@ -60,8 +60,7 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;
 
-  base::WeakPtrFactory<DirectRasterWorkerPool>
-      raster_finished_weak_ptr_factory_;
+  base::WeakPtrFactory<GpuRasterWorkerPool> raster_finished_weak_ptr_factory_;
 
   scoped_refptr<RasterizerTask> raster_finished_task_;
   scoped_refptr<RasterizerTask> raster_required_for_activation_finished_task_;
@@ -71,11 +70,11 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   TaskGraph graph_;
   Task::Vector completed_tasks_;
 
-  base::WeakPtrFactory<DirectRasterWorkerPool> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuRasterWorkerPool> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DirectRasterWorkerPool);
+  DISALLOW_COPY_AND_ASSIGN(GpuRasterWorkerPool);
 };
 
 }  // namespace cc
 
-#endif  // CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_
+#endif  // CC_RESOURCES_GPU_RASTER_WORKER_POOL_H_
