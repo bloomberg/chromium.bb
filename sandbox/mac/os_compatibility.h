@@ -16,19 +16,26 @@
 
 #include <string>
 
+#include "sandbox/mac/message_server.h"
+
 namespace sandbox {
 
-typedef std::string (*LookUp2GetRequestName)(const mach_msg_header_t*);
-typedef void (*LookUp2FillReply)(mach_msg_header_t*, mach_port_t service_port);
+typedef uint64_t (*IPCMessageGetID)(const IPCMessage);
 
-typedef bool (*SwapIntegerIsGetOnly)(const mach_msg_header_t*);
+typedef std::string (*LookUp2GetRequestName)(const IPCMessage);
+typedef void (*LookUp2FillReply)(IPCMessage, mach_port_t service_port);
+
+typedef bool (*SwapIntegerIsGetOnly)(const IPCMessage);
 
 struct LaunchdCompatibilityShim {
+  // Gets the message ID of an IPC message.
+  IPCMessageGetID ipc_message_get_id;
+
   // The msgh_id for look_up2.
-  mach_msg_id_t msg_id_look_up2;
+  uint64_t msg_id_look_up2;
 
   // The msgh_id for swap_integer.
-  mach_msg_id_t msg_id_swap_integer;
+  uint64_t msg_id_swap_integer;
 
   // A function to take a look_up2 message and return the string service name
   // that was requested via the message.

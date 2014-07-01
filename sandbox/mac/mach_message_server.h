@@ -10,28 +10,15 @@
 
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
+#include "sandbox/mac/message_server.h"
 
 namespace sandbox {
-
-// A delegate interface for MachMessageServer that handles processing of
-// incoming intercepted IPC messages.
-class MessageDemuxer {
- public:
-  // Handle a |request| message and optionally create a |reply|. Both message
-  // objects are owned by the server. Use the server's methods to send a
-  // reply message.
-  virtual void DemuxMessage(mach_msg_header_t* request,
-                            mach_msg_header_t* reply) = 0;
-
- protected:
-  virtual ~MessageDemuxer() {}
-};
 
 // A Mach message server that operates a receive port. Messages are received
 // and then passed to the MessageDemuxer for handling. The Demuxer
 // can use the server class to send a reply, forward the message to a
 // different port, or reply to the message with a MIG error.
-class MachMessageServer {
+class MachMessageServer : public MessageServer {
  public:
   // Creates a new Mach message server that will send messages to |demuxer|
   // for handling. If the |server_receive_right| is non-NULL, this class will
@@ -41,26 +28,18 @@ class MachMessageServer {
   MachMessageServer(MessageDemuxer* demuxer,
                     mach_port_t server_receive_right,
                     mach_msg_size_t buffer_size);
-  ~MachMessageServer();
+  virtual ~MachMessageServer();
 
-  // Initializes the class and starts running the message server. If this
-  // returns false, no other methods may be called on this class.
-  bool Initialize();
-
-  // Given a received request message, returns the PID of the sending process.
-  pid_t GetMessageSenderPID(mach_msg_header_t* request);
-
-  // Sends a reply message. Returns true if the message was sent successfully.
-  bool SendReply(mach_msg_header_t* reply);
-
-  // Forwards the original |request| to the |destination| for handling.
-  void ForwardMessage(mach_msg_header_t* request, mach_port_t destination);
-
+  // MessageServer:
+  virtual bool Initialize() OVERRIDE;
+  virtual pid_t GetMessageSenderPID(IPCMessage request) OVERRIDE;
+  virtual bool SendReply(IPCMessage reply) OVERRIDE;
+  virtual void ForwardMessage(IPCMessage request,
+                              mach_port_t destination) OVERRIDE;
   // Replies to the message with the specified |error_code| as a MIG
   // error_reply RetCode.
-  void RejectMessage(mach_msg_header_t* reply, int error_code);
-
-  mach_port_t server_port() const { return server_port_.get(); }
+  virtual void RejectMessage(IPCMessage reply, int error_code) OVERRIDE;
+  virtual mach_port_t GetServerPort() const OVERRIDE;
 
  private:
   // Event handler for the |server_source_| that reads a message from the queue

@@ -6,11 +6,10 @@
 #define SANDBOX_MAC_LAUNCHD_INTERCEPTION_SERVER_H_
 
 #include <dispatch/dispatch.h>
-#include <mach/mach.h>
 
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/mac/mach_message_server.h"
+#include "sandbox/mac/message_server.h"
 #include "sandbox/mac/os_compatibility.h"
 
 namespace sandbox {
@@ -34,32 +33,30 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   bool Initialize(mach_port_t server_receive_right);
 
   // MessageDemuxer:
-  virtual void DemuxMessage(mach_msg_header_t* request,
-                            mach_msg_header_t* reply) OVERRIDE;
+  virtual void DemuxMessage(IPCMessage request, IPCMessage reply) OVERRIDE;
 
-  mach_port_t server_port() const { return message_server_->server_port(); }
+  mach_port_t server_port() const { return message_server_->GetServerPort(); }
 
  private:
   // Given a look_up2 request message, this looks up the appropriate sandbox
   // policy for the service name then formulates and sends the reply message.
-  void HandleLookUp(mach_msg_header_t* request,
-                    mach_msg_header_t* reply,
+  void HandleLookUp(IPCMessage request,
+                    IPCMessage reply,
                     const BootstrapSandboxPolicy* policy);
 
   // Given a swap_integer request message, this verifies that it is safe, and
   // if so, forwards it on to launchd for servicing. If the request is unsafe,
   // it replies with an error.
-  void HandleSwapInteger(mach_msg_header_t* request,
-                         mach_msg_header_t* reply);
+  void HandleSwapInteger(IPCMessage request, IPCMessage reply);
 
   // Forwards the original |request| on to real bootstrap server for handling.
-  void ForwardMessage(mach_msg_header_t* request);
+  void ForwardMessage(IPCMessage request);
 
   // The sandbox for which this message server is running.
   const BootstrapSandbox* sandbox_;
 
   // The Mach IPC server.
-  scoped_ptr<MachMessageServer> message_server_;
+  scoped_ptr<MessageServer> message_server_;
 
   // The Mach port handed out in reply to denied look up requests. All denied
   // requests share the same port, though nothing reads messages from it.

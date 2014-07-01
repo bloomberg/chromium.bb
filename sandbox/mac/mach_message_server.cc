@@ -94,13 +94,13 @@ bool MachMessageServer::Initialize() {
   return true;
 }
 
-pid_t MachMessageServer::GetMessageSenderPID(mach_msg_header_t* request) {
+pid_t MachMessageServer::GetMessageSenderPID(IPCMessage request) {
   // Get the PID of the task that sent this request. This requires getting at
   // the trailer of the message, from the header.
   mach_msg_audit_trailer_t* trailer =
       reinterpret_cast<mach_msg_audit_trailer_t*>(
-          reinterpret_cast<vm_address_t>(request) +
-              round_msg(request->msgh_size));
+          reinterpret_cast<vm_address_t>(request.mach) +
+              round_msg(request.mach->msgh_size));
   // TODO(rsesek): In the 10.7 SDK, there's audit_token_to_pid().
   pid_t sender_pid;
   audit_token_to_au32(trailer->msgh_audit,
@@ -108,16 +108,18 @@ pid_t MachMessageServer::GetMessageSenderPID(mach_msg_header_t* request) {
   return sender_pid;
 }
 
-bool MachMessageServer::SendReply(mach_msg_header_t* reply) {
-  kern_return_t kr = mach_msg(reply, MACH_SEND_MSG, reply->msgh_size, 0,
-      MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+bool MachMessageServer::SendReply(IPCMessage reply) {
+  kern_return_t kr = mach_msg(reply.mach, MACH_SEND_MSG,
+      reply.mach->msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE,
+      MACH_PORT_NULL);
   MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
       << "Unable to send intercepted reply message.";
   return kr == KERN_SUCCESS;
 }
 
-void MachMessageServer::ForwardMessage(mach_msg_header_t* request,
+void MachMessageServer::ForwardMessage(IPCMessage message,
                                        mach_port_t destination) {
+  mach_msg_header_t* request = message.mach;
   request->msgh_local_port = request->msgh_remote_port;
   request->msgh_remote_port = destination;
   // Preserve the msgh_bits that do not deal with the local and remote ports.
@@ -131,15 +133,19 @@ void MachMessageServer::ForwardMessage(mach_msg_header_t* request,
   }
 }
 
-void MachMessageServer::RejectMessage(mach_msg_header_t* reply,
-                                      int error_code) {
-  mig_reply_error_t* error_reply = reinterpret_cast<mig_reply_error_t*>(reply);
+void MachMessageServer::RejectMessage(IPCMessage reply, int error_code) {
+  mig_reply_error_t* error_reply =
+      reinterpret_cast<mig_reply_error_t*>(reply.mach);
   error_reply->Head.msgh_size = sizeof(mig_reply_error_t);
   error_reply->Head.msgh_bits =
       MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_MOVE_SEND_ONCE);
   error_reply->NDR = NDR_record;
   error_reply->RetCode = error_code;
-  SendReply(&error_reply->Head);
+  SendReply(reply);
+}
+
+mach_port_t MachMessageServer::GetServerPort() const {
+  return server_port_.get();
 }
 
 void MachMessageServer::ReceiveMessage() {
@@ -177,7 +183,9 @@ void MachMessageServer::ReceiveMessage() {
   reply->msgh_id = request->msgh_id + 100;
 
   // Process the message.
-  demuxer_->DemuxMessage(request, reply);
+  IPCMessage request_message = { request };
+  IPCMessage reply_message = { reply };
+  demuxer_->DemuxMessage(request_message, reply_message);
 
   // Free any descriptors in the message body. If the message was forwarded,
   // any descriptors would have been moved out of the process on send. If the

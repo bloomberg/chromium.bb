@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
+#include "sandbox/mac/mach_message_server.h"
 
 namespace sandbox {
 
@@ -51,9 +52,10 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
   return message_server_->Initialize();
 }
 
-void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
-                                             mach_msg_header_t* reply) {
-  VLOG(3) << "Incoming message #" << request->msgh_id;
+void LaunchdInterceptionServer::DemuxMessage(IPCMessage request,
+                                             IPCMessage reply) {
+  const uint64_t message_id = compat_shim_.ipc_message_get_id(request);
+  VLOG(3) << "Incoming message #" << message_id;
 
   pid_t sender_pid = message_server_->GetMessageSenderPID(request);
   const BootstrapSandboxPolicy* policy =
@@ -66,23 +68,23 @@ void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
     return;
   }
 
-  if (request->msgh_id == compat_shim_.msg_id_look_up2) {
+  if (message_id == compat_shim_.msg_id_look_up2) {
     // Filter messages sent via bootstrap_look_up to enforce the sandbox policy
     // over the bootstrap namespace.
     HandleLookUp(request, reply, policy);
-  } else if (request->msgh_id == compat_shim_.msg_id_swap_integer) {
+  } else if (message_id == compat_shim_.msg_id_swap_integer) {
     // Ensure that any vproc_swap_integer requests are safe.
     HandleSwapInteger(request, reply);
   } else {
     // All other messages are not permitted.
-    VLOG(1) << "Rejecting unhandled message #" << request->msgh_id;
+    VLOG(1) << "Rejecting unhandled message #" << message_id;
     message_server_->RejectMessage(reply, MIG_REMOTE_ERROR);
   }
 }
 
 void LaunchdInterceptionServer::HandleLookUp(
-    mach_msg_header_t* request,
-    mach_msg_header_t* reply,
+    IPCMessage request,
+    IPCMessage reply,
     const BootstrapSandboxPolicy* policy) {
   const std::string request_service_name(
       compat_shim_.look_up2_get_request_name(request));
@@ -133,8 +135,8 @@ void LaunchdInterceptionServer::HandleLookUp(
   }
 }
 
-void LaunchdInterceptionServer::HandleSwapInteger(mach_msg_header_t* request,
-                                                  mach_msg_header_t* reply) {
+void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request,
+                                                  IPCMessage reply) {
   // Only allow getting information out of launchd. Do not allow setting
   // values. Two commonly observed values that are retrieved are
   // VPROC_GSK_MGR_PID and VPROC_GSK_TRANSACTIONS_ENABLED.
@@ -146,7 +148,7 @@ void LaunchdInterceptionServer::HandleSwapInteger(mach_msg_header_t* request,
     message_server_->RejectMessage(reply, BOOTSTRAP_NOT_PRIVILEGED);
   }
 }
-void LaunchdInterceptionServer::ForwardMessage(mach_msg_header_t* request) {
+void LaunchdInterceptionServer::ForwardMessage(IPCMessage request) {
   message_server_->ForwardMessage(request, sandbox_->real_bootstrap_port());
 }
 

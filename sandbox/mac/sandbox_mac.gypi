@@ -14,6 +14,7 @@
         'launchd_interception_server.h',
         'mach_message_server.cc',
         'mach_message_server.h',
+        'message_server.h',
         'os_compatibility.cc',
         'os_compatibility.h',
         'policy.cc',
