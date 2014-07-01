@@ -319,13 +319,11 @@ void SearchTabHelper::DidNavigateMainFrame(
 }
 
 void SearchTabHelper::DidFailProvisionalLoad(
-    int64 /* frame_id */,
-    const base::string16& /* frame_unique_name */,
+    content::RenderFrameHost* /* render_frame_host */,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& /* error_description */,
-    content::RenderViewHost* /* render_view_host */) {
+    const base::string16& /* error_description */) {
   // If error_code is ERR_ABORTED means that the user has canceled this
   // navigation so it shouldn't be redirected.
   if (is_main_frame &&

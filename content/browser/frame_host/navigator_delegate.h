@@ -54,7 +54,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // A navigation was committed in |render_frame_host|.
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) {}

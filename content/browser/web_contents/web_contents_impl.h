@@ -471,7 +471,6 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& validated_target_url) OVERRIDE;
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;

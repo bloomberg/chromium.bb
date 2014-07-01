@@ -37,13 +37,11 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      content::RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description,
-      RenderViewHost* render_view_host) OVERRIDE;
+      const base::string16& error_description) OVERRIDE;
   virtual void DidFailLoad(int64 frame_id,
                            const GURL& validated_url,
                            bool is_main_frame,
@@ -64,12 +62,10 @@ class WebContentsObserverAndroid : public WebContentsObserver {
       bool is_iframe_srcdoc,
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& url,
-      PageTransition transition_type,
-      RenderViewHost* render_view_host) OVERRIDE;
+      PageTransition transition_type) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id,
                              const GURL& validated_url,
                              bool is_main_frame,

@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
@@ -97,19 +98,17 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
 }
 
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
+    content::PageTransition transition_type) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes.
   if (!is_main_frame)
     return;
 
-  if (provisional_render_view_host_ == render_view_host) {
+  if (provisional_render_view_host_ == render_frame_host->GetRenderViewHost()) {
     tab_reloader_->OnLoadCommitted(pending_error_code_);
   } else {
     // This may happen if the active RenderView commits a page before a cross
@@ -127,17 +126,16 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
 }
 
 void CaptivePortalTabHelper::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes and unexpected RenderViewHosts.
-  if (!is_main_frame || render_view_host != provisional_render_view_host_)
+  if (!is_main_frame ||
+      render_frame_host->GetRenderViewHost() != provisional_render_view_host_)
     return;
 
   // Aborts generally aren't followed by loading an error page, so go ahead and

@@ -77,12 +77,10 @@ class NetErrorTabHelperTest : public testing::Test {
 
   void CommitProvisionalLoad(MainFrame main_frame) {
     tab_helper_.DidCommitProvisionalLoadForFrame(
-        1,  // frame id
-        base::string16(),
+        NULL,  // render_frame_host, unused
         (main_frame == MAIN_FRAME),
         bogus_url_,  // url
-        content::PAGE_TRANSITION_TYPED,
-        NULL);  // render_view_host
+        content::PAGE_TRANSITION_TYPED);
   }
 
   void FailProvisionalLoad(MainFrame main_frame, ErrorType error_type) {
@@ -93,14 +91,11 @@ class NetErrorTabHelperTest : public testing::Test {
     else
       net_error = net::ERR_TIMED_OUT;
 
-    tab_helper_.DidFailProvisionalLoad(
-        1,  // frame id
-        base::string16(),
-        (main_frame == MAIN_FRAME),
-        bogus_url_,  // validated_url
-        net_error,
-        base::string16(),
-        NULL);  // render_view_host
+    tab_helper_.DidFailProvisionalLoad(NULL,  // render_frame_host, unused
+                                       (main_frame == MAIN_FRAME),
+                                       bogus_url_,  // validated_url
+                                       net_error,
+                                       base::string16());
   }
 
   void FinishProbe(DnsProbeStatus status) {

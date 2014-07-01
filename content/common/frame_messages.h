@@ -82,8 +82,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
-  // The WebFrame's uniqueName().
-  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
   // Error code as reported in the DidFailProvisionalLoad callback.
   IPC_STRUCT_MEMBER(int, error_code)
   // An error message generated from the error_code. This can be an empty
@@ -115,8 +113,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
                              content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
-  // The WebFrame's uniqueName().
-  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
 
   // Information regarding the security of the connection (empty if the
   // connection was not secure).

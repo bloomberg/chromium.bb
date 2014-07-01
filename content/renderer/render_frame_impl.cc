@@ -1816,7 +1816,6 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
        EqualsASCII(failed_request.httpMethod(), "POST"));
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.frame_unique_name = frame->uniqueName();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       render_view_.get(),
@@ -2945,7 +2944,6 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   params.is_post = false;
   params.post_id = -1;
   params.page_id = render_view_->page_id_;
-  params.frame_unique_name = frame->uniqueName();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());
   WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);

@@ -440,12 +440,10 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   // content::WebContentsObserver:
   virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      content::RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& url,
-      content::PageTransition transition_type,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::PageTransition transition_type) OVERRIDE;
 
  private:
   scoped_ptr<content::WebContents> contents_;
@@ -464,12 +462,10 @@ CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 }
 
 void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
+    content::PageTransition transition_type) {
   // Return early if this is not top-level navigation.
   if (!is_main_frame)
     return;

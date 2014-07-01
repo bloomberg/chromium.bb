@@ -359,12 +359,10 @@ void BrowserPluginGuest::SendQueuedMessages() {
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    PageTransition transition_type,
-    RenderViewHost* render_view_host) {
+    PageTransition transition_type) {
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 

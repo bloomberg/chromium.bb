@@ -648,14 +648,12 @@ void PrerenderContents::DidStartProvisionalLoadForFrame(
 }
 
 void PrerenderContents::DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
-      bool is_main_frame,
-      const GURL& url,
-      content::PageTransition transition_type,
-      RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host,
+    bool is_main_frame,
+    const GURL& url,
+    content::PageTransition transition_type) {
   if (is_main_frame) {
-    main_frame_id_ = frame_id;
+    main_frame_id_ = render_frame_host->GetRoutingID();
   }
 }
 

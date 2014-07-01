@@ -220,13 +220,11 @@ void WebAuthFlow::DidStartProvisionalLoadForFrame(
 }
 
 void WebAuthFlow::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
   if (delegate_)
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
 }

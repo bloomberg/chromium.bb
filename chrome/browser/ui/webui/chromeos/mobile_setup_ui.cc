@@ -33,6 +33,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -636,13 +637,11 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
 }
 
 void MobileSetupUI::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != base::UTF8ToUTF16("paymentForm"))
+    content::PageTransition transition_type) {
+  if (render_frame_host->GetFrameName() != "paymentForm")
     return;
 
   web_ui()->CallJavascriptFunction(
@@ -650,14 +649,12 @@ void MobileSetupUI::DidCommitProvisionalLoadForFrame(
 }
 
 void MobileSetupUI::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != base::UTF8ToUTF16("paymentForm"))
+    const base::string16& error_description) {
+  if (render_frame_host->GetFrameName() != "paymentForm")
     return;
 
   base::FundamentalValue result_value(-error_code);

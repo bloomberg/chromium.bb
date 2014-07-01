@@ -518,7 +518,6 @@ void NavigatorImpl::DidNavigate(
     }
 
     delegate_->DidCommitProvisionalLoad(render_frame_host,
-                                        params.frame_unique_name,
                                         is_main_frame,
                                         params.url,
                                         transition_type);

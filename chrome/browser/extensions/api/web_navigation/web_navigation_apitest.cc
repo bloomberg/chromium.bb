@@ -191,17 +191,15 @@ class DelayLoadStartAndExecuteJavascript
   }
 
   virtual void DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      content::RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& url,
-      content::PageTransition transition_type,
-      content::RenderViewHost* render_view_host) OVERRIDE {
+      content::PageTransition transition_type) OVERRIDE {
     if (script_was_executed_ && EndsWith(url.spec(), until_url_suffix_, true)) {
       content::WebContentsObserver::Observe(NULL);
       test_navigation_listener_->ResumeAll();
     }
-    rvh_ = render_view_host;
+    rvh_ = render_frame_host->GetRenderViewHost();
   }
 
  private:

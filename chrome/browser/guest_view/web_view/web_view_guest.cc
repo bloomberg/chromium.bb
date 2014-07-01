@@ -1010,12 +1010,10 @@ WebViewGuest::~WebViewGuest() {
 }
 
 void WebViewGuest::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
+    content::PageTransition transition_type) {
   find_helper_.CancelAllFindSessions();
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
@@ -1036,18 +1034,16 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
 
   if (is_main_frame) {
     chromevox_injected_ = false;
-    main_frame_id_ = frame_id;
+    main_frame_id_ = render_frame_host->GetRoutingID();
   }
 }
 
 void WebViewGuest::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
   // Translate the |error_code| into an error string.
   std::string error_type(net::ErrorToString(error_code));
   DCHECK(StartsWithASCII(error_type, "net::", true));

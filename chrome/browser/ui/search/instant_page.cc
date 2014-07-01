@@ -68,12 +68,10 @@ bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
 }
 
 void InstantPage::DidCommitProvisionalLoadForFrame(
-    int64 /* frame_id */,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* /* render_frame_host */,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition /* transition_type */,
-    content::RenderViewHost* /* render_view_host */) {
+    content::PageTransition /* transition_type */) {
   if (is_main_frame && ShouldProcessAboutToNavigateMainFrame())
     delegate_->InstantPageAboutToNavigateMainFrame(contents(), url);
 }

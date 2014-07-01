@@ -65,20 +65,16 @@ class WebNavigationTabObserver
       bool is_iframe_srcdoc,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
-      int64 frame_num,
-      const base::string16& frame_unique_name,
+      content::RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& url,
-      content::PageTransition transition_type,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::PageTransition transition_type) OVERRIDE;
   virtual void DidFailProvisionalLoad(
-      int64 frame_num,
-      const base::string16& frame_unique_name,
+      content::RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      const base::string16& error_description) OVERRIDE;
   virtual void DocumentLoadedInFrame(
       int64 frame_num,
       content::RenderViewHost* render_view_host) OVERRIDE;

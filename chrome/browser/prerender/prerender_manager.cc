@@ -1123,25 +1123,21 @@ void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
 }
 
 void PrerenderManager::PendingSwap::DidCommitProvisionalLoadForFrame(
-        int64 frame_id,
-        const base::string16& frame_unique_name,
-        bool is_main_frame,
-        const GURL& validated_url,
-        content::PageTransition transition_type,
-        content::RenderViewHost* render_view_host){
+    content::RenderFrameHost* render_frame_host,
+    bool is_main_frame,
+    const GURL& validated_url,
+    content::PageTransition transition_type) {
   if (!is_main_frame)
     return;
   prerender_data_->ClearPendingSwap();
 }
 
 void PrerenderManager::PendingSwap::DidFailProvisionalLoad(
-        int64 frame_id,
-        const base::string16& frame_unique_name,
-        bool is_main_frame,
-        const GURL& validated_url,
-        int error_code,
-        const base::string16& error_description,
-        content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description) {
   if (!is_main_frame)
     return;
   prerender_data_->ClearPendingSwap();

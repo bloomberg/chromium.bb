@@ -109,12 +109,10 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
 }
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    PageTransition transition_type,
-    RenderViewHost* render_view_host) {
+    PageTransition transition_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!is_main_frame)
@@ -135,13 +133,11 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
 }
 
 void NetErrorTabHelper::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!is_main_frame)

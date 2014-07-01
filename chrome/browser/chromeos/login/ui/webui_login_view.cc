@@ -33,6 +33,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -423,14 +424,12 @@ bool WebUILoginView::PreHandleGestureEvent(
 }
 
 void WebUILoginView::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != base::UTF8ToUTF16("gaia-frame"))
+    const base::string16& error_description) {
+  if (render_frame_host->GetFrameName() != "gaia-frame")
     return;
 
   GetWebUI()->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",

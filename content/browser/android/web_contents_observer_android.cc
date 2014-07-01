@@ -97,13 +97,11 @@ void WebContentsObserverAndroid::DidStopLoading(
 }
 
 void WebContentsObserverAndroid::DidFailProvisionalLoad(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
   DidFailLoadInternal(
         true, is_main_frame, error_code, error_description, validated_url);
 }
@@ -188,12 +186,10 @@ void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(
 }
 
 void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
-      bool is_main_frame,
-      const GURL& url,
-      PageTransition transition_type,
-      RenderViewHost* render_view_host) {
+    RenderFrameHost* render_frame_host,
+    bool is_main_frame,
+    const GURL& url,
+    PageTransition transition_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
@@ -201,7 +197,11 @@ void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
   Java_WebContentsObserverAndroid_didCommitProvisionalLoadForFrame(
-      env, obj.obj(), frame_id, is_main_frame, jstring_url.obj(),
+      env,
+      obj.obj(),
+      render_frame_host->GetRoutingID(),
+      is_main_frame,
+      jstring_url.obj(),
       transition_type);
 }
 

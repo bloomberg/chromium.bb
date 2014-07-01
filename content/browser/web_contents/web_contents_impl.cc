@@ -2360,19 +2360,14 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   GURL validated_url(params.url);
-  int render_frame_id = render_frame_host->GetRoutingID();
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
-  FOR_EACH_OBSERVER(
-      WebContentsObserver,
-      observers_,
-      DidFailProvisionalLoad(render_frame_id,
-                             params.frame_unique_name,
-                             is_main_frame,
-                             validated_url,
-                             params.error_code,
-                             params.error_description,
-                             render_view_host));
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DidFailProvisionalLoad(render_frame_host,
+                                           is_main_frame,
+                                           validated_url,
+                                           params.error_code,
+                                           params.error_description));
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -2450,22 +2445,15 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
 
 void WebContentsImpl::DidCommitProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
-  int render_frame_id = render_frame_host->GetRoutingID();
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   // Notify observers about the commit of the provisional load.
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidCommitProvisionalLoadForFrame(render_frame_id,
-                                       frame_unique_name,
-                                       is_main_frame,
-                                       url,
-                                       transition_type,
-                                       render_view_host));
+      DidCommitProvisionalLoadForFrame(
+          render_frame_host, is_main_frame, url, transition_type));
 }
 
 void WebContentsImpl::DidNavigateMainFramePreCommit(

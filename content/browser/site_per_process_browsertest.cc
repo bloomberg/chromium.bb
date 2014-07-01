@@ -45,24 +45,20 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
   }
 
   virtual void DidFailProvisionalLoad(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description,
-      RenderViewHost* render_view_host) OVERRIDE {
+      const base::string16& error_description) OVERRIDE {
     navigation_url_ = validated_url;
     navigation_succeeded_ = false;
   }
 
   virtual void DidCommitProvisionalLoadForFrame(
-      int64 frame_id,
-      const base::string16& frame_unique_name,
+      RenderFrameHost* render_frame_host,
       bool is_main_frame,
       const GURL& url,
-      PageTransition transition_type,
-      RenderViewHost* render_view_host) OVERRIDE{
+      PageTransition transition_type) OVERRIDE {
     navigation_url_ = url;
     navigation_succeeded_ = true;
   }

@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
@@ -369,20 +370,21 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
 }
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
-    int64 frame_num,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
+    content::PageTransition transition_type) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidCommitProvisionalLoad("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num
+           << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << url << ")";
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
 
   bool is_reference_fragment_navigation =
       IsReferenceFragmentNavigation(frame_id, url);
@@ -419,7 +421,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     helpers::DispatchOnCommitted(
         web_navigation::OnReferenceFragmentUpdated::kEventName,
         web_contents(),
-        frame_num,
+        render_frame_host->GetRoutingID(),
         is_main_frame,
         navigation_state_.GetUrl(frame_id),
         transition_type);
@@ -427,7 +429,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     helpers::DispatchOnCommitted(
         web_navigation::OnHistoryStateUpdated::kEventName,
         web_contents(),
-        frame_num,
+        render_frame_host->GetRoutingID(),
         is_main_frame,
         navigation_state_.GetUrl(frame_id),
         transition_type);
@@ -436,27 +438,26 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
       transition_type = static_cast<content::PageTransition>(
           transition_type | content::PAGE_TRANSITION_SERVER_REDIRECT);
     }
-    helpers::DispatchOnCommitted(
-        web_navigation::OnCommitted::kEventName,
-        web_contents(),
-        frame_num,
-        is_main_frame,
-        navigation_state_.GetUrl(frame_id),
-        transition_type);
+    helpers::DispatchOnCommitted(web_navigation::OnCommitted::kEventName,
+                                 web_contents(),
+                                 render_frame_host->GetRoutingID(),
+                                 is_main_frame,
+                                 navigation_state_.GetUrl(frame_id),
+                                 transition_type);
   }
 }
 
 void WebNavigationTabObserver::DidFailProvisionalLoad(
-    int64 frame_num,
-    const base::string16& frame_unique_id,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFailProvisionalLoad("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num
+           << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
@@ -467,15 +468,15 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
     stop_tracking_frames = true;
   }
 
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   if (navigation_state_.CanSendEvents(frame_id)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_view_host->GetProcess()->GetID(),
-        navigation_state_.GetUrl(frame_id),
-        frame_num,
-        is_main_frame,
-        error_code);
+    helpers::DispatchOnErrorOccurred(web_contents(),
+                                     render_view_host->GetProcess()->GetID(),
+                                     navigation_state_.GetUrl(frame_id),
+                                     render_frame_host->GetRoutingID(),
+                                     is_main_frame,
+                                     error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   if (stop_tracking_frames) {

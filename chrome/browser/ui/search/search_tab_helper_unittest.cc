@@ -347,8 +347,8 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailRedirectNTPToLocal) {
   // A failed provisional load of a cacheable NTP should be redirected to local
   // NTP.
   const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
-  search_tab_helper->DidFailProvisionalLoad(1, base::string16(), true,
-      cacheableNTPURL, 1, base::string16(), NULL);
+  search_tab_helper->DidFailProvisionalLoad(
+      NULL, true, cacheableNTPURL, 1, base::string16());
   CommitPendingLoad(controller);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
                  controller->GetLastCommittedEntry()->GetURL());
@@ -367,8 +367,8 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectIfAborted) {
   // A failed provisional load of a cacheable NTP should be redirected to local
   // NTP.
   const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
-  search_tab_helper->DidFailProvisionalLoad(1, base::string16(), true,
-      cacheableNTPURL, net::ERR_ABORTED, base::string16(), NULL);
+  search_tab_helper->DidFailProvisionalLoad(
+      NULL, true, cacheableNTPURL, net::ERR_ABORTED, base::string16());
   CommitPendingLoad(controller);
   EXPECT_EQ(GURL("chrome://blank"),
                  controller->GetLastCommittedEntry()->GetURL());
@@ -385,8 +385,8 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectNonNTP) {
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   // Any other web page shouldn't be redirected when provisional load fails.
-  search_tab_helper->DidFailProvisionalLoad(1, base::string16(), true,
-      GURL("http://www.example.com"), 1, base::string16(), NULL);
+  search_tab_helper->DidFailProvisionalLoad(
+      NULL, true, GURL("http://www.example.com"), 1, base::string16());
   CommitPendingLoad(controller);
   EXPECT_NE(GURL(chrome::kChromeSearchLocalNtpUrl),
                  controller->GetLastCommittedEntry()->GetURL());

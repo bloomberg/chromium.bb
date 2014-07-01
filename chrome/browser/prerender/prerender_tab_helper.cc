@@ -97,12 +97,10 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
 }
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    const base::string16& frame_unique_name,
+    content::RenderFrameHost* render_frame_host,
     bool is_main_frame,
     const GURL& validated_url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
+    content::PageTransition transition_type) {
   if (!is_main_frame)
     return;
   RecordEvent(EVENT_MAINFRAME_COMMIT);
