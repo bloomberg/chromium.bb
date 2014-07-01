@@ -644,6 +644,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     if (!network)
       return;
     network->IPConfigPropertiesChanged(properties);
+    NotifyNetworkPropertiesUpdated(network);
     if (network->path() == default_network_path_)
       NotifyDefaultNetworkChanged(network);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
