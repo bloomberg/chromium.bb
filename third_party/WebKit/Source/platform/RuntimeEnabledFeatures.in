@@ -98,7 +98,6 @@ PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
 PreciseMemoryInfo
 PushMessaging status=experimental
-Quota status=stable
 QuotaPromise status=experimental
 OverlayScrollbars
 RegionBasedColumns status=experimental
