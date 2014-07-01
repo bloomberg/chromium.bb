@@ -20,6 +20,7 @@ group("all_components") {
     "//components/query_parser",
     "//components/resources:components_resources",
     "//components/startup_metric_utils",
+    "//components/strings:components_strings",
     "//components/tracing",
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
