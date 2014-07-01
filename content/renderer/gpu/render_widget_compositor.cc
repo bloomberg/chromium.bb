@@ -19,6 +19,7 @@
 #include "cc/base/switches.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -33,6 +34,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
+#include "third_party/WebKit/public/platform/WebSelectionBound.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/frame_time.h"
@@ -48,6 +50,7 @@ class Layer;
 }
 
 using blink::WebFloatPoint;
+using blink::WebSelectionBound;
 using blink::WebSize;
 using blink::WebRect;
 
@@ -71,6 +74,27 @@ bool GetSwitchValueAsInt(
         string_value;
     return false;
   }
+}
+
+cc::LayerSelectionBound ConvertWebSelectionBound(
+    const WebSelectionBound& bound) {
+  DCHECK(bound.layerId);
+
+  cc::LayerSelectionBound result;
+  switch (bound.type) {
+    case blink::WebSelectionBound::Caret:
+      result.type = cc::SELECTION_BOUND_CENTER;
+      break;
+    case blink::WebSelectionBound::SelectionLeft:
+      result.type = cc::SELECTION_BOUND_LEFT;
+      break;
+    case blink::WebSelectionBound::SelectionRight:
+      result.type = cc::SELECTION_BOUND_RIGHT;
+      break;
+  }
+  result.layer_id = bound.layerId;
+  result.layer_rect = gfx::Rect(bound.edgeRectInLayer);
+  return result;
 }
 
 }  // namespace
@@ -565,6 +589,18 @@ void RenderWidgetCompositor::clearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(scoped_refptr<cc::Layer>(),
                                            scoped_refptr<cc::Layer>(),
                                            scoped_refptr<cc::Layer>());
+}
+
+void RenderWidgetCompositor::registerSelection(
+    const blink::WebSelectionBound& anchor,
+    const blink::WebSelectionBound& focus) {
+  layer_tree_host_->RegisterSelection(ConvertWebSelectionBound(anchor),
+                                      ConvertWebSelectionBound(focus));
+}
+
+void RenderWidgetCompositor::clearSelection() {
+  cc::LayerSelectionBound empty_selection;
+  layer_tree_host_->RegisterSelection(empty_selection, empty_selection);
 }
 
 void CompositeAndReadbackAsyncCallback(

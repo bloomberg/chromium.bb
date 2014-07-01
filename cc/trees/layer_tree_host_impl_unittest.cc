@@ -6291,6 +6291,59 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
 }
 
+TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
+  int root_layer_id = 1;
+  scoped_ptr<SolidColorLayerImpl> root =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), root_layer_id);
+  root->SetPosition(gfx::PointF());
+  root->SetBounds(gfx::Size(10, 10));
+  root->SetContentBounds(gfx::Size(10, 10));
+  root->SetDrawsContent(true);
+
+  host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
+
+  // Ensure the default frame selection bounds are empty.
+  FakeOutputSurface* fake_output_surface =
+      static_cast<FakeOutputSurface*>(host_impl_->output_surface());
+  const ViewportSelectionBound& selection_anchor_before =
+      fake_output_surface->last_sent_frame().metadata.selection_anchor;
+  const ViewportSelectionBound& selection_focus_before =
+      fake_output_surface->last_sent_frame().metadata.selection_focus;
+  EXPECT_EQ(ViewportSelectionBound(), selection_anchor_before);
+  EXPECT_EQ(ViewportSelectionBound(), selection_focus_before);
+
+  // Plumb the layer-local selection bounds.
+  gfx::Rect selection_rect(5, 0, 0, 5);
+  LayerSelectionBound anchor, focus;
+  anchor.type = SELECTION_BOUND_CENTER;
+  anchor.layer_id = root_layer_id;
+  anchor.layer_rect = selection_rect;
+  focus = anchor;
+  host_impl_->active_tree()->RegisterSelection(anchor, focus);
+
+  // Trigger a draw-swap sequence.
+  host_impl_->SetNeedsRedraw();
+
+  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_TRUE(host_impl_->SwapBuffers(frame));
+
+  // Ensure the selection bounds have propagated to the frame metadata.
+  const ViewportSelectionBound& selection_anchor_after =
+      fake_output_surface->last_sent_frame().metadata.selection_anchor;
+  const ViewportSelectionBound& selection_focus_after =
+      fake_output_surface->last_sent_frame().metadata.selection_focus;
+  EXPECT_EQ(anchor.type, selection_anchor_after.type);
+  EXPECT_EQ(focus.type, selection_focus_after.type);
+  EXPECT_EQ(selection_rect, selection_anchor_after.viewport_rect);
+  EXPECT_EQ(selection_rect, selection_anchor_after.viewport_rect);
+  EXPECT_TRUE(selection_anchor_after.visible);
+  EXPECT_TRUE(selection_anchor_after.visible);
+}
+
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,

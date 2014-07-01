@@ -21,6 +21,7 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -314,6 +315,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   } else {
     sync_tree->ClearViewportLayers();
   }
+
+  sync_tree->RegisterSelection(selection_anchor_, selection_focus_);
 
   float page_scale_delta =
       sync_tree->page_scale_delta() / sync_tree->sent_page_scale_delta();
@@ -1219,6 +1222,16 @@ void LayerTreeHost::RegisterViewportLayers(
   page_scale_layer_ = page_scale_layer;
   inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
+}
+
+void LayerTreeHost::RegisterSelection(const LayerSelectionBound& anchor,
+                                      const LayerSelectionBound& focus) {
+  if (selection_anchor_ == anchor && selection_focus_ == focus)
+    return;
+
+  selection_anchor_ = anchor;
+  selection_focus_ = focus;
+  SetNeedsCommit();
 }
 
 int LayerTreeHost::ScheduleMicroBenchmark(

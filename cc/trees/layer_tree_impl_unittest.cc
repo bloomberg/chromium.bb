@@ -2070,5 +2070,254 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   EXPECT_FALSE(result_layer);
 }
 
+TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
+  int root_layer_id = 12345;
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), root_layer_id);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               transform_origin,
+                               position,
+                               bounds,
+                               true,
+                               false);
+  root->SetDrawsContent(true);
+
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().active_tree()->UpdateDrawProperties();
+
+  // Sanity check the scenario we just created.
+  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
+  ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
+
+  LayerSelectionBound left_input;
+  left_input.type = SELECTION_BOUND_LEFT;
+  left_input.layer_rect = gfx::RectF(10, 10, 5, 20);
+  left_input.layer_id = root_layer_id;
+
+  LayerSelectionBound right_input;
+  right_input.type = SELECTION_BOUND_RIGHT;
+  right_input.layer_rect = gfx::RectF(50, 10, 5, 20);
+  right_input.layer_id = root_layer_id;
+
+  ViewportSelectionBound left_output, right_output;
+
+  // Empty input bounds should produce empty output bounds.
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_EQ(ViewportSelectionBound(), left_output);
+  EXPECT_EQ(ViewportSelectionBound(), right_output);
+
+  // Selection bounds should produce distinct left and right bounds.
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_EQ(left_input.type, left_output.type);
+  EXPECT_EQ(left_input.layer_rect, left_output.viewport_rect);
+  EXPECT_TRUE(left_output.visible);
+  EXPECT_EQ(right_input.type, right_output.type);
+  EXPECT_EQ(right_input.layer_rect, right_output.viewport_rect);
+  EXPECT_TRUE(right_output.visible);
+
+  // Insertion bounds should produce identical left and right bounds.
+  LayerSelectionBound insertion_input;
+  insertion_input.type = SELECTION_BOUND_CENTER;
+  insertion_input.layer_rect = gfx::RectF(10, 10, 5, 20);
+  insertion_input.layer_id = root_layer_id;
+  host_impl().active_tree()->RegisterSelection(insertion_input,
+                                               LayerSelectionBound());
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_EQ(insertion_input.type, left_output.type);
+  EXPECT_EQ(insertion_input.layer_rect, left_output.viewport_rect);
+  EXPECT_TRUE(left_output.visible);
+  EXPECT_EQ(left_output, right_output);
+}
+
+TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
+  int root_layer_id = 12345;
+  int clip_layer_id = 1234;
+  int clipped_layer_id = 123;
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), root_layer_id);
+  root->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               transform_origin,
+                               position,
+                               bounds,
+                               true,
+                               false);
+
+  gfx::Vector2dF clipping_offset(10, 10);
+  {
+    scoped_ptr<LayerImpl> clipping_layer =
+        LayerImpl::Create(host_impl().active_tree(), clip_layer_id);
+    // The clipping layer should occlude the right selection bound.
+    gfx::PointF position = gfx::PointF() + clipping_offset;
+    gfx::Size bounds(50, 50);
+    SetLayerPropertiesForTesting(clipping_layer.get(),
+                                 identity_matrix,
+                                 transform_origin,
+                                 position,
+                                 bounds,
+                                 true,
+                                 false);
+    clipping_layer->SetMasksToBounds(true);
+
+    scoped_ptr<LayerImpl> clipped_layer =
+        LayerImpl::Create(host_impl().active_tree(), clipped_layer_id);
+    position = gfx::PointF();
+    bounds = gfx::Size(100, 100);
+    SetLayerPropertiesForTesting(clipped_layer.get(),
+                                 identity_matrix,
+                                 transform_origin,
+                                 position,
+                                 bounds,
+                                 true,
+                                 false);
+    clipped_layer->SetDrawsContent(true);
+    clipping_layer->AddChild(clipped_layer.Pass());
+    root->AddChild(clipping_layer.Pass());
+  }
+
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().active_tree()->UpdateDrawProperties();
+
+  // Sanity check the scenario we just created.
+  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
+
+  LayerSelectionBound left_input;
+  left_input.type = SELECTION_BOUND_LEFT;
+  left_input.layer_rect = gfx::RectF(25, 10, 5, 20);
+  left_input.layer_id = clipped_layer_id;
+
+  LayerSelectionBound right_input;
+  right_input.type = SELECTION_BOUND_RIGHT;
+  right_input.layer_rect = gfx::RectF(75, 10, 5, 20);
+  right_input.layer_id = clipped_layer_id;
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+
+  // The left bound should be occluded by the clip layer.
+  ViewportSelectionBound left_output, right_output;
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_EQ(left_input.type, left_output.type);
+  gfx::RectF expected_left_output_rect = left_input.layer_rect;
+  expected_left_output_rect.Offset(clipping_offset);
+  EXPECT_EQ(expected_left_output_rect, left_output.viewport_rect);
+  EXPECT_TRUE(left_output.visible);
+  EXPECT_EQ(right_input.type, right_output.type);
+  gfx::RectF expected_right_output_rect = right_input.layer_rect;
+  expected_right_output_rect.Offset(clipping_offset);
+  EXPECT_EQ(expected_right_output_rect, right_output.viewport_rect);
+  EXPECT_FALSE(right_output.visible);
+
+  // Handles outside the viewport bounds should be marked invisible.
+  left_input.layer_rect = gfx::RectF(-25, 0, 5, 20);
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_FALSE(left_output.visible);
+
+  left_input.layer_rect = gfx::RectF(0, -25, 5, 20);
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_FALSE(left_output.visible);
+
+  // If the handle bottom is partially visible, the handle is marked visible.
+  left_input.layer_rect = gfx::RectF(0, -20, 5, 21);
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_TRUE(left_output.visible);
+}
+
+TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
+  int root_layer_id = 1;
+  int sub_layer_id = 2;
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), root_layer_id);
+  root->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               transform_origin,
+                               position,
+                               bounds,
+                               true,
+                               false);
+
+  gfx::Vector2dF sub_layer_offset(10, 0);
+  {
+    scoped_ptr<LayerImpl> sub_layer =
+        LayerImpl::Create(host_impl().active_tree(), sub_layer_id);
+    gfx::PointF position = gfx::PointF() + sub_layer_offset;
+    gfx::Size bounds(50, 50);
+    SetLayerPropertiesForTesting(sub_layer.get(),
+                                 identity_matrix,
+                                 transform_origin,
+                                 position,
+                                 bounds,
+                                 true,
+                                 false);
+    sub_layer->SetDrawsContent(true);
+    root->AddChild(sub_layer.Pass());
+  }
+
+  float device_scale_factor = 3.f;
+  float page_scale_factor = 5.f;
+  gfx::Size scaled_bounds_for_root = gfx::ToCeiledSize(
+      gfx::ScaleSize(root->bounds(), device_scale_factor * page_scale_factor));
+  host_impl().SetViewportSize(scaled_bounds_for_root);
+
+  host_impl().SetDeviceScaleFactor(device_scale_factor);
+  host_impl().active_tree()->SetPageScaleFactorAndLimits(
+      page_scale_factor, page_scale_factor, page_scale_factor);
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().active_tree()->SetViewportLayersFromIds(1, 1, Layer::INVALID_ID);
+  host_impl().active_tree()->UpdateDrawProperties();
+
+  // Sanity check the scenario we just created.
+  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
+
+  LayerSelectionBound left_input;
+  left_input.type = SELECTION_BOUND_LEFT;
+  left_input.layer_rect = gfx::RectF(10, 10, 5, 20);
+  left_input.layer_id = root_layer_id;
+
+  LayerSelectionBound right_input;
+  right_input.type = SELECTION_BOUND_RIGHT;
+  right_input.layer_rect = gfx::RectF(0, 0, 5, 20);
+  right_input.layer_id = sub_layer_id;
+  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+
+  // The viewport bounds should be properly scaled by the page scale, but should
+  // remain in DIP coordinates.
+  ViewportSelectionBound left_output, right_output;
+  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
+  EXPECT_EQ(left_input.type, left_output.type);
+  gfx::RectF expected_left_output_rect = left_input.layer_rect;
+  expected_left_output_rect.Scale(page_scale_factor);
+  EXPECT_EQ(left_input.layer_rect, left_output.viewport_rect);
+  EXPECT_TRUE(left_output.visible);
+  EXPECT_EQ(right_input.type, right_output.type);
+  gfx::RectF expected_right_output_rect = right_input.layer_rect;
+  expected_right_output_rect.Offset(sub_layer_offset);
+  expected_right_output_rect.Scale(page_scale_factor);
+  EXPECT_EQ(expected_right_output_rect, right_output.viewport_rect);
+  EXPECT_TRUE(right_output.visible);
+}
+
 }  // namespace
 }  // namespace cc

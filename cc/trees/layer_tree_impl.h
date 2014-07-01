@@ -48,6 +48,7 @@ class ResourceProvider;
 class TileManager;
 class UIResourceRequest;
 struct RendererCapabilities;
+struct SelectionHandle;
 
 typedef std::list<UIResourceRequest> UIResourceRequestQueue;
 
@@ -263,6 +264,14 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       const gfx::PointF& screen_space_point);
 
+  void RegisterSelection(const LayerSelectionBound& anchor,
+                         const LayerSelectionBound& focus);
+
+  // Compute the current selection handle location and visbility with respect to
+  // the viewport.
+  void GetViewportSelection(ViewportSelectionBound* anchor,
+                            ViewportSelectionBound* focus);
+
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
@@ -286,6 +295,9 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* page_scale_layer_;
   LayerImpl* inner_viewport_scroll_layer_;
   LayerImpl* outer_viewport_scroll_layer_;
+
+  LayerSelectionBound selection_anchor_;
+  LayerSelectionBound selection_focus_;
 
   float page_scale_factor_;
   float page_scale_delta_;

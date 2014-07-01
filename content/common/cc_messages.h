@@ -8,6 +8,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/filter_operation.h"
+#include "cc/output/viewport_selection_bound.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
@@ -132,6 +133,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(cc::IOSurfaceDrawQuad::Orientation,
 IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
                           cc::FilterOperation::FILTER_TYPE_LAST )
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::SelectionBoundType, cc::SELECTION_BOUND_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
                           cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
@@ -259,6 +261,12 @@ IPC_STRUCT_TRAITS_BEGIN(cc::ReturnedResource)
   IPC_STRUCT_TRAITS_MEMBER(lost)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(cc::ViewportSelectionBound)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_rect)
+  IPC_STRUCT_TRAITS_MEMBER(visible)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(frame_time)
   IPC_STRUCT_TRAITS_MEMBER(deadline)
@@ -276,6 +284,8 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_offset)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_content_translation)
   IPC_STRUCT_TRAITS_MEMBER(overdraw_bottom_height)
+  IPC_STRUCT_TRAITS_MEMBER(selection_anchor)
+  IPC_STRUCT_TRAITS_MEMBER(selection_focus)
   IPC_STRUCT_TRAITS_MEMBER(latency_info)
 IPC_STRUCT_TRAITS_END()
 

@@ -210,6 +210,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   } else {
     target_tree->ClearViewportLayers();
   }
+
+  target_tree->RegisterSelection(selection_anchor_, selection_focus_);
+
   // This should match the property synchronization in
   // LayerTreeHost::finishCommitOnImplThread().
   target_tree->set_source_frame_number(source_frame_number());
@@ -1122,7 +1125,7 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
       gfx::ToRoundedPoint(hit_test_point_in_layer_space));
 }
 
-static LayerImpl* GetNextClippingLayer(LayerImpl* layer) {
+static const LayerImpl* GetNextClippingLayer(const LayerImpl* layer) {
   if (layer->scroll_parent())
     return layer->scroll_parent();
   if (layer->clip_parent())
@@ -1132,7 +1135,7 @@ static LayerImpl* GetNextClippingLayer(LayerImpl* layer) {
 
 static bool PointIsClippedBySurfaceOrClipRect(
     const gfx::PointF& screen_space_point,
-    LayerImpl* layer) {
+    const LayerImpl* layer) {
   // Walk up the layer tree and hit-test any render_surfaces and any layer
   // clip rects that are active.
   for (; layer; layer = GetNextClippingLayer(layer)) {
@@ -1156,7 +1159,7 @@ static bool PointIsClippedBySurfaceOrClipRect(
   return false;
 }
 
-static bool PointHitsLayer(LayerImpl* layer,
+static bool PointHitsLayer(const LayerImpl* layer,
                            const gfx::PointF& screen_space_point,
                            float* distance_to_intersection) {
   gfx::RectF content_rect(layer->content_bounds());
@@ -1306,6 +1309,60 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   FindClosestMatchingLayer(
       screen_space_point, root_layer(), func, &data_for_recursion);
   return data_for_recursion.closest_match;
+}
+
+void LayerTreeImpl::RegisterSelection(const LayerSelectionBound& anchor,
+                                      const LayerSelectionBound& focus) {
+  selection_anchor_ = anchor;
+  selection_focus_ = focus;
+}
+
+static ViewportSelectionBound ComputeViewportSelection(
+    const LayerSelectionBound& bound,
+    LayerImpl* layer,
+    float device_scale_factor) {
+  ViewportSelectionBound result;
+  result.type = bound.type;
+
+  if (!layer || bound.type == SELECTION_BOUND_EMPTY)
+    return result;
+
+  gfx::RectF layer_scaled_rect = gfx::ScaleRect(
+      bound.layer_rect, layer->contents_scale_x(), layer->contents_scale_y());
+  gfx::RectF screen_rect = MathUtil::ProjectClippedRect(
+      layer->screen_space_transform(), layer_scaled_rect);
+
+  // The bottom left of the bound is used for visibility because 1) the bound
+  // edge rect is one-dimensional (no width), and 2) the bottom is the logical
+  // focal point for bound selection handles (this may change in the future).
+  const gfx::PointF& visibility_point = screen_rect.bottom_left();
+  float intersect_distance = 0.f;
+  result.visible = PointHitsLayer(layer, visibility_point, &intersect_distance);
+
+  screen_rect.Scale(1.f / device_scale_factor);
+  result.viewport_rect = screen_rect;
+
+  return result;
+}
+
+void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* anchor,
+                                         ViewportSelectionBound* focus) {
+  DCHECK(anchor);
+  DCHECK(focus);
+
+  *anchor = ComputeViewportSelection(
+      selection_anchor_,
+      selection_anchor_.layer_id ? LayerById(selection_anchor_.layer_id) : NULL,
+      device_scale_factor());
+  if (anchor->type == SELECTION_BOUND_CENTER ||
+      anchor->type == SELECTION_BOUND_EMPTY) {
+    *focus = *anchor;
+  } else {
+    *focus = ComputeViewportSelection(
+        selection_focus_,
+        selection_focus_.layer_id ? LayerById(selection_focus_.layer_id) : NULL,
+        device_scale_factor());
+  }
 }
 
 void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {

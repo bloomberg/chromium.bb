@@ -59,6 +59,10 @@ class WebLayerTreeViewImplForTesting
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) OVERRIDE;
   virtual void clearViewportLayers() OVERRIDE;
+  virtual void registerSelection(
+      const blink::WebSelectionBound& anchor,
+      const blink::WebSelectionBound& focus) OVERRIDE;
+  virtual void clearSelection() OVERRIDE;
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}

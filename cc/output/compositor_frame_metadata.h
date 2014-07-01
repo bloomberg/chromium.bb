@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/output/viewport_selection_bound.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/size_f.h"
 #include "ui/gfx/vector2d_f.h"
@@ -39,6 +40,11 @@ class CC_EXPORT CompositorFrameMetadata {
   gfx::Vector2dF location_bar_offset;
   gfx::Vector2dF location_bar_content_translation;
   float overdraw_bottom_height;
+
+  // Provides selection region updates relative to the current viewport. If the
+  // selection is empty or otherwise unused, the bound types will indicate such.
+  ViewportSelectionBound selection_anchor;
+  ViewportSelectionBound selection_focus;
 
   std::vector<ui::LatencyInfo> latency_info;
 };

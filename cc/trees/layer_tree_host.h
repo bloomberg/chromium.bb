@@ -27,6 +27,7 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
@@ -177,6 +178,9 @@ class CC_EXPORT LayerTreeHost {
   Layer* outer_viewport_scroll_layer() const {
     return outer_viewport_scroll_layer_.get();
   }
+
+  void RegisterSelection(const LayerSelectionBound& anchor,
+                         const LayerSelectionBound& focus);
 
   const LayerTreeSettings& settings() const { return settings_; }
 
@@ -438,6 +442,9 @@ class CC_EXPORT LayerTreeHost {
   scoped_refptr<Layer> page_scale_layer_;
   scoped_refptr<Layer> inner_viewport_scroll_layer_;
   scoped_refptr<Layer> outer_viewport_scroll_layer_;
+
+  LayerSelectionBound selection_anchor_;
+  LayerSelectionBound selection_focus_;
 
   SharedBitmapManager* shared_bitmap_manager_;
 
