@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/strings
       'target_name': 'components_strings',
       'type': 'none',
       'variables': {

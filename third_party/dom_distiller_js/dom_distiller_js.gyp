@@ -4,6 +4,7 @@
 {
     'targets': [
         {
+            # GN version: //third_party/dom_distiller_js:proto
             'target_name': 'dom_distiller_js_proto',
             'type': 'static_library',
             'sources': [ 'package/proto/dom_distiller.proto', ],

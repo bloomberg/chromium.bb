@@ -21,6 +21,7 @@
   },
   'targets': [
     {
+      # GN version: //third_party/libaddressinput:strings
       'target_name': 'libaddressinput_strings',
       'type': 'none',
       'variables': {
@@ -42,6 +43,7 @@
       ],
     },
     {
+      # GN version: //third_party/libaddressinput:updated_strings
       'target_name': 'libaddressinput_updated_strings',
       'type': 'none',
       'variables': {
@@ -63,7 +65,9 @@
       ],
     },
     # This target provides basic functionality which is cooked into the build.
-    { 'target_name': 'libaddressinput_util',
+    {
+      # GN version: //third_party/libaddressinput:util
+      'target_name': 'libaddressinput_util',
       'type': 'static_library',
       'include_dirs': [
         '<(libaddressinput_dir)/cpp/include/',
@@ -112,6 +116,7 @@
     # This target provides more complicated functionality like pinging servers
     # for validation rules.
     {
+      # GN version: //third_party/libaddressinput
       'target_name': 'libaddressinput',
       'type': 'static_library',
       'include_dirs': [
@@ -169,6 +174,7 @@
       },
     },
     {
+      # GN version: //third_party/libaddressinput:libaddressinput_unittests
       'target_name': 'libaddressinput_unittests',
       'type': '<(gtest_target_type)',
       'include_dirs': [

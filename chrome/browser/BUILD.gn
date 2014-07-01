@@ -11,13 +11,14 @@ about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
 
+# TODO(brettw) uncomment this when this target compiles.
 if (false) {
 
-#gypi_values = exec_script(
-#    "//build/gypi_to_gn.py",
-#    [ rebase_path("../chrome_browser.gypi") ],
-#    "scope",
-#    [ "../chrome_browser.gypi" ])
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../chrome_browser.gypi") ],
+    "scope",
+    [ "../chrome_browser.gypi" ])
 
 static_library("browser") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -33,14 +34,20 @@ static_library("browser") {
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/app:generated_resources_map",
+    "//chrome/app/theme:theme_resources",
+    "//chrome/browser/net:probe_message_proto",
+    "//chrome/browser/search/suggestions/proto",
     "//chrome/common",
     "//chrome/common/net",
+    "//components/strings",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
     "//skia",
     "//sql",
     "//sync",
+    "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/widevine/cdm:version_h",
@@ -52,15 +59,12 @@ static_library("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/strings",
+    "//ui/resources",
     # TODO(GYP)
     #"browser_ui",
     #"cert_logger_proto",
-    #"chrome_resources.gyp:chrome_strings_map",
     #"chrome_resources.gyp:platform_locale_settings",
-    #"chrome_resources.gyp:theme_resources",
     #"in_memory_url_index_cache_proto",
-    #"probe_message_proto",
-    #"suggestions_proto",
     #"../components/components.gyp:autocomplete",
     #"../components/components.gyp:autofill_core_browser",
     #"../components/components.gyp:bookmarks_browser",
@@ -99,7 +103,6 @@ static_library("browser") {
     #"../components/components.gyp:translate_core_common",
     #"../components/components.gyp:url_fixer",
     #"../components/components.gyp:user_prefs",
-    #"../components/components_strings.gyp:components_strings",
     ## This depends directly on the variations target, rather than just
     ## transitively via the common target because the proto sources need to
     ## be generated before code in this target can start building.
@@ -108,11 +111,8 @@ static_library("browser") {
     #"../courgette/courgette.gyp:courgette_lib",
     #"../google_apis/google_apis.gyp:google_apis",
     #"../jingle/jingle.gyp:notifier",
-    #"../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation",
-    #"../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp",
     #"../third_party/libjingle/libjingle.gyp:libjingle",
     #"../ui/message_center/message_center.gyp:message_center",
-    #"../ui/resources/ui_resources.gyp:ui_resources",
     #"../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs",
   ]
 
@@ -138,6 +138,10 @@ static_library("browser") {
 
     # TODO(GYP) Also add these nacl_defines to direct dependents.
     #defines = nacl_defines
+
+    # TODO(GYP) remove this when the real webrtc target is used below.
+    configs += [ "//content:webrtc_stub_config" ]
+
     deps += [
       "//cc",
       "//components/visitedlink/browser",
@@ -186,6 +190,7 @@ static_library("browser") {
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",
       #"../third_party/libaddressinput/libaddressinput.gyp:libaddressinput",
+      # Note: for this one also remove the webrtc_stub_config
       #"../third_party/webrtc/modules/modules.gyp:desktop_capture",
       #"../ui/web_dialogs/web_dialogs.gyp:web_dialogs",
       #"../v8/tools/gyp/v8.gyp:v8",
@@ -268,7 +273,7 @@ static_library("browser") {
         gypi_values.chrome_browser_policy_shared_with_ios_sources,
         ".", "//chrome")
     deps += [
-      #"../components/components.gyp:cloud_policy_proto",  TODO(GYP)
+      "//components/policy/proto",
       #"../components/components.gyp:policy",  TODO(GYP)
     ]
     if (!is_ios) {
@@ -328,17 +333,11 @@ static_library("browser") {
   }
 
   if (is_linux) {
-    deps += [
-      #"../build/linux/system.gyp:udev",  TODO(GYP)
-      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_file_entry_proto",  TODO(GYP)
-      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_storage_info_proto",  TODO(GYP)
-      #"../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol",  TODO(GYP)
-    ]
+    configs += [ "//build/config/linux:udev" ]
+    deps += [ "//device/media_transfer_protocol" ]
   }
   if (is_linux && !is_chromeos) {
-    deps += [
-      # "../build/linux/system.gyp:libspeechd",  TODO(GYP)
-    ]
+    deps += [ "//build/config/linux:libspeechd" ]
   }
 
   if (is_chromeos) {

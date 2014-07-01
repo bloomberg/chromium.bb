@@ -7,6 +7,7 @@
     ['android_webview_build == 0', {
       'targets': [
         {
+          # GN version: //components/dom_distiller/webui
           'target_name': 'dom_distiller_webui',
           'type': 'static_library',
           'dependencies': [
@@ -30,6 +31,7 @@
           ],
         },
         {
+          # GN version: //components/dom_distiller/core
           'target_name': 'dom_distiller_core',
           'type': 'static_library',
           'dependencies': [
@@ -95,6 +97,7 @@
           ],
         },
         {
+          # GN version: components/dom_distiller/core:test_support
           'target_name': 'dom_distiller_test_support',
           'type': 'static_library',
           'dependencies': [
@@ -116,6 +119,7 @@
           ],
         },
         {
+          # GN version: //components/dom_distiller/core/proto
           'target_name': 'distilled_page_proto',
           'type': 'static_library',
           'sources': [
@@ -133,6 +137,7 @@
         ['OS != "ios"', {
           'targets': [
             {
+              # GN version: //components/dom_distiller/content
               'target_name': 'dom_distiller_content',
               'type': 'static_library',
               'dependencies': [

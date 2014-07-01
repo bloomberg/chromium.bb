@@ -198,6 +198,7 @@
           ],
         },
         {
+          # GN version: //components/policy/proto
           'target_name': 'cloud_policy_proto',
           'type': '<(component)',
           'sources': [

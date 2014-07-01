@@ -1,0 +1,79 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/dom_distiller.gypi:dom_distiller_core
+static_library("core") {
+  sources = [
+    "../android/component_jni_registrar.cc",
+    "../android/component_jni_registrar.h",
+    "article_distillation_update.cc",
+    "article_distillation_update.h",
+    "article_entry.cc",
+    "article_entry.h",
+    "distilled_content_store.cc",
+    "distilled_content_store.h",
+    "distiller.cc",
+    "distiller.h",
+    "distiller_page.cc",
+    "distiller_page.h",
+    "distiller_url_fetcher.cc",
+    "distiller_url_fetcher.h",
+    "dom_distiller_constants.cc",
+    "dom_distiller_constants.h",
+    "dom_distiller_model.cc",
+    "dom_distiller_model.h",
+    "dom_distiller_observer.h",
+    "dom_distiller_service.cc",
+    "dom_distiller_service.h",
+    "dom_distiller_store.cc",
+    "dom_distiller_store.h",
+    "feedback_reporter.cc",
+    "feedback_reporter.h",
+    "task_tracker.cc",
+    "task_tracker.h",
+    "url_constants.cc",
+    "url_constants.h",
+    "url_utils_android.cc",
+    "url_utils_android.h",
+    "url_utils.cc",
+    "url_utils.h",
+    "viewer.cc",
+    "viewer.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/dom_distiller/core/proto",
+    "//components/resources",
+    "//components/strings",
+    "//skia",
+    "//sync",
+    "//third_party/dom_distiller_js/package/proto",
+    #'components.gyp:leveldb_proto',  TODO(GYP)
+  ]
+
+  if (is_android) {
+    #deps += [ ":dom_distiller_core_jni_headers" ]  TODO(GYP)
+  }
+}
+
+# GYP version: components/dom_distiller.gypi:dom_distiller_test_support
+static_library("test_support") {
+  sources = [
+    "dom_distiller_test_util.cc",
+    "dom_distiller_test_util.h",
+    "fake_distiller.cc",
+    "fake_distiller.h",
+    "fake_distiller_page.cc",
+    "fake_distiller_page.h",
+  ]
+
+  deps = [
+    ":core",
+    #'components.gyp:leveldb_proto_test_support',  TODO(GYP)
+    "//sync",
+    "//testing/gmock",
+  ]
+}
+

@@ -4,6 +4,22 @@
 
 import("//tools/grit/grit_rule.gni")
 
+# GYP version: components/components_resources.gyp:components_resources
+group("resources") {
+  deps = [
+    ":components_resources",
+    ":components_scaled_resources",
+  ]
+}
+
+# GYP version: components/components_resources.gyp
+#              (generate_components_resources action)
 grit("components_resources") {
   source = "components_resources.grd"
+}
+
+# GYP version: components/components_resources.gyp
+#              (generate_scaled_components_resources action)
+grit("components_scaled_resources") {
+  source = "components_scaled_resources.grd"
 }

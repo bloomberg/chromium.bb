@@ -10,6 +10,7 @@
     {
       # Protobuf compiler / generator for the MtpFileEntry and
       # MtpFileEntries protocol buffers.
+      # GN version: //device/media_transfer_protocol:mtp_file_entry_proto
       'target_name': 'mtp_file_entry_proto',
       'type': 'static_library',
       'sources': [
@@ -24,6 +25,7 @@
     {
       # Protobuf compiler / generator for the MtpStorageInfo protocol
       # buffer.
+      # GN version: //device/media_transfer_protocol:mtp_storage_info_proto
       'target_name': 'mtp_storage_info_proto',
       'type': 'static_library',
       'sources': [
@@ -36,6 +38,7 @@
       'includes': ['../../build/protoc.gypi'],
     },
     {
+      # GN version: //device/media_transfer_protocol
       'target_name': 'device_media_transfer_protocol',
       'type': 'static_library',
       'dependencies': [

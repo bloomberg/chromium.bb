@@ -3422,6 +3422,7 @@
     },
     {
       # Protobuf compiler / generator for the suggestions service proto.
+      # GN version: //chrome/browser/search/suggestions/proto
       'target_name': 'suggestions_proto',
       'type': 'static_library',
       'sources': [ 'browser/search/suggestions/proto/suggestions.proto', ],
@@ -3433,6 +3434,7 @@
     },
     {
       # Protobuf compiler / generator for Probe Message.
+      # GN version: //chrome/browser/net:probe_message_proto
       'target_name': 'probe_message_proto',
       'type': 'static_library',
       'sources': [ 'browser/net/probe_message.proto' ],

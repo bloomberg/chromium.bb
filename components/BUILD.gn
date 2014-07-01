@@ -9,6 +9,7 @@ group("all_components") {
 
   deps = [
     "//components/cloud_devices/common",
+    "//components/dom_distiller/core",
     "//components/favicon_base",
     "//components/json_schema",
     "//components/language_usage_metrics",
@@ -20,7 +21,7 @@ group("all_components") {
     "//components/query_parser",
     "//components/resources:components_resources",
     "//components/startup_metric_utils",
-    "//components/strings:components_strings",
+    "//components/strings",
     "//components/tracing",
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",

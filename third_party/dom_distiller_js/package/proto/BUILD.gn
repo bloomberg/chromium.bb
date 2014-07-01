@@ -1,0 +1,21 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+config("dependent_config") {
+  include_dirs = [ "//third_party/dom_distiller_js/package/proto_gen" ]
+}
+
+source_set("proto") {
+  deps = [ ":dom_distiller_proto" ]
+  direct_dependent_configs = [ ":dependent_config" ]
+  forward_dependent_configs_from = [ ":dom_distiller_proto" ]
+}
+
+proto_library("dom_distiller_proto") {
+  visibility = ":*"
+  sources = [ "dom_distiller.proto" ]
+  proto_out_dir = "third_party/dom_distiller_js"
+}

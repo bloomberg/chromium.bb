@@ -277,6 +277,7 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      # GN version: //chrome/app:make_generated_resources_map
       'target_name': 'chrome_strings_map',
       'type': 'none',
       'dependencies': [ 'chrome_strings', ],
@@ -510,6 +511,7 @@
       ], # conditions
     },
     {
+      # GN version: //chrome/app/theme:chrome_unscaled_resources
       'target_name': 'chrome_unscaled_resources',
       'type': 'none',
       'actions': [
