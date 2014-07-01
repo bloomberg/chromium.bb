@@ -39005,6 +39005,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="469" label="CSSSelectorPseudoHost"/>
   <int value="470" label="CSSSelectorPseudoHostContext"/>
   <int value="471" label="CSSDeepCombinator"/>
+  <int value="472" label="SyncXHRWithCredentials"/>
+  <int value="473" label="UseAsm"/>
+  <int value="474" label="KeyEventNotAllowedInFullScreen"/>
+  <int value="475" label="DOMWindowOpen"/>
+  <int value="476" label="DOMWindowOpenFeatures"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
