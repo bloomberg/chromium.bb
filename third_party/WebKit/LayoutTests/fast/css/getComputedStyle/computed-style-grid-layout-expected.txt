@@ -1,7 +1,7 @@
 CSS Grid Layout Attributes that are exposed in the CSS computed style object:
 
 grid-auto-columns: auto;
-grid-auto-flow: none;
+grid-auto-flow: row;
 grid-auto-rows: auto;
 grid-column-end: auto;
 grid-column-start: auto;

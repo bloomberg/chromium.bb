@@ -4081,42 +4081,6 @@ template<> inline CSSPrimitiveValue::operator ETransformStyle3D() const
     return TransformStyle3DFlat;
 }
 
-template<> inline CSSPrimitiveValue::operator GridAutoFlow() const
-{
-    ASSERT(isValueID());
-    switch (m_value.valueID) {
-    case CSSValueNone:
-        return AutoFlowNone;
-    case CSSValueColumn:
-        return AutoFlowColumn;
-    case CSSValueRow:
-        return AutoFlowRow;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return AutoFlowNone;
-
-}
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(GridAutoFlow flow)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (flow) {
-    case AutoFlowNone:
-        m_value.valueID = CSSValueNone;
-        break;
-    case AutoFlowColumn:
-        m_value.valueID = CSSValueColumn;
-        break;
-    case AutoFlowRow:
-        m_value.valueID = CSSValueRow;
-        break;
-    }
-}
-
 enum LengthConversion {
     AnyConversion = ~0,
     FixedConversion = 1 << 0,

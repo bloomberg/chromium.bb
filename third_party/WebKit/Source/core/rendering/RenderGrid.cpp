@@ -211,7 +211,8 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
         return;
     }
 
-    if (style()->gridAutoFlow() != AutoFlowNone) {
+    // FIXME: Implement properly "stack" value in auto-placement algorithm.
+    if (!style()->isGridAutoFlowAlgorithmStack()) {
         // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
         dirtyGrid();
         return;
@@ -260,7 +261,8 @@ void RenderGrid::removeChild(RenderObject* child)
 
     ASSERT(child->isBox());
 
-    if (style()->gridAutoFlow() != AutoFlowNone) {
+    // FIXME: Implement properly "stack" value in auto-placement algorithm.
+    if (!style()->isGridAutoFlowAlgorithmStack()) {
         // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
         dirtyGrid();
         return;
@@ -790,7 +792,6 @@ void RenderGrid::placeItemsOnGrid()
 
     Vector<RenderBox*> autoMajorAxisAutoGridItems;
     Vector<RenderBox*> specifiedMajorAxisAutoGridItems;
-    GridAutoFlow autoFlow = style()->gridAutoFlow();
     for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
         // FIXME: We never re-resolve positions if the grid is grown during auto-placement which may lead auto / <integer>
         // positions to not match the author's intent. The specification is unclear on what should be done in this case.
@@ -810,7 +811,8 @@ void RenderGrid::placeItemsOnGrid()
     ASSERT(gridRowCount() >= style()->gridTemplateRows().size());
     ASSERT(gridColumnCount() >= style()->gridTemplateColumns().size());
 
-    if (autoFlow == AutoFlowNone) {
+    // FIXME: Implement properly "stack" value in auto-placement algorithm.
+    if (style()->isGridAutoFlowAlgorithmStack()) {
         // If we did collect some grid items, they won't be placed thus never laid out.
         ASSERT(!autoMajorAxisAutoGridItems.size());
         ASSERT(!specifiedMajorAxisAutoGridItems.size());
@@ -932,16 +934,12 @@ void RenderGrid::placeAutoMajorAxisItemOnGrid(RenderBox* gridItem)
 
 GridTrackSizingDirection RenderGrid::autoPlacementMajorAxisDirection() const
 {
-    GridAutoFlow flow = style()->gridAutoFlow();
-    ASSERT(flow != AutoFlowNone);
-    return (flow == AutoFlowColumn) ? ForColumns : ForRows;
+    return style()->isGridAutoFlowDirectionColumn() ? ForColumns : ForRows;
 }
 
 GridTrackSizingDirection RenderGrid::autoPlacementMinorAxisDirection() const
 {
-    GridAutoFlow flow = style()->gridAutoFlow();
-    ASSERT(flow != AutoFlowNone);
-    return (flow == AutoFlowColumn) ? ForRows : ForColumns;
+    return style()->isGridAutoFlowDirectionColumn() ? ForRows : ForColumns;
 }
 
 void RenderGrid::dirtyGrid()

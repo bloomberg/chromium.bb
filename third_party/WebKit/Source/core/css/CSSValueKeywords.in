@@ -521,6 +521,10 @@ column-reverse
 wrap
 wrap-reverse
 
+// grid-auto-flow
+dense
+stack
+
 // -internal-marquee-direction
 forwards
 backwards

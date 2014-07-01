@@ -1958,9 +1958,43 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             }
             return list.release();
         }
-        case CSSPropertyGridAutoFlow:
-            return cssValuePool().createValue(style->gridAutoFlow());
+        case CSSPropertyGridAutoFlow: {
+            RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+            switch (style->gridAutoFlow()) {
+            case AutoFlowRow:
+            case AutoFlowRowDense:
+                list->append(cssValuePool().createIdentifierValue(CSSValueRow));
+                break;
+            case AutoFlowColumn:
+            case AutoFlowColumnDense:
+                list->append(cssValuePool().createIdentifierValue(CSSValueColumn));
+                break;
+            case AutoFlowStackRow:
+            case AutoFlowStackColumn:
+                list->append(cssValuePool().createIdentifierValue(CSSValueStack));
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
 
+            switch (style->gridAutoFlow()) {
+            case AutoFlowRowDense:
+            case AutoFlowColumnDense:
+                list->append(cssValuePool().createIdentifierValue(CSSValueDense));
+                break;
+            case AutoFlowStackRow:
+                list->append(cssValuePool().createIdentifierValue(CSSValueRow));
+                break;
+            case AutoFlowStackColumn:
+                list->append(cssValuePool().createIdentifierValue(CSSValueColumn));
+                break;
+            default:
+                // Do nothing.
+                break;
+            }
+
+            return list.release();
+        }
         // Specs mention that getComputedStyle() should return the used value of the property instead of the computed
         // one for grid-definition-{rows|columns} but not for the grid-auto-{rows|columns} as things like
         // grid-auto-columns: 2fr; cannot be resolved to a value in pixels as the '2fr' means very different things

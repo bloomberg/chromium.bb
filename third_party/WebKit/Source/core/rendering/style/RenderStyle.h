@@ -795,7 +795,12 @@ public:
     const NamedGridAreaMap& namedGridArea() const { return rareNonInheritedData->m_grid->m_namedGridArea; }
     size_t namedGridAreaRowCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaRowCount; }
     size_t namedGridAreaColumnCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaColumnCount; }
-    GridAutoFlow gridAutoFlow() const { return rareNonInheritedData->m_grid->m_gridAutoFlow; }
+    GridAutoFlow gridAutoFlow() const { return static_cast<GridAutoFlow>(rareNonInheritedData->m_grid->m_gridAutoFlow); }
+    bool isGridAutoFlowDirectionRow() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowDirectionRow) == InternalAutoFlowDirectionRow; }
+    bool isGridAutoFlowDirectionColumn() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowDirectionColumn) == InternalAutoFlowDirectionColumn; }
+    bool isGridAutoFlowAlgorithmSparse() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowAlgorithmSparse) == InternalAutoFlowAlgorithmSparse; }
+    bool isGridAutoFlowAlgorithmDense() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowAlgorithmDense) == InternalAutoFlowAlgorithmDense; }
+    bool isGridAutoFlowAlgorithmStack() const { return (rareNonInheritedData->m_grid->m_gridAutoFlow & InternalAutoFlowAlgorithmStack) == InternalAutoFlowAlgorithmStack; }
     const GridTrackSize& gridAutoColumns() const { return rareNonInheritedData->m_grid->m_gridAutoColumns; }
     const GridTrackSize& gridAutoRows() const { return rareNonInheritedData->m_grid->m_gridAutoRows; }
 
@@ -1678,7 +1683,7 @@ public:
     static Vector<GridTrackSize> initialGridTemplateColumns() { return Vector<GridTrackSize>(); }
     static Vector<GridTrackSize> initialGridTemplateRows() { return Vector<GridTrackSize>(); }
 
-    static GridAutoFlow initialGridAutoFlow() { return AutoFlowNone; }
+    static GridAutoFlow initialGridAutoFlow() { return AutoFlowRow; }
 
     static GridTrackSize initialGridAutoColumns() { return GridTrackSize(Length(Auto)); }
     static GridTrackSize initialGridAutoRows() { return GridTrackSize(Length(Auto)); }

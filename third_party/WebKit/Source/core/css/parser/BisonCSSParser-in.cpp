@@ -524,9 +524,6 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
         return valueID == CSSValueAuto || valueID == CSSValueNormal || valueID == CSSValueNone;
     case CSSPropertyWebkitFontSmoothing:
         return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueAntialiased || valueID == CSSValueSubpixelAntialiased;
-    case CSSPropertyGridAutoFlow:
-        return RuntimeEnabledFeatures::cssGridLayoutEnabled()
-            && (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn);
     case CSSPropertyWebkitLineBreak: // auto | loose | normal | strict | after-white-space
         return valueID == CSSValueAuto || valueID == CSSValueLoose || valueID == CSSValueNormal || valueID == CSSValueStrict || valueID == CSSValueAfterWhiteSpace;
     case CSSPropertyWebkitMarginAfterCollapse:
@@ -649,7 +646,6 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyJustifyContent:
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:

@@ -65,7 +65,7 @@ public:
     OrderedNamedGridLines m_orderedNamedGridColumnLines;
     OrderedNamedGridLines m_orderedNamedGridRowLines;
 
-    GridAutoFlow m_gridAutoFlow;
+    unsigned m_gridAutoFlow : GridAutoFlowBits;
 
     GridTrackSize m_gridAutoRows;
     GridTrackSize m_gridAutoColumns;

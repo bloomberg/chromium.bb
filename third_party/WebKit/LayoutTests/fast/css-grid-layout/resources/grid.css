@@ -123,8 +123,8 @@
 }
 
 /* Grid element flow. */
-.gridAutoFlowNone {
-    grid-auto-flow: none;
+.gridAutoFlowStack {
+    grid-auto-flow: stack;
 }
 
 .gridAutoFlowColumn {

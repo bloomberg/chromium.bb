@@ -1197,6 +1197,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
 
         return parseItemPositionOverflowPosition(propId, important);
+    case CSSPropertyGridAutoFlow:
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
+            return false;
+        parsedValue = parseGridAutoFlow(*m_valueList);
+        break;
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
@@ -1570,7 +1575,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyJustifyContent:
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:
@@ -3551,15 +3555,13 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     m_valueList->setCurrentIndex(0);
 
     // 2- <grid-auto-flow> [ <grid-auto-columns> [ / <grid-auto-rows> ]? ]
-    CSSValueID id = m_valueList->current()->id;
-    if (id != CSSValueRow && id != CSSValueColumn && id != CSSValueNone)
+    if (!parseValue(CSSPropertyGridAutoFlow, important))
         return false;
 
-    RefPtrWillBeRawPtr<CSSValue> autoFlowValue = cssValuePool().createIdentifierValue(id);
     RefPtrWillBeRawPtr<CSSValue> autoColumnsValue = nullptr;
     RefPtrWillBeRawPtr<CSSValue> autoRowsValue = nullptr;
 
-    if (m_valueList->next()) {
+    if (m_valueList->current()) {
         autoColumnsValue = parseGridTrackSize(*m_valueList);
         if (!autoColumnsValue)
             return false;
@@ -3582,7 +3584,6 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     if (!autoRowsValue)
         autoRowsValue = autoColumnsValue;
 
-    addProperty(CSSPropertyGridAutoFlow, autoFlowValue, important);
     addProperty(CSSPropertyGridAutoColumns, autoColumnsValue, important);
     addProperty(CSSPropertyGridAutoRows, autoRowsValue, important);
 
@@ -3900,6 +3901,50 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateAreas()
         return nullptr;
 
     return CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
+{
+    // [ row | column ] && dense? | stack && [ row | column ]?
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+
+    CSSParserValue* value = list.current();
+    if (!value)
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+
+    // First parameter.
+    CSSValueID firstId = value->id;
+    if (firstId != CSSValueRow && firstId != CSSValueColumn && firstId != CSSValueDense && firstId != CSSValueStack)
+        return nullptr;
+    parsedValues->append(cssValuePool().createIdentifierValue(firstId));
+
+    // Second parameter, if any.
+    value = list.next();
+    if (!value && firstId == CSSValueDense)
+        return nullptr;
+
+    if (value) {
+        switch (firstId) {
+        case CSSValueRow:
+        case CSSValueColumn:
+            if (value->id != CSSValueDense && value->id != CSSValueStack)
+                return parsedValues;
+            break;
+        case CSSValueDense:
+        case CSSValueStack:
+            if (value->id != CSSValueRow && value->id != CSSValueColumn)
+                return parsedValues;
+            break;
+        default:
+            return parsedValues;
+        }
+        parsedValues->append(cssValuePool().createIdentifierValue(value->id));
+        list.next();
+    }
+
+    return parsedValues;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParserValueList* args, bool counters)

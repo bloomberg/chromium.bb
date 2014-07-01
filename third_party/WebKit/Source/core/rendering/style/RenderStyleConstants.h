@@ -483,7 +483,26 @@ enum WrapThrough { WrapThroughWrap, WrapThroughNone };
 
 enum RubyPosition { RubyPositionBefore, RubyPositionAfter };
 
-enum GridAutoFlow { AutoFlowNone, AutoFlowColumn, AutoFlowRow };
+static const size_t GridAutoFlowBits = 5;
+enum InternalGridAutoFlowAlgorithm {
+    InternalAutoFlowAlgorithmSparse = 0x1,
+    InternalAutoFlowAlgorithmDense = 0x2,
+    InternalAutoFlowAlgorithmStack = 0x4
+};
+
+enum InternalGridAutoFlowDirection {
+    InternalAutoFlowDirectionRow = 0x8,
+    InternalAutoFlowDirectionColumn = 0x10
+};
+
+enum GridAutoFlow {
+    AutoFlowRow = InternalAutoFlowAlgorithmSparse | InternalAutoFlowDirectionRow,
+    AutoFlowColumn = InternalAutoFlowAlgorithmSparse | InternalAutoFlowDirectionColumn,
+    AutoFlowRowDense = InternalAutoFlowAlgorithmDense | InternalAutoFlowDirectionRow,
+    AutoFlowColumnDense = InternalAutoFlowAlgorithmDense | InternalAutoFlowDirectionColumn,
+    AutoFlowStackRow = InternalAutoFlowAlgorithmStack | InternalAutoFlowDirectionRow,
+    AutoFlowStackColumn = InternalAutoFlowAlgorithmStack | InternalAutoFlowDirectionColumn
+};
 
 enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRegionNoDrag };
 

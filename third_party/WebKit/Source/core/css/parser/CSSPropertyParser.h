@@ -164,6 +164,7 @@ private:
     bool parseGridTemplateAreasRow(NamedGridAreaMap&, const size_t, size_t&);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateAreas();
     void parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = 0);
+    PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
     bool parseClipShape(CSSPropertyID, bool important);
 
