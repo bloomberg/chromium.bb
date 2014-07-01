@@ -344,6 +344,8 @@ def includes_for_type(idl_type):
     if base_idl_type.endswith('Constructor'):
         # FIXME: replace with a [ConstructorAttribute] extended attribute
         base_idl_type = idl_type.constructor_type_name
+    if base_idl_type not in component_dir:
+        return set()
     return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
                                            base_idl_type)])
 
