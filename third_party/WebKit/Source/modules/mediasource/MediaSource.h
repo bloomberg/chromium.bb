@@ -51,13 +51,15 @@ namespace WebCore {
 class ExceptionState;
 class GenericEventQueue;
 
+// FIXME: Oilpan: Change this to RefCountedGarbageCollectedWillBeGarbageCollectedFinalized
+// if MediaSource stops using ActiveDOMObject::setPendingActivity.
 class MediaSource FINAL
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
+    : public RefCountedGarbageCollected<MediaSource>
     , public HTMLMediaSource
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public ScriptWrappable {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<MediaSource>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
     static const AtomicString& openKeyword();
