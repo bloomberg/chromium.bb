@@ -212,7 +212,7 @@ MetadataCache.prototype.get = function(entries, type, callback) {
  * @param {string} type The metadata type.
  * @param {function(Object)} callback The metadata is passed to callback.
  */
-MetadataCache.prototype.getLatest = function(entries, type, callback, refresh) {
+MetadataCache.prototype.getLatest = function(entries, type, callback) {
   return this.getInternal_(entries, type, true, callback);
 };
 
