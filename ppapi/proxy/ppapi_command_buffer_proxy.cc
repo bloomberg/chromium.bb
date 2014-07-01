@@ -152,6 +152,22 @@ uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   return sync_point;
 }
 
+uint32 PpapiCommandBufferProxy::InsertFutureSyncPoint() {
+  uint32 sync_point = 0;
+  if (last_state_.error == gpu::error::kNoError) {
+    Send(new PpapiHostMsg_PPBGraphics3D_InsertFutureSyncPoint(
+        ppapi::API_ID_PPB_GRAPHICS_3D, resource_, &sync_point));
+  }
+  return sync_point;
+}
+
+void PpapiCommandBufferProxy::RetireSyncPoint(uint32 sync_point) {
+  if (last_state_.error == gpu::error::kNoError) {
+    Send(new PpapiHostMsg_PPBGraphics3D_RetireSyncPoint(
+        ppapi::API_ID_PPB_GRAPHICS_3D, resource_, sync_point));
+  }
+}
+
 void PpapiCommandBufferProxy::SignalSyncPoint(uint32 sync_point,
                                               const base::Closure& callback) {
   NOTREACHED();

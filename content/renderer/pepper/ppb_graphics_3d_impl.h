@@ -35,6 +35,8 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
                                                             int32_t end)
       OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
+  virtual uint32_t InsertFutureSyncPoint() OVERRIDE;
+  virtual void RetireSyncPoint(uint32_t) OVERRIDE;
 
   // Binds/unbinds the graphics of this context with the associated instance.
   // Returns true if binding/unbinding is successful.

@@ -22,6 +22,7 @@ struct GPU_EXPORT Capabilities {
   bool discard_framebuffer;
   bool sync_query;
   bool map_image;
+  bool future_sync_points;
 
   Capabilities();
 };

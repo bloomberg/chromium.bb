@@ -392,8 +392,24 @@ uint32 CommandBufferProxyImpl::InsertSyncPoint() {
     return 0;
 
   uint32 sync_point = 0;
-  Send(new GpuCommandBufferMsg_InsertSyncPoint(route_id_, &sync_point));
+  Send(new GpuCommandBufferMsg_InsertSyncPoint(route_id_, true, &sync_point));
   return sync_point;
+}
+
+uint32_t CommandBufferProxyImpl::InsertFutureSyncPoint() {
+  if (last_state_.error != gpu::error::kNoError)
+    return 0;
+
+  uint32 sync_point = 0;
+  Send(new GpuCommandBufferMsg_InsertSyncPoint(route_id_, false, &sync_point));
+  return sync_point;
+}
+
+void CommandBufferProxyImpl::RetireSyncPoint(uint32_t sync_point) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_RetireSyncPoint(route_id_, sync_point));
 }
 
 void CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,

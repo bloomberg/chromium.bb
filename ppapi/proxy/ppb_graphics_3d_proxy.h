@@ -46,6 +46,8 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
                                                             int32_t end)
       OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
+  virtual uint32_t InsertFutureSyncPoint() OVERRIDE;
+  virtual void RetireSyncPoint(uint32_t sync_point) OVERRIDE;
 
  private:
   // PPB_Graphics3D_Shared overrides.
@@ -100,6 +102,9 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                                   int32 id);
   void OnMsgSwapBuffers(const HostResource& context);
   void OnMsgInsertSyncPoint(const HostResource& context, uint32* sync_point);
+  void OnMsgInsertFutureSyncPoint(const HostResource& context,
+                                  uint32* sync_point);
+  void OnMsgRetireSyncPoint(const HostResource& context, uint32 sync_point);
   // Renderer->plugin message handlers.
   void OnMsgSwapBuffersACK(const HostResource& context,
                            int32_t pp_error);

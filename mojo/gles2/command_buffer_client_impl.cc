@@ -187,6 +187,17 @@ uint32 CommandBufferClientImpl::InsertSyncPoint() {
   return 0;
 }
 
+uint32 CommandBufferClientImpl::InsertFutureSyncPoint() {
+  // TODO(piman)
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void CommandBufferClientImpl::RetireSyncPoint(uint32 sync_point) {
+  // TODO(piman)
+  NOTIMPLEMENTED();
+}
+
 void CommandBufferClientImpl::SignalSyncPoint(uint32 sync_point,
                                               const base::Closure& callback) {
   // TODO(piman)

@@ -304,8 +304,17 @@ uint32 GLManager::InsertSyncPoint() {
   return 0u;
 }
 
+uint32 GLManager::InsertFutureSyncPoint() {
+  NOTIMPLEMENTED();
+  return 0u;
+}
+
+void GLManager::RetireSyncPoint(uint32 sync_point) {
+  NOTIMPLEMENTED();
+}
+
 void GLManager::SignalSyncPoint(uint32 sync_point,
-                             const base::Closure& callback) {
+                                const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 

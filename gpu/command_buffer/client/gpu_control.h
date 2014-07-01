@@ -45,6 +45,15 @@ class GPU_EXPORT GpuControl {
   // be used for cross-context synchronization.
   virtual uint32_t InsertSyncPoint() = 0;
 
+  // Inserts a future sync point, returning its ID. Sync point IDs are global
+  // and can be used for cross-context synchronization. The sync point won't be
+  // retired immediately.
+  virtual uint32_t InsertFutureSyncPoint() = 0;
+
+  // Retires a future sync point. This will signal contexts that are waiting
+  // on it to start executing.
+  virtual void RetireSyncPoint(uint32_t sync_point) = 0;
+
   // Runs |callback| when a sync point is reached.
   virtual void SignalSyncPoint(uint32_t sync_point,
                                const base::Closure& callback) = 0;

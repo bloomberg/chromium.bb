@@ -137,6 +137,15 @@ uint32_t Graphics3DResource::InsertSyncPoint() {
   return 0;
 }
 
+uint32_t Graphics3DResource::InsertFutureSyncPoint() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void Graphics3DResource::RetireSyncPoint(uint32_t sync_point) {
+  NOTIMPLEMENTED();
+}
+
 Graphics3DResource::~Graphics3DResource() {
   MojoGLES2DestroyContext(context_);
 }

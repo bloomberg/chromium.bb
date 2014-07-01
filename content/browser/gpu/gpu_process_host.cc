@@ -602,6 +602,7 @@ void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
 void GpuProcessHost::EstablishGpuChannel(
     int client_id,
     bool share_context,
+    bool allow_future_sync_points,
     const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("gpu", "GpuProcessHost::EstablishGpuChannel");
@@ -613,7 +614,8 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  if (Send(new GpuMsg_EstablishChannel(client_id, share_context))) {
+  if (Send(new GpuMsg_EstablishChannel(
+          client_id, share_context, allow_future_sync_points))) {
     channel_requests_.push(callback);
   } else {
     DVLOG(1) << "Failed to send GpuMsg_EstablishChannel.";

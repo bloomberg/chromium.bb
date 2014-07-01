@@ -105,6 +105,8 @@ class GLManager : private GpuControl {
                                                       int32* id) OVERRIDE;
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual uint32 InsertFutureSyncPoint() OVERRIDE;
+  virtual void RetireSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void SignalSyncPoint(uint32 sync_point,
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,

@@ -655,6 +655,16 @@ uint32 InProcessCommandBuffer::InsertSyncPoint() {
   return sync_point;
 }
 
+uint32 InProcessCommandBuffer::InsertFutureSyncPoint() {
+  return g_sync_point_manager.Get().GenerateSyncPoint();
+}
+
+void InProcessCommandBuffer::RetireSyncPoint(uint32 sync_point) {
+  QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
+                       base::Unretained(this),
+                       sync_point));
+}
+
 void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();

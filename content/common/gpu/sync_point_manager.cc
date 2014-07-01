@@ -46,7 +46,11 @@ void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
   {
     base::AutoLock lock(lock_);
     SyncPointMap::iterator it = sync_point_map_.find(sync_point);
-    DCHECK(it != sync_point_map_.end());
+    if (it == sync_point_map_.end()) {
+      LOG(ERROR) << "Attempted to retire sync point that"
+                    " didn't exist or was already retired.";
+      return;
+    }
     list.swap(it->second);
     sync_point_map_.erase(it);
   }

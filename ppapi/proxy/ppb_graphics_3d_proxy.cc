@@ -98,6 +98,15 @@ uint32_t Graphics3D::InsertSyncPoint() {
   return 0;
 }
 
+uint32_t Graphics3D::InsertFutureSyncPoint() {
+  NOTREACHED();
+  return 0;
+}
+
+void Graphics3D::RetireSyncPoint(uint32_t sync_point) {
+  NOTREACHED();
+}
+
 gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
   return command_buffer_.get();
 }
@@ -190,6 +199,10 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgSwapBuffers)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_InsertSyncPoint,
                         OnMsgInsertSyncPoint)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_InsertFutureSyncPoint,
+                        OnMsgInsertFutureSyncPoint)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_RetireSyncPoint,
+                        OnMsgRetireSyncPoint)
 #endif  // !defined(OS_NACL)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
@@ -312,6 +325,22 @@ void PPB_Graphics3D_Proxy::OnMsgInsertSyncPoint(const HostResource& context,
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.succeeded())
     *sync_point = enter.object()->InsertSyncPoint();
+}
+
+void PPB_Graphics3D_Proxy::OnMsgInsertFutureSyncPoint(
+    const HostResource& context,
+    uint32* sync_point) {
+  *sync_point = 0;
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.succeeded())
+    *sync_point = enter.object()->InsertFutureSyncPoint();
+}
+
+void PPB_Graphics3D_Proxy::OnMsgRetireSyncPoint(const HostResource& context,
+                                                uint32 sync_point) {
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->RetireSyncPoint(sync_point);
 }
 #endif  // !defined(OS_NACL)
 

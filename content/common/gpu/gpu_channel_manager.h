@@ -110,7 +110,9 @@ class GpuChannelManager : public IPC::Listener,
   typedef std::deque<ImageOperation*> ImageOperationQueue;
 
   // Message handlers.
-  void OnEstablishChannel(int client_id, bool share_context);
+  void OnEstablishChannel(int client_id,
+                          bool share_context,
+                          bool allow_future_sync_points);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnVisibilityChanged(
       int32 render_view_id, int32 client_id, bool visible);

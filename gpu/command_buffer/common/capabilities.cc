@@ -18,6 +18,8 @@ Capabilities::Capabilities()
       texture_storage(false),
       discard_framebuffer(false),
       sync_query(false),
-      map_image(false) {}
+      map_image(false),
+      future_sync_points(false) {
+}
 
 }  // namespace gpu

@@ -584,8 +584,11 @@ void GpuCommandBufferStub::OnInitialize(
   command_buffer_->SetSharedStateBuffer(gpu::MakeBackingFromSharedMemory(
       shared_state_shm.Pass(), kSharedStateSize));
 
+  gpu::Capabilities capabilities = decoder_->GetCapabilities();
+  capabilities.future_sync_points = channel_->allow_future_sync_points();
+
   GpuCommandBufferMsg_Initialize::WriteReplyParams(
-      reply_message, true, decoder_->GetCapabilities());
+      reply_message, true, capabilities);
   Send(reply_message);
 
   if (handle_.is_null() && !active_url_.is_empty()) {

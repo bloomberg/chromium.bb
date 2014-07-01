@@ -292,8 +292,17 @@ uint32 Display::InsertSyncPoint() {
   return 0u;
 }
 
+uint32 Display::InsertFutureSyncPoint() {
+  NOTIMPLEMENTED();
+  return 0u;
+}
+
+void Display::RetireSyncPoint(uint32 sync_point) {
+  NOTIMPLEMENTED();
+}
+
 void Display::SignalSyncPoint(uint32 sync_point,
-                             const base::Closure& callback) {
+                              const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 

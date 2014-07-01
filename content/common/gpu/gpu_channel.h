@@ -58,7 +58,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
              gfx::GLShareGroup* share_group,
              gpu::gles2::MailboxManager* mailbox_manager,
              int client_id,
-             bool software);
+             bool software,
+             bool allow_future_sync_points);
   virtual ~GpuChannel();
 
   void Init(base::MessageLoopProxy* io_message_loop,
@@ -150,6 +151,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
 
   uint64 GetMemoryUsage();
 
+  bool allow_future_sync_points() const { return allow_future_sync_points_; }
+
  private:
   friend class GpuChannelMessageFilter;
 
@@ -224,6 +227,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   scoped_ptr<DevToolsGpuAgent> devtools_gpu_agent_;
 
   size_t num_stubs_descheduled_;
+
+  bool allow_future_sync_points_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

@@ -134,6 +134,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   host->EstablishGpuChannel(
       render_process_id_,
       share_contexts,
+      false,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&reply)));
