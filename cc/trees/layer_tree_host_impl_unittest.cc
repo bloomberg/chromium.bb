@@ -122,7 +122,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   virtual void NotifyReadyToActivate() OVERRIDE {
     did_notify_ready_to_activate_ = true;
-    host_impl_->ActivatePendingTree();
+    host_impl_->ActivateSyncTree();
   }
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {
     did_request_redraw_ = true;
@@ -159,7 +159,7 @@ class LayerTreeHostImplTest : public testing::Test,
     scrollbar_fade_start_ = start_fade;
     requested_scrollbar_animation_delay_ = delay;
   }
-  virtual void DidActivatePendingTree() OVERRIDE {}
+  virtual void DidActivateSyncTree() OVERRIDE {}
   virtual void DidManageTiles() OVERRIDE {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
@@ -3160,7 +3160,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   gfx::Size new_size(42, 24);
   host_impl_->CreatePendingTree();
   CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
-  host_impl_->ActivatePendingTree();
+  host_impl_->ActivateSyncTree();
   EXPECT_EQ(new_size, scroll_delegate.scrollable_size());
 
   // Un-setting the delegate should propagate the delegate's current offset to
@@ -3892,7 +3892,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     host_impl_->DidDrawAllLayers(frame);
   }
 
-  virtual void DidActivatePendingTree() OVERRIDE {
+  virtual void DidActivateSyncTree() OVERRIDE {
     did_activate_pending_tree_ = true;
   }
 
@@ -4050,7 +4050,7 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
                             viewport_size_.height() + 100);
   host_impl_->SetViewportSize(DipSizeToPixelSize(larger_viewport));
   EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
-  host_impl_->ActivatePendingTree();
+  host_impl_->ActivateSyncTree();
   EXPECT_TRUE(did_activate_pending_tree_);
   EXPECT_FALSE(host_impl_->active_tree()->ViewportSizeInvalid());
 
@@ -5487,7 +5487,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   scrolling_layer->SetScrollClipLayer(root->id());
   scrolling_layer->SetScrollOffset(scroll_offset);
 
-  host_impl_->ActivatePendingTree();
+  host_impl_->ActivateSyncTree();
 
   host_impl_->active_tree()->UpdateDrawProperties();
   ASSERT_EQ(1u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
@@ -5777,7 +5777,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
   EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
 
   host_impl_->CreatePendingTree();
-  host_impl_->ActivatePendingTree();
+  host_impl_->ActivateSyncTree();
 
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetVisible(true);
@@ -5797,7 +5797,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
 
   host_impl_->CreatePendingTree();
-  host_impl_->ActivatePendingTree();
+  host_impl_->ActivateSyncTree();
 
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(true);

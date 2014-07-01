@@ -315,36 +315,31 @@ void LayerTreeHostImpl::BeginMainFrameAborted(bool did_handle) {
 void LayerTreeHostImpl::BeginCommit() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
 
-  if (settings_.impl_side_painting)
+  if (UsePendingTreeForSync())
     CreatePendingTree();
 }
 
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
+  if (pending_tree_)
+    pending_tree_->ApplyScrollDeltasSinceBeginMainFrame();
+  sync_tree()->set_needs_update_draw_properties();
+
   if (settings_.impl_side_painting) {
     // Impl-side painting needs an update immediately post-commit to have the
     // opportunity to create tilings.  Other paths can call UpdateDrawProperties
     // more lazily when needed prior to drawing.
-    pending_tree()->ApplyScrollDeltasSinceBeginMainFrame();
-    pending_tree_->set_needs_update_draw_properties();
-    pending_tree_->UpdateDrawProperties();
+    sync_tree()->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.
-    if (!tile_manager_ || !tile_priorities_dirty_)
-      NotifyReadyToActivate();
-    else
+    if (tile_manager_ && tile_priorities_dirty_)
       ManageTiles();
+    else
+      NotifyReadyToActivate();
   } else {
     // If we're not in impl-side painting, the tree is immediately considered
     // active.
-    active_tree_->ProcessUIResourceRequestQueue();
-    active_tree_->DidBecomeActive();
-
-    ActivateAnimations();
-
-    active_tree_->set_needs_update_draw_properties();
-    if (time_source_client_adapter_ && time_source_client_adapter_->Active())
-      DCHECK(active_tree_->root_layer());
+    ActivateSyncTree();
   }
 
   micro_benchmark_controller_.DidCompleteCommit();
@@ -1705,44 +1700,51 @@ void LayerTreeHostImpl::UpdateVisibleTiles() {
   need_to_update_visible_tiles_before_draw_ = false;
 }
 
-void LayerTreeHostImpl::ActivatePendingTree() {
-  CHECK(pending_tree_);
-  TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
-
+void LayerTreeHostImpl::ActivateSyncTree() {
   need_to_update_visible_tiles_before_draw_ = true;
 
-  active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
-  active_tree_->PushPersistedState(pending_tree_.get());
-  if (pending_tree_->needs_full_tree_sync()) {
-    active_tree_->SetRootLayer(
-        TreeSynchronizer::SynchronizeTrees(pending_tree_->root_layer(),
-                                           active_tree_->DetachLayerTree(),
-                                           active_tree_.get()));
+  if (pending_tree_) {
+    TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
+
+    active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
+    active_tree_->PushPersistedState(pending_tree_.get());
+    // Process any requests in the UI resource queue.  The request queue is
+    // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place
+    // before the swap.
+    pending_tree_->ProcessUIResourceRequestQueue();
+
+    if (pending_tree_->needs_full_tree_sync()) {
+      active_tree_->SetRootLayer(
+          TreeSynchronizer::SynchronizeTrees(pending_tree_->root_layer(),
+                                             active_tree_->DetachLayerTree(),
+                                             active_tree_.get()));
+    }
+    TreeSynchronizer::PushProperties(pending_tree_->root_layer(),
+                                     active_tree_->root_layer());
+    pending_tree_->PushPropertiesTo(active_tree_.get());
+
+    // Now that we've synced everything from the pending tree to the active
+    // tree, rename the pending tree the recycle tree so we can reuse it on the
+    // next sync.
+    DCHECK(!recycle_tree_);
+    pending_tree_.swap(recycle_tree_);
+
+    active_tree_->SetRootLayerScrollOffsetDelegate(
+        root_layer_scroll_offset_delegate_);
+    UpdateInnerViewportContainerSize();
+  } else {
+    active_tree_->ProcessUIResourceRequestQueue();
   }
-  TreeSynchronizer::PushProperties(pending_tree_->root_layer(),
-                                   active_tree_->root_layer());
-  DCHECK(!recycle_tree_);
-
-  // Process any requests in the UI resource queue.  The request queue is given
-  // in LayerTreeHost::FinishCommitOnImplThread.  This must take place before
-  // the swap.
-  pending_tree_->ProcessUIResourceRequestQueue();
-
-  pending_tree_->PushPropertiesTo(active_tree_.get());
-
-  // Now that we've synced everything from the pending tree to the active
-  // tree, rename the pending tree the recycle tree so we can reuse it on the
-  // next sync.
-  pending_tree_.swap(recycle_tree_);
 
   active_tree_->DidBecomeActive();
-  active_tree_->SetRootLayerScrollOffsetDelegate(
-      root_layer_scroll_offset_delegate_);
   ActivateAnimations();
+  if (settings_.impl_side_painting)
+    client_->RenewTreePriority();
 
   client_->OnCanDrawStateChanged(CanDraw());
-  SetNeedsRedraw();
-  client_->RenewTreePriority();
+  client_->DidActivateSyncTree();
+  if (!tree_activation_callback_.is_null())
+    tree_activation_callback_.Run();
 
   if (debug_state_.continuous_painting) {
     const RenderingStats& stats =
@@ -1751,11 +1753,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
                                        stats.main_stats.record_time +
                                        stats.impl_stats.rasterize_time);
   }
-
-  UpdateInnerViewportContainerSize();
-  client_->DidActivatePendingTree();
-  if (!tree_activation_callback_.is_null())
-    tree_activation_callback_.Run();
 
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())
     DCHECK(active_tree_->root_layer());
@@ -1948,6 +1945,12 @@ void LayerTreeHostImpl::DestroyTileManager() {
   resource_pool_.reset();
   staging_resource_pool_.reset();
   raster_worker_pool_.reset();
+}
+
+bool LayerTreeHostImpl::UsePendingTreeForSync() const {
+  // In impl-side painting, synchronize to the pending tree so that it has
+  // time to raster before being displayed.
+  return settings_.impl_side_painting;
 }
 
 bool LayerTreeHostImpl::UseZeroCopyTextureUpload() const {

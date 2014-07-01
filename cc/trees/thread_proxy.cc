@@ -1017,7 +1017,7 @@ void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
 void ThreadProxy::ScheduledActionActivatePendingTree() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivatePendingTree");
   DCHECK(IsImplThread());
-  impl().layer_tree_host_impl->ActivatePendingTree();
+  impl().layer_tree_host_impl->ActivateSyncTree();
 }
 
 void ThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
@@ -1419,10 +1419,9 @@ void ThreadProxy::PostDelayedScrollbarFadeOnImplThread(
   Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, start_fade, delay);
 }
 
-void ThreadProxy::DidActivatePendingTree() {
-  TRACE_EVENT0("cc", "ThreadProxy::DidActivatePendingTreeOnImplThread");
+void ThreadProxy::DidActivateSyncTree() {
+  TRACE_EVENT0("cc", "ThreadProxy::DidActivateSyncTreeOnImplThread");
   DCHECK(IsImplThread());
-  DCHECK(!impl().layer_tree_host_impl->pending_tree());
 
   if (impl().completion_event_for_commit_held_on_tree_activation) {
     TRACE_EVENT_INSTANT0(

@@ -81,7 +81,7 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   void ActivateTree() {
-    host_impl_.ActivatePendingTree();
+    host_impl_.ActivateSyncTree();
     CHECK(!host_impl_.pending_tree());
     pending_layer_ = NULL;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -1480,7 +1480,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   pending_layer_->set_raster_page_scale(raster_page_scale);
   EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
 
-  host_impl_.ActivatePendingTree();
+  host_impl_.ActivateSyncTree();
 
   active_layer_ = static_cast<FakePictureLayerImpl*>(
       host_impl_.active_tree()->LayerById(id_));
@@ -1495,7 +1495,7 @@ TEST_F(PictureLayerImplTest, RemoveInvalidTilesOnActivation) {
   AddDefaultTilingsWithInvalidation(gfx::Rect(0, 0, 1, 1));
 
   FakePictureLayerImpl* recycled_layer = pending_layer_;
-  host_impl_.ActivatePendingTree();
+  host_impl_.ActivateSyncTree();
 
   active_layer_ = static_cast<FakePictureLayerImpl*>(
       host_impl_.active_tree()->LayerById(id_));

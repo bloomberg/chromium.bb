@@ -130,7 +130,7 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   void ActivateTree() {
-    host_impl_.ActivatePendingTree();
+    host_impl_.ActivateSyncTree();
     CHECK(!host_impl_.pending_tree());
     pending_root_layer_ = NULL;
     active_root_layer_ = static_cast<FakePictureLayerImpl*>(

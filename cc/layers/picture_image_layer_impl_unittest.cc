@@ -127,7 +127,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
 
   // Push to active layer.
   host_impl_.pending_tree()->SetRootLayer(pending_layer.PassAs<LayerImpl>());
-  host_impl_.ActivatePendingTree();
+  host_impl_.ActivateSyncTree();
   TestablePictureImageLayerImpl* active_layer =
       static_cast<TestablePictureImageLayerImpl*>(
           host_impl_.active_tree()->root_layer());

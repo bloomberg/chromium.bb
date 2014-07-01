@@ -476,7 +476,7 @@ class TileManagerTileIteratorTest : public testing::Test {
   }
 
   void ActivateTree() {
-    host_impl_.ActivatePendingTree();
+    host_impl_.ActivateSyncTree();
     CHECK(!host_impl_.pending_tree());
     pending_layer_ = NULL;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -539,7 +539,7 @@ class TileManagerTileIteratorTest : public testing::Test {
 
 TEST_F(TileManagerTileIteratorTest, PairedPictureLayers) {
   host_impl_.CreatePendingTree();
-  host_impl_.ActivatePendingTree();
+  host_impl_.ActivateSyncTree();
   host_impl_.CreatePendingTree();
 
   LayerTreeImpl* active_tree = host_impl_.active_tree();

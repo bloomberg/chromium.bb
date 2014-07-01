@@ -31,7 +31,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   virtual base::TimeTicks CurrentFrameTimeTicks() OVERRIDE;
   void SetCurrentFrameTimeTicks(base::TimeTicks current_frame_time_ticks);
 
-  using LayerTreeHostImpl::ActivatePendingTree;
+  using LayerTreeHostImpl::ActivateSyncTree;
   using LayerTreeHostImpl::manage_tiles_needed;
 
  private:

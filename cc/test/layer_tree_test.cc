@@ -159,16 +159,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
 
   virtual void CommitComplete() OVERRIDE {
     LayerTreeHostImpl::CommitComplete();
-
-    // A few tests count the number of times pending tree is activated.
-    // When not using impl-side painting, ActivatePendingTree is not called,
-    // so call these test hooks functions explicitly so that they do need
-    // to handle non-impl-side path explicitly.
-    if (!settings().impl_side_painting) {
-      test_hooks_->WillActivateTreeOnThread(this);
-      test_hooks_->DidActivateTreeOnThread(this);
-    }
-
     test_hooks_->CommitCompleteOnThread(this);
   }
 
@@ -218,9 +208,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
-  virtual void ActivatePendingTree() OVERRIDE {
+  virtual void ActivateSyncTree() OVERRIDE {
     test_hooks_->WillActivateTreeOnThread(this);
-    LayerTreeHostImpl::ActivatePendingTree();
+    LayerTreeHostImpl::ActivateSyncTree();
     DCHECK(!pending_tree());
     test_hooks_->DidActivateTreeOnThread(this);
   }

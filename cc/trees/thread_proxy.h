@@ -203,7 +203,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual void PostDelayedScrollbarFadeOnImplThread(
       const base::Closure& start_fade,
       base::TimeDelta delay) OVERRIDE;
-  virtual void DidActivatePendingTree() OVERRIDE;
+  virtual void DidActivateSyncTree() OVERRIDE;
   virtual void DidManageTiles() OVERRIDE;
 
   // SchedulerClient implementation

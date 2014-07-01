@@ -94,7 +94,7 @@ class LayerTreeHostImplClient {
   virtual void PostDelayedScrollbarFadeOnImplThread(
       const base::Closure& start_fade,
       base::TimeDelta delay) = 0;
-  virtual void DidActivatePendingTree() = 0;
+  virtual void DidActivateSyncTree() = 0;
   virtual void DidManageTiles() = 0;
 
  protected:
@@ -298,14 +298,11 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   // Returns the tree LTH synchronizes with.
   LayerTreeImpl* sync_tree() {
-    // In impl-side painting, synchronize to the pending tree so that it has
-    // time to raster before being displayed.
-    return settings_.impl_side_painting ? pending_tree_.get()
-                                        : active_tree_.get();
+    return pending_tree_ ? pending_tree_.get() : active_tree_.get();
   }
   virtual void CreatePendingTree();
   virtual void UpdateVisibleTiles();
-  virtual void ActivatePendingTree();
+  virtual void ActivateSyncTree();
 
   // Shortcuts to layers on the active tree.
   LayerImpl* RootLayer() const;
@@ -500,6 +497,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 
+  bool UsePendingTreeForSync() const;
   bool UseZeroCopyTextureUpload() const;
   bool UseOneCopyTextureUpload() const;
 
