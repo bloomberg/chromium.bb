@@ -1268,7 +1268,7 @@ void InspectorTimelineAgent::setLiveEvents(const String& liveEvents)
     if (liveEvents.isNull() || liveEvents.isEmpty())
         return;
     Vector<String> eventList;
-    liveEvents.split(",", eventList);
+    liveEvents.split(',', eventList);
     for (Vector<String>::iterator it = eventList.begin(); it != eventList.end(); ++it)
         m_liveEvents.add(*it);
 }

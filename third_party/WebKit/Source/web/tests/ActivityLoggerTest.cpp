@@ -95,7 +95,7 @@ protected:
     bool verifyActivities(const String& activities)
     {
         Vector<String> activityVector;
-        activities.split("\n", activityVector);
+        activities.split('\n', activityVector);
         return m_activityLogger->verifyActivities(activityVector);
     }
 

@@ -21,13 +21,13 @@ void initUnderlines(const String& testCase, Vector<CompositionUnderline>* underl
 {
     ASSERT(underlines && underlines->size() == 0U);
     Vector<String> rangeList;
-    testCase.split("|", rangeList);
+    testCase.split('|', rangeList);
     // Intervals are named 'A', 'B', ..., 'Z', so ensure there aren't too many.
     ASSERT_LE(rangeList.size(), static_cast<size_t>('Z' - 'A'));
     for (unsigned i = 0; i < rangeList.size(); ++i) {
         String range = rangeList[i];
         Vector<String> toks;
-        rangeList[i].split(",", toks);
+        rangeList[i].split(',', toks);
         ASSERT_EQ(2U, toks.size());
         int startOffset = toks[0].toInt();
         int endOffset = toks[1].toInt();

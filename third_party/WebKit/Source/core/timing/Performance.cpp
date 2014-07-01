@@ -174,7 +174,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
 
     const String& securityOrigin = requestingDocument->securityOrigin()->toString();
     Vector<String> timingAllowOrigins;
-    timingAllowOriginString.string().split(" ", timingAllowOrigins);
+    timingAllowOriginString.string().split(' ', timingAllowOrigins);
     for (size_t i = 0; i < timingAllowOrigins.size(); ++i) {
         if (timingAllowOrigins[i] == securityOrigin)
             return true;

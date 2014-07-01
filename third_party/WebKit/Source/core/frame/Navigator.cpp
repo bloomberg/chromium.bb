@@ -137,7 +137,7 @@ Vector<String> Navigator::languages()
     }
 
     String acceptLanguages = m_frame->host()->chrome().client().acceptLanguages();
-    acceptLanguages.split(",", languages);
+    acceptLanguages.split(',', languages);
 
     // Sanitizing tokens. We could do that more extensively but we should assume
     // that the accept languages are already sane and support BCP47. It is

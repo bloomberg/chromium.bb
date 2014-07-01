@@ -84,7 +84,7 @@ Vector<String> ContentType::codecs() const
         return Vector<String>();
 
     Vector<String> codecs;
-    codecsParameter.split(",", codecs);
+    codecsParameter.split(',', codecs);
     for (size_t i = 0; i < codecs.size(); ++i)
         codecs[i] = codecs[i].simplifyWhiteSpace();
 
