@@ -27,6 +27,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -393,10 +394,11 @@ bool CreateApplicationShortcutView::Accept() {
   creation_locations.in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcutsForShortcutInfo(
-      web_app::SHORTCUT_CREATION_BY_USER,
-      creation_locations,
-      shortcut_info_);
+  // TODO(mgiuca): Pass the correct file handlers info.
+  web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
+                                   creation_locations,
+                                   shortcut_info_,
+                                   extensions::FileHandlersInfo());
   return true;
 }
 

@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "net/base/url_util.h"
@@ -149,10 +150,10 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   if (installed_version == 0)
     shortcut_locations.in_quick_launch_bar = true;
 
-  web_app::CreateShortcutsForShortcutInfo(
-      web_app::SHORTCUT_CREATION_AUTOMATED,
-      shortcut_locations,
-      shortcut_info);
+  web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_AUTOMATED,
+                                   shortcut_locations,
+                                   shortcut_info,
+                                   extensions::FileHandlersInfo());
 
   local_state->SetInteger(prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);

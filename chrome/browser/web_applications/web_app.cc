@@ -77,22 +77,6 @@ base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
                                          shortcut_info.url);
 }
 
-void CreateShortcutsWithInfo(
-    web_app::ShortcutCreationReason reason,
-    const web_app::ShortcutLocations& locations,
-    const web_app::ShortcutInfo& shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&web_app::internals::CreatePlatformShortcuts),
-          GetShortcutDataDir(shortcut_info),
-          shortcut_info, file_handlers_info, locations, reason));
-}
-
 void UpdateAllShortcutsForShortcutInfo(
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info,
@@ -214,16 +198,6 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 #endif
   file_util::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
-}
-
-bool CreateShortcutsOnFileThread(ShortcutCreationReason reason,
-                                 const ShortcutLocations& locations,
-                                 const ShortcutInfo& shortcut_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  return CreatePlatformShortcuts(
-      GetShortcutDataDir(shortcut_info),
-      shortcut_info, extensions::FileHandlersInfo(), locations, reason);
 }
 
 }  // namespace internals
@@ -362,17 +336,22 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
   return app_name.substr(prefix.length());
 }
 
-void CreateShortcutsForShortcutInfo(ShortcutCreationReason reason,
-                                    const ShortcutLocations& locations,
-                                    const ShortcutInfo& shortcut_info) {
+void CreateShortcutsWithInfo(
+    ShortcutCreationReason reason,
+    const ShortcutLocations& locations,
+    const ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&web_app::internals::CreateShortcutsOnFileThread),
-          reason, locations, shortcut_info));
+      base::Bind(base::IgnoreResult(&internals::CreatePlatformShortcuts),
+                 GetShortcutDataDir(shortcut_info),
+                 shortcut_info,
+                 file_handlers_info,
+                 locations,
+                 reason));
 }
 
 void CreateShortcuts(ShortcutCreationReason reason,
