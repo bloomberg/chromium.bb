@@ -10,7 +10,6 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILESYSTEM_API_UTIL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
 
@@ -19,10 +18,6 @@ class Profile;
 namespace base {
 class FilePath;
 }  // namespace base
-
-namespace fileapi {
-class FileSystemURL;
-}  // namespace fileapi
 
 namespace file_manager {
 namespace util {

@@ -781,6 +781,7 @@ Gallery.prototype.updateShareMenu_ = function() {
   }
 
   var api = Gallery.getFileBrowserPrivate();
+  var mimeTypes = [];  // TODO(kaznacheev) Collect mime types properly.
 
   var createShareMenu = function(tasks) {
     var wasHidden = this.shareMenu_.hidden;
@@ -833,7 +834,7 @@ Gallery.prototype.updateShareMenu_ = function() {
   if (!entries.length)
     createShareMenu([]);  // Empty list of tasks, since there is no selection.
   else
-    api.getFileTasks(util.entriesToURLs(entries), createShareMenu);
+    api.getFileTasks(util.entriesToURLs(entries), mimeTypes, createShareMenu);
 };
 
 /**

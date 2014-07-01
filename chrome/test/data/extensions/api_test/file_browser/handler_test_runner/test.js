@@ -25,20 +25,32 @@
 
 /**
  * Files for which the file browser handlers will be executed by the extension.
- * @type {Array.<string>}
+ * Each test case contains the file's file path and mimeType that will be given
+ * to chrome.fileBrowserPrivate.executeTask for the file.
+ *
+ * @type {Array.<Object.<string, string>>}
  */
-var kTestPaths = ['test_dir/test_file.xul', 'test_dir/test_file.tiff'];
+var kTestCases = [
+    {
+      path: 'test_dir/test_file.xul',
+      mimeType: ''
+    },
+    {
+      path: 'test_dir/test_file.tiff',
+      mimeType: ''
+    }
+];
 
 // Starts the test extension.
 function run() {
   /**
    * Test cases after the file path has been resolved to FileEntry. Each
-   * resolved test case contains the resolved FileEntry object.
+   * resolved test case contains the resolved FileEntry object and mimeType.
    *
-   * @type Array.<FileEntry>
+   * @type Array.<Object.<FileEntry, string>>
    */
-  var resolvedEntries = [];
 
+  var resolvedTestCases = [];
   /**
    * List of tasks found for a testCase. Each object contains the found task id
    * and file URL for which the task should be executed.
@@ -87,10 +99,11 @@ function run() {
    * and calls getFileTasks again.
    *
    * @param {string} fileUrl File url for which getFileTasks was called.
+   * @param {string} mimeType MIME type of fireUrl.
    * @param {Array.<Object>} tasks List of found task objects.
    */
 
-  function onGotNonDefaultTasks(fileUrl, tasks) {
+  function onGotNonDefaultTasks(fileUrl, mimeType, tasks) {
     if (!tasks) {
       onError('Failed getting tasks for ' + fileUrl);
       return;
@@ -104,8 +117,8 @@ function run() {
           '"');
     }
     chrome.fileBrowserPrivate.setDefaultTask(
-        tasks[0].taskId, [fileUrl],
-        chrome.fileBrowserPrivate.getFileTasks.bind(null, [fileUrl],
+        tasks[0].taskId, [fileUrl], [mimeType],
+        chrome.fileBrowserPrivate.getFileTasks.bind(null, [fileUrl], [mimeType],
             onGotTasks.bind(null, fileUrl)));
   }
 
@@ -133,7 +146,7 @@ function run() {
 
     foundTasks.push({id: tasks[0].taskId, url: fileUrl});
 
-    if (foundTasks.length == kTestPaths.length) {
+    if (foundTasks.length == kTestCases.length) {
       foundTasks.forEach(function(task) {
         chrome.fileBrowserPrivate.executeTask(task.id, [task.url],
             onExecuteTask.bind(null, task.url));
@@ -146,16 +159,19 @@ function run() {
    * when all the test cases have been resolved, gets file tasks for each of
    * them.
    *
+   * @param {string} mimeType The mime type for the test case.
    * @param {FileEntry} entry The file entry for the test case.
    */
-  function onGotEntry(entry) {
-    resolvedEntries.push(entry);
+  function onGotEntry(mimeType, entry) {
+    resolvedTestCases.push({entry: entry, mimeType: mimeType});
 
-    if (resolvedEntries.length == kTestPaths.length) {
-      resolvedEntries.forEach(function(entry) {
+    if (resolvedTestCases.length == kTestCases.length) {
+      resolvedTestCases.forEach(function(testCase) {
         chrome.fileBrowserPrivate.getFileTasks(
-            [entry.toURL()],
-            onGotNonDefaultTasks.bind(null, entry.toURL()));
+            [testCase.entry.toURL()],
+            [testCase.mimeType],
+            onGotNonDefaultTasks.bind(null, testCase.entry.toURL(),
+              testCase.mimeType));
       });
     }
   }
@@ -169,11 +185,11 @@ function run() {
    */
   function onGotFileSystem(fileSystem, volumeType) {
     var isOnDrive = volumeType == 'drive';
-    kTestPaths.forEach(function(filePath) {
+    kTestCases.forEach(function(testCase) {
       fileSystem.root.getFile(
-          (isOnDrive ? 'root/' : '') + filePath, {},
-          onGotEntry.bind(null),
-          onError.bind(null, 'Unable to get file: ' + filePath));
+          (isOnDrive ? 'root/' : '') + testCase.path, {},
+          onGotEntry.bind(null, testCase.mimeType),
+          onError.bind(null, 'Unable to get file: ' + testCase.path));
     });
   }
 

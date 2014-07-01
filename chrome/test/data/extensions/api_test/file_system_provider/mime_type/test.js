@@ -149,6 +149,8 @@ function runTests() {
       fileSystem.root.getFile(TESTING_WITH_MIME_FILE.name, {}, function(entry) {
         chrome.fileBrowserPrivate.getFileTasks(
             [entry.toURL()],
+            // TODO(mtomasz): Get rid of this. See: crbug.com/388586.
+            [TESTING_MIME_TYPE],
             function(tasks) {
               chrome.test.assertEq(1, tasks.length);
               chrome.test.assertEq(
@@ -167,6 +169,8 @@ function runTests() {
       fileSystem.root.getFile(TESTING_WITH_MIME_FILE.name, {}, function(entry) {
         chrome.fileBrowserPrivate.getFileTasks(
             [entry.toURL()],
+            // TODO(mtomasz): Get rid of this. See: crbug.com/388586.
+            [TESTING_MIME_TYPE],
             function(tasks) {
               chrome.test.assertEq(1, tasks.length);
               chrome.test.assertEq(
@@ -203,6 +207,8 @@ function runTests() {
           function(entry) {
             chrome.fileBrowserPrivate.getFileTasks(
                 [entry.toURL()],
+                // TODO(mtomasz): Get rid of this. See: crbug.com/388586.
+                [],
                 function(tasks) {
                   chrome.test.assertEq(0, tasks.length);
                   onSuccess();
