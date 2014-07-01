@@ -448,7 +448,7 @@ int WebRtcAudioCapturer::MaxVolume() const {
   return WebRtcAudioDeviceImpl::kMaxVolumeLevel;
 }
 
-void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
+void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
                                   int audio_delay_milliseconds,
                                   double volume,
                                   bool key_pressed) {

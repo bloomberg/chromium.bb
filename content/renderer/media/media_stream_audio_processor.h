@@ -68,7 +68,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Pushes capture data in |audio_source| to the internal FIFO.
   // Called on the capture audio thread.
-  void PushCaptureData(media::AudioBus* audio_source);
+  void PushCaptureData(const media::AudioBus* audio_source);
 
   // Processes a block of 10 ms data from the internal FIFO and outputs it via
   // |out|. |out| is the address of the pointer that will be pointed to
