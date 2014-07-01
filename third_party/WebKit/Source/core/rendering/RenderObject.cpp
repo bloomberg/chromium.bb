@@ -612,6 +612,19 @@ RenderFlowThread* RenderObject::locateFlowThreadContainingBlock() const
     return 0;
 }
 
+bool RenderObject::skipInvalidationWhenLaidOutChildren() const
+{
+    if (!neededLayoutBecauseOfChildren())
+        return false;
+
+    // SVG renderers need to be invalidated when their children are laid out.
+    // RenderBlocks with line boxes are responsible to invalidate them so we can't ignore them.
+    if (isSVG() || (isRenderBlock() && toRenderBlock(this)->firstLineBox()))
+        return false;
+
+    return rendererHasNoBoxEffect();
+}
+
 RenderBlock* RenderObject::firstLineBlock() const
 {
     return 0;
@@ -1664,6 +1677,13 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     // of one.
     if (oldBounds.size().isZero() || newBounds.size().isZero())
         return InvalidationBoundsChange;
+
+    // This covers the case where we mark containing blocks for layout
+    // and they change size but don't have anything to paint. This is
+    // a pretty common case for <body> as we add / remove children
+    // (and the default background is done by FrameView).
+    if (skipInvalidationWhenLaidOutChildren() && !mayNeedPaintInvalidation())
+        return InvalidationNone;
 
     return InvalidationIncremental;
 }
@@ -3385,6 +3405,7 @@ void RenderObject::clearPaintInvalidationState()
     setShouldDoFullPaintInvalidationAfterLayout(false);
     setShouldDoFullPaintInvalidationIfSelfPaintingLayer(false);
     setOnlyNeededPositionedMovementLayout(false);
+    setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);
     setLayoutDidGetCalled(false);
     setMayNeedPaintInvalidation(false);

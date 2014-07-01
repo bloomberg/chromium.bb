@@ -5,10 +5,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 113, 784, 102],
-        [0, 126, 800, 102]
-      ],
       "children": [
         {
           "position": [8, 8],

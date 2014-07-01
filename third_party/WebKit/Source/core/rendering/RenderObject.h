@@ -249,6 +249,14 @@ public:
 
 #endif
 
+    bool skipInvalidationWhenLaidOutChildren() const;
+
+    // FIXME: This could be used when changing the size of a renderer without children to skip some invalidations.
+    bool rendererHasNoBoxEffect() const
+    {
+        return !style()->hasVisualOverflowingEffect() && !style()->hasBorder() && !style()->hasBackground();
+    }
+
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
     // children.
     virtual RenderBlock* firstLineBlock() const;
@@ -529,6 +537,8 @@ public:
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;
+
+    bool needsLayoutBecauseOfChildren() const { return needsLayout() && !selfNeedsLayout() && !needsPositionedMovementLayout() && !needsSimplifiedNormalFlowLayout(); }
 
     bool needsLayout() const
     {
@@ -1011,6 +1021,9 @@ public:
             parent()->setMayNeedPaintInvalidation(b);
     }
 
+    bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
+    void setNeededLayoutBecauseOfChildren(bool b) { m_bitfields.setNeededLayoutBecauseOfChildren(b); }
+
     bool shouldCheckForPaintInvalidationAfterLayout()
     {
         return layoutDidGetCalled() || mayNeedPaintInvalidation();
@@ -1145,6 +1158,7 @@ private:
             // use the other layout flags to detect the same cases. crbug.com/370118
             , m_mayNeedPaintInvalidation(false)
             , m_onlyNeededPositionedMovementLayout(false)
+            , m_neededLayoutBecauseOfChildren(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1185,6 +1199,7 @@ private:
         ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidationIfSelfPaintingLayer, ShouldDoFullPaintInvalidationIfSelfPaintingLayer);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
+        ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
@@ -1341,8 +1356,8 @@ inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior
 
 inline void RenderObject::clearNeedsLayout()
 {
-    if (needsPositionedMovementLayoutOnly())
-        setOnlyNeededPositionedMovementLayout(true);
+    setOnlyNeededPositionedMovementLayout(needsPositionedMovementLayoutOnly());
+    setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
     setLayoutDidGetCalled(true);
     setSelfNeedsLayout(false);
     setEverHadLayout(true);

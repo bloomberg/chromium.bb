@@ -366,6 +366,9 @@ void RenderTable::layoutCaption(RenderTableCaption* caption)
     }
     caption->setLogicalLocation(LayoutPoint(caption->marginStart(), captionLogicalTop));
 
+    if (!selfNeedsLayout())
+        caption->setMayNeedPaintInvalidation(true);
+
     setLogicalHeight(logicalHeight() + caption->logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
 }
 
@@ -521,7 +524,12 @@ void RenderTable::layout()
             }
             section->setLogicalLocation(LayoutPoint(sectionLogicalLeft, logicalHeight()));
 
+            // As we may skip invalidation on the table, we need to ensure that sections are invalidated when they moved.
+            if (sectionMoved && !section->selfNeedsLayout())
+                section->setMayNeedPaintInvalidation(true);
+
             setLogicalHeight(logicalHeight() + section->logicalHeight());
+
             section = sectionBelow(section);
         }
 

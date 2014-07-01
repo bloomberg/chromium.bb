@@ -4129,7 +4129,7 @@ void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScop
 
 void RenderBox::addVisualEffectOverflow()
 {
-    if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
+    if (!style()->hasVisualOverflowingEffect())
         return;
 
     LayoutRect borderBox = borderBoxRect();

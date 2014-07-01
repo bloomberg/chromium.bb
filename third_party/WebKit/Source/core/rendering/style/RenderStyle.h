@@ -824,6 +824,10 @@ public:
     StyleReflection* boxReflect() const { return rareNonInheritedData->m_boxReflect.get(); }
     bool reflectionDataEquivalent(const RenderStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
 
+    // FIXME: reflections should belong to this helper function but they are currently handled
+    // through their self-painting layers. So the rendering code doesn't account for them.
+    bool hasVisualOverflowingEffect() const { return boxShadow() || hasBorderImageOutsets() || hasOutline(); }
+
     EBoxSizing boxSizing() const { return m_box->boxSizing(); }
     const Length& marqueeIncrement() const { return rareNonInheritedData->m_marquee->increment; }
     int marqueeSpeed() const { return rareNonInheritedData->m_marquee->speed; }
