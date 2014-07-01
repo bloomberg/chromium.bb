@@ -32,6 +32,11 @@
       }
     }],
   ],
+  'variables': {
+    # Whether we're building a ChromeOS build.
+    # TODO(thakis): Remove once the 32bit chroot is fixed, crbug.com/390666
+    'chromeos%': 0,
+  },
   'targets': [
     {
       'target_name': 'nacl_bootstrap_munge_phdr',
@@ -46,6 +51,16 @@
       # Drop flags such as -fsanitize-memory-track-origins=. See
       # the comment below.
       'cflags/': [['exclude', '^-fsanitize-memory']],
+
+      'conditions': [
+        ['target_arch=="ia32" and chromeos!=0', {
+          'cflags/': [['exclude', '^-m.*'],
+                      ['exclude', '^--sysroot=.*']],
+          'ldflags/': [['exclude', '^-m.*'],
+                       ['exclude', '^--sysroot=.*']],
+        }],
+      ],
+
       'cflags!': [
         # MemorySanitizer reports an error in this binary unless instrumented
         # libelf is supplied. Because libelf source code uses gcc extensions,
