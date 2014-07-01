@@ -974,6 +974,8 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
    * applications?
    */
 
+  /* memset() call is required to clear padding in struct nacl_abi_timeval. */
+  memset(&now, 0, sizeof(now));
   retval = NaClGetTimeOfDay(&now);
   if (0 != retval) {
     return retval;
@@ -1020,6 +1022,8 @@ static int32_t NaClSysClockGetCommon(struct NaClAppThread  *natp,
   if (!NaClIsValidClockId(clk_id)) {
     goto done;
   }
+  /* memset() call is required to clear padding in struct nacl_abi_timespec. */
+  memset(&out_buf, 0, sizeof(out_buf));
   retval = (*timefunc)((nacl_clockid_t) clk_id, &out_buf);
   if (0 == retval) {
     if (ts_addr == 0 ? !null_ok :
