@@ -133,6 +133,10 @@ bool IsHistorySyncEnabled(Profile* profile) {
       sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
+bool OmniboxHasFocus(OmniboxView* omnibox) {
+  return omnibox && omnibox->model()->has_focus();
+}
+
 }  // namespace
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
@@ -143,7 +147,8 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
                   make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))
                       .PassAs<SearchIPCRouter::Policy>()),
       instant_service_(NULL),
-      delegate_(NULL) {
+      delegate_(NULL),
+      omnibox_has_focus_fn_(&OmniboxHasFocus) {
   if (!is_search_enabled_)
     return;
 
@@ -245,8 +250,8 @@ void SearchTabHelper::OnTabActivated() {
   ipc_router_.OnTabActivated();
 
   OmniboxView* omnibox_view = GetOmniboxView();
-  if (chrome::ShouldPrerenderInstantUrlOnOmniboxFocus() && omnibox_view &&
-      omnibox_view->model()->has_focus()) {
+  if (chrome::ShouldPrerenderInstantUrlOnOmniboxFocus() &&
+      omnibox_has_focus_fn_(omnibox_view)) {
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(profile());
     if (prerenderer && !IsSearchResultsPage()) {
