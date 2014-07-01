@@ -115,6 +115,7 @@ class LocalDOMWindow;
 class LocalFrame;
 class Location;
 class MainThreadTaskRunner;
+class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeFilter;
 class NodeIterator;
@@ -908,6 +909,7 @@ public:
     void enqueueResizeEvent();
     void enqueueScrollEventForNode(Node*);
     void enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
 
     bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
     void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }

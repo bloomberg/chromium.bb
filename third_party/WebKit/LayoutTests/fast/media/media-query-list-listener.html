@@ -5,9 +5,7 @@
 
 <script>
     description("Media query listeners should fire on changes to matches status.");
-
-    if (window.testRunner)
-        testRunner.dumpAsText();
+    var jsTestIsAsync = true;
 
     var sandbox = document.getElementById("sandbox");
     var iframe = document.createElement("iframe");
@@ -17,36 +15,47 @@
     var mediaList = matchMedia("(max-width: 100px)");
     var expectedValue = "";
 
+    var tests = [];
+    var currentTest = 0;
+    function runNextTest() {
+        tests[currentTest++]();
+    }
     function listener(list) {
         window.mediaListArgument = list;
         shouldBe("mediaList", "mediaListArgument");
         shouldBe("mediaList.matches", expectedValue);
+        runNextTest();
     }
 
     mediaList.addListener(listener);
 
     shouldBe("mediaList.matches", "true");
 
-    // FIXME: You shouldn't need to touch offsetTop to force these updates.
-
     // Should fire.
     iframe.style.width = "200px";
     expectedValue = "false";
-    iframe.offsetTop;
 
-    // Should not fire.
-    iframe.style.width = "250px";
-    expectedValue = "false";
-    iframe.offsetTop;
+    tests.push(function() {
+        // Should not fire.
+        iframe.style.width = "250px";
+        expectedValue = "false";
 
-    // Should fire.
-    iframe.style.width = "80px";
-    expectedValue = "true";
-    iframe.offsetTop;
+        setTimeout(runNextTest, 20);
+    });
 
-    // Should not fire.
-    mediaList.removeListener(listener);
-    iframe.style.width = "200px";
-    iframe.offsetTop;
-    shouldBe("mediaList.matches", "false");
+    tests.push(function() {
+        // Should fire.
+        iframe.style.width = "80px";
+        expectedValue = "true";
+    });
+
+    tests.push(function() {
+        // Should not fire.
+        mediaList.removeListener(listener);
+        iframe.style.width = "200px";
+        iframe.offsetTop;
+        shouldBe("mediaList.matches", "false");
+
+        setTimeout(finishJSTest, 20);
+    });
 </script>

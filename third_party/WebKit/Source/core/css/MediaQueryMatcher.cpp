@@ -109,9 +109,7 @@ void MediaQueryMatcher::mediaFeaturesChanged()
     for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it)
         (*it)->mediaFeaturesChanged(&listenersToNotify);
 
-    // FIXME: This should be async! We're running script inside ::layout() or ::updateRenderTree().
-    for (size_t i = 0; i < listenersToNotify.size(); ++i)
-        listenersToNotify[i]->call();
+    m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
 }
 
 void MediaQueryMatcher::trace(Visitor* visitor)

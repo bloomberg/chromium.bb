@@ -20,7 +20,7 @@ function test()
         if (messageObject.error)
             InspectorTest.log("FAILED: " + messageObject.error.message);
         InspectorTest.sendCommand("Page.disable", {});
-        InspectorTest.completeTest();
+        setTimeout("InspectorTest.completeTest();", 20);
     }
 
     InspectorTest.sendCommand("Page.enable", {});

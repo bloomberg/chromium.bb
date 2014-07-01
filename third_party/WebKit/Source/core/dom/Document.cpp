@@ -3865,6 +3865,12 @@ void Document::enqueueResizeEvent()
     ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }
 
+void Document::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >& listeners)
+{
+    ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
+}
+
+
 Document::EventFactorySet& Document::eventFactories()
 {
     DEFINE_STATIC_LOCAL(EventFactorySet, s_eventFactory, ());

@@ -86,13 +86,13 @@ void MediaQueryList::documentDetached()
     m_listeners.clear();
 }
 
-void MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* toNotify)
+void MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify)
 {
     m_matchesDirty = true;
     if (!updateMatches())
         return;
     for (ListenerList::const_iterator it = m_listeners.begin(), end = m_listeners.end(); it != end; ++it) {
-        toNotify->append(*it);
+        listenersToNotify->append(*it);
     }
 }
 

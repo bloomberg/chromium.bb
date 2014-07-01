@@ -5,6 +5,7 @@
 
 <script>
     description("Media query listeners should fire grouped by the MediaQueryList.");
+    var jsTestIsAsync = true;
 
     var sandbox = document.getElementById("sandbox");
     var iframe = document.createElement("iframe");
@@ -25,12 +26,13 @@
     mediaList2.addListener(makeListener("mediaList2_1"));
     mediaList1.addListener(makeListener("mediaList1_1"));
     mediaList2.addListener(makeListener("mediaList2_2"));
-
-    // FIXME: You shouldn't need to touch offsetTop to force these updates.
+    mediaList3.addListener(verifyResult);
 
     iframe.style.width = "200px";
-    iframe.offsetTop;
 
     var expectedResult = ["mediaList1_1", "mediaList2_1", "mediaList2_2", "mediaList3_1"];
-    shouldBe("listenersCalled", "expectedResult");
+    function verifyResult() {
+        shouldBe("listenersCalled", "expectedResult");
+        finishJSTest();
+    }
 </script>

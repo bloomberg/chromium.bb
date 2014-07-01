@@ -33,6 +33,10 @@ MediaQueryListListener::MediaQueryListListener(ScriptState* scriptState, const S
     ASSERT(m_function.isFunction());
 }
 
+MediaQueryListListener::~MediaQueryListListener()
+{
+}
+
 void MediaQueryListListener::call()
 {
     if (!m_query)

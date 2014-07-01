@@ -38,6 +38,7 @@ namespace WebCore {
 class Document;
 class Event;
 class EventTarget;
+class MediaQueryListListener;
 class RequestAnimationFrameCallback;
 
 class ScriptedAnimationController : public RefCountedWillBeGarbageCollectedFinalized<ScriptedAnimationController> {
@@ -58,6 +59,7 @@ public:
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
 
     void suspend();
     void resume();
@@ -69,6 +71,7 @@ private:
 
     void dispatchEvents();
     void executeCallbacks(double monotonicTimeNow);
+    void callMediaQueryListListeners();
 
     typedef Vector<OwnPtr<RequestAnimationFrameCallback> > CallbackList;
     CallbackList m_callbacks;
@@ -79,6 +82,8 @@ private:
     int m_suspendCount;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_eventQueue;
     WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*> > m_perFrameEvents;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener> > MediaQueryListListeners;
+    MediaQueryListListeners m_mediaQueryListListeners;
 };
 
 }

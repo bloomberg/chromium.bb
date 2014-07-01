@@ -22,6 +22,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
+#include "core/css/MediaQueryList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
@@ -39,6 +40,8 @@ public:
             return nullptr;
         return adoptRefWillBeNoop(new MediaQueryListListener(scriptState, value));
     }
+    ~MediaQueryListListener();
+
     void call();
 
     // Used to keep the MediaQueryList alive and registered with the MediaQueryMatcher

@@ -48,7 +48,7 @@ public:
     void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
     void removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
-    void mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* toNotify);
+    void mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify);
 
     void trace(Visitor*);
 
