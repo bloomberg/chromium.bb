@@ -31,7 +31,7 @@ uint8_t GetColorDepth(SkColorType type) {
       return 16;
     case kARGB_4444_SkColorType:
       return 12;
-    case kPMColor_SkColorType:
+    case kN32_SkColorType:
       return 24;
     default:
       NOTREACHED();

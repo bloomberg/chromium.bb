@@ -107,15 +107,12 @@ SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
   gfx::Size src_size = jbitmap.size();
 
   SkBitmap skbitmap;
-  skbitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     src_size.width(),
-                     src_size.height(),
-                     jbitmap.stride());
-  if (!skbitmap.allocPixels()) {
+  if (!skbitmap.allocPixels(SkImageInfo::MakeN32Premul(src_size.width(),
+                                                       src_size.height()),
+                            jbitmap.stride())) {
     LOG(FATAL) << " Failed to allocate bitmap of size " << src_size.width()
                << "x" << src_size.height() << " stride=" << jbitmap.stride();
   }
-  SkAutoLockPixels dst_lock(skbitmap);
   const void* src_pixels = jbitmap.pixels();
   void* dst_pixels = skbitmap.getPixels();
   memcpy(dst_pixels, src_pixels, skbitmap.getSize());

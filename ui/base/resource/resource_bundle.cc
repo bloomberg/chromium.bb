@@ -774,8 +774,7 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
   if (empty_image_.IsEmpty()) {
     // The placeholder bitmap is bright red so people notice the problem.
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(32, 32);
     bitmap.eraseARGB(255, 255, 0, 0);
     empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }

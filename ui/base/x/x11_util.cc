@@ -329,7 +329,7 @@ void UnrefCustomXCursor(::Cursor cursor) {
 
 XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
                                      const gfx::Point& hotspot) {
-  DCHECK(cursor_image->colorType() == kPMColor_SkColorType);
+  DCHECK(cursor_image->colorType() == kN32_SkColorType);
   gfx::Point hotspot_point = hotspot;
   SkBitmap scaled;
 

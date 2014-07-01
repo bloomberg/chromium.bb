@@ -30,8 +30,7 @@ TEST(ImageUtilTest, TestVisibleMargins) {
   // Image with non-transparent piece should return margins at those
   // columns.
   SkBitmap bitmap1;
-  bitmap1.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap1.allocPixels();
+  bitmap1.allocN32Pixels(16, 16);
   bitmap1.eraseColor(SK_ColorTRANSPARENT);
   bitmap1.eraseArea(SkIRect::MakeLTRB(3, 3, 14, 14), SK_ColorYELLOW);
   gfx::ImageSkia img = gfx::ImageSkia::CreateFrom1xBitmap(bitmap1);
@@ -45,8 +44,7 @@ TEST(ImageUtilTest, TestVisibleMargins) {
   // Full-width-transparent image should return margins in the center
   // of the image.
   SkBitmap bitmap2;
-  bitmap2.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap2.allocPixels();
+  bitmap2.allocN32Pixels(16, 16);
   bitmap2.eraseColor(SK_ColorTRANSPARENT);
   gfx::ImageSkia img_transparent = gfx::ImageSkia::CreateFrom1xBitmap(bitmap2);
   x = 0;
@@ -59,8 +57,7 @@ TEST(ImageUtilTest, TestVisibleMargins) {
   // Image with non-transparent piece that is skewed to one side should
   // return margins at those columns.
   SkBitmap bitmap3;
-  bitmap3.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap3.allocPixels();
+  bitmap3.allocN32Pixels(16, 16);
   bitmap3.eraseColor(SK_ColorTRANSPARENT);
   bitmap3.eraseArea(SkIRect::MakeLTRB(3, 3, 5, 5), SK_ColorYELLOW);
   gfx::ImageSkia img3 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap3);
@@ -74,8 +71,7 @@ TEST(ImageUtilTest, TestVisibleMargins) {
   // Image with non-transparent piece that is at one edge should
   // return margins at those columns.
   SkBitmap bitmap4;
-  bitmap4.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap4.allocPixels();
+  bitmap4.allocN32Pixels(16, 16);
   bitmap4.eraseColor(SK_ColorTRANSPARENT);
   bitmap4.eraseArea(SkIRect::MakeLTRB(0, 3, 5, 5), SK_ColorYELLOW);
   gfx::ImageSkia img4 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap4);
@@ -89,8 +85,7 @@ TEST(ImageUtilTest, TestVisibleMargins) {
   // Image with non-transparent piece that is at trailing edge should
   // return margins at those columns.
   SkBitmap bitmap5;
-  bitmap5.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap5.allocPixels();
+  bitmap5.allocN32Pixels(16, 16);
   bitmap5.eraseColor(SK_ColorTRANSPARENT);
   bitmap5.eraseArea(SkIRect::MakeLTRB(4, 3, 16, 16), SK_ColorYELLOW);
   gfx::ImageSkia img5 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap5);

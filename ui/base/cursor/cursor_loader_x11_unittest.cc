@@ -16,8 +16,7 @@ namespace ui {
 
 TEST(CursorLoaderX11Test, ScaleAndRotate) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 5);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(10, 5);
   bitmap.eraseColor(SK_ColorBLACK);
 
   gfx::Point hotpoint(3,4);

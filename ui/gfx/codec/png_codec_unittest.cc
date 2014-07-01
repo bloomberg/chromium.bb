@@ -257,8 +257,7 @@ bool BGRAGrayEqualsA8Gray(uint32_t a, uint8_t b) {
 }
 
 void MakeTestBGRASkBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   uint32_t* src_data = bmp->getAddr32(0, 0);
   for (int i = 0; i < w * h; i++)
@@ -266,8 +265,7 @@ void MakeTestBGRASkBitmap(int w, int h, SkBitmap* bmp) {
 }
 
 void MakeTestA8SkBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kA8_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocPixels(SkImageInfo::MakeA8(w, h));
 
   uint8_t* src_data = bmp->getAddr8(0, 0);
   for (int i = 0; i < w * h; i++)
@@ -994,9 +992,9 @@ TEST(PNGCodec, EncodeBGRASkBitmapStridePadded) {
   const int kPaddedSize = kPaddedWidth * kHeight;
   const int kRowBytes = kPaddedWidth * kBytesPerPixel;
 
+  SkImageInfo info = SkImageInfo::MakeN32Premul(kWidth, kHeight);
   SkBitmap original_bitmap;
-  original_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                            kWidth, kHeight, kRowBytes);
+  original_bitmap.setInfo(info, kRowBytes);
   original_bitmap.allocPixels();
 
   // Write data over the source bitmap.

@@ -82,9 +82,9 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   // function returns.  The copy will copy the pixel data into a place owned by
   // the bitmap, which is in turn owned by the shader, etc., so it will live
   // until we're done using it.
+  SkImageInfo info = SkImageInfo::MakeN32Premul(2, 2);
   SkBitmap temp_bitmap;
-  temp_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  temp_bitmap.setPixels(buffer);
+  temp_bitmap.installPixels(info, buffer, info.minRowBytes());
   SkBitmap bitmap;
   temp_bitmap.copyTo(&bitmap);
 
@@ -706,7 +706,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   const SkBitmap& hdc_bitmap =
       offscreen_canvas.getDevice()->accessBitmap(false);
   SkBitmap bitmap;
-  hdc_bitmap.copyTo(&bitmap, kPMColor_SkColorType);
+  hdc_bitmap.copyTo(&bitmap, kN32_SkColorType);
 
   // Post-process the pixels to fix up the alpha values (see big comment above).
   const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);

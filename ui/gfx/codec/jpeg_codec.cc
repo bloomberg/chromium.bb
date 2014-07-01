@@ -622,8 +622,7 @@ SkBitmap* JPEGCodec::Decode(const unsigned char* input, size_t input_size) {
   int data_length = w * h * 4;
 
   SkBitmap* bitmap = new SkBitmap();
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bitmap->allocPixels();
+  bitmap->allocN32Pixels(w, h);
   memcpy(bitmap->getAddr32(0, 0), &data_vector[0], data_length);
 
   return bitmap;

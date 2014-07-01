@@ -38,9 +38,7 @@ gfx::Rect DIPToPixelBounds(gfx::Rect dip_bounds, float scale) {
 // an error.
 ImageSkiaRep GetErrorImageRep(float scale, const gfx::Size& pixel_size) {
   SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, pixel_size.width(), pixel_size.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(pixel_size.width(), pixel_size.height());
   bitmap.eraseColor(SK_ColorRED);
   return gfx::ImageSkiaRep(bitmap, scale);
 }
@@ -166,10 +164,8 @@ class TransparentImageSource : public gfx::ImageSkiaSource {
   virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale);
     SkBitmap alpha;
-    alpha.setConfig(SkBitmap::kARGB_8888_Config,
-                    image_rep.pixel_width(),
-                    image_rep.pixel_height());
-    alpha.allocPixels();
+    alpha.allocN32Pixels(image_rep.pixel_width(),
+                         image_rep.pixel_height());
     alpha.eraseColor(SkColorSetARGB(alpha_ * 255, 0, 0, 0));
     return ImageSkiaRep(
         SkBitmapOperations::CreateMaskedBitmap(image_rep.sk_bitmap(), alpha),

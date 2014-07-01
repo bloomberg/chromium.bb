@@ -17,7 +17,7 @@ namespace {
 // Creates a gfx::Image with the requested dimensions.
 gfx::Image* CreateImage(const gfx::Size& size) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
+  bitmap.setInfo(SkImageInfo::MakeN32Premul(size.width(), size.height()));
   return new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }
 

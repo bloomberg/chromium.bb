@@ -276,9 +276,7 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
   png_read_update_info(png_ptr, info_ptr);
 
   if (state->bitmap) {
-    state->bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                             state->width, state->height);
-    state->bitmap->allocPixels();
+    state->bitmap->allocN32Pixels(state->width, state->height);
   } else if (state->output) {
     state->output->resize(
         state->width * state->output_channels * state->height);

@@ -419,7 +419,7 @@ gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
     return covariance;
 
   // Assume ARGB_8888 format.
-  DCHECK(bitmap.colorType() == kPMColor_SkColorType);
+  DCHECK(bitmap.colorType() == kN32_SkColorType);
 
   int64_t r_sum = 0;
   int64_t g_sum = 0;
@@ -488,7 +488,7 @@ bool ApplyColorReduction(const SkBitmap& source_bitmap,
 
   DCHECK(source_bitmap.getPixels());
   DCHECK(target_bitmap->getPixels());
-  DCHECK_EQ(kPMColor_SkColorType, source_bitmap.colorType());
+  DCHECK_EQ(kN32_SkColorType, source_bitmap.colorType());
   DCHECK_EQ(kAlpha_8_SkColorType, target_bitmap->colorType());
   DCHECK_EQ(source_bitmap.height(), target_bitmap->height());
   DCHECK_EQ(source_bitmap.width(), target_bitmap->width());

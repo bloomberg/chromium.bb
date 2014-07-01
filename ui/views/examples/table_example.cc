@@ -71,13 +71,11 @@ void TableExample::CreateExampleView(View* container) {
   table_ = new TableView(this, columns, ICON_AND_TEXT, true);
   table_->SetGrouper(this);
   table_->SetObserver(this);
-  icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  icon1_.allocPixels();
+  icon1_.allocN32Pixels(16, 16);
   SkCanvas canvas1(icon1_);
   canvas1.drawColor(SK_ColorRED);
 
-  icon2_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  icon2_.allocPixels();
+  icon2_.allocN32Pixels(16, 16);
   SkCanvas canvas2(icon2_);
   canvas2.drawColor(SK_ColorBLUE);
 

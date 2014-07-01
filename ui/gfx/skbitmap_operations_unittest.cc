@@ -44,8 +44,7 @@ bool BitmapsClose(const SkBitmap& a, const SkBitmap& b) {
 }
 
 void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   unsigned char* src_data =
       reinterpret_cast<unsigned char*>(bmp->getAddr32(0, 0));
@@ -62,9 +61,7 @@ SkBitmap ReferenceCreateHSLShiftedBitmap(
     const SkBitmap& bitmap,
     color_utils::HSL hsl_shift) {
   SkBitmap shifted;
-  shifted.setConfig(SkBitmap::kARGB_8888_Config, bitmap.width(),
-                    bitmap.height());
-  shifted.allocPixels();
+  shifted.allocN32Pixels(bitmap.width(), bitmap.height());
   shifted.eraseARGB(0, 0, 0, 0);
 
   SkAutoLockPixels lock_bitmap(bitmap);
@@ -91,8 +88,7 @@ SkBitmap ReferenceCreateHSLShiftedBitmap(
 TEST(SkBitmapOperationsTest, CreateInvertedBitmap) {
   int src_w = 16, src_h = 16;
   SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
+  src.allocN32Pixels(src_w, src_h);
 
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -126,12 +122,10 @@ TEST(SkBitmapOperationsTest, CreateInvertedBitmap) {
 TEST(SkBitmapOperationsTest, CreateBlendedBitmap) {
   int src_w = 16, src_h = 16;
   SkBitmap src_a;
-  src_a.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src_a.allocPixels();
+  src_a.allocN32Pixels(src_w, src_h);
 
   SkBitmap src_b;
-  src_b.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src_b.allocPixels();
+  src_b.allocN32Pixels(src_w, src_h);
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -173,8 +167,7 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
 
   // Generate alpha mask
   SkBitmap alpha;
-  alpha.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  alpha.allocPixels();
+  alpha.allocN32Pixels(src_w, src_h);
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
       *alpha.getAddr32(x, y) = SkColorSetARGB((i + 128) % 255,
@@ -218,8 +211,7 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
 TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapToSame) {
   int src_w = 16, src_h = 16;
   SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
+  src.allocN32Pixels(src_w, src_h);
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -256,8 +248,7 @@ TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapToSame) {
 TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapHueOnly) {
   int src_w = 16, src_h = 16;
   SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
+  src.allocN32Pixels(src_w, src_h);
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -289,8 +280,7 @@ TEST(SkBitmapOperationsTest, ValidateHSLShift) {
   const int inc = 51;
   const int dim = 255 / inc + 1;
   SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, dim*dim, dim*dim);
-  src.allocPixels();
+  src.allocN32Pixels(dim*dim, dim*dim);
 
   for (int a = 0, y = 0; a <= 255; a += inc) {
     for (int r = 0; r <= 255; r += inc, y++) {
@@ -379,8 +369,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwo) {
   //        A0404040  FF808080
   //        FF808080  FF808080
   SkBitmap input;
-  input.setConfig(SkBitmap::kARGB_8888_Config, 3, 3);
-  input.allocPixels();
+  input.allocN32Pixels(3, 3);
 
   // The color order may be different, but we don't care (the channels are
   // trated the same).
@@ -412,8 +401,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
 
   // Test a 1x1 bitmap.
   SkBitmap one_by_one;
-  one_by_one.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  one_by_one.allocPixels();
+  one_by_one.allocN32Pixels(1, 1);
   *one_by_one.getAddr32(0, 0) = reference;
   SkBitmap result = SkBitmapOperations::DownsampleByTwo(one_by_one);
   SkAutoLockPixels lock1(result);
@@ -423,8 +411,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
 
   // Test an n by 1 bitmap.
   SkBitmap one_by_n;
-  one_by_n.setConfig(SkBitmap::kARGB_8888_Config, 300, 1);
-  one_by_n.allocPixels();
+  one_by_n.allocN32Pixels(300, 1);
   result = SkBitmapOperations::DownsampleByTwo(one_by_n);
   SkAutoLockPixels lock2(result);
   EXPECT_EQ(300, result.width());
@@ -432,8 +419,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
 
   // Test a 1 by n bitmap.
   SkBitmap n_by_one;
-  n_by_one.setConfig(SkBitmap::kARGB_8888_Config, 1, 300);
-  n_by_one.allocPixels();
+  n_by_one.allocN32Pixels(1, 300);
   result = SkBitmapOperations::DownsampleByTwo(n_by_one);
   SkAutoLockPixels lock3(result);
   EXPECT_EQ(1, result.width());
@@ -452,8 +438,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoSmall) {
 TEST(SkBitmapOperationsTest, DownsampleByTwoUntilSize) {
   // First make sure a "too small" bitmap doesn't get modified at all.
   SkBitmap too_small;
-  too_small.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  too_small.allocPixels();
+  too_small.allocN32Pixels(10, 10);
   SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
       too_small, 16, 16);
   EXPECT_EQ(10, result.width());
@@ -466,8 +451,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoUntilSize) {
 
   // Test multiple steps of downsampling.
   SkBitmap large;
-  large.setConfig(SkBitmap::kARGB_8888_Config, 100, 43);
-  large.allocPixels();
+  large.allocN32Pixels(100, 43);
   result = SkBitmapOperations::DownsampleByTwoUntilSize(large, 6, 6);
 
   // The result should be divided in half 100x43 -> 50x22 -> 25x11
@@ -477,8 +461,7 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoUntilSize) {
 
 TEST(SkBitmapOperationsTest, UnPreMultiply) {
   SkBitmap input;
-  input.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  input.allocPixels();
+  input.allocN32Pixels(2, 2);
 
   // Set PMColors into the bitmap
   *input.getAddr32(0, 0) = SkPackARGB32NoCheck(0x80, 0x00, 0x00, 0x00);
@@ -499,8 +482,7 @@ TEST(SkBitmapOperationsTest, UnPreMultiply) {
 
 TEST(SkBitmapOperationsTest, CreateTransposedBitmap) {
   SkBitmap input;
-  input.setConfig(SkBitmap::kARGB_8888_Config, 2, 3);
-  input.allocPixels();
+  input.allocN32Pixels(2, 3);
 
   for (int x = 0; x < input.width(); ++x) {
     for (int y = 0; y < input.height(); ++y) {
@@ -529,8 +511,7 @@ TEST(SkBitmapOperationsTest, RotateImage) {
   // RRRBBB
   // GGGYYY
   // GGGYYY
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
+  src.allocN32Pixels(src_w, src_h);
 
   SkCanvas canvas(src);
   src.eraseARGB(0, 0, 0, 0);

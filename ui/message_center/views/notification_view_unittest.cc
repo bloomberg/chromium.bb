@@ -54,8 +54,7 @@ class NotificationViewTest : public views::ViewsTestBase,
 
   const SkBitmap CreateBitmap(int width, int height) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(width, height);
     bitmap.eraseRGB(0, 255, 0);
     return bitmap;
   }

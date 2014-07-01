@@ -51,7 +51,7 @@ CacaSurface::~CacaSurface() {
 bool CacaSurface::Initialize() {
   SkImageInfo info = SkImageInfo::Make(connection_->bitmap_size().width(),
                                        connection_->bitmap_size().height(),
-                                       kPMColor_SkColorType,
+                                       kN32_SkColorType,
                                        kPremul_SkAlphaType);
 
   surface_ = skia::AdoptRef(SkSurface::NewRaster(info));

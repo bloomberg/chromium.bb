@@ -306,8 +306,7 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
     DCHECK_LE(sizeof(gfx::Size), input.size());
     const gfx::Size* size = reinterpret_cast<const gfx::Size*>(input.data());
 
-    bmp.setConfig(SkBitmap::kARGB_8888_Config, size->width(), size->height());
-    bmp.allocPixels();
+    bmp.allocN32Pixels(size->width(), size->height());
 
     DCHECK_EQ(sizeof(gfx::Size) + bmp.getSize(), input.size());
 

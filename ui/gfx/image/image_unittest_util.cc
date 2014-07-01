@@ -54,8 +54,7 @@ std::vector<float> Get1xAnd2xScales() {
 
 const SkBitmap CreateBitmap(int width, int height) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseARGB(255, 0, 255, 0);
   return bitmap;
 }

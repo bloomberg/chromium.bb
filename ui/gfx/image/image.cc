@@ -58,8 +58,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
 // Caller takes ownership of returned ImageSkia.
 ImageSkia* GetErrorImageSkia() {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(16, 16);
   bitmap.eraseARGB(0xff, 0xff, 0, 0);
   return new ImageSkia(ImageSkiaRep(bitmap, 1.0f));
 }

@@ -77,7 +77,7 @@ bool BuildResizedImageFamily(const gfx::ImageFamily& image_family,
       SkBitmap best_bitmap = best->AsBitmap();
       // Only kARGB_8888 images are supported.
       // This will also filter out images with no pixels.
-      if (best_bitmap.colorType() != kPMColor_SkColorType)
+      if (best_bitmap.colorType() != kN32_SkColorType)
         return false;
       SkBitmap resized_bitmap = skia::ImageOperations::Resize(
           best_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
@@ -119,7 +119,7 @@ bool ConvertImageFamilyToBitmaps(
     // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
     // been properly initialized.
     SkAutoLockPixels bitmap_lock(bitmap);
-    if ((bitmap.colorType() != kPMColor_SkColorType) ||
+    if ((bitmap.colorType() != kN32_SkColorType) ||
         (bitmap.getPixels() == NULL)) {
       return false;
     }
@@ -166,7 +166,7 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
   // Only 32 bit ARGB bitmaps are supported. We also try to perform as many
   // validations as we can on the bitmap.
   SkAutoLockPixels bitmap_lock(bitmap);
-  if ((bitmap.colorType() != kPMColor_SkColorType) ||
+  if ((bitmap.colorType() != kN32_SkColorType) ||
       (bitmap.width() <= 0) || (bitmap.height() <= 0) ||
       (bitmap.getPixels() == NULL))
     return NULL;

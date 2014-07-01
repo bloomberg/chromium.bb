@@ -156,9 +156,8 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
           reinterpret_cast<const gfx::Size*>(&params[1].front());
       // Let Skia do some sanity checking for us (no negative widths/heights, no
       // overflows while calculating bytes per row, etc).
-      if (!bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                            unvalidated_size->width(),
-                            unvalidated_size->height())) {
+      if (!bitmap.setInfo(SkImageInfo::MakeN32Premul(
+          unvalidated_size->width(), unvalidated_size->height()))) {
         return;
       }
       // Make sure the size is representable as a signed 32-bit int, so
