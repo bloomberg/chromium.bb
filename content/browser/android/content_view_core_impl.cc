@@ -1539,6 +1539,15 @@ void ContentViewCoreImpl::ShowSelectionHandlesAutomatically() const {
   Java_ContentViewCore_showSelectionHandlesAutomatically(env, obj.obj());
 }
 
+bool ContentViewCoreImpl::IsFullscreenRequiredForOrientationLock() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return true;
+  return Java_ContentViewCore_isFullscreenRequiredForOrientationLock(env,
+                                                                     obj.obj());
+}
+
 void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
   accessibility_enabled_ = enabled;
   RenderWidgetHostViewAndroid* host_view = GetRenderWidgetHostViewAndroid();

@@ -4,6 +4,7 @@
 
 #include "content/browser/screen_orientation/screen_orientation_provider_android.h"
 
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
@@ -45,7 +46,13 @@ bool ScreenOrientationProviderAndroid::Register(JNIEnv* env) {
 void ScreenOrientationProviderAndroid::LockOrientation(
     int request_id,
     blink::WebScreenOrientationLockType lock_orientation) {
-  if (!web_contents_impl()->IsFullscreenForCurrentTab()) {
+  ContentViewCoreImpl* cvc =
+      ContentViewCoreImpl::FromWebContents(web_contents());
+  bool fullscreen_required = cvc ? cvc->IsFullscreenRequiredForOrientationLock()
+                                 : true;
+
+  if (fullscreen_required &&
+      !web_contents_impl()->IsFullscreenForCurrentTab()) {
     dispatcher_->NotifyLockError(
         request_id,
         blink::WebLockOrientationErrorFullScreenRequired);

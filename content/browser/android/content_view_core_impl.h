@@ -322,6 +322,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void ShowSelectionHandlesAutomatically() const;
 
+  bool IsFullscreenRequiredForOrientationLock() const;
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------

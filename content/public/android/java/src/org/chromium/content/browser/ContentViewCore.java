@@ -355,6 +355,10 @@ public class ContentViewCore
     private float mCurrentTouchOffsetX;
     private float mCurrentTouchOffsetY;
 
+    // Whether the ContentViewCore requires the WebContents to be fullscreen in order to lock the
+    // screen orientation.
+    private boolean mFullscreenRequiredForOrientationLock = true;
+
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -3161,6 +3165,19 @@ public class ContentViewCore
     public void resumeResponseDeferredAtStart() {
         if (mNativeContentViewCore == 0) return;
         nativeResumeResponseDeferredAtStart(mNativeContentViewCore);
+    }
+
+    /**
+     * Set whether the ContentViewCore requires the WebContents to be fullscreen in order to lock
+     * the screen orientation.
+     */
+    public void setFullscreenRequiredForOrientationLock(boolean value) {
+        mFullscreenRequiredForOrientationLock = value;
+    }
+
+    @CalledByNative
+    private boolean isFullscreenRequiredForOrientationLock() {
+        return mFullscreenRequiredForOrientationLock;
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
