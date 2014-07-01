@@ -12,7 +12,7 @@ class Message;
 }
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 namespace translate {
@@ -55,9 +55,9 @@ class BrowserCldDataProvider : public IPC::Listener {
 };
 
 // Static factory function defined by the implementation that produces a new
-// provider for the specified render view host.
+// provider for the specified WebContents.
 BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
-    content::RenderViewHost*);
+    content::WebContents*);
 
 }  // namespace translate
 

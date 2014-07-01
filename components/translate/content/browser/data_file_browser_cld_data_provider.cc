@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -38,8 +39,8 @@ namespace translate {
 // Implementation of the static factory method from BrowserCldDataProvider,
 // hooking up this specific implementation for all of Chromium.
 BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
-    content::RenderViewHost* render_view_host) {
-  return new DataFileBrowserCldDataProvider(render_view_host);
+    content::WebContents* web_contents) {
+  return new DataFileBrowserCldDataProvider(web_contents);
 }
 
 void DataFileBrowserCldDataProvider::SetCldDataFilePath(
@@ -61,8 +62,8 @@ base::FilePath DataFileBrowserCldDataProvider::GetCldDataFilePath() {
 }
 
 DataFileBrowserCldDataProvider::DataFileBrowserCldDataProvider(
-    content::RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host), weak_pointer_factory_() {
+    content::WebContents* web_contents)
+    : web_contents_(web_contents), weak_pointer_factory_() {
 }
 
 DataFileBrowserCldDataProvider::~DataFileBrowserCldDataProvider() {
@@ -140,19 +141,37 @@ void DataFileBrowserCldDataProvider::SendCldDataResponseInternal(
     const uint64 data_offset,
     const uint64 data_length) {
   VLOG(1) << "Sending CLD data file response.";
+
+  content::RenderViewHost* render_view_host =
+      web_contents_->GetRenderViewHost();
+  if (render_view_host == NULL) {
+    // Render view destroyed, no need to bother.
+    VLOG(1) << "Lost render view host, giving up";
+    return;
+  }
+
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  if (render_process_host == NULL) {
+    // Render process destroyed, render view not yet dead. No need to bother.
+    VLOG(1) << "Lost render process, giving up";
+    return;
+  }
+
   // Data available, respond to the request.
+  const int render_process_handle = render_process_host->GetHandle();
   IPC::PlatformFileForTransit ipc_platform_file =
       IPC::GetFileHandleForProcess(handle->GetPlatformFile(),
-                                   render_view_host_->GetProcess()->GetHandle(),
-                                   false);
+                                   render_process_handle, false);
+
   // In general, sending a response from within the code path that is processing
   // a request is discouraged because there is potential for deadlock (if the
   // methods are sent synchronously) or loops (if the response can trigger a
   // new request). Neither of these concerns is relevant in this code, so
   // sending the response from within the code path of the request handler is
   // safe.
-  render_view_host_->Send(
-      new ChromeViewMsg_CldDataFileAvailable(render_view_host_->GetRoutingID(),
+  render_view_host->Send(
+      new ChromeViewMsg_CldDataFileAvailable(render_view_host->GetRoutingID(),
                                              ipc_platform_file,
                                              data_offset,
                                              data_length));

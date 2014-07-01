@@ -86,7 +86,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
       translate_driver_(&web_contents->GetController()),
       translate_manager_(new TranslateManager(this, prefs::kAcceptLanguages)),
       cld_data_provider_(translate::CreateBrowserCldDataProviderFor(
-          web_contents->GetRenderViewHost())),
+          web_contents)),
       weak_pointer_factory_(this) {
 #if defined(CLD_DATA_FROM_STANDALONE)
   if (!g_cld_file_path_initialized_)

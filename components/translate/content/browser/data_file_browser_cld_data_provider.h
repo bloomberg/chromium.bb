@@ -16,7 +16,7 @@ namespace translate {
 
 class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
  public:
-  explicit DataFileBrowserCldDataProvider(content::RenderViewHost*);
+  explicit DataFileBrowserCldDataProvider(content::WebContents*);
   virtual ~DataFileBrowserCldDataProvider();
   // BrowserCldDataProvider implementations:
   virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
@@ -42,7 +42,7 @@ class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
                                    const uint64);
   static void OnCldDataRequestInternal();
 
-  content::RenderViewHost* render_view_host_;
+  content::WebContents* web_contents_;
   scoped_ptr<base::WeakPtrFactory<DataFileBrowserCldDataProvider> >
       weak_pointer_factory_;
 

@@ -190,6 +190,11 @@
             'translate/content/renderer/renderer_cld_data_provider.h',
            ],
           'conditions': [
+            ['cld_version==0 or cld_version==2', {
+              'dependencies': [
+                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
+              ],
+            }],
             ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
               'sources': [
                 'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
