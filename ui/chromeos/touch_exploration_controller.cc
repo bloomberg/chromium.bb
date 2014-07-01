@@ -18,25 +18,9 @@
 
 namespace ui {
 
-namespace {
-// The default value for initial_touch_id_passthrough_mapping_ used
-// when the user has not yet released any fingers yet, so there's no
-// touch id remapping yet.
-const int kTouchIdUnassigned = 0;
-
-// The value for initial_touch_id_passthrough_mapping_ if the user has
-// released the first finger but some other fingers are held down. In this
-// state we don't do any touch id remapping, but we distinguish it from the
-// kTouchIdUnassigned state because we don't want to assign
-// initial_touch_id_passthrough_mapping_ a touch id anymore,
-// until all fingers are released.
-const int kTouchIdNone = -1;
-}  // namespace
-
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window)
     : root_window_(root_window),
-      initial_touch_id_passthrough_mapping_(kTouchIdUnassigned),
       state_(NO_FINGERS_DOWN),
       event_handler_for_testing_(NULL),
       prev_state_(NO_FINGERS_DOWN) {
@@ -139,10 +123,14 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InDoubleTapPressed(touch_event, rewritten_event);
     case TOUCH_EXPLORATION:
       return InTouchExploration(touch_event, rewritten_event);
-    case PASSTHROUGH_MINUS_ONE:
-      return InPassthroughMinusOne(touch_event, rewritten_event);
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event, rewritten_event);
+    case TWO_TO_ONE_FINGER:
+      return InTwoToOneFinger(touch_event, rewritten_event);
+    case PASSTHROUGH:
+      return InPassthrough(touch_event, rewritten_event);
+    case WAIT_FOR_RELEASE:
+      return InWaitForRelease(touch_event, rewritten_event);
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -159,6 +147,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
   const ui::EventType type = event.type();
   if (type == ui::ET_TOUCH_PRESSED) {
     initial_press_.reset(new TouchEvent(event));
+    last_unused_finger_event_.reset(new TouchEvent(event));
     tap_timer_.Start(FROM_HERE,
                      gesture_detector_config_.double_tap_timeout,
                      this,
@@ -167,7 +156,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     VLOG_STATE();
     return ui::EVENT_REWRITE_DISCARD;
   }
-  NOTREACHED();
+  NOTREACHED() << "Unexpected event type received.";
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -177,10 +166,16 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
 
   if (type == ui::ET_TOUCH_PRESSED) {
     // Adding a second finger within the timeout period switches to
-    // passthrough.
-    state_ = PASSTHROUGH_MINUS_ONE;
-    VLOG_STATE();
-    return InPassthroughMinusOne(event, rewritten_event);
+    // passing through every event from the second finger and none form the
+    // first. The event from the first finger is still saved in initial_press_.
+    state_ = TWO_TO_ONE_FINGER;
+    last_two_to_one_.reset(new TouchEvent(event));
+    rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                                              event.location(),
+                                              event.touch_id(),
+                                              event.time_stamp()));
+    (*rewritten_event)->set_flags(event.flags());
+    return EVENT_REWRITE_REWRITTEN;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     DCHECK_EQ(0U, current_touch_ids_.size());
     state_ = SINGLE_TAP_RELEASED;
@@ -226,15 +221,15 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     state_ = DOUBLE_TAP_PRESSED;
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
-  }
-  // If the previous press was discarded, we need to also handle its release.
-  if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+  } else if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+    // If the previous press was discarded, we need to also handle its
+    // release.
     if (current_touch_ids_.size() == 0) {
       ResetToNoFingersDown();
     }
     return ui::EVENT_REWRITE_DISCARD;
   }
-  NOTREACHED();
+  NOTREACHED() << "Unexpected event type received.";
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -265,7 +260,8 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPressed(
 }
 
 ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
-    const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event) {
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
   if (type == ui::ET_TOUCH_PRESSED) {
     // Handle split-tap.
@@ -300,48 +296,89 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
-ui::EventRewriteStatus TouchExplorationController::InPassthroughMinusOne(
-    const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event) {
+
+ui::EventRewriteStatus TouchExplorationController::InTwoToOneFinger(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  // The user should only ever be in TWO_TO_ONE_FINGER with two fingers down.
+  // If the user added or removed a finger, the state is changed.
   ui::EventType type = event.type();
-  gfx::PointF location = event.location_f();
-
   if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
-    if (current_touch_ids_.size() == 0)
-      ResetToNoFingersDown();
-
-    if (initial_touch_id_passthrough_mapping_ == kTouchIdUnassigned) {
-      if (event.touch_id() == initial_press_->touch_id()) {
-        initial_touch_id_passthrough_mapping_ = kTouchIdNone;
-      } else {
-        // If the only finger now remaining is the first finger,
-        // rewrite as a move to the location of the first finger.
-        initial_touch_id_passthrough_mapping_ = event.touch_id();
-        rewritten_event->reset(
-            new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-                               touch_locations_[initial_press_->touch_id()],
-                               initial_touch_id_passthrough_mapping_,
-                               event.time_stamp()));
-        (*rewritten_event)->set_flags(event.flags());
-        return ui::EVENT_REWRITE_REWRITTEN;
-      }
+    DCHECK(current_touch_ids_.size() == 1);
+    // Stop passing through the second finger and go to the wait state.
+    if (current_touch_ids_.size() == 1) {
+      rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED,
+                                                last_two_to_one_->location(),
+                                                last_two_to_one_->touch_id(),
+                                                event.time_stamp()));
+      (*rewritten_event)->set_flags(event.flags());
+      state_ = WAIT_FOR_RELEASE;
+      return ui::EVENT_REWRITE_REWRITTEN;
     }
-  }
-
-  if (event.touch_id() == initial_press_->touch_id()) {
-    if (initial_touch_id_passthrough_mapping_ == kTouchIdNone ||
-        initial_touch_id_passthrough_mapping_ == kTouchIdUnassigned) {
+  } else if (type == ui::ET_TOUCH_PRESSED) {
+    DCHECK(current_touch_ids_.size() == 3);
+    // If a third finger is pressed, we are now going into passthrough mode
+    // and now need to dispatch the first finger into a press, as well as the
+    // recent press.
+    if (current_touch_ids_.size() == 3){
+      state_ = PASSTHROUGH;
+      scoped_ptr<ui::TouchEvent> first_finger_press;
+      first_finger_press.reset(
+          new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                             last_unused_finger_event_->location(),
+                             last_unused_finger_event_->touch_id(),
+                             event.time_stamp()));
+      DispatchEvent(first_finger_press.get());
+      rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                                                event.location(),
+                                                event.touch_id(),
+                                                event.time_stamp()));
+      (*rewritten_event)->set_flags(event.flags());
+      return ui::EVENT_REWRITE_REWRITTEN;
+    }
+  } else if (type == ui::ET_TOUCH_MOVED) {
+    DCHECK(current_touch_ids_.size() == 2);
+    // The first finger should have no events pass through, but for a proper
+    // conversion to passthrough, the press of the initial finger should
+    // be updated.
+    if (event.touch_id() == last_unused_finger_event_->touch_id()) {
+      last_unused_finger_event_.reset(new TouchEvent(event));
       return ui::EVENT_REWRITE_DISCARD;
     }
-
-    rewritten_event->reset(
-        new ui::TouchEvent(type,
-                           location,
-                           initial_touch_id_passthrough_mapping_,
-                           event.time_stamp()));
-    (*rewritten_event)->set_flags(event.flags());
-    return ui::EVENT_REWRITE_REWRITTEN;
+    if (event.touch_id() == last_two_to_one_->touch_id()) {
+      last_two_to_one_.reset(new TouchEvent(event));
+      rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
+                                                event.location(),
+                                                event.touch_id(),
+                                                event.time_stamp()));
+      (*rewritten_event)->set_flags(event.flags());
+      return ui::EVENT_REWRITE_REWRITTEN;
+    }
   }
+  NOTREACHED() << "Unexpected event type received";
   return ui::EVENT_REWRITE_CONTINUE;
+}
+
+ui::EventRewriteStatus TouchExplorationController::InPassthrough(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  ui::EventType type = event.type();
+
+  if (!(type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED ||
+        type == ui::ET_TOUCH_MOVED || type == ui::ET_TOUCH_PRESSED)) {
+    NOTREACHED() << "Unexpected event type received.";
+    return ui::EVENT_REWRITE_CONTINUE;
+  }
+
+  rewritten_event->reset(new ui::TouchEvent(
+      type, event.location(), event.touch_id(), event.time_stamp()));
+  (*rewritten_event)->set_flags(event.flags());
+
+  if (current_touch_ids_.size() == 0) {
+    ResetToNoFingersDown();
+  }
+
+  return ui::EVENT_REWRITE_REWRITTEN;
 }
 
 ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
@@ -370,11 +407,6 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     if (current_touch_ids_.size() != 1)
       return EVENT_REWRITE_DISCARD;
 
-    // Continue to release the touch only if the touch explore finger is the
-    // only finger remaining.
-    if (current_touch_ids_.size() != 1)
-      return EVENT_REWRITE_DISCARD;
-
     // Rewrite at location of last touch exploration.
     rewritten_event->reset(
         new ui::TouchEvent(ui::ET_TOUCH_RELEASED,
@@ -388,6 +420,22 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
   }
   NOTREACHED() << "Unexpected event type received.";
   return ui::EVENT_REWRITE_CONTINUE;
+}
+
+ui::EventRewriteStatus TouchExplorationController::InWaitForRelease(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  ui::EventType type = event.type();
+  if (!(type == ui::ET_TOUCH_PRESSED || type == ui::ET_TOUCH_MOVED ||
+        type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED)) {
+    NOTREACHED() << "Unexpected event type received.";
+    return ui::EVENT_REWRITE_CONTINUE;
+  }
+  if (current_touch_ids_.size() == 0) {
+    state_ = NO_FINGERS_DOWN;
+    ResetToNoFingersDown();
+  }
+  return EVENT_REWRITE_DISCARD;
 }
 
 void TouchExplorationController::OnTapTimerFired() {
@@ -446,7 +494,6 @@ void TouchExplorationController::EnterTouchToMouseMode() {
 
 void TouchExplorationController::ResetToNoFingersDown() {
   state_ = NO_FINGERS_DOWN;
-  initial_touch_id_passthrough_mapping_ = kTouchIdUnassigned;
   VLOG_STATE();
   if (tap_timer_.IsRunning())
     tap_timer_.Stop();
@@ -502,10 +549,14 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "DOUBLE_TAP_PRESSED";
     case TOUCH_EXPLORATION:
       return "TOUCH_EXPLORATION";
-    case PASSTHROUGH_MINUS_ONE:
-      return "PASSTHROUGH_MINUS_ONE";
     case TOUCH_EXPLORE_SECOND_PRESS:
       return "TOUCH_EXPLORE_SECOND_PRESS";
+    case TWO_TO_ONE_FINGER:
+      return "TWO_TO_ONE_FINGER";
+    case PASSTHROUGH:
+      return "PASSTHROUGH";
+    case WAIT_FOR_RELEASE:
+      return "WAIT_FOR_RELEASE";
   }
   return "Not a state";
 }
