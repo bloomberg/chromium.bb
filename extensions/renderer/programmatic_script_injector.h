@@ -8,11 +8,16 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/renderer/script_injection.h"
+#include "url/gurl.h"
 
 struct ExtensionMsg_ExecuteCode_Params;
 
 namespace blink {
 class WebFrame;
+}
+
+namespace content {
+class RenderView;
 }
 
 namespace extensions {
@@ -59,8 +64,11 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // The parameters for injecting the script.
   scoped_ptr<ExtensionMsg_ExecuteCode_Params> params_;
 
-  // The web frame into which we are injecting.
-  blink::WebFrame* web_frame_;
+  // The url of the frame into which we are injecting.
+  GURL url_;
+
+  // The RenderView to which we send the response upon completion.
+  content::RenderView* render_view_;
 
   // The results of the script execution.
   scoped_ptr<base::ListValue> results_;

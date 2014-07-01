@@ -18,7 +18,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
-#include "url/gurl.h"
 
 namespace extensions {
 
@@ -26,7 +25,8 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
     const ExtensionMsg_ExecuteCode_Params& params,
     blink::WebFrame* web_frame)
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
-      web_frame_(web_frame),
+      url_(ScriptContext::GetDataSourceURLForFrame(web_frame)),
+      render_view_(content::RenderView::FromWebView(web_frame->view())),
       results_(new base::ListValue()),
       finished_(false) {
 }
@@ -118,9 +118,8 @@ void ProgrammaticScriptInjector::OnWillNotInject(InjectFailureReason reason) {
   std::string error;
   switch (reason) {
     case NOT_ALLOWED:
-      error = ErrorUtils::FormatErrorMessage(
-          manifest_errors::kCannotAccessPage,
-          GURL(web_frame_->document().url()).spec());
+      error = ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
+                                             url_.spec());
       break;
     case EXTENSION_REMOVED:  // no special error here.
     case WONT_INJECT:
@@ -137,14 +136,12 @@ void ProgrammaticScriptInjector::Finish(const std::string& error) {
   DCHECK(!finished_);
   finished_ = true;
 
-  content::RenderView* render_view =
-      content::RenderView::FromWebView(web_frame_->view());
-  render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-      render_view->GetRoutingID(),
+  render_view_->Send(new ExtensionHostMsg_ExecuteCodeFinished(
+      render_view_->GetRoutingID(),
       params_->request_id,
       error,
-      render_view->GetPageId(),
-      ScriptContext::GetDataSourceURLForFrame(web_frame_),
+      render_view_->GetPageId(),
+      url_,
       *results_));
 }
 
