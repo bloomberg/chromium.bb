@@ -1189,12 +1189,12 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   if (result->proxy_server().isDataReductionProxy()) {
     RecordDataReductionProxyBypassInfo(
-        true, result->proxy_server(), ERROR_BYPASS);
+        true, false, result->proxy_server(), NETWORK_ERROR);
     RecordDataReductionProxyBypassOnNetworkError(
         true, result->proxy_server(), net_error);
   } else if (result->proxy_server().isDataReductionProxyFallback()) {
     RecordDataReductionProxyBypassInfo(
-        false, result->proxy_server(), ERROR_BYPASS);
+        false, false, result->proxy_server(), NETWORK_ERROR);
     RecordDataReductionProxyBypassOnNetworkError(
         false, result->proxy_server(), net_error);
   }
@@ -1427,18 +1427,29 @@ scoped_ptr<ProxyService::PacPollPolicy>
 
 void ProxyService::RecordDataReductionProxyBypassInfo(
     bool is_primary,
+    bool bypass_all,
     const ProxyServer& proxy_server,
-    DataReductionProxyBypassEventType bypass_type) const {
+    DataReductionProxyBypassType bypass_type) const {
   // Only record UMA if the proxy isn't already on the retry list.
   if (proxy_retry_info_.find(proxy_server.ToURI()) != proxy_retry_info_.end())
     return;
 
-  if (is_primary) {
-    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassInfoPrimary",
-                              bypass_type, BYPASS_EVENT_TYPE_MAX);
+  if (bypass_all) {
+    if (is_primary) {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypePrimary",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypeFallback",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    }
   } else {
-    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassInfoFallback",
-                              bypass_type, BYPASS_EVENT_TYPE_MAX);
+    if (is_primary) {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypePrimary",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypeFallback",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    }
   }
 }
 

@@ -56,8 +56,8 @@ bool MaybeBypassProxyAndPrepareToRetry(
     return false;
 
   DataReductionProxyInfo data_reduction_proxy_info;
-  net::ProxyService::DataReductionProxyBypassEventType bypass_type =
-      GetDataReductionProxyBypassEventType(
+  net::ProxyService::DataReductionProxyBypassType bypass_type =
+      GetDataReductionProxyBypassType(
           original_response_headers, &data_reduction_proxy_info);
   if (bypass_type == net::ProxyService::BYPASS_EVENT_TYPE_MAX) {
     return false;
@@ -68,7 +68,10 @@ bool MaybeBypassProxyAndPrepareToRetry(
   net::ProxyServer proxy_server;
   SetProxyServerFromGURL(data_reduction_proxies.first, &proxy_server);
   request->context()->proxy_service()->RecordDataReductionProxyBypassInfo(
-      !data_reduction_proxies.second.is_empty(), proxy_server, bypass_type);
+      !data_reduction_proxies.second.is_empty(),
+      data_reduction_proxy_info.bypass_all,
+      proxy_server,
+      bypass_type);
 
   MarkProxiesAsBadUntil(request,
                         data_reduction_proxy_info.bypass_duration,

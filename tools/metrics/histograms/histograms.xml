@@ -2937,8 +2937,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.BlockTypeFallback"
+    enum="DataReductionProxyBypassType">
+  <owner>bengr@chromium.org</owner>
+  <owner>marq@chromium.org</owner>
+  <summary>
+    Counts various events that trigger Chrome to block the fallback
+    configuration of the data reduction proxy.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.BlockTypePrimary"
+    enum="DataReductionProxyBypassType">
+  <owner>bengr@chromium.org</owner>
+  <owner>marq@chromium.org</owner>
+  <summary>
+    Counts various events that trigger Chrome to block the primary configuration
+    of the data reduction proxy.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BypassInfoFallback"
-    enum="DataReductionProxyBypassEventType">
+    enum="DataReductionProxyBypassEventType_Deprecated">
+  <obsolete>
+    Deprecated as of 6/2014, replaced by DataReductionProxy.BypassTypeFallback.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -2948,7 +2971,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DataReductionProxy.BypassInfoPrimary"
-    enum="DataReductionProxyBypassEventType">
+    enum="DataReductionProxyBypassEventType_Deprecated">
+  <obsolete>
+    Deprecated as of 6/2014, replaced by DataReductionProxy.BypassTypePrimary.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -2974,6 +3000,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Positive net error code that caused the primary data reduction proxy to be
     bypassed and put on the proxy retry list. Called after a failure to connect
     or resolve a host name.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.BypassTypeFallback"
+    enum="DataReductionProxyBypassType">
+  <owner>bengr@chromium.org</owner>
+  <owner>marq@chromium.org</owner>
+  <summary>
+    Counts various events that trigger Chrome to bypass the fallback
+    configuration of the data reduction proxy.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.BypassTypePrimary"
+    enum="DataReductionProxyBypassType">
+  <owner>bengr@chromium.org</owner>
+  <owner>marq@chromium.org</owner>
+  <summary>
+    Counts various events that trigger Chrome to bypass the primary
+    configuration of the data reduction proxy.
   </summary>
 </histogram>
 
@@ -35944,7 +35990,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Channel is negotiated."/>
 </enum>
 
-<enum name="DataReductionProxyBypassEventType" type="int">
+<enum name="DataReductionProxyBypassEventType_Deprecated" type="int">
   <int value="0" label="Short bypass"/>
   <int value="1" label="Long bypass"/>
   <int value="2" label="Bypass due to internal server error"/>
@@ -35953,6 +35999,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="Bypass due to 4xx response"/>
   <int value="6"
       label="Bypass due to 407 response from proxy without a challenge"/>
+</enum>
+
+<enum name="DataReductionProxyBypassType" type="int">
+  <int value="0"
+      label="Bypass due to explicit instruction for the current request"/>
+  <int value="1"
+      label="Short bypass: Bypass the proxy for less than one minute"/>
+  <int value="2"
+      label="Medium bypass: Bypass the proxy for one to five minutes"/>
+  <int value="3"
+      label="Long bypass: Bypass the proxy for more than five minutes"/>
+  <int value="4" label="Bypass due to a 4xx missing via header"/>
+  <int value="5"
+      label="Bypass due to other missing via header, excluding 4xx errors"/>
+  <int value="6"
+      label="Bypass due to 407 response from proxy without a challenge"/>
+  <int value="7" label="Bypass due to a 500 internal server error"/>
+  <int value="8" label="Bypass because the request URI was too long"/>
+  <int value="9" label="Bypass due to a 503 response"/>
+  <int value="10" label="Bypass due to any network error"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">

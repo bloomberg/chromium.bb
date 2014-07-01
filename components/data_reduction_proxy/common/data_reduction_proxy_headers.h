@@ -12,6 +12,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 
+using net::ProxyService;
+
 namespace data_reduction_proxy {
 
 // Contains instructions contained in the Chrome-Proxy header.
@@ -43,8 +45,7 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers);
 // Returns the reason why the Chrome proxy should be bypassed or not, and
 // populates |proxy_info| with information on how long to bypass if
 // applicable.
-net::ProxyService::DataReductionProxyBypassEventType
-GetDataReductionProxyBypassEventType(
+ProxyService::DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
     DataReductionProxyInfo* proxy_info);
 
