@@ -711,7 +711,11 @@ public class AwContents {
         AwViewMethods awViewMethodsImpl = mFullScreenTransitionsState.getInitialAwViewMethods();
         awViewMethodsImpl.onVisibilityChanged(mContainerView, mContainerView.getVisibility());
         awViewMethodsImpl.onWindowVisibilityChanged(mContainerView.getWindowVisibility());
-        if (mContainerView.isAttachedToWindow()) {
+
+        // We should stop running WebView tests in JellyBean devices, see crbug/161864.
+        // Until then we skip calling isAttachedToWindow() as it has only been introduced in K.
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.KITKAT
+                || mContainerView.isAttachedToWindow()) {
             awViewMethodsImpl.onAttachedToWindow();
         } else {
             awViewMethodsImpl.onDetachedFromWindow();
