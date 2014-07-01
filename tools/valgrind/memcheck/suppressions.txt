@@ -6236,3 +6236,25 @@
    fun:_ZN3url17AddStandardSchemeEPKc
    fun:_ZN36AutocompleteInputTest_InputType_Test8TestBodyEv
 }
+{
+   bug_390500a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN14message_center22MessagePopupCollection13UpdateWidgetsEv
+   fun:_ZN14message_center22MessagePopupCollection18DoUpdateIfPossibleEv
+}
+{
+   bug_390500b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN14message_center22MessagePopupCollection17RepositionWidgetsEv
+   fun:_ZN14message_center22MessagePopupCollection18DoUpdateIfPossibleEv
+}
+
+{
+   bug_390500c
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN14message_center22MessagePopupCollection17RepositionWidgetsEv
+   fun:_ZN14message_center22MessagePopupCollection14SetDisplayInfoERKN3gfx4RectES4_
+}
