@@ -76,7 +76,13 @@ void GetMetadata::OnSuccess(int /* request_id */,
   EntryMetadata metadata;
   const bool convert_result =
       ConvertRequestValueToFileInfo(result.Pass(), &metadata);
-  DCHECK(convert_result);
+
+  if (!convert_result) {
+    LOG(ERROR) << "Failed to parse a response for the get metadata operation.";
+    callback_.Run(EntryMetadata(), base::File::FILE_ERROR_IO);
+    return;
+  }
+
   callback_.Run(metadata, base::File::FILE_OK);
 }
 

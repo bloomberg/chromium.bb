@@ -80,8 +80,14 @@ void ReadFile::OnSuccess(int /* request_id */,
   TRACE_EVENT0("file_system_provider", "ReadFile::OnSuccess");
   const int copy_result = CopyRequestValueToBuffer(
       result.Pass(), buffer_, current_offset_, length_);
-  DCHECK_LE(0, copy_result);
-  DCHECK(!has_more || copy_result > 0);
+
+  if (copy_result < 0) {
+    LOG(ERROR) << "Failed to parse a response for the read file operation.";
+    callback_.Run(
+        0 /* chunk_length */, false /* has_more */, base::File::FILE_ERROR_IO);
+    return;
+  }
+
   if (copy_result > 0)
     current_offset_ += copy_result;
   callback_.Run(copy_result, has_more, base::File::FILE_OK);

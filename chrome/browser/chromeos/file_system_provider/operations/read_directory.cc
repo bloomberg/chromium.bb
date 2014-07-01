@@ -80,7 +80,16 @@ void ReadDirectory::OnSuccess(int /* request_id */,
   fileapi::AsyncFileUtil::EntryList entry_list;
   const bool convert_result =
       ConvertRequestValueToEntryList(result.Pass(), &entry_list);
-  DCHECK(convert_result);
+
+  if (!convert_result) {
+    LOG(ERROR)
+        << "Failed to parse a response for the read directory operation.";
+    callback_.Run(base::File::FILE_ERROR_IO,
+                  fileapi::AsyncFileUtil::EntryList(),
+                  false /* has_more */);
+    return;
+  }
+
   callback_.Run(base::File::FILE_OK, entry_list, has_more);
 }
 

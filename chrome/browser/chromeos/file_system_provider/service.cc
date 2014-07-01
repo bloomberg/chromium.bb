@@ -66,7 +66,8 @@ Service::~Service() {
     const std::string extension_id =
         it->second->GetFileSystemInfo().extension_id();
     ++it;
-    UnmountFileSystem(extension_id, file_system_id);
+    const bool unmount_result = UnmountFileSystem(extension_id, file_system_id);
+    DCHECK(unmount_result);
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
@@ -271,9 +272,9 @@ void Service::OnExtensionUnloaded(
     // by the UnmountFileSystem() call.
     ++it;
     if (file_system_info.extension_id() == extension->id()) {
-      bool result = UnmountFileSystem(file_system_info.extension_id(),
-                                      file_system_info.file_system_id());
-      DCHECK(result);
+      const bool unmount_result = UnmountFileSystem(
+          file_system_info.extension_id(), file_system_info.file_system_id());
+      DCHECK(unmount_result);
     }
   }
 }
