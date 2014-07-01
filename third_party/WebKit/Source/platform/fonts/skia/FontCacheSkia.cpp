@@ -65,9 +65,48 @@ void FontCache::platformInit()
 {
 }
 
+static bool fontContainsCharacter(const FontPlatformData* fontData, UChar32 character)
+{
+    SkPaint paint;
+    fontData->setupPaint(&paint);
+    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+
+    uint16_t glyph;
+    paint.textToGlyphs(&character, sizeof(character), &glyph);
+    return glyph;
+}
+
+PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
+    const FontDescription& fontDescription, UChar32 character)
+{
+    FontDescription substituteDescription(fontDescription);
+    substituteDescription.setStyle(FontStyleNormal);
+    substituteDescription.setWeight(FontWeightNormal);
+
+    FontFaceCreationParams creationParams(substituteDescription.family().family());
+    FontPlatformData* substitutePlatformData = getFontPlatformData(substituteDescription, creationParams);
+    if (substitutePlatformData && fontContainsCharacter(substitutePlatformData, character)) {
+        FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
+        platformData.setSyntheticBold(fontDescription.weight() >= FontWeightBold);
+        platformData.setSyntheticItalic(fontDescription.style() == FontStyleItalic);
+        return fontDataFromFontPlatformData(&platformData, DoNotRetain);
+    }
+
+    return nullptr;
+}
+
 #if !OS(WIN) && !OS(ANDROID)
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
 {
+    // First try the specified font with standard style & weight.
+    if (fontDescription.style() == FontStyleItalic
+        || fontDescription.weight() >= FontWeightBold) {
+        RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
+            fontDescription, c);
+        if (fontData)
+            return fontData;
+    }
+
     icu::Locale locale = icu::Locale::getDefault();
     FontCache::PlatformFallbackFont fallbackFont;
     FontCache::getFontForCharacter(c, locale.getLanguage(), &fallbackFont);

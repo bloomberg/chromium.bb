@@ -88,6 +88,15 @@ static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_
 // font that can be used to render the given range of characters.
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*)
 {
+    // First try the specified font with standard style & weight.
+    if (fontDescription.style() == FontStyleItalic
+        || fontDescription.weight() >= FontWeightBold) {
+        RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
+            fontDescription, character);
+        if (fontData)
+            return fontData;
+    }
+
     // FIXME: Consider passing fontDescription.dominantScript()
     // to GetFallbackFamily here.
     UScriptCode script;
