@@ -258,7 +258,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         // toggling is ignored in that case.
         if (mediaElement->hasVideo() && !mediaElement->isFullscreen())
             data.mediaFlags |= WebContextMenuData::MediaCanToggleControls;
-        if (mediaElement->controls())
+        if (mediaElement->shouldShowControls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
     } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
         RenderObject* object = r.innerNonSharedNode()->renderer();

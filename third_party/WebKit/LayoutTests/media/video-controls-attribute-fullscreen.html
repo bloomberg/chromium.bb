@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test that the controls attribute is not affected by fullscreen</title>
+        <script src="media-file.js"></script>
+        <script src="video-test.js"></script>
+        <script>
+            function start()
+            {
+                findMediaElement();
+                video.src = findMediaFile("video", "content/test");
+                waitForEvent("loadeddata", loadeddata);
+            }
+
+            function loadeddata()
+            {
+                testExpected("video.controls", false);
+                waitForEventOnce("webkitfullscreenchange", fullscreenchange);
+                document.addEventListener("click", function()
+                {
+                    run("video.webkitRequestFullscreen()");
+                });
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+            }
+
+            function fullscreenchange()
+            {
+                testExpected("video.controls", false);
+                endTest();
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <p>Test that the controls attribute is not affected by fullscreen</p>
+        <video></video>
+    </body>
+</html>

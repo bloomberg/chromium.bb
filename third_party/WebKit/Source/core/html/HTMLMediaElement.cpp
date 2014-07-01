@@ -481,7 +481,7 @@ bool HTMLMediaElement::supportsFocus() const
         return false;
 
     // If no controls specified, we should still be able to focus the element if it has tabIndex.
-    return controls() || HTMLElement::supportsFocus();
+    return shouldShowControls() || HTMLElement::supportsFocus();
 }
 
 bool HTMLMediaElement::isMouseFocusable() const
@@ -531,7 +531,7 @@ void HTMLMediaElement::finishParsingChildren()
 
 bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
 {
-    return controls() ? HTMLElement::rendererIsNeeded(style) : false;
+    return shouldShowControls() && HTMLElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
@@ -2252,7 +2252,7 @@ void HTMLMediaElement::setLoop(bool b)
     setBooleanAttribute(loopAttr, b);
 }
 
-bool HTMLMediaElement::controls() const
+bool HTMLMediaElement::shouldShowControls() const
 {
     LocalFrame* frame = document().frame();
 
@@ -2265,12 +2265,6 @@ bool HTMLMediaElement::controls() const
         return true;
 
     return fastHasAttribute(controlsAttr);
-}
-
-void HTMLMediaElement::setControls(bool b)
-{
-    WTF_LOG(Media, "HTMLMediaElement::setControls(%s)", boolString(b));
-    setBooleanAttribute(controlsAttr, b);
 }
 
 double HTMLMediaElement::volume() const
@@ -3599,7 +3593,7 @@ bool HTMLMediaElement::createMediaControls()
 
     ensureUserAgentShadowRoot().appendChild(mediaControls);
 
-    if (!controls() || !inDocument())
+    if (!shouldShowControls() || !inDocument())
         mediaControls->hide();
 
     return true;
@@ -3607,7 +3601,7 @@ bool HTMLMediaElement::createMediaControls()
 
 void HTMLMediaElement::configureMediaControls()
 {
-    if (!controls() || !inDocument()) {
+    if (!shouldShowControls() || !inDocument()) {
         if (hasMediaControls())
             mediaControls()->hide();
         return;

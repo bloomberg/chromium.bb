@@ -158,8 +158,7 @@ public:
     void durationChanged(double duration, bool requestSeek);
 
     // controls
-    bool controls() const;
-    void setControls(bool);
+    bool shouldShowControls() const;
     double volume() const;
     void setVolume(double, ExceptionState&);
     bool muted() const;

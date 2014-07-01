@@ -1,0 +1,9 @@
+Test that the controls attribute is not affected by fullscreen
+
+EVENT(loadeddata)
+EXPECTED (video.controls == 'false') OK
+RUN(video.webkitRequestFullscreen())
+EVENT(webkitfullscreenchange)
+EXPECTED (video.controls == 'false') OK
+END OF TEST
+
