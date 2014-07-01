@@ -301,6 +301,21 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaList) {
   RunTest(FILE_PATH_LITERAL("aria-list.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaListBoxActiveDescendant) {
+  RunTest(FILE_PATH_LITERAL("aria-listbox-activedescendant.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaListBoxAriaSelected) {
+  RunTest(FILE_PATH_LITERAL("aria-listbox-aria-selected.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaListBoxChildFocus) {
+  RunTest(FILE_PATH_LITERAL("aria-listbox-childfocus.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenu) {
   RunTest(FILE_PATH_LITERAL("aria-menu.html"));
 }

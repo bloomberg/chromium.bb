@@ -270,6 +270,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityRowIndexRangeAttribute, @"rowIndexRange" },
     { NSAccessibilityRowsAttribute, @"rows" },
     // TODO(aboxhall): expose NSAccessibilityServesAsTitleForUIElementsAttribute
+    { NSAccessibilitySelectedChildrenAttribute, @"selectedChildren" },
     { NSAccessibilitySizeAttribute, @"size" },
     { NSAccessibilitySubroleAttribute, @"subrole" },
     { NSAccessibilityTabsAttribute, @"tabs" },
@@ -281,6 +282,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityValueDescriptionAttribute, @"valueDescription" },
     { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
     { NSAccessibilityVisibleCellsAttribute, @"visibleCells" },
+    { NSAccessibilityVisibleChildrenAttribute, @"visibleChildren" },
     { NSAccessibilityVisibleColumnsAttribute, @"visibleColumns" },
     { NSAccessibilityVisibleRowsAttribute, @"visibleRows" },
     { NSAccessibilityWindowAttribute, @"window" },
@@ -628,6 +630,11 @@ NSDictionary* attributeToMethodNameMap = nil;
   if ([self internalRole] == ui::AX_ROLE_SPIN_BUTTON)
     return NSAccessibilityVerticalOrientationValue;
 
+  if ([self internalRole] == ui::AX_ROLE_LIST ||
+      [self internalRole] == ui::AX_ROLE_LIST_BOX) {
+    return NSAccessibilityVerticalOrientationValue;
+  }
+
   if (GetState(browserAccessibility_, ui::AX_STATE_VERTICAL))
     return NSAccessibilityVerticalOrientationValue;
   else
@@ -829,6 +836,40 @@ NSDictionary* attributeToMethodNameMap = nil;
   return ret;
 }
 
+- (NSArray*)selectedChildren {
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
+  BrowserAccessibility* focusedChild =
+      manager->GetFocus(browserAccessibility_);
+  if (focusedChild && focusedChild != browserAccessibility_) {
+    // First try the focused child.
+    [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
+  } else {
+    // Next try the active descendant.
+    int activeDescendantId;
+    if (browserAccessibility_->GetIntAttribute(
+            ui::AX_ATTR_ACTIVEDESCENDANT_ID, &activeDescendantId)) {
+      BrowserAccessibility* activeDescendant =
+          manager->GetFromID(activeDescendantId);
+      if (activeDescendant)
+        [ret addObject:activeDescendant->ToBrowserAccessibilityCocoa()];
+    } else {
+      // Otherwise return any children with the "selected" state, which
+      // may come from aria-selected.
+      uint32 childCount = browserAccessibility_->PlatformChildCount();
+      for (uint32 index = 0; index < childCount; ++index) {
+        BrowserAccessibility* child =
+            browserAccessibility_->PlatformGetChild(index);
+        if (child->HasState(ui::AX_STATE_SELECTED))
+          [ret addObject:child->ToBrowserAccessibilityCocoa()];
+      }
+    }
+  }
+
+  return ret;
+}
+
 // Returns the size of this object.
 - (NSValue*)size {
   gfx::Rect bounds = browserAccessibility_->GetLocalBoundsRect();
@@ -998,6 +1039,18 @@ NSDictionary* attributeToMethodNameMap = nil;
         browserAccessibility_->manager()->GetFromID(id);
     if (cell)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+  }
+  return ret;
+}
+
+- (NSArray*)visibleChildren {
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  uint32 childCount = browserAccessibility_->PlatformChildCount();
+  for (uint32 index = 0; index < childCount; ++index) {
+    BrowserAccessibilityCocoa* child =
+        browserAccessibility_->PlatformGetChild(index)->
+            ToBrowserAccessibilityCocoa();
+    [ret addObject:child];
   }
   return ret;
 }
@@ -1396,6 +1449,12 @@ NSDictionary* attributeToMethodNameMap = nil;
             nil]];
       }
     }
+  } else if ([role isEqualToString:NSAccessibilityListRole]) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityOrientationAttribute,
+        NSAccessibilitySelectedChildrenAttribute,
+        NSAccessibilityVisibleChildrenAttribute,
+        nil]];
   }
 
   // Add the url attribute only if it has a valid url.

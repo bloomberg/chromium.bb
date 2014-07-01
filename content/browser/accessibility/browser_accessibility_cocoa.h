@@ -95,6 +95,7 @@
 @property(nonatomic, readonly) NSArray* rowHeaders;
 @property(nonatomic, readonly) NSValue* rowIndexRange;
 @property(nonatomic, readonly) NSArray* rows;
+@property(nonatomic, readonly) NSArray* selectedChildren;
 // The size of this object.
 @property(nonatomic, readonly) NSValue* size;
 // A string indicating the subrole of this object as far as accessibility
@@ -109,6 +110,7 @@
 @property(nonatomic, readonly) NSString* valueDescription;
 @property(nonatomic, readonly) NSValue* visibleCharacterRange;
 @property(nonatomic, readonly) NSArray* visibleCells;
+@property(nonatomic, readonly) NSArray* visibleChildren;
 @property(nonatomic, readonly) NSArray* visibleColumns;
 @property(nonatomic, readonly) NSArray* visibleRows;
 @property(nonatomic, readonly) NSNumber* visited;

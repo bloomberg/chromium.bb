@@ -1,5 +1,5 @@
 AXWebArea
-    AXList AXSubrole=AXContentList
+    AXList AXSubrole=AXContentList AXOrientation='AXVerticalOrientation' AXSelectedChildren=[] AXVisibleChildren=["AXGroup group 1","AXGroup group 2","AXGroup group 3"]
         AXGroup
             AXStaticText AXValue='Item 1'
         AXGroup

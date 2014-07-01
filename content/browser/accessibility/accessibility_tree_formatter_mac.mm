@@ -94,19 +94,35 @@ scoped_ptr<base::ListValue> PopulateArray(NSArray* array) {
 
 scoped_ptr<base::StringValue> StringForBrowserAccessibility(
     BrowserAccessibilityCocoa* obj) {
-  NSString* description = [obj role];
-  id value = [obj value];
+  NSMutableArray* tokens = [[NSMutableArray alloc] init];
+
+  // Always include the role
+  id role = [obj role];
+  [tokens addObject:role];
+
+  // If the role is "group", include the role description as well.
   id roleDescription = [obj roleDescription];
-  if (value && ![value isEqual:@""]) {
-    description = [NSString stringWithFormat:@"%@ %@", description, value];
-  } else if ([description isEqualToString:NSAccessibilityGroupRole] &&
-           roleDescription != nil &&
-           ![roleDescription isEqualToString:@""]) {
-    description = [NSString stringWithFormat:@"%@ %@",
-                            description, roleDescription];
+  if ([role isEqualToString:NSAccessibilityGroupRole] &&
+      roleDescription != nil &&
+      ![roleDescription isEqualToString:@""]) {
+    [tokens addObject:roleDescription];
   }
+
+  // Include the description, title, or value - the first one not empty.
+  id title = [obj title];
+  id description = [obj description];
+  id value = [obj value];
+  if (description && ![description isEqual:@""]) {
+    [tokens addObject:description];
+  } else if (title && ![title isEqual:@""]) {
+    [tokens addObject:title];
+  } else if (value && ![value isEqual:@""]) {
+    [tokens addObject:value];
+  }
+
+  NSString* result = [tokens componentsJoinedByString:@" "];
   return scoped_ptr<base::StringValue>(
-      new base::StringValue(SysNSStringToUTF16(description))).Pass();
+      new base::StringValue(SysNSStringToUTF16(result))).Pass();
 }
 
 scoped_ptr<base::Value> PopulateObject(id value) {
@@ -154,9 +170,11 @@ NSArray* BuildAllAttributesArray() {
       NSAccessibilityOrientationAttribute,
       @"AXRequired",
       NSAccessibilityRowIndexRangeAttribute,
+      NSAccessibilitySelectedChildrenAttribute,
       NSAccessibilityTitleUIElementAttribute,
       NSAccessibilityURLAttribute,
       NSAccessibilityVisibleCharacterRangeAttribute,
+      NSAccessibilityVisibleChildrenAttribute,
       @"AXVisited",
       @"AXLinkedUIElements",
       nil];
