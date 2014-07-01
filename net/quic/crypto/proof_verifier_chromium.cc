@@ -124,7 +124,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain. Certs are empty.";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    *verify_details = verify_details_.Pass();
     return QUIC_FAILURE;
   }
 
@@ -138,7 +138,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    *verify_details = verify_details_.Pass();
     return QUIC_FAILURE;
   }
 
@@ -148,7 +148,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    *verify_details = verify_details_.Pass();
     return QUIC_FAILURE;
   }
 
@@ -157,14 +157,14 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   next_state_ = STATE_VERIFY_CERT;
   switch (DoLoop(OK)) {
     case OK:
-      verify_details->reset(verify_details_.release());
+      *verify_details = verify_details_.Pass();
       return QUIC_SUCCESS;
     case ERR_IO_PENDING:
       callback_.reset(callback);
       return QUIC_PENDING;
     default:
       *error_details = error_details_;
-      verify_details->reset(verify_details_.release());
+      *verify_details = verify_details_.Pass();
       return QUIC_FAILURE;
   }
 }
@@ -195,9 +195,9 @@ int ProofVerifierChromium::Job::DoLoop(int last_result) {
 void ProofVerifierChromium::Job::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    scoped_ptr<ProofVerifierCallback> callback(callback_.release());
+    scoped_ptr<ProofVerifierCallback> callback(callback_.Pass());
     // Callback expects ProofVerifyDetails not ProofVerifyDetailsChromium.
-    scoped_ptr<ProofVerifyDetails> verify_details(verify_details_.release());
+    scoped_ptr<ProofVerifyDetails> verify_details(verify_details_.Pass());
     callback->Run(rv == OK, error_details_, &verify_details);
     // Will delete |this|.
     proof_verifier_->OnJobComplete(this);
@@ -222,11 +222,10 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   verifier_.reset();
 
-  if (result <= ERR_FAILED) {
+  if (result != OK) {
     error_details_ = StringPrintf("Failed to verify certificate chain: %s",
                                   ErrorToString(result));
     DLOG(WARNING) << error_details_;
-    result = ERR_FAILED;
   }
 
   // Exit DoLoop and return the result to the caller to VerifyProof.

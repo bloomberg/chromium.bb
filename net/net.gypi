@@ -776,6 +776,8 @@
       'quic/crypto/chacha20_poly1305_encrypter_openssl.cc',
       'quic/crypto/channel_id.cc',
       'quic/crypto/channel_id.h',
+      'quic/crypto/channel_id_chromium.cc',
+      'quic/crypto/channel_id_chromium.h',
       'quic/crypto/channel_id_nss.cc',
       'quic/crypto/channel_id_openssl.cc',
       'quic/crypto/common_cert_set.cc',

@@ -38,6 +38,7 @@ class QuicRandom;
 class QuicServerInfoFactory;
 class QuicServerId;
 class QuicStreamFactory;
+class ServerBoundCertService;
 
 namespace test {
 class QuicStreamFactoryPeer;
@@ -51,7 +52,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   explicit QuicStreamRequest(QuicStreamFactory* factory);
   ~QuicStreamRequest();
 
-  // For http, |is_https| is false and |cert_verifier| can be null.
+  // For http, |is_https| is false.
   int Request(const HostPortPair& host_port_pair,
               bool is_https,
               PrivacyMode privacy_mode,
@@ -91,6 +92,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       ClientSocketFactory* client_socket_factory,
       base::WeakPtr<HttpServerProperties> http_server_properties,
       CertVerifier* cert_verifier,
+      ServerBoundCertService* server_bound_cert_service,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
       QuicClock* clock,
@@ -105,11 +107,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be
   // owned by |request|. |is_https| specifies if the protocol is https or not.
-  // |cert_verifier| is used by ProofVerifier for verifying the certificate
-  // chain and signature. For http, this can be null. If a matching session
-  // already exists, this method will return OK.  If no matching session exists,
-  // this will return ERR_IO_PENDING and will invoke OnRequestComplete
-  // asynchronously.
+  // If a matching session already exists, this method will return OK.  If no
+  // matching session exists, this will return ERR_IO_PENDING and will invoke
+  // OnRequestComplete asynchronously.
   int Create(const HostPortPair& host_port_pair,
              bool is_https,
              PrivacyMode privacy_mode,
@@ -236,7 +236,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;
-  CertVerifier* cert_verifier_;
   QuicServerInfoFactory* quic_server_info_factory_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;

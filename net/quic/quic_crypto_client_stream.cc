@@ -4,16 +4,39 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
-#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
-#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
 namespace net {
+
+QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
+ChannelIDSourceCallbackImpl(QuicCryptoClientStream* stream)
+    : stream_(stream) {}
+
+QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
+~ChannelIDSourceCallbackImpl() {}
+
+void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Run(
+    scoped_ptr<ChannelIDKey>* channel_id_key) {
+  if (stream_ == NULL) {
+    return;
+  }
+
+  stream_->channel_id_key_.reset(channel_id_key->release());
+  stream_->channel_id_source_callback_ = NULL;
+  stream_->DoHandshakeLoop(NULL);
+
+  // The ChannelIDSource owns this object and will delete it when this method
+  // returns.
+}
+
+void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Cancel() {
+  stream_ = NULL;
+}
 
 QuicCryptoClientStream::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
     QuicCryptoClientStream* stream)
@@ -55,11 +78,15 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       crypto_config_(crypto_config),
       server_id_(server_id),
       generation_counter_(0),
-      proof_verify_callback_(NULL),
-      verify_context_(verify_context) {
+      channel_id_source_callback_(NULL),
+      verify_context_(verify_context),
+      proof_verify_callback_(NULL) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
+  if (channel_id_source_callback_) {
+    channel_id_source_callback_->Cancel();
+  }
   if (proof_verify_callback_) {
     proof_verify_callback_->Cancel();
   }
@@ -106,13 +133,13 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_INITIALIZE: {
-        if (!cached->IsEmpty() && !cached->signature().empty() &&
-            server_id_.is_https()) {
+        if (!cached->IsEmpty() && !cached->proof_valid() &&
+            !cached->signature().empty() && server_id_.is_https()) {
           DCHECK(crypto_config_->proof_verifier());
           // If the cached state needs to be verified, do it now.
           next_state_ = STATE_VERIFY_PROOF;
         } else {
-          next_state_ = STATE_SEND_CHLO;
+          next_state_ = STATE_GET_CHANNEL_ID;
         }
         break;
       }
@@ -152,35 +179,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         session()->config()->ToHandshakeMessage(&out);
-
-        scoped_ptr<ChannelIDKey> channel_id_key;
-        bool do_channel_id = false;
-        if (crypto_config_->channel_id_source()) {
-          const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
-          DCHECK(scfg);
-          const QuicTag* their_proof_demands;
-          size_t num_their_proof_demands;
-          if (scfg->GetTaglist(kPDMD, &their_proof_demands,
-                               &num_their_proof_demands) == QUIC_NO_ERROR) {
-            for (size_t i = 0; i < num_their_proof_demands; i++) {
-              if (their_proof_demands[i] == kCHID) {
-                do_channel_id = true;
-                break;
-              }
-            }
-          }
-        }
-        if (do_channel_id) {
-          QuicAsyncStatus status =
-              crypto_config_->channel_id_source()->GetChannelIDKey(
-                  server_id_.host(), &channel_id_key, NULL);
-          if (status != QUIC_SUCCESS) {
-            CloseConnectionWithDetails(QUIC_INVALID_CHANNEL_ID_SIGNATURE,
-                                       "Channel ID lookup failed");
-            return;
-          }
-        }
-
         error = crypto_config_->FillClientHello(
             server_id_,
             session()->connection()->connection_id(),
@@ -188,7 +186,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached,
             session()->connection()->clock()->WallNow(),
             session()->connection()->random_generator(),
-            channel_id_key.get(),
+            channel_id_key_.get(),
             &crypto_negotiated_params_,
             &out,
             &error_details);
@@ -254,7 +252,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             break;
           }
         }
-        next_state_ = STATE_SEND_CHLO;
+        next_state_ = STATE_GET_CHANNEL_ID;
         break;
       case STATE_VERIFY_PROOF: {
         ProofVerifier* verifier = crypto_config_->proof_verifier();
@@ -306,8 +304,47 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         } else {
           SetCachedProofValid(cached);
           cached->SetProofVerifyDetails(verify_details_.release());
-          next_state_ = STATE_SEND_CHLO;
+          next_state_ = STATE_GET_CHANNEL_ID;
         }
+        break;
+      case STATE_GET_CHANNEL_ID: {
+        next_state_ = STATE_GET_CHANNEL_ID_COMPLETE;
+        channel_id_key_.reset();
+        if (!RequiresChannelID(cached)) {
+          next_state_ = STATE_SEND_CHLO;
+          break;
+        }
+
+        ChannelIDSourceCallbackImpl* channel_id_source_callback =
+            new ChannelIDSourceCallbackImpl(this);
+        QuicAsyncStatus status =
+            crypto_config_->channel_id_source()->GetChannelIDKey(
+                server_id_.host(), &channel_id_key_,
+                channel_id_source_callback);
+
+        switch (status) {
+          case QUIC_PENDING:
+            channel_id_source_callback_ = channel_id_source_callback;
+            DVLOG(1) << "Looking up channel ID";
+            return;
+          case QUIC_FAILURE:
+            delete channel_id_source_callback;
+            CloseConnectionWithDetails(QUIC_INVALID_CHANNEL_ID_SIGNATURE,
+                                       "Channel ID lookup failed");
+            return;
+          case QUIC_SUCCESS:
+            delete channel_id_source_callback;
+            break;
+        }
+        break;
+      }
+      case STATE_GET_CHANNEL_ID_COMPLETE:
+        if (!channel_id_key_) {
+          CloseConnectionWithDetails(QUIC_INVALID_CHANNEL_ID_SIGNATURE,
+                                     "Channel ID lookup failed");
+          return;
+        }
+        next_state_ = STATE_SEND_CHLO;
         break;
       case STATE_RECV_SHLO: {
         // We sent a CHLO that we expected to be accepted and now we're hoping
@@ -388,6 +425,31 @@ void QuicCryptoClientStream::SetCachedProofValid(
     QuicCryptoClientConfig::CachedState* cached) {
   cached->SetProofValid();
   client_session()->OnProofValid(*cached);
+}
+
+bool QuicCryptoClientStream::RequiresChannelID(
+    QuicCryptoClientConfig::CachedState* cached) {
+  if (!server_id_.is_https() ||
+      server_id_.privacy_mode() == PRIVACY_MODE_ENABLED ||
+      !crypto_config_->channel_id_source()) {
+    return false;
+  }
+  const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
+  if (!scfg) {  // scfg may be null when we send an inchoate CHLO.
+    return false;
+  }
+  const QuicTag* their_proof_demands;
+  size_t num_their_proof_demands;
+  if (scfg->GetTaglist(kPDMD, &their_proof_demands,
+                       &num_their_proof_demands) != QUIC_NO_ERROR) {
+    return false;
+  }
+  for (size_t i = 0; i < num_their_proof_demands; i++) {
+    if (their_proof_demands[i] == kCHID) {
+      return true;
+    }
+  }
+  return false;
 }
 
 QuicClientSessionBase* QuicCryptoClientStream::client_session() {

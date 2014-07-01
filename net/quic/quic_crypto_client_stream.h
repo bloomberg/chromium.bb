@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/quic_config.h"
@@ -44,6 +45,25 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   int num_sent_client_hellos() const;
 
  private:
+  // ChannelIDSourceCallbackImpl is passed as the callback method to
+  // GetChannelIDKey. The ChannelIDSource calls this class with the result of
+  // channel ID lookup when lookup is performed asynchronously.
+  class ChannelIDSourceCallbackImpl : public ChannelIDSourceCallback {
+   public:
+    explicit ChannelIDSourceCallbackImpl(QuicCryptoClientStream* stream);
+    virtual ~ChannelIDSourceCallbackImpl();
+
+    // ChannelIDSourceCallback interface.
+    virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE;
+
+    // Cancel causes any future callbacks to be ignored. It must be called on
+    // the same thread as the callback will be made on.
+    void Cancel();
+
+   private:
+    QuicCryptoClientStream* stream_;
+  };
+
   // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.
   // The ProofVerifier calls this class with the result of proof verification
   // when verification is performed asynchronously.
@@ -66,7 +86,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   };
 
   friend class test::CryptoTestUtils;
-  friend class ProofVerifierCallbackImpl;
 
   enum State {
     STATE_IDLE,
@@ -75,6 +94,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     STATE_RECV_REJ,
     STATE_VERIFY_PROOF,
     STATE_VERIFY_PROOF_COMPLETE,
+    STATE_GET_CHANNEL_ID,
+    STATE_GET_CHANNEL_ID_COMPLETE,
     STATE_RECV_SHLO,
   };
 
@@ -85,6 +106,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Called to set the proof of |cached| valid.  Also invokes the session's
   // OnProofValid() method.
   void SetCachedProofValid(QuicCryptoClientConfig::CachedState* cached);
+
+  // Returns true if the server crypto config in |cached| requires a ChannelID
+  // and the client config settings also allow sending a ChannelID.
+  bool RequiresChannelID(QuicCryptoClientConfig::CachedState* cached);
 
   QuicClientSessionBase* client_session();
 
@@ -103,6 +128,20 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Generation counter from QuicCryptoClientConfig's CachedState.
   uint64 generation_counter_;
 
+  // channel_id_source_callback_ contains the callback object that we passed
+  // to an asynchronous channel ID lookup. The ChannelIDSource owns this
+  // object.
+  ChannelIDSourceCallbackImpl* channel_id_source_callback_;
+
+  // These members are used to store the result of an asynchronous channel ID
+  // lookup. These members must not be used after
+  // STATE_GET_CHANNEL_ID_COMPLETE.
+  scoped_ptr<ChannelIDKey> channel_id_key_;
+
+  // verify_context_ contains the context object that we pass to asynchronous
+  // proof verifications.
+  scoped_ptr<ProofVerifyContext> verify_context_;
+
   // proof_verify_callback_ contains the callback object that we passed to an
   // asynchronous proof verification. The ProofVerifier owns this object.
   ProofVerifierCallbackImpl* proof_verify_callback_;
@@ -113,7 +152,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool verify_ok_;
   string verify_error_details_;
   scoped_ptr<ProofVerifyDetails> verify_details_;
-  scoped_ptr<ProofVerifyContext> verify_context_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

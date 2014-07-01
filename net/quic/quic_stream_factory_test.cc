@@ -24,6 +24,7 @@
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
+#include "net/ssl/default_server_bound_cert_store.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,8 +90,12 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         maker_(GetParam(), 0),
         clock_(new MockClock()),
         cert_verifier_(CertVerifier::CreateDefault()),
+        server_bound_cert_service_(new ServerBoundCertService(
+            new DefaultServerBoundCertStore(NULL),
+            base::MessageLoopProxy::current())),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(), cert_verifier_.get(),
+                 server_bound_cert_service_.get(),
                  &crypto_client_stream_factory_, &random_generator_, clock_,
                  kDefaultMaxPacketSize, std::string(),
                  SupportedVersions(GetParam()), true, true, true,
@@ -182,6 +187,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   QuicTestPacketMaker maker_;
   MockClock* clock_;  // Owned by factory_.
   scoped_ptr<CertVerifier> cert_verifier_;
+  scoped_ptr<ServerBoundCertService> server_bound_cert_service_;
   QuicStreamFactory factory_;
   HostPortPair host_port_pair_;
   bool is_https_;

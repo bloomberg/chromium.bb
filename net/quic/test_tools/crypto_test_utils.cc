@@ -170,16 +170,20 @@ int CryptoTestUtils::HandshakeWithFakeClient(
 
   client_session.config()->SetDefaults();
   crypto_config.SetDefaults();
-  // TODO(rtenneti): Enable testing of ProofVerifier.
-  // if (!options.dont_verify_certs) {
-  //   crypto_config.SetProofVerifier(ProofVerifierForTesting());
-  // }
+  if (!options.dont_verify_certs) {
+    // TODO(wtc): replace this with ProofVerifierForTesting() when we have
+    // a working ProofSourceForTesting().
+    crypto_config.SetProofVerifier(FakeProofVerifierForTesting());
+  }
+  bool is_https = false;
   if (options.channel_id_enabled) {
+    is_https = true;
     crypto_config.SetChannelIDSource(ChannelIDSourceForTesting());
   }
-  QuicServerId server_id(kServerHostname, kServerPort, false,
+  QuicServerId server_id(kServerHostname, kServerPort, is_https,
                          PRIVACY_MODE_DISABLED);
-  QuicCryptoClientStream client(server_id, &client_session, NULL,
+  QuicCryptoClientStream client(server_id, &client_session,
+                                ProofVerifyContextForTesting(),
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
 

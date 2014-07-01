@@ -20,6 +20,7 @@
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_server_properties.h"
 #include "net/quic/congestion_control/tcp_receiver.h"
+#include "net/quic/crypto/channel_id_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -452,6 +453,7 @@ QuicStreamFactory::QuicStreamFactory(
     ClientSocketFactory* client_socket_factory,
     base::WeakPtr<HttpServerProperties> http_server_properties,
     CertVerifier* cert_verifier,
+    ServerBoundCertService* server_bound_cert_service,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
@@ -466,7 +468,6 @@ QuicStreamFactory::QuicStreamFactory(
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
-      cert_verifier_(cert_verifier),
       quic_server_info_factory_(NULL),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
@@ -484,6 +485,8 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(new ProofVerifierChromium(cert_verifier));
+  crypto_config_.SetChannelIDSource(
+      new ChannelIDSourceChromium(server_bound_cert_service));
   base::CPU cpu;
   if (cpu.has_aesni() && cpu.has_avx())
     crypto_config_.PreferAesGcm();

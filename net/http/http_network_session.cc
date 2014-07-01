@@ -116,6 +116,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                                net::ClientSocketFactory::GetDefaultFactory(),
                            params.http_server_properties,
                            params.cert_verifier,
+                           params.server_bound_cert_service,
                            params.quic_crypto_client_stream_factory,
                            params.quic_random ? params.quic_random :
                                QuicRandom::GetInstance(),
