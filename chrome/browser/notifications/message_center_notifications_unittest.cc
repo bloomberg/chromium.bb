@@ -159,6 +159,7 @@ TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
   EXPECT_EQ(1u, message_center()->NotificationCount());
   notification_manager()->Update(GetANotification("test"), &profile);
   EXPECT_EQ(1u, message_center()->NotificationCount());
+  chrome::MultiUserWindowManager::DeleteInstance();
 }
 #endif
 
