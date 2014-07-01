@@ -235,17 +235,17 @@ def main():
       print(
           'A DEPS file was updated inside a gclient checkout, running gclient '
           'sync.')
-      base_rev = 'BASE' if scm_type == 'svn' else 'HEAD'
       gclient_path = os.path.join(BASE_DIR, 'gclient')
       if sys.platform == 'win32':
         gclient_path += '.bat'
       with annotated_gclient.temp_filename(suffix='gclient') as f:
         cmd = [
             gclient_path, 'sync',
-            '--revision', base_rev,
             '--nohooks',
             '--delete_unversioned_trees',
             ]
+        if scm_type == 'svn':
+          cmd.extend(['--revision', 'BASE'])
         if options.revision_mapping:
           cmd.extend(['--output-json', f])
 
