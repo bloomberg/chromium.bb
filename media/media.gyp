@@ -400,8 +400,6 @@
         'filters/file_data_source.h',
         'filters/frame_processor.cc',
         'filters/frame_processor.h',
-        'filters/frame_processor_base.cc',
-        'filters/frame_processor_base.h',
         'filters/gpu_video_accelerator_factories.cc',
         'filters/gpu_video_accelerator_factories.h',
         'filters/gpu_video_decoder.cc',

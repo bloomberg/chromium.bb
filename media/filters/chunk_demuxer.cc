@@ -561,8 +561,7 @@ bool SourceState::OnNewConfigs(
         return false;
       }
 
-      if (!frame_processor_->AddTrack(FrameProcessorBase::kAudioTrackId,
-                                      audio_)) {
+      if (!frame_processor_->AddTrack(FrameProcessor::kAudioTrackId, audio_)) {
         DVLOG(1) << "Failed to add audio track to frame processor.";
         return false;
       }
@@ -581,8 +580,7 @@ bool SourceState::OnNewConfigs(
         return false;
       }
 
-      if (!frame_processor_->AddTrack(FrameProcessorBase::kVideoTrackId,
-                                      video_)) {
+      if (!frame_processor_->AddTrack(FrameProcessor::kVideoTrackId, video_)) {
         DVLOG(1) << "Failed to add video track to frame processor.";
         return false;
       }

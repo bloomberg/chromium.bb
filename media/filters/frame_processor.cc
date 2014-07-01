@@ -4,20 +4,137 @@
 
 #include "media/filters/frame_processor.h"
 
+#include <cstdlib>
+
 #include "base/stl_util.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 
 namespace media {
 
+// Helper class to capture per-track details needed by a frame processor. Some
+// of this information may be duplicated in the short-term in the associated
+// ChunkDemuxerStream and SourceBufferStream for a track.
+// This parallels the MSE spec each of a SourceBuffer's Track Buffers at
+// http://www.w3.org/TR/media-source/#track-buffers.
+class MseTrackBuffer {
+ public:
+  explicit MseTrackBuffer(ChunkDemuxerStream* stream);
+  ~MseTrackBuffer();
+
+  // Get/set |last_decode_timestamp_|.
+  base::TimeDelta last_decode_timestamp() const {
+    return last_decode_timestamp_;
+  }
+  void set_last_decode_timestamp(base::TimeDelta timestamp) {
+    last_decode_timestamp_ = timestamp;
+  }
+
+  // Get/set |last_frame_duration_|.
+  base::TimeDelta last_frame_duration() const {
+    return last_frame_duration_;
+  }
+  void set_last_frame_duration(base::TimeDelta duration) {
+    last_frame_duration_ = duration;
+  }
+
+  // Gets |highest_presentation_timestamp_|.
+  base::TimeDelta highest_presentation_timestamp() const {
+    return highest_presentation_timestamp_;
+  }
+
+  // Get/set |needs_random_access_point_|.
+  bool needs_random_access_point() const {
+    return needs_random_access_point_;
+  }
+  void set_needs_random_access_point(bool needs_random_access_point) {
+    needs_random_access_point_ = needs_random_access_point;
+  }
+
+  // Gets a pointer to this track's ChunkDemuxerStream.
+  ChunkDemuxerStream* stream() const { return stream_; }
+
+  // Unsets |last_decode_timestamp_|, unsets |last_frame_duration_|,
+  // unsets |highest_presentation_timestamp_|, and sets
+  // |needs_random_access_point_| to true.
+  void Reset();
+
+  // If |highest_presentation_timestamp_| is unset or |timestamp| is greater
+  // than |highest_presentation_timestamp_|, sets
+  // |highest_presentation_timestamp_| to |timestamp|. Note that bidirectional
+  // prediction between coded frames can cause |timestamp| to not be
+  // monotonically increasing even though the decode timestamps are
+  // monotonically increasing.
+  void SetHighestPresentationTimestampIfIncreased(base::TimeDelta timestamp);
+
+ private:
+  // The decode timestamp of the last coded frame appended in the current coded
+  // frame group. Initially kNoTimestamp(), meaning "unset".
+  base::TimeDelta last_decode_timestamp_;
+
+  // The coded frame duration of the last coded frame appended in the current
+  // coded frame group. Initially kNoTimestamp(), meaning "unset".
+  base::TimeDelta last_frame_duration_;
+
+  // The highest presentation timestamp encountered in a coded frame appended
+  // in the current coded frame group. Initially kNoTimestamp(), meaning
+  // "unset".
+  base::TimeDelta highest_presentation_timestamp_;
+
+  // Keeps track of whether the track buffer is waiting for a random access
+  // point coded frame. Initially set to true to indicate that a random access
+  // point coded frame is needed before anything can be added to the track
+  // buffer.
+  bool needs_random_access_point_;
+
+  // Pointer to the stream associated with this track. The stream is not owned
+  // by |this|.
+  ChunkDemuxerStream* const stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(MseTrackBuffer);
+};
+
+MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream)
+    : last_decode_timestamp_(kNoTimestamp()),
+      last_frame_duration_(kNoTimestamp()),
+      highest_presentation_timestamp_(kNoTimestamp()),
+      needs_random_access_point_(true),
+      stream_(stream) {
+  DCHECK(stream_);
+}
+
+MseTrackBuffer::~MseTrackBuffer() {
+  DVLOG(2) << __FUNCTION__ << "()";
+}
+
+void MseTrackBuffer::Reset() {
+  DVLOG(2) << __FUNCTION__ << "()";
+
+  last_decode_timestamp_ = kNoTimestamp();
+  last_frame_duration_ = kNoTimestamp();
+  highest_presentation_timestamp_ = kNoTimestamp();
+  needs_random_access_point_ = true;
+}
+
+void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
+    base::TimeDelta timestamp) {
+  if (highest_presentation_timestamp_ == kNoTimestamp() ||
+      timestamp > highest_presentation_timestamp_) {
+    highest_presentation_timestamp_ = timestamp;
+  }
+}
+
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb)
-    : update_duration_cb_(update_duration_cb) {
+    : sequence_mode_(false),
+      group_start_timestamp_(kNoTimestamp()),
+      update_duration_cb_(update_duration_cb) {
   DVLOG(2) << __FUNCTION__ << "()";
   DCHECK(!update_duration_cb.is_null());
 }
 
 FrameProcessor::~FrameProcessor() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << "()";
+  STLDeleteValues(&track_buffers_);
 }
 
 void FrameProcessor::SetSequenceMode(bool sequence_mode) {
@@ -72,6 +189,166 @@ bool FrameProcessor::ProcessFrames(
   // Step 5:
   update_duration_cb_.Run(group_end_timestamp_);
 
+  return true;
+}
+
+void FrameProcessor::SetGroupStartTimestampIfInSequenceMode(
+    base::TimeDelta timestamp_offset) {
+  DVLOG(2) << __FUNCTION__ << "(" << timestamp_offset.InSecondsF() << ")";
+  DCHECK(kNoTimestamp() != timestamp_offset);
+  if (sequence_mode_)
+    group_start_timestamp_ = timestamp_offset;
+
+  // Changes to timestampOffset should invalidate the preroll buffer.
+  audio_preroll_buffer_ = NULL;
+}
+
+bool FrameProcessor::AddTrack(StreamParser::TrackId id,
+                              ChunkDemuxerStream* stream) {
+  DVLOG(2) << __FUNCTION__ << "(): id=" << id;
+
+  MseTrackBuffer* existing_track = FindTrack(id);
+  DCHECK(!existing_track);
+  if (existing_track)
+    return false;
+
+  track_buffers_[id] = new MseTrackBuffer(stream);
+  return true;
+}
+
+bool FrameProcessor::UpdateTrack(StreamParser::TrackId old_id,
+                                 StreamParser::TrackId new_id) {
+  DVLOG(2) << __FUNCTION__ << "() : old_id=" << old_id << ", new_id=" << new_id;
+
+  if (old_id == new_id || !FindTrack(old_id) || FindTrack(new_id))
+    return false;
+
+  track_buffers_[new_id] = track_buffers_[old_id];
+  CHECK_EQ(1u, track_buffers_.erase(old_id));
+  return true;
+}
+
+void FrameProcessor::SetAllTrackBuffersNeedRandomAccessPoint() {
+  for (TrackBufferMap::iterator itr = track_buffers_.begin();
+       itr != track_buffers_.end();
+       ++itr) {
+    itr->second->set_needs_random_access_point(true);
+  }
+}
+
+void FrameProcessor::Reset() {
+  DVLOG(2) << __FUNCTION__ << "()";
+  for (TrackBufferMap::iterator itr = track_buffers_.begin();
+       itr != track_buffers_.end(); ++itr) {
+    itr->second->Reset();
+  }
+}
+
+void FrameProcessor::OnPossibleAudioConfigUpdate(
+    const AudioDecoderConfig& config) {
+  DCHECK(config.IsValidConfig());
+
+  // Always clear the preroll buffer when a config update is received.
+  audio_preroll_buffer_ = NULL;
+
+  if (config.Matches(current_audio_config_))
+    return;
+
+  current_audio_config_ = config;
+  sample_duration_ = base::TimeDelta::FromSecondsD(
+      1.0 / current_audio_config_.samples_per_second());
+}
+
+MseTrackBuffer* FrameProcessor::FindTrack(StreamParser::TrackId id) {
+  TrackBufferMap::iterator itr = track_buffers_.find(id);
+  if (itr == track_buffers_.end())
+    return NULL;
+
+  return itr->second;
+}
+
+void FrameProcessor::NotifyNewMediaSegmentStarting(
+    base::TimeDelta segment_timestamp) {
+  DVLOG(2) << __FUNCTION__ << "(" << segment_timestamp.InSecondsF() << ")";
+
+  for (TrackBufferMap::iterator itr = track_buffers_.begin();
+       itr != track_buffers_.end();
+       ++itr) {
+    itr->second->stream()->OnNewMediaSegment(segment_timestamp);
+  }
+}
+
+bool FrameProcessor::HandlePartialAppendWindowTrimming(
+    base::TimeDelta append_window_start,
+    base::TimeDelta append_window_end,
+    const scoped_refptr<StreamParserBuffer>& buffer) {
+  DCHECK(buffer->duration() > base::TimeDelta());
+  DCHECK_EQ(DemuxerStream::AUDIO, buffer->type());
+
+  const base::TimeDelta frame_end_timestamp =
+      buffer->timestamp() + buffer->duration();
+
+  // Ignore any buffers which start after |append_window_start| or end after
+  // |append_window_end|.  For simplicity, even those that start before
+  // |append_window_start|.
+  if (buffer->timestamp() > append_window_start ||
+      frame_end_timestamp > append_window_end) {
+    // TODO(dalecurtis): Partial append window trimming could also be done
+    // around |append_window_end|, but is not necessary since splice frames
+    // cover overlaps there.
+    return false;
+  }
+
+  // If the buffer is entirely before |append_window_start|, save it as preroll
+  // for the first buffer which overlaps |append_window_start|.
+  if (buffer->timestamp() < append_window_start &&
+      frame_end_timestamp <= append_window_start) {
+    audio_preroll_buffer_ = buffer;
+    return false;
+  }
+
+  // There's nothing to be done if we have no preroll and the buffer starts on
+  // the append window start.
+  if (buffer->timestamp() == append_window_start && !audio_preroll_buffer_)
+    return false;
+
+  // See if a partial discard can be done around |append_window_start|.
+  DCHECK(buffer->timestamp() <= append_window_start);
+  DCHECK(buffer->IsKeyframe());
+  DVLOG(1) << "Truncating buffer which overlaps append window start."
+           << " presentation_timestamp " << buffer->timestamp().InSecondsF()
+           << " append_window_start " << append_window_start.InSecondsF();
+
+  // If this isn't the first buffer discarded by the append window, try to use
+  // the last buffer discarded for preroll.  This ensures that the partially
+  // trimmed buffer can be correctly decoded.
+  if (audio_preroll_buffer_) {
+    // We only want to use the preroll buffer if it directly precedes (less than
+    // one sample apart) the current buffer.
+    const int64 delta = std::abs((audio_preroll_buffer_->timestamp() +
+                                  audio_preroll_buffer_->duration() -
+                                  buffer->timestamp()).InMicroseconds());
+    if (delta < sample_duration_.InMicroseconds()) {
+      buffer->SetPrerollBuffer(audio_preroll_buffer_);
+    } else {
+      // TODO(dalecurtis): Add a MEDIA_LOG() for when this is dropped unused.
+    }
+    audio_preroll_buffer_ = NULL;
+  }
+
+  // Decrease the duration appropriately.  We only need to shorten the buffer if
+  // it overlaps |append_window_start|.
+  if (buffer->timestamp() < append_window_start) {
+    buffer->set_discard_padding(std::make_pair(
+        append_window_start - buffer->timestamp(), base::TimeDelta()));
+    buffer->set_duration(frame_end_timestamp - append_window_start);
+  }
+
+  // Adjust the timestamp of this buffer forward to |append_window_start|.  The
+  // timestamps are always set, even if |buffer|'s timestamp is already set to
+  // |append_window_start|, to ensure the preroll buffer is setup correctly.
+  buffer->set_timestamp(append_window_start);
+  buffer->SetDecodeTimestamp(append_window_start);
   return true;
 }
 
