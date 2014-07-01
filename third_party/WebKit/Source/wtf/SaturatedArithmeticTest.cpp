@@ -104,4 +104,54 @@ TEST(SaturatedArithmeticTest, Subtraction)
     EXPECT_EQ(INT_MAX, saturatedSubtraction(INT_MAX, INT_MIN));
 }
 
+TEST(SaturatedArithmeticTest, SetSigned)
+{
+    const int kFractionBits = 6;
+    const int intMaxForLayoutUnit = INT_MAX >> kFractionBits;
+    const int intMinForLayoutUnit = INT_MIN >> kFractionBits;
+
+    EXPECT_EQ(0, saturatedSet(0, kFractionBits));
+
+    // Internally the max number we can represent (without saturating)
+    // is all the (non-sign) bits set except for the bottom n fraction bits
+    const int maxInternalRepresentation = INT_MAX ^ ((1 << kFractionBits)-1);
+    EXPECT_EQ(maxInternalRepresentation,
+        saturatedSet(intMaxForLayoutUnit, kFractionBits));
+
+    EXPECT_EQ(getMaxSaturatedSetResultForTesting(kFractionBits),
+        saturatedSet(intMaxForLayoutUnit + 100, kFractionBits));
+
+    EXPECT_EQ((intMaxForLayoutUnit - 100) << kFractionBits,
+        saturatedSet(intMaxForLayoutUnit - 100, kFractionBits));
+
+    EXPECT_EQ(getMinSaturatedSetResultForTesting(kFractionBits),
+        saturatedSet(intMinForLayoutUnit, kFractionBits));
+
+    EXPECT_EQ(getMinSaturatedSetResultForTesting(kFractionBits),
+        saturatedSet(intMinForLayoutUnit - 100, kFractionBits));
+
+    EXPECT_EQ((intMinForLayoutUnit + 100) << kFractionBits,
+        saturatedSet(intMinForLayoutUnit + 100, kFractionBits));
+}
+
+TEST(SaturatedArithmeticTest, SetUnsigned)
+{
+    const int kFractionBits = 6;
+    const int intMaxForLayoutUnit = INT_MAX >> kFractionBits;
+
+    EXPECT_EQ(0, saturatedSet((unsigned)0, kFractionBits));
+
+    EXPECT_EQ(getMaxSaturatedSetResultForTesting(kFractionBits),
+        saturatedSet((unsigned)intMaxForLayoutUnit, kFractionBits));
+
+    const unsigned kOverflowed = intMaxForLayoutUnit + 100;
+    EXPECT_EQ(getMaxSaturatedSetResultForTesting(kFractionBits),
+        saturatedSet(kOverflowed, kFractionBits));
+
+    const unsigned kNotOverflowed = intMaxForLayoutUnit - 100;
+    EXPECT_EQ((intMaxForLayoutUnit - 100) << kFractionBits,
+        saturatedSet(kNotOverflowed, kFractionBits));
+}
+
+
 } // namespace
