@@ -115,14 +115,20 @@ bool ParseContentRange(const StringMap_t& headers,
   // bytes is "bytes 0-9/*". Convert it to a half-open range by incrementing
   // read_end.
   if (result == 2) {
-    *read_start = read_start_int;
-    *read_end = read_end_int + 1;
-    *entity_length = 0;
+    if (read_start)
+      *read_start = read_start_int;
+    if (read_end)
+      *read_end = read_end_int + 1;
+    if (entity_length)
+      *entity_length = 0;
     return true;
   } else if (result == 3) {
-    *read_start = read_start_int;
-    *read_end = read_end_int + 1;
-    *entity_length = entity_length_int;
+    if (read_start)
+      *read_start = read_start_int;
+    if (read_end)
+      *read_end = read_end_int + 1;
+    if (entity_length)
+      *entity_length = entity_length_int;
     return true;
   }
 
@@ -241,7 +247,17 @@ Error HttpFsNode::GetStat_Locked(struct stat* stat) {
     ScopedResource response(filesystem_->ppapi());
     int32_t statuscode;
     StringMap_t response_headers;
-    Error error = OpenUrl("HEAD",
+    const char* method = "HEAD";
+
+    if (filesystem->is_blob_url_) {
+      // Blob URLs do not support HEAD requests, but do give the content length
+      // in their response headers. We issue a single-byte GET request to
+      // retrieve the content length.
+      method = "GET";
+      headers["Range"] = "bytes=0-0";
+    }
+
+    Error error = OpenUrl(method,
                           &headers,
                           &loader,
                           &request,
@@ -252,7 +268,9 @@ Error HttpFsNode::GetStat_Locked(struct stat* stat) {
       return error;
 
     off_t entity_length;
-    if (ParseContentLength(response_headers, &entity_length)) {
+    if (ParseContentRange(response_headers, NULL, NULL, &entity_length)) {
+      SetCachedSize(static_cast<off_t>(entity_length));
+    } else if (ParseContentLength(response_headers, &entity_length)) {
       SetCachedSize(static_cast<off_t>(entity_length));
     } else if (cache_content_) {
       // The server didn't give a content length; download the data to memory

@@ -367,3 +367,26 @@ TEST(HttpFsDirTest, ParseManifest) {
   EXPECT_EQ(234, sbar.st_size);
   EXPECT_EQ(S_IFREG | S_IRALL | S_IWALL, sbar.st_mode);
 }
+
+TEST(HttpFsBlobUrlTest, Basic) {
+  const char* kUrl =
+      "blob:http%3A//example.com/6b87a5a6-713e-46a4-9f0c-78066406455d";
+  FakePepperInterfaceURLLoader ppapi;
+  ASSERT_TRUE(ppapi.server_template()->SetBlobEntity(kUrl, "", NULL));
+
+  StringMap_t args;
+  args["SOURCE"] = kUrl;
+
+  HttpFsForTesting fs(args, &ppapi);
+
+  // We have to read from the mount root to read a Blob URL.
+  ASSERT_EQ(0, fs.Access(Path("/"), R_OK));
+  ASSERT_EQ(EACCES, fs.Access(Path("/"), W_OK));
+  ASSERT_EQ(EACCES, fs.Access(Path("/"), X_OK));
+
+  // Any other path will fail.
+  ScopedNode foo;
+  ASSERT_EQ(ENOENT, fs.Access(Path(""), R_OK));
+  ASSERT_EQ(ENOENT, fs.Access(Path("."), R_OK));
+  ASSERT_EQ(ENOENT, fs.Access(Path("blah"), R_OK));
+}

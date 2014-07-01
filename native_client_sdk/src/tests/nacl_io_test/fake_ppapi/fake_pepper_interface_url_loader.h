@@ -43,6 +43,11 @@ class FakeURLLoaderServer {
                  const std::string& body,
                  off_t size,
                  FakeURLLoaderEntity** out_entity);
+  // Similar to AddEntity, but also allows partial requests and disallows HEAD
+  // requests.
+  bool SetBlobEntity(const std::string& url,
+                     const std::string& body,
+                     FakeURLLoaderEntity** out_entity);
   bool AddError(const std::string& url,
                 int http_status_code);
   FakeURLLoaderEntity* GetEntity(const std::string& url);
@@ -63,9 +68,13 @@ class FakeURLLoaderServer {
   // Whether to allow partial reads (via the "Range" request header).
   void set_allow_partial(bool allow_partial) { allow_partial_ = allow_partial; }
 
+  // Whether to allow HEAD requests.
+  void set_allow_head(bool allow_head) { allow_head_ = allow_head; }
+
   size_t max_read_size() const { return max_read_size_; }
   bool send_content_length() const { return send_content_length_; }
   bool allow_partial() const { return allow_partial_; }
+  bool allow_head() const { return allow_head_; }
 
  private:
   typedef std::map<std::string, FakeURLLoaderEntity> EntityMap;
@@ -75,6 +84,7 @@ class FakeURLLoaderServer {
   size_t max_read_size_;
   bool send_content_length_;
   bool allow_partial_;
+  bool allow_head_;
 };
 
 class FakeURLLoaderInterface : public nacl_io::URLLoaderInterface {

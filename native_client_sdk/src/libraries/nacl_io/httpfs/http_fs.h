@@ -54,6 +54,7 @@ class HttpFs : public Filesystem {
   bool allow_credentials_;
   bool cache_stat_;
   bool cache_content_;
+  bool is_blob_url_;
 
   friend class TypedFsFactory<HttpFs>;
   friend class HttpFsNode;

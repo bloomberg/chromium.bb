@@ -239,7 +239,10 @@ size_t FakeURLLoaderEntity::Read(void* buffer, size_t count, off_t offset) {
 }
 
 FakeURLLoaderServer::FakeURLLoaderServer()
-    : max_read_size_(0), send_content_length_(false), allow_partial_(false) {
+    : max_read_size_(0),
+      send_content_length_(false),
+      allow_partial_(false),
+      allow_head_(true) {
 }
 
 void FakeURLLoaderServer::Clear() {
@@ -285,6 +288,14 @@ bool FakeURLLoaderServer::AddEntity(const std::string& url,
   if (out_entity)
     *out_entity = &result.first->second;
   return true;
+}
+
+bool FakeURLLoaderServer::SetBlobEntity(const std::string& url,
+                                        const std::string& body,
+                                        FakeURLLoaderEntity** out_entity) {
+  set_allow_partial(true);
+  set_allow_head(false);
+  return AddEntity(url, body, out_entity);
 }
 
 bool FakeURLLoaderServer::AddError(const std::string& url,
@@ -381,7 +392,7 @@ int32_t FakeURLLoaderInterface::Open(PP_Resource loader,
 
   if (method == "GET") {
     loader_resource->entity = entity;
-  } else if (method != "HEAD") {
+  } else if (method != "HEAD" || !loader_resource->server->allow_head()) {
     response_resource->status_code = 405;  // Method not allowed.
     return RunCompletionCallback(&callback, PP_OK);
   }
