@@ -147,7 +147,7 @@ protected:
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
     {
         RefPtrWillBeRawPtr<WebCore::StyleSheetContents> styleSheet = WebCore::StyleSheetContents::create(WebCore::CSSParserContext(WebCore::UASheetMode, 0));
-        styleSheet->parseString(String(WebCore::viewportAndroidUserAgentStyleSheet, sizeof(WebCore::viewportAndroidUserAgentStyleSheet)));
+        styleSheet->parseString(String(WebCore::viewportAndroidCss, sizeof(WebCore::viewportAndroidCss)));
         OwnPtrWillBeRawPtr<WebCore::RuleSet> ruleSet = WebCore::RuleSet::create();
         ruleSet->addRulesFromSheet(styleSheet.get(), WebCore::MediaQueryEvaluator("screen"));
 

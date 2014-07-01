@@ -45,7 +45,10 @@ import rjsmin
 
 
 def make_variable_name_and_read(file_name):
-    result = re.match(r'([\w\d_]+)\.([\w\d_]+)', os.path.basename(file_name))
+    base_name = os.path.basename(file_name)
+    # view-source.css -> viewSource.css
+    base_name = re.sub(r'-[a-zA-Z]', lambda match: match.group(0)[1:].upper(), base_name)
+    result = re.match(r'([\w\d_]+)\.([\w\d_]+)', base_name)
     if not result:
         print 'Invalid input file name:', os.path.basename(file_name)
         sys.exit(1)
@@ -62,10 +65,9 @@ def strip_whitespace_and_comments(file_name, content):
         sys.exit(1)
     extension = result.group(1).lower()
     multi_line_comment = re.compile(r'/\*.*?\*/', re.MULTILINE | re.DOTALL)
-    # Don't accidentally match URLs (http://...)
-    repeating_space = re.compile(r'[ \t]+', re.MULTILINE)
-    leading_space = re.compile(r'^[ \t]+', re.MULTILINE)
-    trailing_space = re.compile(r'[ \t]+$', re.MULTILINE)
+    repeating_space = re.compile(r'\s+', re.MULTILINE)
+    leading_space = re.compile(r'^\s+', re.MULTILINE)
+    trailing_space = re.compile(r'\s+$', re.MULTILINE)
     empty_line = re.compile(r'\n+')
     if extension == 'js':
         content = rjsmin.jsmin(content)

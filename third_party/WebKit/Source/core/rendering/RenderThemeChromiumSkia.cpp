@@ -70,14 +70,14 @@ RenderThemeChromiumSkia::~RenderThemeChromiumSkia()
 String RenderThemeChromiumSkia::extraDefaultStyleSheet()
 {
     return RenderTheme::extraDefaultStyleSheet() +
-        String(themeWinUserAgentStyleSheet, sizeof(themeWinUserAgentStyleSheet)) +
-        String(themeChromiumSkiaUserAgentStyleSheet, sizeof(themeChromiumSkiaUserAgentStyleSheet)) +
-        String(themeChromiumUserAgentStyleSheet, sizeof(themeChromiumUserAgentStyleSheet));
+        String(themeWinCss, sizeof(themeWinCss)) +
+        String(themeChromiumSkiaCss, sizeof(themeChromiumSkiaCss)) +
+        String(themeChromiumCss, sizeof(themeChromiumCss));
 }
 
 String RenderThemeChromiumSkia::extraQuirksStyleSheet()
 {
-    return String(themeWinQuirksUserAgentStyleSheet, sizeof(themeWinQuirksUserAgentStyleSheet));
+    return String(themeWinQuirksCss, sizeof(themeWinQuirksCss));
 }
 
 bool RenderThemeChromiumSkia::supportsHover(const RenderStyle* style) const

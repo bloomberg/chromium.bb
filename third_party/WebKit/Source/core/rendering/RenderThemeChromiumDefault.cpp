@@ -133,12 +133,12 @@ String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 #if !OS(WIN)
     return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
 #if !OS(ANDROID)
-        String(themeInputMultipleFieldsUserAgentStyleSheet, sizeof(themeInputMultipleFieldsUserAgentStyleSheet)) +
+        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss)) +
 #endif
-        String(themeChromiumLinuxUserAgentStyleSheet, sizeof(themeChromiumLinuxUserAgentStyleSheet));
+        String(themeChromiumLinuxCss, sizeof(themeChromiumLinuxCss));
 #else
     return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
-        String(themeInputMultipleFieldsUserAgentStyleSheet, sizeof(themeInputMultipleFieldsUserAgentStyleSheet));
+        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss));
 #endif
 }
 

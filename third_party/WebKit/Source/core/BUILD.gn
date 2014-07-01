@@ -1033,12 +1033,9 @@ action("make_core_generated_media_query_tokenizer_codepoints") {
 # "UserAgentStyleSheets" in make_core_generated from GYP.
 action("make_core_generated_user_agent_style_sheets") {
   visibility = ":make_core_generated"
-  script = "../build/scripts/action_useragentstylesheets.py"
+  script = "../build/scripts/make-file-arrays.py"
 
-  scripts = [
-    "css/make-css-file-arrays.pl",
-  ]
-  stylesheets = [
+  source_prereqs = [
     "css/html.css",
     "css/quirks.css",
     "css/view-source.css",
@@ -1060,19 +1057,16 @@ action("make_core_generated_user_agent_style_sheets") {
     "css/viewportAndroid.css",
   ]
 
-  source_prereqs = scripts + stylesheets
   outputs = [
     "$blink_core_output_dir/UserAgentStyleSheets.h",
     "$blink_core_output_dir/UserAgentStyleSheetsData.cpp",
   ]
 
   args =
-    rebase_path(outputs, root_build_dir) +
-    rebase_path(stylesheets, root_build_dir) +
-    [ "--" ] +
-    rebase_path(scripts, root_build_dir) +
-    [ "--" ] +
-    [ "--perl", perl_exe ]
+    [ "--namespace", "WebCore" ] +
+    [ "--out-h=" + rebase_path(outputs[0], root_build_dir) ] +
+    [ "--out-cpp=" + rebase_path(outputs[1], root_build_dir) ] +
+    rebase_path(source_prereqs, root_build_dir)
 
   deps = make_core_generated_deps
 }

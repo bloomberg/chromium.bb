@@ -56,11 +56,9 @@ make_element_type_helpers_files = make_qualified_names_files + [
 # The executables are relative to the build directory. Don't rebase it because
 # on Posix we want to run the system one on the path.
 if (is_win) {
-  perl_exe = rebase_path("//third_party/perl/perl/bin/perl.exe", root_build_dir)
   gperf_exe = rebase_path("//third_party/gperf/bin/gperf.exe", root_build_dir)
   bison_exe = rebase_path("//third_party/bison/bin/bison.exe", root_build_dir)
 } else {
-  perl_exe = "perl"
   gperf_exe = "gperf"
   bison_exe = "bison"
 }

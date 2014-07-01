@@ -584,7 +584,7 @@
           'action_name': 'UserAgentStyleSheets',
           'variables': {
             'scripts': [
-              'css/make-css-file-arrays.pl',
+              '../build/scripts/make-file-arrays.py',
             ],
             'stylesheets': [
               'css/html.css',
@@ -618,13 +618,12 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_useragentstylesheets.py',
-            '<@(_outputs)',
-            '<@(stylesheets)',
-            '--',
             '<@(scripts)',
-            '--',
-            '--perl', '<(perl_exe)',
+            '--namespace',
+            'WebCore',
+            '--out-h=<(blink_core_output_dir)/UserAgentStyleSheets.h',
+            '--out-cpp=<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
+            '<@(stylesheets)',
           ],
         },
         {

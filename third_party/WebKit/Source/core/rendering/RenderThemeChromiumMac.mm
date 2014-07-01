@@ -1857,9 +1857,9 @@ String RenderThemeChromiumMac::extraFullScreenStyleSheet()
 String RenderThemeChromiumMac::extraDefaultStyleSheet()
 {
     return RenderTheme::extraDefaultStyleSheet() +
-        String(themeChromiumUserAgentStyleSheet, sizeof(themeChromiumUserAgentStyleSheet)) +
-        String(themeInputMultipleFieldsUserAgentStyleSheet, sizeof(themeInputMultipleFieldsUserAgentStyleSheet)) +
-        String(themeMacUserAgentStyleSheet, sizeof(themeMacUserAgentStyleSheet));
+        String(themeChromiumCss, sizeof(themeChromiumCss)) +
+        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss)) +
+        String(themeMacCss, sizeof(themeMacCss));
 }
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderContainer(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)

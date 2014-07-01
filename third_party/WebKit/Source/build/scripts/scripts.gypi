@@ -47,13 +47,9 @@
         ],
         'conditions': [
             ['OS=="win"', {
-                # Using native perl rather than cygwin perl cuts execution time
-                # of idl preprocessing rules by a bit more than 50%.
-                'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
                 'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
                 'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
               },{
-                'perl_exe': 'perl',
                 'gperf_exe': 'gperf',
                 'bison_exe': 'bison',
               }],

@@ -60,13 +60,13 @@ RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
 
 String RenderThemeChromiumAndroid::extraMediaControlsStyleSheet()
 {
-    return String(mediaControlsAndroidUserAgentStyleSheet, sizeof(mediaControlsAndroidUserAgentStyleSheet));
+    return String(mediaControlsAndroidCss, sizeof(mediaControlsAndroidCss));
 }
 
 String RenderThemeChromiumAndroid::extraDefaultStyleSheet()
 {
     return RenderThemeChromiumDefault::extraDefaultStyleSheet() +
-        String(themeChromiumAndroidUserAgentStyleSheet, sizeof(themeChromiumAndroidUserAgentStyleSheet));
+        String(themeChromiumAndroidCss, sizeof(themeChromiumAndroidCss));
 }
 
 void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
