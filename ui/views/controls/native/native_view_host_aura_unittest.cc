@@ -237,4 +237,19 @@ TEST_F(NativeViewHostAuraTest, InstallClip) {
   DestroyHost();
 }
 
+// Ensure native view is parented to the root window after detaching. This is
+// a regression test for http://crbug.com/389261.
+TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
+  CreateHost();
+  aura::Window* child_win = child()->GetNativeView();
+  aura::Window* root_window = child_win->GetRootWindow();
+  aura::WindowTreeHost* child_win_tree_host = child_win->GetHost();
+
+  host()->Detach();
+  EXPECT_EQ(root_window, child_win->GetRootWindow());
+  EXPECT_EQ(child_win_tree_host, child_win->GetHost());
+
+  DestroyHost();
+}
+
 }  // namespace views

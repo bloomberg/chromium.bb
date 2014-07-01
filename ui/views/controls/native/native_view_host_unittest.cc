@@ -146,7 +146,13 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
   // Detaching should send a NativeViewHierarchyChanged() notification and
   // change the parent.
   host->Detach();
+#if defined(USE_AURA)
+  // Two notifications are generated from removing the native view from the
+  // clipping window and then reparenting it to the root window.
+  EXPECT_EQ(2, test_view->notification_count());
+#else
   EXPECT_EQ(1, test_view->notification_count());
+#endif
   EXPECT_NE(toplevel()->GetNativeView(),
             GetNativeParent(child->GetNativeView()));
   test_view->ResetCount();

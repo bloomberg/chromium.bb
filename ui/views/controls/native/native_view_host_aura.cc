@@ -53,7 +53,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
-      host_->native_view()->parent()->RemoveChild(host_->native_view());
+      Widget::ReparentNativeView(host_->native_view(), NULL);
   }
 }
 
