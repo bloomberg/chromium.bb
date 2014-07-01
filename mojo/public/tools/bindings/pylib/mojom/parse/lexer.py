@@ -84,7 +84,6 @@ class Lexer(object):
     'ORDINAL',
     'INT_CONST_DEC', 'INT_CONST_HEX',
     'FLOAT_CONST',
-    'CHAR_CONST',
 
     # String literals
     'STRING_LITERAL',
@@ -139,12 +138,6 @@ class Lexer(object):
 
   escape_sequence = \
       r"""(\\("""+simple_escape+'|'+decimal_escape+'|'+hex_escape+'))'
-  cconst_char = r"""([^'\\\n]|"""+escape_sequence+')'
-  char_const = "'"+cconst_char+"'"
-  unmatched_quote = "('"+cconst_char+"*\\n)|('"+cconst_char+"*$)"
-  bad_char_const = \
-      r"""('"""+cconst_char+"""[^'\n]+')|('')|('"""+ \
-      bad_escape+r"""[^'\n]*')"""
 
   # string literals (K&R2: A.2.6)
   string_char = r"""([^"\\\n]|"""+escape_sequence+')'
@@ -222,23 +215,6 @@ class Lexer(object):
   @TOKEN(decimal_constant)
   def t_INT_CONST_DEC(self, t):
     return t
-
-  # Must come before bad_char_const, to prevent it from
-  # catching valid char constants as invalid
-  #
-  @TOKEN(char_const)
-  def t_CHAR_CONST(self, t):
-    return t
-
-  @TOKEN(unmatched_quote)
-  def t_UNMATCHED_QUOTE(self, t):
-    msg = "Unmatched '"
-    self._error(msg, t)
-
-  @TOKEN(bad_char_const)
-  def t_BAD_CHAR_CONST(self, t):
-    msg = "Invalid char constant %s" % t.value
-    self._error(msg, t)
 
   # unmatched string literals are caught by the preprocessor
 

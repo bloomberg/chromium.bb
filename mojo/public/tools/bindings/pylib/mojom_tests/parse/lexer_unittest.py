@@ -127,8 +127,6 @@ class LexerTest(unittest.TestCase):
                       _MakeLexToken("INT_CONST_HEX", "0x01aB2eF3"))
     self.assertEquals(self._SingleTokenForInput("123.456"),
                       _MakeLexToken("FLOAT_CONST", "123.456"))
-    self.assertEquals(self._SingleTokenForInput("'x'"),
-                      _MakeLexToken("CHAR_CONST", "'x'"))
     self.assertEquals(self._SingleTokenForInput("\"hello\""),
                       _MakeLexToken("STRING_LITERAL", "\"hello\""))
     self.assertEquals(self._SingleTokenForInput("+"),

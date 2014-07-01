@@ -291,7 +291,6 @@ class Parser(object):
 
   def p_literal(self, p):
     """literal : number
-               | CHAR_CONST
                | TRUE
                | FALSE
                | DEFAULT
