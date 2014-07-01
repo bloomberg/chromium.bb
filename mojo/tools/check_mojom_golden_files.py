@@ -12,6 +12,7 @@ from tempfile import mkdtemp
 
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 _mojo_dir = os.path.join(_script_dir, os.pardir)
+_chromium_src_dir = os.path.join(_mojo_dir, os.pardir)
 sys.path.insert(0, os.path.join(_mojo_dir, "public", "tools", "bindings",
                                 "pylib"))
 from mojom_tests.support.find_files import FindFiles
@@ -71,7 +72,10 @@ def main():
   for mojom_file in mojom_files:
     if args.verbose:
       print "  Processing %s ..." % os.path.relpath(mojom_file, _mojo_dir)
-    RunBindingsGenerator(out_dir, _mojo_dir, mojom_file)
+    # TODO(vtl): This may wrong, since the path can be overridden in the .gyp
+    # file.
+    RunBindingsGenerator(out_dir, _mojo_dir, mojom_file,
+                         ["-I", os.path.abspath(_chromium_src_dir)])
 
   if args.generate_golden_files:
     return 0
