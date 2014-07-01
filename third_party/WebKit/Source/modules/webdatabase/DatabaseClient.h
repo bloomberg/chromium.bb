@@ -43,7 +43,6 @@ class InspectorDatabaseAgent;
 class Page;
 class WorkerClients;
 
-class GC_PLUGIN_IGNORE("http://crbug.com/367712") DatabaseClient;
 class DatabaseClient : public WillBeHeapSupplement<Page>, public WillBeHeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
@@ -58,6 +57,12 @@ public:
     static const char* supplementName();
 
     void createInspectorAgentFor(Page*);
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        WillBeHeapSupplement<Page>::trace(visitor);
+        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+    }
 
 private:
     InspectorDatabaseAgent* m_inspectorAgent;

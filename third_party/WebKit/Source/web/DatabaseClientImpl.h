@@ -45,8 +45,6 @@ public:
 
     virtual bool allowDatabase(WebCore::ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE { }
-
 private:
     DatabaseClientImpl();
 };
