@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/web/WebDOMError.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMError.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMError.h"
 #include "wtf/PassOwnPtr.h"
 

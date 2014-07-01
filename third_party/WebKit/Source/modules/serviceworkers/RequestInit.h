@@ -5,7 +5,7 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "modules/serviceworkers/HeaderMap.h"
 #include "wtf/RefPtr.h"
 

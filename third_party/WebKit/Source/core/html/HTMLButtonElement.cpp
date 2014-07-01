@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLButtonElement.h"
 
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"

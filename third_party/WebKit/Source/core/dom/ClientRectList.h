@@ -27,7 +27,7 @@
 #ifndef ClientRectList_h
 #define ClientRectList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"

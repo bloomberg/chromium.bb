@@ -31,7 +31,7 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"

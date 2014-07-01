@@ -28,7 +28,7 @@
 #ifndef IDBFactory_h
 #define IDBFactory_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 #include "platform/heap/Handle.h"

@@ -26,7 +26,7 @@
 #ifndef SpeechSynthesis_h
 #define SpeechSynthesis_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"

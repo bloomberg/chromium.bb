@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"

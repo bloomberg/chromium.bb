@@ -25,7 +25,7 @@
 #ifndef RTCStatsResponse_h
 #define RTCStatsResponse_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/mediastream/RTCStatsReport.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCStatsResponseBase.h"

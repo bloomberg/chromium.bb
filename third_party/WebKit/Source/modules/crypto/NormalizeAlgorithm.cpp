@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"

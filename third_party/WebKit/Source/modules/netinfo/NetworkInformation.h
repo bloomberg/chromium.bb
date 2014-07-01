@@ -5,7 +5,7 @@
 #ifndef NetworkInformation_h
 #define NetworkInformation_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/NetworkStateNotifier.h"

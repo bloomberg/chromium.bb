@@ -31,10 +31,10 @@
 #ifndef V8TypedArrayCustom_h
 #define V8TypedArrayCustom_h
 
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 

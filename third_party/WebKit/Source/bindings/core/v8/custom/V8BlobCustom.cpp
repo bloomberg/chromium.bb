@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/core/v8/V8Blob.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/custom/V8BlobCustomHelpers.h"
-#include "bindings/v8/ExceptionState.h"
 
 namespace WebCore {
 

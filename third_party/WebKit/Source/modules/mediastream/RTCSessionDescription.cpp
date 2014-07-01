@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/RemoveNodeCommand.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "wtf/Assertions.h"
 

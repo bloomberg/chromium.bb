@@ -30,10 +30,10 @@
 
 #include "config.h"
 
+#include "bindings/core/v8/ScriptController.h"
 #include "bindings/modules/v8/V8SQLError.h"
 #include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "bindings/modules/v8/V8SQLTransaction.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 

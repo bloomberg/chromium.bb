@@ -51,7 +51,7 @@ def attribute_context(interface, attribute):
     # [CheckSecurity]
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
-        includes.add('bindings/v8/BindingSecurity.h')
+        includes.add('bindings/core/v8/BindingSecurity.h')
     # [Custom]
     has_custom_getter = ('Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Getter'])
@@ -75,7 +75,7 @@ def attribute_context(interface, attribute):
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
         attribute.name == 'onerror'):
-        includes.add('bindings/v8/V8ErrorHandler.h')
+        includes.add('bindings/core/v8/V8ErrorHandler.h')
 
     # Nullable type where the corresponding C++ type supports a null value.
     is_nullable_simple = idl_type.is_nullable and (
@@ -336,7 +336,7 @@ def setter_expression(interface, attribute, context):
             getter_name, ', '.join(arguments))
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
             attribute.name == 'onerror'):
-            includes.add('bindings/v8/V8ErrorHandler.h')
+            includes.add('bindings/core/v8/V8ErrorHandler.h')
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
         else:
             arguments.append('V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/AnimationTestHelper.h"
 
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/V8Binding.h"
 
 namespace WebCore {
 

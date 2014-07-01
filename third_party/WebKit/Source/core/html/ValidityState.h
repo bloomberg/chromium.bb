@@ -24,7 +24,7 @@
 #ifndef ValidityState_h
 #define ValidityState_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/FormAssociatedElement.h"
 #include "wtf/PassOwnPtr.h"
 

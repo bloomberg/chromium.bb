@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"

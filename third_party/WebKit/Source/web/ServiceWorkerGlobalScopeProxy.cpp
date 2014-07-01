@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/ServiceWorkerGlobalScopeProxy.h"
 
-#include "bindings/v8/WorkerScriptController.h"
+#include "bindings/core/v8/WorkerScriptController.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"

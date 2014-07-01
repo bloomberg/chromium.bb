@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesis.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/testing/MockPagePopupDriver.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/frame/LocalFrame.h"

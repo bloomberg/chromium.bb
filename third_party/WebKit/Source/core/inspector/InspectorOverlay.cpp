@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/inspector/InspectorOverlay.h"
 
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptSourceCode.h"
 #include "core/InspectorOverlayPage.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"

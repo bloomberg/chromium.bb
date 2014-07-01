@@ -27,7 +27,7 @@
 #ifndef WebGLContextAttributes_h
 #define WebGLContextAttributes_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/PassRefPtr.h"

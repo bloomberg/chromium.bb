@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/loader/NavigationScheduler.h"
 
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/LocalFrame.h"

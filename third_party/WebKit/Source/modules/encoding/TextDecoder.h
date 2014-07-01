@@ -31,7 +31,7 @@
 #ifndef TextDecoder_h
 #define TextDecoder_h
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/text/TextCodec.h"

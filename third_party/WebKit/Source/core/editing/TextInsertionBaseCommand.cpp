@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/TextInsertionBaseCommand.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"

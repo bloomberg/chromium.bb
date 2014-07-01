@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGStringList.h"
 
-#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionMessages.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"

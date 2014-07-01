@@ -9,6 +9,11 @@
     'variables': {
         'bindings_modules_v8_files': [
             '<@(bindings_modules_v8_custom_files)',
+            'IDBBindingUtilities.cpp',
+            'IDBBindingUtilities.h',
+        ],
+        'bindings_modules_v8_unittest_files': [
+            'IDBBindingUtilitiesTest.cpp',
         ],
     },
 }

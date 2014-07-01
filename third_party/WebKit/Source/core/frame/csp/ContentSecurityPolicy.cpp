@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/SecurityPolicyViolationEvent.h"

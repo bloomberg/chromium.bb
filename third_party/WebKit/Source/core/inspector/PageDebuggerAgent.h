@@ -31,7 +31,7 @@
 #ifndef PageDebuggerAgent_h
 #define PageDebuggerAgent_h
 
-#include "bindings/v8/PageScriptDebugServer.h"
+#include "bindings/core/v8/PageScriptDebugServer.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 

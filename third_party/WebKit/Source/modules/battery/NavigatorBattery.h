@@ -5,7 +5,7 @@
 #ifndef NavigatorBattery_h
 #define NavigatorBattery_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"

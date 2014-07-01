@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptModule.h"
 
-#include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 

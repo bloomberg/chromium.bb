@@ -31,7 +31,7 @@
 #ifndef StorageInfo_h
 #define StorageInfo_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

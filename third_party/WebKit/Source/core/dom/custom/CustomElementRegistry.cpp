@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementRegistry.h"
 
-#include "bindings/v8/CustomElementConstructorBuilder.h"
+#include "bindings/core/v8/CustomElementConstructorBuilder.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/DocumentLifecycleObserver.h"

@@ -32,8 +32,8 @@
 #include "config.h"
 #include "core/events/EventTarget.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NoEventDispatchAssertion.h"
 #include "core/editing/Editor.h"

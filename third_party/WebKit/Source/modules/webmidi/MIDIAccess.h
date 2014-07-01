@@ -31,8 +31,8 @@
 #ifndef MIDIAccess_h
 #define MIDIAccess_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"

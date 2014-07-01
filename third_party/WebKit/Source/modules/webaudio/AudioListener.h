@@ -29,7 +29,7 @@
 #ifndef AudioListener_h
 #define AudioListener_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"

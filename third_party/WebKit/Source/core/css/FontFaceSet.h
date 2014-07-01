@@ -26,7 +26,7 @@
 #ifndef FontFaceSet_h
 #define FontFaceSet_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceSetForEachCallback.h"
 #include "core/dom/ActiveDOMObject.h"

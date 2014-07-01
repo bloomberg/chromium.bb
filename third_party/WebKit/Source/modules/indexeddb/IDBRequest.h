@@ -29,9 +29,9 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/DOMStringList.h"

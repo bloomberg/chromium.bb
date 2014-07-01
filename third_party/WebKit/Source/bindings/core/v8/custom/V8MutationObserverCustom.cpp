@@ -31,12 +31,12 @@
 #include "config.h"
 #include "bindings/core/v8/V8MutationObserver.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/V8GCController.h"
-#include "bindings/v8/V8MutationCallback.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 
 namespace WebCore {

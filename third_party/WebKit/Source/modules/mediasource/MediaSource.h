@@ -31,7 +31,7 @@
 #ifndef MediaSource_h
 #define MediaSource_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"

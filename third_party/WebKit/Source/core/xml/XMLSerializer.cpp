@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/xml/XMLSerializer.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/editing/MarkupAccumulator.h"
 #include "wtf/text/WTFString.h"

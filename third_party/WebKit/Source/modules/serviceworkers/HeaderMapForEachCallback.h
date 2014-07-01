@@ -5,7 +5,7 @@
 #ifndef HeaderMapForEachCallback_h
 #define HeaderMapForEachCallback_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 
 namespace WebCore {
 

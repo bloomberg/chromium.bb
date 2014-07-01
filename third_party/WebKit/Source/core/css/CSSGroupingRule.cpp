@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/css/CSSGroupingRule.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"

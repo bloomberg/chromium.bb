@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/svg/SVGPaint.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/RGBColor.h"
 #include "core/css/parser/BisonCSSParser.h"
 

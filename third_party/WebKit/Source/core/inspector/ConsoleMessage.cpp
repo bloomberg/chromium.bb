@@ -33,8 +33,8 @@
 
 #include "core/inspector/ConsoleMessage.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"

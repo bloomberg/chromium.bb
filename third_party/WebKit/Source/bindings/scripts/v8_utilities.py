@@ -149,7 +149,7 @@ def activity_logging_world_list(member, access_type=''):
     if log_activity and not log_activity.startswith(access_type):
         return set()
 
-    includes.add('bindings/v8/V8DOMActivityLogger.h')
+    includes.add('bindings/core/v8/V8DOMActivityLogger.h')
     if 'LogAllWorlds' in extended_attributes:
         return set(['', 'ForMainWorld'])
     return set([''])  # At minimum, include isolated worlds.

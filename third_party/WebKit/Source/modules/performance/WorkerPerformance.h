@@ -31,7 +31,7 @@
 #ifndef WorkerPerformance_h
 #define WorkerPerformance_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

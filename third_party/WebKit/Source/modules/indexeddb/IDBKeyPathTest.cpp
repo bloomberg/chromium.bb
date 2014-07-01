@@ -26,8 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 
-#include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/modules/v8/IDBBindingUtilities.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "wtf/Vector.h"
 

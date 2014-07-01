@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/css/FontFaceSet.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"

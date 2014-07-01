@@ -25,10 +25,9 @@
 #include "config.h"
 #include "core/html/HTMLFormElement.h"
 
-#include <limits>
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptEventListener.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptEventListener.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -56,6 +55,7 @@
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/AtomicString.h"
+#include <limits>
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #include "config.h"
 #include "web/FrameLoaderClientImpl.h"
 
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/events/ApplicationCacheErrorEvent.h"
 #include "core/events/ProgressEvent.h"
 #include "core/frame/LocalFrame.h"

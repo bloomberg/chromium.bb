@@ -26,9 +26,9 @@
 #ifndef V8ArrayBufferCustom_h
 #define V8ArrayBufferCustom_h
 
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 

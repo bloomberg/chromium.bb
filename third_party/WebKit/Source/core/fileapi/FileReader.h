@@ -31,7 +31,7 @@
 #ifndef FileReader_h
 #define FileReader_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"

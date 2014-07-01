@@ -26,7 +26,7 @@
 #ifndef IDBIndex_h
 #define IDBIndex_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"

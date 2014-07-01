@@ -26,7 +26,7 @@
 #ifndef MediaStream_h
 #define MediaStream_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/html/URLRegistry.h"
 #include "modules/EventTargetModules.h"

@@ -5,10 +5,10 @@
 #include "config.h"
 #include "bindings/modules/v8/V8SubtleCrypto.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
-#include "bindings/v8/Dictionary.h"
 
 namespace WebCore {
 

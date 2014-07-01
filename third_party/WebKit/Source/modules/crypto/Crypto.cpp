@@ -30,7 +30,7 @@
 #include "config.h"
 #include "modules/crypto/Crypto.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/CryptographicallyRandomNumber.h"

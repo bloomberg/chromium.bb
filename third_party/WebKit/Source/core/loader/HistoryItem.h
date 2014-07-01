@@ -27,7 +27,7 @@
 #ifndef HistoryItem_h
 #define HistoryItem_h
 
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/weborigin/Referrer.h"

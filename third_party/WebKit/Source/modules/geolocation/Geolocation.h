@@ -27,7 +27,7 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"

@@ -5,8 +5,8 @@
 #include "config.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 
-#include "bindings/v8/CallbackPromiseAdapter.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/serviceworkers/Client.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"

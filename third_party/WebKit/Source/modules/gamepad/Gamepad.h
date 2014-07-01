@@ -26,7 +26,7 @@
 #ifndef Gamepad_h
 #define Gamepad_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/gamepad/GamepadButton.h"
 #include "modules/gamepad/GamepadCommon.h"
 #include "platform/heap/Handle.h"

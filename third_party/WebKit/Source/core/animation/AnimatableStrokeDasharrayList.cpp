@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/AnimatableStrokeDasharrayList.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/animation/AnimatableSVGLength.h"
 
 namespace WebCore {

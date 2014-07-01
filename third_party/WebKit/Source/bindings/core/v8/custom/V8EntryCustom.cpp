@@ -32,9 +32,9 @@
 #include "bindings/modules/v8/V8Entry.h"
 
 #include "bindings/core/v8/V8Attr.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/V8DirectoryEntry.h"
 #include "bindings/modules/v8/V8FileEntry.h"
-#include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

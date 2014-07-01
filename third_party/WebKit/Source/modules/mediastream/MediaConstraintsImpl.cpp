@@ -32,9 +32,9 @@
 
 #include "modules/mediastream/MediaConstraintsImpl.h"
 
-#include "bindings/v8/ArrayValue.h"
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ArrayValue.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"

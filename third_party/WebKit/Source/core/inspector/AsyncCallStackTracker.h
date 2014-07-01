@@ -31,7 +31,7 @@
 #ifndef AsyncCallStackTracker_h
 #define AsyncCallStackTracker_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

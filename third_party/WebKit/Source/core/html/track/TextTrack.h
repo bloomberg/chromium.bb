@@ -27,7 +27,7 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
 #include "platform/heap/Handle.h"

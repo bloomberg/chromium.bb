@@ -5,7 +5,7 @@
 #ifndef ImageBitmap_h
 #define ImageBitmap_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/IntRect.h"

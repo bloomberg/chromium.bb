@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/forms/NumberInputType.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ExceptionCode.h"

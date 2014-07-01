@@ -5,7 +5,7 @@
 #ifndef VideoTrackList_h
 #define VideoTrackList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/TrackListBase.h"
 #include "core/html/track/VideoTrack.h"
 

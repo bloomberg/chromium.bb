@@ -200,7 +200,7 @@
       'target_name': 'debugger_script_source',
       'type': 'none',
       'variables': {
-        'input_file_path': '<(bindings_v8_dir)/DebuggerScript.js',
+        'input_file_path': '<(bindings_core_v8_dir)/DebuggerScript.js',
         'output_file_path': '<(blink_core_output_dir)/DebuggerScriptSource.h',
         'character_array_name': 'DebuggerScriptSource_js',
       },
@@ -244,7 +244,7 @@
       ],
       'sources': [
         # FIXME: should be bindings_core_v8_files http://crbug.com/358074
-        '<@(bindings_v8_files)',
+        '<@(bindings_core_v8_files)',
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
         '<@(bindings_core_v8_generated_aggregate_files)',
@@ -796,7 +796,7 @@
         'INSIDE_BLINK',
       ],
       'include_dirs': [
-        '<(bindings_v8_dir)',  # FIXME: Remove once http://crbug.com/236119 is fixed.
+        '<(bindings_core_v8_dir)',  # FIXME: Remove once http://crbug.com/236119 is fixed.
         'testing',
         'testing/v8',
       ],

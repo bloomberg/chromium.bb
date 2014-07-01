@@ -26,7 +26,7 @@
 #ifndef FontFaceSetForEachCallback_h
 #define FontFaceSetForEachCallback_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 
 namespace WebCore {
 

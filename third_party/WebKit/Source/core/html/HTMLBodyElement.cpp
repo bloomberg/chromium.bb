@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLBodyElement.h"
 
-#include "bindings/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSImageValue.h"

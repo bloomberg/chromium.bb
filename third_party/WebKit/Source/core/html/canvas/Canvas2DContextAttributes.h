@@ -27,7 +27,7 @@
 #ifndef Canvas2DContextAttributes_h
 #define Canvas2DContextAttributes_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
 #include "wtf/PassRefPtr.h"
 

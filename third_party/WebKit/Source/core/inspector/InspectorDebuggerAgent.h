@@ -30,7 +30,7 @@
 #ifndef InspectorDebuggerAgent_h
 #define InspectorDebuggerAgent_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorFrontend.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/AsyncCallStackTracker.h"

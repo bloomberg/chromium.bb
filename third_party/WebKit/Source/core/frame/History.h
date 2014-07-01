@@ -26,8 +26,8 @@
 #ifndef History_h
 #define History_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"

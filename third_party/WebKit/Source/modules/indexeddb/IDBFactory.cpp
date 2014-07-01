@@ -29,8 +29,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBFactory.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/IDBBindingUtilities.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"

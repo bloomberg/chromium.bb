@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/html/HTMLOptionElement.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"

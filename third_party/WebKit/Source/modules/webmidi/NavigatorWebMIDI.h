@@ -31,7 +31,7 @@
 #ifndef NavigatorWebMIDI_h
 #define NavigatorWebMIDI_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "platform/Supplementable.h"

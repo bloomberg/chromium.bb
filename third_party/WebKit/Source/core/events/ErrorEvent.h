@@ -31,7 +31,7 @@
 #ifndef ErrorEvent_h
 #define ErrorEvent_h
 
-#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/events/Event.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"

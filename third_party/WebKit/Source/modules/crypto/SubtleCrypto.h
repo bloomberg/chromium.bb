@@ -31,8 +31,8 @@
 #ifndef SubtleCrypto_h
 #define SubtleCrypto_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayPiece.h"
 #include "wtf/Forward.h"

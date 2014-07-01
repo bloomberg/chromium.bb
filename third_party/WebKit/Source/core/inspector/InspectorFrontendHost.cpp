@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"

@@ -33,7 +33,7 @@
 
 #include "core/inspector/InjectedScriptBase.h"
 
-#include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/ScriptFunctionCall.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/JSONValues.h"

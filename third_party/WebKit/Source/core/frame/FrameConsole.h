@@ -29,7 +29,7 @@
 #ifndef FrameConsole_h
 #define FrameConsole_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/Forward.h"

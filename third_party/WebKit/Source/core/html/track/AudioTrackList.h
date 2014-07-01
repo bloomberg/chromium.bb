@@ -5,7 +5,7 @@
 #ifndef AudioTrackList_h
 #define AudioTrackList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TrackListBase.h"
 

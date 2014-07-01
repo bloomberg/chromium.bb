@@ -5,8 +5,8 @@
 #ifndef BatteryManager_h
 #define BatteryManager_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/DeviceEventControllerBase.h"
 #include "modules/EventTargetModules.h"

@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/html/HTMLLinkElement.h"
 
-#include "bindings/v8/ScriptEventListener.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/ScriptEventListener.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"

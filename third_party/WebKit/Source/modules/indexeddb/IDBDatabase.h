@@ -26,8 +26,8 @@
 #ifndef IDBDatabase_h
 #define IDBDatabase_h
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"

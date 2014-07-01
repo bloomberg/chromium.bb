@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptProfiler.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptProfiler.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorOverlay.h"

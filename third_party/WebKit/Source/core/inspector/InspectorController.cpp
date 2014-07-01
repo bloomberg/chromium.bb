@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorController.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/IdentifiersFactory.h"

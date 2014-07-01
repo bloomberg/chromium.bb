@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementException.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {

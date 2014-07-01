@@ -30,7 +30,7 @@
 #ifndef WorkerConsole_h
 #define WorkerConsole_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/ConsoleTypes.h"

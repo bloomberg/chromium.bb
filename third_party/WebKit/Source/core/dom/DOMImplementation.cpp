@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/DOMImplementation.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSStyleSheet.h"

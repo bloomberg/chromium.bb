@@ -19,7 +19,7 @@ _gypi = exec_script(
 core_idl_files = get_path_info(_gypi.core_idl_files, "abspath")
 
 # 'partial interface', target (right side of) 'implements', and
-# interfaces with static bindings (in bindings/v8/)
+# interfaces with static bindings (in bindings/core/v8/)
 core_dependency_idl_files =
   get_path_info(_gypi.core_dependency_idl_files, "abspath")
 

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/modules/v8/V8SQLTransactionSync.h"
 
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/V8SQLResultSet.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/SQLResultSet.h"

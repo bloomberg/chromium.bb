@@ -25,7 +25,7 @@
 #ifndef AudioContext_h
 #define AudioContext_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"

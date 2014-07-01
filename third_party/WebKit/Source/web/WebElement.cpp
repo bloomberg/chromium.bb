@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebElement.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"

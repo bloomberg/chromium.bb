@@ -20,7 +20,7 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"

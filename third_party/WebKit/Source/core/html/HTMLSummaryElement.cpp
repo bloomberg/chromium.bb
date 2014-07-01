@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/html/HTMLSummaryElement.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeRenderingTraversal.h"

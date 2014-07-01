@@ -31,10 +31,10 @@
 #include "config.h"
 #include "bindings/core/v8/V8MessagePort.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/MessagePort.h"
 #include "wtf/ArrayBuffer.h"
 

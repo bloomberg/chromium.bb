@@ -33,7 +33,7 @@
 
 #include "core/inspector/InjectedScript.h"
 
-#include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/ScriptFunctionCall.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"

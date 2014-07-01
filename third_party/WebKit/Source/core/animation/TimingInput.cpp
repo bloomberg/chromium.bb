@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/TimingInput.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 

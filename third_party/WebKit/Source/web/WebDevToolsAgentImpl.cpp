@@ -31,9 +31,9 @@
 #include "config.h"
 #include "web/WebDevToolsAgentImpl.h"
 
-#include "bindings/v8/PageScriptDebugServer.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/PageScriptDebugServer.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/ExceptionCode.h"

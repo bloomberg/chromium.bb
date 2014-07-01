@@ -31,7 +31,7 @@
 #ifndef DirectoryReaderSync_h
 #define DirectoryReaderSync_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "platform/heap/Handle.h"

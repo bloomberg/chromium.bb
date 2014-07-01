@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/html/HTMLPlugInElement.h"
 
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/npruntime_impl.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/npruntime_impl.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"

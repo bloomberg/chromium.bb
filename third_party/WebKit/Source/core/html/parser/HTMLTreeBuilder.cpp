@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/MathMLNames.h"
 #include "core/SVGNames.h"

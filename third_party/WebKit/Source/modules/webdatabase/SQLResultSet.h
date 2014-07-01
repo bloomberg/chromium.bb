@@ -29,7 +29,7 @@
 #ifndef SQLResultSet_h
 #define SQLResultSet_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 #include "wtf/ThreadSafeRefCounted.h"

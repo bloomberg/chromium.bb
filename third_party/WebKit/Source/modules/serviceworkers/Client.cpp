@@ -5,8 +5,8 @@
 #include "config.h"
 #include "modules/serviceworkers/Client.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"

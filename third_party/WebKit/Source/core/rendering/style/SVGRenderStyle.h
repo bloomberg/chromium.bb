@@ -23,7 +23,7 @@
 #ifndef SVGRenderStyle_h
 #define SVGRenderStyle_h
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSValueList.h"
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/RenderStyleConstants.h"

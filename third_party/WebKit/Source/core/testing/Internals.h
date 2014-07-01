@@ -27,9 +27,9 @@
 #ifndef Internals_h
 #define Internals_h
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

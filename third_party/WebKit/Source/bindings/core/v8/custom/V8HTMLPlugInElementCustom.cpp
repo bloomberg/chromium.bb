@@ -30,12 +30,12 @@
 
 #include "config.h"
 
+#include "bindings/core/v8/SharedPersistent.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLAppletElement.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
-#include "bindings/v8/SharedPersistent.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8NPObject.h"
+#include "bindings/core/v8/V8NPObject.h"
 #include "core/frame/UseCounter.h"
 
 namespace WebCore {

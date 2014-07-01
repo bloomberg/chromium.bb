@@ -29,7 +29,7 @@
 #ifndef Console_h
 #define Console_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"

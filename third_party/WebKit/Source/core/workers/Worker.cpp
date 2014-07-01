@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/workers/Worker.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
 #include "core/fetch/ResourceFetcher.h"

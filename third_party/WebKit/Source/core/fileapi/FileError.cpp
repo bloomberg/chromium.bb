@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/fileapi/FileError.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {

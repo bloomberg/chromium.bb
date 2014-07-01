@@ -26,8 +26,8 @@
 #ifndef IDBCursor_h
 #define IDBCursor_h
 
-#include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IndexedDB.h"

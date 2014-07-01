@@ -30,9 +30,9 @@
 #include "config.h"
 #include "ServiceWorkerGlobalScope.h"
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/V8ThrowException.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"

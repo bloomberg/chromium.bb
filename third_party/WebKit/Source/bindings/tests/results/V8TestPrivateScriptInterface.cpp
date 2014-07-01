@@ -7,10 +7,10 @@
 #include "config.h"
 #include "V8TestPrivateScriptInterface.h"
 
+#include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/tests/v8/V8Document.h"
 #include "bindings/tests/v8/V8Node.h"
-#include "bindings/v8/PrivateScriptRunner.h"
 #include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/LocalFrame.h"
 

@@ -30,7 +30,7 @@
 
 #include "core/inspector/ContentSearchUtils.h"
 
-#include "bindings/v8/ScriptRegexp.h"
+#include "bindings/core/v8/ScriptRegexp.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

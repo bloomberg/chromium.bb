@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/crypto/CryptoResultImpl.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/DOMException.h"

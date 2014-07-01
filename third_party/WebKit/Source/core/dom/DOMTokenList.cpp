@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/DOMTokenList.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/StringBuilder.h"

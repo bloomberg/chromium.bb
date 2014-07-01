@@ -26,11 +26,10 @@
 #include "config.h"
 #include "core/html/HTMLMediaElement.h"
 
-#include <limits>
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/dom/Attribute.h"
@@ -79,6 +78,7 @@
 #include "wtf/NonCopyingSort.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
+#include <limits>
 
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioSourceProvider.h"

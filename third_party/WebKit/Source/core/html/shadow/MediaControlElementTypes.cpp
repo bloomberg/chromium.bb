@@ -31,7 +31,7 @@
 
 #include "core/html/shadow/MediaControlElementTypes.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"

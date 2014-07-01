@@ -26,7 +26,7 @@
 #ifndef WebGLRenderingContext_h
 #define WebGLRenderingContext_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {

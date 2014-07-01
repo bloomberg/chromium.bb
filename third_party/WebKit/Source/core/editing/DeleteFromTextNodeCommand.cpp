@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/DeleteFromTextNodeCommand.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Text.h"
 
 namespace WebCore {

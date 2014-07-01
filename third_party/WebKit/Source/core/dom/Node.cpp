@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/dom/Node.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/HTMLNames.h"
 #include "core/XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"

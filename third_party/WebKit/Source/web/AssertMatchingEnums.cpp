@@ -33,7 +33,7 @@
 
 #include "config.h"
 
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"

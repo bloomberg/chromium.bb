@@ -31,7 +31,7 @@
 #ifndef DatabaseSync_h
 #define DatabaseSync_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/Microtask.h"
 
-#include "bindings/v8/V8PerIsolateData.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "platform/Task.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Vector.h"

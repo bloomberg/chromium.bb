@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/serviceworkers/HeaderMap.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "modules/serviceworkers/HeaderMapForEachCallback.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

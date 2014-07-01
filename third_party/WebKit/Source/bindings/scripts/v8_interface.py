@@ -50,16 +50,16 @@ from v8_utilities import capitalize, conditional_string, cpp_name, gc_type, has_
 
 
 INTERFACE_H_INCLUDES = frozenset([
-    'bindings/v8/V8Binding.h',
-    'bindings/v8/V8DOMWrapper.h',
-    'bindings/v8/WrapperTypeInfo.h',
+    'bindings/core/v8/V8Binding.h',
+    'bindings/core/v8/V8DOMWrapper.h',
+    'bindings/core/v8/WrapperTypeInfo.h',
     'platform/heap/Handle.h',
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/v8/ExceptionState.h',
-    'bindings/v8/V8DOMConfiguration.h',
-    'bindings/v8/V8HiddenValue.h',
-    'bindings/v8/V8ObjectConstructor.h',
+    'bindings/core/v8/ExceptionState.h',
+    'bindings/core/v8/V8DOMConfiguration.h',
+    'bindings/core/v8/V8HiddenValue.h',
+    'bindings/core/v8/V8ObjectConstructor.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/RuntimeEnabledFeatures.h',
@@ -85,8 +85,8 @@ def interface_context(interface):
 
     is_document = inherits_interface(interface.name, 'Document')
     if is_document:
-        includes.update(['bindings/v8/ScriptController.h',
-                         'bindings/v8/V8WindowShell.h',
+        includes.update(['bindings/core/v8/ScriptController.h',
+                         'bindings/core/v8/V8WindowShell.h',
                          'core/frame/LocalFrame.h'])
 
     # [ActiveDOMObject]
@@ -95,7 +95,7 @@ def interface_context(interface):
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
-        includes.add('bindings/v8/BindingSecurity.h')
+        includes.add('bindings/core/v8/BindingSecurity.h')
 
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
@@ -108,7 +108,7 @@ def interface_context(interface):
     # [SetWrapperReferenceFrom]
     reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
     if reachable_node_function:
-        includes.update(['bindings/v8/V8GCController.h',
+        includes.update(['bindings/core/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
     # [SetWrapperReferenceTo]
@@ -197,16 +197,16 @@ def interface_context(interface):
     any_type_attributes = [attribute for attribute in interface.attributes
                            if attribute.idl_type.name == 'Any']
     if has_event_constructor:
-        includes.add('bindings/v8/Dictionary.h')
+        includes.add('bindings/core/v8/Dictionary.h')
         if any_type_attributes:
-            includes.add('bindings/v8/SerializedScriptValue.h')
+            includes.add('bindings/core/v8/SerializedScriptValue.h')
 
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
 
     if (constructors or custom_constructors or has_event_constructor or
         named_constructor):
-        includes.add('bindings/v8/V8ObjectConstructor.h')
+        includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
 
     context.update({

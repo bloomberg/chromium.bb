@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/clipboard/DataTransferItem.h"
 
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/StringCallback.h"

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "Request.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "modules/serviceworkers/RequestInit.h"
 #include "platform/NotImplemented.h"

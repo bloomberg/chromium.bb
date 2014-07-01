@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/CustomEvent.h"
 
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 
 namespace WebCore {
 

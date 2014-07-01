@@ -31,7 +31,7 @@
 #ifndef ConsoleMessage_h
 #define ConsoleMessage_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleTypes.h"

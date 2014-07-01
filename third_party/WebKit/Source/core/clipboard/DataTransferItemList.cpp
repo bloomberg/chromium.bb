@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/clipboard/DataTransferItemList.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"

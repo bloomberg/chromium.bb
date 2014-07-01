@@ -31,7 +31,7 @@
 #ifndef InspectorResourceAgent_h
 #define InspectorResourceAgent_h
 
-#include "bindings/v8/ScriptString.h"
+#include "bindings/core/v8/ScriptString.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"

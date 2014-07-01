@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

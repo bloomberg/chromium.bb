@@ -5,9 +5,9 @@
 #include "config.h"
 #include "FetchManager.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/V8ThrowException.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoader.h"

@@ -30,11 +30,11 @@
 
 #include "config.h"
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Event.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/SerializedScriptValue.h"
-#include "bindings/v8/V8AbstractEventListener.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDOMCustomEvent.h"

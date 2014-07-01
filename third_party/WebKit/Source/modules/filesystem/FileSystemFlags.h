@@ -31,7 +31,7 @@
 #ifndef FileSystemFlags_h
 #define FileSystemFlags_h
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 
 namespace WebCore {
 

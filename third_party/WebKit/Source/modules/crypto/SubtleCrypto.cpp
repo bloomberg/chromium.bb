@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/crypto/SubtleCrypto.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/crypto/CryptoResultImpl.h"

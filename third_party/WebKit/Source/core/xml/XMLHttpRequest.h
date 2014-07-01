@@ -22,8 +22,8 @@
 #ifndef XMLHttpRequest_h
 #define XMLHttpRequest_h
 
-#include "bindings/v8/ScriptString.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptString.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/loader/ThreadableLoaderClient.h"

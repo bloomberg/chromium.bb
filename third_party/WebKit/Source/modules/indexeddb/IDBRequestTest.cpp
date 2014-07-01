@@ -26,8 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBRequest.h"
 
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/NullExecutionContext.h"

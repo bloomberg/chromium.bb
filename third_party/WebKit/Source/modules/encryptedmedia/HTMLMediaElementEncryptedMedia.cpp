@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaKeyError.h"

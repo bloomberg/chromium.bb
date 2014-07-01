@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 
-#include "bindings/v8/ScriptProfiler.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptProfiler.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/inspector/BindingVisitors.h"
 #include "core/inspector/InjectedScript.h"

@@ -23,7 +23,7 @@
 #ifndef HTMLPlugInElement_h
 #define HTMLPlugInElement_h
 
-#include "bindings/v8/SharedPersistent.h"
+#include "bindings/core/v8/SharedPersistent.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include <v8.h>
 

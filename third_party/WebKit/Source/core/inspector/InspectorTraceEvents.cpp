@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/inspector/InspectorTraceEvents.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptGCEvent.h"
-#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptGCEvent.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"

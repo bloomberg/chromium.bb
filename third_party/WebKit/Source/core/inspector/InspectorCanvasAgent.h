@@ -32,7 +32,7 @@
 #define InspectorCanvasAgent_h
 
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"

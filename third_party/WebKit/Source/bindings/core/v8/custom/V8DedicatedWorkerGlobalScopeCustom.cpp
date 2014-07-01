@@ -31,11 +31,11 @@
 #include "config.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "wtf/ArrayBuffer.h"
 

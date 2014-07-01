@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorInspectorAgent.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/V8WebKitPoint.h"
 
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

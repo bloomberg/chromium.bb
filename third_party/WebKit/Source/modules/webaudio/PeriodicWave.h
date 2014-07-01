@@ -29,7 +29,7 @@
 #ifndef PeriodicWave_h
 #define PeriodicWave_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/audio/AudioArray.h"
 #include "wtf/Float32Array.h"
 #include "wtf/Forward.h"

@@ -26,7 +26,7 @@
 #ifndef TextTrackList_h
 #define TextTrackList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"

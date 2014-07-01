@@ -31,7 +31,7 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"

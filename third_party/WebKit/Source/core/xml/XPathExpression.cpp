@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/xml/XPathExpression.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathNSResolver.h"

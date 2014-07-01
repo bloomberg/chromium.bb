@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXRenderObject.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXImageMapLink.h"
 #include "core/accessibility/AXInlineTextBox.h"
 #include "core/accessibility/AXObjectCache.h"

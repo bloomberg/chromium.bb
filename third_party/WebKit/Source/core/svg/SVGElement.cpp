@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGElement.h"
 
-#include "bindings/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"

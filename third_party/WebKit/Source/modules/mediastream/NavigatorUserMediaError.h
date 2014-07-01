@@ -25,7 +25,7 @@
 #ifndef NavigatorUserMediaError_h
 #define NavigatorUserMediaError_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

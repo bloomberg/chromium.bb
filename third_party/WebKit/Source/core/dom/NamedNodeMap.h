@@ -25,7 +25,7 @@
 #ifndef NamedNodeMap_h
 #define NamedNodeMap_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Element.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

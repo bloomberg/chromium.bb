@@ -31,8 +31,8 @@
 #ifndef ServiceWorkerContainer_h
 #define ServiceWorkerContainer_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/ScriptArguments.h"
 
-#include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
 #include <v8.h>
 
 namespace WebCore {

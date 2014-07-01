@@ -31,9 +31,9 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/Supplementable.h"

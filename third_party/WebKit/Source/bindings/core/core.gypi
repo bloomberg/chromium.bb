@@ -5,7 +5,7 @@
 {
   'includes': [
     '../modules/v8/generated.gypi',  # FIXME: remove once core scripts generate qualified includes correctly: http://crbug.com/358074
-    '../v8/v8.gypi',  # FIXME: should be v8/v8.gypi: http://crbug.com/358074
+    'v8/v8.gypi',  # FIXME: should be v8/v8.gypi: http://crbug.com/358074
     'v8/generated.gypi',
   ],
 

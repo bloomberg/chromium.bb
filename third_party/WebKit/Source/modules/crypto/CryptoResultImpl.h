@@ -31,7 +31,7 @@
 #ifndef CryptoResultImpl_h
 #define CryptoResultImpl_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"

@@ -26,8 +26,8 @@
 #ifndef IDBVersionChangeEvent_h
 #define IDBVersionChangeEvent_h
 
-#include "bindings/v8/Nullable.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/EventModules.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBRequest.h"

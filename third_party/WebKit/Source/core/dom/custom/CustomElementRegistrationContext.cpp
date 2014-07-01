@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"

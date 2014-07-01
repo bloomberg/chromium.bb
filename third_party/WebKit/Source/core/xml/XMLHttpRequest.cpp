@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequest.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"

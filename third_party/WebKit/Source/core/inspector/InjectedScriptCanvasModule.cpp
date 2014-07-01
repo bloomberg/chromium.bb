@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptCanvasModule.h"
 
-#include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/InjectedScriptCanvasModuleSource.h"
 
 using WebCore::TypeBuilder::Array;

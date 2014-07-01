@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/WrapContentsInDummySpanCommand.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/html/HTMLElement.h"
 

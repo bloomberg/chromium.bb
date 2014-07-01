@@ -5,7 +5,7 @@
 #ifndef HitRegion_h
 #define HitRegion_h
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/Element.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"

@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/frame/Console.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"

@@ -5,7 +5,7 @@
 #ifndef ServiceWorkerClients_h
 #define ServiceWorkerClients_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
 

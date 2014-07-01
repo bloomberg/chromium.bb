@@ -5,8 +5,8 @@
 #ifndef Response_h
 #define Response_h
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/HeaderMap.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/RefCounted.h"

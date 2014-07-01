@@ -7,11 +7,11 @@
 #ifndef V8TestNode_h
 #define V8TestNode_h
 
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/TestNode.h"
 #include "bindings/tests/v8/V8Node.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

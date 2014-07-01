@@ -26,7 +26,7 @@
 #ifndef ApplicationCache_h
 #define ApplicationCache_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/DOMWindowProperty.h"

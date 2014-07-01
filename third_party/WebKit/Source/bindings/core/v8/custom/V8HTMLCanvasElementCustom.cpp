@@ -32,11 +32,11 @@
 #include "config.h"
 #include "bindings/core/v8/V8HTMLCanvasElement.h"
 
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8CanvasRenderingContext2D.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8WebGLRenderingContext.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"

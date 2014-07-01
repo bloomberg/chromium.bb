@@ -32,7 +32,7 @@
 #ifndef SQLTransactionSync_h
 #define SQLTransactionSync_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/SQLTransactionBackendSync.h"
 
 namespace WebCore {

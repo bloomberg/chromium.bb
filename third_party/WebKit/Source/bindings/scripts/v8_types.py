@@ -293,11 +293,11 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 INCLUDES_FOR_TYPE = {
     'object': set(),
     'CompareHow': set(),
-    'Dictionary': set(['bindings/v8/Dictionary.h']),
-    'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
-                         'bindings/v8/V8EventListenerList.h']),
-    'EventListener': set(['bindings/v8/BindingSecurity.h',
-                          'bindings/v8/V8EventListenerList.h',
+    'Dictionary': set(['bindings/core/v8/Dictionary.h']),
+    'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
+                         'bindings/core/v8/V8EventListenerList.h']),
+    'EventListener': set(['bindings/core/v8/BindingSecurity.h',
+                          'bindings/core/v8/V8EventListenerList.h',
                           'core/frame/LocalDOMWindow.h']),
     'HTMLCollection': set(['bindings/core/v8/V8HTMLCollection.h',
                            'core/dom/ClassCollection.h',
@@ -311,9 +311,9 @@ INCLUDES_FOR_TYPE = {
                      'core/dom/NodeList.h',
                      'core/dom/StaticNodeList.h',
                      'core/html/LabelsNodeList.h']),
-    'Promise': set(['bindings/v8/ScriptPromise.h']),
-    'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
-    'ScriptValue': set(['bindings/v8/ScriptValue.h']),
+    'Promise': set(['bindings/core/v8/ScriptPromise.h']),
+    'SerializedScriptValue': set(['bindings/core/v8/SerializedScriptValue.h']),
+    'ScriptValue': set(['bindings/core/v8/ScriptValue.h']),
 }
 
 

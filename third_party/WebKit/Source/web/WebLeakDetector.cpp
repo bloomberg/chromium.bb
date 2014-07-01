@@ -32,8 +32,8 @@
 
 #include "public/web/WebLeakDetector.h"
 
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8GCController.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"

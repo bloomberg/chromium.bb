@@ -26,7 +26,7 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/SourceInfo.h"

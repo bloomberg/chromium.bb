@@ -32,7 +32,7 @@
 #ifndef SyncCallbackHelper_h
 #define SyncCallbackHelper_h
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"

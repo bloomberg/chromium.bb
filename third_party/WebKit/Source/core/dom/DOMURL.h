@@ -27,7 +27,7 @@
 #ifndef DOMURL_h
 #define DOMURL_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMURLUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

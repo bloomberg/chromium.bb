@@ -7,10 +7,10 @@
 #ifndef V8TestInterface3_h
 #define V8TestInterface3_h
 
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/TestInterface3.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

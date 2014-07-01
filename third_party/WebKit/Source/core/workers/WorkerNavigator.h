@@ -26,7 +26,7 @@
 #ifndef WorkerNavigator_h
 #define WorkerNavigator_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/NavigatorCPU.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/NavigatorOnLine.h"

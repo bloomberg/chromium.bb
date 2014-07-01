@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/css/MediaList.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/MediaFeatureNames.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"

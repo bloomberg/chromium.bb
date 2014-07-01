@@ -26,7 +26,7 @@
 #ifndef SpeechRecognition_h
 #define SpeechRecognition_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechGrammarList.h"

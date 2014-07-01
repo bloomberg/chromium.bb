@@ -62,7 +62,7 @@ def argument_needs_try_catch(argument):
         base_type == 'SerializedScriptValue' or
         (argument.is_variadic and idl_type.is_wrapper_type) or
         # String and enumeration arguments converted using one of the
-        # TOSTRING_* macros in Source/bindings/v8/V8BindingMacros.h don't
+        # TOSTRING_* macros in Source/bindings/core/v8/V8BindingMacros.h don't
         # use a v8::TryCatch.
         (base_type == 'DOMString' and not argument.is_variadic))
 
@@ -86,14 +86,14 @@ def method_context(interface, method):
 
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
-        includes.update(['bindings/v8/ScriptCallStackFactory.h',
+        includes.update(['bindings/core/v8/ScriptCallStackFactory.h',
                          'core/inspector/ScriptArguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
-        includes.add('bindings/v8/ScriptState.h')
+        includes.add('bindings/core/v8/ScriptState.h')
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
-        includes.add('bindings/v8/BindingSecurity.h')
+        includes.add('bindings/core/v8/BindingSecurity.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')

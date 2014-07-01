@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"

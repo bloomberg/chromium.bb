@@ -30,8 +30,8 @@
 #ifndef ConsoleBase_h
 #define ConsoleBase_h
 
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"

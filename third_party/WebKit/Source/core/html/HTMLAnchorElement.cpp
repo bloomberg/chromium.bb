@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Attribute.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/KeyboardEvent.h"

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLVideoElement.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"

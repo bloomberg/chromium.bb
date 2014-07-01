@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/appcache/ApplicationCache.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/EventListener.h"

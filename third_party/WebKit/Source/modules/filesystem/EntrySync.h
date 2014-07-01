@@ -31,7 +31,7 @@
 #ifndef EntrySync_h
 #define EntrySync_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/EntryBase.h"
 #include "platform/heap/Handle.h"

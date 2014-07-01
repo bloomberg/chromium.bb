@@ -31,9 +31,8 @@
 #include "config.h"
 #include "core/dom/MutationObserver.h"
 
-#include <algorithm>
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/MutationCallback.h"
@@ -42,6 +41,7 @@
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/MainThread.h"
+#include <algorithm>
 
 namespace WebCore {
 

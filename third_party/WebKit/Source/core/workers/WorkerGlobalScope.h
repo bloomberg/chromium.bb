@@ -27,8 +27,8 @@
 #ifndef WorkerGlobalScope_h
 #define WorkerGlobalScope_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "bindings/v8/WorkerScriptController.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/WorkerScriptController.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"

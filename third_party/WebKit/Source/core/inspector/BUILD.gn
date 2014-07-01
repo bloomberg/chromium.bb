@@ -92,7 +92,7 @@ convert_file_to_header_with_character_array("injected_script_source") {
 }
 
 convert_file_to_header_with_character_array("debugger_script_source") {
-  input_file_path = "$bindings_v8_dir/DebuggerScript.js"
+  input_file_path = "$bindings_core_v8_dir/DebuggerScript.js"
   output_file_path = "$blink_core_output_dir/DebuggerScriptSource.h"
   character_array_name = "DebuggerScriptSource_js"
 }

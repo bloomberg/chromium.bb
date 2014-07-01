@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
 

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorResourceAgent.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"

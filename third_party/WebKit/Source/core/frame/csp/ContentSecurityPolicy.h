@@ -26,7 +26,7 @@
 #ifndef ContentSecurityPolicy_h
 #define ContentSecurityPolicy_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"

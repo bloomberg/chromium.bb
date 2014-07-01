@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/DataView.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/CheckedInt.h"
 #include "wtf/CPU.h"

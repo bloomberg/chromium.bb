@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/geolocation/PositionOptions.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include <limits.h>
 
 namespace WebCore {

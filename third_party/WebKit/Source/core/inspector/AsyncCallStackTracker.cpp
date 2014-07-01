@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
-#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"

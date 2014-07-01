@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/web/WebSerializedScriptValue.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "public/platform/WebString.h"
 
 using namespace WebCore;

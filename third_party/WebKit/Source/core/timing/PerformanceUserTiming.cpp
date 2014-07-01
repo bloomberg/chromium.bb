@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/timing/PerformanceUserTiming.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"

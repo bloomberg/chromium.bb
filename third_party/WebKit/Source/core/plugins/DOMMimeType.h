@@ -20,7 +20,7 @@
 #ifndef DOMMimeType_h
 #define DOMMimeType_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/plugins/PluginData.h"

@@ -25,7 +25,7 @@
 #ifndef NodeIterator_h
 #define NodeIterator_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIteratorBase.h"
 #include "platform/heap/Handle.h"

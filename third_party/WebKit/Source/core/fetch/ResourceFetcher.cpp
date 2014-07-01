@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/fetch/ResourceFetcher.h"
 
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/CrossOriginAccessControl.h"

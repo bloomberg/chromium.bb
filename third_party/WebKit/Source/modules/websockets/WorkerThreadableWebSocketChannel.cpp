@@ -32,7 +32,7 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

@@ -28,7 +28,7 @@
 
 #include "core/workers/WorkerThread.h"
 
-#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"

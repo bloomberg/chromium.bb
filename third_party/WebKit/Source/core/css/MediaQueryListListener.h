@@ -20,8 +20,8 @@
 #ifndef MediaQueryListListener_h
 #define MediaQueryListListener_h
 
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/css/MediaQueryList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"

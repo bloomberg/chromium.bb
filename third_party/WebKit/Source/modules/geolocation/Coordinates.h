@@ -26,7 +26,7 @@
 #ifndef Coordinates_h
 #define Coordinates_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 

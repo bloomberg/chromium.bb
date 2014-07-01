@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/html/HTMLIFrameElement.h"
 
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLDocument.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/workers/WorkerObjectProxy.h"
 
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerMessagingProxy.h"

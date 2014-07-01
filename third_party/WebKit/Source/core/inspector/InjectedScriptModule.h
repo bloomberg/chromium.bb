@@ -31,7 +31,7 @@
 #ifndef InjectedScriptModule_h
 #define InjectedScriptModule_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "wtf/text/WTFString.h"
 

@@ -28,7 +28,7 @@
 #ifndef Path2D_h
 #define Path2D_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGPathUtilities.h"

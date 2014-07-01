@@ -26,7 +26,7 @@
 #ifndef XMLHttpRequestUpload_h
 #define XMLHttpRequestUpload_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestEventTarget.h"

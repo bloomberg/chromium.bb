@@ -26,7 +26,7 @@
 #ifndef MediaKeys_h
 #define MediaKeys_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/EventTargetModules.h"

@@ -5,7 +5,7 @@
 #ifndef SVGPropertyHelper_h
 #define SVGPropertyHelper_h
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/properties/SVGProperty.h"
 
 namespace WebCore {

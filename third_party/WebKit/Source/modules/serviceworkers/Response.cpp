@@ -5,7 +5,7 @@
 #include "config.h"
 #include "Response.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/fileapi/Blob.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "platform/NotImplemented.h"

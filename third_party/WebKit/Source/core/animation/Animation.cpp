@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/animation/Animation.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationPlayer.h"

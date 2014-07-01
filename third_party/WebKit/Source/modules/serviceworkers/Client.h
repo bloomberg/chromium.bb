@@ -5,8 +5,8 @@
 #ifndef Client_h
 #define Client_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

@@ -31,7 +31,7 @@
 #ifndef SVGTransformList_h
 #define SVGTransformList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 

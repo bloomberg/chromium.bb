@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/parser/HTMLParserOptions.h"
 
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

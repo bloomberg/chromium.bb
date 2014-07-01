@@ -25,7 +25,7 @@
 #ifndef RTCDataChannel_h
 #define RTCDataChannel_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"

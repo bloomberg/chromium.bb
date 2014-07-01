@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/svg/SVGLengthContext.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/ExceptionCode.h"

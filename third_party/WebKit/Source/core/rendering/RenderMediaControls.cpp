@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/rendering/RenderMediaControls.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/rendering/PaintInfo.h"

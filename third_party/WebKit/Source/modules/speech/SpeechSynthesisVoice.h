@@ -26,7 +26,7 @@
 #ifndef SpeechSynthesisVoice_h
 #define SpeechSynthesisVoice_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/text/WTFString.h"

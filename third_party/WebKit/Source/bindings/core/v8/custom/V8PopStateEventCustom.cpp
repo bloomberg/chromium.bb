@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/V8PopStateEvent.h"
 
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8History.h"
-#include "bindings/v8/SerializedScriptValue.h"
-#include "bindings/v8/V8HiddenValue.h"
 #include "core/events/PopStateEvent.h"
 #include "core/frame/History.h"
 

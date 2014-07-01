@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/DOMPatchSupport.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"

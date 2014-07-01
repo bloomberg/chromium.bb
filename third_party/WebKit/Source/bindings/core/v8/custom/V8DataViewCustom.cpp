@@ -26,8 +26,8 @@
 #include "config.h"
 #include "bindings/core/v8/custom/V8DataViewCustom.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/html/canvas/DataView.h"
 
 namespace WebCore {

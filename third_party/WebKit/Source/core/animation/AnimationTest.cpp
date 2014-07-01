@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/Animation.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationNodeTiming.h"

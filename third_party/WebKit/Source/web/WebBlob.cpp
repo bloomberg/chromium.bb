@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/web/WebBlob.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/fileapi/Blob.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"

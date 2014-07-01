@@ -26,7 +26,7 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "core/html/canvas/WebGLShader.h"
 #include "wtf/PassRefPtr.h"

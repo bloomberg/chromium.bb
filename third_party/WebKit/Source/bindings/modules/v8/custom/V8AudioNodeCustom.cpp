@@ -26,6 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "bindings/modules/v8/V8AudioNode.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/V8AnalyserNode.h"
 #include "bindings/modules/v8/V8AudioBufferSourceNode.h"
 #include "bindings/modules/v8/V8AudioDestinationNode.h"
@@ -43,7 +44,6 @@
 #include "bindings/modules/v8/V8PannerNode.h"
 #include "bindings/modules/v8/V8ScriptProcessorNode.h"
 #include "bindings/modules/v8/V8WaveShaperNode.h"
-#include "bindings/v8/V8Binding.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioDestinationNode.h"

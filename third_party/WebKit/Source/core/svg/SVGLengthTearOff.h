@@ -31,7 +31,7 @@
 #ifndef SVGLengthTearOff_h
 #define SVGLengthTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 

@@ -33,7 +33,7 @@
 #include "config.h"
 #include "core/frame/DOMWindowBase64.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/Base64.h"

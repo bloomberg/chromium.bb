@@ -26,7 +26,7 @@
 #ifndef IDBTransaction_h
 #define IDBTransaction_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
 #include "core/events/EventListener.h"

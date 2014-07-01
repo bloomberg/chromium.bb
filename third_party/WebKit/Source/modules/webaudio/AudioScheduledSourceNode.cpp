@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioContext.h"

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/core/v8/V8Event.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DataTransfer.h"
-#include "bindings/v8/V8Binding.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"

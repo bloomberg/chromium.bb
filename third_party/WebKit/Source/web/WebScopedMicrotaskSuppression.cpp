@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebScopedMicrotaskSuppression.h"
 
-#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {

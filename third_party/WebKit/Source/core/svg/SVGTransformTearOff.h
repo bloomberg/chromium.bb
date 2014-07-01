@@ -31,7 +31,7 @@
 #ifndef SVGTransformTearOff_h
 #define SVGTransformTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"

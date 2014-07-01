@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptProfiler.h"
+#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InjectedScriptHost.h"

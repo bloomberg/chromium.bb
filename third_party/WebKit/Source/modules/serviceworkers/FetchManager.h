@@ -5,7 +5,7 @@
 #ifndef FetchManager_h
 #define FetchManager_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 

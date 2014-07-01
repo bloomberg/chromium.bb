@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"

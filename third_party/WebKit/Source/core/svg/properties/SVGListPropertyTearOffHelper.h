@@ -31,7 +31,7 @@
 #ifndef SVGListPropertyTearOffHelper_h
 #define SVGListPropertyTearOffHelper_h
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "wtf/HashMap.h"
 #include "wtf/TypeTraits.h"

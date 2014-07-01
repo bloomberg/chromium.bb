@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InspectorPageAgent.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptRegexp.h"
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptRegexp.h"
 #include "core/HTMLNames.h"
 #include "core/UserAgentStyleSheets.h"
 #include "core/css/StyleSheetContents.h"

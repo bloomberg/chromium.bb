@@ -26,8 +26,7 @@
 #include "config.h"
 #include "core/editing/FrameSelection.h"
 
-#include <stdio.h>
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
@@ -73,6 +72,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/text/CString.h"
+#include <stdio.h>
 
 #define EDIT_DEBUG 0
 

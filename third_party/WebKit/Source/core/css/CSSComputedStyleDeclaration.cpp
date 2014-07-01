@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/DocumentAnimations.h"

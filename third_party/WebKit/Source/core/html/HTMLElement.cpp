@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/html/HTMLElement.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"

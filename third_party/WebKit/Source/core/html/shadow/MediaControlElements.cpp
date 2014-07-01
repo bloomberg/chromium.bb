@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/html/shadow/MediaControlElements.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"

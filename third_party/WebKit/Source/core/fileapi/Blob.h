@@ -31,7 +31,7 @@
 #ifndef Blob_h
 #define Blob_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/URLRegistry.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"

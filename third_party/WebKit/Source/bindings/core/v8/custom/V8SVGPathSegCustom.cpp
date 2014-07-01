@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8SVGPathSeg.h"
 
+#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8SVGPathSegArcAbs.h"
 #include "bindings/core/v8/V8SVGPathSegArcRel.h"
 #include "bindings/core/v8/V8SVGPathSegClosePath.h"
@@ -51,7 +52,6 @@
 #include "bindings/core/v8/V8SVGPathSegMovetoAbs.h"
 #include "bindings/core/v8/V8SVGPathSegMovetoRel.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/v8/V8DOMWrapper.h"
 
 namespace WebCore {
 

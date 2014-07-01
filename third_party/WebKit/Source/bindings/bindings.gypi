@@ -4,12 +4,14 @@
 
 {
     'includes': [
-        'v8/v8.gypi',
+        'core/v8/v8.gypi',
+        'modules/v8/v8.gypi',
     ],
     'variables': {
         'bindings_dir': '.',
         'bindings_unittest_files': [
-            '<@(bindings_v8_unittest_files)',
+            '<@(bindings_core_v8_unittest_files)',
+            '<@(bindings_modules_v8_unittest_files)',
         ],
     },
 }

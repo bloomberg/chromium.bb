@@ -31,7 +31,7 @@
 #ifndef SVGNumberList_h
 #define SVGNumberList_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGNumber.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 

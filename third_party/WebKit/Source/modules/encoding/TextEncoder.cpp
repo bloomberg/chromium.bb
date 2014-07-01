@@ -32,8 +32,8 @@
 
 #include "modules/encoding/TextEncoder.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncodingRegistry.h"
 

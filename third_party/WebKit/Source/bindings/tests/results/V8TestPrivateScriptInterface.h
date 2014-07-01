@@ -7,7 +7,7 @@
 #ifndef V8TestPrivateScriptInterface_h
 #define V8TestPrivateScriptInterface_h
 
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/V8Binding.h"
 
 namespace WebCore {
 

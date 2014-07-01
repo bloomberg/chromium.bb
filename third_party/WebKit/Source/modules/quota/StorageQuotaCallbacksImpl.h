@@ -31,7 +31,7 @@
 #ifndef StorageQuotaCallbacksImpl_h
 #define StorageQuotaCallbacksImpl_h
 
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "platform/StorageQuotaCallbacks.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"

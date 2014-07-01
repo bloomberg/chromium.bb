@@ -8,11 +8,11 @@
 #define V8TestInterface_h
 
 #if ENABLE(CONDITION)
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/TestInterfaceImplementation.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

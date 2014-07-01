@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/testing/InternalSettings.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"

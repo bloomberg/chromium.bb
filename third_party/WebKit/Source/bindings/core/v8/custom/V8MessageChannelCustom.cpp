@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/V8MessageChannel.h"
 
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/MessageChannel.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/RefPtr.h"

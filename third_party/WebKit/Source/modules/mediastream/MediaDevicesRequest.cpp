@@ -27,7 +27,7 @@
 
 #include "modules/mediastream/MediaDevicesRequest.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "modules/mediastream/UserMediaController.h"
 

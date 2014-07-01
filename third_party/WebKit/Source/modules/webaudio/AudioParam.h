@@ -29,7 +29,7 @@
 #ifndef AudioParam_h
 #define AudioParam_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"

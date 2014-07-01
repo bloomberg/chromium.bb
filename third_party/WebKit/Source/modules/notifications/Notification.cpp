@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/notifications/Notification.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"

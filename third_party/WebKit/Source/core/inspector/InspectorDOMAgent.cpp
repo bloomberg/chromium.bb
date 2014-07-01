@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMAgent.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/ContainerNode.h"

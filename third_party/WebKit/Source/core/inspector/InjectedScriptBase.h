@@ -31,8 +31,8 @@
 #ifndef InjectedScriptBase_h
 #define InjectedScriptBase_h
 
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorTypeBuilder.h"
 #include "wtf/Forward.h"
 

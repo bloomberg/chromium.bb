@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebCryptoNormalize.h"
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/CryptoResult.h"

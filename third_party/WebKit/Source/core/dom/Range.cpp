@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/Range.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentFragment.h"

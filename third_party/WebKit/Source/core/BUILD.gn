@@ -336,7 +336,7 @@ source_set("testing") {
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_generated
 source_set("core_generated") {
-  sources = bindings_v8_files
+  sources = bindings_core_v8_files
   # These files include all the .cpp files generated from the .idl files
   # in webcore_files.
   sources += bindings_core_generated_aggregate_files
@@ -941,7 +941,7 @@ action("make_core_generated_private_script") {
   script = "../build/scripts/make_private_script_source.py"
 
   source_prereqs = [
-    "../bindings/v8/PrivateScriptRunner.js",
+    "../bindings/core/v8/PrivateScriptRunner.js",
   ]
   outputs = [
     "$blink_core_output_dir/PrivateScriptSources.h",

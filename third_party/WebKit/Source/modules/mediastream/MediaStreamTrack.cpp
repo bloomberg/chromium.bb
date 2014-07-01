@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
-#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionMessages.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"

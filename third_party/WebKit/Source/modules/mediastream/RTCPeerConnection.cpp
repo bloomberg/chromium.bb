@@ -31,9 +31,9 @@
 #include "config.h"
 #include "modules/mediastream/RTCPeerConnection.h"
 
-#include "bindings/v8/ArrayValue.h"
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ArrayValue.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

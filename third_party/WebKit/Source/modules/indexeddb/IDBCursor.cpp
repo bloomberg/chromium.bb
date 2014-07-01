@@ -26,9 +26,9 @@
 #include "config.h"
 #include "modules/indexeddb/IDBCursor.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"

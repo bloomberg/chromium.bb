@@ -31,7 +31,7 @@
 #ifndef InstallEvent_h
 #define InstallEvent_h
 
-#include "bindings/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "modules/serviceworkers/InstallPhaseEvent.h"
 #include "wtf/Forward.h"
 

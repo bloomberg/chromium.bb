@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptManager.h"
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/InjectedScriptSource.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"

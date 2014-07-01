@@ -31,9 +31,9 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptWrappable.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProxy.h"

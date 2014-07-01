@@ -26,7 +26,7 @@
 #ifndef SpeechRecognitionResult_h
 #define SpeechRecognitionResult_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "platform/heap/Handle.h"
 

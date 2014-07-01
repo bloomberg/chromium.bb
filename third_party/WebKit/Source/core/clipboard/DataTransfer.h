@@ -24,7 +24,7 @@
 #ifndef DataTransfer_h
 #define DataTransfer_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 
-#include "bindings/v8/ScriptDebugServer.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptDebugServer.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"

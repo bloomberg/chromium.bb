@@ -24,11 +24,12 @@
  */
 
 #include "config.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/editing/FormatBlockCommand.h"
+
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/editing/FormatBlockCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"

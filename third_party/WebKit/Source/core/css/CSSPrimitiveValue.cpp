@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/CSSPrimitiveValue.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSHelper.h"

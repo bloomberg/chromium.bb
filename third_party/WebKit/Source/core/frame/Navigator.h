@@ -20,7 +20,7 @@
 #ifndef Navigator_h
 #define Navigator_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/frame/NavigatorCPU.h"
 #include "core/frame/NavigatorID.h"

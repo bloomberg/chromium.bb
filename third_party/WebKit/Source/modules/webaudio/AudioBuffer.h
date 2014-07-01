@@ -29,7 +29,7 @@
 #ifndef AudioBuffer_h
 #define AudioBuffer_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/Float32Array.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/core/v8/V8CSSStyleDeclaration.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleDeclaration.h"

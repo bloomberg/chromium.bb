@@ -31,7 +31,7 @@
 #ifndef SVGPreserveAspectRatioTearOff_h
 #define SVGPreserveAspectRatioTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 

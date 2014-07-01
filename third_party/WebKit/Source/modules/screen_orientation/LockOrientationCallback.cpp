@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/screen_orientation/LockOrientationCallback.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/screen_orientation/ScreenOrientation.h"

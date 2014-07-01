@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/editing/ApplyBlockElementCommand.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"

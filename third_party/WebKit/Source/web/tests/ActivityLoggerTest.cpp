@@ -5,8 +5,8 @@
 #include "config.h"
 
 #include "FrameTestHelpers.h"
-#include "bindings/v8/ScriptController.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/Forward.h"
 #include "wtf/text/Base64.h"

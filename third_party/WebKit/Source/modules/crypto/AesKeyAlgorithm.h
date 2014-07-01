@@ -31,7 +31,7 @@
 #ifndef AesKeyAlgorithm_h
 #define AesKeyAlgorithm_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/crypto/KeyAlgorithm.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

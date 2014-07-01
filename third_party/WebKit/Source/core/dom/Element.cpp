@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/dom/Element.h"
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"

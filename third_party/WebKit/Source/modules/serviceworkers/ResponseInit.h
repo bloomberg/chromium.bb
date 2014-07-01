@@ -5,7 +5,7 @@
 #ifndef ResponseInit_h
 #define ResponseInit_h
 
-#include "bindings/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "modules/serviceworkers/HeaderMap.h"
 #include "wtf/RefPtr.h"
 

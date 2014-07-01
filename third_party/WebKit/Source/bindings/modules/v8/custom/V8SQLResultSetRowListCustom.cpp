@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/modules/v8/V8SQLResultSetRowList.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 

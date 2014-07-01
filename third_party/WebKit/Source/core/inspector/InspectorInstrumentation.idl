@@ -494,7 +494,7 @@ interface InspectorOverrides {
 
 interface InspectorCanvasInstrumentation {
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptValue.h"
 
     [Canvas]
     ScriptValue wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptValue&);

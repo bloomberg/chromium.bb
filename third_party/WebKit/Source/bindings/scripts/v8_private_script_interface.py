@@ -13,12 +13,12 @@ import v8_types
 import v8_utilities
 
 BLINK_IN_JS_INTERFACE_H_INCLUDES = frozenset([
-    'bindings/v8/V8Binding.h',
+    'bindings/core/v8/V8Binding.h',
 ])
 
 BLINK_IN_JS_INTERFACE_CPP_INCLUDES = frozenset([
+    'bindings/core/v8/PrivateScriptRunner.h',
     'bindings/core/v8/V8Window.h',
-    'bindings/v8/PrivateScriptRunner.h',
     'core/dom/ScriptForbiddenScope.h',
     'core/frame/LocalFrame.h',
 ])

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "public/web/WebKit.h"
 
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8GCController.h"
-#include "bindings/v8/V8Initializer.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8Initializer.h"
 #include "core/Init.h"
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Microtask.h"

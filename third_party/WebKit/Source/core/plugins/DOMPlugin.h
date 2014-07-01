@@ -20,7 +20,7 @@
 #ifndef DOMPlugin_h
 #define DOMPlugin_h
 
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/plugins/DOMMimeType.h"
 #include "platform/heap/Handle.h"

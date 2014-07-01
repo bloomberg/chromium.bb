@@ -28,7 +28,7 @@
 #ifndef MessageEvent_h
 #define MessageEvent_h
 
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/dom/MessagePort.h"

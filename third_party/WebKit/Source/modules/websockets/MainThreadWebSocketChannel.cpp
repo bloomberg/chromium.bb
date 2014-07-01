@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebScriptController.h"
 
-#include "bindings/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptController.h"
 
 using namespace WebCore;
 

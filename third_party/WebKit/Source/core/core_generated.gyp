@@ -149,7 +149,7 @@
            # You can use Blink-in-JS in your local experiment, but don't ship it.
            # crbug.com/341031
            'private_script_files': [
-              '../bindings/v8/PrivateScriptRunner.js',
+              '../bindings/core/v8/PrivateScriptRunner.js',
            ],
            'inputs': [
               '../build/scripts/make_private_script_source.py',

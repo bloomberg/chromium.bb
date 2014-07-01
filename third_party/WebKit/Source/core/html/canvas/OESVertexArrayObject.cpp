@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESVertexArrayObject.h"
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 

@@ -5,8 +5,8 @@
 #ifndef Request_h
 #define Request_h
 
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/HeaderMap.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
