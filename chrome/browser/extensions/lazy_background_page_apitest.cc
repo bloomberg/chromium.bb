@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -28,8 +27,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -47,12 +44,11 @@ namespace {
 // incognito involves reloading the extension - and the background pages may
 // have already loaded once before then. So we wait until the extension is
 // unloaded before listening to the background page notifications.
-class LoadedIncognitoObserver : public extensions::ExtensionRegistryObserver {
+class LoadedIncognitoObserver : public content::NotificationObserver {
  public:
-  explicit LoadedIncognitoObserver(Profile* profile)
-      : profile_(profile), extension_registry_observer_(this) {
-    extension_registry_observer_.Add(
-        extensions::ExtensionRegistry::Get(profile_));
+  explicit LoadedIncognitoObserver(Profile* profile) : profile_(profile) {
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                   content::Source<Profile>(profile));
   }
 
   void Wait() {
@@ -62,19 +58,18 @@ class LoadedIncognitoObserver : public extensions::ExtensionRegistryObserver {
   }
 
  private:
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE {
+
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     original_complete_.reset(new LazyBackgroundObserver(profile_));
     incognito_complete_.reset(
         new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
   }
 
   Profile* profile_;
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+  content::NotificationRegistrar registrar_;
   scoped_ptr<LazyBackgroundObserver> original_complete_;
   scoped_ptr<LazyBackgroundObserver> incognito_complete_;
 };
