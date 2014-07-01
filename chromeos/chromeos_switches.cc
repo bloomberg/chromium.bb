@@ -37,14 +37,14 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 const char kDisableGeniusApp[] = "disable-genius-app";
 
 // Disable HID-detection OOBE screen.
-const char kDisableHIDDetectionOnOOBE[]      = "disable-hid-detection-on-oobe";
+const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
 // Disable login/lock UI (user pods) scrolling into view on JS side when virtual
 // keyboard is shown.
-const char kDisableLoginScrollIntoView[]    = "disable-login-scroll-into-view";
+const char kDisableLoginScrollIntoView[] = "disable-login-scroll-into-view";
 
 // Disable new channel switcher UI.
 const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
@@ -91,6 +91,9 @@ const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
+
+// Enables activation of voice search by saying 'Ok Google'.
+const char kEnableOkGoogleVoiceSearch[] = "enable-ok-google-voice-search";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]

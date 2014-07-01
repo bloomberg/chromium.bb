@@ -1946,6 +1946,15 @@ const Experiment kExperiments[] = {
         data_reduction_proxy::switches::kDisableDataReductionProxyDev)
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "enable-ok-google-voice-search",
+    IDS_FLAGS_OK_GOOGLE_NAME,
+    IDS_FLAGS_OK_GOOGLE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableOkGoogleVoiceSearch)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
