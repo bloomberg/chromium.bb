@@ -95,6 +95,14 @@ void ExceptionState::throwTypeError(const String& message)
     setException(V8ThrowException::createTypeError(addExceptionContext(message), m_isolate));
 }
 
+void ExceptionState::throwRangeError(const String& message)
+{
+    ASSERT(m_isolate);
+    m_code = RangeError;
+    m_message = message;
+    setException(V8ThrowException::createError(v8RangeError, addExceptionContext(message), m_isolate));
+}
+
 void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     ASSERT_NOT_REACHED();
@@ -116,6 +124,13 @@ void NonThrowableExceptionState::throwSecurityError(const String& sanitizedMessa
     m_message = sanitizedMessage;
 }
 
+void NonThrowableExceptionState::throwRangeError(const String& message)
+{
+    ASSERT_NOT_REACHED();
+    m_code = RangeError;
+    m_message = message;
+}
+
 void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     m_code = ec;
@@ -132,6 +147,12 @@ void TrackExceptionState::throwSecurityError(const String& sanitizedMessage, con
 {
     m_code = SecurityError;
     m_message = sanitizedMessage;
+}
+
+void TrackExceptionState::throwRangeError(const String& message)
+{
+    m_code = RangeError;
+    m_message = message;
 }
 
 String ExceptionState::addExceptionContext(const String& message) const

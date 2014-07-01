@@ -77,6 +77,7 @@ public:
     virtual void throwDOMException(const ExceptionCode&, const String& message);
     virtual void throwTypeError(const String& message);
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
+    virtual void throwRangeError(const String& message);
 
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
@@ -126,6 +127,7 @@ public:
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
     virtual void throwTypeError(const String& message = String()) OVERRIDE;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
+    virtual void throwRangeError(const String& message) OVERRIDE;
 };
 
 // Used if any exceptions thrown are ignorable.
@@ -135,6 +137,7 @@ public:
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
     virtual void throwTypeError(const String& message = String()) OVERRIDE;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
+    virtual void throwRangeError(const String& message) OVERRIDE;
 };
 
 } // namespace WebCore

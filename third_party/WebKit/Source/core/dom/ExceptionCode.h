@@ -84,6 +84,7 @@ namespace WebCore {
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
         TypeError,
+        RangeError,
     };
 
 } // namespace WebCore
