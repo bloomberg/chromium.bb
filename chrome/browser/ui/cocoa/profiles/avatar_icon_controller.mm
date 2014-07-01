@@ -225,9 +225,8 @@ const CGFloat kAvatarLabelRightSpacing = 2;
   if (![wc isKindOfClass:[BrowserWindowController class]])
     return;
 
-  size_t count = g_browser_process->profile_manager()->GetNumberOfProfiles();
-  [self.view setHidden:count < 2];
-
+  [self.view setHidden:
+      ![static_cast<BrowserWindowController*>(wc) shouldShowAvatar]];
   [static_cast<BrowserWindowController*>(wc) layoutSubviews];
 
   // If the avatar is being added or removed, then the Lion fullscreen button
