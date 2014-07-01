@@ -69,9 +69,9 @@
 
     void alert();
     void alert(DOMString message);
-    boolean confirm(optional DOMString message = null);
-    DOMString? prompt(optional DOMString message = null,
-                      optional DOMString defaultValue = null);
+    boolean confirm(optional DOMString message = "");
+    DOMString? prompt(optional DOMString message = "",
+                      optional DOMString defaultValue = "");
 
     boolean find([Default=Undefined] optional DOMString string,
                  [Default=Undefined] optional boolean caseSensitive,
