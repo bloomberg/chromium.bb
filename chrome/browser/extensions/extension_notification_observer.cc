@@ -36,8 +36,9 @@ ExtensionNotificationObserver::ExtensionNotificationObserver(
     : extension_ids_(extension_ids) {
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, source);
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED, source);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+                 source);
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, source);
 }
@@ -96,7 +97,7 @@ void ExtensionNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
+    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension_ids_.count(extension->id()))

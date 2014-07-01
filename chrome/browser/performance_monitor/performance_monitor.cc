@@ -230,7 +230,7 @@ void PerformanceMonitor::RegisterForNotifications() {
 
   // Extensions
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
       content::NotificationService::AllSources());
@@ -556,7 +556,7 @@ void PerformanceMonitor::Observe(int type,
   DCHECK(database_logging_enabled_);
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
+    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       AddExtensionEvent(
           EVENT_EXTENSION_INSTALL,
           content::Details<const extensions::InstalledExtensionInfo>(details)->

@@ -203,7 +203,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
 
     // Set the policy and wait until the extension is installed.
     content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+        chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
         content::NotificationService::AllSources());
     policy_provider_.UpdateChromePolicy(policy);
     observer.Wait();

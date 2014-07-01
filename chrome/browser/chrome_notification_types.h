@@ -407,9 +407,10 @@ enum NotificationType {
 
   // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
   //
-  // Sent when new extensions are installed, or existing extensions are updated.
-  // The details are an InstalledExtensionInfo, and the source is a Profile.
-  NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+  // Sent immediately before new extensions are installed or existing
+  // extensions are updated. The details are an InstalledExtensionInfo, and the
+  // source is a Profile.
+  NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
 
   // An error occured during extension install. The details are a string with
   // details about why the install failed.

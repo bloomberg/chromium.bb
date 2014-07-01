@@ -244,7 +244,7 @@ class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
   virtual void SetUpOnMainThread() OVERRIDE {
     WebstoreStartupInstallerTest::SetUpOnMainThread();
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+                   chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
@@ -258,7 +258,7 @@ class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED) {
+    if (type == chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED) {
       const Extension* extension =
           content::Details<const extensions::InstalledExtensionInfo>(details)->
               extension;

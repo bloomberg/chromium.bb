@@ -668,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 
   // The delayed installation will occur when the ephemeral app is closed.
   content::WindowedNotificationObserver installed_signal(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile()));
   InstallObserver installed_observer(profile());
   CloseApp(app_id);
