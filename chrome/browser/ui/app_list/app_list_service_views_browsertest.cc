@@ -105,7 +105,7 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
 // Test the DoShowAppInfoFlow function of the controller delegate.
 // Crashes on all platforms some of the time (flaky). http://crbug.com/378251
 IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
-                       DISABLED_DoShowAppInfoFlow) {
+                       DoShowAppInfoFlow) {
   // Install an extension to open the dialog for.
   base::FilePath test_extension_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
