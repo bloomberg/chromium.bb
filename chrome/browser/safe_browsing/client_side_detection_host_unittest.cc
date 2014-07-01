@@ -91,12 +91,10 @@ ACTION(QuitUIMessageLoop) {
   base::MessageLoopForUI::current()->Quit();
 }
 
-// It's kind of insane that InvokeArgument doesn't work with callbacks, but it
-// doesn't seem like it.
-ACTION_TEMPLATE(InvokeCallbackArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_2_VALUE_PARAMS(p0, p1)) {
-  ::std::tr1::get<k>(args).Run(p0, p1);
+ACTION_P(InvokeDoneCallback, verdict) {
+  scoped_ptr<ClientPhishingRequest> request(::std::tr1::get<1>(args));
+  request->CopyFrom(*verdict);
+  ::std::tr1::get<2>(args).Run(true, request.Pass());
 }
 
 ACTION_P(InvokeMalwareCallback, verdict) {
@@ -482,12 +480,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(DoAll(DeleteArg<1>(),
-                      InvokeCallbackArgument<2>(true, &verdict)));
+      .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(SaveArg<1>(&cb));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
@@ -515,12 +512,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(DoAll(DeleteArg<1>(),
-                      InvokeCallbackArgument<2>(true, &verdict)));
+      .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(SaveArg<1>(&cb));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
@@ -549,12 +545,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(DoAll(DeleteArg<1>(),
-                      InvokeCallbackArgument<2>(true, &verdict)));
+      .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(SaveArg<1>(&cb));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
@@ -604,12 +599,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(DoAll(DeleteArg<1>(),
-                      InvokeCallbackArgument<2>(true, &verdict)));
+      .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(SaveArg<1>(&cb));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));

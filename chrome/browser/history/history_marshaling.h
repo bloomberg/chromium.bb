@@ -21,9 +21,6 @@ namespace history {
 
 // Querying -------------------------------------------------------------------
 
-typedef CancelableRequest<HistoryService::GetVisibleVisitCountToHostCallback>
-    GetVisibleVisitCountToHostRequest;
-
 typedef CancelableRequest1<HistoryService::QueryMostVisitedURLsCallback,
                            history::MostVisitedURLList>
     QueryMostVisitedURLsRequest;
