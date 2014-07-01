@@ -166,6 +166,10 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   VerifyString(dict, "type", update_type);
   VerifyString(dict, "value", update_value);
 
+  std::string time;
+  EXPECT_TRUE(dict->GetString("time", &time));
+  EXPECT_FALSE(time.empty());
+
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(1, 2);
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
@@ -248,6 +252,9 @@ TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   EXPECT_TRUE((*log->begin())->GetAsDictionary(&dict));
   VerifyString(dict, "type", update_type);
   VerifyString(dict, "value", update_value);
+  std::string time;
+  EXPECT_TRUE(dict->GetString("time", &time));
+  EXPECT_FALSE(time.empty());
 }
 
 TEST_F(WebRTCInternalsTest, OnAddStats) {

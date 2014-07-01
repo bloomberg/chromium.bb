@@ -81,7 +81,8 @@ var PeerConnectionUpdateTable = (function() {
       var row = document.createElement('tr');
       tableElement.firstChild.appendChild(row);
 
-      row.innerHTML = '<td>' + (new Date()).toLocaleString() + '</td>';
+      var time = new Date(parseInt(update.time));
+      row.innerHTML = '<td>' + time.toLocaleString() + '</td>';
 
       if (update.value.length == 0) {
         row.innerHTML += '<td>' + update.type + '</td>';

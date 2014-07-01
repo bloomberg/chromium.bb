@@ -61,14 +61,15 @@ var PeerConnectionRecord = (function() {
     },
 
     /**
-     * @param {string} type The type of the update.
-     * @param {string} value The value of the update.
+     * @param {!Object} update The object contains keys "time", "type", and
+     *   "value".
      */
-    addUpdate: function(type, value) {
+    addUpdate: function(update) {
+      var time = new Date(parseInt(update.time));
       this.record_.updateLog.push({
-        time: (new Date()).toLocaleString(),
-        type: type,
-        value: value,
+        time: time.toLocaleString(),
+        type: update.type,
+        value: update.value,
       });
     },
   };
@@ -146,8 +147,7 @@ function addPeerConnectionUpdate(peerConnectionElement, update) {
   peerConnectionUpdateTable.addPeerConnectionUpdate(peerConnectionElement,
                                                     update);
   extractSsrcInfo(update);
-  peerConnectionDataStore[peerConnectionElement.id].addUpdate(
-      update.type, update.value);
+  peerConnectionDataStore[peerConnectionElement.id].addUpdate(update);
 }
 
 

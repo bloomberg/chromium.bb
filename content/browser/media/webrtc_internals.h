@@ -143,8 +143,9 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   // "servers" and "constraints" -- server configuration and media constraints
   // used to initialize the PeerConnection respectively.
   // "log" -- a ListValue contains all the updates for the PeerConnection. Each
-  // list item is a DictionaryValue containing "type" and "value", both of which
-  // are strings.
+  // list item is a DictionaryValue containing "time", which is the number of
+  // milliseconds since epoch as a string, and "type" and "value", both of which
+  // are strings representing the event.
   base::ListValue peer_connection_data_;
 
   // A list of getUserMedia requests. Each item is a DictionaryValue that

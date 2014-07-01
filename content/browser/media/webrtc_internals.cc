@@ -5,6 +5,7 @@
 #include "content/browser/media/webrtc_internals.h"
 
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,6 +137,9 @@ void WebRTCInternals::OnUpdatePeerConnection(
     if (!log_entry)
       return;
 
+    int64 milliseconds = (base::Time::Now() - base::Time()).InMilliseconds();
+    string time = base::Int64ToString(milliseconds);
+    log_entry->SetString("time", time);
     log_entry->SetString("type", type);
     log_entry->SetString("value", value);
     log->Append(log_entry);
@@ -144,8 +148,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
       base::DictionaryValue update;
       update.SetInteger("pid", static_cast<int>(pid));
       update.SetInteger("lid", lid);
-      update.SetString("type", type);
-      update.SetString("value", value);
+      update.MergeDictionary(log_entry);
 
       SendUpdate("updatePeerConnection", &update);
     }
