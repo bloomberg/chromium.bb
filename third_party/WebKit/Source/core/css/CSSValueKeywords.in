@@ -966,10 +966,11 @@ pan-x
 pan-y
 manipulation
 
-// justify-self
+// justify-items / justify-self
 // auto
 // stretch
 // baseline
+last-baseline
 // center
 // start
 // end
@@ -981,6 +982,7 @@ self-end
 // right
 true
 safe
+legacy
 
 // scroll-behavior
 instant

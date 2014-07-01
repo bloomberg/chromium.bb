@@ -4647,6 +4647,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ItemPosition itemPosition
     case ItemPositionBaseline:
         m_value.valueID = CSSValueBaseline;
         break;
+    case ItemPositionLastBaseline:
+        m_value.valueID = CSSValueLastBaseline;
+        break;
     case ItemPositionCenter:
         m_value.valueID = CSSValueCenter;
         break;
@@ -4686,6 +4689,8 @@ template<> inline CSSPrimitiveValue::operator ItemPosition() const
         return ItemPositionStretch;
     case CSSValueBaseline:
         return ItemPositionBaseline;
+    case CSSValueLastBaseline:
+        return ItemPositionLastBaseline;
     case CSSValueCenter:
         return ItemPositionCenter;
     case CSSValueStart:

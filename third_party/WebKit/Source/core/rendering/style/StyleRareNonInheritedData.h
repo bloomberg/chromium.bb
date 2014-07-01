@@ -190,6 +190,10 @@ public:
 
     unsigned m_isolation : 1; // Isolation
 
+    unsigned m_justifyItems : 4; // ItemPosition
+    unsigned m_justifyItemsOverflowAlignment : 2; // OverflowAlignment
+    unsigned m_justifyItemsPositionType: 1; // Whether or not alignment uses the 'legacy' keyword.
+
     unsigned m_justifySelf : 4; // ItemPosition
     unsigned m_justifySelfOverflowAlignment : 2; // OverflowAlignment
 

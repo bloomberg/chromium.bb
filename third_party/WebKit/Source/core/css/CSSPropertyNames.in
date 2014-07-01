@@ -105,6 +105,7 @@ font-stretch
 height
 image-rendering
 isolation
+justify-items
 justify-self
 left
 letter-spacing

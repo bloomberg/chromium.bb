@@ -136,6 +136,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyHeight,
     CSSPropertyImageRendering,
     CSSPropertyIsolation,
+    CSSPropertyJustifyItems,
     CSSPropertyJustifySelf,
     CSSPropertyLeft,
     CSSPropertyLetterSpacing,
@@ -1554,12 +1555,15 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     return m_node.get();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlignment(ItemPosition itemPosition, OverflowAlignment overflowAlignment)
+static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlignment(ItemPosition itemPosition, OverflowAlignment overflowAlignment, ItemPositionType positionType)
 {
     RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+    if (positionType == LegacyPosition)
+        result->append(CSSPrimitiveValue::createIdentifier(CSSValueLegacy));
     result->append(CSSPrimitiveValue::create(itemPosition));
     if (itemPosition >= ItemPositionCenter && overflowAlignment != OverflowAlignmentDefault)
         result->append(CSSPrimitiveValue::create(overflowAlignment));
+    ASSERT(result->length() <= 2);
     return result.release();
 }
 
@@ -1886,7 +1890,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyAlignContent:
             return cssValuePool().createValue(style->alignContent());
         case CSSPropertyAlignItems:
-            return valueForItemPositionWithOverflowAlignment(style->alignItems(), style->alignItemsOverflowAlignment());
+            return valueForItemPositionWithOverflowAlignment(style->alignItems(), style->alignItemsOverflowAlignment(), NonLegacyPosition);
         case CSSPropertyAlignSelf: {
             ItemPosition alignSelf = style->alignSelf();
             if (alignSelf == ItemPositionAuto) {
@@ -1896,7 +1900,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                 else
                     alignSelf = ItemPositionStretch;
             }
-            return valueForItemPositionWithOverflowAlignment(alignSelf, style->alignSelfOverflowAlignment());
+            return valueForItemPositionWithOverflowAlignment(alignSelf, style->alignSelfOverflowAlignment(), NonLegacyPosition);
         }
         case CSSPropertyFlex:
             return valuesForShorthandProperty(flexShorthand());
@@ -2061,8 +2065,47 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return CSSPrimitiveValue::create(style->imageRendering());
         case CSSPropertyIsolation:
             return cssValuePool().createValue(style->isolation());
-        case CSSPropertyJustifySelf:
-            return valueForItemPositionWithOverflowAlignment(style->justifySelf(), style->justifySelfOverflowAlignment());
+        case CSSPropertyJustifyItems: {
+            // FIXME: I would like this to be tested; is not possible with a layout test but it
+            // should be possible using a method similar to https://codereview.chromium.org/351973004
+            ItemPosition justifyItems = style->justifyItems();
+            ItemPositionType positionType = style->justifyItemsPositionType();
+            if (justifyItems == ItemPositionAuto) {
+                Node* parent = styledNode->parentNode();
+                // If the inherited value of justify-items includes the legacy keyword, 'auto'
+                // computes to the the inherited value.
+                if (parent && parent->computedStyle() && parent->computedStyle()->justifyItemsPositionType()) {
+                    justifyItems = parent->computedStyle()->justifyItems();
+                    positionType = parent->computedStyle()->justifyItemsPositionType();
+                // Otherwise, auto computes to:
+                } else if (style->isDisplayFlexibleOrGridBox()) {
+                    // 'stretch' for flex containers and grid containers.
+                    justifyItems = ItemPositionStretch;
+                } else {
+                    // 'start' for everything else.
+                    justifyItems = ItemPositionStart;
+                }
+            }
+            return valueForItemPositionWithOverflowAlignment(justifyItems, style->justifyItemsOverflowAlignment(), positionType);
+        }
+        case CSSPropertyJustifySelf: {
+            // FIXME: I would like this to be tested; is not possible with a layout test but it
+            // should be possible using a method similar to https://codereview.chromium.org/351973004
+            ItemPosition justifySelf = style->justifySelf();
+            if (justifySelf == ItemPositionAuto) {
+                // The auto keyword computes to stretch on absolutely-positioned elements,
+                if (style->position() == AbsolutePosition) {
+                    justifySelf = ItemPositionStretch;
+                } else {
+                    // and to the computed value of justify-items on the parent (minus
+                    // any legacy keywords) on all other boxes.
+                    Node* parent = styledNode->parentNode();
+                    if (parent && parent->computedStyle())
+                        justifySelf = parent->computedStyle()->justifyItems();
+                }
+            }
+            return valueForItemPositionWithOverflowAlignment(justifySelf, style->justifySelfOverflowAlignment(), NonLegacyPosition);
+        }
         case CSSPropertyLeft:
             return valueForPositionOffset(*style, CSSPropertyLeft, renderer);
         case CSSPropertyLetterSpacing:

@@ -1133,6 +1133,7 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox* child) const
     case ItemPositionAuto:
     case ItemPositionStretch:
     case ItemPositionBaseline:
+    case ItemPositionLastBaseline:
         // FIXME: Implement the previous values. For now, we always start align the child.
         return startOfColumnForChild(child);
     }

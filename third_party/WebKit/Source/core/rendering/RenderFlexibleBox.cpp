@@ -1308,6 +1308,7 @@ void RenderFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
                     minMarginAfterBaseline = std::min(minMarginAfterBaseline, availableAlignmentSpaceForChild(lineCrossAxisExtent, child) - startOffset);
                 break;
             }
+            case ItemPositionLastBaseline:
             case ItemPositionSelfStart:
             case ItemPositionSelfEnd:
             case ItemPositionStart:

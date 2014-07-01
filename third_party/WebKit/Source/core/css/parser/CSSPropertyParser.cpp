@@ -1197,6 +1197,15 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
 
         return parseItemPositionOverflowPosition(propId, important);
+    case CSSPropertyJustifyItems:
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
+            return false;
+
+        if (parseLegacyPosition(propId, important))
+            return true;
+
+        m_valueList->setCurrentIndex(0);
+        return parseItemPositionOverflowPosition(propId, important);
     case CSSPropertyGridAutoFlow:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
@@ -4180,6 +4189,11 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInset(CS
     return shape;
 }
 
+static bool isBaselinePositionKeyword(CSSValueID id)
+{
+    return id == CSSValueBaseline || id == CSSValueLastBaseline;
+}
+
 static bool isItemPositionKeyword(CSSValueID id)
 {
     return id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
@@ -4187,15 +4201,43 @@ static bool isItemPositionKeyword(CSSValueID id)
         || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight;
 }
 
+bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important)
+{
+    // [ legacy && [ left | right | center ]
+
+    CSSParserValue* value = m_valueList->current();
+    if (!value)
+        return false;
+
+    if (value->id == CSSValueLegacy) {
+        value = m_valueList->next();
+        if (!value)
+            return false;
+        if (value->id != CSSValueCenter && value->id != CSSValueLeft && value->id != CSSValueRight)
+            return false;
+    } else if (value->id == CSSValueCenter || value->id == CSSValueLeft || value->id == CSSValueRight) {
+        if (!m_valueList->next() || m_valueList->current()->id != CSSValueLegacy)
+            return false;
+    } else {
+        return false;
+    }
+
+    addProperty(propId, createPrimitiveValuePair(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id)), important);
+    return !m_valueList->next();
+}
+
 bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, bool important)
 {
-    // auto | baseline | stretch | [<item-position> && <overflow-position>? ]
+    // auto | stretch | <baseline-position> | [<item-position> && <overflow-position>? ]
+    // <baseline-position> = baseline | last-baseline;
     // <item-position> = center | start | end | self-start | self-end | flex-start | flex-end | left | right;
     // <overflow-position> = true | safe
 
     CSSParserValue* value = m_valueList->current();
+    if (!value)
+        return false;
 
-    if (value->id == CSSValueAuto || value->id == CSSValueBaseline || value->id == CSSValueStretch) {
+    if (value->id == CSSValueAuto || value->id == CSSValueStretch || isBaselinePositionKeyword(value->id)) {
         if (m_valueList->next())
             return false;
 

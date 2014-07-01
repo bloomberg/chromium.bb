@@ -527,6 +527,7 @@ enum ItemPosition {
     ItemPositionAuto,
     ItemPositionStretch,
     ItemPositionBaseline,
+    ItemPositionLastBaseline,
     ItemPositionCenter,
     ItemPositionStart,
     ItemPositionEnd,
@@ -542,6 +543,11 @@ enum OverflowAlignment {
     OverflowAlignmentDefault,
     OverflowAlignmentTrue,
     OverflowAlignmentSafe
+};
+
+enum ItemPositionType {
+    NonLegacyPosition,
+    LegacyPosition
 };
 
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).

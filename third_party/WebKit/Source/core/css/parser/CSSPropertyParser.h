@@ -168,6 +168,7 @@ private:
 
     bool parseClipShape(CSSPropertyID, bool important);
 
+    bool parseLegacyPosition(CSSPropertyID, bool important);
     bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);

@@ -126,19 +126,9 @@ static bool isInTopLayer(const Element* element, const RenderStyle* style)
     return (element && element->isInTopLayer()) || (style && style->styleType() == BACKDROP);
 }
 
-static bool isDisplayFlexibleBox(EDisplay display)
-{
-    return display == FLEX || display == INLINE_FLEX;
-}
-
-static bool isDisplayGridBox(EDisplay display)
-{
-    return display == GRID || display == INLINE_GRID;
-}
-
 static bool parentStyleForcesZIndexToCreateStackingContext(const RenderStyle* parentStyle)
 {
-    return isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display());
+    return parentStyle->isDisplayFlexibleOrGridBox();
 }
 
 static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style)
@@ -408,7 +398,7 @@ void StyleAdjuster::adjustStyleForDisplay(RenderStyle* style, RenderStyle* paren
     if (style->writingMode() != TopToBottomWritingMode && (style->display() == BOX || style->display() == INLINE_BOX))
         style->setWritingMode(TopToBottomWritingMode);
 
-    if (isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display())) {
+    if (parentStyle->isDisplayFlexibleOrGridBox()) {
         style->setFloating(NoFloat);
         style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !m_useQuirksModeStyles));
     }

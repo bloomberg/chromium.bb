@@ -511,6 +511,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGridTemplate: return 452;
     case CSSPropertyGrid: return 453;
     case CSSPropertyAll: return 454;
+    case CSSPropertyJustifyItems: return 455;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -533,7 +534,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 454; }
+static int maximumCSSSampleId() { return 455; }
 
 void UseCounter::muteForInspector()
 {

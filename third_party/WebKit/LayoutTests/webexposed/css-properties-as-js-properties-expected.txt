@@ -131,6 +131,7 @@ height
 imageRendering
 isolation
 justifyContent
+justifyItems
 justifySelf
 left
 length

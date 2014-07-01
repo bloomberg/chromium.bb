@@ -83,6 +83,7 @@ justify-content
 image-rendering
 internal-callback custom_all
 isolation
+justify-items custom_value
 justify-self custom_value
 left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
