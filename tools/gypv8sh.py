@@ -44,13 +44,15 @@ def main ():
     print cmd
   if not opts.impotent:
     try:
-      with open(cxxoutfile, 'w') as f:
-        subprocess.check_call(cmd, stdin=subprocess.PIPE, stdout=f)
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0)
+      out, err = p.communicate()
+      if p.returncode:
+        raise Exception('Failed to run d8', out, err)
+      with open(cxxoutfile, 'wb') as f:
+        f.write(out)
       shutil.copyfile(inputfile, jsoutfile)
     except Exception, ex:
       if os.path.exists(cxxoutfile):
-        # The contents of the output file will include the error message.
-        print open(cxxoutfile).read()
         os.remove(cxxoutfile)
       if os.path.exists(jsoutfile):
         os.remove(jsoutfile)
