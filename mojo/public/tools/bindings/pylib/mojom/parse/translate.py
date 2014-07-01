@@ -35,8 +35,8 @@ def _MapKind(kind):
                   'handle<message_pipe>': 'h:m',
                   'handle<shared_buffer>': 'h:s'}
   if kind.endswith('[]'):
-    typename = kind[0:len(kind)-2]
-    if _FIXED_ARRAY_REGEXP.search(typename) != None:
+    typename = kind[0:-2]
+    if _FIXED_ARRAY_REGEXP.search(typename):
       raise Exception("Arrays of fixed sized arrays not supported")
     return 'a:' + _MapKind(typename)
   if kind.endswith(']'):
@@ -44,9 +44,9 @@ def _MapKind(kind):
     typename = kind[0:lbracket]
     if typename.find('[') != -1:
       raise Exception("Fixed sized arrays of arrays not supported")
-    return 'a' + kind[lbracket+1:len(kind)-1] + ':' + _MapKind(typename)
+    return 'a' + kind[lbracket+1:-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
-    return 'r:' + _MapKind(kind[0:len(kind)-1])
+    return 'r:' + _MapKind(kind[0:-1])
   if kind in map_to_kind:
     return map_to_kind[kind]
   return 'x:' + kind
@@ -83,7 +83,8 @@ def _MapMethod(tree):
   method = {'name': tree[1],
             'parameters': _MapTree(_MapParameter, tree[2], 'PARAM'),
             'ordinal': tree[3].value}
-  if tree[4] != None:
+  # Note: |tree[4]| may be an empty list, indicating a parameter-less response.
+  if tree[4] is not None:
     method['response_parameters'] = _MapTree(_MapParameter, tree[4], 'PARAM')
   return method
 
