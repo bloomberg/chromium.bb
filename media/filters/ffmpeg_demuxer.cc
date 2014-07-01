@@ -84,10 +84,8 @@ static base::TimeDelta ExtractStartTime(AVStream* stream,
 //
 // FFmpegDemuxerStream
 //
-FFmpegDemuxerStream::FFmpegDemuxerStream(
-    FFmpegDemuxer* demuxer,
-    AVStream* stream,
-    bool discard_negative_timestamps)
+FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
+                                         AVStream* stream)
     : demuxer_(demuxer),
       task_runner_(base::MessageLoopProxy::current()),
       stream_(stream),
@@ -95,7 +93,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp()),
       bitstream_converter_enabled_(false),
-      discard_negative_timestamps_(discard_negative_timestamps) {
+      fixup_negative_ogg_timestamps_(false) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
@@ -262,11 +260,21 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       ConvertStreamTimestamp(stream_->time_base, packet->pts);
 
   if (stream_timestamp != kNoTimestamp()) {
-    buffer->set_timestamp(stream_timestamp - demuxer_->start_time());
+    // If this is an OGG file with negative timestamps don't rebase any other
+    // stream types against the negative starting time.
+    base::TimeDelta start_time = demuxer_->start_time();
+    if (fixup_negative_ogg_timestamps_ && type() != AUDIO &&
+        start_time < base::TimeDelta()) {
+      DCHECK(stream_timestamp >= base::TimeDelta());
+      start_time = base::TimeDelta();
+    }
+
+    buffer->set_timestamp(stream_timestamp - start_time);
 
     // If enabled, mark packets with negative timestamps for post-decode
     // discard.
-    if (discard_negative_timestamps_ && stream_timestamp < base::TimeDelta()) {
+    if (fixup_negative_ogg_timestamps_ &&
+        stream_timestamp < base::TimeDelta()) {
       if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
         // Discard the entire packet if it's entirely before zero.
         buffer->set_discard_padding(
@@ -502,12 +510,21 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   // FFmpeg requires seeks to be adjusted according to the lowest starting time.
   const base::TimeDelta seek_time = time + start_time_;
 
-  // Choose the preferred stream if |seek_time| occurs after its starting time,
-  // otherwise use the fallback stream.
+  // Choose the seeking stream based on whether it contains the seek time, if no
+  // match can be found prefer the preferred stream.
+  //
+  // TODO(dalecurtis): Currently FFmpeg does not ensure that all streams in a
+  // given container will demux all packets after the seek point.  Instead it
+  // only guarantees that all packets after the file position of the seek will
+  // be demuxed.  It's an open question whether FFmpeg should fix this:
+  // http://lists.ffmpeg.org/pipermail/ffmpeg-devel/2014-June/159212.html
+  // Tracked by http://crbug.com/387996.
   DCHECK(preferred_stream_for_seeking_.second != kNoTimestamp());
-  const int stream_index = seek_time >= preferred_stream_for_seeking_.second
-                               ? preferred_stream_for_seeking_.first
-                               : fallback_stream_for_seeking_.first;
+  const int stream_index =
+      seek_time < preferred_stream_for_seeking_.second &&
+              seek_time >= fallback_stream_for_seeking_.second
+          ? fallback_stream_for_seeking_.first
+          : preferred_stream_for_seeking_.first;
   DCHECK_NE(stream_index, -1);
 
   const AVStream* seeking_stream =
@@ -722,7 +739,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     AVStream* stream = format_context->streams[i];
     const AVCodecContext* codec_context = stream->codec;
     const AVMediaType codec_type = codec_context->codec_type;
-    bool discard_negative_timestamps = false;
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       if (audio_stream)
@@ -737,13 +753,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       if (!audio_config.IsValidConfig())
         continue;
       audio_stream = stream;
-
-      // Enable post-decode frame dropping for packets with negative timestamps
-      // as outlined in section A.2 in the Ogg Vorbis spec:
-      // http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-      discard_negative_timestamps =
-          audio_config.codec() == kCodecVorbis &&
-          strcmp(glue_->format_context()->iformat->name, "ogg") == 0;
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       if (video_stream)
         continue;
@@ -766,8 +775,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       continue;
     }
 
-    streams_[i] =
-        new FFmpegDemuxerStream(this, stream, discard_negative_timestamps);
+    streams_[i] = new FFmpegDemuxerStream(this, stream);
     max_duration = std::max(max_duration, streams_[i]->duration());
 
     const base::TimeDelta start_time =
@@ -811,6 +819,27 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   } else {
     // The duration is unknown, in which case this is likely a live stream.
     max_duration = kInfiniteDuration();
+  }
+
+  // Ogg has some peculiarities around negative timestamps, so use this flag to
+  // setup the FFmpegDemuxerStreams appropriately.
+  //
+  // Post-decode frame dropping for packets with negative timestamps is outlined
+  // in section A.2 in the Ogg Vorbis spec:
+  // http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+  if (strcmp(format_context->iformat->name, "ogg") == 0 && audio_stream &&
+      audio_stream->codec->codec_id == AV_CODEC_ID_VORBIS) {
+    for (size_t i = 0; i < streams_.size(); ++i) {
+      if (streams_[i])
+        streams_[i]->enable_negative_timestamp_fixups_for_ogg();
+    }
+
+    // Fixup the seeking information to avoid selecting the audio stream simply
+    // because it has a lower starting time.
+    if (fallback_stream_for_seeking_.first == audio_stream->index &&
+        fallback_stream_for_seeking_.second < base::TimeDelta()) {
+      fallback_stream_for_seeking_.second = base::TimeDelta();
+    }
   }
 
   // If no start time could be determined, default to zero and prefer the video

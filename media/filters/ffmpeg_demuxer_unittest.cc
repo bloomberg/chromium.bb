@@ -489,29 +489,85 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
   }
 }
 
-TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard) {
+// TODO(dalecurtis): Test is disabled since FFmpeg does not currently guarantee
+// the order of demuxed packets in OGG containers.  Re-enable once we decide to
+// either workaround it or attempt a fix upstream.  See http://crbug.com/387996.
+TEST_F(FFmpegDemuxerTest,
+       DISABLED_Read_AudioNegativeStartTimeAndOggDiscard_Bear) {
   // Many ogg files have negative starting timestamps, so ensure demuxing and
   // seeking work correctly with a negative start time.
   CreateDemuxer("bear.ogv");
   InitializeDemuxer();
 
+  // Attempt a read from the video stream and run the message loop until done.
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(
+    audio->Read(
         NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration()));
     message_loop_.Run();
-    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(
+    audio->Read(
         NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903, kInfiniteDuration()));
     message_loop_.Run();
-    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(NewReadCBWithCheckedDiscard(
+    audio->Read(NewReadCBWithCheckedDiscard(
         FROM_HERE, 173, 5805, base::TimeDelta::FromMicroseconds(10159)));
     message_loop_.Run();
 
-    demuxer_->GetStream(DemuxerStream::AUDIO)
-        ->Read(NewReadCB(FROM_HERE, 148, 18866));
+    audio->Read(NewReadCB(FROM_HERE, 148, 18866));
     message_loop_.Run();
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(-15964),
               demuxer_->start_time());
+
+    video->Read(NewReadCB(FROM_HERE, 5751, 0));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 846, 33367));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 1255, 66733));
+    message_loop_.Run();
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+
+// Same test above, but using sync2.ogv which has video stream muxed before the
+// audio stream, so seeking based only on start time will fail since ffmpeg is
+// essentially just seeking based on file position.
+TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
+  // Many ogg files have negative starting timestamps, so ensure demuxing and
+  // seeking work correctly with a negative start time.
+  CreateDemuxer("sync2.ogv");
+  InitializeDemuxer();
+
+  // Attempt a read from the video stream and run the message loop until done.
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    audio->Read(NewReadCBWithCheckedDiscard(
+        FROM_HERE, 1, 0, base::TimeDelta::FromMicroseconds(2902)));
+    message_loop_.Run();
+
+    audio->Read(NewReadCB(FROM_HERE, 1, 2902));
+    message_loop_.Run();
+    EXPECT_EQ(base::TimeDelta::FromMicroseconds(-2902),
+              demuxer_->start_time());
+
+    video->Read(NewReadCB(FROM_HERE, 9997, 0));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 16, 33241));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 631, 66482));
+    message_loop_.Run();
 
     // Seek back to the beginning and repeat the test.
     WaitableMessageLoopEvent event;
