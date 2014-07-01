@@ -617,7 +617,11 @@ public:
         ThreadState* state = ThreadState::current();
         do {
             bool leaveSafePoint = false;
-            if (!state->isAtSafePoint()) {
+            // We cannot enter a safepoint if we are currently sweeping. In that
+            // case we just try to acquire the lock without being at a safepoint.
+            // If another thread tries to do a GC at that time it might time out
+            // due to this thread not being at a safepoint and waiting on the lock.
+            if (!state->isSweepInProgress() && !state->isAtSafePoint()) {
                 state->enterSafePoint(ThreadState::HeapPointersOnStack, this);
                 leaveSafePoint = true;
             }
