@@ -593,7 +593,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
  * @return {boolean} Always return true.
  */
 test.util.sync.overrideTasks = function(contentWindow, taskList) {
-  var getFileTasks = function(urls, mime, onTasks) {
+  var getFileTasks = function(urls, onTasks) {
     // Call onTask asynchronously (same with original getFileTasks).
     setTimeout(function() {
       onTasks(taskList);
