@@ -63,9 +63,48 @@ ChromeVoxUnitTestBase.prototype = {
    *     comment inside an anonymous function - see example, above.
    */
   loadDoc: function(commentEncodedHtml) {
-    var html = commentEncodedHtml.toString().
+    var html = this.extractHtmlFromCommentEncodedString_(commentEncodedHtml);
+    this.loadHtml(html);
+  },
+
+  /**
+   * Appends some inlined html into the current document, at the end of
+   * the body element. Takes the html encoded as a comment inside a function,
+   * so you can use it like this:
+   *
+   * this.appendDoc(function() {/*!
+   *     <p>Html goes here</p>
+   * * /});
+   *
+   * @param {Function} commentEncodedHtml The html to load, embedded as a
+   *     comment inside an anonymous function - see example, above.
+   */
+  appendDoc: function(commentEncodedHtml) {
+    var html = this.extractHtmlFromCommentEncodedString_(commentEncodedHtml);
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    var fragment = document.createDocumentFragment();
+    while (div.firstChild) {
+      fragment.appendChild(div.firstChild);
+    }
+    document.body.appendChild(fragment);
+  },
+
+  /**
+   * Extracts some inlined html encoded as a comment inside a function,
+   * so you can use it like this:
+   *
+   * this.appendDoc(function() {/*!
+   *     <p>Html goes here</p>
+   * * /});
+   *
+   * @param {Function} commentEncodedHtml The html , embedded as a
+   *     comment inside an anonymous function - see example, above.
+   @ @return {String} The html text.
+   */
+  extractHtmlFromCommentEncodedString_: function(commentEncodedHtml) {
+    return commentEncodedHtml.toString().
         replace(/^[^\/]+\/\*!?/, '').
         replace(/\*\/[^\/]+$/, '');
-    this.loadHtml(html);
   }
 };

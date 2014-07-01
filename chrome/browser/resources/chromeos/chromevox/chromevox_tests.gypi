@@ -126,6 +126,7 @@
         'common/braille_util_test.js',
         'common/command_store_test.js',
         'common/cursor_selection_test.js',
+        'common/dom_util_test.js',
         'common/editable_text_area_shadow_test.js',
         'common/editable_text_test.js',
         'common/find_util_test.js',
