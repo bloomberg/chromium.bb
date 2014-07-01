@@ -44,6 +44,9 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
     const std::string& extension_id,
     const base::FilePath& extension_root,
     const base::FilePath& relative_path) {
+  if (!fetcher_ || !delegate_)
+    return NULL;
+
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
   const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
