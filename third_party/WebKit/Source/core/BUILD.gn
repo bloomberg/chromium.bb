@@ -276,7 +276,7 @@ source_set("remaining") {
     # prefix header injected.
     cflags = [
       "-include",
-      rebase_path("WebCorePrefixMac.h", root_build_dir),
+      rebase_path("../build/mac/Prefix.h", root_build_dir),
     ]
   } else {  # !is_mac
     sources -= [

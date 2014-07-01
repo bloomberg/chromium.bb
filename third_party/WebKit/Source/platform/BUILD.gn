@@ -249,7 +249,7 @@ component("platform") {
     # prefix header injected.
     cflags = [
       "-include",
-      rebase_path("../core/WebCorePrefixMac.h", root_build_dir),
+      rebase_path("../build/mac/Prefix.h", root_build_dir),
     ]
 
     defines += [ "WebFontCache=ChromiumWebCoreObjCWebFontCache" ]

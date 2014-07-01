@@ -220,8 +220,7 @@
     'xcode_settings': {
       # Some Mac-specific parts of WebKit won't compile without having this
       # prefix header injected.
-      # FIXME: make this a first-class setting.
-      'GCC_PREFIX_HEADER': '../core/WebCorePrefixMac.h',
+      'GCC_PREFIX_HEADER': '<(DEPTH)/third_party/WebKit/Source/build/mac/Prefix.h',
     },
     'sources': [
       '<@(platform_files)',
