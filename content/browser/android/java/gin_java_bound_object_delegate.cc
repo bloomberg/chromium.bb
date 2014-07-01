@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/gin_java_bound_object_delegate.h"
+#include "content/browser/android/java/gin_java_bound_object_delegate.h"
 
 namespace content {
 

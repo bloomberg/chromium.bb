@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_H_
 
 #include <map>
 #include <set>
@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/java/java_method.h"
+#include "content/browser/android/java/java_method.h"
 
 namespace content {
 
@@ -93,4 +93,4 @@ class GinJavaBoundObject
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_H_

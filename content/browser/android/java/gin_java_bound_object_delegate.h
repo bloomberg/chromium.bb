@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
 
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/java/gin_java_bound_object.h"
-#include "content/browser/renderer_host/java/gin_java_method_invocation_helper.h"
+#include "content/browser/android/java/gin_java_bound_object.h"
+#include "content/browser/android/java/gin_java_method_invocation_helper.h"
 
 namespace content {
 
@@ -35,4 +35,4 @@ class GinJavaBoundObjectDelegate
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_

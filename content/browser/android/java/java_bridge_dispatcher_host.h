@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
 
 #include <vector>
 #include "base/memory/ref_counted.h"
@@ -68,4 +68,4 @@ class JavaBridgeDispatcherHost
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_

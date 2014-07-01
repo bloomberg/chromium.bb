@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/java_bridge_channel_host.h"
+#include "content/browser/android/java/java_bridge_channel_host.h"
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"

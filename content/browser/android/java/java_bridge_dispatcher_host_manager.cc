@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/android/java/java_bridge_dispatcher_host_manager.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/renderer_host/java/java_bound_object.h"
-#include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
+#include "content/browser/android/java/java_bound_object.h"
+#include "content/browser/android/java/java_bridge_dispatcher_host.h"
 #include "content/common/android/hash_set.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/public/browser/browser_thread.h"

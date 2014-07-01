@@ -881,8 +881,8 @@
         }],
         ['OS == "android"', {
           'sources': [
-            'browser/renderer_host/java/gin_java_method_invocation_helper_unittest.cc',
-            'browser/renderer_host/java/jni_helper_unittest.cc',
+            'browser/android/java/gin_java_method_invocation_helper_unittest.cc',
+            'browser/android/java/jni_helper_unittest.cc',
             'renderer/java/gin_java_bridge_value_converter_unittest.cc',
           ],
           'sources!': [

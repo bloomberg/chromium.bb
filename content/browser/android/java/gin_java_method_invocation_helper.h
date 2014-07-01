@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_
 
 #include <map>
 
@@ -11,8 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/java/gin_java_bound_object.h"
-#include "content/browser/renderer_host/java/java_type.h"
+#include "content/browser/android/java/gin_java_bound_object.h"
+#include "content/browser/android/java/java_type.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 
@@ -114,4 +114,4 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_METHOD_INVOCATION_HELPER_H_

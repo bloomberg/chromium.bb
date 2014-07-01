@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/gin_java_method_invocation_helper.h"
+#include "content/browser/android/java/gin_java_method_invocation_helper.h"
 
 #include "base/android/jni_android.h"
-#include "content/browser/renderer_host/java/jni_helper.h"
+#include "content/browser/android/java/jni_helper.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

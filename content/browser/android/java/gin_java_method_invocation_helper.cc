@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/gin_java_method_invocation_helper.h"
+#include "content/browser/android/java/gin_java_method_invocation_helper.h"
 
 #include <unistd.h>
 
@@ -10,9 +10,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/float_util.h"
-#include "content/browser/renderer_host/java/gin_java_script_to_java_types_coercion.h"
-#include "content/browser/renderer_host/java/java_method.h"
-#include "content/browser/renderer_host/java/jni_helper.h"
+#include "content/browser/android/java/gin_java_script_to_java_types_coercion.h"
+#include "content/browser/android/java/java_method.h"
+#include "content/browser/android/java/jni_helper.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/public/browser/browser_thread.h"
 

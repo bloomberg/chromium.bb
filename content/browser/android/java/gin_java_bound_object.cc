@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/java/gin_java_bound_object.h"
+#include "content/browser/android/java/gin_java_bound_object.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/renderer_host/java/jni_helper.h"
+#include "content/browser/android/java/jni_helper.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

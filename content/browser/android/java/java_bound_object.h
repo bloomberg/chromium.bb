@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BOUND_OBJECT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BOUND_OBJECT_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_JAVA_BOUND_OBJECT_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_JAVA_BOUND_OBJECT_H_
 
 #include <jni.h>
 #include <map>
@@ -13,7 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/renderer_host/java/java_method.h"
+#include "content/browser/android/java/java_method.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 namespace content {
@@ -93,4 +93,4 @@ class JavaBoundObject {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BOUND_OBJECT_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_JAVA_BOUND_OBJECT_H_

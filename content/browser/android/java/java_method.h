@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_METHOD_H_
-#define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_METHOD_H_
+#ifndef CONTENT_BROWSER_ANDROID_JAVA_JAVA_METHOD_H_
+#define CONTENT_BROWSER_ANDROID_JAVA_JAVA_METHOD_H_
 
 #include <jni.h>
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "content/browser/renderer_host/java/java_type.h"
+#include "content/browser/android/java/java_type.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -47,4 +47,4 @@ class CONTENT_EXPORT JavaMethod {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_METHOD_H_
+#endif  // CONTENT_BROWSER_ANDROID_JAVA_JAVA_METHOD_H_
