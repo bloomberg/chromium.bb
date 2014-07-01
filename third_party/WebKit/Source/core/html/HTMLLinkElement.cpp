@@ -453,6 +453,22 @@ void HTMLLinkElement::trace(Visitor* visitor)
     HTMLElement::trace(visitor);
 }
 
+void HTMLLinkElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (name == hrefAttr && inDocument()) {
+        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+        if (activityLogger) {
+            Vector<String> argv;
+            argv.append("link");
+            argv.append(hrefAttr.toString());
+            argv.append(oldValue);
+            argv.append(newValue);
+            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+        }
+    }
+    HTMLElement::attributeWillChange(name, oldValue, newValue);
+}
+
 PassOwnPtrWillBeRawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
 {
     return adoptPtrWillBeNoop(new LinkStyle(owner));

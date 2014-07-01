@@ -28,7 +28,7 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString border;
     [Reflect, URL] attribute DOMString codeBase;
     [Reflect] attribute DOMString codeType;
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString data;
+    [Reflect, URL] attribute DOMString data;
     [Reflect] attribute boolean declare;
     [Reflect] attribute DOMString height;
     [Reflect] attribute long hspace;

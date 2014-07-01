@@ -230,4 +230,20 @@ Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode
     return HTMLFormControlElement::insertedInto(insertionPoint);
 }
 
+void HTMLButtonElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (name == formactionAttr && inDocument()) {
+        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+        if (activityLogger) {
+            Vector<String> argv;
+            argv.append("button");
+            argv.append(formactionAttr.toString());
+            argv.append(oldValue);
+            argv.append(newValue);
+            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+        }
+    }
+    HTMLFormControlElement::attributeWillChange(name, oldValue, newValue);
+}
+
 } // namespace

@@ -22,7 +22,7 @@
     OverrideBuiltins,
 ] interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset] attribute DOMString acceptCharset;
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString action;
+    [Reflect, URL] attribute DOMString action;
     [Reflect, ReflectOnly="on"|"off", ReflectMissing="on", ReflectInvalid="on"] attribute DOMString autocomplete;
     [CustomElementCallbacks] attribute DOMString enctype;
     [CustomElementCallbacks] attribute DOMString encoding;

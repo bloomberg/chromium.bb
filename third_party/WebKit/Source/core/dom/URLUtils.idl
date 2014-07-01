@@ -30,7 +30,7 @@
 ] interface URLUtils {
     // FIXME: should be stringifier: http://crbug.com/306606
     // stringifier attribute ScalarValueString href;
-    [PerWorldBindings, LogActivity=SetterOnly, LogPreviousValue] attribute ScalarValueString href;
+    attribute ScalarValueString href;
     [NotEnumerable, ImplementedAs=href] ScalarValueString toString();
     readonly attribute ScalarValueString origin;
 

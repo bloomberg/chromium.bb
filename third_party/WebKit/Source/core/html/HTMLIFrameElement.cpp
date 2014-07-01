@@ -70,6 +70,22 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
         HTMLFrameElementBase::collectStyleForPresentationAttribute(name, value, style);
 }
 
+void HTMLIFrameElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (name == srcAttr && inDocument()) {
+        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+        if (activityLogger) {
+            Vector<String> argv;
+            argv.append("iframe");
+            argv.append(srcAttr.toString());
+            argv.append(oldValue);
+            argv.append(newValue);
+            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+        }
+    }
+    HTMLFrameElementBase::attributeWillChange(name, oldValue, newValue);
+}
+
 void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == nameAttr) {

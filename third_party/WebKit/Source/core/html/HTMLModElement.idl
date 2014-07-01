@@ -18,6 +18,6 @@
  */
 
 interface HTMLModElement : HTMLElement {
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString cite;
+    [Reflect, URL] attribute DOMString cite;
     [Reflect] attribute DOMString dateTime;
 };

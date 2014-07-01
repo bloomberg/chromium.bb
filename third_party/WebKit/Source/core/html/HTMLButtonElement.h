@@ -51,6 +51,7 @@ private:
     virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE { return false; }
 
     virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;

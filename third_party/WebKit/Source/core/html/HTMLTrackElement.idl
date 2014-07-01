@@ -25,7 +25,7 @@
 
 interface HTMLTrackElement : HTMLElement {
     attribute DOMString kind;
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString src;
+    [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString srclang;
     [Reflect] attribute DOMString label;
     [Reflect] attribute boolean default;

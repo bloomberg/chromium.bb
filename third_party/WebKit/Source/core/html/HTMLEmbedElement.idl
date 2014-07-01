@@ -24,7 +24,7 @@
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString height;
     [Reflect] attribute DOMString name;
-    [Reflect, URL, LogActivity=SetterOnly, LogPreviousValue] attribute DOMString src;
+    [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString type;
     [Reflect] attribute DOMString width;
     [Custom, NotEnumerable] getter boolean (unsigned long index);

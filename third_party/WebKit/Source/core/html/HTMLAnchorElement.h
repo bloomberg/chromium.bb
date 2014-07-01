@@ -85,6 +85,7 @@ public:
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE;
 

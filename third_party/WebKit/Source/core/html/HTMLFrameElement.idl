@@ -27,7 +27,7 @@ interface HTMLFrameElement : HTMLElement {
     [Reflect] attribute DOMString name;
     [Reflect] attribute boolean noResize;
     [Reflect] attribute DOMString scrolling;
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString src;
+    [Reflect, URL] attribute DOMString src;
 
     // Introduced in DOM Level 2:
     [CheckSecurity=Node] readonly attribute Document contentDocument;

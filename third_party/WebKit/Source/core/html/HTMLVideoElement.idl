@@ -30,7 +30,7 @@
     [Reflect] attribute unsigned long height;
     readonly attribute unsigned long videoWidth;
     readonly attribute unsigned long videoHeight;
-    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString poster;
+    [Reflect, URL] attribute DOMString poster;
 
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;

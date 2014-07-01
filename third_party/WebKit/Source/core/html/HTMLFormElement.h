@@ -129,6 +129,7 @@ private:
 
     virtual void handleLocalEvents(Event*) OVERRIDE;
 
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;

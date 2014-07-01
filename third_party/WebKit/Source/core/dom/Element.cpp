@@ -2854,6 +2854,8 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (OwnPtrWillBeRawPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
+    attributeWillChange(name, oldValue, newValue);
+
     InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
 }
 

@@ -520,6 +520,22 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         HTMLElement::parseAttribute(name, value);
 }
 
+void HTMLFormElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (name == actionAttr && inDocument()) {
+        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+        if (activityLogger) {
+            Vector<String> argv;
+            argv.append("form");
+            argv.append(actionAttr.toString());
+            argv.append(oldValue);
+            argv.append(newValue);
+            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+        }
+    }
+    HTMLElement::attributeWillChange(name, oldValue, newValue);
+}
+
 void HTMLFormElement::associate(FormAssociatedElement& e)
 {
     m_associatedElementsAreDirty = true;
