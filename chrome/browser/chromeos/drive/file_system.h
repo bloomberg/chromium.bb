@@ -163,16 +163,17 @@ class FileSystem : public FileSystemInterface,
       OVERRIDE;
 
   // file_system::OperationObserver overrides.
-  virtual void OnDirectoryChangedByOperation(
-      const base::FilePath& directory_path) OVERRIDE;
+  virtual void OnFileChangedByOperation(
+      const FileChange& changed_files) OVERRIDE;
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE;
   virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
                                 const std::string& local_id) OVERRIDE;
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.
-  virtual void OnDirectoryChanged(
+  virtual void OnDirectoryReloaded(
       const base::FilePath& directory_path) OVERRIDE;
+  virtual void OnFileChanged(const FileChange& changed_files) OVERRIDE;
   virtual void OnLoadFromServerComplete() OVERRIDE;
   virtual void OnInitialLoadComplete() OVERRIDE;
 

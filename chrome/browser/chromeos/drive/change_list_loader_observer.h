@@ -10,16 +10,20 @@ class FilePath;
 }  // namespace base
 
 namespace drive {
+class FileChange;
 namespace internal {
 
 // Interface for classes that need to observe events from ChangeListLoader.
 // All events are notified on UI thread.
 class ChangeListLoaderObserver {
  public:
-  // Triggered when a content of a directory has been changed.
-  // |directory_path| is a virtual directory path representing the
-  // changed directory.
-  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
+  // Triggered when the content of a directory is reloaded. The content may
+  // changed.  |directory_path| is a virtual directory path representing the
+  // reloaded directory.
+  virtual void OnDirectoryReloaded(const base::FilePath& directory_path) {}
+
+  // Triggered when content(s) in drive has been changed.
+  virtual void OnFileChanged(const FileChange& changed_files) {}
 
   // Triggered when loading from the server is complete.
   virtual void OnLoadFromServerComplete() {}

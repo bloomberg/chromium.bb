@@ -15,6 +15,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,6 +38,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -63,6 +66,11 @@ const char kFileTransferStateFailed[] = "failed";
 
 // Frequency of sending onFileTransferUpdated.
 const int64 kProgressEventFrequencyInMilliseconds = 1000;
+
+// Maximim size of detailed change info on directory change event. If the size
+// exceeds the maximum size, the detailed info is omitted and the force refresh
+// is kicked.
+const size_t kDirectoryChangeEventMaxDetailInfoSize = 1000;
 
 // Utility function to check if |job_info| is a file uploading job.
 bool IsUploadJob(drive::JobType type) {
@@ -198,6 +206,18 @@ CopyProgressTypeToCopyProgressStatusType(
   }
   NOTREACHED();
   return file_browser_private::COPY_PROGRESS_STATUS_TYPE_NONE;
+}
+
+file_browser_private::ChangeType ConvertChangeTypeFromDriveToApi(
+    drive::FileChange::ChangeType type) {
+  switch (type) {
+    case drive::FileChange::ADD_OR_UPDATE:
+      return file_browser_private::CHANGE_TYPE_ADD_OR_UPDATE;
+    case drive::FileChange::DELETE:
+      return file_browser_private::CHANGE_TYPE_DELETE;
+  }
+  NOTREACHED();
+  return file_browser_private::CHANGE_TYPE_ADD_OR_UPDATE;
 }
 
 std::string FileErrorToErrorName(base::File::Error error_code) {
@@ -448,7 +468,8 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
       watcher->WatchLocalFile(
           watch_path,
           base::Bind(&EventRouter::HandleFileWatchNotification,
-                     weak_factory_.GetWeakPtr()),
+                     weak_factory_.GetWeakPtr(),
+                     static_cast<drive::FileChange*>(NULL)),
           callback);
     }
 
@@ -630,7 +651,24 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
 }
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
-  HandleFileWatchNotification(drive_path, false);
+  HandleFileWatchNotification(NULL, drive_path, false);
+}
+
+void EventRouter::OnFileChanged(const drive::FileChange& changed_files) {
+  typedef std::map<base::FilePath, drive::FileChange> FileChangeMap;
+
+  FileChangeMap map;
+  const drive::FileChange::Map& changed_file_map = changed_files.map();
+  for (drive::FileChange::Map::const_iterator it = changed_file_map.begin();
+       it != changed_file_map.end();
+       it++) {
+    const base::FilePath& path = it->first;
+    map[path.DirName()].Update(path, it->second);
+  }
+
+  for (FileChangeMap::const_iterator it = map.begin(); it != map.end(); it++) {
+    HandleFileWatchNotification(&(it->second), it->first, false);
+  }
 }
 
 void EventRouter::OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
@@ -668,7 +706,8 @@ void EventRouter::OnRefreshTokenInvalid() {
       file_browser_private::OnDriveConnectionStatusChanged::Create());
 }
 
-void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
+void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
+                                              const base::FilePath& local_path,
                                               bool got_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -676,21 +715,36 @@ void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
   if (iter == file_watchers_.end()) {
     return;
   }
-  DispatchDirectoryChangeEvent(iter->second->virtual_path(), got_error,
+
+  if (list && list->size() > kDirectoryChangeEventMaxDetailInfoSize) {
+    // Removes the detailed information, if the list size is more than
+    // kDirectoryChangeEventMaxDetailInfoSize, since passing large list
+    // and processing it may cause more itme.
+    // This will be invoked full-refresh in Files.app.
+    list = NULL;
+  }
+
+  DispatchDirectoryChangeEvent(iter->second->virtual_path(),
+                               list,
+                               got_error,
                                iter->second->GetExtensionIds());
 }
 
 void EventRouter::DispatchDirectoryChangeEvent(
     const base::FilePath& virtual_path,
+    const drive::FileChange* list,
     bool got_error,
     const std::vector<std::string>& extension_ids) {
   if (!profile_) {
     NOTREACHED();
     return;
   }
+  linked_ptr<drive::FileChange> changes;
+  if (list)
+    changes.reset(new drive::FileChange(*list));  // Copy
 
   for (size_t i = 0; i < extension_ids.size(); ++i) {
-    const std::string& extension_id = extension_ids[i];
+    std::string* extension_id = new std::string(extension_ids[i]);
 
     FileDefinition file_definition;
     file_definition.virtual_path = virtual_path;
@@ -698,18 +752,24 @@ void EventRouter::DispatchDirectoryChangeEvent(
 
     file_manager::util::ConvertFileDefinitionToEntryDefinition(
         profile_,
-        extension_id,
+        *extension_id,
         file_definition,
         base::Bind(
             &EventRouter::DispatchDirectoryChangeEventWithEntryDefinition,
             weak_factory_.GetWeakPtr(),
+            changes,
+            base::Owned(extension_id),
             got_error));
   }
 }
 
 void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
+    const linked_ptr<drive::FileChange> list,
+    const std::string* extension_id,
     bool watcher_error,
     const EntryDefinition& entry_definition) {
+  typedef std::map<base::FilePath, drive::FileChange::ChangeList> ChangeListMap;
+
   if (entry_definition.error != base::File::FILE_OK ||
       !entry_definition.is_directory) {
     DVLOG(1) << "Unable to dispatch event because resolving the directory "
@@ -721,6 +781,36 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
   event.event_type = watcher_error
       ? file_browser_private::FILE_WATCH_EVENT_TYPE_ERROR
       : file_browser_private::FILE_WATCH_EVENT_TYPE_CHANGED;
+
+  // Detailed information is available.
+  if (list.get()) {
+    event.changed_files.reset(
+        new std::vector<linked_ptr<file_browser_private::FileChange> >);
+
+    if (list->map().empty())
+      return;
+
+    for (drive::FileChange::Map::const_iterator it = list->map().begin();
+         it != list->map().end();
+         it++) {
+      linked_ptr<file_browser_private::FileChange> change_list(
+          new file_browser_private::FileChange);
+
+      GURL url = util::ConvertDrivePathToFileSystemUrl(
+          profile_, it->first, *extension_id);
+      change_list->url = url.spec();
+
+      for (drive::FileChange::ChangeList::List::const_iterator change =
+               it->second.list().begin();
+           change != it->second.list().end();
+           change++) {
+        change_list->changes.push_back(
+            ConvertChangeTypeFromDriveToApi(change->change()));
+      }
+
+      event.changed_files->push_back(change_list);
+    }
+  }
 
   event.entry.additional_properties.SetString(
       "fileSystemName", entry_definition.file_system_name);
@@ -740,6 +830,7 @@ void EventRouter::DispatchDeviceEvent(
     file_browser_private::DeviceEventType type,
     const std::string& device_path) {
   file_browser_private::DeviceEvent event;
+
   event.type = type;
   event.device_path = device_path;
   BroadcastEvent(profile_,

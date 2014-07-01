@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,8 +37,8 @@ TEST_F(CreateFileOperationTest, CreateFile) {
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_accessed()).is_null());
 
-  EXPECT_EQ(1u, observer()->get_changed_paths().size());
-  EXPECT_EQ(1u, observer()->get_changed_paths().count(kFilePath.DirName()));
+  EXPECT_EQ(1u, observer()->get_changed_files().size());
+  EXPECT_EQ(1u, observer()->get_changed_files().count(kFilePath));
   EXPECT_EQ(1u, observer()->updated_local_ids().size());
   EXPECT_EQ(1u, observer()->updated_local_ids().count(entry.local_id()));
 }

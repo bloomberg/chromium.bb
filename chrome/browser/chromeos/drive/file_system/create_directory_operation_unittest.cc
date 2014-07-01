@@ -49,9 +49,10 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, FindDirectory(kNewDirectory1));
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_EQ(1U,
-            observer()->get_changed_paths().count(kNewDirectory1.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_EQ(
+      1U,
+      observer()->get_changed_files().CountDirectory(kNewDirectory1.DirName()));
 
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kNewDirectory1, &entry));

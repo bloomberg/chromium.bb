@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -119,12 +120,18 @@ FileError FinishUpdate(ResourceMetadata* metadata,
                        FileCache* cache,
                        const std::string& local_id,
                        scoped_ptr<google_apis::FileResource> file_resource,
-                       base::FilePath* changed_directory) {
+                       FileChange* changed_files) {
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryById(local_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   // When creating new entries, update check may add a new entry with the same
   // resource ID before us. If such an entry exists, remove it.
   std::string existing_local_id;
-  FileError error = metadata->GetIdByResourceId(
-      file_resource->file_id(), &existing_local_id);
+  error =
+      metadata->GetIdByResourceId(file_resource->file_id(), &existing_local_id);
+
   switch (error) {
     case FILE_ERROR_OK:
       if (existing_local_id != local_id) {
@@ -135,7 +142,7 @@ FileError FinishUpdate(ResourceMetadata* metadata,
         error = metadata->RemoveEntry(existing_local_id);
         if (error != FILE_ERROR_OK)
           return error;
-        *changed_directory = existing_entry_path.DirName();
+        changed_files->Update(existing_entry_path, entry, FileChange::DELETE);
       }
       break;
     case FILE_ERROR_NOT_FOUND:
@@ -143,11 +150,6 @@ FileError FinishUpdate(ResourceMetadata* metadata,
     default:
       return error;
   }
-
-  ResourceEntry entry;
-  error = metadata->GetResourceEntryById(local_id, &entry);
-  if (error != FILE_ERROR_OK)
-    return error;
 
   // Update metadata_edit_state and MD5.
   switch (entry.metadata_edit_state()) {
@@ -165,6 +167,11 @@ FileError FinishUpdate(ResourceMetadata* metadata,
   error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;
+  base::FilePath entry_path;
+  error = metadata->GetFilePath(local_id, &entry_path);
+  if (error != FILE_ERROR_OK)
+    return error;
+  changed_files->Update(entry_path, entry, FileChange::ADD_OR_UPDATE);
 
   // Clear dirty bit unless the file has been edited during update.
   if (entry.file_specific_info().cache_state().is_dirty() &&
@@ -369,27 +376,30 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     return;
   }
 
-  base::FilePath* changed_directory = new base::FilePath;
+  FileChange* changed_files = new FileChange;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FinishUpdate,
-                 metadata_, cache_, local_id, base::Passed(&entry),
-                 changed_directory),
+                 metadata_,
+                 cache_,
+                 local_id,
+                 base::Passed(&entry),
+                 changed_files),
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterFinish,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Owned(changed_directory)));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(changed_files)));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterFinish(
     const FileOperationCallback& callback,
-    const base::FilePath* changed_directory,
+    const FileChange* changed_files,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (!changed_directory->empty())
-    observer_->OnDirectoryChangedByOperation(*changed_directory);
+  observer_->OnFileChangedByOperation(*changed_files);
   callback.Run(error);
 }
 

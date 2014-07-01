@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,8 +47,9 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
   EXPECT_EQ(ResourceEntry::DIRTY, dest_entry.metadata_edit_state());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(src_path.DirName()));
+  EXPECT_EQ(2U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(src_path));
+  EXPECT_TRUE(observer()->get_changed_files().count(dest_path));
 
   EXPECT_EQ(1U, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(src_entry.local_id()));
@@ -75,9 +77,9 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   EXPECT_EQ(ResourceEntry::DIRTY, dest_entry.metadata_edit_state());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
-  EXPECT_EQ(2U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(src_path.DirName()));
-  EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+  EXPECT_EQ(2U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(src_path));
+  EXPECT_TRUE(observer()->get_changed_files().count(dest_path));
 
   EXPECT_EQ(1U, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(src_entry.local_id()));

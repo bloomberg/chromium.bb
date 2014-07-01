@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "google_apis/drive/test_util.h"
@@ -68,9 +69,9 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // Verify observer notifications.
-  EXPECT_EQ(2U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
-  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_subdir.DirName()));
+  EXPECT_EQ(2U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
+  EXPECT_TRUE(observer()->get_changed_files().count(file_in_subdir));
 
   EXPECT_EQ(2U, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(id_file_in_root));

@@ -24,6 +24,7 @@ class FileResource;
 
 namespace drive {
 
+class FileChange;
 class JobScheduler;
 class ResourceEntry;
 struct ClientContext;
@@ -68,10 +69,9 @@ class EntryRevertPerformer {
       scoped_ptr<google_apis::FileResource> entry);
 
   // Part of RevertEntry(). Called after local metadata is updated.
-  void RevertEntryAfterFinishRevert(
-      const FileOperationCallback& callback,
-      const std::set<base::FilePath>* changed_directories,
-      FileError error);
+  void RevertEntryAfterFinishRevert(const FileOperationCallback& callback,
+                                    const FileChange* changed_files,
+                                    FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   file_system::OperationObserver* observer_;

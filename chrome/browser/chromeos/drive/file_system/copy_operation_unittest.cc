@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -63,9 +64,8 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(
-      remote_dest_path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(remote_dest_path));
 }
 
 TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_Overwrite) {
@@ -96,9 +96,8 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_Overwrite) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(
-      remote_dest_path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(remote_dest_path));
 }
 
 TEST_F(CopyOperationTest,
@@ -129,9 +128,8 @@ TEST_F(CopyOperationTest,
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(
-      observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(remote_dest_path));
   // New copy is created.
   EXPECT_NE("document:5_document_resource_id", entry.resource_id());
 }
@@ -165,9 +163,8 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
   EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
   EXPECT_TRUE(observer()->updated_local_ids().count(entry.local_id()));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(
-      observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(remote_dest_path));
   // The original document got new parent.
   EXPECT_EQ("document:orphan_doc_1", entry.resource_id());
 }
@@ -208,9 +205,8 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_NewHostedDocument) {
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(
-      observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(remote_dest_path));
   // The original document got new parent.
   EXPECT_EQ(new_gdoc_entry->file_id(), entry.resource_id());
 }
@@ -232,7 +228,7 @@ TEST_F(CopyOperationTest, CopyNotExistingFile) {
 
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(dest_path, &entry));
-  EXPECT_TRUE(observer()->get_changed_paths().empty());
+  EXPECT_TRUE(observer()->get_changed_files().empty());
 }
 
 TEST_F(CopyOperationTest, CopyFileToNonExistingDirectory) {
@@ -254,7 +250,7 @@ TEST_F(CopyOperationTest, CopyFileToNonExistingDirectory) {
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(dest_path, &entry));
-  EXPECT_TRUE(observer()->get_changed_paths().empty());
+  EXPECT_TRUE(observer()->get_changed_files().empty());
 }
 
 // Test the case where the parent of the destination path is an existing file,
@@ -280,7 +276,7 @@ TEST_F(CopyOperationTest, CopyFileToInvalidPath) {
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(dest_path, &entry));
-  EXPECT_TRUE(observer()->get_changed_paths().empty());
+  EXPECT_TRUE(observer()->get_changed_files().empty());
 }
 
 TEST_F(CopyOperationTest, CopyDirtyFile) {
@@ -324,8 +320,8 @@ TEST_F(CopyOperationTest, CopyDirtyFile) {
 
   EXPECT_EQ(1u, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(dest_entry.local_id()));
-  EXPECT_EQ(1u, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+  EXPECT_EQ(1u, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(dest_path));
 
   // Copied cache file should be dirty.
   EXPECT_TRUE(dest_entry.file_specific_info().cache_state().is_dirty());
@@ -369,8 +365,8 @@ TEST_F(CopyOperationTest, CopyFileOverwriteFile) {
 
   EXPECT_EQ(1u, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(old_dest_entry.local_id()));
-  EXPECT_EQ(1u, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+  EXPECT_EQ(1u, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(dest_path));
 }
 
 TEST_F(CopyOperationTest, CopyFileOverwriteDirectory) {

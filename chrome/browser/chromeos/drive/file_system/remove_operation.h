@@ -53,6 +53,7 @@ class RemoveOperation {
   // Part of Remove(). Called after UpdateLocalState() completion.
   void RemoveAfterUpdateLocalState(const FileOperationCallback& callback,
                                    const std::string* local_id,
+                                   const ResourceEntry* entry,
                                    const base::FilePath* changed_directory_path,
                                    FileError error);
 

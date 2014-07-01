@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
@@ -123,8 +124,13 @@ void CreateFileOperation::CreateFileAfterUpdateLocalState(
              entry->file_specific_info().is_hosted_document()) ?
         FILE_ERROR_EXISTS : FILE_ERROR_OK;
   } else if (error == FILE_ERROR_OK) {
+    DCHECK(!entry->file_info().is_directory());
+
     // Notify observer if the file was newly created.
-    observer_->OnDirectoryChangedByOperation(file_path.DirName());
+    FileChange changed_file;
+    changed_file.Update(
+        file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+    observer_->OnFileChangedByOperation(changed_file);
     observer_->OnEntryUpdatedByOperation(entry->local_id());
   }
   callback.Run(error);

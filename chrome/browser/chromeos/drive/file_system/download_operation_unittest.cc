@@ -8,6 +8,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -61,8 +62,8 @@ TEST_F(DownloadOperationTest,
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_EQ(1U, observer()->get_changed_paths().count(file_in_root.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
 }
 
 TEST_F(DownloadOperationTest,
@@ -135,8 +136,9 @@ TEST_F(DownloadOperationTest,
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_EQ(1U, observer()->get_changed_paths().count(file_in_root.DirName()));
+  EXPECT_EQ(2U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
+  EXPECT_TRUE(observer()->get_changed_files().count(cached_file));
 
   // The cache for the other file should be removed in order to free up space.
   ResourceEntry cached_file_entry;
@@ -266,8 +268,8 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId) {
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_EQ(1U, observer()->get_changed_paths().count(file_in_root.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
 }
 
 TEST_F(DownloadOperationTest,
@@ -303,9 +305,8 @@ TEST_F(DownloadOperationTest,
 
     // The transfered file is cached and the change of "offline available"
     // attribute is notified.
-    EXPECT_EQ(1U, observer()->get_changed_paths().size());
-    EXPECT_EQ(1U,
-              observer()->get_changed_paths().count(file_in_root.DirName()));
+    EXPECT_EQ(1U, observer()->get_changed_files().size());
+    EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
   }
 
   {

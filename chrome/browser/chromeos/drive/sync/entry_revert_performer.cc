@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -24,7 +25,7 @@ FileError FinishRevert(ResourceMetadata* metadata,
                        const std::string& local_id,
                        google_apis::GDataErrorCode status,
                        scoped_ptr<google_apis::FileResource> file_resource,
-                       std::set<base::FilePath>* changed_directories) {
+                       FileChange* changed_files) {
   ResourceEntry entry;
   std::string parent_resource_id;
   FileError error = GDataToFileError(status);
@@ -53,8 +54,13 @@ FileError FinishRevert(ResourceMetadata* metadata,
     if (error != FILE_ERROR_OK)
       return error;
 
-    changed_directories->insert(original_path.DirName());
+    changed_files->Update(
+        original_path,
+        FileChange::FILE_TYPE_UNKNOWN,  // Undetermined type for deleted file.
+        FileChange::DELETE);
   } else {
+    changed_files->Update(original_path, entry, FileChange::DELETE);
+
     error = ChangeListProcessor::SetParentLocalIdOfEntry(metadata, &entry,
                                                          parent_resource_id);
     if (error != FILE_ERROR_OK)
@@ -65,12 +71,12 @@ FileError FinishRevert(ResourceMetadata* metadata,
     if (error != FILE_ERROR_OK)
       return error;
 
-    base::FilePath new_parent_path;
-    error = metadata->GetFilePath(entry.parent_local_id(), &new_parent_path);
+    base::FilePath new_path;
+    error = metadata->GetFilePath(local_id, &new_path);
     if (error != FILE_ERROR_OK)
       return error;
-    changed_directories->insert(new_parent_path);
-    changed_directories->insert(original_path.DirName());
+
+    changed_files->Update(new_path, entry, FileChange::ADD_OR_UPDATE);
   }
   return FILE_ERROR_OK;
 }
@@ -143,27 +149,30 @@ void EntryRevertPerformer::RevertEntryAfterGetFileResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::set<base::FilePath>* changed_directories = new std::set<base::FilePath>;
+  FileChange* changed_files = new FileChange;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FinishRevert, metadata_, local_id, status,
-                 base::Passed(&entry), changed_directories),
+      base::Bind(&FinishRevert,
+                 metadata_,
+                 local_id,
+                 status,
+                 base::Passed(&entry),
+                 changed_files),
       base::Bind(&EntryRevertPerformer::RevertEntryAfterFinishRevert,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Owned(changed_directories)));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(changed_files)));
 }
 
 void EntryRevertPerformer::RevertEntryAfterFinishRevert(
     const FileOperationCallback& callback,
-    const std::set<base::FilePath>* changed_directories,
+    const FileChange* changed_files,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  for (std::set<base::FilePath>::const_iterator it =
-           changed_directories->begin(); it != changed_directories->end(); ++it)
-    observer_->OnDirectoryChangedByOperation(*it);
+  observer_->OnFileChangedByOperation(*changed_files);
 
   callback.Run(error);
 }

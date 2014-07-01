@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -113,7 +114,7 @@ ChangeList::ChangeList(const google_apis::FileList& file_list)
 ChangeList::~ChangeList() {}
 
 ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata)
-  : resource_metadata_(resource_metadata) {
+    : resource_metadata_(resource_metadata), changed_files_(new FileChange) {
 }
 
 ChangeListProcessor::~ChangeListProcessor() {
@@ -480,21 +481,9 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
     resource_metadata_->GetFilePath(local_id, &file_path);
 
   if (!file_path.empty()) {
-    // Notify parent.
-    changed_dirs_.insert(file_path.DirName());
-
-    if (entry.file_info().is_directory()) {
-      // Notify self if entry is a directory.
-      changed_dirs_.insert(file_path);
-
-      // Notify all descendants if it is a directory deletion.
-      if (entry.deleted()) {
-        std::set<base::FilePath> sub_directories;
-        resource_metadata_->GetSubDirectoriesRecursively(local_id,
-                                                         &sub_directories);
-        changed_dirs_.insert(sub_directories.begin(), sub_directories.end());
-      }
-    }
+    FileChange::ChangeType type =
+        entry.deleted() ? FileChange::DELETE : FileChange::ADD_OR_UPDATE;
+    changed_files_->Update(file_path, entry, type);
   }
 }
 

@@ -12,6 +12,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "google_apis/drive/test_util.h"
@@ -116,8 +117,8 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
@@ -150,8 +151,8 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   test_util::RunBlockingPoolTask();
 
   // Notified because 'available offline' status of the existing file changes.
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));

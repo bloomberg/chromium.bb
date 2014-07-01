@@ -5,52 +5,112 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CHANGE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CHANGE_H_
 
-#include <set>
+#include <deque>
+#include <map>
+#include <string>
 
+#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace drive {
+class ResourceEntry;
 
-class FileChange;
-
-// Set of changes.
-typedef std::set<FileChange> FileChangeSet;
-
-// Represents change in the filesystem. Rename is represented as two entries:
-// of type DELETED and ADDED. CHANGED type is for changed contents of
-// directories or for changed metadata and/or contents of files.
 class FileChange {
  public:
-  enum Type {
-    DELETED,
-    ADDED,
-    CHANGED,
+  enum FileType {
+    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_FILE,
+    FILE_TYPE_DIRECTORY,
   };
 
-  // Created an object representing a change of file or directory pointed by
-  // |change_path|. The change is of |change_type| type.
-  FileChange(const base::FilePath& path, Type type);
+  enum ChangeType {
+    ADD_OR_UPDATE,
+    DELETE,
+  };
+
+  class Change {
+   public:
+    Change(ChangeType change, FileType file_type);
+
+    bool IsAddOrUpdate() const { return change_ == ADD_OR_UPDATE; }
+    bool IsDelete() const { return change_ == DELETE; }
+
+    bool IsFile() const { return file_type_ == FILE_TYPE_FILE; }
+    bool IsDirectory() const { return file_type_ == FILE_TYPE_DIRECTORY; }
+    bool IsTypeUnknown() const { return !IsFile() && !IsDirectory(); }
+
+    ChangeType change() const { return change_; }
+    FileType file_type() const { return file_type_; }
+
+    std::string DebugString() const;
+
+    bool operator==(const Change& that) const {
+      return change() == that.change() && file_type() == that.file_type();
+    }
+
+   private:
+    ChangeType change_;
+    FileType file_type_;
+  };
+
+  class ChangeList {
+   public:
+    typedef std::deque<Change> List;
+
+    ChangeList();
+    ~ChangeList();
+
+    // Updates the list with the |new_change|.
+    void Update(const Change& new_change);
+
+    size_t size() const { return list_.size(); }
+    bool empty() const { return list_.empty(); }
+    void clear() { list_.clear(); }
+    const List& list() const { return list_; }
+    const Change& front() const { return list_.front(); }
+    const Change& back() const { return list_.back(); }
+
+    ChangeList PopAndGetNewList() const;
+
+    std::string DebugString() const;
+
+   private:
+    List list_;
+  };
+
+ public:
+  typedef std::map<base::FilePath, FileChange::ChangeList> Map;
+
+  FileChange();
   ~FileChange();
 
-  // Factory method to create a FileChangeSet object with only one element.
-  static FileChangeSet CreateSingleSet(const base::FilePath& path, Type type);
+  void Update(const base::FilePath file_path,
+              const FileChange::Change& new_change);
+  void Update(const base::FilePath file_path,
+              const FileChange::ChangeList& list);
+  void Update(const base::FilePath file_path,
+              FileType type,
+              FileChange::ChangeType change);
+  void Update(const base::FilePath file_path,
+              const ResourceEntry& entry,
+              FileChange::ChangeType change);
+  void Apply(const FileChange& new_changed_files);
 
-  bool operator==(const FileChange &file_change) const {
-    return path_ == file_change.path() && type_ == file_change.type();
+  const Map& map() const { return map_; }
+
+  size_t size() const { return map_.size(); }
+  bool empty() const { return map_.empty(); }
+  void ClearForTest() { map_.clear(); }
+  size_t CountDirectory(const base::FilePath& directory_path) const;
+  size_t count(const base::FilePath& file_path) const {
+    return map_.count(file_path);
   }
 
-  bool operator<(const FileChange &file_change) const {
-    return (path_ < file_change.path()) ||
-           (path_ == file_change.path() && type_ < file_change.type());
-  }
-
-  const base::FilePath& path() const { return path_; }
-
-  Type type() const { return type_; }
+  std::string DebugString() const;
 
  private:
-  const base::FilePath path_;
-  const Type type_;
+  Map map_;
 };
 
 }  // namespace drive

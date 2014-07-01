@@ -46,7 +46,7 @@ class TestDirectoryLoaderObserver : public ChangeListLoaderObserver {
   void clear_changed_directories() { changed_directories_.clear(); }
 
   // ChageListObserver overrides:
-  virtual void OnDirectoryChanged(
+  virtual void OnDirectoryReloaded(
       const base::FilePath& directory_path) OVERRIDE {
     changed_directories_.insert(directory_path);
   }

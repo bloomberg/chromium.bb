@@ -52,6 +52,7 @@ class TouchOperation {
   // Part of TouchFile(). Runs after updating the local state.
   void TouchFileAfterUpdateLocalState(const base::FilePath& file_path,
                                       const FileOperationCallback& callback,
+                                      const ResourceEntry* entry,
                                       const std::string* local_id,
                                       FileError error);
 

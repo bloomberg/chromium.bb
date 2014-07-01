@@ -23,6 +23,7 @@ class FileResource;
 
 namespace drive {
 
+class FileChange;
 class JobScheduler;
 class ResourceEntry;
 struct ClientContext;
@@ -78,7 +79,7 @@ class EntryUpdatePerformer {
 
   // Part of UpdateEntry(). Called after FinishUpdate is completed.
   void UpdateEntryAfterFinish(const FileOperationCallback& callback,
-                              const base::FilePath* changed_directory,
+                              const FileChange* changed_files,
                               FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

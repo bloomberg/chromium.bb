@@ -12,6 +12,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -527,9 +528,13 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
     params->OnError(error);
     return;
   }
+  DCHECK(!entry_after_update->file_info().is_directory());
 
+  FileChange changed_files;
+  changed_files.Update(
+      file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
   // Storing to cache changes the "offline available" status, hence notify.
-  observer_->OnDirectoryChangedByOperation(file_path.DirName());
+  observer_->OnFileChangedByOperation(changed_files);
   params->OnDownloadCompleted(*cache_file_path, entry_after_update.Pass());
 }
 

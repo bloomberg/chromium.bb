@@ -8,93 +8,53 @@
 
 namespace drive {
 
-TEST(FileChangeTest, Getters) {
-  base::FilePath change_path(FILE_PATH_LITERAL("test"));
-  FileChange::Type change_type = FileChange::ADDED;
+TEST(ChangeListTest, FileChange_Change) {
+  FileChange::ChangeType change_type = FileChange::ADD_OR_UPDATE;
+  FileChange::FileType file_type = FileChange::FILE_TYPE_FILE;
 
-  FileChange file_change(change_path, change_type);
+  FileChange::Change change1(change_type, file_type);
+  EXPECT_EQ(change_type, change1.change());
+  EXPECT_EQ(file_type, change1.file_type());
 
-  EXPECT_EQ(change_path, file_change.path());
-  EXPECT_EQ(change_type, file_change.type());
+  FileChange::Change change2(change_type, file_type);
+  EXPECT_EQ(change_type, change1.change());
+  EXPECT_EQ(file_type, change1.file_type());
+  EXPECT_EQ(change1, change2);
+
+  FileChange::Change change3(change_type, FileChange::FILE_TYPE_DIRECTORY);
+  EXPECT_EQ(change_type, change3.change());
+  EXPECT_EQ(FileChange::FILE_TYPE_DIRECTORY, change3.file_type());
+  EXPECT_TRUE(!(change1 == change3));
 }
 
-TEST(FileChangeTest, FactoryMethod) {
-  base::FilePath change_path(FILE_PATH_LITERAL("a/b/c/d"));
-  FileChange::Type change_type = FileChange::CHANGED;
+TEST(ChangeListTest, FileChangeChangeList) {
+  FileChange::ChangeList changes;
+  EXPECT_TRUE(changes.empty());
+  EXPECT_EQ(0u, changes.size());
 
-  FileChangeSet changed_files =
-      FileChange::CreateSingleSet(change_path, change_type);
-
-  ASSERT_EQ(1u, changed_files.size());
-  FileChangeSet::iterator it = changed_files.begin();
-
-  EXPECT_EQ(change_path, it->path());
-  EXPECT_EQ(change_type, it->type());
+  changes.Update(FileChange::Change(FileChange::ADD_OR_UPDATE,
+                                    FileChange::FILE_TYPE_FILE));
+  EXPECT_EQ(1u, changes.size());
 }
 
-TEST(FileChangeTest, Equals) {
-  // Change is equal if and only if both path and type are equal.
-  // Paths differ, types are equal.
-  FileChange file_change1(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::ADDED);
-  FileChange file_change2(base::FilePath(FILE_PATH_LITERAL("b")),
-                          FileChange::ADDED);
-  EXPECT_EQ(file_change1, file_change1);
-  EXPECT_FALSE(file_change1 == file_change2);
+TEST(ChangeListTest, FileChange) {
+  base::FilePath change_path1(FILE_PATH_LITERAL("test"));
+  base::FilePath change_path2(FILE_PATH_LITERAL("a/b/c/d"));
+  base::FilePath change_path3(FILE_PATH_LITERAL("a/b/c/e"));
+  base::FilePath change_dir(FILE_PATH_LITERAL("a/b/c"));
 
-  // Paths are equal, types differ.
-  FileChange file_change3(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::DELETED);
-  FileChange file_change4(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::CHANGED);
-  EXPECT_FALSE(file_change3 == file_change4);
+  FileChange changed_files;
+  changed_files.Update(
+      change_path1, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+  changed_files.Update(
+      change_path2, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+  changed_files.Update(
+      change_path2, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+  changed_files.Update(
+      change_path3, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
 
-  // Paths and types are equal.
-  FileChange file_change5(base::FilePath(FILE_PATH_LITERAL("c")),
-                          FileChange::ADDED);
-  FileChange file_change6(base::FilePath(FILE_PATH_LITERAL("c")),
-                          FileChange::ADDED);
-  EXPECT_EQ(file_change5, file_change6);
-}
-
-TEST(FileChangeTest, Compare) {
-  FileChange file_change1(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::DELETED);
-  FileChange file_change2(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::ADDED);
-  FileChange file_change3(base::FilePath(FILE_PATH_LITERAL("a")),
-                          FileChange::CHANGED);
-  FileChange file_change4(base::FilePath(FILE_PATH_LITERAL("b")),
-                          FileChange::ADDED);
-  FileChange file_change5(base::FilePath(FILE_PATH_LITERAL("c")),
-                          FileChange::DELETED);
-
-  // Comparison operator should not return true for equal values.
-  EXPECT_FALSE(file_change1 < file_change1);
-  EXPECT_FALSE(file_change2 < file_change2);
-  EXPECT_FALSE(file_change3 < file_change3);
-  EXPECT_FALSE(file_change4 < file_change4);
-  EXPECT_FALSE(file_change5 < file_change5);
-
-  EXPECT_LT(file_change1, file_change2);
-  EXPECT_LT(file_change1, file_change3);
-  EXPECT_LT(file_change1, file_change4);
-  EXPECT_LT(file_change1, file_change5);
-
-  EXPECT_FALSE(file_change2 < file_change1);
-  EXPECT_LT(file_change2, file_change3);
-  EXPECT_LT(file_change2, file_change4);
-  EXPECT_LT(file_change2, file_change5);
-
-  EXPECT_FALSE(file_change3 < file_change1);
-  EXPECT_FALSE(file_change3 < file_change2);
-  EXPECT_LT(file_change3, file_change4);
-  EXPECT_LT(file_change3, file_change5);
-
-  EXPECT_FALSE(file_change4 < file_change1);
-  EXPECT_FALSE(file_change4 < file_change2);
-  EXPECT_FALSE(file_change4 < file_change3);
-  EXPECT_LT(file_change4, file_change5);
+  ASSERT_EQ(3u, changed_files.size());
+  ASSERT_EQ(2u, changed_files.CountDirectory(change_dir));
 }
 
 }  // namespace drive

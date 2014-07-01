@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -39,10 +40,8 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
     loader_->RemoveObserver(this);
   }
 
-  const std::set<base::FilePath>& changed_directories() const {
-    return changed_directories_;
-  }
-  void clear_changed_directories() { changed_directories_.clear(); }
+  const FileChange& changed_files() const { return changed_files_; }
+  void clear_changed_files() { changed_files_.ClearForTest(); }
 
   int load_from_server_complete_count() const {
     return load_from_server_complete_count_;
@@ -52,9 +51,8 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   }
 
   // ChageListObserver overrides:
-  virtual void OnDirectoryChanged(
-      const base::FilePath& directory_path) OVERRIDE {
-    changed_directories_.insert(directory_path);
+  virtual void OnFileChanged(const FileChange& changed_files) OVERRIDE {
+    changed_files_.Apply(changed_files);
   }
   virtual void OnLoadFromServerComplete() OVERRIDE {
     ++load_from_server_complete_count_;
@@ -65,7 +63,7 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
 
  private:
   ChangeListLoader* loader_;
-  std::set<base::FilePath> changed_directories_;
+  FileChange changed_files_;
   int load_from_server_complete_count_;
   int initial_load_complete_count_;
 
@@ -168,7 +166,7 @@ TEST_F(ChangeListLoaderTest, Load) {
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
   EXPECT_EQ(1, observer.initial_load_complete_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());
-  EXPECT_TRUE(observer.changed_directories().empty());
+  EXPECT_TRUE(observer.changed_files().empty());
 
   base::FilePath file_path =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
@@ -219,8 +217,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(drive_service_->about_resource().largest_change_id(), changestamp);
   EXPECT_EQ(1, drive_service_->change_list_load_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveMyDriveRootPath()));
+  EXPECT_TRUE(
+      observer.changed_files().CountDirectory(util::GetDriveMyDriveRootPath()));
 
   base::FilePath file_path =
       util::GetDriveMyDriveRootPath().AppendASCII(gdata_entry->title());
@@ -292,8 +290,8 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_LT(previous_changestamp, changestamp);
   EXPECT_EQ(1, observer.load_from_server_complete_count());
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveMyDriveRootPath()));
+  EXPECT_TRUE(
+      observer.changed_files().CountDirectory(util::GetDriveMyDriveRootPath()));
 
   // The new file is found in the local metadata.
   base::FilePath new_file_path =
@@ -326,13 +324,13 @@ TEST_F(ChangeListLoaderTest, Lock) {
   base::RunLoop().RunUntilIdle();
 
   // Update is pending due to the lock.
-  EXPECT_TRUE(observer.changed_directories().empty());
+  EXPECT_TRUE(observer.changed_files().empty());
 
   // Unlock the loader, this should resume the pending udpate.
   lock.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveMyDriveRootPath()));
+  EXPECT_TRUE(
+      observer.changed_files().CountDirectory(util::GetDriveMyDriveRootPath()));
 }
 
 }  // namespace internal

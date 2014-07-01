@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
@@ -34,8 +35,8 @@ class TestObserver : public OperationObserver {
   }
 
   // OperationObserver overrides.
-  virtual void OnDirectoryChangedByOperation(
-      const base::FilePath& path) OVERRIDE {}
+  virtual void OnFileChangedByOperation(
+      const FileChange& changed_file) OVERRIDE {}
 
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE {
     observed_local_id_ = local_id;

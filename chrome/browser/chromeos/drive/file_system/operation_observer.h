@@ -10,6 +10,8 @@ class FilePath;
 }
 
 namespace drive {
+class FileChange;
+
 namespace file_system {
 
 // Error type of sync client.
@@ -29,8 +31,7 @@ class OperationObserver {
   // Sent when a content of a directory has been changed.
   // |directory_path| is a virtual directory path representing the
   // changed directory.
-  virtual void OnDirectoryChangedByOperation(
-      const base::FilePath& directory_path) = 0;
+  virtual void OnFileChangedByOperation(const FileChange& changed_files) = 0;
 
   // Sent when an entry is updated and sync is needed.
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) {}

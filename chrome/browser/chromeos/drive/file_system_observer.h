@@ -14,6 +14,8 @@ class FilePath;
 
 namespace drive {
 
+class FileChange;
+
 // Interface for classes that need to observe events from classes implementing
 // FileSystemInterface.
 // All events are notified on UI thread.
@@ -23,6 +25,7 @@ class FileSystemObserver {
   // |directory_path| is a virtual directory path (/drive/...) representing
   // changed directory.
   virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
+  virtual void OnFileChanged(const FileChange& file_change) {}
 
   // Triggared when a specific drive error occurred.
   // |type| is a type of the error. |file_name| is a virtual path of the entry.

@@ -9,6 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -51,17 +52,15 @@ class OperationTestBase : public testing::Test {
     ~LoggingObserver();
 
     // OperationObserver overrides.
-    virtual void OnDirectoryChangedByOperation(
-        const base::FilePath& path) OVERRIDE;
+    virtual void OnFileChangedByOperation(
+        const FileChange& changed_files) OVERRIDE;
     virtual void OnEntryUpdatedByOperation(
         const std::string& local_id) OVERRIDE;
     virtual void OnDriveSyncError(DriveSyncErrorType type,
                                   const std::string& local_id) OVERRIDE;
 
     // Gets the set of changed paths.
-    const std::set<base::FilePath>& get_changed_paths() {
-      return changed_paths_;
-    }
+    const FileChange& get_changed_files() { return changed_files_; }
 
     // Gets the set of updated local IDs.
     const std::set<std::string>& updated_local_ids() const {
@@ -74,7 +73,7 @@ class OperationTestBase : public testing::Test {
     }
 
    private:
-    std::set<base::FilePath> changed_paths_;
+    FileChange changed_files_;
     std::set<std::string> updated_local_ids_;
     std::vector<DriveSyncErrorType> drive_sync_errors_;
   };

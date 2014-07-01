@@ -7,6 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -25,17 +26,17 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            const base::FilePath& path,
                            bool is_recursive,
                            std::string* local_id,
-                           base::FilePath* changed_directory_path) {
+                           ResourceEntry* entry,
+                           base::FilePath* changed_path) {
   FileError error = metadata->GetIdByPath(path, local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  ResourceEntry entry;
-  error = metadata->GetResourceEntryById(*local_id, &entry);
+  error = metadata->GetResourceEntryById(*local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  if (entry.file_info().is_directory() && !is_recursive) {
+  if (entry->file_info().is_directory() && !is_recursive) {
     // Check emptiness of the directory.
     ResourceEntryVector entries;
     error = metadata->ReadDirectoryByPath(path, &entries);
@@ -49,11 +50,11 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  *changed_directory_path = path.DirName();
+  *changed_path = path;
 
   // Move to the trash.
-  entry.set_parent_local_id(util::kDriveTrashDirLocalId);
-  return metadata->RefreshEntry(entry);
+  entry->set_parent_local_id(util::kDriveTrashDirLocalId);
+  return metadata->RefreshEntry(*entry);
 }
 
 }  // namespace
@@ -82,7 +83,8 @@ void RemoveOperation::Remove(const base::FilePath& path,
   DCHECK(!callback.is_null());
 
   std::string* local_id = new std::string;
-  base::FilePath* changed_directory_path = new base::FilePath;
+  base::FilePath* changed_path = new base::FilePath;
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -92,25 +94,32 @@ void RemoveOperation::Remove(const base::FilePath& path,
                  path,
                  is_recursive,
                  local_id,
-                 changed_directory_path),
+                 entry,
+                 changed_path),
       base::Bind(&RemoveOperation::RemoveAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  base::Owned(local_id),
-                 base::Owned(changed_directory_path)));
+                 base::Owned(entry),
+                 base::Owned(changed_path)));
 }
 
 void RemoveOperation::RemoveAfterUpdateLocalState(
     const FileOperationCallback& callback,
     const std::string* local_id,
-    const base::FilePath* changed_directory_path,
+    const ResourceEntry* entry,
+    const base::FilePath* changed_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK) {
-    observer_->OnDirectoryChangedByOperation(*changed_directory_path);
-    observer_->OnEntryUpdatedByOperation(*local_id);
+  if (!changed_path->empty()) {
+    FileChange changed_file;
+    changed_file.Update(*changed_path, *entry, FileChange::DELETE);
+    if (error == FILE_ERROR_OK) {
+      observer_->OnFileChangedByOperation(changed_file);
+      observer_->OnEntryUpdatedByOperation(*local_id);
+    }
   }
 
   callback.Run(error);

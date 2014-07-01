@@ -19,6 +19,7 @@ class SequencedTaskRunner;
 
 namespace drive {
 
+class FileChange;
 class ResourceEntry;
 
 namespace internal {
@@ -56,7 +57,7 @@ class CreateDirectoryOperation {
   void CreateDirectoryAfterUpdateLocalState(
       const FileOperationCallback& callback,
       const std::set<std::string>* updated_local_ids,
-      const std::set<base::FilePath>* changed_directories,
+      const FileChange* changed_directories,
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

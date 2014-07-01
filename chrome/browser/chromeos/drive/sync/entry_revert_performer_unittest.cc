@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -32,6 +33,8 @@ class EntryRevertPerformerTest : public file_system::OperationTestBase {
 TEST_F(EntryRevertPerformerTest, RevertEntry) {
   base::FilePath path(
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  base::FilePath updated_path(FILE_PATH_LITERAL(
+      "drive/root/Directory 1/UpdatedSubDirectory File 1.txt"));
 
   ResourceEntry src_entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(path, &src_entry));
@@ -67,8 +70,9 @@ TEST_F(EntryRevertPerformerTest, RevertEntry) {
   EXPECT_EQ(src_entry.title(), result_entry.title());
   EXPECT_EQ(ResourceEntry::CLEAN, result_entry.metadata_edit_state());
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(path.DirName()));
+  EXPECT_EQ(2U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(path));
+  EXPECT_TRUE(observer()->get_changed_files().count(updated_path));
 }
 
 TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
@@ -105,8 +109,8 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
   // Verify the entry was deleted locally.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntryById(local_id, &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().CountDirectory(
       util::GetDriveMyDriveRootPath()));
 }
 
@@ -138,8 +142,8 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntryById(entry.local_id(), &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(path.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(path));
 }
 
 }  // namespace internal

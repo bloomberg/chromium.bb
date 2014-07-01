@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/directory_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
@@ -788,9 +789,11 @@ void FileSystem::SearchMetadata(const std::string& query,
                                   callback);
 }
 
-void FileSystem::OnDirectoryChangedByOperation(
-    const base::FilePath& directory_path) {
-  OnDirectoryChanged(directory_path);
+void FileSystem::OnFileChangedByOperation(const FileChange& changed_files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FOR_EACH_OBSERVER(
+      FileSystemObserver, observers_, OnFileChanged(changed_files));
 }
 
 void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
@@ -824,11 +827,18 @@ void FileSystem::OnDriveSyncErrorAfterGetFilePath(
                     OnDriveSyncError(type, *file_path));
 }
 
-void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
+void FileSystem::OnDirectoryReloaded(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
-                    OnDirectoryChanged(directory_path));
+  FOR_EACH_OBSERVER(
+      FileSystemObserver, observers_, OnDirectoryChanged(directory_path));
+}
+
+void FileSystem::OnFileChanged(const FileChange& changed_files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FOR_EACH_OBSERVER(
+      FileSystemObserver, observers_, OnFileChanged(changed_files));
 }
 
 void FileSystem::OnLoadFromServerComplete() {

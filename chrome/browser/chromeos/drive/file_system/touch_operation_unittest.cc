@@ -48,8 +48,8 @@ TEST_F(TouchOperationTest, TouchFile) {
             base::Time::FromInternalValue(entry.file_info().last_modified()));
   EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
 
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(kTestPath.DirName()));
+  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_TRUE(observer()->get_changed_files().count(kTestPath));
 
   EXPECT_EQ(1U, observer()->updated_local_ids().size());
   EXPECT_TRUE(observer()->updated_local_ids().count(entry.local_id()));

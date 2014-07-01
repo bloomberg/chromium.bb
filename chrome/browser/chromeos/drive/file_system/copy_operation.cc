@@ -10,6 +10,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -163,13 +164,13 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
 FileError UpdateLocalStateForServerSideOperation(
     internal::ResourceMetadata* metadata,
     scoped_ptr<google_apis::FileResource> file_resource,
+    ResourceEntry* entry,
     base::FilePath* file_path) {
   DCHECK(file_resource);
 
-  ResourceEntry entry;
   std::string parent_resource_id;
-  if (!ConvertFileResourceToResourceEntry(*file_resource, &entry,
-                                          &parent_resource_id) ||
+  if (!ConvertFileResourceToResourceEntry(
+          *file_resource, entry, &parent_resource_id) ||
       parent_resource_id.empty())
     return FILE_ERROR_NOT_A_FILE;
 
@@ -178,14 +179,14 @@ FileError UpdateLocalStateForServerSideOperation(
                                                 &parent_local_id);
   if (error != FILE_ERROR_OK)
     return error;
-  entry.set_parent_local_id(parent_local_id);
+  entry->set_parent_local_id(parent_local_id);
 
   std::string local_id;
-  error = metadata->AddEntry(entry, &local_id);
+  error = metadata->AddEntry(*entry, &local_id);
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.
   if (error == FILE_ERROR_EXISTS)
-    error = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
+    error = metadata->GetIdByResourceId(entry->resource_id(), &local_id);
 
   if (error != FILE_ERROR_OK)
     return error;
@@ -200,13 +201,13 @@ FileError UpdateLocalStateForScheduleTransfer(
     internal::FileCache* cache,
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
+    ResourceEntry* entry,
     std::string* local_id) {
   FileError error = metadata->GetIdByPath(remote_dest_path, local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  ResourceEntry entry;
-  error = metadata->GetResourceEntryById(*local_id, &entry);
+  error = metadata->GetResourceEntryById(*local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -336,8 +337,14 @@ void CopyOperation::CopyAfterTryToCopyLocally(
   for (size_t i = 0; i < updated_local_ids->size(); ++i)
     observer_->OnEntryUpdatedByOperation((*updated_local_ids)[i]);
 
-  if (*directory_changed)
-    observer_->OnDirectoryChangedByOperation(params->dest_file_path.DirName());
+  if (*directory_changed) {
+    FileChange changed_file;
+    DCHECK(!params->src_entry.file_info().is_directory());
+    changed_file.Update(params->dest_file_path,
+                        FileChange::FILE_TYPE_FILE,
+                        FileChange::ADD_OR_UPDATE);
+    observer_->OnFileChangedByOperation(changed_file);
+  }
 
   if (error != FILE_ERROR_OK || !*should_copy_on_server) {
     params->callback.Run(error);
@@ -449,12 +456,19 @@ void CopyOperation::TransferJsonGdocFileAfterLocalWork(
     // When |resource_id| has no parent, we just set the new destination folder
     // as the parent, for sharing the document between the original source.
     // This reparenting is already done in LocalWorkForTransferJsonGdocFile().
-    case IS_ORPHAN:
+    case IS_ORPHAN: {
       DCHECK(!params->changed_path.empty());
       observer_->OnEntryUpdatedByOperation(params->local_id);
-      observer_->OnDirectoryChangedByOperation(params->changed_path.DirName());
+
+      FileChange changed_file;
+      changed_file.Update(
+          params->changed_path,
+          FileChange::FILE_TYPE_FILE,  // This must be a hosted document.
+          FileChange::ADD_OR_UPDATE);
+      observer_->OnFileChangedByOperation(changed_file);
       params->callback.Run(error);
       break;
+    }
     // When the |resource_id| is not in the local metadata, assume it to be a
     // document just now shared on the server but not synced locally.
     // Same as the IS_ORPHAN case, we want to deal the case by setting parent,
@@ -503,6 +517,8 @@ void CopyOperation::UpdateAfterServerSideOperation(
     return;
   }
 
+  ResourceEntry* resource_entry = new ResourceEntry;
+
   // The copy on the server side is completed successfully. Update the local
   // metadata.
   base::FilePath* file_path = new base::FilePath;
@@ -510,21 +526,30 @@ void CopyOperation::UpdateAfterServerSideOperation(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForServerSideOperation,
-                 metadata_, base::Passed(&entry), file_path),
+                 metadata_,
+                 base::Passed(&entry),
+                 resource_entry,
+                 file_path),
       base::Bind(&CopyOperation::UpdateAfterLocalStateUpdate,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, base::Owned(file_path)));
+                 callback,
+                 base::Owned(file_path),
+                 base::Owned(resource_entry)));
 }
 
 void CopyOperation::UpdateAfterLocalStateUpdate(
     const FileOperationCallback& callback,
     base::FilePath* file_path,
+    const ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK)
-    observer_->OnDirectoryChangedByOperation(file_path->DirName());
+  if (error == FILE_ERROR_OK) {
+    FileChange changed_file;
+    changed_file.Update(*file_path, *entry, FileChange::ADD_OR_UPDATE);
+    observer_->OnFileChangedByOperation(changed_file);
+  }
   callback.Run(error);
 }
 
@@ -558,28 +583,39 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
   }
 
   std::string* local_id = new std::string;
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(
-          &UpdateLocalStateForScheduleTransfer,
-          metadata_, cache_, local_src_path, remote_dest_path, local_id),
+      base::Bind(&UpdateLocalStateForScheduleTransfer,
+                 metadata_,
+                 cache_,
+                 local_src_path,
+                 remote_dest_path,
+                 entry,
+                 local_id),
       base::Bind(
           &CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState,
-          weak_ptr_factory_.GetWeakPtr(), callback, remote_dest_path,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback,
+          remote_dest_path,
+          base::Owned(entry),
           base::Owned(local_id)));
 }
 
 void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
     const base::FilePath& remote_dest_path,
+    const ResourceEntry* entry,
     std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK) {
-    observer_->OnDirectoryChangedByOperation(remote_dest_path.DirName());
+    FileChange changed_file;
+    changed_file.Update(remote_dest_path, *entry, FileChange::ADD_OR_UPDATE);
+    observer_->OnFileChangedByOperation(changed_file);
     observer_->OnEntryUpdatedByOperation(*local_id);
   }
   callback.Run(error);

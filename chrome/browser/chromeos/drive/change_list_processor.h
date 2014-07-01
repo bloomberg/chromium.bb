@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "url/gurl.h"
 
 namespace google_apis {
@@ -23,6 +24,7 @@ class FileList;
 
 namespace drive {
 
+class FileChange;
 class ResourceEntry;
 
 namespace internal {
@@ -114,8 +116,8 @@ class ChangeListProcessor {
                   ScopedVector<ChangeList> change_lists,
                   bool is_delta_update);
 
-  // The set of changed directories as a result of change list processing.
-  const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
+  // The set of changed files as a result of change list processing.
+  const FileChange& changed_files() const { return *changed_files_; }
 
   // Adds or refreshes the child entries from |change_list| to the directory.
   static FileError RefreshDirectory(
@@ -152,7 +154,7 @@ class ChangeListProcessor {
 
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
-  std::set<base::FilePath> changed_dirs_;
+  scoped_ptr<FileChange> changed_files_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);
 };

@@ -523,13 +523,9 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
                base::Int64ToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
-    for (std::set<base::FilePath>::iterator dir_iter =
-            change_list_processor->changed_dirs().begin();
-        dir_iter != change_list_processor->changed_dirs().end();
-        ++dir_iter) {
-      FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                        OnDirectoryChanged(*dir_iter));
-    }
+    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
+                      observers_,
+                      OnFileChanged(change_list_processor->changed_files()));
   }
 
   OnChangeListLoadComplete(error);

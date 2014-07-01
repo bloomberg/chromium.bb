@@ -6,6 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,7 +21,7 @@ namespace {
 FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            const base::FilePath& src_path,
                            const base::FilePath& dest_path,
-                           std::set<base::FilePath>* changed_directories,
+                           FileChange* changed_files,
                            std::string* local_id) {
   ResourceEntry entry;
   FileError error = metadata->GetResourceEntryByPath(src_path, &entry);
@@ -36,6 +37,8 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   // The parent must be a directory.
   if (!parent_entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
+
+  changed_files->Update(src_path, entry, FileChange::DELETE);
 
   // Strip the extension for a hosted document if necessary.
   const std::string new_extension =
@@ -57,8 +60,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  changed_directories->insert(src_path.DirName());
-  changed_directories->insert(dest_path.DirName());
+  changed_files->Update(dest_path, entry, FileChange::ADD_OR_UPDATE);
   return FILE_ERROR_OK;
 }
 
@@ -84,7 +86,7 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::set<base::FilePath>* changed_directories = new std::set<base::FilePath>;
+  FileChange* changed_files = new FileChange;
   std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -93,28 +95,24 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
                  metadata_,
                  src_file_path,
                  dest_file_path,
-                 changed_directories,
+                 changed_files,
                  local_id),
       base::Bind(&MoveOperation::MoveAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 base::Owned(changed_directories),
+                 base::Owned(changed_files),
                  base::Owned(local_id)));
 }
 
 void MoveOperation::MoveAfterUpdateLocalState(
     const FileOperationCallback& callback,
-    const std::set<base::FilePath>* changed_directories,
+    const FileChange* changed_files,
     const std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error == FILE_ERROR_OK) {
     // Notify the change of directory.
-    for (std::set<base::FilePath>::const_iterator it =
-             changed_directories->begin();
-         it != changed_directories->end(); ++it)
-      observer_->OnDirectoryChangedByOperation(*it);
-
+    observer_->OnFileChangedByOperation(*changed_files);
     observer_->OnEntryUpdatedByOperation(*local_id);
   }
   callback.Run(error);

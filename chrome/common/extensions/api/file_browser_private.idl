@@ -75,6 +75,9 @@ enum CopyProgressStatusType {
 // Specifies type of event that is raised.
 enum FileWatchEventType { changed, error };
 
+// Specifies type of change in file watch event.
+enum ChangeType { add_or_update, delete };
+
 // The type of entry that is needed. Default to ALL.
 enum SearchType { EXCLUDE_DIRECTORIES, SHARED_WITH_ME, OFFLINE, ALL };
 
@@ -364,6 +367,15 @@ dictionary FileTransferCancelStatus {
   boolean canceled;
 };
 
+// Detailed information of change.
+dictionary FileChange {
+  // URL of changed file (or directory).
+  DOMString url;
+
+  // Type of change, which may be multiple.
+  ChangeType[] changes;
+};
+
 // Directory change notification details.
 dictionary FileWatchEvent {
   // Specifies type of event that is raised.
@@ -376,6 +388,10 @@ dictionary FileWatchEvent {
   // href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry
   // interface</a>.
   [instanceOf=Entry] object entry;
+
+  // Detailed change information of change. It would be null if the detailed
+  // information is not available.
+  FileChange[]? changedFiles;
 };
 
 dictionary Preferences {

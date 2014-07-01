@@ -567,8 +567,9 @@ void DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp(
 
   // Also notify the observers.
   if (error == FILE_ERROR_OK && !directory_path->empty()) {
-    FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                      OnDirectoryChanged(*directory_path));
+    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
+                      observers_,
+                      OnDirectoryReloaded(*directory_path));
   }
 }
 

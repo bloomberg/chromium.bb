@@ -25,6 +25,7 @@ class ResourceEntry;
 
 namespace drive {
 
+class FileChange;
 class ResourceEntry;
 
 namespace internal {
@@ -54,11 +55,10 @@ class MoveOperation {
 
  private:
   // Part of Move(). Called after updating the local state.
-  void MoveAfterUpdateLocalState(
-      const FileOperationCallback& callback,
-      const std::set<base::FilePath>* changed_directories,
-      const std::string* local_id,
-      FileError error);
+  void MoveAfterUpdateLocalState(const FileOperationCallback& callback,
+                                 const FileChange* changed_file,
+                                 const std::string* local_id,
+                                 FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

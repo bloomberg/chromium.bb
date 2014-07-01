@@ -42,6 +42,10 @@ namespace chromeos {
 class NetworkState;
 }
 
+namespace drive {
+class FileChange;
+}
+
 namespace file_manager {
 
 // Monitors changes in disk mounts, network connection state and preferences
@@ -109,6 +113,7 @@ class EventRouter
 
   // drive::FileSystemObserver overrides.
   virtual void OnDirectoryChanged(const base::FilePath& drive_path) OVERRIDE;
+  virtual void OnFileChanged(const drive::FileChange& changed_files) OVERRIDE;
   virtual void OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
                                 const base::FilePath& drive_path) OVERRIDE;
 
@@ -146,18 +151,22 @@ class EventRouter
   void OnFileManagerPrefsChanged();
 
   // Process file watch notifications.
-  void HandleFileWatchNotification(const base::FilePath& path,
+  void HandleFileWatchNotification(const drive::FileChange* list,
+                                   const base::FilePath& path,
                                    bool got_error);
 
   // Sends directory change event.
   void DispatchDirectoryChangeEvent(
       const base::FilePath& path,
-      bool error,
+      const drive::FileChange* list,
+      bool got_error,
       const std::vector<std::string>& extension_ids);
 
   // Sends directory change event, after converting the file definition to entry
   // definition.
   void DispatchDirectoryChangeEventWithEntryDefinition(
+      const linked_ptr<drive::FileChange> list,
+      const std::string* extension_id,
       bool watcher_error,
       const EntryDefinition& entry_definition);
 

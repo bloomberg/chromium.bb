@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -65,12 +66,19 @@ class MockDirectoryChangeObserver : public FileSystemObserver {
     changed_directories_.push_back(directory_path);
   }
 
+  virtual void OnFileChanged(const FileChange& new_file_change) OVERRIDE {
+    changed_files_.Apply(new_file_change);
+  }
+
   const std::vector<base::FilePath>& changed_directories() const {
     return changed_directories_;
   }
 
+  const FileChange& changed_files() const { return changed_files_; }
+
  private:
   std::vector<base::FilePath> changed_directories_;
+  FileChange changed_files_;
   DISALLOW_COPY_AND_ASSIGN(MockDirectoryChangeObserver);
 };
 
@@ -705,7 +713,8 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 
-  ASSERT_LE(1u, mock_directory_observer_->changed_directories().size());
+  ASSERT_LE(0u, mock_directory_observer_->changed_directories().size());
+  ASSERT_LE(1u, mock_directory_observer_->changed_files().size());
 }
 
 TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
@@ -804,9 +813,11 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   EXPECT_FALSE(entry->file_specific_info().cache_state().is_pinned());
 
   // Pinned file gets synced and it results in entry state changes.
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
-            mock_directory_observer_->changed_directories()[0]);
+  ASSERT_EQ(0u, mock_directory_observer_->changed_directories().size());
+  ASSERT_EQ(1u, mock_directory_observer_->changed_files().size());
+  EXPECT_EQ(1u,
+            mock_directory_observer_->changed_files().CountDirectory(
+                base::FilePath(FILE_PATH_LITERAL("drive/root"))));
 }
 
 TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
