@@ -28,7 +28,7 @@
 [
     GarbageCollected,
 ] interface IDBObjectStore {
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString name;
+    readonly attribute DOMString? name;
     [CallWith=ScriptState] readonly attribute any keyPath;
     readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;

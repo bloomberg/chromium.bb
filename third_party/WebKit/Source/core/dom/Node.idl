@@ -38,7 +38,7 @@
 
     readonly attribute DOMString nodeName;
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString nodeValue;
+    [CustomElementCallbacks] attribute DOMString? nodeValue;
 
     readonly attribute unsigned short   nodeType;
     [PerWorldBindings] readonly attribute Node             parentNode;
@@ -59,19 +59,19 @@
     [CustomElementCallbacks] void normalize();
 
     // Introduced in DOM Level 2:
-    [TreatReturnedNullStringAs=Null, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
-    [TreatReturnedNullStringAs=Null, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
+    [MeasureAs=NodeNamespaceURI] readonly attribute DOMString? namespaceURI; // Moved to Element and Attr in DOM4.
+    [MeasureAs=NodeLocalName] readonly attribute DOMString? localName; // Moved to Element and Attr in DOM4.
 
     // Introduced in DOM Level 3:
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString baseURI;
+    readonly attribute DOMString? baseURI;
 
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, TreatUndefinedAs=NullString, CustomElementCallbacks] attribute DOMString textContent;
 
     [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other); // Removed in DOM4.
     boolean isEqualNode(Node other);
-    [TreatReturnedNullStringAs=Null] DOMString lookupPrefix([TreatNullAs=NullString] DOMString namespaceURI);
+    DOMString? lookupPrefix([TreatNullAs=NullString] DOMString namespaceURI);
     boolean isDefaultNamespace([TreatNullAs=NullString] DOMString namespaceURI);
-    [TreatReturnedNullStringAs=Null] DOMString lookupNamespaceURI([TreatNullAs=NullString] DOMString prefix);
+    DOMString? lookupNamespaceURI([TreatNullAs=NullString] DOMString prefix);
 
     // DocumentPosition
     const unsigned short      DOCUMENT_POSITION_DISCONNECTED = 0x01;

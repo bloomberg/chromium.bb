@@ -31,5 +31,5 @@
 // http://www.w3.org/TR/mediacapture-streams/#idl-def-URL
 
 partial interface URL {
-    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream stream);
+    [CallWith=ExecutionContext] static DOMString? createObjectURL(MediaStream stream);
 };

@@ -33,7 +33,7 @@
     Constructor(optional Dictionary descriptionInitDict),
     RaisesException=Constructor
 ] interface RTCSessionDescription {
-    [RaisesException=Setter, TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString type;
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString sdp;
+    [RaisesException=Setter] attribute DOMString? type;
+    attribute DOMString? sdp;
 };
 

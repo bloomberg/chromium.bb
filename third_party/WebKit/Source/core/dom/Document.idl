@@ -51,15 +51,15 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 3 Core
 
-    [TreatReturnedNullStringAs=Null, MeasureAs=DocumentInputEncoding] readonly attribute DOMString inputEncoding; // Removed from DOM4.
+    [MeasureAs=DocumentInputEncoding] readonly attribute DOMString? inputEncoding; // Removed from DOM4.
 
-    [TreatReturnedNullStringAs=Null, MeasureAs=DocumentXMLEncoding] readonly attribute DOMString xmlEncoding; // Removed from DOM4.
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
+    [MeasureAs=DocumentXMLEncoding] readonly attribute DOMString? xmlEncoding; // Removed from DOM4.
+    [RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString? xmlVersion; // Removed from DOM4.
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
     [RaisesException, CustomElementCallbacks, TypeChecking=Interface] Node adoptNode(Node node);
 
-    [TreatReturnedNullStringAs=Null, ImplementedAs=url] readonly attribute DOMString documentURI;
+    [ImplementedAs=url] readonly attribute DOMString? documentURI;
 
     // DOM Level 2 Events (DocumentEvents interface)
 
@@ -146,12 +146,12 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // Mozilla extensions
     Selection          getSelection();
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString characterSet;
+    readonly attribute DOMString? characterSet;
 
     // WebKit extensions
 
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString preferredStylesheetSet;
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
+    readonly attribute DOMString? preferredStylesheetSet;
+             attribute DOMString? selectedStylesheetSet;
 
     [MeasureAs=DocumentGetCSSCanvasContext] RenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 

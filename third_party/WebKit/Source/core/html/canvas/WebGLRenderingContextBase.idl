@@ -561,15 +561,15 @@ typedef unrestricted float GLclampf;
     [Custom] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
     [Custom] any getParameter(GLenum pname);
     [Custom] any getProgramParameter(WebGLProgram? program, GLenum pname);
-    [TreatReturnedNullStringAs=Null] DOMString getProgramInfoLog(WebGLProgram? program);
+    DOMString? getProgramInfoLog(WebGLProgram? program);
     [Custom] any getRenderbufferParameter(GLenum target, GLenum pname);
     [Custom] any getShaderParameter(WebGLShader? shader, GLenum pname);
 
-    [TreatReturnedNullStringAs=Null] DOMString    getShaderInfoLog(WebGLShader? shader);
+    DOMString?   getShaderInfoLog(WebGLShader? shader);
 
     WebGLShaderPrecisionFormat getShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype);
 
-    [TreatReturnedNullStringAs=Null] DOMString    getShaderSource(WebGLShader? shader);
+    DOMString?   getShaderSource(WebGLShader? shader);
 
     [Custom] sequence<DOMString> getSupportedExtensions();
 

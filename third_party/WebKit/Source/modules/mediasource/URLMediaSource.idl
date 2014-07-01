@@ -33,5 +33,5 @@
 [
     TypeChecking=Interface,
 ] partial interface URL {
-    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource source);
+    [CallWith=ExecutionContext] static DOMString? createObjectURL(MediaSource source);
 };

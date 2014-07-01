@@ -38,7 +38,7 @@
     // FIXME: should be in separate URLBlob.idl partial interface definition
     // http://dev.w3.org/2006/webapi/FileAPI/#URL-object
     // FIXME: should not be nullable
-    [RaisesException, CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(Blob? blob);
+    [RaisesException, CallWith=ExecutionContext] static DOMString? createObjectURL(Blob? blob);
     [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
 };
 

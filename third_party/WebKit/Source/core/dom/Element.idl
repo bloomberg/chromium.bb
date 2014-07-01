@@ -24,9 +24,9 @@
 
     // DOM Level 1 Core
 
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString tagName;
+    readonly attribute DOMString? tagName;
 
-    [TreatReturnedNullStringAs=Null] DOMString getAttribute(DOMString name);
+    DOMString? getAttribute(DOMString name);
     [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
     [CustomElementCallbacks] void removeAttribute(DOMString name);
     [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode([Default=Undefined] optional DOMString name); // Removed from DOM4.
@@ -39,7 +39,7 @@
 
     // DOM Level 2 Core
 
-    [TreatReturnedNullStringAs=Null] DOMString getAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
+    DOMString? getAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
     [RaisesException, CustomElementCallbacks] void setAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName, DOMString value);
     [CustomElementCallbacks] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
     HTMLCollection getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
@@ -53,9 +53,9 @@
 
     // DOM4
     [Reflect] attribute DOMString id;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString namespaceURI;
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString prefix;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString localName;
+    readonly attribute DOMString? namespaceURI;
+    [RaisesException=Setter] attribute DOMString? prefix;
+    readonly attribute DOMString? localName;
 
     [RaisesException] boolean matches(DOMString selectors);
 

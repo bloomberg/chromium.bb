@@ -29,5 +29,5 @@
  */
 
 partial interface Navigator {
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString doNotTrack;
+    readonly attribute DOMString? doNotTrack;
 };

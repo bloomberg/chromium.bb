@@ -23,7 +23,7 @@ interface CharacterData : Node {
 
     readonly attribute unsigned long length;
 
-    [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData(unsigned long offset, unsigned long length);
+    [RaisesException] DOMString? substringData(unsigned long offset, unsigned long length);
 
     void appendData(DOMString data);
     [RaisesException] void insertData(unsigned long offset, DOMString data);

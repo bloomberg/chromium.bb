@@ -35,8 +35,8 @@
     [RaisesException] deleter boolean (DOMString name);
 
     [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
-    [NotEnumerable, RaisesException, TreatReturnedNullStringAs=Null] DOMString key(unsigned long index);
-    [LogActivity, NotEnumerable, RaisesException, TreatReturnedNullStringAs=Null] DOMString getItem(DOMString key);
+    [NotEnumerable, RaisesException] DOMString? key(unsigned long index);
+    [LogActivity, NotEnumerable, RaisesException] DOMString? getItem(DOMString key);
     [LogActivity, NotEnumerable, RaisesException] void setItem(DOMString key, DOMString data);
     [LogActivity, NotEnumerable, RaisesException] void removeItem(DOMString key);
     [LogActivity, NotEnumerable, RaisesException] void clear();
