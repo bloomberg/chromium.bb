@@ -587,8 +587,7 @@ void MessagePopupCollection::OnDisplayMetricsChanged(
   if (display.id() != display_id_)
     return;
 
-  if (metrics & DISPLAY_METRIC_BOUNDS || metrics & DISPLAY_METRIC_WORK_AREA)
-    SetDisplayInfo(display.work_area(), display.bounds());
+  SetDisplayInfo(display.work_area(), display.bounds());
 }
 
 views::Widget* MessagePopupCollection::GetWidgetForTest(const std::string& id)
