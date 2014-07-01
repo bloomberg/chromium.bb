@@ -402,7 +402,6 @@ void WebSocketTransportClientSocketPool::FlushWithError(int error) {
   }
   stalled_request_map_.clear();
   stalled_request_queue_.clear();
-  handed_out_socket_count_ = 0;
   flushing_ = false;
 }
 

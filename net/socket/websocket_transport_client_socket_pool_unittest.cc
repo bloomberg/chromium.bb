@@ -1061,6 +1061,30 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   }
 }
 
+// Sockets that have had ownership transferred to a ClientSocketHandle should
+// not be affected by FlushWithError.
+TEST_F(WebSocketTransportClientSocketPoolTest,
+       FlushWithErrorDoesNotAffectHandedOutSockets) {
+  host_resolver_->set_synchronous_mode(true);
+  MockTransportClientSocketFactory::ClientSocketType socket_types[] = {
+      MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET,
+      MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET};
+  client_socket_factory_.set_client_socket_types(socket_types,
+                                                 arraysize(socket_types));
+  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  // Socket has been "handed out".
+  EXPECT_TRUE(request(0)->handle()->socket());
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  // Now we have one socket handed out, and one pending.
+  pool_.FlushWithError(ERR_FAILED);
+  EXPECT_EQ(ERR_FAILED, request(1)->WaitForResult());
+  // Socket owned by ClientSocketHandle is unaffected:
+  EXPECT_TRUE(request(0)->handle()->socket());
+  // Return it to the pool (which deletes it).
+  request(0)->handle()->Reset();
+}
+
 }  // namespace
 
 }  // namespace net
