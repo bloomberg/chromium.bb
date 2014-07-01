@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
 
+#include "base/files/scoped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,7 +46,8 @@ class PrivateFontFile : public ppapi::Resource {
   bool GetFontTable(uint32_t table, void* output, uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
     bool rv = content::GetFontTable(
-        fd_, table, 0 /* offset */, static_cast<uint8_t*>(output), &temp_size);
+        fd_.get(), table, 0 /* offset */, static_cast<uint8_t*>(output),
+        &temp_size);
     *output_length = base::checked_cast<uint32_t>(temp_size);
     return rv;
   }
@@ -54,7 +56,7 @@ class PrivateFontFile : public ppapi::Resource {
   virtual ~PrivateFontFile() {}
 
  private:
-  int fd_;
+  base::ScopedFD fd_;
 };
 #endif
 

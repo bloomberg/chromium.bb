@@ -10,6 +10,10 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/host/resource_host.h"
 
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#include "base/files/scoped_file.h"
+#endif
+
 namespace content {
 class RendererPpapiHost;
 }
@@ -40,8 +44,10 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
 
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;
-  // Only valid on Linux.
-  int fd_;
+
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  base::ScopedFD fd_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashFontFileHost);
 };
