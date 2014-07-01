@@ -70,7 +70,7 @@ private:
     // PendingScript does have a (trivial) destructor, however.
     Vector<PendingScript> m_scriptsToExecuteInOrder;
     Vector<PendingScript> m_scriptsToExecuteSoon; // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-    HashMap<ScriptLoader*, PendingScript> m_pendingAsyncScripts;
+    WillBeHeapHashMap<ScriptLoader*, PendingScript> m_pendingAsyncScripts;
     Timer<ScriptRunner> m_timer;
 };
 

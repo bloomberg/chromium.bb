@@ -314,7 +314,6 @@ class NeedsTracing {
     typedef struct NoType {
         char padding[8];
     } NoType;
-
 #if COMPILER(MSVC)
     template<typename V> static YesType checkHasTraceMethod(char[&V::trace != 0]);
 #else
@@ -323,7 +322,10 @@ class NeedsTracing {
 #endif // COMPILER(MSVC)
     template<typename V> static NoType checkHasTraceMethod(...);
 public:
-    static const bool value = sizeof(YesType) == sizeof(checkHasTraceMethod<T>(0));
+    // We add sizeof(T) to both sides here, because we want it to fail for
+    // incomplete types. Otherwise it just assumes that incomplete types do not
+    // have a trace method, which may not be true.
+    static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasTraceMethod<T>(0)) + sizeof(T);
 };
 
 // Convenience template wrapping the NeedsTracingLazily template in
