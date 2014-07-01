@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -91,6 +92,8 @@ RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 }
 
 void RemoteToLocalSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+  token->InitializeTaskLog("Remote -> Local");
+
   scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
   blocking_factor->exclusive = true;
   SyncTaskManager::UpdateBlockingFactor(
@@ -100,37 +103,26 @@ void RemoteToLocalSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 }
 
 void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
-  SyncStatusCallback callback = SyncTaskToken::WrapToCallback(token.Pass());
-
   if (!drive_service() || !metadata_database() || !remote_change_processor()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local] Context not ready.");
+    token->RecordLog("Context not ready.");
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
-
-  SyncStatusCallback wrapped_callback = base::Bind(
-      &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-      base::Bind(&RemoteToLocalSyncer::FinalizeSync,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
 
   dirty_tracker_ = make_scoped_ptr(new FileTracker);
   if (metadata_database()->GetNormalPriorityDirtyTracker(
           dirty_tracker_.get())) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local] Start: tracker_id=%" PRId64,
-              dirty_tracker_->tracker_id());
-    ResolveRemoteChange(wrapped_callback);
+    token->RecordLog(base::StringPrintf(
+        "Start: tracker_id=%" PRId64, dirty_tracker_->tracker_id()));
+    ResolveRemoteChange(base::Bind(
+        &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
+        base::Passed(&token)));
     return;
   }
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote -> Local] Nothing to do.");
-  sync_context_->GetWorkerTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC));
+  token->RecordLog("Nothing to do.");
+  SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_NO_CHANGE_TO_SYNC);
 }
 
 void RemoteToLocalSyncer::ResolveRemoteChange(
@@ -594,26 +586,25 @@ void RemoteToLocalSyncer::DidListFolderContent(
       dirty_tracker_->file_id(), *children, callback);
 }
 
-void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
+void RemoteToLocalSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
                                         SyncStatusCode status) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote -> Local]: Finished: action=%s, tracker=%" PRId64
-            " status=%s",
-            SyncActionToString(sync_action_), dirty_tracker_->tracker_id(),
-            SyncStatusCodeToString(status));
+  token->RecordLog(base::StringPrintf(
+      "[Remote -> Local]: Finished: action=%s, tracker=%" PRId64 " status=%s",
+      SyncActionToString(sync_action_), dirty_tracker_->tracker_id(),
+      SyncStatusCodeToString(status)));
 
   if (sync_root_deletion_) {
-    callback.Run(SYNC_STATUS_OK);
+    FinalizeSync(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
   if (status == SYNC_STATUS_RETRY) {
-    callback.Run(SYNC_STATUS_OK);
+    FinalizeSync(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    FinalizeSync(token.Pass(), status);
     return;
   }
 
@@ -633,20 +624,25 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
       updated_details.set_missing(true);
     }
   }
-  metadata_database()->UpdateTracker(dirty_tracker_->tracker_id(),
-                                     updated_details,
-                                     callback);
+  metadata_database()->UpdateTracker(
+      dirty_tracker_->tracker_id(),
+      updated_details,
+      base::Bind(&RemoteToLocalSyncer::FinalizeSync,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&token)));
 }
 
-void RemoteToLocalSyncer::FinalizeSync(const SyncStatusCallback& callback,
+void RemoteToLocalSyncer::FinalizeSync(scoped_ptr<SyncTaskToken> token,
                                        SyncStatusCode status) {
   if (prepared_) {
     remote_change_processor()->FinalizeRemoteSync(
-        url_, false /* clear_local_change */, base::Bind(callback, status));
+        url_, false /* clear_local_change */,
+        base::Bind(SyncTaskManager::NotifyTaskDone,
+                   base::Passed(&token), status));
     return;
   }
 
-  callback.Run(status);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
 void RemoteToLocalSyncer::Prepare(const SyncStatusCallback& callback) {

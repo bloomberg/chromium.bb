@@ -162,9 +162,8 @@ class RemoteToLocalSyncer : public SyncTask {
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
 
-  void SyncCompleted(const SyncStatusCallback& callback, SyncStatusCode status);
-  void FinalizeSync(const SyncStatusCallback& callback, SyncStatusCode status);
-
+  void SyncCompleted(scoped_ptr<SyncTaskToken> token, SyncStatusCode status);
+  void FinalizeSync(scoped_ptr<SyncTaskToken> token, SyncStatusCode status);
 
   void Prepare(const SyncStatusCallback& callback);
   void DidPrepare(const SyncStatusCallback& callback,
