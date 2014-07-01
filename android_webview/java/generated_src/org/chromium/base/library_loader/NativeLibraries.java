@@ -12,6 +12,10 @@ public class NativeLibraries {
     // on multi-process content-based projects. Always disabled for the Android Webview.
     public static boolean USE_LINKER = false;
 
+    // Set to true to directly load the library from the zip file using the
+    // chromium linker. Always disabled for Android Webview.
+    public static boolean USE_LIBRARY_IN_ZIP_FILE = false;
+
     // Set to true to enable chromium linker test support. NEVER enable this for the
     // Android webview.
     public static boolean ENABLE_LINKER_TESTS = false;

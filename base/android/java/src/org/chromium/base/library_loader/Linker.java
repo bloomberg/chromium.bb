@@ -378,9 +378,7 @@ public class Linker {
      * the library directly from the zip file.
      */
     public static boolean isInZipFile() {
-        // TODO(anton) - this is the hook to enable loading from the zip
-        // file, once tool support for building APKs has landed.
-        return false;
+        return NativeLibraries.USE_LIBRARY_IN_ZIP_FILE;
     }
 
     /**
