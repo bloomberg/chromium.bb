@@ -8,6 +8,7 @@ from adb_profile_chrome import profiler
 
 from pylib import android_commands
 from pylib.device import device_utils
+from pylib.device import intent
 
 
 class BaseControllerTest(unittest.TestCase):

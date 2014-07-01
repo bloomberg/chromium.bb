@@ -37,7 +37,7 @@ class ChromeTracingController(controllers.BaseController):
   @staticmethod
   def GetCategories(device, package_info):
     device.BroadcastIntent(intent.Intent(
-        action='%s.GPU_PROFILER_LIST_CATEGORIES' % self._package_info.package))
+        action='%s.GPU_PROFILER_LIST_CATEGORIES' % package_info.package))
     try:
       json_category_list = device.old_interface.WaitForLogMatch(
           re.compile(r'{"traceCategoriesList(.*)'), None, timeout=5).group(0)
