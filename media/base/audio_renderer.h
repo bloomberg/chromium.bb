@@ -22,9 +22,6 @@ class MEDIA_EXPORT AudioRenderer {
   // Second parameter is the maximum time value that the clock cannot exceed.
   typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
 
-  // Used to indicate changes in the buffering state of this audio renderer.
-  typedef base::Callback<void(BufferingState)> BufferingStateCB;
-
   AudioRenderer();
   virtual ~AudioRenderer();
 

@@ -170,15 +170,9 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer(DemuxerStream* stream) {
-    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<2>(PIPELINE_OK));
-    EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
-
-    // Startup sequence.
-    EXPECT_CALL(*video_renderer_, Preroll(base::TimeDelta(), _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
-    EXPECT_CALL(*video_renderer_, Play(_))
-        .WillOnce(RunClosure<0>());
+    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<5>(&video_buffering_state_cb_),
+                        RunCallback<2>(PIPELINE_OK)));
   }
 
   // Sets up expectations to allow the audio renderer to initialize.
@@ -212,6 +206,14 @@ class PipelineTest : public ::testing::Test {
                                         BUFFERING_HAVE_ENOUGH));
         EXPECT_CALL(*audio_renderer_, StartRendering());
       }
+
+      if (video_stream_) {
+        EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
+        EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
+            .WillOnce(SetBufferingState(&video_buffering_state_cb_,
+                                        BUFFERING_HAVE_ENOUGH));
+      }
+
       EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     }
 
@@ -277,12 +279,13 @@ class PipelineTest : public ::testing::Test {
 
     if (video_stream_) {
       EXPECT_CALL(*video_renderer_, Flush(_))
-          .WillOnce(RunClosure<0>());
-      EXPECT_CALL(*video_renderer_, Preroll(seek_time, _))
-          .WillOnce(RunCallback<1>(PIPELINE_OK));
+          .WillOnce(DoAll(SetBufferingState(&video_buffering_state_cb_,
+                                            BUFFERING_HAVE_NOTHING),
+                          RunClosure<0>()));
+      EXPECT_CALL(*video_renderer_, StartPlayingFrom(seek_time))
+          .WillOnce(SetBufferingState(&video_buffering_state_cb_,
+                                      BUFFERING_HAVE_ENOUGH));
       EXPECT_CALL(*video_renderer_, SetPlaybackRate(_));
-      EXPECT_CALL(*video_renderer_, Play(_))
-          .WillOnce(RunClosure<0>());
     }
 
     // We expect a successful seek callback followed by a buffering update.
@@ -337,7 +340,8 @@ class PipelineTest : public ::testing::Test {
   scoped_ptr<StrictMock<MockDemuxerStream> > video_stream_;
   scoped_ptr<FakeTextTrackStream> text_stream_;
   AudioRenderer::TimeCB audio_time_cb_;
-  AudioRenderer::BufferingStateCB audio_buffering_state_cb_;
+  BufferingStateCB audio_buffering_state_cb_;
+  BufferingStateCB video_buffering_state_cb_;
   VideoDecoderConfig video_decoder_config_;
   PipelineMetadata metadata_;
 
@@ -859,7 +863,6 @@ class PipelineTeardownTest : public PipelineTest {
     kInitVideoRenderer,
     kFlushing,
     kSeeking,
-    kPrerolling,
     kPlaying,
   };
 
@@ -882,7 +885,6 @@ class PipelineTeardownTest : public PipelineTest {
 
       case kFlushing:
       case kSeeking:
-      case kPrerolling:
         DoInitialize(state, stop_or_error);
         DoSeek(state, stop_or_error);
         break;
@@ -968,13 +970,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitVideoRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             RunCallback<2>(PIPELINE_OK)));
         EXPECT_CALL(callbacks_, OnStop());
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _, _))
             .WillOnce(RunCallback<2>(status));
       }
 
@@ -984,8 +986,9 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<2>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<5>(&video_buffering_state_cb_),
+                        RunCallback<2>(PIPELINE_OK)));
 
     EXPECT_CALL(callbacks_, OnMetadata(_));
 
@@ -993,16 +996,14 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(*audio_renderer_, StartPlayingFrom(base::TimeDelta()))
         .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                     BUFFERING_HAVE_ENOUGH));
-    EXPECT_CALL(*video_renderer_, Preroll(base::TimeDelta(), _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
+        .WillOnce(SetBufferingState(&video_buffering_state_cb_,
+                                    BUFFERING_HAVE_ENOUGH));
 
     EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
-
     EXPECT_CALL(*audio_renderer_, StartRendering());
-    EXPECT_CALL(*video_renderer_, Play(_))
-        .WillOnce(RunClosure<0>());
 
     if (status == PIPELINE_OK)
       EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
@@ -1059,7 +1060,10 @@ class PipelineTeardownTest : public PipelineTest {
         .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                           BUFFERING_HAVE_NOTHING),
                         RunClosure<0>()));
-    EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*video_renderer_, Flush(_))
+        .WillOnce(DoAll(SetBufferingState(&video_buffering_state_cb_,
+                                          BUFFERING_HAVE_NOTHING),
+                        RunClosure<0>()));
 
     if (state == kSeeking) {
       if (stop_or_error == kStop) {
@@ -1074,29 +1078,6 @@ class PipelineTeardownTest : public PipelineTest {
 
       return status;
     }
-
-    EXPECT_CALL(*demuxer_, Seek(_, _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
-
-    if (state == kPrerolling) {
-      if (stop_or_error == kStop) {
-        EXPECT_CALL(*video_renderer_, Preroll(_, _))
-            .WillOnce(Stop(pipeline_.get(), stop_cb));
-      } else {
-        status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*video_renderer_, Preroll(_, _))
-            .WillOnce(RunCallback<1>(status));
-      }
-
-      return status;
-    }
-
-    EXPECT_CALL(*audio_renderer_, StartPlayingFrom(_));
-
-    // Playback rate and volume are updated prior to starting.
-    EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
-    EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
-    EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
 
     NOTREACHED() << "State not supported: " << state;
     return status;
@@ -1145,7 +1126,6 @@ INSTANTIATE_TEARDOWN_TEST(Stop, InitAudioRenderer);
 INSTANTIATE_TEARDOWN_TEST(Stop, InitVideoRenderer);
 INSTANTIATE_TEARDOWN_TEST(Stop, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Seeking);
-INSTANTIATE_TEARDOWN_TEST(Stop, Prerolling);
 INSTANTIATE_TEARDOWN_TEST(Stop, Playing);
 
 INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer);
@@ -1153,7 +1133,6 @@ INSTANTIATE_TEARDOWN_TEST(Error, InitAudioRenderer);
 INSTANTIATE_TEARDOWN_TEST(Error, InitVideoRenderer);
 INSTANTIATE_TEARDOWN_TEST(Error, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Error, Seeking);
-INSTANTIATE_TEARDOWN_TEST(Error, Prerolling);
 INSTANTIATE_TEARDOWN_TEST(Error, Playing);
 
 INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Playing);

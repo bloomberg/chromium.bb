@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -36,6 +37,9 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // |time_cb| is executed whenever time has advanced by way of video rendering.
   //
+  // |buffering_state_cb| is executed when video rendering has either run out of
+  // data or has enough data to continue playback.
+  //
   // |ended_cb| is executed when video rendering has reached the end of stream.
   //
   // |error_cb| is executed if an error was encountered.
@@ -48,28 +52,24 @@ class MEDIA_EXPORT VideoRenderer {
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& time_cb,
+                          const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
                           const TimeDeltaCB& get_time_cb,
                           const TimeDeltaCB& get_duration_cb) = 0;
 
-  // Start audio decoding and rendering at the current playback rate, executing
-  // |callback| when playback is underway.
-  virtual void Play(const base::Closure& callback) = 0;
-
   // Discard any video data and stop reading from |stream|, executing |callback|
   // when completed.
+  //
+  // Clients should expect |buffering_state_cb| to be called with
+  // BUFFERING_HAVE_NOTHING while flushing is in progress.
   virtual void Flush(const base::Closure& callback) = 0;
 
-  // Start prerolling video data. If |time| equals kNoTimestamp() then all
-  // samples delivered to the renderer are used to complete preroll. If |time|
-  // does not equal kNoTimestamp(), then any samples delivered to the renderer
-  // with timestamps less than |time| are silently dropped and not used to
-  // satisfy preroll. |callback| is executed when preroll has completed.
+  // Starts playback by reading from |stream| and decoding and rendering video.
+  // |timestamp| is the media timestamp playback should start rendering from.
   //
-  // Only valid to call after a successful Initialize(), Pause(), or Flush().
-  virtual void Preroll(base::TimeDelta time,
-                       const PipelineStatusCB& callback) = 0;
+  // Only valid to call after a successful Initialize() or Flush().
+  virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
 
   // Stop all operations in preparation for being deleted, executing |callback|
   // when complete.

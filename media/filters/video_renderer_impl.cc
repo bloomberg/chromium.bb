@@ -35,6 +35,7 @@ VideoRendererImpl::VideoRendererImpl(
       pending_read_(false),
       drop_frames_(drop_frames),
       playback_rate_(0),
+      buffering_state_(BUFFERING_HAVE_NOTHING),
       paint_cb_(paint_cb),
       last_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
@@ -49,26 +50,23 @@ VideoRendererImpl::~VideoRendererImpl() {
   CHECK(thread_.is_null());
 }
 
-void VideoRendererImpl::Play(const base::Closure& callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  DCHECK_EQ(kPrerolled, state_);
-  state_ = kPlaying;
-  callback.Run();
-}
-
 void VideoRendererImpl::Flush(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK_NE(state_, kUninitialized);
+  DCHECK_EQ(state_, kPlaying);
   flush_cb_ = callback;
   state_ = kFlushing;
 
   // This is necessary if the |video_frame_stream_| has already seen an end of
   // stream and needs to drain it before flushing it.
   ready_frames_.clear();
+  if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
+    buffering_state_ = BUFFERING_HAVE_NOTHING;
+    buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  }
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
+
   video_frame_stream_.Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
                  weak_factory_.GetWeakPtr()));
@@ -114,31 +112,16 @@ void VideoRendererImpl::SetPlaybackRate(float playback_rate) {
   playback_rate_ = playback_rate;
 }
 
-void VideoRendererImpl::Preroll(base::TimeDelta time,
-                                const PipelineStatusCB& cb) {
+void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK(!cb.is_null());
-  DCHECK(preroll_cb_.is_null());
-  DCHECK(state_ == kFlushed || state_ == kPlaying) << "state_ " << state_;
+  DCHECK_EQ(state_, kFlushed);
+  DCHECK(!pending_read_);
+  DCHECK(ready_frames_.empty());
+  DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
-  if (state_ == kFlushed) {
-    DCHECK(time != kNoTimestamp());
-    DCHECK(!pending_read_);
-    DCHECK(ready_frames_.empty());
-  } else {
-    DCHECK(time == kNoTimestamp());
-  }
-
-  state_ = kPrerolling;
-  preroll_cb_ = cb;
-  preroll_timestamp_ = time;
-
-  if (ShouldTransitionToPrerolled_Locked()) {
-    TransitionToPrerolled_Locked();
-    return;
-  }
-
+  state_ = kPlaying;
+  start_timestamp_ = timestamp;
   AttemptRead_Locked();
 }
 
@@ -147,6 +130,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
+                                   const BufferingStateCB& buffering_state_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb,
                                    const TimeDeltaCB& get_time_cb,
@@ -158,6 +142,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!max_time_cb.is_null());
+  DCHECK(!buffering_state_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!get_time_cb.is_null());
   DCHECK(!get_duration_cb.is_null());
@@ -168,6 +153,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   init_cb_ = init_cb;
   statistics_cb_ = statistics_cb;
   max_time_cb_ = max_time_cb;
+  buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   get_time_cb_ = get_time_cb;
@@ -235,7 +221,8 @@ void VideoRendererImpl::ThreadMain() {
       return;
 
     // Remain idle as long as we're not playing.
-    if (state_ != kPlaying || playback_rate_ == 0) {
+    if (state_ != kPlaying || playback_rate_ == 0 ||
+        buffering_state_ != BUFFERING_HAVE_ENOUGH) {
       UpdateStatsAndWait_Locked(kIdleTimeDelta);
       continue;
     }
@@ -338,12 +325,6 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     PipelineStatus error = PIPELINE_ERROR_DECODE;
     if (status == VideoFrameStream::DECRYPT_ERROR)
       error = PIPELINE_ERROR_DECRYPT;
-
-    if (!preroll_cb_.is_null()) {
-      base::ResetAndReturn(&preroll_cb_).Run(error);
-      return;
-    }
-
     error_cb_.Run(error);
     return;
   }
@@ -353,38 +334,28 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   if (state_ == kStopped || state_ == kFlushing)
     return;
 
-  if (!frame.get()) {
-    // Abort preroll early for a NULL frame because we won't get more frames.
-    // A new preroll will be requested after this one completes so there is no
-    // point trying to collect more frames.
-    if (state_ == kPrerolling)
-      TransitionToPrerolled_Locked();
+  DCHECK_EQ(state_, kPlaying);
 
+  // Can happen when demuxers are preparing for a new Seek().
+  if (!frame) {
+    DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
     return;
   }
 
   if (frame->end_of_stream()) {
     DCHECK(!received_end_of_stream_);
     received_end_of_stream_ = true;
-    max_time_cb_.Run(get_duration_cb_.Run());
-
-    if (state_ == kPrerolling)
-      TransitionToPrerolled_Locked();
-
-    return;
+  } else {
+    // Maintain the latest frame decoded so the correct frame is displayed after
+    // prerolling has completed.
+    if (frame->timestamp() <= start_timestamp_)
+      ready_frames_.clear();
+    AddReadyFrame_Locked(frame);
   }
 
-  // Maintain the latest frame decoded so the correct frame is displayed after
-  // prerolling has completed.
-  if (state_ == kPrerolling && preroll_timestamp_ != kNoTimestamp() &&
-      frame->timestamp() <= preroll_timestamp_) {
-    ready_frames_.clear();
-  }
-
-  AddReadyFrame_Locked(frame);
-
-  if (ShouldTransitionToPrerolled_Locked())
-    TransitionToPrerolled_Locked();
+  // Signal buffering state if we've met our conditions for having enough data.
+  if (buffering_state_ != BUFFERING_HAVE_ENOUGH && HaveEnoughData_Locked())
+    TransitionToHaveEnough_Locked();
 
   // Always request more decoded video if we have capacity. This serves two
   // purposes:
@@ -393,11 +364,39 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   AttemptRead_Locked();
 }
 
-bool VideoRendererImpl::ShouldTransitionToPrerolled_Locked() {
-  return state_ == kPrerolling &&
-      (!video_frame_stream_.CanReadWithoutStalling() ||
-       ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames) ||
-       (low_delay_ && ready_frames_.size() > 0));
+bool VideoRendererImpl::HaveEnoughData_Locked() {
+  DCHECK_EQ(state_, kPlaying);
+  return received_end_of_stream_ ||
+      !video_frame_stream_.CanReadWithoutStalling() ||
+      ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames) ||
+      (low_delay_ && ready_frames_.size() > 0);
+}
+
+void VideoRendererImpl::TransitionToHaveEnough_Locked() {
+  DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
+
+  if (received_end_of_stream_)
+    max_time_cb_.Run(get_duration_cb_.Run());
+
+  if (!ready_frames_.empty()) {
+    // Max time isn't reported while we're in a have nothing state as we could
+    // be discarding frames to find |start_timestamp_|.
+    if (!received_end_of_stream_) {
+      base::TimeDelta max_timestamp = ready_frames_[0]->timestamp();
+      for (size_t i = 1; i < ready_frames_.size(); ++i) {
+        if (ready_frames_[i]->timestamp() > max_timestamp)
+          max_timestamp = ready_frames_[i]->timestamp();
+      }
+      max_time_cb_.Run(max_timestamp);
+    }
+
+    // Because the clock might remain paused in for an undetermined amount
+    // of time (e.g., seeking while paused), paint the first frame.
+    PaintNextReadyFrame_Locked();
+  }
+
+  buffering_state_ = BUFFERING_HAVE_ENOUGH;
+  buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
 }
 
 void VideoRendererImpl::AddReadyFrame_Locked(
@@ -419,7 +418,12 @@ void VideoRendererImpl::AddReadyFrame_Locked(
   DCHECK_LE(ready_frames_.size(),
             static_cast<size_t>(limits::kMaxVideoFrames));
 
-  max_time_cb_.Run(frame->timestamp());
+  // FrameReady() may add frames but discard them when we're decoding frames to
+  // reach |start_timestamp_|. In this case we'll only want to update the max
+  // time when we know we've reached |start_timestamp_| and have buffered enough
+  // frames to being playback.
+  if (buffering_state_ == BUFFERING_HAVE_ENOUGH)
+    max_time_cb_.Run(frame->timestamp());
 
   // Avoid needlessly waking up |thread_| unless playing.
   if (state_ == kPlaying)
@@ -441,8 +445,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
   }
 
   switch (state_) {
-    case kPrerolling:
-    case kPrerolled:
     case kPlaying:
       pending_read_ = true;
       video_frame_stream_.Read(base::Bind(&VideoRendererImpl::FrameReady,
@@ -468,6 +470,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK(ready_frames_.empty());
   DCHECK(!received_end_of_stream_);
   DCHECK(!rendered_end_of_stream_);
+  DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kFlushed;
   last_timestamp_ = kNoTimestamp();
@@ -491,21 +494,6 @@ void VideoRendererImpl::DoStopOrError_Locked() {
   lock_.AssertAcquired();
   last_timestamp_ = kNoTimestamp();
   ready_frames_.clear();
-}
-
-void VideoRendererImpl::TransitionToPrerolled_Locked() {
-  lock_.AssertAcquired();
-  DCHECK_EQ(state_, kPrerolling);
-
-  state_ = kPrerolled;
-
-  // Because we might remain in the prerolled state for an undetermined amount
-  // of time (e.g., we seeked while paused), we'll paint the first prerolled
-  // frame.
-  if (!ready_frames_.empty())
-    PaintNextReadyFrame_Locked();
-
-  base::ResetAndReturn(&preroll_cb_).Run(PIPELINE_OK);
 }
 
 void VideoRendererImpl::UpdateStatsAndWait_Locked(

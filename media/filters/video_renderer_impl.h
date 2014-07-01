@@ -61,14 +61,13 @@ class MEDIA_EXPORT VideoRendererImpl
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& max_time_cb,
+                          const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
                           const TimeDeltaCB& get_time_cb,
                           const TimeDeltaCB& get_duration_cb) OVERRIDE;
-  virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void Preroll(base::TimeDelta time,
-                       const PipelineStatusCB& cb) OVERRIDE;
+  virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
@@ -117,11 +116,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // A read is scheduled to replace the frame.
   void DropNextReadyFrame_Locked();
 
-  void TransitionToPrerolled_Locked();
-
-  // Returns true of all conditions have been met to transition from
-  // kPrerolling to kPrerolled.
-  bool ShouldTransitionToPrerolled_Locked();
+  // Returns true if the renderer has enough data for playback purposes.
+  // Note that having enough data may be due to reaching end of stream.
+  bool HaveEnoughData_Locked();
+  void TransitionToHaveEnough_Locked();
 
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
   // them to 0, and then waits on |frame_available_| for up to the
@@ -152,36 +150,28 @@ class MEDIA_EXPORT VideoRendererImpl
   // always check |state_| to see if it was set to STOPPED after waking up!
   base::ConditionVariable frame_available_;
 
-  // State transition Diagram of this class:
-  //       [kUninitialized]
-  //              |
-  //              | Initialize()
-  //        [kInitializing]
-  //              |
-  //              V
-  //   +------[kFlushed]<---------------OnVideoFrameStreamResetDone()
-  //   |          | Preroll() or upon               ^
-  //   |          V got first frame            [kFlushing]
-  //   |      [kPrerolling]                         ^
-  //   |          |                                 |
-  //   |          V Got enough frames               |
-  //   |      [kPrerolled]--------------------------|
-  //   |          |                Flush()          ^
-  //   |          V Play()                          |
-  //   |       [kPlaying]---------------------------|
-  //   |                           Flush()          ^ Flush()
-  //   |                                            |
-  //   +-----> [kStopped]                 [Any state other than]
-  //                                      [   kUninitialized   ]
-
-  // Simple state tracking variable.
+  // Important detail: being in kPlaying doesn't imply that video is being
+  // rendered. Rather, it means that the renderer is ready to go. The actual
+  // rendering of video is controlled by time advancing via |time_cb_|.
+  //
+  //   kUninitialized
+  //         | Initialize()
+  //         |
+  //         V
+  //    kInitializing
+  //         | Decoders initialized
+  //         |
+  //         V            Decoders reset
+  //      kFlushed <------------------ kFlushing
+  //         | StartPlayingFrom()         ^
+  //         |                            |
+  //         |                            | Flush()
+  //         `---------> kPlaying --------'
   enum State {
     kUninitialized,
     kInitializing,
-    kPrerolled,
     kFlushing,
     kFlushed,
-    kPrerolling,
     kPlaying,
     kStopped,
   };
@@ -198,20 +188,22 @@ class MEDIA_EXPORT VideoRendererImpl
 
   float playback_rate_;
 
+  BufferingState buffering_state_;
+
   // Playback operation callbacks.
   base::Closure flush_cb_;
-  PipelineStatusCB preroll_cb_;
 
   // Event callbacks.
   PipelineStatusCB init_cb_;
   StatisticsCB statistics_cb_;
   TimeCB max_time_cb_;
+  BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   TimeDeltaCB get_time_cb_;
   TimeDeltaCB get_duration_cb_;
 
-  base::TimeDelta preroll_timestamp_;
+  base::TimeDelta start_timestamp_;
 
   // Embedder callback for notifying a new frame is available for painting.
   PaintCB paint_cb_;

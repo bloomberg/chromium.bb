@@ -115,18 +115,18 @@ class MockVideoRenderer : public VideoRenderer {
   virtual ~MockVideoRenderer();
 
   // VideoRenderer implementation.
-  MOCK_METHOD9(Initialize, void(DemuxerStream* stream,
-                                bool low_delay,
-                                const PipelineStatusCB& init_cb,
-                                const StatisticsCB& statistics_cb,
-                                const TimeCB& time_cb,
-                                const base::Closure& ended_cb,
-                                const PipelineStatusCB& error_cb,
-                                const TimeDeltaCB& get_time_cb,
-                                const TimeDeltaCB& get_duration_cb));
-  MOCK_METHOD1(Play, void(const base::Closure& callback));
+  MOCK_METHOD10(Initialize, void(DemuxerStream* stream,
+                                 bool low_delay,
+                                 const PipelineStatusCB& init_cb,
+                                 const StatisticsCB& statistics_cb,
+                                 const TimeCB& time_cb,
+                                 const BufferingStateCB& buffering_state_cb,
+                                 const base::Closure& ended_cb,
+                                 const PipelineStatusCB& error_cb,
+                                 const TimeDeltaCB& get_time_cb,
+                                 const TimeDeltaCB& get_duration_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
-  MOCK_METHOD2(Preroll, void(base::TimeDelta time, const PipelineStatusCB& cb));
+  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
 
@@ -152,7 +152,7 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
-  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta time));
+  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD0(ResumeAfterUnderflow, void());
 
