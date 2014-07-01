@@ -39,7 +39,6 @@ static_library("common") {
     "//chrome:strings",
     "//chrome/app/theme:theme_resources",
     "//chrome/common:constants",
-    "//chrome/common/metrics/proto",
     "//chrome/common/net",
     #"//components/cloud_devices:common",  TODO(GYP)
     #"//components/json_schema",  TODO(GYP)

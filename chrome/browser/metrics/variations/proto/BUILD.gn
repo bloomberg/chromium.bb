@@ -4,7 +4,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_common.gypi:metrics_proto
+# GYP version: chrome/chrome_browser.gypi:variations_proto
 proto_library("proto") {
   sources = [
     "chrome_experiments.proto",

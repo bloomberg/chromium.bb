@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "chrome/common/metrics/proto/chrome_experiments.pb.h"
+#include "chrome/browser/metrics/variations/proto/chrome_experiments.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_request_headers.h"
