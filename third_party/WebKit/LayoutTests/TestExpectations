@@ -1012,7 +1012,6 @@ crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
 crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
 crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
-crbug.com/390506 [ Mac ] inspector/console/console-format-broken-unicode.html [ Pass Failure ]
 crbug.com/376194 inspector/runtime/runtime-es6-setSymbolPropertyValue.html [ Skip ]
 
 crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
