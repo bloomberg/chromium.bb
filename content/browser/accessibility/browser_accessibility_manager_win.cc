@@ -142,6 +142,16 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
+  // If full accessibility is enabled, wait for the LegacyRenderWidgetHostHWND
+  // to be initialized before sending any events - otherwise we'd be firing
+  // events on the wrong HWND.
+  if (BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser() &&
+      !accessible_hwnd_) {
+    return;
+  }
+
+  // Inline text boxes are an internal implementation detail, we don't
+  // expose them to Windows.
   if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return;
 
