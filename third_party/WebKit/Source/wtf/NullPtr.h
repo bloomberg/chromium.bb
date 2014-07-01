@@ -33,8 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if COMPILER_SUPPORTS(CXX_NULLPTR) || defined(_LIBCPP_VERSION)
 
-#include <cstddef>
-
 // libstdc++ supports nullptr_t starting with gcc 4.6. STLport doesn't define it.
 #if (defined(__GLIBCXX__) && __GLIBCXX__ < 20110325) || defined(_STLPORT_VERSION)
 namespace std {
@@ -43,6 +41,8 @@ typedef decltype(nullptr) nullptr_t;
 #endif
 
 #else
+
+#include "wtf/WTFExport.h"
 
 namespace std {
 class nullptr_t {

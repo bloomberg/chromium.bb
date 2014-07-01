@@ -22,7 +22,6 @@
 #define WTF_FastMalloc_h
 
 #include "wtf/WTFExport.h"
-#include <cstddef>
 
 namespace WTF {
 
