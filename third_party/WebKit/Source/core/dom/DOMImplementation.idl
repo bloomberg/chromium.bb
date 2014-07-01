@@ -26,15 +26,15 @@
     // DOM Level 1
 
     [ImplementedAs=hasFeatureForBindings, MeasureAs=DOMImplementationHasFeature]
-    boolean hasFeature(DOMString feature, [TreatNullAs=NullString] DOMString version);
+    boolean hasFeature(DOMString feature, DOMString? version);
 
     // DOM Level 2
 
     [RaisesException] DocumentType createDocumentType(DOMString qualifiedName,
                                                       DOMString publicId,
                                                       DOMString systemId);
-    [RaisesException] XMLDocument createDocument([TreatNullAs=NullString] DOMString namespaceURI,
-                                                 [TreatNullAs=NullString] DOMString qualifiedName,
+    [RaisesException] XMLDocument createDocument(DOMString? namespaceURI,
+                                                 DOMString? qualifiedName,
                                                  [Default=Undefined] optional DocumentType doctype);
 
     // HTMLDOMImplementation interface from DOM Level 2 HTML

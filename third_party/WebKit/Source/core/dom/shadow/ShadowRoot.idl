@@ -36,7 +36,7 @@ interface ShadowRoot : DocumentFragment {
     Element getElementById([Default=Undefined] optional DOMString elementId);
     HTMLCollection getElementsByClassName([Default=Undefined] optional DOMString className);
     HTMLCollection getElementsByTagName([Default=Undefined] optional DOMString tagName);
-    HTMLCollection getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+    HTMLCollection getElementsByTagNameNS([Default=Undefined] optional DOMString? namespaceURI,
                                           [Default=Undefined] optional DOMString localName);
 
     Element elementFromPoint([Default=Undefined] optional long x,

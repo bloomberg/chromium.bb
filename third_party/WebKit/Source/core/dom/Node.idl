@@ -69,9 +69,9 @@
 
     [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other); // Removed in DOM4.
     boolean isEqualNode(Node other);
-    DOMString? lookupPrefix([TreatNullAs=NullString] DOMString namespaceURI);
-    boolean isDefaultNamespace([TreatNullAs=NullString] DOMString namespaceURI);
-    DOMString? lookupNamespaceURI([TreatNullAs=NullString] DOMString prefix);
+    DOMString? lookupPrefix(DOMString? namespaceURI);
+    boolean isDefaultNamespace(DOMString? namespaceURI);
+    DOMString? lookupNamespaceURI(DOMString? prefix);
 
     // DocumentPosition
     const unsigned short      DOCUMENT_POSITION_DISCONNECTED = 0x01;

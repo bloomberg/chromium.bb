@@ -71,9 +71,9 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     [Custom] attribute object fillStyle; // (default black)
     CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
     [RaisesException] CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1);
-    [RaisesException] CanvasPattern createPattern(HTMLCanvasElement canvas, [TreatNullAs=NullString] DOMString repetitionType);
-    [RaisesException] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
-    [RaisesException] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException] CanvasPattern createPattern(HTMLCanvasElement canvas, DOMString? repetitionType);
+    [RaisesException] CanvasPattern createPattern(HTMLImageElement image, DOMString? repetitionType);
+    [RaisesException] CanvasPattern createPattern(HTMLVideoElement image, DOMString? repetitionType);
 
     // shadows
     attribute unrestricted float shadowOffsetX;
