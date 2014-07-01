@@ -46,8 +46,6 @@ public:
 
     BLINK_EXPORT static void enableDatabase(bool);
 
-    BLINK_EXPORT static void enableDialogElement(bool);
-
     BLINK_EXPORT static void enableEncryptedMedia(bool);
     BLINK_EXPORT static bool isEncryptedMediaEnabled();
 
@@ -112,8 +110,6 @@ public:
 
     BLINK_EXPORT static void enableWebMIDI(bool);
 
-    BLINK_EXPORT static void enableHTMLImports(bool);
-
     BLINK_EXPORT static void enableXSLT(bool);
 
     BLINK_EXPORT static void enableOverlayScrollbars(bool);
@@ -121,8 +117,6 @@ public:
     BLINK_EXPORT static void enableOverlayFullscreenVideo(bool);
 
     BLINK_EXPORT static void enableSharedWorker(bool);
-
-    BLINK_EXPORT static void enableExperimentalWebSocket(bool);
 
     BLINK_EXPORT static void enableTargetedStyleRecalc(bool);
 

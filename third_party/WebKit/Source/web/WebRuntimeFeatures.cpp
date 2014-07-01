@@ -67,11 +67,6 @@ void WebRuntimeFeatures::enableDatabase(bool enable)
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableDialogElement(bool enable)
-{
-    RuntimeEnabledFeatures::setDialogElementEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 {
     RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
@@ -240,11 +235,6 @@ void WebRuntimeFeatures::enableWebMIDI(bool enable)
     return RuntimeEnabledFeatures::setWebMIDIEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableHTMLImports(bool enable)
-{
-    RuntimeEnabledFeatures::setHTMLImportsEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableXSLT(bool enable)
 {
     RuntimeEnabledFeatures::setXSLTEnabled(enable);
@@ -263,11 +253,6 @@ void WebRuntimeFeatures::enableOverlayFullscreenVideo(bool enable)
 void WebRuntimeFeatures::enableSharedWorker(bool enable)
 {
     RuntimeEnabledFeatures::setSharedWorkerEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
-{
-    RuntimeEnabledFeatures::setExperimentalWebSocketEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableTargetedStyleRecalc(bool enable)
