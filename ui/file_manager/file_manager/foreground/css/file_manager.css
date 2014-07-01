@@ -545,47 +545,6 @@ div.splitter {
   padding-top: 1px;
 }
 
-#dir-breadcrumbs {
-  -webkit-margin-end: 5px;
-  -webkit-margin-start: 10px;
-}
-
-/* The icon for offline mode */
-.offline-icon {
-  -webkit-margin-end: 0;
-  -webkit-margin-start: 10px;
-  background-image: -webkit-image-set(
-    url('../images/files/ui/offline.png') 1x,
-    url('../images/files/ui/2x/offline.png') 2x);
-  height: 16px;
-  opacity: 0;
-  transition-duration: 200ms;
-  transition-property: opacity;
-  transition-timing-function: ease-out;
-  width: 16px;
-}
-
-/* Transition for '-webkit-margin-start' (or -end) property is not working.
- * So I added .offline-icon-space to animate 'width' property. */
-.offline-icon-space {
-  -webkit-margin-end: 0;
-  -webkit-margin-start: -26px; /* Clear width of .offline-icon */
-  transition-duration: 200ms;
-  transition-property: width;
-  transition-timing-function: ease-out;
-  width: 0;
-}
-
-body[drive] .dialog-container[connection='offline'] .offline-icon,
-body[drive] .dialog-container[connection='metered'] .offline-icon {
-  opacity: 1;
-}
-
-body[drive] .dialog-container[connection='offline'] .offline-icon-space,
-body[drive] .dialog-container[connection='metered'] .offline-icon-space {
-  width: 26px;
-}
-
 .breadcrumbs > [collapsed]::before {
   content: '...';
 }
@@ -777,7 +736,7 @@ body[type='full-page'] .detail-name .detail-icon {
   position: absolute;
 }
 
-.img-container > img:not(.cached):not(.drag-thumbnail) {
+.img-container > img:not(.cached) {
   -webkit-animation: fadeIn 250ms linear;
 }
 
@@ -889,11 +848,6 @@ body[type='full-page'] .detail-name .detail-icon {
   0% {
     background-color: transparent;
   }
-}
-
-.table-row-cell .selection-label {
-  -webkit-margin-end: 10px;
-  height: 15px;
 }
 
 .table-row-cell .filename-label,
@@ -1165,17 +1119,6 @@ li[renaming=''] .filename-label {
   margin-bottom: 2px;
 }
 
-.metadata-item {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: horizontal;
-  -webkit-padding-start: 8px;
-  display: -webkit-box;
-}
-
-.metadata-label {
-  -webkit-margin-end: 6px;
-}
-
 .preview-panel .spacer {
   -webkit-box-flex: 1;
 }
@@ -1238,25 +1181,6 @@ li[renaming=''] .filename-label {
   display: -webkit-box;
 }
 
-/* Overriding input.common[type='checkbox'] rule in common.css. */
-.detail-name > input.common[type='checkbox'] {
-  -webkit-margin-end: 4px;
-  -webkit-margin-start: -1px;
-  border-color: #444;
-}
-
-list .detail-name > .file-checkbox::before,
-.pin::before {
-  /* Invisible area that reacts on mouse events. */
-  content: '';
-  display: -webkit-box;
-  height: 38px;
-  left: -8px;
-  position: absolute;
-  right: -9px;
-  top: -14px;
-}
-
 #filename-input-box {
   -webkit-box-align: center;
   -webkit-box-flex: 1;
@@ -1279,13 +1203,6 @@ list .detail-name > .file-checkbox::before,
 
 body:not([type='saveas-file']) #filename-input-box {
   display: none;
-}
-
-/* A vertical spring. */
-.vertical-spacer {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
 }
 
 /* Dimmed items */
@@ -1362,16 +1279,6 @@ menu.file-context-menu {
 menu.chrome-menu hr {
   color: transparent;
   font-size: 0;
-}
-
-div.offline {
-  -webkit-box-pack: center;
-  display: -webkit-box;
-}
-
-div.offline > * {
-  -webkit-box-align: center;
-  display: -webkit-box;
 }
 
 div.shade {
