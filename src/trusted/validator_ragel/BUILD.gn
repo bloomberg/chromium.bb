@@ -1,0 +1,45 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
+
+# These objects are included in both dfa_validate_x86_xx and rdfa_validator
+# libraries, so we have to introduce intermediate scons nodes.
+validator32 = "gen/validator_x86_32.c"
+validator64 = "gen/validator_x86_64.c"
+
+features = [
+    "validator_features_all.c",
+    "validator_features_validator.c"
+]
+
+static_library("dfa_validate_caller_x86_32") {
+  sources = [
+    "dfa_validate_32.c",
+    "dfa_validate_common.c",
+    validator32
+  ]
+  sources += features
+}
+
+static_library("dfa_validate_caller_x86_64") {
+  sources = [
+    "dfa_validate_64.c",
+    "dfa_validate_common.c",
+    validator64
+  ]
+  sources += features
+}
+
+# Low-level platform-independent interface supporting both 32 and 64 bit,
+# used in ncval and in validator_benchmark.
+static_library("rdfa_validator") {
+  sources = [
+    validator32,
+    validator64
+  ]
+  sources += features
+  defines = ["VALIDATOR_EXPORT=DLLEXPORT"]
+}

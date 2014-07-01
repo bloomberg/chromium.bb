@@ -9,6 +9,9 @@ import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
 
 
 static_library("platform") {
+  if (!defined(deps)) {
+    deps = []
+  }
   deps += [
     "//native_client/src/shared/gio:gio",
   ]

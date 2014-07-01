@@ -5,6 +5,7 @@
 from collections import defaultdict
 import hashlib
 import json
+import os
 import sys
 
 from conditions import TrustedConditions, UntrustedConditions
@@ -52,13 +53,21 @@ class ObjectTracker(object):
   def ExecCondition(self, name):
     env = Environment(self, self.cond_obj)
     global_map = {
-      'Import': Import
+      'Action': Action,
+      'Import': Import,
+      'COMMAND_LINE_TARGETS' : [],
+      'env' : env,
+      'os' : os
     }
     local_map = {
-      'env' : env
+      'env' : env,
+      'os' : os
     }
-    execfile(name, global_map, local_map)
-    env.Flush()
+    try:
+      execfile(name, global_map, local_map)
+      env.Flush()
+    except BaseException, e:
+      pass
 
   def AddHeader(self, node):
     self.installs.append("Header: " + node)
@@ -119,11 +128,12 @@ class ObjectTracker(object):
               prop_node.AddChild(ValueNode(value))
     self.top.Examine(OrganizeProperties())
 
+def Action(*args):
+  return []
 
 def Import(name):
   if name != 'env':
     print 'Warning: Tried to IMPORT: ' + name
-
 
 def ParseSource(name):
   tracker = ObjectTracker(name);

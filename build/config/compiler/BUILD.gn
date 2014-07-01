@@ -131,7 +131,7 @@ config("compiler") {
         # precendence for now.
         # TODO(brettw) common.gypi has this only for target toolset.
         #"-Wl,--icf=safe",
-        "-Wl,--icf=none",
+        #"-Wl,--icf=none",
 
         # Experimentation found that using four linking threads
         # saved ~20% of link time.

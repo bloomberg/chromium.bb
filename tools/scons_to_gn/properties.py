@@ -9,7 +9,8 @@ PROPERTY_REMAP = {
   'CFLAGS': 'cflags',
   'CCFLAGS': 'cflags_c',
   'CXXFLAGS': 'cflags_cc',
-  'LDFLAGS': 'ldflags'
+  'LDFLAGS': 'ldflags',
+  'EXTRA_LIBS': 'deps'
 }
 COMPILER_FLAGS = ['cflags', 'cflags_c', 'cflags_cc']
 LINKER_FLAGS = ['ldfalgs']
@@ -50,12 +51,16 @@ def ConvertSconsPropertyToSubTable(key, items):
 
   # If the name is not in the remap, then keep it
   propname = PROPERTY_REMAP.get(key, key)
+  print "KEY=%s, PROPNAME=%s" %(key, propname)
 
   # If this is a compiler flag, we will need to build a new table
   if propname in COMPILER_FLAGS:
     return RemapCompilerProperties(propname, items)
 
-  return { key: items }
+  if propname == 'deps':
+    items = [i for i in items if i not in ['pthread']]
+
+  return { propname: items }
 
 
 def ParsePropertyTable(table):
@@ -73,6 +78,4 @@ def ParsePropertyTable(table):
       props[k].extend(v)
 
   return props
-
-
 

@@ -7,6 +7,9 @@ group("trusted_targets") {
     "//native_client/src/trusted/cpu_features:all_cpu_features",
     "//native_client/src/trusted/debug_stub:debug_stub",
     "//native_client/src/trusted/desc:nrd_xfer",
+    "//native_client/src/trusted/validator/driver:ncval_new",
+    "//native_client/src/trusted/validator/driver:elf_load",
+    "//native_client/src/trusted/validator_ragel:rdfa_validator"
   ]
 }
 

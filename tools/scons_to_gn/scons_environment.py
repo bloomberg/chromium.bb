@@ -25,10 +25,12 @@ class Environment(object):
     self.del_attributes = defaultdict()
     self.tracker = tracker
     self.cond_obj = cond_obj
-    self.props = {}
+    self.props = { 'AS' : 'assembler', 'OBJDUMP' : 'objdump' }
     self.headers = []
 
   def __getitem__(self, key):
+    if key in ['TARGET_ARCHITECTURE']:
+      return self.cond_obj.get(key)
     return self.props[key]
 
   def __setitem__(self, key, value):
@@ -42,11 +44,19 @@ class Environment(object):
   def Bit(self, name):
     return self.cond_obj.Bit(name)
 
-  def Clone(self):
+  def Clone(self, **kwargs):
     env = Environment(self.tracker, self.cond_obj)
     env.add_attributes = dict(self.add_attributes)
     env.del_attributes = dict(self.del_attributes)
+    for k,v in kwargs.iteritems():
+      env.props[k] = v
     return env
+
+  def MakeUntrustedNativeEnv(self):
+    return self
+
+  def MakeGTestEnv(self):
+    return self
 
   def Append(self, **kwargs):
     table = ParsePropertyTable(kwargs)
@@ -63,6 +73,15 @@ class Environment(object):
       nodes = [nodes]
     self.headers.extend(nodes)
     return nodes
+
+  def File(self, name):
+    return name
+
+  def AutoDepsCommand(self, name, *args, **kwargs):
+    return name
+
+  def AlwaysBuild(self, *args, **kwargs):
+    return None
 
   def AddLibraryToSdk(self, nodes):
     if not isinstance(nodes, list):
@@ -121,8 +140,8 @@ class Environment(object):
     self.AddObject(name, sources, 'executable', **kwargs)
     return name
 
-  def Command(self, name, command, other, **kwargs):
-    print "Command: %s, %s, %s, : %s" % (name, command, other, str(kwargs))
+  def Command(self, *args, **kwargs):
+    print "Command: %s : %s" % (str(args), str(kwargs))
 
   def CommandTest(self, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
@@ -140,14 +159,29 @@ class Environment(object):
     self.AddObject(name, [], 'test', **ARGS)
     return name
 
-  def AddNodeToTestSuite(self, node, suites, name, **kwargs):
-    self.tracker.AddObject('Add %s as %s to %s.' %
-                           (node, name, ' and '.join(suites)),
+  def CommandSelLdrTestNacl(self, *args, **kwargs):
+    return None
+
+  def GetTranslatedNexe(self, *args, **kwargs):
+    return "Translated Nexe"
+
+  def AddNodeToTestSuite(self, node, suites, *args, **kwargs):
+    name = "Unknown"
+    if len(args):
+      name = args[0]
+    self.tracker.AddObject('Add %s to %s.' %
+                           (node, ' and '.join(suites)),
                            'note')
     return name
 
   def EnsureRequiredBuildWarnings(env, **kwargs):
     return True
+
+  def IsRunningUnderValgrind(self):
+    return False
+
+  def GetIrtNexe(self):
+    return "irt_core.nexe"
 
   def MakeEmptyFile(env, **kwargs) :
     return "BOGUS TEMP FILE"
@@ -156,7 +190,7 @@ class Environment(object):
     return "BOGUS TEMP DIR"
 
   def NaClSharedLibrary(env, name, *args, **kwargs):
-    return self.AddObject(LibName(name), sources, 'NaClSharedibrary', **kwargs)
+    return self.AddObject(LibName(name), sources, 'shared_library', **kwargs)
 
   def NaClSdkLibrary(self, name, sources, **kwargs):
     return self.AddObject(LibName(name), sources, 'NaClDualLibrary', **kwargs)

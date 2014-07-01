@@ -14,6 +14,12 @@ FULLARCH = {
   'x64' : 'x86-64'
 }
 
+SUBARCH = {
+  'arm' : '32',
+  'x86' : '32',
+  'x64' : '64'
+}
+
 class Conditions(object):
   def __init__(self, seta, setb):
     self._set_a = seta
@@ -21,10 +27,12 @@ class Conditions(object):
     self._all = ['%s_%s' % (a, b) for a in seta for b in setb]
     self._active_condition = self._all[0]
 
-  def get(self, key, condition, default=False):
-    os, arch = condition.split('_')
-    if key == "TARGET_FULLARCH":
+  def get(self, key, default=False):
+    os, arch = self._active_condition.split('_')
+    if key in ["TARGET_FULLARCH", "TARGET_ARCHITECTURE"]:
       return FULLARCH[arch]
+    if key == "TARGET_SUBARCH":
+      return SUBARCH[arch]
 
   def All(self):
     return self._all
@@ -94,10 +102,11 @@ class UntrustedConditions(Conditions):
       "//native_client/build/toolchain/nacl/nacl_sdk.gni"
     ]
 
-  def get(self, key, condition, default=False):
+  def get(self, key, default=False):
     os, arch = self._active_condition.split('_')
     if key == "TARGET_FULLARCH":
       return FULLARCH[arch]
+    return Conditions.get(self, key, default)
 
   def Bit(self, name):
     libc, arch = self._active_condition.split('_')
