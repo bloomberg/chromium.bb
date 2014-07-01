@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.TestUtils;
+import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiver;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.Handle;
@@ -26,20 +27,6 @@ import java.util.List;
  * Testing {@link Message}.
  */
 public class MessageTest extends MojoTestCase {
-
-    static class RecordingMessageReceiver implements MessageReceiver {
-
-        public final List<Message> messages = new ArrayList<Message>();
-
-        /**
-         * @see MessageReceiver#accept(Message)
-         */
-        @Override
-        public boolean accept(Message message) {
-            messages.add(message);
-            return true;
-        }
-    }
 
     private static final int DATA_SIZE = 1024;
 
