@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..9ee6b94 100644
+index 36b7011..5876f96 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -43,7 +43,33 @@ index 36b7011..9ee6b94 100644
  	struct curveType *curve = NULL;
  	uint32_t type = read_u32(src, offset);
  	uint32_t count;
-@@ -657,7 +666,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -484,19 +493,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
+ 	uint32_t channel_offset = 0;
+ 	int i;
+ 	for (i = 0; i < num_channels; i++) {
+-		uint32_t tag_len;
++		uint32_t tag_len = ~0;
+ 
+ 		(*curveArray)[i] = read_curveType(src, curve_offset + channel_offset, &tag_len);
+ 		if (!(*curveArray)[i]) {
+ 			invalid_source(src, "invalid nested curveType curve");
+ 		}
+ 
++		if (tag_len == ~0) {
++			invalid_source(src, "invalid nested curveType tag length");
++			return;
++		}
++
+ 		channel_offset += tag_len;
+ 		// 4 byte aligned
+ 		if ((tag_len % 4) != 0)
+ 			channel_offset += 4 - (tag_len % 4);
+ 	}
+-
+ }
+ 
+ static void mAB_release(struct lutmABType *lut)
+@@ -657,7 +670,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	uint16_t num_input_table_entries;
  	uint16_t num_output_table_entries;
  	uint8_t in_chan, grid_points, out_chan;
@@ -52,7 +78,7 @@ index 36b7011..9ee6b94 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
-@@ -997,6 +1006,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -997,6 +1010,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	source.size = size;
  	source.valid = true;
  

@@ -36,5 +36,6 @@ google.patch contains the following modifications. Apply with
    - https://bugzilla.mozilla.org/show_bug.cgi?id=969226
  - Apply upstream simplification of qcmstypes.h
    - https://hg.mozilla.org/mozilla-central/rev/b5be94737a83
+ - Check for unused tag_len in read_nested_curveType()
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

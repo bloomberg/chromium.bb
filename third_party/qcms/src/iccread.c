@@ -493,11 +493,16 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
 	uint32_t channel_offset = 0;
 	int i;
 	for (i = 0; i < num_channels; i++) {
-		uint32_t tag_len;
+		uint32_t tag_len = ~0;
 
 		(*curveArray)[i] = read_curveType(src, curve_offset + channel_offset, &tag_len);
 		if (!(*curveArray)[i]) {
 			invalid_source(src, "invalid nested curveType curve");
+		}
+
+		if (tag_len == ~0) {
+			invalid_source(src, "invalid nested curveType tag length");
+			return;
 		}
 
 		channel_offset += tag_len;
@@ -505,7 +510,6 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
 		if ((tag_len % 4) != 0)
 			channel_offset += 4 - (tag_len % 4);
 	}
-
 }
 
 static void mAB_release(struct lutmABType *lut)
