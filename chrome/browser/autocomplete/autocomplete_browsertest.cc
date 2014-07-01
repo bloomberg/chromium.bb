@@ -148,9 +148,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     EXPECT_TRUE(omnibox_view->GetText().empty());
     EXPECT_TRUE(omnibox_view->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
-    // We get two matches because we have a provider for extension apps and the
-    // Chrome Web Store is a built-in Extension app. For this test, we only care
-    // about the other match existing.
     ASSERT_GE(result.size(), 1U) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
     EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);

@@ -141,8 +141,6 @@
       'browser/autocomplete/builtin_provider.h',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.cc',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.h',
-      'browser/autocomplete/extension_app_provider.cc',
-      'browser/autocomplete/extension_app_provider.h',
       'browser/autocomplete/history_provider.cc',
       'browser/autocomplete/history_provider.h',
       'browser/autocomplete/history_provider_util.cc',

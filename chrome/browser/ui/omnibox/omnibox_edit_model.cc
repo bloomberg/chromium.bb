@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
@@ -825,33 +824,28 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     view_->RevertAll();  // Revert the box to its unedited state.
   }
 
-  if (match.type == AutocompleteMatchType::EXTENSION_APP) {
-    ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
-    observer->OnSuccessfulNavigation();
-  } else {
-    RecordPercentageMatchHistogram(
-        permanent_text_, current_text,
-        controller_->GetToolbarModel()->WouldReplaceURL(),
-        match.transition, view_->GetWidth());
+  RecordPercentageMatchHistogram(
+      permanent_text_, current_text,
+      controller_->GetToolbarModel()->WouldReplaceURL(),
+      match.transition, view_->GetWidth());
 
-    // Track whether the destination URL sends us to a search results page
-    // using the default search provider.
-    if (TemplateURLServiceFactory::GetForProfile(profile_)->
-        IsSearchResultsPageFromDefaultSearchProvider(match.destination_url)) {
-      content::RecordAction(
-          base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
-    }
+  // Track whether the destination URL sends us to a search results page
+  // using the default search provider.
+  if (TemplateURLServiceFactory::GetForProfile(profile_)->
+      IsSearchResultsPageFromDefaultSearchProvider(match.destination_url)) {
+    content::RecordAction(
+        base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
+  }
 
-    if (match.destination_url.is_valid()) {
-      // This calls RevertAll again.
-      base::AutoReset<bool> tmp(&in_revert_, true);
-      controller_->OnAutocompleteAccept(
-          match.destination_url, disposition,
-          content::PageTransitionFromInt(
-              match.transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-      if (observer->load_state() != OmniboxNavigationObserver::LOAD_NOT_SEEN)
-        ignore_result(observer.release());  // The observer will delete itself.
-    }
+  if (match.destination_url.is_valid()) {
+    // This calls RevertAll again.
+    base::AutoReset<bool> tmp(&in_revert_, true);
+    controller_->OnAutocompleteAccept(
+        match.destination_url, disposition,
+        content::PageTransitionFromInt(
+            match.transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+    if (observer->load_state() != OmniboxNavigationObserver::LOAD_NOT_SEEN)
+      ignore_result(observer.release());  // The observer will delete itself.
   }
 
   if (match.starred)

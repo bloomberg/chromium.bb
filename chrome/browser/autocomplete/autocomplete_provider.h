@@ -39,13 +39,11 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
-// Extension App (exact match)                                         | 1425
 // HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
 // HistoryURL (intranet url never visited match, some inexact matches) | 1400++
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
 // HistoryURL (what you typed, some inexact matches)                   | 1200++
-// Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryURL (some inexact matches)                                   |  900++
@@ -62,11 +60,9 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // URL input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
-// Extension App (exact match)                                         | 1425
 // HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
 // HistoryURL (intranet url never visited match, some inexact matches) | 1400++
 // HistoryURL (what you typed, some inexact matches)                   | 1200++
-// Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // HistoryURL (some inexact matches)                                   |  900++
 // Built-in                                                            |  860++
@@ -85,10 +81,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary or Secondary (past query in history within 2 days)   | 1599**
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Keyword (substituting, exact match)                                 | 1450
-// Extension App (exact match)                                         | 1425
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// Extension App (inexact match)                                       | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryURL (inexact match)                                          |  900++
 // BookmarkProvider (prefix match in bookmark title)                   |  900+-
@@ -102,10 +96,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 //
 // FORCED_QUERY input type:
 // --------------------------------------------------------------------|-----
-// Extension App (exact match on title only, not url)                  | 1425
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// Extension App (inexact match on title only, not url)                | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // Search Primary Provider (navigational suggestion)                   |  800++
 // Search Primary Provider (suggestion)                                |  600++
@@ -127,9 +119,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 //     450 points @ two weeks)
 // **: relevance score falls off over two days (discounted 99 points after two
 //     days).
-// *~: Partial matches get a score on a sliding scale from about 575-1125 based
-//     on how many times the URL for the Extension App has been typed and how
-//     many of the letters match.
 // +-: A base score that the provider will adjust upward or downward based on
 //     provider-specific metrics.
 //
@@ -143,13 +132,12 @@ class AutocompleteProvider
   enum Type {
     TYPE_BOOKMARK         = 1 << 0,
     TYPE_BUILTIN          = 1 << 1,
-    TYPE_EXTENSION_APP    = 1 << 2,
-    TYPE_HISTORY_QUICK    = 1 << 3,
-    TYPE_HISTORY_URL      = 1 << 4,
-    TYPE_KEYWORD          = 1 << 5,
-    TYPE_SEARCH           = 1 << 6,
-    TYPE_SHORTCUTS        = 1 << 7,
-    TYPE_ZERO_SUGGEST     = 1 << 8,
+    TYPE_HISTORY_QUICK    = 1 << 2,
+    TYPE_HISTORY_URL      = 1 << 3,
+    TYPE_KEYWORD          = 1 << 4,
+    TYPE_SEARCH           = 1 << 5,
+    TYPE_SHORTCUTS        = 1 << 6,
+    TYPE_ZERO_SUGGEST     = 1 << 7,
   };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,

@@ -145,7 +145,7 @@ message OmniboxEventProto {
     KEYWORD = 5;           // Keyword-triggered searches
     BUILTIN = 6;           // Built-in URLs, such as chrome://version
     SHORTCUTS = 7;         // Recently selected omnibox suggestions
-    EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
+    EXTENSION_APPS = 8;    // DEPRECATED. Suggestions from extensions or apps
     CONTACT = 9;           // DEPRECATED. The user's contacts
     BOOKMARK = 10;         // The user's bookmarks
     ZERO_SUGGEST = 11;     // Suggestions based on the current page
@@ -169,7 +169,8 @@ message OmniboxEventProto {
       URL_WHAT_YOU_TYPED = 1;     // The input as a URL
       HISTORY_URL = 2;            // A past page whose URL contains the input
       HISTORY_TITLE = 3;          // A past page whose title contains the input
-      HISTORY_BODY = 4;           // A past page whose body contains the input
+      HISTORY_BODY = 4;           // DEPRECATED. A past page whose body
+                                  // contains the input
       HISTORY_KEYWORD = 5;        // A past page whose keyword contains the
                                   // input
       NAVSUGGEST = 6;             // A suggested URL
@@ -180,8 +181,8 @@ message OmniboxEventProto {
       SEARCH_SUGGEST = 9;         // A suggested search (with the default
                                   // engine) for a query.
       SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
-      EXTENSION_APP = 11;         // An Extension App with a title/url that
-                                  // contains the input
+      EXTENSION_APP = 11;         // DEPRECATED. An Extension App with a
+                                  // title/url that contains the input.
       CONTACT = 12;               // One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
       SEARCH_SUGGEST_ENTITY = 14; // A suggested search for an entity.

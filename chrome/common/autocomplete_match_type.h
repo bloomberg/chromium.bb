@@ -35,7 +35,7 @@ struct AutocompleteMatchType {
                                        // Google+ profile.
     SEARCH_OTHER_ENGINE         = 13,  // A search with a non-default engine.
     EXTENSION_APP               = 14,  // An Extension App with a title/url that
-                                       // contains the input.
+                                       // contains the input (deprecated).
     CONTACT_DEPRECATED          = 15,  // One of the user's contacts
                                        // (deprecated).
     BOOKMARK_TITLE              = 16,  // A bookmark whose title contains the
