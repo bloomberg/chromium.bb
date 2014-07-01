@@ -2625,6 +2625,7 @@
         'defines': [
           'ADDRESS_SANITIZER',
           'MEMORY_TOOL_REPLACES_ALLOCATOR',
+          'MEMORY_SANITIZER_INITIAL_SIZE',
         ],
       }],
       ['syzyasan==1', {
@@ -2637,6 +2638,7 @@
         'defines': [
             'SYZYASAN',
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
+            'MEMORY_SANITIZER_INITIAL_SIZE',
         ],
       }],
       ['OS=="win"', {
@@ -3212,6 +3214,7 @@
           }, {
             'defines': [
               'MEMORY_TOOL_REPLACES_ALLOCATOR',
+              'MEMORY_SANITIZER_INITIAL_SIZE',
               'DYNAMIC_ANNOTATIONS_ENABLED=1',
               'WTF_USE_DYNAMIC_ANNOTATIONS=1',
             ],
