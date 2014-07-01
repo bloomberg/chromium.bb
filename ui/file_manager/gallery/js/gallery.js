@@ -314,6 +314,7 @@ Gallery.prototype.load = function(entries, selectedEntries) {
 
     // Do the initialization for each mode.
     if (shouldShowMosaic) {
+      mosaic.show();
       this.inactivityWatcher_.check();  // Show the toolbar.
       cr.dispatchSimpleEvent(this, 'loaded');
     } else {
