@@ -222,16 +222,13 @@ int GpuMain(const MainFunctionParams& parameters) {
     bool initialized_sandbox = false;
     bool initialized_gl_context = false;
     bool should_initialize_gl_context = false;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
     // On Chrome OS ARM Mali, GPU driver userspace creates threads when
     // initializing a GL context, so start the sandbox early.
-    if (!command_line.HasSwitch(
-             switches::kGpuSandboxStartAfterInitialization)) {
-      gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get(),
-                                             should_initialize_gl_context);
+    if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
+      gpu_info.sandboxed = StartSandboxLinux(
+          gpu_info, watchdog_thread.get(), should_initialize_gl_context);
       initialized_sandbox = true;
     }
-#endif
 #endif  // defined(OS_LINUX)
 
     base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();

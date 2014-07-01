@@ -568,11 +568,6 @@ const char kGpuSandboxAllowSysVShm[]        = "gpu-sandbox-allow-sysv-shm";
 // Makes GPU sandbox failures fatal.
 const char kGpuSandboxFailuresFatal[]       = "gpu-sandbox-failures-fatal";
 
-// TODO(jorgelo): remove this once crbug.com/356959 is fixed.
-// Allows GPU sandbox to start later.
-const char kGpuSandboxStartAfterInitialization[] =
-    "gpu-sandbox-start-after-initialization";
-
 // Starts the GPU sandbox before creating a GL context.
 const char kGpuSandboxStartEarly[]          = "gpu-sandbox-start-early";
 

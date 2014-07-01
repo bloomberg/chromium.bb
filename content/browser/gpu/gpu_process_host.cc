@@ -989,7 +989,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kGpuStartupDialog,
     switches::kGpuSandboxAllowSysVShm,
     switches::kGpuSandboxFailuresFatal,
-    switches::kGpuSandboxStartAfterInitialization,
+    switches::kGpuSandboxStartEarly,
     switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
     switches::kLoggingLevel,
     switches::kLowEndDeviceMode,
