@@ -227,8 +227,6 @@
             'host/screen_resolution.h',
             'host/server_log_entry_host.cc',
             'host/server_log_entry_host.h',
-            'host/service_urls.cc',
-            'host/service_urls.h',
             'host/session_manager_factory.cc',
             'host/session_manager_factory.h',
             'host/shaped_screen_capturer.cc',

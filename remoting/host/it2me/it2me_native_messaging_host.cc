@@ -18,9 +18,9 @@
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auth_token_util.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/service_urls.h"
 #include "remoting/protocol/name_value_map.h"
 
 namespace remoting {

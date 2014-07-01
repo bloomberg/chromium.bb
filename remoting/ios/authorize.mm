@@ -6,18 +6,17 @@
 #error "This file requires ARC support."
 #endif
 
-#import "remoting/ios/authorize.h"
-
 // TODO (aboone) This include is for The Google Toolbox for Mac OAuth 2
 // Controllers https://code.google.com/p/gtm-oauth2/ This may need to be added
 // as a third-party or locate the proper project in Chromium.
 #import "GTMOAuth2ViewControllerTouch.h"
 
 #include "google_apis/google_api_keys.h"
+#import "remoting/ios/authorize.h"
+#include "remoting/base/service_urls.h"
 // TODO (aboone) Pulling in some service values from the host side.  The cc's
 // are also compiled as part of this project because the target remoting_host
 // does not build on iOS right now.
-#include "remoting/host/service_urls.h"
 #include "remoting/host/setup/oauth_helper.h"
 
 namespace {

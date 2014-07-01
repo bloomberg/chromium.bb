@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
@@ -377,9 +378,10 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
-  log_to_server_.reset(new client::LogToServer(ServerLogEntry::ME2ME,
-                                               signaling_.get(),
-                                               "remoting@bot.talk.google.com"));
+  log_to_server_.reset(
+      new client::LogToServer(ServerLogEntry::ME2ME,
+                              signaling_.get(),
+                              ServiceUrls::GetInstance()->directory_bot_jid()));
 
   NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_FULL);
 
