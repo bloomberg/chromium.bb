@@ -41,7 +41,9 @@ const char* const kHangoutsExtensionIds[] = {
   "nckgahadagoaajjgafhacjanaoiihapd",
   "ljclpkphhpbpinifbeabbhlfddcpfdde",
   "ppleadejekpmccmnpjdimmlfljlkdfej",
-  "eggnbpckecmjlblplehfpjjdhhidfdoj"
+  "eggnbpckecmjlblplehfpjjdhhidfdoj",
+  "jfjjdfefebklmdbmenmlehlopoocnoeh",
+  "knipolnnllmklapflnccelgolnpehhpl"
 };
 
 // Add a query parameter to specify the size to fetch the image in. The
