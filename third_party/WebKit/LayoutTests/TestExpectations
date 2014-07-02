@@ -433,6 +433,21 @@ crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailur
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
+crbug.com/263911 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/W3C-SVG-1.1/masking-path-01-b.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-child-clipped.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-css-transform-1.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-evenodd.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-pixelation.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-transform-1.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/custom/masking-clipping-hidpi.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/zoom/page/zoom-clip-path.html [ NeedsRebaseline ]
+
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
@@ -999,7 +1014,8 @@ crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.h
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
-crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
+# Bug(fmalita) to be re-enabled after https://codereview.chromium.org/362333002/
+# crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
 
 crbug.com/390488 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 

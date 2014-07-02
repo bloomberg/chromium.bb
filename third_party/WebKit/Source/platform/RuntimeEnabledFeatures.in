@@ -94,7 +94,7 @@ OrientationEvent
 OverlayFullscreenVideo
 PagePopup status=stable
 Path2D status=stable
-PathOpsSVGClipping
+PathOpsSVGClipping status=experimental
 PeerConnection depends_on=MediaStream, status=stable
 PreciseMemoryInfo
 PushMessaging status=experimental
