@@ -357,6 +357,8 @@ class Builder(object):
     Returns:
       Whether the build succeeded.
     """
+    report_stages.WriteBasicMetadata(self._run)
+
     self._InitializeTrybotPatchPool()
 
     if self._run.options.bootstrap:

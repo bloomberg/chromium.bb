@@ -107,6 +107,15 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertGreater(alerts.SendEmail.call_count, 0,
                        'CQ health alerts emails were not sent.')
 
+  def testWriteBasicMetadata(self):
+    """Test that WriteBasicMetadata writes expected keys correctly."""
+    report_stages.WriteBasicMetadata(self._run)
+    metadata_dict = self._run.attrs.metadata.GetDict()
+    self.assertEqual(metadata_dict['build-number'],
+                     generic_stages_unittest.DEFAULT_BUILD_NUMBER)
+    self.assertTrue(metadata_dict.has_key('builder-name'))
+    self.assertTrue(metadata_dict.has_key('bot-hostname'))
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

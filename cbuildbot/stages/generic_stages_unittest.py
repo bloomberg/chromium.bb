@@ -35,6 +35,7 @@ import mock
 
 
 DEFAULT_CHROME_BRANCH = '27'
+DEFAULT_BUILD_NUMBER = 1234321
 
 
 class BuilderRunMock(partial_mock.PartialMock):
@@ -113,7 +114,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
       # Fill in default command args.
       cmd_args = [
           '-r', self.build_root, '--buildbot', '--noprebuilts',
-          '--buildnumber', '1234',
+          '--buildnumber', str(DEFAULT_BUILD_NUMBER),
           '--branch', self.TARGET_MANIFEST_BRANCH,
       ]
     if extra_cmd_args:
@@ -268,7 +269,7 @@ class BuilderStageTest(AbstractStageTest):
     stage = self.ConstructStage()
 
     exp_url = ('http://build.chromium.org/p/chromiumos/builders/'
-               'x86-generic-paladin/builds/1234')
+               'x86-generic-paladin/builds/%s' % DEFAULT_BUILD_NUMBER)
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'

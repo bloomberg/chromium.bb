@@ -23,6 +23,33 @@ from chromite.lib import osutils
 from chromite.lib import toolchain
 
 
+def WriteBasicMetadata(builder_run):
+  """Writes the most basic metadata that should be known at start of execution.
+
+  This method writes basic metadata values to the |builder_run| metadata, to
+  guarantee that these values will be part of the metadata even if some early
+  build stage (like a Sync stage) fails unexpectedly before ReportBuildStart
+  can run.
+
+  This method is safe to run more than once (for instance, once per cbuildbot
+  execution) because it will write the same data each time. In particular, this
+  method does not write any metadata values that depend on the builder config,
+  as the config may be different in inner cbuildbot executions than it is in
+  outermost one.
+
+  Args:
+    builder_run: The BuilderRun instance for this build.
+  """
+  metadata = {
+      # Data for this build.
+      'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
+      'build-number': builder_run.buildnumber,
+      'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
+  }
+
+  builder_run.attrs.metadata.UpdateWithDict(metadata)
+
+
 class ReportBuildStartStage(generic_stages.BuilderStage,
                             generic_stages.ArchivingStageMixin):
   """Uploads partial metadata artifact describing what will be built.
@@ -69,12 +96,8 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
-        # Data for this build.
         'bot-config': config['name'],
-        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
         'boards': config['boards'],
-        'build-number': self._run.buildnumber,
-        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'child-configs': child_configs,
         'time': {
             'start': start_time_stamp,
