@@ -51,8 +51,6 @@ deps = {
         Var('git_url') + '/external/font-compression-reference.git@6cef49677dc4c650ef6e3f56041e0a41803afa8c',
     'src/third_party/cacheinvalidation/src':
         Var('git_url') + '/external/google-cache-invalidation-api/src.git@bf41949f62d571cae38acf525fbc552537c6e74b',
-    'src/third_party/clang_format/script':
-        Var('git_url') + '/chromium/llvm-project/cfe/tools/clang-format.git@385fc3379dc95b67d601b4384b16b1ec0bf12361',
     'src/third_party/cld_2/src':
         Var('git_url') + '/external/cld2.git@d076f5eda223ac568639d6288f2e2d70d908f282',
     'src/third_party/colorama/src':
@@ -619,53 +617,13 @@ hooks = [
     {
     'action':
          [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=win32',
-    '--no_auth',
-    '--bucket',
-    'chromium-clang-format',
-    '-s',
-    'src/third_party/clang_format/bin/win/clang-format.exe.sha1'
+    'python',
+    'src/third_party/clang_format/bin/rm_binaries.py'
 ],
     'pattern':
          '.',
     'name':
-         'clang_format_win_old'
-},
-    {
-    'action':
-         [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=darwin',
-    '--no_auth',
-    '--bucket',
-    'chromium-clang-format',
-    '-s',
-    'src/third_party/clang_format/bin/mac/clang-format.sha1'
-],
-    'pattern':
-         '.',
-    'name':
-         'clang_format_mac_old'
-},
-    {
-    'action':
-         [
-    'download_from_google_storage',
-    '--no_resume',
-    '--platform=linux*',
-    '--no_auth',
-    '--bucket',
-    'chromium-clang-format',
-    '-s',
-    'src/third_party/clang_format/bin/linux/clang-format.sha1'
-],
-    'pattern':
-         '.',
-    'name':
-         'clang_format_linux_old'
+         'remove_old_clang_format_binaries'
 },
     {
     'action':
