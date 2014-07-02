@@ -1106,7 +1106,9 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
   DCHECK(host_resolver);
   // Start up the thread.
   thread_.reset(new base::Thread("Proxy resolver"));
-  CHECK(thread_->Start());
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  CHECK(thread_->StartWithOptions(options));
 
   v8_resolver_.reset(new ProxyResolverV8);
 }

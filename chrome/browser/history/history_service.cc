@@ -913,7 +913,9 @@ void HistoryService::RebuildTable(
 
 bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!thread_->Start()) {
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  if (!thread_->StartWithOptions(options)) {
     Cleanup();
     return false;
   }
