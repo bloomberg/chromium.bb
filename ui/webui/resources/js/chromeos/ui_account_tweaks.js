@@ -17,6 +17,10 @@ cr.define('uiAccountTweaks', function() {
   /////////////////////////////////////////////////////////////////////////////
   // UIAccountTweaks class:
 
+  // String specificators for different types of sessions.
+  /** @const */ var SESSION_TYPE_GUEST = 'guest';
+  /** @const */ var SESSION_TYPE_PUBLIC = 'public-account';
+
   /**
    * Encapsulated handling of ChromeOS accounts options page.
    * @constructor
@@ -32,10 +36,17 @@ cr.define('uiAccountTweaks', function() {
   };
 
   /**
-   * @return {boolean} Whether we're currently in guest mode.
+   * @return {boolean} Whether we're currently in guest session.
    */
   UIAccountTweaks.loggedInAsGuest = function() {
     return loadTimeData.getBoolean('loggedInAsGuest');
+  };
+
+  /**
+   * @return {boolean} Whether we're currently in public session.
+   */
+  UIAccountTweaks.loggedInAsPublicAccount = function() {
+    return loadTimeData.getBoolean('loggedInAsPublicAccount');
   };
 
   /**
@@ -46,38 +57,65 @@ cr.define('uiAccountTweaks', function() {
   };
 
   /**
-   * Disables or hides some elements in Guest mode in ChromeOS.
-   * All elements within given document with guest-visibility
-   * attribute are either hidden (for guest-visibility="hidden")
-   * or disabled (for guest-visibility="disabled").
+   * Disables or hides some elements in specified type of session in ChromeOS.
+   * All elements within given document with *sessionType*-visibility
+   * attribute are either hidden (for *sessionType*-visibility="hidden")
+   * or disabled (for *sessionType*-visibility="disabled").
    *
    * @param {Document} document Document that should processed.
+   * @param {string} sessionType name of the session type processed.
+   * @private
    */
-  UIAccountTweaks.applyGuestModeVisibility = function(document) {
-    if (!cr.isChromeOS || !UIAccountTweaks.loggedInAsGuest())
-      return;
-    var elements = document.querySelectorAll('[guest-visibility]');
+  UIAccountTweaks.applySessionTypeVisibility_ = function(document,
+                                                         sessionType) {
+    var elements = document.querySelectorAll('['+ sessionType +'-visibility]');
     for (var i = 0; i < elements.length; i++) {
       var element = elements[i];
-      var visibility = element.getAttribute('guest-visibility');
+      var visibility = element.getAttribute(sessionType +'-visibility');
       if (visibility == 'hidden')
         element.hidden = true;
       else if (visibility == 'disabled')
-        UIAccountTweaks.disableElementsForGuest(element);
+        UIAccountTweaks.disableElementsForSessionType(element, sessionType);
     }
   }
 
   /**
-   * Disables and marks page elements for Guest mode.
-   * Adds guest-disabled css class to all elements within given subtree,
+   * Updates specific visibility of elements for Guest session in ChromeOS.
+   * Calls applySessionTypeVisibility_ method.
+   *
+   * @param {Document} document Document that should processed.
+   */
+  UIAccountTweaks.applyGuestSessionVisibility = function(document) {
+    if (!cr.isChromeOS || !UIAccountTweaks.loggedInAsGuest())
+      return;
+    UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_GUEST);
+  }
+
+  /**
+   * Updates specific visibility of elements for Public account session in
+   * ChromeOS. Calls applySessionTypeVisibility_ method.
+   *
+   * @param {Document} document Document that should processed.
+   */
+  UIAccountTweaks.applyPublicSessionVisibility = function(document) {
+    if (!cr.isChromeOS || !UIAccountTweaks.loggedInAsPublicAccount())
+      return;
+    UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_PUBLIC);
+  }
+
+  /**
+   * Disables and marks page elements for specified session type.
+   * Adds #-disabled css class to all elements within given subtree,
    * disables interactive elements (input/select/button), and removes href
    * attribute from <a> elements.
    *
    * @param {Element} element Root element of DOM subtree that should be
    *     disabled.
+   * @param {string} sessionType session type specificator.
    */
-  UIAccountTweaks.disableElementsForGuest = function(element) {
-    UIAccountTweaks.disableElementForGuest_(element);
+  UIAccountTweaks.disableElementsForSessionType = function(element,
+                                                           sessionType) {
+    UIAccountTweaks.disableElementForSessionType_(element, sessionType);
 
     // Walk the tree, searching each ELEMENT node.
     var walker = document.createTreeWalker(element,
@@ -87,22 +125,24 @@ cr.define('uiAccountTweaks', function() {
 
     var node = walker.nextNode();
     while (node) {
-      UIAccountTweaks.disableElementForGuest_(node);
+      UIAccountTweaks.disableElementForSessionType_(node, sessionType);
       node = walker.nextNode();
     }
   };
 
   /**
-   * Disables single element for Guest mode.
-   * Adds guest-disabled css class, adds disabled attribute for appropriate
-   * elements (input/select/button), and removes href attribute from
+   * Disables single element for given session type.
+   * Adds *sessionType*-disabled css class, adds disabled attribute for
+   * appropriate elements (input/select/button), and removes href attribute from
    * <a> element.
    *
    * @private
    * @param {Element} element Element that should be disabled.
+   * @param {string} sessionType account session Type specificator.
    */
-  UIAccountTweaks.disableElementForGuest_ = function(element) {
-    element.classList.add('guest-disabled');
+  UIAccountTweaks.disableElementForSessionType_ = function(element,
+                                                           sessionType) {
+    element.classList.add(sessionType + '-disabled');
     if (element.nodeName == 'INPUT' ||
         element.nodeName == 'SELECT' ||
         element.nodeName == 'BUTTON')

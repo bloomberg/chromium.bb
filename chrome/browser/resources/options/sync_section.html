@@ -31,7 +31,7 @@
     </div>
 
 <if expr="chromeos">
-    <div class="checkbox">
+    <div class="checkbox" public-account-visibility="hidden">
       <span class="controlled-setting-with-label">
         <input id="enable-screen-lock" type="checkbox"
             metric="Options_ScreenLock"
@@ -58,6 +58,7 @@
     </button>
 <if expr="chromeos">
     <button id="manage-accounts-button"
+        public-account-visibility="hidden"
         i18n-content="manageAccountsButtonTitle">
     </button>
 </if>  <!-- chromeos -->

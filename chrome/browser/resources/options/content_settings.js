@@ -52,8 +52,13 @@ cr.define('options', function() {
         };
       }
 
-      if (cr.isChromeOS)
-        UIAccountTweaks.applyGuestModeVisibility(document);
+      if (cr.isChromeOS) {
+        // Disable some controls for Guest in Chrome OS.
+        UIAccountTweaks.applyGuestSessionVisibility(document);
+
+        // Disable some controls for Public session in Chrome OS.
+        UIAccountTweaks.applyPublicSessionVisibility(document);
+      }
 
       // Cookies filter page ---------------------------------------------------
       $('show-cookies-button').onclick = function(event) {
