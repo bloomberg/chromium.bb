@@ -190,11 +190,6 @@ crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
 
-crbug.com/390605 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
-crbug.com/390605 fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
-crbug.com/390605 virtual/softwarecompositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-crbug.com/390605 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-
 crbug.com/391044 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
 crbug.com/391052 editing/inserting/return-key-with-selection-003.html [ NeedsRebaseline ]
 
