@@ -5,16 +5,22 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
+#include "chrome/browser/local_discovery/privet_device_lister.h"
+#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 
-class GcdPrivateAPI : public BrowserContextKeyedAPI {
+class GcdPrivateAPI : public BrowserContextKeyedAPI,
+                      public EventRouter::Observer,
+                      public local_discovery::PrivetDeviceLister::Delegate {
  public:
   class GCDApiFlowFactoryForTests {
    public:
@@ -34,8 +40,29 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
 
+  typedef std::map<std::string /* id_string */,
+                   linked_ptr<api::gcd_private::GCDDevice> > GCDDeviceMap;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "GcdPrivateAPI"; }
+
+  // local_discovery::PrivetDeviceLister implementation.
+  virtual void DeviceChanged(
+      bool added,
+      const std::string& name,
+      const local_discovery::DeviceDescription& description) OVERRIDE;
+  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
+  virtual void DeviceCacheFlushed() OVERRIDE;
+
+  int num_device_listeners_;
+  scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
+      service_discovery_client_;
+  scoped_ptr<local_discovery::PrivetDeviceLister> privet_device_lister_;
+  GCDDeviceMap known_devices_;
 
   content::BrowserContext* const browser_context_;
 };

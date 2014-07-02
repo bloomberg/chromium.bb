@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/local_discovery/test_service_discovery_client.h"
+#endif  // ENABLE_MDNS
 
 namespace api = extensions::api;
 
@@ -47,6 +53,84 @@ const char kGCDResponse[] =
     "  \"personalizedInfo\": {"
     "   \"maxRole\": \"owner\""
     "  }}]}";
+
+#if defined(ENABLE_MDNS)
+
+const uint8 kAnnouncePacket[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x80, 0x00,  // Standard query response, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x05,  // 5 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+    0x07, '_',  'p',  'r',  'i',  'v',  'e',  't',  0x04, '_',
+    't',  'c',  'p',  0x05, 'l',  'o',  'c',  'a',  'l',  0x00,
+    0x00, 0x0c,              // TYPE is PTR.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00,              // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x0c,  // RDLENGTH is 12 bytes.
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0xc0, 0x0c, 0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',
+    'c',  'e',  0xc0, 0x0c, 0x00, 0x10,  // TYPE is TXT.
+    0x00, 0x01,                          // CLASS is IN.
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 seconds.
+    0x01, 0x00, 0x00, 0x41,              // RDLENGTH is 69 bytes.
+    0x03, 'i',  'd',  '=',  0x10, 't',  'y',  '=',  'S',  'a',
+    'm',  'p',  'l',  'e',  ' ',  'd',  'e',  'v',  'i',  'c',
+    'e',  0x1e, 'n',  'o',  't',  'e',  '=',  'S',  'a',  'm',
+    'p',  'l',  'e',  ' ',  'd',  'e',  'v',  'i',  'c',  'e',
+    ' ',  'd',  'e',  's',  'c',  'r',  'i',  'p',  't',  'i',
+    'o',  'n',  0x0c, 't',  'y',  'p',  'e',  '=',  'p',  'r',
+    'i',  'n',  't',  'e',  'r',  0x09, 'm',  'y',  'S',  'e',
+    'r',  'v',  'i',  'c',  'e',  0xc0, 0x0c, 0x00, 0x21,  // Type is SRV
+    0x00, 0x01,                                            // CLASS is IN
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x17,              // RDLENGTH is 23
+    0x00, 0x00, 0x00, 0x00, 0x22, 0xb8,  // port 8888
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0x05, 'l',  'o',  'c',  'a',  'l',  0x00, 0x09, 'm',  'y',
+    'S',  'e',  'r',  'v',  'i',  'c',  'e',  0x05, 'l',  'o',
+    'c',  'a',  'l',  0x00, 0x00, 0x01,  // Type is A
+    0x00, 0x01,                          // CLASS is IN
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x04,              // RDLENGTH is 4
+    0x01, 0x02, 0x03, 0x04,              // 1.2.3.4
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0x05, 'l',  'o',  'c',  'a',  'l',  0x00, 0x00, 0x1C,  // Type is AAAA
+    0x00, 0x01,                                            // CLASS is IN
+    0x00, 0x00,              // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x10,  // RDLENGTH is 16
+    0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
+    0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02,
+    0x03, 0x04,
+};
+
+const uint8 kGoodbyePacket[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x80, 0x00,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+    0x07, '_',  'p',  'r',  'i',  'v',  'e', 't',  0x04, '_',  't',  'c',
+    'p',  0x05, 'l',  'o',  'c',  'a',  'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                                 // CLASS is IN.
+    0x00, 0x00,              // TTL (4 bytes) is 0 seconds.
+    0x00, 0x00, 0x00, 0x0c,  // RDLENGTH is 12 bytes.
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0xc0, 0x0c,
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0xc0, 0x0c,
+    0x00, 0x21,                          // Type is SRV
+    0x00, 0x01,                          // CLASS is IN
+    0x00, 0x00,                          // TTL (4 bytes) is 0 seconds.
+    0x00, 0x00, 0x00, 0x17,              // RDLENGTH is 23
+    0x00, 0x00, 0x00, 0x00, 0x22, 0xb8,  // port 8888
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0x05, 'l',
+    'o',  'c',  'a',  'l',  0x00,
+};
+
+#endif  // ENABLE_MDNS
 
 // Sentinel value to signify the request should fail.
 const char kResponseValueFailure[] = "FAILURE";
@@ -105,10 +189,21 @@ class FakeGCDApiFlowFactory
 
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
-  GcdPrivateAPITest() {}
+  GcdPrivateAPITest() {
+#if defined(ENABLE_MDNS)
+    test_service_discovery_client_ =
+        new local_discovery::TestServiceDiscoveryClient();
+    test_service_discovery_client_->Start();
+#endif  // ENABLE_MDNS
+  }
 
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
+
+#if defined(ENABLE_MDNS)
+  scoped_refptr<local_discovery::TestServiceDiscoveryClient>
+      test_service_discovery_client_;
+#endif  // ENABLE_MDNS
 };
 
 IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
@@ -120,5 +215,45 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
 
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "get_cloud_list.html"));
 }
+
+#if defined(ENABLE_MDNS)
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddBefore) {
+  test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
+                                                  sizeof(kAnnouncePacket));
+
+  EXPECT_TRUE(
+      RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddAfter) {
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
+                 test_service_discovery_client_,
+                 kAnnouncePacket,
+                 sizeof(kAnnouncePacket)),
+      base::TimeDelta::FromSeconds(1));
+
+  EXPECT_TRUE(
+      RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
+  test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
+                                                  sizeof(kAnnouncePacket));
+
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
+                 test_service_discovery_client_,
+                 kGoodbyePacket,
+                 sizeof(kGoodbyePacket)),
+      base::TimeDelta::FromSeconds(1));
+
+  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "remove_device.html"));
+}
+
+#endif  // ENABLE_MDNS
 
 }  // namespace
