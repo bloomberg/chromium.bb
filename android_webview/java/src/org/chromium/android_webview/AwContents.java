@@ -1602,7 +1602,7 @@ public class AwContents {
         if (!canZoomIn()) {
             return false;
         }
-        return mContentViewCore.pinchByDelta(1.25f);
+        return zoomBy(1.25f);
     }
 
     /**
@@ -1614,7 +1614,19 @@ public class AwContents {
         if (!canZoomOut()) {
             return false;
         }
-        return mContentViewCore.pinchByDelta(0.8f);
+        return zoomBy(0.8f);
+    }
+
+    /**
+     * @see android.webkit.WebView#zoomBy()
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomBy(float delta) {
+        if (delta < 0.01f || delta > 100.0f) {
+            throw new IllegalStateException("zoom delta value outside [0.01, 100] range.");
+        }
+        return mContentViewCore.pinchByDelta(delta);
     }
 
     /**
@@ -2061,9 +2073,6 @@ public class AwContents {
         if (mPageScaleFactor != pageScaleFactor) {
             float oldPageScaleFactor = mPageScaleFactor;
             mPageScaleFactor = pageScaleFactor;
-            // NOTE: if this ever needs to become synchronous then we need to make sure the scroll
-            // bounds are correctly updated before calling the method, otherwise embedder code that
-            // attempts to scroll on scale change might cause weird results.
             mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
                     (float)(oldPageScaleFactor * mDIPScale),
                     (float)(mPageScaleFactor * mDIPScale));

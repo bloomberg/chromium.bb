@@ -4,9 +4,10 @@
 
 package org.chromium.android_webview.test;
 
+import android.test.suitebuilder.annotation.SmallTest;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -30,11 +31,7 @@ public class AwContentsClientOnScaleChangedTest extends AwTestBase {
         super.tearDown();
     }
 
-    /*
     @SmallTest
-    This test is timing out on ICS bots including cq. See crbug.com/175854.
-    */
-    @DisabledTest
     public void testScaleUp() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),

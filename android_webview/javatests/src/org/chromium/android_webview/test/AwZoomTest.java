@@ -24,6 +24,7 @@ import java.util.concurrent.Callable;
 public class AwZoomTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
+    private float MAXIMUM_SCALE = 2.0f;
 
     @Override
     public void setUp() throws Exception {
@@ -37,11 +38,11 @@ public class AwZoomTest extends AwTestBase {
     private String getZoomableHtml(float scale) {
         final int divWidthPercent = (int)(100.0f / scale);
         return String.format(Locale.US, "<html><head><meta name=\"viewport\" content=\"" +
-                "width=device-width, minimum-scale=%f, maximum-scale=2.0, initial-scale=%f" +
+                "width=device-width, minimum-scale=%f, maximum-scale=%f, initial-scale=%f" +
                 "\"/></head><body style='margin:0'>" +
                 "<div style='width:%d%%;height:100px;border:1px solid black'>Zoomable</div>" +
                 "</body></html>",
-                scale, scale, divWidthPercent);
+                scale, MAXIMUM_SCALE, scale, divWidthPercent);
     }
 
     private String getNonZoomableHtml() {
@@ -114,6 +115,18 @@ public class AwZoomTest extends AwTestBase {
         waitForScaleChange(previousScale);
     }
 
+    private void zoomByOnUiThreadAndWait(final float delta) throws Throwable {
+        final float previousScale = getPixelScaleOnUiThread(mAwContents);
+        assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return mAwContents.zoomBy(delta);
+            }
+        }));
+        // The zoom level is updated asynchronously.
+        waitForScaleChange(previousScale);
+    }
+
     private void waitForScaleChange(final float previousScale) throws Throwable {
         poll(new Callable<Boolean>() {
             @Override
@@ -161,6 +174,15 @@ public class AwZoomTest extends AwTestBase {
             zoomOutOnUiThreadAndWait();
         }
         assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
+
+        zoomByOnUiThreadAndWait(4.0f);
+        waitForScaleToBecome(MAXIMUM_SCALE);
+
+        zoomByOnUiThreadAndWait(0.5f);
+        waitForScaleToBecome(MAXIMUM_SCALE * 0.5f);
+
+        zoomByOnUiThreadAndWait(0.01f);
+        waitForScaleToBecome(pageMinimumScale);
     }
 
     @SmallTest
