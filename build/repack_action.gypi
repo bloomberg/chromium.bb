@@ -6,9 +6,10 @@
 # consistent manner. To use this the following variables need to be
 # defined:
 #   pak_inputs: list: paths of pak files that need to be combined.
-#   pak_output: string: the output pak file path. 
+#   pak_output: string: the output pak file path.
 
 {
+  # GYP version: //tools/grit/repack.gni
   'variables': {
     'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
     'repack_options%': [],

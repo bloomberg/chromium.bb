@@ -279,9 +279,7 @@ component("base") {
     "//third_party/icu",
     "//ui/events:events_base",
     "//ui/resources",
-    "//ui/resources:unscaled_resources",
     "//ui/strings",
-    "//ui/webui/resources",
     "//url",
   ]
 

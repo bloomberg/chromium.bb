@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/wm
       'target_name': 'wm',
       'type': '<(component)',
       'dependencies': [
@@ -93,6 +94,7 @@
       ],
     },
     {
+      # GN version: //ui/wm:test_support
       'target_name': 'wm_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -108,6 +110,7 @@
       ],
     },
     {
+      # GN version: //ui/wm:wm_unittests
       'target_name': 'wm_unittests',
       'type': 'executable',
       'dependencies': [

@@ -1,0 +1,89 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+component("keyboard") {
+  sources = [
+    "keyboard.cc",
+    "keyboard.h",
+    "keyboard_constants.cc",
+    "keyboard_constants.h",
+    "keyboard_controller.cc",
+    "keyboard_controller.h",
+    "keyboard_controller_observer.h",
+    "keyboard_controller_proxy.cc",
+    "keyboard_controller_proxy.h",
+    "keyboard_layout_manager.h",
+    "keyboard_layout_manager.cc",
+    "keyboard_export.h",
+    "keyboard_switches.cc",
+    "keyboard_switches.h",
+    "keyboard_util.cc",
+    "keyboard_util.h",
+  ]
+
+  defines = [ "KEYBOARD_IMPLEMENTATION" ]
+
+  deps = [
+    ":resources",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//content/public/browser",
+    "//ipc",
+    "//skia",
+    "//url",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/wm",
+  ]
+}
+
+grit("resources_grit") {
+  source = "keyboard_resources.grd"
+}
+
+copy("resources") {
+  sources = [ "$target_gen_dir/keyboard_resources.pak" ]
+  outputs = [ "$root_out_dir/keyboard_resources.pak" ]
+  deps = [ ":resources_grit" ]
+  forward_dependent_configs_from = deps
+}
+
+# TODO(GYP) enable this when all dependencies are resolved. Some transitive
+# deps aren't done yet.
+if (false) {
+
+test("keyboard_unittests") {
+  sources = [
+    "test/run_all_unittests.cc",
+    "keyboard_controller_unittest.cc",
+  ]
+
+  deps = [
+    ":keyboard",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//content",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/resources:ui_test_pak",
+    "//ui/wm",
+    "//url",
+  ]
+}
+
+}

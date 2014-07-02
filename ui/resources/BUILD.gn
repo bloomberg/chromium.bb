@@ -3,13 +3,78 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
-grit("resources") {
-  output_name = "ui_resources"
+# GYP version: ui/resources/ui_resources.gyp:ui_resources
+group("resources") {
+  deps = [
+    ":ui_resources_grd",
+    ":ui_unscaled_resources_grd",
+    ":webui_resources_grd",
+  ]
+}
+
+grit("ui_resources_grd") {
+  visibility = ":resources"
   source = "ui_resources.grd"
 }
 
-grit("unscaled_resources") {
-  output_name = "ui_unscaled_resources"
+grit("ui_unscaled_resources_grd") {
+  visibility = ":resources"
   source = "ui_unscaled_resources.grd"
 }
+
+grit("webui_resources_grd") {
+  visibility = ":resources"
+  source = "../webui/resources/webui_resources.grd"
+}
+
+if (!is_mac) {
+  copy("copy_ui_resources_100_percent") {
+    sources = [ "$root_gen_dir/ui/resources/ui_resources_100_percent.pak" ]
+    outputs = [ "$root_out_dir/ui_resources_100_percent.pak" ]
+    deps = [ "//ui/resources" ]
+  }
+}
+
+# On iOS the output needs to additionally be copied to another location, so
+# we have this intermediate step.
+#
+# GYP version: ui/resources/ui_resources.gyp:ui_test_pak
+#              (copy_ui_test_pak action)
+if (is_ios) {
+  copy("ui_test_pak") {
+    sources = [ "$root_out_dir/ui_test.pak" ]
+    outputs = [ "$root_out_dir/ui/en.lproj/locale.pak" ]
+    deps = [ ":repack_ui_test_pak" ]
+  }
+} else {
+  group("ui_test_pak") {
+    deps = [ ":repack_ui_test_pak" ]
+  }
+}
+
+# GYP version: ui/resources/ui_resources.gyp:ui_test_pak
+repack("repack_ui_test_pak") {
+  # Depend on ui_test_pak instead of this one.
+  visibility = ":ui_test_pak"
+
+  sources = [ 
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+  ]
+
+  output = "$root_out_dir/ui_test.pak"
+
+  deps = [
+    "//ui/resources",
+    "//ui/strings",
+  ]
+
+  if (!is_mac) {
+    deps += [ ":copy_ui_resources_100_percent" ]
+  }
+}
+

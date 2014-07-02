@@ -40,6 +40,7 @@ static_library("browser") {
     "//chrome/browser/search/suggestions/proto",
     "//chrome/common",
     "//chrome/common/net",
+    "//components/autofill/core/browser",
     "//components/cloud_devices/common",
     "//components/metrics:net",
     "//components/navigation_metrics",
@@ -52,7 +53,9 @@ static_library("browser") {
     "//components/user_prefs",
     "//content/public/browser",
     "//content/public/common",
+    "//courgette:courgette_lib",
     "//crypto",
+    "//google_apis",
     "//skia",
     "//sql",
     "//sync",
@@ -75,7 +78,6 @@ static_library("browser") {
     #"chrome_resources.gyp:platform_locale_settings",
     #"in_memory_url_index_cache_proto",
     #"../components/components.gyp:autocomplete",
-    #"../components/components.gyp:autofill_core_browser",
     #"../components/components.gyp:bookmarks_browser",
     #"../components/components.gyp:captive_portal",
     #"../components/components.gyp:data_reduction_proxy_browser",
@@ -102,8 +104,6 @@ static_library("browser") {
     #"../components/components.gyp:sync_driver",
     #"../components/components.gyp:url_fixer",
     #"../components/components.gyp:webdata_common",
-    #"../courgette/courgette.gyp:courgette_lib",
-    #"../google_apis/google_apis.gyp:google_apis",
     #"../jingle/jingle.gyp:notifier",
     #"../third_party/libjingle/libjingle.gyp:libjingle",
     #"../ui/message_center/message_center.gyp:message_center",
@@ -142,10 +142,15 @@ static_library("browser") {
     deps += [
       "//cc",
       "//chrome/browser/performance_monitor",
+      "//chrome/common/extensions/api:api",
       "//components/keyed_service/content",
       "//components/url_matcher",
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
+      "//mojo/environment:chromium",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/js/bindings",
+      "//mojo/system",
       "//net:net_with_v8",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/expat",
@@ -157,6 +162,7 @@ static_library("browser") {
       "//third_party/smhasher:cityhash",
       "//ui/gl",
       "//ui/surface",
+      "//ui/web_dialogs",
       "//v8",
       "//webkit:resources",
       "//webkit/browser:storage",
@@ -165,7 +171,6 @@ static_library("browser") {
       # TODO(GYP)
       #"apps",
       #"browser_extensions",
-      #"common/extensions/api/api.gyp:chrome_api",
       #"debugger",
       #"installer_util",
       #"sync_file_system_drive_proto",
@@ -182,15 +187,10 @@ static_library("browser") {
       #"../components/components.gyp:web_modal",
       #"../media/cast/cast.gyp:cast_transport",
       #"../media/media.gyp:media",
-      #"../mojo/mojo.gyp:mojo_cpp_bindings",
-      #"../mojo/mojo.gyp:mojo_environment_chromium",
-      #"../mojo/mojo.gyp:mojo_js_bindings",
-      #"../mojo/mojo.gyp:mojo_system_impl",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",
       # Note: for this one also remove the webrtc_stub_config
       #"../third_party/webrtc/modules/modules.gyp:desktop_capture",
-      #"../ui/web_dialogs/web_dialogs.gyp:web_dialogs",
     ]
   } else {  # iOS
     sources += rebase_path(gypi_values.chrome_browser_ios_sources,
@@ -270,8 +270,8 @@ static_library("browser") {
         gypi_values.chrome_browser_policy_shared_with_ios_sources,
         ".", "//chrome")
     deps += [
+      "//components/policy",
       "//components/policy/proto",
-      #"../components/components.gyp:policy",  TODO(GYP)
     ]
     if (!is_ios) {
       sources += rebase_path(
@@ -350,7 +350,7 @@ static_library("browser") {
   }
 
   if (use_cups) {
-    #deps += [ "../printing/printing.gyp:cups" ]  TODO(GYP)
+    configs += [ "//printing:cups" ]
   }
   if (is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_gnome_keyring_sources,
@@ -363,7 +363,7 @@ static_library("browser") {
     deps += [
       "//ui/aura",
       "//ui/compositor",
-      #"../ui/keyboard/keyboard.gyp:keyboard",  TODO(GYP)
+      "//ui/keyboard",
     ]
   }
   if (ui_compositor_image_transport) {

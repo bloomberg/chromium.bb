@@ -90,11 +90,14 @@ group("root") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gl",
+    "//ui/keyboard",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/snapshot",
     "//ui/strings",
     "//ui/surface",
+    "//ui/web_dialogs",
+    "//ui/wm",
     "//url",
     "//v8:v8",
     "//webkit/browser:storage",
@@ -146,6 +149,7 @@ group("root") {
       "//ppapi:ppapi_c",
       "//sandbox",
       "//third_party/libusb",
+      "//ui/keyboard",  # Blocked on content.
 
       # Seems to not be compiled on Android. Otherwise it will need a config.h.
       "//third_party/libxslt",
@@ -163,6 +167,8 @@ group("root") {
       # Not tested on Android yet:
       "//third_party/libaddressinput",
       "//third_party/ffmpeg",
+      "//ui/web_dialogs",
+      "//ui/wm",
       "//webkit/browser:storage",
       "//webkit/child",
     ]

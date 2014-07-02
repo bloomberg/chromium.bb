@@ -140,7 +140,7 @@ component("aura") {
   }
 }
 
-source_set("aura_test_support") {
+source_set("test_support") {
   sources = [
     "test/aura_test_base.cc",
     "test/aura_test_base.h",

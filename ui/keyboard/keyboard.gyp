@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/keyboard:resources
       'target_name': 'keyboard_resources',
       'type': 'none',
       'variables': {
@@ -33,6 +34,7 @@
       ],
     },
     {
+      # GN version: //ui/keyboard
       'target_name': 'keyboard',
       'type': '<(component)',
       'dependencies': [

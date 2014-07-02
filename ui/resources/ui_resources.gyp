@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //ui/resources
       'target_name': 'ui_resources',
       'type': 'none',
       'variables': {
@@ -38,6 +39,8 @@
     {
       # This creates a pak file that contains the resources in src/ui.
       # This pak file can be used by tests.
+      #
+      # GN version: //ui/resources:ui_test_pak
       'target_name': 'ui_test_pak',
       'type': 'none',
       'dependencies': [
@@ -63,6 +66,7 @@
         ['OS != "mac"', {
           'copies': [
             {
+              # GN version //ui/resources:copy_ui_resources_100_percent
               'destination': '<(PRODUCT_DIR)/ui',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
@@ -73,6 +77,7 @@
         ['OS == "ios"', {
           'actions': [
             {
+              # GN version: //ui/resources:copy_ui_test_pak
               'action_name': 'copy_ui_test_pak',
               'message': 'Copying ui_test.pak into locale.pak',
               'inputs': [

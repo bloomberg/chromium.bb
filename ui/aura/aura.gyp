@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/aura
       'target_name': 'aura',
       'type': '<(component)',
       'dependencies': [
@@ -139,6 +140,7 @@
       ],
     },
     {
+      # GN version: //ui/aura:test_support
       'target_name': 'aura_test_support',
       'type': 'static_library',
       'dependencies': [

@@ -100,7 +100,6 @@ source_set("browser") {
       "//third_party/libyuv",
       "//ui/resources",
       "//ui/surface",
-      "//ui/webui/resources",
       "//webkit:resources",
       "//webkit:strings",
       "//webkit/browser:storage",
