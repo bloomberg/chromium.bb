@@ -32,6 +32,12 @@ group("all_components") {
     "//components/visitedlink/renderer",  # Blocked on blink
   ]
 
+  if (is_win || is_mac) {
+    deps += [
+      "//components/wifi",
+    ]
+  }
+
   if (!is_ios) {
     deps += [ "//components/keyed_service/content" ]
   }
