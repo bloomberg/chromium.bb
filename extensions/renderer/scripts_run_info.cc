@@ -27,7 +27,6 @@ void ScriptsRunInfo::LogRun(blink::WebFrame* frame,
     render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
         render_view->GetRoutingID(),
         executing_scripts,
-        render_view->GetPageId(),
         ScriptContext::GetDataSourceURLForFrame(frame)));
   }
 

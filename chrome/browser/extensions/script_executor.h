@@ -75,9 +75,10 @@ class ScriptExecutor {
     JSON_SERIALIZED_RESULT,
   };
 
-  // Callback from ExecuteScript. The arguments are (error, on_page_id, on_url,
-  // result). Success is implied by an empty error.
-  typedef base::Callback<void(const std::string&, int32, const GURL&,
+  // Callback from ExecuteScript. The arguments are (error, on_url, result).
+  // Success is implied by an empty error.
+  typedef base::Callback<void(const std::string&,
+                              const GURL&,
                               const base::ListValue&)>
       ExecuteScriptCallback;
 

@@ -150,7 +150,6 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
  private:
   virtual bool RunAsync() OVERRIDE;
   void OnExecuteCodeFinished(const std::string& error,
-                             int32 on_page_id,
                              const GURL& on_url,
                              const base::ListValue& script_result);
 
@@ -240,7 +239,6 @@ class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
 
   virtual void OnExecuteCodeFinished(
       const std::string& error,
-      int32 on_page_id,
       const GURL& on_url,
       const base::ListValue& script_result) OVERRIDE;
 

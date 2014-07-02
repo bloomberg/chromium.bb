@@ -322,13 +322,12 @@ WebViewInternalExecuteScriptFunction::WebViewInternalExecuteScriptFunction() {
 
 void WebViewInternalExecuteScriptFunction::OnExecuteCodeFinished(
     const std::string& error,
-    int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& result) {
   if (error.empty())
     SetResult(result.DeepCopy());
   WebViewInternalExecuteCodeFunction::OnExecuteCodeFinished(
-      error, on_page_id, on_url, result);
+      error, on_url, result);
 }
 
 WebViewInternalInsertCSSFunction::WebViewInternalInsertCSSFunction() {

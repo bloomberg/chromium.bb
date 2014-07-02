@@ -155,7 +155,6 @@ class ActivityLog : public BrowserContextKeyedAPI,
   virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& extension_ids,
-      int32 page_id,
       const GURL& on_url) OVERRIDE;
 #endif
 

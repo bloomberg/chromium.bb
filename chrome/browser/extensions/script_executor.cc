@@ -69,14 +69,13 @@ class Handler : public content::WebContentsObserver {
 
   virtual void WebContentsDestroyed() OVERRIDE {
     base::ListValue val;
-    callback_.Run(kRendererDestroyed, -1, GURL(std::string()), val);
+    callback_.Run(kRendererDestroyed, GURL(std::string()), val);
     delete this;
   }
 
  private:
   void OnExecuteCodeFinished(int request_id,
                              const std::string& error,
-                             int32 on_page_id,
                              const GURL& on_url,
                              const base::ListValue& script_result) {
     if (script_observers_.get() && error.empty()) {
@@ -85,11 +84,10 @@ class Handler : public content::WebContentsObserver {
       FOR_EACH_OBSERVER(TabHelper::ScriptExecutionObserver, *script_observers_,
                         OnScriptsExecuted(web_contents(),
                                           id_map,
-                                          on_page_id,
                                           on_url));
     }
 
-    callback_.Run(error, on_page_id, on_url, script_result);
+    callback_.Run(error, on_url, script_result);
     delete this;
   }
 

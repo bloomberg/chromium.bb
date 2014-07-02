@@ -79,7 +79,6 @@ class TabHelper : public content::WebContentsObserver,
     virtual void OnScriptsExecuted(
         const content::WebContents* web_contents,
         const ExecutingScriptsMap& executing_scripts_map,
-        int32 on_page_id,
         const GURL& on_url) = 0;
 
    protected:
@@ -204,7 +203,6 @@ class TabHelper : public content::WebContentsObserver,
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnContentScriptsExecuting(
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
-      int32 page_id,
       const GURL& on_url);
   void OnWatchedPageChange(const std::vector<std::string>& css_selectors);
   void OnDetailedConsoleMessageAdded(const base::string16& message,

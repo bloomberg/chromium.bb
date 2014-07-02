@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEB_VIEW_INTERNRAL_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEB_VIEW_INTERNRAL_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 
 #include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
@@ -186,7 +186,6 @@ class WebViewInternalExecuteScriptFunction
   virtual ~WebViewInternalExecuteScriptFunction() {}
 
   virtual void OnExecuteCodeFinished(const std::string& error,
-                                     int32 on_page_id,
                                      const GURL& on_url,
                                      const base::ListValue& result) OVERRIDE;
 
@@ -440,4 +439,4 @@ class WebViewInternalTerminateFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEB_VIEW_INTERNRAL_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_

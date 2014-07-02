@@ -564,22 +564,17 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
                             SubstitutionMap /* message bundle */)
 
 // Sent from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED5(
+IPC_MESSAGE_ROUTED4(
     ExtensionHostMsg_ExecuteCodeFinished,
     int /* request id */,
     std::string /* error; empty implies success */,
-    int32 /* page_id the code executed on.  May be -1 if unsuccessful */,
     GURL /* URL of the code executed on. May be empty if unsuccessful. */,
     base::ListValue /* result of the script */)
 
 // Sent from the renderer to the browser to notify that content scripts are
 // running in the renderer that the IPC originated from.
-// Note that the page_id is for the parent (or more accurately the topmost)
-// frame (e.g. if executing in an iframe this is the page ID of the parent,
-// unless the parent is an iframe... etc).
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
                     ExecutingScriptsMap,
-                    int32 /* page_id of the _topmost_ frame */,
                     GURL /* url of the _topmost_ frame */)
 
 // Sent from the renderer to the browser to request permission for a script

@@ -1225,7 +1225,6 @@ void TabsUpdateFunction::PopulateResult() {
 
 void TabsUpdateFunction::OnExecuteCodeFinished(
     const std::string& error,
-    int32 on_page_id,
     const GURL& url,
     const base::ListValue& script_result) {
   if (error.empty())
@@ -1700,13 +1699,11 @@ bool TabsExecuteScriptFunction::ShouldInsertCSS() const {
 
 void TabsExecuteScriptFunction::OnExecuteCodeFinished(
     const std::string& error,
-    int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& result) {
   if (error.empty())
     SetResult(result.DeepCopy());
-  ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
-                                                  result);
+  ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_url, result);
 }
 
 bool ExecuteCodeInTabFunction::Init() {

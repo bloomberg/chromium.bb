@@ -140,7 +140,6 @@ void ProgrammaticScriptInjector::Finish(const std::string& error) {
       render_view_->GetRoutingID(),
       params_->request_id,
       error,
-      render_view_->GetPageId(),
       url_,
       *results_));
 }

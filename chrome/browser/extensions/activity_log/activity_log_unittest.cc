@@ -264,7 +264,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
   executing_scripts[extension->id()].insert("script");
 
   static_cast<TabHelper::ScriptExecutionObserver*>(activity_log)->
-      OnScriptsExecuted(contents, executing_scripts, 0, url);
+      OnScriptsExecuted(contents, executing_scripts, url);
 
   activity_log->GetFilteredActions(
       extension->id(),

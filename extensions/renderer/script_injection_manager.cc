@@ -263,7 +263,6 @@ void ScriptInjectionManager::HandleExecuteCode(
         new ExtensionHostMsg_ExecuteCodeFinished(render_view->GetRoutingID(),
                                                  params.request_id,
                                                  "No main frame",
-                                                 -1,
                                                  GURL(std::string()),
                                                  base::ListValue()));
     return;

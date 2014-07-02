@@ -434,12 +434,10 @@ void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {
 
 void TabHelper::OnContentScriptsExecuting(
     const ScriptExecutionObserver::ExecutingScriptsMap& executing_scripts_map,
-    int32 on_page_id,
     const GURL& on_url) {
   FOR_EACH_OBSERVER(ScriptExecutionObserver, script_execution_observers_,
                     OnScriptsExecuted(web_contents(),
                                       executing_scripts_map,
-                                      on_page_id,
                                       on_url));
 }
 

@@ -214,7 +214,6 @@ bool ExecuteCodeFunction::RunAsync() {
 
 void ExecuteCodeFunction::OnExecuteCodeFinished(
     const std::string& error,
-    int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& result) {
   if (!error.empty())
