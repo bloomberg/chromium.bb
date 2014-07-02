@@ -1853,6 +1853,12 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
+internal_paladin.add_config('rush-paladin',
+  boards=['rush'],
+  paladin_builder_name='rush paladin',
+  important=False,
+)
+
 
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
 ### itself.
@@ -2157,6 +2163,7 @@ _release.add_config('stout-release',
   afdo_use=True,
 )
 
+
 ### Arm release configs.
 
 _arm_release = _release.derive(non_testable_builder)
@@ -2265,6 +2272,14 @@ _release.add_config('stumpy_moblab-release',
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
+)
+
+_release.add_config('rush-release',
+  boards=['rush'],
+  hw_tests=[],
+  # This build doesn't generate signed images, so don't try to release them.
+  paygen=False,
+  signer_tests=False,
 )
 
 ### Per-chipset release groups
