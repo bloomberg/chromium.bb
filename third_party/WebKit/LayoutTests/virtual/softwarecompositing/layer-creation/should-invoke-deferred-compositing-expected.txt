@@ -8,10 +8,7 @@
       "children": [
         {
           "bounds": [300, 300],
-          "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 200, 200]
-          ]
+          "drawsContent": true
         }
       ]
     }

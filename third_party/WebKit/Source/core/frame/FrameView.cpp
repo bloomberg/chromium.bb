@@ -952,12 +952,6 @@ void FrameView::layout(bool allowSubtree)
         performLayout(rootForThisLayout, inSubtreeLayout);
 
         m_layoutSubtreeRoot = 0;
-        // The following loop ensures that we mark up all renderers up to the RenderView
-        // for paint invalidation. This simplifies our code as we just always do a full
-        // tree walk. FIXME: This loop will probably make us over-mark as we don't skip
-        // containers and we can't use containingBlock as it skips some cases (see markContainingBlocksForLayout).
-        if (RenderObject* container = rootForThisLayout->container())
-            container->setMayNeedPaintInvalidation(true);
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
@@ -990,6 +984,10 @@ void FrameView::layout(bool allowSubtree)
     if (m_nestedLayoutCount)
         return;
 
+    invalidateTree(rootForThisLayout);
+
+    m_doFullPaintInvalidation = false;
+
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
     document->renderView()->assertSubtreeIsLaidOut();
@@ -1009,16 +1007,22 @@ void FrameView::layout(bool allowSubtree)
 // method would setNeedsRedraw on the GraphicsLayers with invalidations and
 // let the compositor pick which to actually draw.
 // See http://crbug.com/306706
-void FrameView::invalidateTreeIfNeeded()
+void FrameView::invalidateTree(RenderObject* root)
 {
-    RenderObject* rootForPaintInvalidation = renderView();
-    ASSERT(!rootForPaintInvalidation->needsLayout());
+    ASSERT(!root->needsLayout());
+    // We should only invalidate paints for the outer most layout. This works as
+    // we continue to track paint invalidation rects until this function is called.
+    ASSERT(!m_nestedLayoutCount);
 
-    TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation->debugName().ascii());
+    TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", root->debugName().ascii());
 
-    LayoutState rootLayoutState(*rootForPaintInvalidation);
+    // FIXME: really, we're in the paint invalidation phase here, and the compositing queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts compositingQueryAssertsDisabler;
 
-    rootForPaintInvalidation->invalidateTreeAfterLayout(*rootForPaintInvalidation->containerForPaintInvalidation());
+    LayoutState rootLayoutState(*root);
+
+    root->invalidateTreeAfterLayout(*root->containerForPaintInvalidation());
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1026,8 +1030,6 @@ void FrameView::invalidateTreeIfNeeded()
     if (hasHorizontalBarDamage())
         invalidateRect(horizontalBarDamage());
     resetScrollbarDamage();
-
-    m_doFullPaintInvalidation = false;
 }
 
 DocumentLifecycle& FrameView::lifecycle() const
@@ -2818,8 +2820,6 @@ void FrameView::updateLayoutAndStyleForPainting()
             m_frame->page()->scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
         InspectorInstrumentation::didUpdateLayerTree(view->frame());
-
-        invalidateTreeIfNeededRecursive();
     }
 
     scrollContentsIfNeededRecursive();
@@ -2873,19 +2873,6 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     m_frame->document()->renderView()->assertRendererLaidOut();
 #endif
 
-}
-
-void FrameView::invalidateTreeIfNeededRecursive()
-{
-    // FIXME: We should be more aggressive at cutting tree traversals.
-    invalidateTreeIfNeeded();
-
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
-            continue;
-
-        toLocalFrame(child)->view()->invalidateTreeIfNeededRecursive();
-    }
 }
 
 void FrameView::enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize)
