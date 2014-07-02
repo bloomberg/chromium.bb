@@ -9,9 +9,9 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@9092f6874655ca08e6286e596900a59432da58ce',
+         '@7ef4cc38b3d51221a265033133778dcfb95be9ce',
     'angle_revision':
-         '4fd75c1c991e86ed1d1c1e43ef0220c5491605b1'
+         'e8cda37186d82aea05e67fd9a595a59c2ab7ec18'
 }
 
 deps = {
