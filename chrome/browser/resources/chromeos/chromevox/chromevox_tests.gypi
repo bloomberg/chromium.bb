@@ -123,6 +123,7 @@
         '<(DEPTH)/chrome/browser/extensions/browsertest_util.h',
 
         'common/aria_util_test.js',
+        'common/braille_text_handler_test.js',
         'common/braille_util_test.js',
         'common/command_store_test.js',
         'common/cursor_selection_test.js',
