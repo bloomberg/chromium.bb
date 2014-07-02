@@ -21,7 +21,6 @@ class TemplateURLService;
 class TestingProfile;
 class TestingTemplateURLService;
 class TestingProfile;
-class WebDataService;
 
 // TemplateURLServiceTestUtilBase contains basic API to ease testing of
 // TemplateURLService. User should take care of the infrastructure separately.

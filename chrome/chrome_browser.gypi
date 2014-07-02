@@ -1652,6 +1652,8 @@
       'browser/webdata/autocomplete_syncable_service.h',
       'browser/webdata/keyword_table.cc',
       'browser/webdata/keyword_table.h',
+      'browser/webdata/keyword_web_data_service.cc',
+      'browser/webdata/keyword_web_data_service.h',
       'browser/webdata/logins_table.cc',
       'browser/webdata/logins_table.h',
       'browser/webdata/logins_table_win.cc',

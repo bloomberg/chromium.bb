@@ -97,7 +97,9 @@ void TemplateURLServiceTestUtilBase::ChangeModelToLoadState() {
   // Initialize the web data service so that the database gets updated with
   // any changes made.
 
-  model()->service_ = WebDataService::FromBrowserContext(profile());
+  model()->web_data_service_ =
+      WebDataServiceFactory::GetKeywordWebDataForProfile(
+          profile(), Profile::EXPLICIT_ACCESS);
   base::RunLoop().RunUntilIdle();
 }
 

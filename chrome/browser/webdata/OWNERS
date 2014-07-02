@@ -10,3 +10,4 @@ per-file autofill*=isherman@chromium.org
 
 # Keywords
 per-file keyword_table*=pkasting@chromium.org
+per-file keyword_web_data_service*=pkasting@chromium.org

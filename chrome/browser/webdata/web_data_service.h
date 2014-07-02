@@ -9,18 +9,10 @@
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 #define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 
-#include <map>
-#include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/files/file_path.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/webdata/keyword_table.h"
-#include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -63,8 +55,6 @@ struct WebIntentServiceData;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef base::Callback<scoped_ptr<WDTypedResult>(void)> ResultTask;
-
 // Result from GetWebAppImages.
 struct WDAppImagesResult {
   WDAppImagesResult();
@@ -77,76 +67,16 @@ struct WDAppImagesResult {
   std::vector<SkBitmap> images;
 };
 
-struct WDKeywordsResult {
-  WDKeywordsResult();
-  ~WDKeywordsResult();
-
-  KeywordTable::Keywords keywords;
-  // Identifies the ID of the TemplateURL that is the default search. A value of
-  // 0 indicates there is no default search provider.
-  int64 default_search_provider_id;
-  // Version of the built-in keywords. A value of 0 indicates a first run.
-  int builtin_keyword_version;
-};
-
 class WebDataServiceConsumer;
 
 class WebDataService : public WebDataServiceBase {
  public:
-  // Instantiate this to turn on keyword batch mode on the provided |service|
-  // until the scoper is destroyed.  When batch mode is on, calls to any of the
-  // three keyword table modification functions below will result in locally
-  // queueing the operation; on setting this back to false, all the
-  // modifications will be performed at once.  This is a performance
-  // optimization; see comments on KeywordTable::PerformOperations().
-  //
-  // If multiple scopers are in-scope simultaneously, batch mode will only be
-  // exited when all are destroyed.  If |service| is NULL, the object will do
-  // nothing.
-  class KeywordBatchModeScoper {
-   public:
-    explicit KeywordBatchModeScoper(WebDataService* service);
-    ~KeywordBatchModeScoper();
-
-   private:
-    WebDataService* service_;
-
-    DISALLOW_COPY_AND_ASSIGN(KeywordBatchModeScoper);
-  };
-
   // Retrieve a WebDataService for the given context.
   static scoped_refptr<WebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
   WebDataService(scoped_refptr<WebDatabaseService> wdbs,
                  const ProfileErrorCallback& callback);
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Keywords
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // As the database processes requests at a later date, all deletion is
-  // done on the background thread.
-  //
-  // Many of the keyword related methods do not return a handle. This is because
-  // the caller (TemplateURLService) does not need to know when the request is
-  // done.
-
-  void AddKeyword(const TemplateURLData& data);
-  void RemoveKeyword(TemplateURLID id);
-  void UpdateKeyword(const TemplateURLData& data);
-
-  // Fetches the keywords.
-  // On success, consumer is notified with WDResult<KeywordTable::Keywords>.
-  Handle GetKeywords(WebDataServiceConsumer* consumer);
-
-  // Sets the ID of the default search provider.
-  void SetDefaultSearchProviderID(TemplateURLID id);
-
-  // Sets the version of the builtin keywords.
-  void SetBuiltinKeywordVersion(int version);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -197,27 +127,11 @@ class WebDataService : public WebDataServiceBase {
   virtual ~WebDataService();
 
  private:
-  // Called by the KeywordBatchModeScoper (see comments there).
-  void AdjustKeywordBatchModeLevel(bool entering_batch_mode);
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked on the DB thread.
   //
   //////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Keywords.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  WebDatabase::State PerformKeywordOperationsImpl(
-      const KeywordTable::Operations& operations,
-      WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
-  WebDatabase::State SetDefaultSearchProviderIDImpl(TemplateURLID id,
-                                                    WebDatabase* db);
-  WebDatabase::State SetBuiltinKeywordVersionImpl(int version, WebDatabase* db);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -272,9 +186,6 @@ class WebDataService : public WebDataServiceBase {
   scoped_ptr<WDTypedResult> GetIE7LoginImpl(
       const IE7PasswordInfo& info, WebDatabase* db);
 #endif  // defined(OS_WIN)
-
-  size_t keyword_batch_mode_level_;
-  KeywordTable::Operations queued_keyword_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataService);
 };

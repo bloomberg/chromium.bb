@@ -14,10 +14,10 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 
+class KeywordWebDataService;
 class PrefService;
 class TemplateURL;
 class WDTypedResult;
-class WebDataService;
 
 // Returns the short name of the default search engine, or the empty string if
 // none is set.
@@ -77,21 +77,21 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
     const TemplateURLService::TemplateURLVector& existing_urls,
     const TemplateURL* default_search_provider);
 
-// Processes the results of WebDataService::GetKeywords, combining it with
-// prepopulated search providers to result in:
+// Processes the results of KeywordWebDataService::GetKeywords, combining it
+// with prepopulated search providers to result in:
 //  * a set of template_urls (search providers). The caller owns the
 //    TemplateURL* returned in template_urls.
 //  * whether there is a new resource keyword version (and the value).
 //    |*new_resource_keyword_version| is set to 0 if no new value. Otherwise,
 //    it is the new value.
-// Only pass in a non-NULL value for service if the WebDataService should be
-// updated. If |removed_keyword_guids| is not NULL, any TemplateURLs removed
-// from the keyword table in the WebDataService will have their Sync GUIDs
-// added to it. |default_search_provider| will be used to prevent removing the
-// current user-selected DSE, regardless of changes in prepopulate data.
+// Only pass in a non-NULL value for service if the KeywordWebDataService should
+// be updated. If |removed_keyword_guids| is not NULL, any TemplateURLs removed
+// from the keyword table in the KeywordWebDataService will have their Sync
+// GUIDs added to it. |default_search_provider| will be used to prevent removing
+// the current user-selected DSE, regardless of changes in prepopulate data.
 void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
-    WebDataService* service,
+    KeywordWebDataService* service,
     PrefService* prefs,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
@@ -107,7 +107,7 @@ void GetSearchProvidersUsingKeywordResult(
 // that has been merged into the current keyword data.  On exit, this will be
 // set as in GetSearchProvidersUsingKeywordResult().
 void GetSearchProvidersUsingLoadedEngines(
-    WebDataService* service,
+    KeywordWebDataService* service,
     PrefService* prefs,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
@@ -126,7 +126,7 @@ bool DeDupeEncodings(std::vector<std::string>* encodings);
 // helper used by GetSearchProvidersUsingKeywordResult(), but is declared here
 // so it's accessible by unittests.
 void RemoveDuplicatePrepopulateIDs(
-    WebDataService* service,
+    KeywordWebDataService* service,
     const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::TemplateURLVector* template_urls,

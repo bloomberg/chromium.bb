@@ -45,7 +45,7 @@ GURL GetDefaultSearchURLForSearchTerms(TemplateURLService* service,
 }
 
 void RemoveDuplicatePrepopulateIDs(
-    WebDataService* service,
+    KeywordWebDataService* service,
     const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::TemplateURLVector* template_urls,
@@ -186,7 +186,7 @@ ActionsFromPrepopulateData::~ActionsFromPrepopulateData() {}
 // from the DB will be added to it.  Note that this function will take
 // ownership of |prepopulated_urls| and will clear the vector.
 void MergeEnginesFromPrepopulateData(
-    WebDataService* service,
+    KeywordWebDataService* service,
     ScopedVector<TemplateURLData>* prepopulated_urls,
     size_t default_search_index,
     TemplateURLService::TemplateURLVector* template_urls,
@@ -307,7 +307,7 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
 
 void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
-    WebDataService* service,
+    KeywordWebDataService* service,
     PrefService* prefs,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
@@ -347,7 +347,7 @@ void GetSearchProvidersUsingKeywordResult(
 }
 
 void GetSearchProvidersUsingLoadedEngines(
-    WebDataService* service,
+    KeywordWebDataService* service,
     PrefService* prefs,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,

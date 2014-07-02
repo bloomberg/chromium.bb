@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/keyword_table.h"
+#include "chrome/browser/webdata/keyword_web_data_service.h"
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -105,6 +106,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
           &ProfileErrorCallback, PROFILE_ERROR_DB_AUTOFILL_WEB_DATA));
   autofill_web_data_->Init();
 
+  keyword_web_data_ = new KeywordWebDataService(
+      web_database_, ui_thread, base::Bind(
+          &ProfileErrorCallback, PROFILE_ERROR_DB_KEYWORD_WEB_DATA));
+  keyword_web_data_->Init();
+
   token_web_data_ = new TokenWebData(
       web_database_, ui_thread, db_thread, base::Bind(
          &ProfileErrorCallback, PROFILE_ERROR_DB_TOKEN_WEB_DATA));
@@ -127,6 +133,7 @@ WebDataServiceWrapper::~WebDataServiceWrapper() {
 
 void WebDataServiceWrapper::Shutdown() {
   autofill_web_data_->ShutdownOnUIThread();
+  keyword_web_data_->ShutdownOnUIThread();
   token_web_data_->ShutdownOnUIThread();
   web_data_->ShutdownOnUIThread();
   web_database_->ShutdownDatabase();
@@ -135,6 +142,11 @@ void WebDataServiceWrapper::Shutdown() {
 scoped_refptr<AutofillWebDataService>
 WebDataServiceWrapper::GetAutofillWebData() {
   return autofill_web_data_.get();
+}
+
+scoped_refptr<KeywordWebDataService>
+WebDataServiceWrapper::GetKeywordWebData() {
+  return keyword_web_data_.get();
 }
 
 scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
@@ -204,6 +216,18 @@ WebDataServiceFactory::GetAutofillWebDataForProfile(
   return wrapper ?
       wrapper->GetAutofillWebData() :
       scoped_refptr<AutofillWebDataService>(NULL);
+}
+
+// static
+scoped_refptr<KeywordWebDataService>
+WebDataServiceFactory::GetKeywordWebDataForProfile(
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(profile, access_type);
+  // |wrapper| can be NULL in Incognito mode.
+  return wrapper ?
+      wrapper->GetKeywordWebData() : scoped_refptr<KeywordWebDataService>(NULL);
 }
 
 // static

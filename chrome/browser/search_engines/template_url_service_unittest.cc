@@ -21,6 +21,7 @@
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/webdata/keyword_web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/search_terms_data.h"
@@ -1181,9 +1182,8 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
   test_util_.VerifyLoad();
 
   test_util_.ClearModel();
-  scoped_refptr<WebDataService> web_service =
-      WebDataService::FromBrowserContext(test_util_.profile());
-  web_service->ShutdownDatabase();
+  WebDataServiceFactory::GetKeywordWebDataForProfile(
+      test_util_.profile(), Profile::EXPLICIT_ACCESS)->ShutdownDatabase();
 
   test_util_.ResetModel(false);
   model()->Load();

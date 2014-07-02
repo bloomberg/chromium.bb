@@ -16,11 +16,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/keyword_web_data_service.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_id.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/api/sync_change.h"
@@ -52,10 +54,10 @@ struct URLVisitedDetails;
 // KeywordAutocomplete.
 //
 // TemplateURLService stores a vector of TemplateURLs. The TemplateURLs are
-// persisted to the database maintained by WebDataService. *ALL* mutations
-// to the TemplateURLs must funnel through TemplateURLService. This allows
-// TemplateURLService to notify listeners of changes as well as keep the
-// database in sync.
+// persisted to the database maintained by KeywordWebDataService.
+// *ALL* mutations to the TemplateURLs must funnel through TemplateURLService.
+// This allows TemplateURLService to notify listeners of changes as well as keep
+// the database in sync.
 //
 // There is a TemplateURLService per Profile.
 //
@@ -66,8 +68,8 @@ struct URLVisitedDetails;
 // the Load method.
 //
 // TemplateURLService takes ownership of any TemplateURL passed to it. If there
-// is a WebDataService, deletion is handled by WebDataService, otherwise
-// TemplateURLService handles deletion.
+// is a KeywordWebDataService, deletion is handled by KeywordWebDataService,
+// otherwise TemplateURLService handles deletion.
 
 class TemplateURLService : public WebDataServiceConsumer,
                            public KeyedService,
@@ -287,7 +289,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This is invoked from WebDataService, and should not be directly
   // invoked.
   virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
+      KeywordWebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
   // Returns the locale-direction-adjusted short name for the given keyword.
@@ -690,10 +692,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool load_failed_;
 
   // If non-zero, we're waiting on a load.
-  WebDataService::Handle load_handle_;
+  KeywordWebDataService::Handle load_handle_;
 
   // Service used to store entries.
-  scoped_refptr<WebDataService> service_;
+  scoped_refptr<KeywordWebDataService> web_data_service_;
 
   // All visits that occurred before we finished loading. Once loaded
   // UpdateKeywordSearchTermsForURL is invoked for each element of the vector.
@@ -734,7 +736,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   // A set of sync GUIDs denoting TemplateURLs that have been removed from this
-  // model or the underlying WebDataService prior to MergeDataAndStartSyncing.
+  // model or the underlying KeywordWebDataService prior to
+  // MergeDataAndStartSyncing.
   // This set is used to determine what entries from the server we want to
   // ignore locally and return a delete command for.
   std::set<std::string> pre_sync_deletes_;
