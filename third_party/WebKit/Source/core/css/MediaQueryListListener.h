@@ -31,7 +31,9 @@ namespace WebCore {
 class MediaQueryList;
 
 // See http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
-// FIXME: MediaQueryListListener should be implemented using callback interface
+// FIXME: For JS use this should become a DOM Event.
+// C++ listeners can subclass this class and override call(). The no-argument constructor
+// is provided for this purpose.
 class MediaQueryListListener : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryListListener> {
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryListListener> create(ScriptState* scriptState, const ScriptValue& value)
@@ -40,25 +42,29 @@ public:
             return nullptr;
         return adoptRefWillBeNoop(new MediaQueryListListener(scriptState, value));
     }
-    ~MediaQueryListListener();
+    virtual ~MediaQueryListListener();
 
-    void call();
+    virtual void call();
 
     // Used to keep the MediaQueryList alive and registered with the MediaQueryMatcher
     // as long as the listener exists.
     void setMediaQueryList(MediaQueryList* query) { m_query = query; }
     void clearMediaQueryList() { m_query = nullptr; }
 
-    bool operator==(const MediaQueryListListener& other) const { return m_function == other.m_function; }
+    bool operator==(const MediaQueryListListener& other) const { return m_function.isNull() ? this == &other : m_function == other.m_function; }
 
     void trace(Visitor* visitor) { visitor->trace(m_query); }
+
+protected:
+    MediaQueryListListener();
+
+    RefPtrWillBeMember<MediaQueryList> m_query;
 
 private:
     MediaQueryListListener(ScriptState*, const ScriptValue&);
 
     RefPtr<ScriptState> m_scriptState;
     ScriptValue m_function;
-    RefPtrWillBeMember<MediaQueryList> m_query;
 };
 
 }

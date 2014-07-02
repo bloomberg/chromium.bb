@@ -26,6 +26,11 @@
 
 namespace WebCore {
 
+MediaQueryListListener::MediaQueryListListener()
+{
+    // only for use by subclasses
+}
+
 MediaQueryListListener::MediaQueryListListener(ScriptState* scriptState, const ScriptValue& function)
     : m_scriptState(scriptState)
     , m_function(function)
