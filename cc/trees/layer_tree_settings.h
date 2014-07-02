@@ -80,6 +80,7 @@ class CC_EXPORT LayerTreeSettings {
   bool touch_hit_testing;
   size_t texture_id_allocation_chunk_size;
   bool use_occlusion_for_tile_prioritization;
+  bool record_full_layer;
 
   LayerTreeDebugState initial_debug_state;
 };

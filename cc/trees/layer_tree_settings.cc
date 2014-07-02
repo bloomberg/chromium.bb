@@ -64,7 +64,8 @@ LayerTreeSettings::LayerTreeSettings()
       use_rgba_4444_textures(false),
       touch_hit_testing(true),
       texture_id_allocation_chunk_size(64),
-      use_occlusion_for_tile_prioritization(false) {
+      use_occlusion_for_tile_prioritization(false),
+      record_full_layer(false) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

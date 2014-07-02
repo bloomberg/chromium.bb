@@ -42,6 +42,7 @@ class SynchronousCompositorFactory {
 
   virtual scoped_refptr<base::MessageLoopProxy>
       GetCompositorMessageLoop() = 0;
+  virtual bool RecordFullLayer() = 0;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id) = 0;
 

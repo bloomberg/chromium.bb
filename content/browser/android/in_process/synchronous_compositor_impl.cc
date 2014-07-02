@@ -89,6 +89,11 @@ void SynchronousCompositor::SetGpuService(
   g_factory.Get().SetDeferredGpuService(service);
 }
 
+// static
+void SynchronousCompositor::DisableRecordFullLayer() {
+  g_factory.Get().DisableRecordFullLayer();
+}
+
 bool SynchronousCompositorImpl::InitializeHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);

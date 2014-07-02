@@ -116,7 +116,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   pending_invalidation_.Swap(&pile_invalidation_);
   pending_invalidation_.Clear();
 
-  if (layer_tree_host()->settings().using_synchronous_renderer_compositor) {
+  if (layer_tree_host()->settings().record_full_layer) {
     // Workaround for http://crbug.com/235910 - to retain backwards compat
     // the full page content must always be provided in the picture layer.
     visible_layer_rect = gfx::Rect(bounds());

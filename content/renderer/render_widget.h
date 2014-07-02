@@ -214,8 +214,6 @@ class CONTENT_EXPORT RenderWidget
   // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
   void IgnoreAckForMouseMoveFromDebugger();
 
-  bool UsingSynchronousRendererCompositor() const;
-
   // ScreenMetricsEmulator class manages screen emulation inside a render
   // widget. This includes resizing, placing view on the screen at desired
   // position, changing device scale factor, and scaling down the whole

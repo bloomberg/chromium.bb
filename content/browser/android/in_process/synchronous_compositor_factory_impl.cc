@@ -123,7 +123,8 @@ class VideoContextProvider
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
-    : num_hardware_compositors_(0) {
+    : record_full_layer_(true),
+      num_hardware_compositors_(0) {
   SynchronousCompositorFactory::SetInstance(this);
 }
 
@@ -132,6 +133,11 @@ SynchronousCompositorFactoryImpl::~SynchronousCompositorFactoryImpl() {}
 scoped_refptr<base::MessageLoopProxy>
 SynchronousCompositorFactoryImpl::GetCompositorMessageLoop() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+}
+
+bool
+SynchronousCompositorFactoryImpl::RecordFullLayer() {
+  return record_full_layer_;
 }
 
 scoped_ptr<cc::OutputSurface>
@@ -238,6 +244,10 @@ void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(!service_);
   service_ = service;
+}
+
+void SynchronousCompositorFactoryImpl::DisableRecordFullLayer() {
+  record_full_layer_ = false;
 }
 
 }  // namespace content

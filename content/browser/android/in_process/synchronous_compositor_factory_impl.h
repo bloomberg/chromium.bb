@@ -32,6 +32,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // SynchronousCompositorFactory
   virtual scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop()
       OVERRIDE;
+  virtual bool RecordFullLayer() OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(int routing_id)
       OVERRIDE;
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
@@ -49,6 +50,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   void SetDeferredGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
+  void DisableRecordFullLayer();
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 
@@ -70,6 +72,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_ptr<gpu::GLInProcessContext> share_context_;
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       video_context_provider_;
+
+  bool record_full_layer_;
 
   // |num_hardware_compositor_lock_| is updated on UI thread only but can be
   // read on renderer main thread.

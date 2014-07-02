@@ -41,6 +41,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 
+#if defined(OS_ANDROID)
+#include "content/renderer/android/synchronous_compositor_factory.h"
+#endif
+
 namespace base {
 class Value;
 }
@@ -123,10 +127,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings.main_frame_before_draw_enabled =
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeDraw);
-  settings.using_synchronous_renderer_compositor =
-      widget->UsingSynchronousRendererCompositor();
-  settings.report_overscroll_only_for_scrollable_axes =
-      !widget->UsingSynchronousRendererCompositor();
+  settings.report_overscroll_only_for_scrollable_axes = true;
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.touch_hit_testing =
@@ -284,8 +285,18 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 
 #if defined(OS_ANDROID)
+  SynchronousCompositorFactory* synchronous_compositor_factory =
+      SynchronousCompositorFactory::GetInstance();
+
+  settings.using_synchronous_renderer_compositor =
+      synchronous_compositor_factory;
+  settings.record_full_layer =
+      synchronous_compositor_factory &&
+      synchronous_compositor_factory->RecordFullLayer();
+  settings.report_overscroll_only_for_scrollable_axes =
+      !synchronous_compositor_factory;
   settings.max_partial_texture_updates = 0;
-  if (widget->UsingSynchronousRendererCompositor()) {
+  if (synchronous_compositor_factory) {
     // Android WebView uses system scrollbars, so make ours invisible.
     settings.scrollbar_animator = cc::LayerTreeSettings::NoAnimator;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
@@ -298,13 +309,13 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
-      widget->UsingSynchronousRendererCompositor();
+      synchronous_compositor_factory;
   // RGBA_4444 textures are only enabled for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
   settings.use_rgba_4444_textures =
       base::SysInfo::IsLowEndDevice() &&
-      !widget->UsingSynchronousRendererCompositor();
-  if (widget->UsingSynchronousRendererCompositor()) {
+      !synchronous_compositor_factory;
+  if (synchronous_compositor_factory) {
     // TODO(boliu): Set this ratio for Webview.
   } else if (base::SysInfo::IsLowEndDevice()) {
     // On low-end we want to be very carefull about killing other
@@ -319,7 +330,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   }
   // Webview does not own the surface so should not clear it.
   settings.should_clear_root_render_pass =
-      !widget->UsingSynchronousRendererCompositor();
+      !synchronous_compositor_factory;
 
 #elif !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
