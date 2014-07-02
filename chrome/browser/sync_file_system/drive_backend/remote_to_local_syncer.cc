@@ -115,9 +115,7 @@ void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
           dirty_tracker_.get())) {
     token->RecordLog(base::StringPrintf(
         "Start: tracker_id=%" PRId64, dirty_tracker_->tracker_id()));
-    ResolveRemoteChange(base::Bind(
-        &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-        base::Passed(&token)));
+    ResolveRemoteChange(token.Pass());
     return;
   }
 
@@ -125,21 +123,19 @@ void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_NO_CHANGE_TO_SYNC);
 }
 
-void RemoteToLocalSyncer::ResolveRemoteChange(
-    const SyncStatusCallback& callback) {
+void RemoteToLocalSyncer::ResolveRemoteChange(scoped_ptr<SyncTaskToken> token) {
   DCHECK(dirty_tracker_);
   remote_metadata_ = GetFileMetadata(
       metadata_database(), dirty_tracker_->file_id());
 
   if (!remote_metadata_ || !remote_metadata_->has_details()) {
     if (remote_metadata_ && !remote_metadata_->has_details()) {
-      LOG(ERROR) << "Missing details of a remote file: "
-                 << remote_metadata_->file_id();
+      token->RecordLog(
+          "Missing details of a remote file: " + remote_metadata_->file_id());
       NOTREACHED();
     }
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Missing remote metadata case.");
-    HandleMissingRemoteMetadata(callback);
+    token->RecordLog("Missing remote metadata case.");
+    HandleMissingRemoteMetadata(SyncCompletedCallback(token.Pass()));
     return;
   }
 
@@ -150,9 +146,8 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   if (!dirty_tracker_->active() ||
       HasDisabledAppRoot(metadata_database(), *dirty_tracker_)) {
     // Handle inactive tracker in SyncCompleted.
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Inactive tracker case.");
-    callback.Run(SYNC_STATUS_OK);
+    token->RecordLog("Inactive tracker case.");
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
@@ -160,10 +155,11 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
 
   if (!dirty_tracker_->has_synced_details()) {
-    LOG(ERROR) << "Missing synced_details of an active tracker: "
-               << dirty_tracker_->tracker_id();
+    token->RecordLog(base::StringPrintf(
+        "Missing synced_details of an active tracker: %" PRId64,
+        dirty_tracker_->tracker_id()));
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -175,14 +171,12 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     if (remote_details.missing() ||
         synced_details.title() != remote_details.title() ||
         remote_details.parent_folder_ids_size()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Remote -> Local]: Sync-root deletion.");
-      HandleSyncRootDeletion(callback);
+      token->RecordLog("Sync-root deletion.");
+      HandleSyncRootDeletion(SyncCompletedCallback(token.Pass()));
       return;
     }
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Trivial sync-root change.");
-    callback.Run(SYNC_STATUS_OK);
+    token->RecordLog("Trivial sync-root change.");
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
@@ -191,17 +185,16 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
 
   if (remote_details.missing()) {
     if (!synced_details.missing()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Remote -> Local]: Remote file deletion.");
-      HandleDeletion(callback);
+      token->RecordLog("Remote file deletion.");
+      HandleDeletion(SyncCompletedCallback(token.Pass()));
       return;
     }
 
     DCHECK(synced_details.missing());
-    LOG(ERROR) << "Found a stray missing tracker: "
-               << dirty_tracker_->file_id();
+    token->RecordLog("Found a stray missing tracker: " +
+                     dirty_tracker_->file_id());
     NOTREACHED();
-    callback.Run(SYNC_STATUS_OK);
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
@@ -209,21 +202,23 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   DCHECK(!remote_details.missing());
 
   if (synced_details.file_kind() != remote_details.file_kind()) {
-    LOG(ERROR) << "Found type mismatch between remote and local file: "
-               << dirty_tracker_->file_id()
-               << " type: (local) " << synced_details.file_kind()
-               << " vs (remote) " << remote_details.file_kind();
+    token->RecordLog(base::StringPrintf(
+        "Found type mismatch between remote and local file: %s"
+        " type: (local) %d vs (remote) %d",
+        dirty_tracker_->file_id().c_str(),
+        synced_details.file_kind(),
+        remote_details.file_kind()));
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
   DCHECK_EQ(synced_details.file_kind(), remote_details.file_kind());
 
   if (synced_details.file_kind() == FILE_KIND_UNSUPPORTED) {
-    LOG(ERROR) << "Found an unsupported active file: "
-               << remote_metadata_->file_id();
+    token->RecordLog("Found an unsupported active file: " +
+                     remote_metadata_->file_id());
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
   DCHECK(remote_details.file_kind() == FILE_KIND_FILE ||
@@ -231,10 +226,10 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
 
   if (synced_details.title() != remote_details.title()) {
     // Handle rename as deletion + addition.
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Detected file rename.");
+    token->RecordLog("Detected file rename.");
     Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       SyncCompletedCallback(token.Pass())));
     return;
   }
   DCHECK_EQ(synced_details.title(), remote_details.title());
@@ -242,50 +237,46 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   FileTracker parent_tracker;
   if (!metadata_database()->FindTrackerByTrackerID(
           dirty_tracker_->parent_tracker_id(), &parent_tracker)) {
-    LOG(ERROR) << "Missing parent tracker for a non sync-root tracker: "
-               << dirty_tracker_->file_id();
+    token->RecordLog("Missing parent tracker for a non sync-root tracker: "
+                     + dirty_tracker_->file_id());
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
   if (!HasFolderAsParent(remote_details, parent_tracker.file_id())) {
     // Handle reorganize as deletion + addition.
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Detected file reorganize.");
+    token->RecordLog("Detected file reorganize.");
     Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       SyncCompletedCallback(token.Pass())));
     return;
   }
 
   if (synced_details.file_kind() == FILE_KIND_FILE) {
     if (synced_details.md5() != remote_details.md5()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Remote -> Local]: Detected file content update.");
-      HandleContentUpdate(callback);
+      token->RecordLog("Detected file content update.");
+      HandleContentUpdate(SyncCompletedCallback(token.Pass()));
       return;
     }
   } else {
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
     if (synced_details.missing()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Remote -> Local]: Detected folder update.");
-      HandleFolderUpdate(callback);
+      token->RecordLog("Detected folder update.");
+      HandleFolderUpdate(SyncCompletedCallback(token.Pass()));
       return;
     }
     if (dirty_tracker_->needs_folder_listing()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Remote -> Local]: Needs listing folder.");
-      ListFolderContent(callback);
+      token->RecordLog("Needs listing folder.");
+      ListFolderContent(SyncCompletedCallback(token.Pass()));
       return;
     }
-    callback.Run(SYNC_STATUS_OK);
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote -> Local]: Trivial file change.");
-  callback.Run(SYNC_STATUS_OK);
+  token->RecordLog("Trivial file change.");
+  SyncCompleted(token.Pass(), SYNC_STATUS_OK);
 }
 
 void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
@@ -794,6 +785,13 @@ MetadataDatabase* RemoteToLocalSyncer::metadata_database() {
 RemoteChangeProcessor* RemoteToLocalSyncer::remote_change_processor() {
   DCHECK(sync_context_->GetRemoteChangeProcessor());
   return sync_context_->GetRemoteChangeProcessor();
+}
+
+SyncStatusCallback RemoteToLocalSyncer::SyncCompletedCallback(
+    scoped_ptr<SyncTaskToken> token) {
+  return base::Bind(&RemoteToLocalSyncer::SyncCompleted,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    base::Passed(&token));
 }
 
 }  // namespace drive_backend

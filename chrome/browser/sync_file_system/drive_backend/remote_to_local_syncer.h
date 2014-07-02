@@ -100,7 +100,7 @@ class RemoteToLocalSyncer : public SyncTask {
   //   - Dispatch to HandleFolderContentListing()
   // Else, there should be no change to sync.
   //   - Dispatch to HandleOfflineSolvable()
-  void ResolveRemoteChange(const SyncStatusCallback& callback);
+  void ResolveRemoteChange(scoped_ptr<SyncTaskToken> token);
 
   // Handles missing remote metadata case.
   // Fetches remote metadata and updates MetadataDatabase by that.  The sync
@@ -187,6 +187,10 @@ class RemoteToLocalSyncer : public SyncTask {
                         SyncStatusCode status);
 
   void CreateFolder(const SyncStatusCallback& callback);
+
+  // TODO(tzik): After we convert all callbacks to token-passing style,
+  // drop this function.
+  SyncStatusCallback SyncCompletedCallback(scoped_ptr<SyncTaskToken> token);
 
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();
