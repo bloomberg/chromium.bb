@@ -1,3 +1,5 @@
+crbug.com/391036 fast/repaint/create-layer-repaint.html [ NeedsRebaseline ]
+crbug.com/391036 fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
@@ -24,7 +26,6 @@ crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
-
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
