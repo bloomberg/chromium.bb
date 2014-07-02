@@ -24,7 +24,7 @@ class AudioCapturerSource
   class CaptureCallback {
    public:
     // Callback to deliver the captured data from the OS.
-    virtual void Capture(AudioBus* audio_source,
+    virtual void Capture(const AudioBus* audio_source,
                          int audio_delay_milliseconds,
                          double volume,
                          bool key_pressed) = 0;

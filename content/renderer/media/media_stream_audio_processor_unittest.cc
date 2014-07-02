@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/aligned_memory.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
@@ -403,6 +404,68 @@ TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
 
   EXPECT_TRUE(audio_processor->aec_dump_message_filter_);
 
+  audio_processor = NULL;
+}
+
+TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
+  // Set up the correct constraints to turn off the audio processing and turn
+  // on the stereo channels mirroring.
+  MockMediaConstraintFactory constraint_factory;
+  constraint_factory.AddMandatory(MediaAudioConstraints::kEchoCancellation,
+                                  false);
+  constraint_factory.AddMandatory(MediaAudioConstraints::kGoogAudioMirroring,
+                                  true);
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), 0,
+          webrtc_audio_device.get()));
+  EXPECT_FALSE(audio_processor->has_audio_processing());
+  const media::AudioParameters source_params(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480);
+  audio_processor->OnCaptureFormatChanged(source_params);
+  EXPECT_EQ(audio_processor->OutputFormat().channels(), 2);
+
+  // Construct left and right channels, and assign different values to the
+  // first data of the left channel and right channel.
+  const int size = media::AudioBus::CalculateMemorySize(source_params);
+  scoped_ptr<float, base::AlignedFreeDeleter> left_channel(
+      static_cast<float*>(base::AlignedAlloc(size, 32)));
+  scoped_ptr<float, base::AlignedFreeDeleter> right_channel(
+      static_cast<float*>(base::AlignedAlloc(size, 32)));
+  scoped_ptr<media::AudioBus> wrapper = media::AudioBus::CreateWrapper(
+      source_params.channels());
+  wrapper->set_frames(source_params.frames_per_buffer());
+  wrapper->SetChannelData(0, left_channel.get());
+  wrapper->SetChannelData(1, right_channel.get());
+  wrapper->Zero();
+  float* left_channel_ptr = left_channel.get();
+  left_channel_ptr[0] = 1.0f;
+
+  // A audio bus used for verifying the output data values.
+  scoped_ptr<media::AudioBus> output_bus = media::AudioBus::Create(
+      audio_processor->OutputFormat());
+
+  // Run the test consecutively to make sure the stereo channels are not
+  // flipped back and forth.
+  static const int kNumberOfPacketsForTest = 100;
+  for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
+    audio_processor->PushCaptureData(wrapper.get());
+
+    int16* output = NULL;
+    int new_volume = 0;
+    EXPECT_TRUE(audio_processor->ProcessAndConsumeData(
+        base::TimeDelta::FromMilliseconds(0), 0, false, &new_volume, &output));
+    output_bus->FromInterleaved(output, output_bus->frames(), 2);
+    EXPECT_TRUE(output != NULL);
+    EXPECT_EQ(output_bus->channel(0)[0], 0);
+    EXPECT_NE(output_bus->channel(1)[0], 0);
+  }
+
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
   audio_processor = NULL;
 }
 
