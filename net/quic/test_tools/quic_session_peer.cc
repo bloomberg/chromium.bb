@@ -22,6 +22,11 @@ void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
 }
 
 // static
+QuicCryptoStream* QuicSessionPeer::GetCryptoStream(QuicSession* session) {
+  return session->GetCryptoStream();
+}
+
+// static
 QuicHeadersStream* QuicSessionPeer::GetHeadersStream(QuicSession* session) {
   return session->headers_stream_.get();
 }

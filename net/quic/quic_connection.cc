@@ -1482,8 +1482,8 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   pending_write_.reset();
 
   if (result.status == WRITE_STATUS_ERROR) {
-    DVLOG(1) << "Write failed with error: " << result.error_code << " ("
-             << ErrorToString(result.error_code) << ")";
+    DVLOG(1) << ENDPOINT << "Write failed with error: " << result.error_code
+             << " (" << ErrorToString(result.error_code) << ")";
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;

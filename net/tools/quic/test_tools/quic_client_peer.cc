@@ -25,6 +25,11 @@ void QuicClientPeer::SetClientPort(QuicClient* client, int port) {
   client->client_address_ = IPEndPoint(client->client_address_.address(), port);
 }
 
+// static
+void QuicClientPeer::SetWriter(QuicClient* client, QuicPacketWriter* writer) {
+  client->writer_.reset(writer);
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

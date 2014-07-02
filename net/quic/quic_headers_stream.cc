@@ -174,7 +174,13 @@ QuicHeadersStream::QuicHeadersStream(QuicSession* session)
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   spdy_framer_.set_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
-  DisableFlowControl();
+  if (version() <= QUIC_VERSION_20) {
+    // Prior to QUIC_VERSION_21 the headers stream is not subject to any flow
+    // control.
+    DisableFlowControl();
+  }
+  // The headers stream is exempt from connection level flow control.
+  DisableConnectionFlowControlForThisStream();
 }
 
 QuicHeadersStream::~QuicHeadersStream() {}

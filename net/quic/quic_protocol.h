@@ -278,11 +278,12 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_15 = 15,
-  QUIC_VERSION_16 = 16,
-  QUIC_VERSION_18 = 18,
-  QUIC_VERSION_19 = 19,
-  QUIC_VERSION_20 = 20,  // Current version.
+  QUIC_VERSION_15 = 15,  // Revived packets in ReceivedPacketInfo.
+  QUIC_VERSION_16 = 16,  // STOP_WAITING frame.
+  QUIC_VERSION_18 = 18,  // PING frame.
+  QUIC_VERSION_19 = 19,  // Session level flow control.
+  QUIC_VERSION_20 = 20,  // Independent stream/session flow control windows.
+  QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -292,7 +293,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_20,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_21,
+                                                     QUIC_VERSION_20,
                                                      QUIC_VERSION_19,
                                                      QUIC_VERSION_18,
                                                      QUIC_VERSION_16,

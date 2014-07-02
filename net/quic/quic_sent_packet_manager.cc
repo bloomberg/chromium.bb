@@ -41,6 +41,9 @@ static const int64 kMinTailLossProbeTimeoutMs = 10;
 // Number of samples before we force a new recent min rtt to be captured.
 static const size_t kNumMinRttSamplesAfterQuiescence = 2;
 
+// Number of unpaced packets to send after quiescence.
+static const size_t kInitialUnpacedBurst = 10;
+
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == NULL) {
     return false;
@@ -787,6 +790,10 @@ QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {
   return send_algorithm_->BandwidthEstimate();
 }
 
+bool QuicSentPacketManager::HasReliableBandwidthEstimate() const {
+  return send_algorithm_->HasReliableBandwidthEstimate();
+}
+
 QuicByteCount QuicSentPacketManager::GetCongestionWindow() const {
   return send_algorithm_->GetCongestionWindow();
 }
@@ -804,7 +811,8 @@ void QuicSentPacketManager::MaybeEnablePacing() {
   using_pacing_ = true;
   send_algorithm_.reset(
       new PacingSender(send_algorithm_.release(),
-                       QuicTime::Delta::FromMilliseconds(5)));
+                       QuicTime::Delta::FromMilliseconds(5),
+                       kInitialUnpacedBurst));
 }
 
 }  // namespace net

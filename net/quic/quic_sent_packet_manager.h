@@ -165,6 +165,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate() const;
 
+  // Returns true if the current bandwidth estimate is reliable.
+  bool HasReliableBandwidthEstimate() const;
+
   // Returns the size of the current congestion window in bytes.  Note, this is
   // not the *available* window.  Some send algorithms may not use a congestion
   // window and will return 0.
@@ -178,6 +181,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
+  }
+
+  QuicPacketSequenceNumber largest_observed() const {
+    return largest_observed_;
   }
 
  private:

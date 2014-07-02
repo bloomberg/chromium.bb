@@ -87,6 +87,9 @@ QuicBandwidth FixRateSender::BandwidthEstimate() const {
   return bitrate_;
 }
 
+bool FixRateSender::HasReliableBandwidthEstimate() const {
+  return true;
+}
 
 QuicTime::Delta FixRateSender::RetransmissionDelay() const {
   // TODO(pwestin): Calculate and return retransmission delay.

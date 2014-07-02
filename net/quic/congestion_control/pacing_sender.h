@@ -25,8 +25,13 @@ namespace net {
 
 class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
  public:
+  // Create a PacingSender to wrap the specified sender.  |alarm_granularity|
+  // indicates to the pacer to send that far into the future, since it should
+  // not expect a callback before that time delta.  |initial_packet_burst| is
+  // the number of packets sent without pacing after quiescence.
   PacingSender(SendAlgorithmInterface* sender,
-               QuicTime::Delta alarm_granularity);
+               QuicTime::Delta alarm_granularity,
+               uint32 initial_packet_burst);
   virtual ~PacingSender();
 
   // SendAlgorithmInterface methods.
@@ -50,12 +55,15 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) const OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
+  virtual bool HasReliableBandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
 
  private:
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.
   QuicTime::Delta alarm_granularity_;
+  uint32 initial_packet_burst_;
+  uint32 burst_tokens_;
   // Send time of the last packet considered delayed.
   QuicTime last_delayed_packet_sent_time_;
   QuicTime next_packet_send_time_;  // When can the next packet be sent.

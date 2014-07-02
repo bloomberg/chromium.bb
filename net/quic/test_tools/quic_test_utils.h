@@ -458,6 +458,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                      QuicByteCount bytes_in_flight,
                                      HasRetransmittableData));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
+  MOCK_CONST_METHOD0(HasReliableBandwidthEstimate, bool());
   MOCK_METHOD1(OnRttUpdated, void(QuicPacketSequenceNumber));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());

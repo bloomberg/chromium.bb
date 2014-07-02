@@ -60,6 +60,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
       QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) const OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
+  virtual bool HasReliableBandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.

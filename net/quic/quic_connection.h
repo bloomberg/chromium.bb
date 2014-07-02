@@ -306,7 +306,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
   // can be handled, false otherwise.
-  bool ProcessValidatedPacket();
+  virtual bool ProcessValidatedPacket();
 
   // The version of the protocol this connection is using.
   QuicVersion version() const { return framer_.version(); }
@@ -511,6 +511,16 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
 
   QuicPacketWriter* writer() { return writer_; }
+
+  bool peer_port_changed() const { return peer_port_changed_; }
+
+  const QuicReceivedPacketManager& received_packet_manager() {
+    return received_packet_manager_;
+  }
+
+  QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
+    return sequence_number_of_last_sent_packet_;
+  }
 
  private:
   friend class test::QuicConnectionPeer;

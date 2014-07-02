@@ -196,6 +196,10 @@ QuicBandwidth TcpCubicSender::BandwidthEstimate() const {
                                               rtt_stats_->SmoothedRtt());
 }
 
+bool TcpCubicSender::HasReliableBandwidthEstimate() const {
+  return !InSlowStart() && !InRecovery();
+}
+
 QuicTime::Delta TcpCubicSender::RetransmissionDelay() const {
   if (!rtt_stats_->HasUpdates()) {
     return QuicTime::Delta::Zero();

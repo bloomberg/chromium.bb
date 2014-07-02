@@ -162,8 +162,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   const QuicStreamSequencer* sequencer() const { return &sequencer_; }
   QuicStreamSequencer* sequencer() { return &sequencer_; }
 
+  // TODO(rjshade): Remove this method when removing QUIC_VERSION_20.
   void DisableFlowControl() {
     flow_controller_.Disable();
+  }
+
+  void DisableConnectionFlowControlForThisStream() {
+    stream_contributes_to_connection_flow_control_ = false;
   }
 
  private:
@@ -234,6 +239,11 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // The connection level flow controller. Not owned.
   QuicFlowController* connection_flow_controller_;
+
+  // Special streams, such as the crypto and headers streams, do not respect
+  // connection level flow control limits (but are stream level flow control
+  // limited).
+  bool stream_contributes_to_connection_flow_control_;
 
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStream);
 };

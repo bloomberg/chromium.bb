@@ -1275,6 +1275,60 @@ TEST_P(EndToEndTest, DifferentFlowControlWindowsQ020) {
   server_thread_->Resume();
 }
 
+TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
+  // The special headers and crypto streams should be subject to per-stream flow
+  // control limits, but should not be subject to connection level flow control.
+  const uint32 kStreamIFCW = 123456;
+  const uint32 kSessionIFCW = 234567;
+  set_client_initial_stream_flow_control_receive_window(kStreamIFCW);
+  set_client_initial_session_flow_control_receive_window(kSessionIFCW);
+  set_server_initial_stream_flow_control_receive_window(kStreamIFCW);
+  set_server_initial_session_flow_control_receive_window(kSessionIFCW);
+
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_ <= QUIC_VERSION_20) {
+    return;
+  }
+
+  // Wait for crypto handshake to finish. This should have contributed to the
+  // crypto stream flow control window, but not affected the session flow
+  // control window.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  QuicCryptoStream* crypto_stream =
+      QuicSessionPeer::GetCryptoStream(client_->client()->session());
+  EXPECT_LT(
+      QuicFlowControllerPeer::SendWindowSize(crypto_stream->flow_controller()),
+      kStreamIFCW);
+  EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::SendWindowSize(
+                              client_->client()->session()->flow_controller()));
+
+  // Send a request with no body, and verify that the connection level window
+  // has not been affected.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+
+  QuicHeadersStream* headers_stream =
+      QuicSessionPeer::GetHeadersStream(client_->client()->session());
+  EXPECT_LT(
+      QuicFlowControllerPeer::SendWindowSize(headers_stream->flow_controller()),
+      kStreamIFCW);
+  EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::SendWindowSize(
+                              client_->client()->session()->flow_controller()));
+
+  // Server should be in a similar state: connection flow control window should
+  // not have any bytes marked as received.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  QuicFlowController* server_connection_flow_controller =
+      session->flow_controller();
+  EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::ReceiveWindowSize(
+                              server_connection_flow_controller));
+  server_thread_->Resume();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace tools

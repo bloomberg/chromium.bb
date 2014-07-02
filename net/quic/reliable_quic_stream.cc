@@ -159,7 +159,8 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
           GetReceivedFlowControlWindow(session),
           GetInitialStreamFlowControlWindowToSend(session),
           GetInitialStreamFlowControlWindowToSend(session)),
-      connection_flow_controller_(session_->flow_controller()) {
+      connection_flow_controller_(session_->flow_controller()),
+      stream_contributes_to_connection_flow_control_(true) {
 }
 
 ReliableQuicStream::~ReliableQuicStream() {
@@ -332,11 +333,14 @@ void ReliableQuicStream::OnCanWrite() {
 
 void ReliableQuicStream::MaybeSendBlocked() {
   flow_controller_.MaybeSendBlocked();
-  connection_flow_controller_->MaybeSendBlocked();
+  if (stream_contributes_to_connection_flow_control_) {
+    connection_flow_controller_->MaybeSendBlocked();
+  }
   // If we are connection level flow control blocked, then add the stream
   // to the write blocked list. It will be given a chance to write when a
   // connection level WINDOW_UPDATE arrives.
-  if (connection_flow_controller_->IsBlocked() &&
+  if (stream_contributes_to_connection_flow_control_ &&
+      connection_flow_controller_->IsBlocked() &&
       !flow_controller_.IsBlocked()) {
     session_->MarkWriteBlocked(id(), EffectivePriority());
   }
@@ -361,7 +365,10 @@ QuicConsumedData ReliableQuicStream::WritevData(
   if (flow_controller_.IsEnabled()) {
     // How much data we are allowed to write from flow control.
     uint64 send_window = flow_controller_.SendWindowSize();
-    if (connection_flow_controller_->IsEnabled()) {
+    // TODO(rjshade): Remove connection_flow_controller_->IsEnabled() check when
+    // removing QUIC_VERSION_19.
+    if (stream_contributes_to_connection_flow_control_ &&
+        connection_flow_controller_->IsEnabled()) {
       send_window =
           min(send_window, connection_flow_controller_->SendWindowSize());
     }
@@ -490,9 +497,11 @@ bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(uint64 new_offset) {
       // If |new_offset| increased the stream flow controller's highest received
       // offset, then we need to increase the connection flow controller's value
       // by the incremental difference.
-      connection_flow_controller_->UpdateHighestReceivedOffset(
-          connection_flow_controller_->highest_received_byte_offset() +
-          increment);
+      if (stream_contributes_to_connection_flow_control_) {
+        connection_flow_controller_->UpdateHighestReceivedOffset(
+            connection_flow_controller_->highest_received_byte_offset() +
+            increment);
+      }
       return true;
     }
   }
@@ -502,7 +511,9 @@ bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(uint64 new_offset) {
 void ReliableQuicStream::AddBytesSent(uint64 bytes) {
   if (flow_controller_.IsEnabled()) {
     flow_controller_.AddBytesSent(bytes);
-    connection_flow_controller_->AddBytesSent(bytes);
+    if (stream_contributes_to_connection_flow_control_) {
+      connection_flow_controller_->AddBytesSent(bytes);
+    }
   }
 }
 
@@ -513,13 +524,18 @@ void ReliableQuicStream::AddBytesConsumed(uint64 bytes) {
       flow_controller_.AddBytesConsumed(bytes);
     }
 
-    connection_flow_controller_->AddBytesConsumed(bytes);
+    if (stream_contributes_to_connection_flow_control_) {
+      connection_flow_controller_->AddBytesConsumed(bytes);
+    }
   }
 }
 
 bool ReliableQuicStream::IsFlowControlBlocked() {
-  return flow_controller_.IsBlocked() ||
-         connection_flow_controller_->IsBlocked();
+  bool stream_flow_control_blocked = flow_controller_.IsBlocked();
+  bool connecton_flow_control_blocked =
+      stream_contributes_to_connection_flow_control_ &&
+      connection_flow_controller_->IsBlocked();
+  return stream_flow_control_blocked || connecton_flow_control_blocked;
 }
 
 }  // namespace net

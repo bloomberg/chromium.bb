@@ -57,5 +57,11 @@ void ReliableQuicStreamPeer::SetFecPolicy(ReliableQuicStream* stream,
   stream->set_fec_policy(fec_policy);
 }
 
+// static
+bool ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
+    ReliableQuicStream* stream) {
+  return stream->stream_contributes_to_connection_flow_control_;
+}
+
 }  // namespace test
 }  // namespace net

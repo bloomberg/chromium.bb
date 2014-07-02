@@ -7,9 +7,12 @@
 namespace net {
 
 PacingSender::PacingSender(SendAlgorithmInterface* sender,
-                           QuicTime::Delta alarm_granularity)
+                           QuicTime::Delta alarm_granularity,
+                           uint32 initial_packet_burst)
     : sender_(sender),
       alarm_granularity_(alarm_granularity),
+      initial_packet_burst_(initial_packet_burst),
+      burst_tokens_(initial_packet_burst),
       last_delayed_packet_sent_time_(QuicTime::Zero()),
       next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
@@ -19,6 +22,8 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
 PacingSender::~PacingSender() {}
 
 void PacingSender::SetFromConfig(const QuicConfig& config, bool is_server) {
+  // TODO(ianswett): Consider using the suggested RTT for pacing an initial
+  // response.
   sender_->SetFromConfig(config, is_server);
 }
 
@@ -36,6 +41,10 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
   if (rtt_updated) {
     has_valid_rtt_ = true;
   }
+  if (bytes_in_flight == 0) {
+    // Add more burst tokens anytime the connection is entering quiescence.
+    burst_tokens_ = initial_packet_burst_;
+  }
   sender_->OnCongestionEvent(
       rtt_updated, bytes_in_flight, acked_packets, lost_packets);
 }
@@ -47,41 +56,51 @@ bool PacingSender::OnPacketSent(
     QuicByteCount bytes,
     HasRetransmittableData has_retransmittable_data) {
   // Only pace data packets once we have an updated RTT.
-  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA && has_valid_rtt_) {
-    // The next packet should be sent as soon as the current packets has
-    // been transferred.  We pace at twice the rate of the underlying
-    // sender's bandwidth estimate to help ensure that pacing doesn't become
-    // a bottleneck.
-    const float kPacingAggression = 2;
-    QuicTime::Delta delay =
-        BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
-    // If the last send was delayed, and the alarm took a long time to get
-    // invoked, allow the connection to make up for lost time.
-    if (was_last_send_delayed_) {
-      next_packet_send_time_ = next_packet_send_time_.Add(delay);
-      // The send was application limited if it takes longer than the
-      // pacing delay between sent packets.
-      const bool application_limited =
-          last_delayed_packet_sent_time_.IsInitialized() &&
-          sent_time > last_delayed_packet_sent_time_.Add(delay);
-      const bool making_up_for_lost_time = next_packet_send_time_ <= sent_time;
-      // As long as we're making up time and not application limited,
-      // continue to consider the packets delayed, allowing the packets to be
-      // sent immediately.
-      if (making_up_for_lost_time && !application_limited) {
-        last_delayed_packet_sent_time_ = sent_time;
-      } else {
-        was_last_send_delayed_ = false;
-        last_delayed_packet_sent_time_ = QuicTime::Zero();
-      }
-    } else {
-      next_packet_send_time_ =
-          QuicTime::Max(next_packet_send_time_.Add(delay),
-                        sent_time.Add(delay).Subtract(alarm_granularity_));
-    }
+  const bool in_flight =
+      sender_->OnPacketSent(sent_time, bytes_in_flight, sequence_number,
+                            bytes, has_retransmittable_data);
+  if (has_retransmittable_data != HAS_RETRANSMITTABLE_DATA || !has_valid_rtt_) {
+    return in_flight;
   }
-  return sender_->OnPacketSent(sent_time, bytes_in_flight, sequence_number,
-                               bytes, has_retransmittable_data);
+  if (burst_tokens_ > 0) {
+    --burst_tokens_;
+    was_last_send_delayed_ = false;
+    last_delayed_packet_sent_time_ = QuicTime::Zero();
+    next_packet_send_time_ = QuicTime::Zero();
+    return in_flight;
+  }
+  // The next packet should be sent as soon as the current packets has
+  // been transferred.  We pace at twice the rate of the underlying
+  // sender's bandwidth estimate to help ensure that pacing doesn't become
+  // a bottleneck.
+  const float kPacingAggression = 2;
+  QuicTime::Delta delay =
+      BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
+  // If the last send was delayed, and the alarm took a long time to get
+  // invoked, allow the connection to make up for lost time.
+  if (was_last_send_delayed_) {
+    next_packet_send_time_ = next_packet_send_time_.Add(delay);
+    // The send was application limited if it takes longer than the
+    // pacing delay between sent packets.
+    const bool application_limited =
+        last_delayed_packet_sent_time_.IsInitialized() &&
+        sent_time > last_delayed_packet_sent_time_.Add(delay);
+    const bool making_up_for_lost_time = next_packet_send_time_ <= sent_time;
+    // As long as we're making up time and not application limited,
+    // continue to consider the packets delayed, allowing the packets to be
+    // sent immediately.
+    if (making_up_for_lost_time && !application_limited) {
+      last_delayed_packet_sent_time_ = sent_time;
+    } else {
+      was_last_send_delayed_ = false;
+      last_delayed_packet_sent_time_ = QuicTime::Zero();
+    }
+  } else {
+    next_packet_send_time_ =
+        QuicTime::Max(next_packet_send_time_.Add(delay),
+                      sent_time.Add(delay).Subtract(alarm_granularity_));
+  }
+  return in_flight;
 }
 
 void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
@@ -100,6 +119,10 @@ QuicTime::Delta PacingSender::TimeUntilSend(
       sender_->TimeUntilSend(now, bytes_in_flight, has_retransmittable_data);
   if (!has_valid_rtt_) {
     // Don't pace if we don't have an updated RTT estimate.
+    return time_until_send;
+  }
+  if (burst_tokens_ > 0) {
+    // Don't pace if we have burst tokens available.
     return time_until_send;
   }
 
@@ -129,6 +152,10 @@ QuicTime::Delta PacingSender::TimeUntilSend(
 
 QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
+}
+
+bool PacingSender::HasReliableBandwidthEstimate() const {
+  return sender_->HasReliableBandwidthEstimate();
 }
 
 QuicTime::Delta PacingSender::RetransmissionDelay() const {
