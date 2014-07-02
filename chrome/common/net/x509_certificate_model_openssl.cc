@@ -1142,8 +1142,28 @@ void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles) {
 
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end) {
-  // TODO(bulach): implement me.
-  return "";
+  std::string rv;
+  crypto::ScopedOpenSSL<PKCS7, PKCS7_free> p7(PKCS7_new());
+  if (!p7.get())
+    return rv;
+  if (!PKCS7_set_type(p7.get(), NID_pkcs7_signed))
+    return rv;
+
+  for (size_t i = start; i < end; ++i) {
+    if (!PKCS7_add_certificate(p7.get(), cert_chain[i]))
+      return rv;
+  }
+
+  crypto::ScopedOpenSSL<BIO, BIO_free_all> bio(crypto::BIO_new_string(&rv));
+  if (!bio.get())
+    return rv;
+
+  if (!i2d_PKCS7_bio(bio.get(), p7.get())) {
+    rv.clear();
+    return rv;
+  }
+
+  return rv;
 }
 
 std::string ProcessSecAlgorithmSignature(

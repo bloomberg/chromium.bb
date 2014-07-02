@@ -278,3 +278,55 @@ TEST(X509CertificateModelTest, GetVersionOmitted) {
 
   EXPECT_EQ("1", x509_certificate_model::GetVersion(cert->os_cert_handle()));
 }
+
+TEST(X509CertificateModelTest, GetCMSString) {
+  net::CertificateList certs =
+      CreateCertificateListFromFile(net::GetTestCertsDirectory(),
+                                    "multi-root-chain1.pem",
+                                    net::X509Certificate::FORMAT_AUTO);
+
+  net::X509Certificate::OSCertHandles cert_handles;
+  for (net::CertificateList::iterator i = certs.begin(); i != certs.end(); ++i)
+    cert_handles.push_back((*i)->os_cert_handle());
+  ASSERT_EQ(4U, cert_handles.size());
+
+  {
+    // Write the full chain.
+    std::string pkcs7_string = x509_certificate_model::GetCMSString(
+        cert_handles, 0, cert_handles.size());
+
+    ASSERT_FALSE(pkcs7_string.empty());
+
+    net::CertificateList decoded_certs =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            pkcs7_string.data(),
+            pkcs7_string.size(),
+            net::X509Certificate::FORMAT_PKCS7);
+
+    ASSERT_EQ(certs.size(), decoded_certs.size());
+#if defined(USE_OPENSSL)
+    for (size_t i = 0; i < certs.size(); ++i)
+      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i]));
+#else
+    // NSS sorts the certs before writing the file.
+    EXPECT_TRUE(certs[0]->Equals(decoded_certs.back()));
+    for (size_t i = 1; i < certs.size(); ++i)
+      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i-1]));
+#endif
+  }
+
+  {
+    // Write only the first cert.
+    std::string pkcs7_string =
+        x509_certificate_model::GetCMSString(cert_handles, 0, 1);
+
+    net::CertificateList decoded_certs =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            pkcs7_string.data(),
+            pkcs7_string.size(),
+            net::X509Certificate::FORMAT_PKCS7);
+
+    ASSERT_EQ(1U, decoded_certs.size());
+    EXPECT_TRUE(certs[0]->Equals(decoded_certs[0]));
+  }
+}
