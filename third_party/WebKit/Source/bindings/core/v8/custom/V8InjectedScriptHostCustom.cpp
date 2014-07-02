@@ -53,13 +53,11 @@
 #include "bindings/core/v8/custom/V8Uint32ArrayCustom.h"
 #include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
-#include "bindings/modules/v8/V8Database.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "modules/webdatabase/Database.h"
 #include "platform/JSONValues.h"
 
 namespace WebCore {

@@ -41,7 +41,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/websockets/WebSocket.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
