@@ -17,10 +17,13 @@ _URL = 'http://www.webkit.org/perf/sunspider-1.0.2/sunspider-1.0.2/driver.html'
 class _SunspiderMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(_SunspiderMeasurement, self).__init__()
-    self._power_metric = power.PowerMetric()
+    self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
+
+  def WillStartBrowser(self, browser):
+    self._power_metric = power.PowerMetric(browser)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)

@@ -25,11 +25,13 @@ _GB = 1024 * 1024 * 1024
 class _OctaneMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(_OctaneMeasurement, self).__init__()
-    self._power_metric = power.PowerMetric()
+    self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
 
+  def WillStartBrowser(self, browser):
+    self._power_metric = power.PowerMetric(browser)
 
   def WillNavigateToPage(self, page, tab):
     if tab.browser.memory_stats['SystemTotalPhysicalMemory'] < 1 * _GB:

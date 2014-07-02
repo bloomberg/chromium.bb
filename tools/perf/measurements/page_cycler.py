@@ -39,7 +39,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
-    self._power_metric = power.PowerMetric()
+    self._power_metric = None
     self._cpu_metric = None
     self._v8_object_stats_metric = None
     self._has_loaded_page = collections.defaultdict(int)
@@ -80,6 +80,10 @@ class PageCycler(page_measurement.PageMeasurement):
                                   cls.discard_first_result)
     else:
       cls._cold_run_start_index = args.pageset_repeat * args.page_repeat
+
+  def WillStartBrowser(self, browser):
+    """Initialize metrics once right before the browser has been launched."""
+    self._power_metric = power.PowerMetric(browser)
 
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
