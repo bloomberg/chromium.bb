@@ -45,7 +45,7 @@
     [Replaceable, MeasureAs=BarPropToolbar] readonly attribute BarProp toolbar;
     [LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
-    [DoNotCheckSecurity, Unforgeable, Replaceable, PutForwards=href] readonly attribute Location location;
+    [DoNotCheckSecurity, Unforgeable, Replaceable, LogActivity, PutForwards=href] readonly attribute Location location;
     [Custom, MeasureAs=WindowEvent, NotEnumerable] attribute Event event;
 
     Selection getSelection();

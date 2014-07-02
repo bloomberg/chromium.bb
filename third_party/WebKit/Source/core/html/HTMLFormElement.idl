@@ -36,7 +36,7 @@
     [ImplementedAs=item] getter Element (unsigned long index);
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
-    [ImplementedAs=submitFromJavaScript] void submit();
+    [ImplementedAs=submitFromJavaScript, LogActivity] void submit();
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
 
