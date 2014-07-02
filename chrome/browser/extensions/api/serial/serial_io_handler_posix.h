@@ -19,13 +19,13 @@ class SerialIoHandlerPosix : public SerialIoHandler,
   virtual void CancelReadImpl() OVERRIDE;
   virtual void CancelWriteImpl() OVERRIDE;
   virtual bool Flush() const OVERRIDE;
-  virtual bool GetControlSignals(
-      api::serial::DeviceControlSignals* control_signals) const OVERRIDE;
+  virtual device::serial::DeviceControlSignalsPtr GetControlSignals()
+      const OVERRIDE;
   virtual bool SetControlSignals(
-      const api::serial::HostControlSignals& control_signals) OVERRIDE;
+      const device::serial::HostControlSignals& control_signals) OVERRIDE;
   virtual bool ConfigurePort(
-      const api::serial::ConnectionOptions& options) OVERRIDE;
-  virtual bool GetPortInfo(api::serial::ConnectionInfo* info) const OVERRIDE;
+      const device::serial::ConnectionOptions& options) OVERRIDE;
+  virtual device::serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE;
   virtual bool PostOpen() OVERRIDE;
 
  private:

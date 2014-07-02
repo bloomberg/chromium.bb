@@ -19,7 +19,7 @@ class SerialDeviceEnumerator {
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();
 
-  virtual mojo::Array<SerialDeviceInfoPtr> GetDevices() = 0;
+  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() = 0;
 };
 
 }  // namespace device

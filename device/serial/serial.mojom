@@ -2,15 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device {
+module device.serial {
 
-struct SerialDeviceInfo {
+struct DeviceInfo {
   string path;
   uint16 vendor_id;
   bool has_vendor_id = false;
   uint16 product_id;
   bool has_product_id = false;
   string display_name;
+};
+
+enum SendError {
+  SEND_ERROR_NONE,
+  SEND_ERROR_DISCONNECTED,
+  SEND_ERROR_PENDING,
+  SEND_ERROR_TIMEOUT,
+  SEND_ERROR_SYSTEM_ERROR,
+};
+
+enum ReceiveError {
+  RECEIVE_ERROR_NONE,
+  RECEIVE_ERROR_DISCONNECTED,
+  RECEIVE_ERROR_TIMEOUT,
+  RECEIVE_ERROR_DEVICE_LOST,
+  RECEIVE_ERROR_SYSTEM_ERROR,
+};
+
+enum DataBits {
+  DATA_BITS_NONE,
+  DATA_BITS_SEVEN,
+  DATA_BITS_EIGHT,
+};
+
+enum ParityBit {
+  PARITY_BIT_NONE,
+  PARITY_BIT_NO,
+  PARITY_BIT_ODD,
+  PARITY_BIT_EVEN,
+};
+
+enum StopBits {
+  STOP_BITS_NONE,
+  STOP_BITS_ONE,
+  STOP_BITS_TWO,
+};
+
+struct ConnectionOptions {
+  uint32 bitrate = 0;
+  DataBits data_bits = DATA_BITS_NONE;
+  ParityBit parity_bit = PARITY_BIT_NONE;
+  StopBits stop_bits = STOP_BITS_NONE;
+  bool cts_flow_control;
+  bool has_cts_flow_control = false;
+};
+
+struct ConnectionInfo {
+  uint32 bitrate = 0;
+  DataBits data_bits = DATA_BITS_NONE;
+  ParityBit parity_bit = PARITY_BIT_NONE;
+  StopBits stop_bits = STOP_BITS_NONE;
+  bool cts_flow_control;
+};
+
+struct HostControlSignals {
+  bool dtr;
+  bool has_dtr = false;
+  bool rts;
+  bool has_rts = false;
+};
+
+struct DeviceControlSignals {
+  bool dcd;
+  bool cts;
+  bool ri;
+  bool dsr;
 };
 
 }

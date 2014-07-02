@@ -143,10 +143,10 @@ class SerialConnection : public ApiResource,
 
   // Receives read completion notification from the |io_handler_|.
   void OnAsyncReadComplete(const std::string& data,
-                           api::serial::ReceiveError error);
+                           device::serial::ReceiveError error);
 
   // Receives write completion notification from the |io_handler_|.
-  void OnAsyncWriteComplete(int bytes_sent, api::serial::SendError error);
+  void OnAsyncWriteComplete(int bytes_sent, device::serial::SendError error);
 
   // The pathname of the serial device.
   std::string port_;
@@ -192,5 +192,25 @@ class SerialConnection : public ApiResource,
 };
 
 }  // namespace extensions
+
+namespace mojo {
+
+template <>
+class TypeConverter<device::serial::HostControlSignalsPtr,
+                    extensions::api::serial::HostControlSignals> {
+ public:
+  static device::serial::HostControlSignalsPtr ConvertFrom(
+      const extensions::api::serial::HostControlSignals& input);
+};
+
+template <>
+class TypeConverter<device::serial::ConnectionOptionsPtr,
+                    extensions::api::serial::ConnectionOptions> {
+ public:
+  static device::serial::ConnectionOptionsPtr ConvertFrom(
+      const extensions::api::serial::ConnectionOptions& input);
+};
+
+}  // namespace mojo
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_CONNECTION_H_

@@ -44,8 +44,8 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
 
-mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
-  mojo::Array<SerialDeviceInfoPtr> devices;
+mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
+  mojo::Array<serial::DeviceInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate) {
     LOG(ERROR) << "Serial device enumeration failed.";
@@ -73,7 +73,7 @@ mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
         udev_device_get_property_value(device.get(), kHostPathKey);
     const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
     if (path != NULL && bus != NULL) {
-      SerialDeviceInfoPtr info(SerialDeviceInfo::New());
+      serial::DeviceInfoPtr info(serial::DeviceInfo::New());
       info->path = path;
 
       const char* vendor_id =

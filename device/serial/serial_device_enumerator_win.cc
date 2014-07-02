@@ -26,12 +26,12 @@ SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 // TODO(rockot): Query the system for more information than just device paths.
 // This may or may not require using a different strategy than scanning the
 // registry location below.
-mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
+mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  mojo::Array<SerialDeviceInfoPtr> devices;
+  mojo::Array<serial::DeviceInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
-    SerialDeviceInfoPtr info(SerialDeviceInfo::New());
+    serial::DeviceInfoPtr info(serial::DeviceInfo::New());
     info->path = base::UTF16ToASCII(iter_key.Value());
     devices.push_back(info.Pass());
   }

@@ -247,11 +247,11 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
 namespace mojo {
 
 template <>
-class TypeConverter<device::SerialDeviceInfoPtr,
+class TypeConverter<device::serial::DeviceInfoPtr,
                     linked_ptr<extensions::api::serial::DeviceInfo> > {
  public:
   static linked_ptr<extensions::api::serial::DeviceInfo> ConvertTo(
-      const device::SerialDeviceInfoPtr& input);
+      const device::serial::DeviceInfoPtr& input);
 };
 
 }  // namespace mojo

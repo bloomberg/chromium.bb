@@ -64,7 +64,7 @@ class FakeEchoSerialIoHandler : public SerialIoHandler {
   }
 
   virtual bool ConfigurePort(
-      const api::serial::ConnectionOptions& options) OVERRIDE {
+      const device::serial::ConnectionOptions& options) OVERRIDE {
     return true;
   }
 
@@ -81,36 +81,41 @@ class FakeEchoSerialIoHandler : public SerialIoHandler {
            pending_write_buffer()->data(),
            pending_write_buffer_len());
     QueueReadCompleted(pending_write_buffer_len(),
-                       api::serial::RECEIVE_ERROR_NONE);
+                       device::serial::RECEIVE_ERROR_NONE);
     QueueWriteCompleted(pending_write_buffer_len(),
-                        api::serial::SEND_ERROR_NONE);
+                        device::serial::SEND_ERROR_NONE);
   }
 
   virtual void CancelWriteImpl() OVERRIDE {
     QueueWriteCompleted(0, write_cancel_reason());
   }
 
-  virtual bool GetControlSignals(
-      api::serial::DeviceControlSignals* signals) const OVERRIDE {
+  virtual device::serial::DeviceControlSignalsPtr GetControlSignals()
+      const OVERRIDE {
+    device::serial::DeviceControlSignalsPtr signals(
+        device::serial::DeviceControlSignals::New());
     signals->dcd = true;
     signals->cts = true;
     signals->ri = true;
     signals->dsr = true;
-    return true;
+    return signals.Pass();
   }
 
-  virtual bool GetPortInfo(api::serial::ConnectionInfo* info) const OVERRIDE {
-    info->bitrate.reset(new int(9600));
-    info->data_bits = api::serial::DATA_BITS_EIGHT;
-    info->parity_bit = api::serial::PARITY_BIT_NO;
-    info->stop_bits = api::serial::STOP_BITS_ONE;
-    info->cts_flow_control.reset(new bool(false));
-    return true;
+  virtual device::serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE {
+    device::serial::ConnectionInfoPtr info(
+        device::serial::ConnectionInfo::New());
+    info->bitrate = 9600;
+    info->data_bits = device::serial::DATA_BITS_EIGHT;
+    info->parity_bit = device::serial::PARITY_BIT_NO;
+    info->stop_bits = device::serial::STOP_BITS_ONE;
+    info->cts_flow_control = false;
+    return info.Pass();
   }
 
   virtual bool Flush() const OVERRIDE { return true; }
 
-  MOCK_METHOD1(SetControlSignals, bool(const api::serial::HostControlSignals&));
+  MOCK_METHOD1(SetControlSignals,
+               bool(const device::serial::HostControlSignals&));
 
  protected:
   virtual ~FakeEchoSerialIoHandler() {}

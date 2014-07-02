@@ -173,14 +173,14 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
                                        pending_read_buffer_len()));
     if (bytes_read < 0) {
       if (errno == ENXIO) {
-        ReadCompleted(0, api::serial::RECEIVE_ERROR_DEVICE_LOST);
+        ReadCompleted(0, device::serial::RECEIVE_ERROR_DEVICE_LOST);
       } else {
-        ReadCompleted(0, api::serial::RECEIVE_ERROR_SYSTEM_ERROR);
+        ReadCompleted(0, device::serial::RECEIVE_ERROR_SYSTEM_ERROR);
       }
     } else if (bytes_read == 0) {
-      ReadCompleted(0, api::serial::RECEIVE_ERROR_DEVICE_LOST);
+      ReadCompleted(0, device::serial::RECEIVE_ERROR_DEVICE_LOST);
     } else {
-      ReadCompleted(bytes_read, api::serial::RECEIVE_ERROR_NONE);
+      ReadCompleted(bytes_read, device::serial::RECEIVE_ERROR_NONE);
     }
   } else {
     // Stop watching the fd if we get notifications with no pending
@@ -199,9 +199,9 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
                                            pending_write_buffer()->data(),
                                            pending_write_buffer_len()));
     if (bytes_written < 0) {
-      WriteCompleted(0, api::serial::SEND_ERROR_SYSTEM_ERROR);
+      WriteCompleted(0, device::serial::SEND_ERROR_SYSTEM_ERROR);
     } else {
-      WriteCompleted(bytes_written, api::serial::SEND_ERROR_NONE);
+      WriteCompleted(bytes_written, device::serial::SEND_ERROR_NONE);
     }
   } else {
     // Stop watching the fd if we get notifications with no pending
@@ -239,64 +239,62 @@ void SerialIoHandlerPosix::EnsureWatchingWrites() {
 }
 
 bool SerialIoHandlerPosix::ConfigurePort(
-    const api::serial::ConnectionOptions& options) {
+    const device::serial::ConnectionOptions& options) {
   struct termios config;
   tcgetattr(file().GetPlatformFile(), &config);
-  if (options.bitrate.get()) {
-    if (*options.bitrate >= 0) {
-      speed_t bitrate_opt = B0;
-      if (BitrateToSpeedConstant(*options.bitrate, &bitrate_opt)) {
-        cfsetispeed(&config, bitrate_opt);
-        cfsetospeed(&config, bitrate_opt);
-      } else {
-        // Attempt to set a custom speed.
-        if (!SetCustomBitrate(
-                file().GetPlatformFile(), &config, *options.bitrate)) {
-          return false;
-        }
+  if (options.bitrate) {
+    speed_t bitrate_opt = B0;
+    if (BitrateToSpeedConstant(options.bitrate, &bitrate_opt)) {
+      cfsetispeed(&config, bitrate_opt);
+      cfsetospeed(&config, bitrate_opt);
+    } else {
+      // Attempt to set a custom speed.
+      if (!SetCustomBitrate(
+              file().GetPlatformFile(), &config, options.bitrate)) {
+        return false;
       }
     }
   }
-  if (options.data_bits != api::serial::DATA_BITS_NONE) {
+  if (options.data_bits != device::serial::DATA_BITS_NONE) {
     config.c_cflag &= ~CSIZE;
     switch (options.data_bits) {
-      case api::serial::DATA_BITS_SEVEN:
+      case device::serial::DATA_BITS_SEVEN:
         config.c_cflag |= CS7;
         break;
-      case api::serial::DATA_BITS_EIGHT:
+      case device::serial::DATA_BITS_EIGHT:
       default:
         config.c_cflag |= CS8;
         break;
     }
   }
-  if (options.parity_bit != api::serial::PARITY_BIT_NONE) {
+  if (options.parity_bit != device::serial::PARITY_BIT_NONE) {
     switch (options.parity_bit) {
-      case api::serial::PARITY_BIT_EVEN:
+      case device::serial::PARITY_BIT_EVEN:
         config.c_cflag |= PARENB;
         config.c_cflag &= ~PARODD;
         break;
-      case api::serial::PARITY_BIT_ODD:
+      case device::serial::PARITY_BIT_ODD:
         config.c_cflag |= (PARODD | PARENB);
         break;
-      case api::serial::PARITY_BIT_NO:
+      case device::serial::PARITY_BIT_NO:
       default:
         config.c_cflag &= ~(PARODD | PARENB);
         break;
     }
   }
-  if (options.stop_bits != api::serial::STOP_BITS_NONE) {
+  if (options.stop_bits != device::serial::STOP_BITS_NONE) {
     switch (options.stop_bits) {
-      case api::serial::STOP_BITS_TWO:
+      case device::serial::STOP_BITS_TWO:
         config.c_cflag |= CSTOPB;
         break;
-      case api::serial::STOP_BITS_ONE:
+      case device::serial::STOP_BITS_ONE:
       default:
         config.c_cflag &= ~CSTOPB;
         break;
     }
   }
-  if (options.cts_flow_control.get()) {
-    if (*options.cts_flow_control) {
+  if (options.has_cts_flow_control) {
+    if (options.cts_flow_control) {
       config.c_cflag |= CRTSCTS;
     } else {
       config.c_cflag &= ~CRTSCTS;
@@ -326,38 +324,40 @@ bool SerialIoHandlerPosix::Flush() const {
   return tcflush(file().GetPlatformFile(), TCIOFLUSH) == 0;
 }
 
-bool SerialIoHandlerPosix::GetControlSignals(
-    api::serial::DeviceControlSignals* signals) const {
+device::serial::DeviceControlSignalsPtr
+SerialIoHandlerPosix::GetControlSignals() const {
   int status;
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
-    return false;
+    return device::serial::DeviceControlSignalsPtr();
   }
 
+  device::serial::DeviceControlSignalsPtr signals(
+      device::serial::DeviceControlSignals::New());
   signals->dcd = (status & TIOCM_CAR) != 0;
   signals->cts = (status & TIOCM_CTS) != 0;
   signals->dsr = (status & TIOCM_DSR) != 0;
   signals->ri = (status & TIOCM_RI) != 0;
-  return true;
+  return signals.Pass();
 }
 
 bool SerialIoHandlerPosix::SetControlSignals(
-    const api::serial::HostControlSignals& signals) {
+    const device::serial::HostControlSignals& signals) {
   int status;
 
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
     return false;
   }
 
-  if (signals.dtr.get()) {
-    if (*signals.dtr) {
+  if (signals.has_dtr) {
+    if (signals.dtr) {
       status |= TIOCM_DTR;
     } else {
       status &= ~TIOCM_DTR;
     }
   }
 
-  if (signals.rts.get()) {
-    if (*signals.rts) {
+  if (signals.has_rts) {
+    if (signals.rts) {
       status |= TIOCM_RTS;
     } else {
       status &= ~TIOCM_RTS;
@@ -367,39 +367,40 @@ bool SerialIoHandlerPosix::SetControlSignals(
   return ioctl(file().GetPlatformFile(), TIOCMSET, &status) == 0;
 }
 
-bool SerialIoHandlerPosix::GetPortInfo(
-    api::serial::ConnectionInfo* info) const {
+device::serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
   struct termios config;
   if (tcgetattr(file().GetPlatformFile(), &config) == -1) {
-    return false;
+    return device::serial::ConnectionInfoPtr();
   }
+  device::serial::ConnectionInfoPtr info(device::serial::ConnectionInfo::New());
   speed_t ispeed = cfgetispeed(&config);
   speed_t ospeed = cfgetospeed(&config);
   if (ispeed == ospeed) {
     int bitrate = 0;
     if (SpeedConstantToBitrate(ispeed, &bitrate)) {
-      info->bitrate.reset(new int(bitrate));
+      info->bitrate = bitrate;
     } else if (ispeed > 0) {
-      info->bitrate.reset(new int(static_cast<int>(ispeed)));
+      info->bitrate = static_cast<int>(ispeed);
     }
   }
   if ((config.c_cflag & CSIZE) == CS7) {
-    info->data_bits = api::serial::DATA_BITS_SEVEN;
+    info->data_bits = device::serial::DATA_BITS_SEVEN;
   } else if ((config.c_cflag & CSIZE) == CS8) {
-    info->data_bits = api::serial::DATA_BITS_EIGHT;
+    info->data_bits = device::serial::DATA_BITS_EIGHT;
   } else {
-    info->data_bits = api::serial::DATA_BITS_NONE;
+    info->data_bits = device::serial::DATA_BITS_NONE;
   }
   if (config.c_cflag & PARENB) {
-    info->parity_bit = (config.c_cflag & PARODD) ? api::serial::PARITY_BIT_ODD
-                                                 : api::serial::PARITY_BIT_EVEN;
+    info->parity_bit = (config.c_cflag & PARODD)
+                           ? device::serial::PARITY_BIT_ODD
+                           : device::serial::PARITY_BIT_EVEN;
   } else {
-    info->parity_bit = api::serial::PARITY_BIT_NO;
+    info->parity_bit = device::serial::PARITY_BIT_NO;
   }
-  info->stop_bits = (config.c_cflag & CSTOPB) ? api::serial::STOP_BITS_TWO
-                                              : api::serial::STOP_BITS_ONE;
-  info->cts_flow_control.reset(new bool((config.c_cflag & CRTSCTS) != 0));
-  return true;
+  info->stop_bits = (config.c_cflag & CSTOPB) ? device::serial::STOP_BITS_TWO
+                                              : device::serial::STOP_BITS_ONE;
+  info->cts_flow_control = (config.c_cflag & CRTSCTS) != 0;
+  return info.Pass();
 }
 
 std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {

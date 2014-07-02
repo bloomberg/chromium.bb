@@ -119,7 +119,7 @@ void SerialIoHandler::Write(const std::string& data) {
 }
 
 void SerialIoHandler::ReadCompleted(int bytes_read,
-                                    api::serial::ReceiveError error) {
+                                    device::serial::ReceiveError error) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsReadPending());
   read_complete_.Run(std::string(pending_read_buffer_->data(), bytes_read),
@@ -130,7 +130,7 @@ void SerialIoHandler::ReadCompleted(int bytes_read,
 }
 
 void SerialIoHandler::WriteCompleted(int bytes_written,
-                                     api::serial::SendError error) {
+                                     device::serial::SendError error) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsWritePending());
   write_complete_.Run(bytes_written, error);
@@ -149,7 +149,7 @@ bool SerialIoHandler::IsWritePending() const {
   return pending_write_buffer_ != NULL;
 }
 
-void SerialIoHandler::CancelRead(api::serial::ReceiveError reason) {
+void SerialIoHandler::CancelRead(device::serial::ReceiveError reason) {
   DCHECK(CalledOnValidThread());
   if (IsReadPending()) {
     read_canceled_ = true;
@@ -158,7 +158,7 @@ void SerialIoHandler::CancelRead(api::serial::ReceiveError reason) {
   }
 }
 
-void SerialIoHandler::CancelWrite(api::serial::SendError reason) {
+void SerialIoHandler::CancelWrite(device::serial::SendError reason) {
   DCHECK(CalledOnValidThread());
   if (IsWritePending()) {
     write_canceled_ = true;
@@ -168,14 +168,14 @@ void SerialIoHandler::CancelWrite(api::serial::SendError reason) {
 }
 
 void SerialIoHandler::QueueReadCompleted(int bytes_read,
-                                         api::serial::ReceiveError error) {
+                                         device::serial::ReceiveError error) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&SerialIoHandler::ReadCompleted, this,
                             bytes_read, error));
 }
 
 void SerialIoHandler::QueueWriteCompleted(int bytes_written,
-                                          api::serial::SendError error) {
+                                          device::serial::SendError error) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&SerialIoHandler::WriteCompleted, this,
                             bytes_written, error));
