@@ -60,7 +60,7 @@ size_t AlignToNextPage(size_t size) {
 bool CreateAshmemRegion(const char* name,
                         size_t size,
                         int* out_fd,
-                        void** out_address) {
+                        uintptr_t* out_address) {
   base::ScopedFD fd(ashmem_create_region(name, size));
   if (!fd.is_valid()) {
     DLOG(ERROR) << "ashmem_create_region() failed";
@@ -84,7 +84,7 @@ bool CreateAshmemRegion(const char* name,
   }
 
   *out_fd = fd.release();
-  *out_address = address;
+  *out_address = reinterpret_cast<uintptr_t>(address);
   return true;
 }
 
@@ -121,14 +121,15 @@ class AshmemRegion {
       DiscardableMemoryAshmemAllocator* allocator) {
     DCHECK_EQ(size, AlignToNextPage(size));
     int fd;
-    void* base;
+    uintptr_t base;
     if (!CreateAshmemRegion(name.c_str(), size, &fd, &base))
       return scoped_ptr<AshmemRegion>();
     return make_scoped_ptr(new AshmemRegion(fd, size, base, allocator));
   }
 
   ~AshmemRegion() {
-    const bool result = CloseAshmemRegion(fd_, size_, base_);
+    const bool result = CloseAshmemRegion(
+        fd_, size_, reinterpret_cast<void*>(base_));
     DCHECK(result);
     DCHECK(!highest_allocated_chunk_);
   }
@@ -168,19 +169,20 @@ class AshmemRegion {
       return scoped_ptr<DiscardableAshmemChunk>();
     }
 
-    void* const address = static_cast<char*>(base_) + offset_;
+    uintptr_t const address = base_ + offset_;
     memory.reset(
-        new DiscardableAshmemChunk(this, fd_, address, offset_, actual_size));
+        new DiscardableAshmemChunk(this, fd_, reinterpret_cast<void*>(address),
+                                   offset_, actual_size));
 
     used_to_previous_chunk_map_.insert(
         std::make_pair(address, highest_allocated_chunk_));
-    highest_allocated_chunk_ = address;
+    highest_allocated_chunk_ = reinterpret_cast<uintptr_t>(address);
     offset_ += actual_size;
     DCHECK_LE(offset_, size_);
     return memory.Pass();
   }
 
-  void OnChunkDeletion(void* chunk, size_t size) {
+  void OnChunkDeletion(uintptr_t chunk, size_t size) {
     AutoLock auto_lock(allocator_->lock_);
     MergeAndAddFreeChunk_Locked(chunk, size);
     // Note that |this| might be deleted beyond this point.
@@ -188,23 +190,23 @@ class AshmemRegion {
 
  private:
   struct FreeChunk {
-    FreeChunk() : previous_chunk(NULL), start(NULL), size(0) {}
+    FreeChunk() : previous_chunk(0), start(0), size(0) {}
 
     explicit FreeChunk(size_t size)
-        : previous_chunk(NULL),
-          start(NULL),
+        : previous_chunk(0),
+          start(0),
           size(size) {
     }
 
-    FreeChunk(void* previous_chunk, void* start, size_t size)
+    FreeChunk(uintptr_t previous_chunk, uintptr_t start, size_t size)
         : previous_chunk(previous_chunk),
           start(start),
           size(size) {
       DCHECK_LT(previous_chunk, start);
     }
 
-    void* const previous_chunk;
-    void* const start;
+    uintptr_t const previous_chunk;
+    uintptr_t const start;
     const size_t size;
 
     bool is_null() const { return !start; }
@@ -217,13 +219,13 @@ class AshmemRegion {
   // Note that |allocator| must outlive |this|.
   AshmemRegion(int fd,
                size_t size,
-               void* base,
+               uintptr_t base,
                DiscardableMemoryAshmemAllocator* allocator)
       : fd_(fd),
         size_(size),
         base_(base),
         allocator_(allocator),
-        highest_allocated_chunk_(NULL),
+        highest_allocated_chunk_(0),
         offset_(0) {
     DCHECK_GE(fd_, 0);
     DCHECK_GE(size, kMinAshmemRegionSize);
@@ -257,8 +259,7 @@ class AshmemRegion {
       // reused (i.e. locked) which would prevent it from being evicted under
       // memory pressure.
       reused_chunk_size = actual_size;
-      void* const new_chunk_start =
-          static_cast<char*>(reused_chunk.start) + actual_size;
+      uintptr_t const new_chunk_start = reused_chunk.start + actual_size;
       if (reused_chunk.start == highest_allocated_chunk_) {
         // We also need to update the pointer to the highest allocated chunk in
         // case we are splitting the highest chunk.
@@ -272,12 +273,12 @@ class AshmemRegion {
           FreeChunk(reused_chunk.start, new_chunk_start, new_chunk_size));
     }
 
-    const size_t offset =
-        static_cast<char*>(reused_chunk.start) - static_cast<char*>(base_);
+    const size_t offset = reused_chunk.start - base_;
     LockAshmemRegion(fd_, offset, reused_chunk_size);
     scoped_ptr<DiscardableAshmemChunk> memory(
-        new DiscardableAshmemChunk(
-            this, fd_, reused_chunk.start, offset, reused_chunk_size));
+        new DiscardableAshmemChunk(this, fd_,
+                                   reinterpret_cast<void*>(reused_chunk.start),
+                                   offset, reused_chunk_size));
     return memory.Pass();
   }
 
@@ -293,16 +294,16 @@ class AshmemRegion {
   // change in versions of kernel >=3.5 though. The fact that free chunks are
   // not immediately released is the reason why we are trying to minimize
   // fragmentation in order not to cause "artificial" memory pressure.
-  void MergeAndAddFreeChunk_Locked(void* chunk, size_t size) {
+  void MergeAndAddFreeChunk_Locked(uintptr_t chunk, size_t size) {
     allocator_->lock_.AssertAcquired();
     size_t new_free_chunk_size = size;
     // Merge with the previous chunk.
-    void* first_free_chunk = chunk;
+    uintptr_t first_free_chunk = chunk;
     DCHECK(!used_to_previous_chunk_map_.empty());
-    const hash_map<void*, void*>::iterator previous_chunk_it =
+    const hash_map<uintptr_t, uintptr_t>::iterator previous_chunk_it =
         used_to_previous_chunk_map_.find(chunk);
     DCHECK(previous_chunk_it != used_to_previous_chunk_map_.end());
-    void* previous_chunk = previous_chunk_it->second;
+    uintptr_t previous_chunk = previous_chunk_it->second;
     used_to_previous_chunk_map_.erase(previous_chunk_it);
 
     if (previous_chunk) {
@@ -320,7 +321,7 @@ class AshmemRegion {
     }
 
     // Merge with the next chunk if free and present.
-    void* next_chunk = static_cast<char*>(chunk) + size;
+    uintptr_t next_chunk = chunk + size;
     const FreeChunk next_free_chunk = RemoveFreeChunk_Locked(next_chunk);
     if (!next_free_chunk.is_null()) {
       new_free_chunk_size += next_free_chunk.size;
@@ -328,8 +329,8 @@ class AshmemRegion {
         highest_allocated_chunk_ = first_free_chunk;
 
       // Same as above.
-      DCHECK(!address_to_free_chunk_map_.count(static_cast<char*>(next_chunk) +
-                                               next_free_chunk.size));
+      DCHECK(
+          !address_to_free_chunk_map_.count(next_chunk + next_free_chunk.size));
     }
 
     const bool whole_ashmem_region_is_free =
@@ -346,7 +347,7 @@ class AshmemRegion {
     DCHECK(free_chunks_.empty());
     DCHECK(address_to_free_chunk_map_.empty());
     DCHECK(used_to_previous_chunk_map_.empty());
-    highest_allocated_chunk_ = NULL;
+    highest_allocated_chunk_ = 0;
     allocator_->DeleteAshmemRegion_Locked(this);  // Deletes |this|.
   }
 
@@ -357,9 +358,9 @@ class AshmemRegion {
     address_to_free_chunk_map_.insert(std::make_pair(free_chunk.start, it));
     // Update the next used contiguous chunk, if any, since its previous chunk
     // may have changed due to free chunks merging/splitting.
-    void* const next_used_contiguous_chunk =
-        static_cast<char*>(free_chunk.start) + free_chunk.size;
-    hash_map<void*, void*>::iterator previous_it =
+    uintptr_t const next_used_contiguous_chunk =
+        free_chunk.start + free_chunk.size;
+    hash_map<uintptr_t, uintptr_t>::iterator previous_it =
         used_to_previous_chunk_map_.find(next_used_contiguous_chunk);
     if (previous_it != used_to_previous_chunk_map_.end())
       previous_it->second = free_chunk.start;
@@ -368,10 +369,10 @@ class AshmemRegion {
   // Finds and removes the free chunk, if any, whose start address is
   // |chunk_start|. Returns a copy of the unlinked free chunk or a free chunk
   // whose content is null if it was not found.
-  FreeChunk RemoveFreeChunk_Locked(void* chunk_start) {
+  FreeChunk RemoveFreeChunk_Locked(uintptr_t chunk_start) {
     allocator_->lock_.AssertAcquired();
     const hash_map<
-        void*, std::multiset<FreeChunk>::iterator>::iterator it =
+        uintptr_t, std::multiset<FreeChunk>::iterator>::iterator it =
             address_to_free_chunk_map_.find(chunk_start);
     if (it == address_to_free_chunk_map_.end())
       return FreeChunk();
@@ -393,11 +394,11 @@ class AshmemRegion {
 
   const int fd_;
   const size_t size_;
-  void* const base_;
+  uintptr_t const base_;
   DiscardableMemoryAshmemAllocator* const allocator_;
   // Points to the chunk with the highest address in the region. This pointer
   // needs to be carefully updated when chunks are merged/split.
-  void* highest_allocated_chunk_;
+  uintptr_t highest_allocated_chunk_;
   // Points to the end of |highest_allocated_chunk_|.
   size_t offset_;
   // Allows free chunks recycling (lookup, insertion and removal) in O(log N).
@@ -410,10 +411,10 @@ class AshmemRegion {
   // don't invalidate iterators (except the one for the element being removed
   // obviously).
   hash_map<
-      void*, std::multiset<FreeChunk>::iterator> address_to_free_chunk_map_;
+      uintptr_t, std::multiset<FreeChunk>::iterator> address_to_free_chunk_map_;
   // Maps the address of *used* chunks to the address of their previous
   // contiguous chunk.
-  hash_map<void*, void*> used_to_previous_chunk_map_;
+  hash_map<uintptr_t, uintptr_t> used_to_previous_chunk_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AshmemRegion);
 };
@@ -421,7 +422,7 @@ class AshmemRegion {
 DiscardableAshmemChunk::~DiscardableAshmemChunk() {
   if (locked_)
     UnlockAshmemRegion(fd_, offset_, size_);
-  ashmem_region_->OnChunkDeletion(address_, size_);
+  ashmem_region_->OnChunkDeletion(reinterpret_cast<uintptr_t>(address_), size_);
 }
 
 bool DiscardableAshmemChunk::Lock() {
@@ -518,7 +519,7 @@ void DiscardableMemoryAshmemAllocator::DeleteAshmemRegion_Locked(
   DCHECK_LE(ashmem_regions_.size(), 5U);
   const ScopedVector<AshmemRegion>::iterator it = std::find(
       ashmem_regions_.begin(), ashmem_regions_.end(), region);
-  DCHECK_NE(ashmem_regions_.end(), it);
+  DCHECK(ashmem_regions_.end() != it);
   std::swap(*it, ashmem_regions_.back());
   ashmem_regions_.pop_back();
 }
