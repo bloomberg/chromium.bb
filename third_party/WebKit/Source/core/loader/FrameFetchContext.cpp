@@ -83,9 +83,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
         return;
 
     m_frame->loader().applyUserAgent(request);
-
-    // Default to sending an empty Origin header if one hasn't been set yet.
-    request.addHTTPOriginIfNeeded(nullAtom);
 }
 
 void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
