@@ -420,12 +420,6 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
     //   instead of forced full repaint.
 
     if (surround.get() != other.surround.get()) {
-        if (surround->margin != other.surround->margin)
-            return true;
-
-        if (surround->padding != other.surround->padding)
-            return true;
-
         // If our border widths change, then we need to layout. Other changes to borders only necessitate a repaint.
         if (borderLeftWidth() != other.borderLeftWidth()
             || borderTopWidth() != other.borderTopWidth()
@@ -612,6 +606,14 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
 
     if (noninherited_flags._vertical_align != other.noninherited_flags._vertical_align)
         return true;
+
+    if (surround.get() != other.surround.get()) {
+        if (surround->margin != other.surround->margin)
+            return true;
+
+        if (surround->padding != other.surround->padding)
+            return true;
+    }
 
     return false;
 }
