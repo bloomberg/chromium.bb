@@ -800,13 +800,6 @@ var audioPlayer = null;
 var audioPlayerInitializationQueue = new AsyncUtil.Queue();
 
 audioPlayerInitializationQueue.run(function(callback) {
-  // TODO(yoshiki): Remove '--file-manager-enable-new-audio-player' flag after
-  // the feature is launched.
-  var newAudioPlayerEnabled = true;
-
-  var audioPlayerHTML =
-      newAudioPlayerEnabled ? 'audio_player.html' : 'mediaplayer.html';
-
   /**
    * Audio player window create options.
    * @type {Object}
@@ -814,16 +807,13 @@ audioPlayerInitializationQueue.run(function(callback) {
   var audioPlayerCreateOptions = Object.freeze({
       type: 'panel',
       hidden: true,
-      minHeight:
-          newAudioPlayerEnabled ?
-              (44 + 73) :  // 44px: track, 73px: controller
-              (35 + 58),  // 35px: track, 58px: controller
-      minWidth: newAudioPlayerEnabled ? 292 : 280,
-      height: newAudioPlayerEnabled ? (44 + 73) : (35 + 58),  // collapsed
-      width: newAudioPlayerEnabled ? 292 : 280,
+      minHeight: 44 + 73,  // 44px: track, 73px: controller
+      minWidth: 292,
+      height: 44 + 73,  // collapsed
+      width: 292
   });
 
-  audioPlayer = new SingletonAppWindowWrapper(audioPlayerHTML,
+  audioPlayer = new SingletonAppWindowWrapper('audio_player.html',
                                               audioPlayerCreateOptions);
   callback();
 });

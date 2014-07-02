@@ -33,7 +33,6 @@ Object['observe'] = undefined;
 
 <include src="audio_player.js"/>
 <include src="audio_player_model.js"/>
-<include src="../../foreground/js/media/player_testapi.js"/>
 
 <include src="../elements/track_list.js"/>
 <include src="../elements/control_panel.js"/>
