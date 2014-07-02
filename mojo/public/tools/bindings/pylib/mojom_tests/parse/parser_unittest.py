@@ -592,7 +592,7 @@ class ParserTest(unittest.TestCase):
             None,
             [('METHOD',
               'MyMethod',
-              [ast.Parameter('int32', 'a', ast.Ordinal(None))],
+              ast.ParameterList(ast.Parameter('int32', 'a', ast.Ordinal(None))),
               ast.Ordinal(None),
               None)])])]
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
@@ -612,15 +612,15 @@ class ParserTest(unittest.TestCase):
             None,
             [('METHOD',
               'MyMethod1',
-              [ast.Parameter('int32', 'a', ast.Ordinal(0)),
-               ast.Parameter('int64', 'b', ast.Ordinal(1))],
+              ast.ParameterList([ast.Parameter('int32', 'a', ast.Ordinal(0)),
+                                 ast.Parameter('int64', 'b', ast.Ordinal(1))]),
               ast.Ordinal(0),
               None),
              ('METHOD',
               'MyMethod2',
-              [],
+              ast.ParameterList(),
               ast.Ordinal(1),
-              [])])])]
+              ast.ParameterList())])])]
     self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
 
     source3 = """\
@@ -637,10 +637,12 @@ class ParserTest(unittest.TestCase):
             None,
             [('METHOD',
               'MyMethod',
-              [ast.Parameter('string', 'a', ast.Ordinal(None))],
+              ast.ParameterList(ast.Parameter('string', 'a',
+                                              ast.Ordinal(None))),
               ast.Ordinal(None),
-              [ast.Parameter('int32', 'a', ast.Ordinal(None)),
-               ast.Parameter('bool', 'b', ast.Ordinal(None))])])])]
+              ast.ParameterList([ast.Parameter('int32', 'a', ast.Ordinal(None)),
+                                 ast.Parameter('bool', 'b',
+                                               ast.Ordinal(None))]))])])]
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testInvalidMethods(self):

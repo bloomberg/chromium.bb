@@ -73,19 +73,20 @@ def _MapField(tree):
           'default': tree[4]}
 
 def _MapMethod(tree):
+  assert isinstance(tree[2], ast.ParameterList)
+  assert isinstance(tree[3], ast.Ordinal)
+  assert tree[4] is None or isinstance(tree[2], ast.ParameterList)
+
   def ParameterToDict(param):
     assert isinstance(param, ast.Parameter)
     return {'name': param.name,
             'kind': _MapKind(param.typename),
             'ordinal': param.ordinal.value}
 
-  assert isinstance(tree[2], list)
-  assert isinstance(tree[3], ast.Ordinal)
   method = {'name': tree[1],
             'parameters': map(ParameterToDict, tree[2]),
             'ordinal': tree[3].value}
-  # Note: |tree[4]| may be an empty list, indicating a parameter-less response.
-  if tree[4] is not None:
+  if tree[4]:
     method['response_parameters'] = map(ParameterToDict, tree[4])
   return method
 

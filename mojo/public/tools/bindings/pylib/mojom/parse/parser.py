@@ -195,7 +195,7 @@ class Parser(object):
 
   def p_parameter_list_1(self, p):
     """parameter_list : """
-    p[0] = []
+    p[0] = ast.ParameterList()
 
   def p_parameter_list_2(self, p):
     """parameter_list : nonempty_parameter_list"""
@@ -203,12 +203,12 @@ class Parser(object):
 
   def p_nonempty_parameter_list_1(self, p):
     """nonempty_parameter_list : parameter"""
-    p[0] = [p[1]]
+    p[0] = ast.ParameterList(p[1])
 
   def p_nonempty_parameter_list_2(self, p):
     """nonempty_parameter_list : nonempty_parameter_list COMMA parameter"""
     p[0] = p[1]
-    p[0].append(p[3])
+    p[0].Append(p[3])
 
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
