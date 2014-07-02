@@ -105,14 +105,9 @@ public:
     virtual double currentTime() const OVERRIDE;
     virtual void seek(double time) OVERRIDE;
     virtual bool seeking() const OVERRIDE;
-    virtual double rate() const OVERRIDE;
-    virtual void setRate(double) OVERRIDE;
     virtual bool paused() const OVERRIDE;
     virtual void setPoster(const WebCore::KURL&) OVERRIDE;
     virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
-    virtual double maxTimeSeekable() const OVERRIDE;
-    virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
-    virtual bool didLoadingProgress() const OVERRIDE;
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
@@ -131,7 +126,6 @@ private:
     WebCore::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebCore::MediaPlayer::Preload m_preload;
-    double m_rate;
 
 #if OS(ANDROID)
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
