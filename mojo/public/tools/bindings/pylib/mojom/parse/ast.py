@@ -23,3 +23,17 @@ class Ordinal(BaseNode):
 
   def __eq__(self, other):
     return self.value == other.value
+
+class Parameter(BaseNode):
+  """Represents a method request or response parameter."""
+  def __init__(self, typename, name, ordinal, **kwargs):
+    assert isinstance(ordinal, Ordinal)
+    BaseNode.__init__(self, **kwargs)
+    self.typename = typename
+    self.name = name
+    self.ordinal = ordinal
+
+  def __eq__(self, other):
+    return self.typename == other.typename and \
+           self.name == other.name and \
+           self.ordinal == other.ordinal

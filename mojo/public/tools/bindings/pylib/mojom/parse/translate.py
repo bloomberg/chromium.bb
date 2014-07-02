@@ -66,26 +66,27 @@ def _GetAttribute(attributes, name):
   return out
 
 def _MapField(tree):
-  assert type(tree[3]) is ast.Ordinal
+  assert isinstance(tree[3], ast.Ordinal)
   return {'name': tree[2],
           'kind': _MapKind(tree[1]),
           'ordinal': tree[3].value,
           'default': tree[4]}
 
-def _MapParameter(tree):
-  assert type(tree[3]) is ast.Ordinal
-  return {'name': tree[2],
-          'kind': _MapKind(tree[1]),
-          'ordinal': tree[3].value}
-
 def _MapMethod(tree):
-  assert type(tree[3]) is ast.Ordinal
+  def ParameterToDict(param):
+    assert isinstance(param, ast.Parameter)
+    return {'name': param.name,
+            'kind': _MapKind(param.typename),
+            'ordinal': param.ordinal.value}
+
+  assert isinstance(tree[2], list)
+  assert isinstance(tree[3], ast.Ordinal)
   method = {'name': tree[1],
-            'parameters': _MapTree(_MapParameter, tree[2], 'PARAM'),
+            'parameters': map(ParameterToDict, tree[2]),
             'ordinal': tree[3].value}
   # Note: |tree[4]| may be an empty list, indicating a parameter-less response.
   if tree[4] is not None:
-    method['response_parameters'] = _MapTree(_MapParameter, tree[4], 'PARAM')
+    method['response_parameters'] = map(ParameterToDict, tree[4])
   return method
 
 def _MapEnumField(tree):

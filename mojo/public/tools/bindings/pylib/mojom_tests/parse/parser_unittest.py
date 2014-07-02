@@ -560,5 +560,72 @@ struct MyStruct {
         r"^my_file\.mojom:2: Error: Unexpected 'abcdefg':"):
       parser.Parse(source3, "my_file.mojom")
 
+  def testValidMethod(self):
+    """Tests parsing method declarations."""
+    source1 = """\
+interface MyInterface {
+  MyMethod(int32 a);
+};
+"""
+    expected1 = \
+[('MODULE',
+  '',
+  None,
+  [('INTERFACE',
+    'MyInterface',
+    None,
+    [('METHOD',
+      'MyMethod',
+      [ast.Parameter('int32', 'a', ast.Ordinal(None))],
+      ast.Ordinal(None),
+      None)])])]
+    self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
+
+    source2 = """\
+interface MyInterface {
+  MyMethod1@0(int32 a@0, int64 b@1);
+  MyMethod2@1() => ();
+};
+"""
+    expected2 = \
+[('MODULE',
+  '',
+  None,
+  [('INTERFACE',
+    'MyInterface',
+    None,
+    [('METHOD',
+      'MyMethod1',
+      [ast.Parameter('int32', 'a', ast.Ordinal(0)),
+       ast.Parameter('int64', 'b', ast.Ordinal(1))],
+      ast.Ordinal(0),
+      None),
+     ('METHOD',
+      'MyMethod2',
+      [],
+      ast.Ordinal(1),
+      [])])])]
+    self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
+
+    source3 = """\
+interface MyInterface {
+  MyMethod(string a) => (int32 a, bool b);
+};
+"""
+    expected3 = \
+[('MODULE',
+  '',
+  None,
+  [('INTERFACE',
+    'MyInterface',
+    None,
+    [('METHOD',
+      'MyMethod',
+      [ast.Parameter('string', 'a', ast.Ordinal(None))],
+      ast.Ordinal(None),
+      [ast.Parameter('int32', 'a', ast.Ordinal(None)),
+       ast.Parameter('bool', 'b', ast.Ordinal(None))])])])]
+    self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
+
 if __name__ == "__main__":
   unittest.main()

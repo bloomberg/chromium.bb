@@ -183,13 +183,14 @@ class Parser(object):
     if len(p) == 1:
       p[0] = []
     elif len(p) == 2:
-      p[0] = _ListFromConcat(p[1])
-    elif len(p) > 3:
-      p[0] = _ListFromConcat(p[1], p[3])
+      p[0] = [p[1]]
+    else:
+      p[0] = [p[1]] + p[3]
 
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
-    p[0] = ('PARAM', p[1], p[2], p[3])
+    p[0] = ast.Parameter(p[1], p[2], p[3],
+                         filename=self.filename, lineno=p.lineno(1))
 
   def p_typename(self, p):
     """typename : basictypename
