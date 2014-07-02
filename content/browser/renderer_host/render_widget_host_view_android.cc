@@ -1480,7 +1480,7 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
   results->deviceScaleFactor = display.device_scale_factor();
   results->orientationAngle = display.RotationAsDegree();
   results->orientationType =
-      RenderWidgetHostViewBase::GetOrientationTypeFromDisplay(display);
+      RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
   gfx::DeviceDisplayInfo info;
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();

@@ -309,8 +309,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
 
-  // Returns the orientation type based on the current display state.
-  static blink::WebScreenOrientationType GetOrientationTypeFromDisplay(
+  // Compute the orientation type of the display assuming it is a mobile device.
+  static blink::WebScreenOrientationType GetOrientationTypeForMobile(
+      const gfx::Display& display);
+
+  // Compute the orientation type of the display assuming it is a desktop.
+  static blink::WebScreenOrientationType GetOrientationTypeForDesktop(
       const gfx::Display& display);
 
   virtual void GetScreenInfo(blink::WebScreenInfo* results) = 0;

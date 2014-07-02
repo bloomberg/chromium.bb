@@ -318,7 +318,7 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
     results->orientationAngle = 90;
 
   results->orientationType =
-      RenderWidgetHostViewBase::GetOrientationTypeFromDisplay(display);
+      RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
 }
 
 bool PointerEventActivates(const ui::Event& event) {
