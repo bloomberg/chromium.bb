@@ -54,7 +54,7 @@ class CongestionControl {
   // Get the FrameStats for a given |frame_id|.
   // Note: Older FrameStats will be removed automatically.
   FrameStats* GetFrameStats(uint32 frame_id);
-  // Calculata safe bitrate. This is based on how much we've been
+  // Calculate a safe bitrate. This is based on how much we've been
   // sending in the past.
   double CalculateSafeBitrate();
 
@@ -63,7 +63,7 @@ class CongestionControl {
   base::TimeTicks EstimatedAckTime(uint32 frame_id, double bitrate);
   // Calculate when we start sending the data for a given frame.
   // This is done by calculating when we were done sending the previous
-  // frame, but obvoiusly can't be less than |sent_time| (if known).
+  // frame, but obviously can't be less than |sent_time| (if known).
   base::TimeTicks EstimatedSendingTime(uint32 frame_id, double bitrate);
 
   base::TickClock* const clock_;  // Not owned by this class.

@@ -56,7 +56,7 @@ class RtcpSender {
       const RtcpReceiverReferenceTimeReport* rrtr,
       const RtcpCastMessage* cast_message,
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
-      uint16 target_delay_ms);
+      base::TimeDelta target_delay);
 
  private:
   void BuildRR(const transport::RtcpReportBlock* report_block,
@@ -81,7 +81,7 @@ class RtcpSender {
                  Packet* packet) const;
 
   void BuildCast(const RtcpCastMessage* cast_message,
-                 uint16 target_delay_ms,
+                 base::TimeDelta target_delay,
                  Packet* packet) const;
 
   void BuildReceiverLog(

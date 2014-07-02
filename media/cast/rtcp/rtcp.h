@@ -194,8 +194,8 @@ class Rtcp {
   base::TimeDelta min_rtt_;
   base::TimeDelta max_rtt_;
   int number_of_rtt_in_avg_;
-  double avg_rtt_ms_;
-  uint16 target_delay_ms_;
+  base::TimeDelta avg_rtt_;
+  base::TimeDelta target_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(Rtcp);
 };

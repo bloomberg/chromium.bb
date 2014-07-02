@@ -166,7 +166,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
     const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
-    uint16 target_delay_ms) {
+    base::TimeDelta target_delay) {
   if (packet_type_flags & transport::kRtcpSr ||
       packet_type_flags & transport::kRtcpDlrr ||
       packet_type_flags & transport::kRtcpSenderLog) {
@@ -197,7 +197,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
   }
   if (packet_type_flags & transport::kRtcpCast) {
     DCHECK(cast_message) << "Invalid argument";
-    BuildCast(cast_message, target_delay_ms, &packet->data);
+    BuildCast(cast_message, target_delay, &packet->data);
   }
   if (packet_type_flags & transport::kRtcpReceiverLog) {
     DCHECK(rtcp_events) << "Invalid argument";
@@ -529,7 +529,7 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
 }
 
 void RtcpSender::BuildCast(const RtcpCastMessage* cast,
-                           uint16 target_delay_ms,
+                           base::TimeDelta target_delay,
                            Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 20, kMaxIpPacketSize) << "Not enough buffer space";
@@ -552,7 +552,9 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   big_endian_writer.WriteU8(static_cast<uint8>(cast->ack_frame_id_));
   size_t cast_loss_field_pos = start_size + 17;  // Save loss field position.
   big_endian_writer.WriteU8(0);  // Overwritten with number_of_loss_fields.
-  big_endian_writer.WriteU16(target_delay_ms);
+  DCHECK_LE(target_delay.InMilliseconds(),
+            std::numeric_limits<uint16_t>::max());
+  big_endian_writer.WriteU16(target_delay.InMilliseconds());
 
   size_t number_of_loss_fields = 0;
   size_t max_number_of_loss_fields = std::min<size_t>(

@@ -15,11 +15,13 @@
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 
+using base::TimeDelta;
+
 namespace media {
 namespace cast {
 
-static const int kMaxRttMs = 10000;  // 10 seconds.
-static const int kMaxDelay = 2000;
+static const int32 kMaxRttMs = 10000;  // 10 seconds.
+static const int32 kMaxDelayMs = 2000;  // 2 seconds.
 
 class LocalRtcpRttFeedback : public RtcpRttFeedback {
  public:
@@ -98,7 +100,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
       lip_sync_rtp_timestamp_(0),
       lip_sync_ntp_timestamp_(0),
-      min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
+      min_rtt_(TimeDelta::FromMilliseconds(kMaxRttMs)),
       number_of_rtt_in_avg_(0) {
   rtcp_receiver_.reset(new RtcpReceiver(cast_environment, sender_feedback,
                                         receiver_feedback_.get(),
@@ -201,7 +203,7 @@ void Rtcp::SendRtcpFromRtpReceiver(
                                         &rrtr,
                                         cast_message,
                                         rtcp_events,
-                                        target_delay_ms_);
+                                        target_delay_);
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
@@ -302,8 +304,8 @@ void Rtcp::SetCastReceiverEventHistorySize(size_t size) {
 }
 
 void Rtcp::SetTargetDelay(base::TimeDelta target_delay) {
-  DCHECK(target_delay.InMilliseconds() < kMaxDelay);
-  target_delay_ms_ = static_cast<uint16>(target_delay.InMilliseconds());
+  DCHECK(target_delay < TimeDelta::FromMilliseconds(kMaxDelayMs));
+  target_delay_ = target_delay;
 }
 
 void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
@@ -331,7 +333,7 @@ void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
   last_reports_sent_map_[last_report] = now;
   last_reports_sent_queue_.push(std::make_pair(last_report, now));
 
-  base::TimeTicks timeout = now - base::TimeDelta::FromMilliseconds(kMaxRttMs);
+  base::TimeTicks timeout = now - TimeDelta::FromMilliseconds(kMaxRttMs);
 
   // Cleanup old statistics older than |timeout|.
   while (!last_reports_sent_queue_.empty()) {
@@ -358,11 +360,12 @@ void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
   // TODO(miu): Replace "average for all time" with an EWMA, or suitable
   // "average over recent past" mechanism.
   if (number_of_rtt_in_avg_ != 0) {
-    const double ac = static_cast<double>(number_of_rtt_in_avg_);
-    avg_rtt_ms_ = ((ac / (ac + 1.0)) * avg_rtt_ms_) +
-                  ((1.0 / (ac + 1.0)) * rtt.InMillisecondsF());
+    // Integer math equivalent of (ac/(ac+1.0))*avg_rtt_ + (1.0/(ac+1.0))*rtt).
+    // (TimeDelta only supports math with other TimeDeltas and int64s.)
+    avg_rtt_ = (avg_rtt_ * number_of_rtt_in_avg_ + rtt) /
+        (number_of_rtt_in_avg_ + 1);
   } else {
-    avg_rtt_ms_ = rtt.InMillisecondsF();
+    avg_rtt_ = rtt;
   }
   number_of_rtt_in_avg_++;
 }
@@ -377,7 +380,7 @@ bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
   if (number_of_rtt_in_avg_ == 0) return false;
 
   *rtt = rtt_;
-  *avg_rtt = base::TimeDelta::FromMillisecondsD(avg_rtt_ms_);
+  *avg_rtt = avg_rtt_;
   *min_rtt = min_rtt_;
   *max_rtt = max_rtt_;
   return true;

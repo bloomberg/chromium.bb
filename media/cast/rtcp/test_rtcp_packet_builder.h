@@ -79,7 +79,9 @@ class TestRtcpPacketBuilder {
   void AddPli(uint32 sender_ssrc, uint32 media_ssrc);
   void AddRpsi(uint32 sender_ssrc, uint32 media_ssrc);
   void AddRemb(uint32 sender_ssrc, uint32 media_ssrc);
-  void AddCast(uint32 sender_ssrc, uint32 media_ssrc, uint16 target_delay_ms);
+  void AddCast(uint32 sender_ssrc,
+               uint32 media_ssrc,
+               base::TimeDelta target_delay);
   void AddReceiverLog(uint32 sender_ssrc);
   void AddReceiverFrameLog(uint32 rtp_timestamp,
                            int num_events,

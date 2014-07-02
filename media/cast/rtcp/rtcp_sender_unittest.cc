@@ -21,7 +21,8 @@ namespace cast {
 namespace {
 static const uint32 kSendingSsrc = 0x12345678;
 static const uint32 kMediaSsrc = 0x87654321;
-static const int16 kDefaultDelay = 100;
+static const base::TimeDelta kDefaultDelay =
+    base::TimeDelta::FromMilliseconds(100);
 static const std::string kCName("test@10.1.1.1");
 
 transport::RtcpReportBlock GetReportBlock() {

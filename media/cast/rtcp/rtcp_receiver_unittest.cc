@@ -22,7 +22,8 @@ using testing::_;
 static const uint32 kSenderSsrc = 0x10203;
 static const uint32 kSourceSsrc = 0x40506;
 static const uint32 kUnknownSsrc = 0xDEAD;
-static const uint16 kTargetDelayMs = 100;
+static const base::TimeDelta kTargetDelay =
+    base::TimeDelta::FromMilliseconds(100);
 static const std::string kCName("test@10.1.1.1");
 
 namespace {
@@ -374,7 +375,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
   TestRtcpPacketBuilder p1;
   p1.AddRr(kSenderSsrc, 1);
   p1.AddRb(kUnknownSsrc);
-  p1.AddCast(kSenderSsrc, kUnknownSsrc, kTargetDelayMs);
+  p1.AddCast(kSenderSsrc, kUnknownSsrc, kTargetDelay);
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
@@ -391,7 +392,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
   TestRtcpPacketBuilder p2;
   p2.AddRr(kSenderSsrc, 1);
   p2.AddRb(kSourceSsrc);
-  p2.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelayMs);
+  p2.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
   InjectRtcpPacket(p2.Data(), p2.Length());
@@ -415,7 +416,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastVerification) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSenderSsrc, 1);
   p.AddRb(kSourceSsrc);
-  p.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelayMs);
+  p.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
   RtcpParser rtcp_parser(p.Data(), p.Length());

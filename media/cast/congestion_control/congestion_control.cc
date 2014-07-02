@@ -59,8 +59,7 @@ CongestionControl::CongestionControl(base::TickClock* clock,
 CongestionControl::~CongestionControl() {}
 
 void CongestionControl::UpdateRtt(base::TimeDelta rtt) {
-  rtt_ = base::TimeDelta::FromSecondsD(
-      (rtt_.InSecondsF() * 7 + rtt.InSecondsF()) / 8);
+  rtt_ = (7 * rtt_ + rtt) / 8;
 }
 
 // Calculate how much "dead air" there is between two frames.
