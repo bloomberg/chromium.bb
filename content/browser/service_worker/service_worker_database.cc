@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
+#include "content/browser/service_worker/service_worker_histograms.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -77,14 +78,6 @@ const char kUncommittedResIdKeyPrefix[] = "URES:";
 const char kPurgeableResIdKeyPrefix[] = "PRES:";
 
 const int64 kCurrentSchemaVersion = 1;
-
-// For histogram.
-const char kOpenResultHistogramLabel[] =
-    "ServiceWorker.Database.OpenResult";
-const char kReadResultHistogramLabel[] =
-    "ServiceWorker.Database.ReadResult";
-const char kWriteResultHistogramLabel[] =
-    "ServiceWorker.Database.WriteResult";
 
 bool RemovePrefix(const std::string& str,
                   const std::string& prefix,
@@ -553,7 +546,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateVersionToActive(
     int64 registration_id,
     const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  ServiceWorkerDatabase::Status status = LazyOpen(false);
+  Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_ERROR_NOT_FOUND;
   if (status != STATUS_OK)
@@ -578,7 +571,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
     const GURL& origin,
     const base::Time& time) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  ServiceWorkerDatabase::Status status = LazyOpen(false);
+  Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_ERROR_NOT_FOUND;
   if (status != STATUS_OK)
@@ -1089,31 +1082,25 @@ void ServiceWorkerDatabase::Disable(
 void ServiceWorkerDatabase::HandleOpenResult(
     const tracked_objects::Location& from_here,
     Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != STATUS_OK)
     Disable(from_here, status);
-  UMA_HISTOGRAM_ENUMERATION(kOpenResultHistogramLabel,
-                            status,
-                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
+  ServiceWorkerHistograms::CountOpenDatabaseResult(status);
 }
 
 void ServiceWorkerDatabase::HandleReadResult(
     const tracked_objects::Location& from_here,
     Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != STATUS_OK)
     Disable(from_here, status);
-  UMA_HISTOGRAM_ENUMERATION(kReadResultHistogramLabel,
-                            status,
-                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
+  ServiceWorkerHistograms::CountReadDatabaseResult(status);
 }
 
 void ServiceWorkerDatabase::HandleWriteResult(
     const tracked_objects::Location& from_here,
     Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != STATUS_OK)
     Disable(from_here, status);
-  UMA_HISTOGRAM_ENUMERATION(kWriteResultHistogramLabel,
-                            status,
-                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
+  ServiceWorkerHistograms::CountWriteDatabaseResult(status);
 }
 
 }  // namespace content

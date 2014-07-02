@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HISTOGRAMS_H_
 
 #include "base/macros.h"
+#include "content/browser/service_worker/service_worker_database.h"
 
 namespace content {
 
@@ -25,9 +26,15 @@ class ServiceWorkerHistograms {
     NUM_WRITE_RESPONSE_RESULT_TYPES,
   };
 
+  // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
   static void CountWriteResponseResult(WriteResponseResult result);
+
+  // Used for ServiceWorkerDatabase.
+  static void CountOpenDatabaseResult(ServiceWorkerDatabase::Status status);
+  static void CountReadDatabaseResult(ServiceWorkerDatabase::Status status);
+  static void CountWriteDatabaseResult(ServiceWorkerDatabase::Status status);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerHistograms);
