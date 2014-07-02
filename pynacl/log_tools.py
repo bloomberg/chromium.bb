@@ -129,11 +129,16 @@ def SetupConsoleLogger(log_level):
 
   formatter = logging.Formatter(fmt='%(message)s')
   console_handler = StreamFlushHandler(stream=sys.stdout,
-                                       direct_write=True,
+                                       direct_write=False,
                                        flush_stream=None)
   console_handler.setFormatter(formatter)
   console_handler.setLevel(log_level)
   CONSOLE_LOGGER.addHandler(console_handler)
+
+
+def GetConsoleLogger():
+  """Returns the console logger or the root logger if not initialized."""
+  return CONSOLE_LOGGER or ROOT_LOGGER
 
 
 def SetupFileLogHandler(log_file=None):
@@ -173,13 +178,10 @@ def CheckCall(command, stdout=None, logger=None, **kwargs):
   """
   # If no logger was passed in, default to the console logger.
   if logger is None:
-    logger = CONSOLE_LOGGER
-  # If the console logger is not initialized, use the root logger.
-  if logger is None:
-    logger = ROOT_LOGGER
+    logger = GetConsoleLogger()
 
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
-  logging.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
+  logger.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
 
   if stdout is None:
     # Interleave stdout and stderr together and log that.
@@ -198,7 +200,7 @@ def CheckCall(command, stdout=None, logger=None, **kwargs):
   # Capture the output as it comes and emit it immediately.
   line = output.readline()
   while line:
-    logger.info(line)
+    logger.info(line.rstrip())
     line = output.readline()
 
   if p.wait() != 0:
@@ -220,13 +222,10 @@ def CheckOutput(command, logger=None, **kwargs):
   """
   # If no logger was passed in, default to the console logger.
   if logger is None:
-    logger = CONSOLE_LOGGER
-  # If the console logger is not initialized, use the root logger.
-  if logger is None:
-    logger = ROOT_LOGGER
+    logger = GetConsoleLogger()
 
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
-  logging.info('Running: subprocess.check_output(%r, cwd=%r)' % (command, cwd))
+  logger.info('Running: subprocess.check_output(%r, cwd=%r)' % (command, cwd))
 
   p = subprocess.Popen(command,
                        stdout=subprocess.PIPE,
@@ -240,7 +239,7 @@ def CheckOutput(command, logger=None, **kwargs):
   stdout_text, stderr_text = p.communicate()
 
   if stderr_text:
-    logger.info(stderr_text)
+    logger.info(stderr_text.rstrip())
 
   if p.wait() != 0:
     raise subprocess.CalledProcessError(cmd=command, returncode=p.returncode)
@@ -249,5 +248,5 @@ def CheckOutput(command, logger=None, **kwargs):
   # output which goes to stderr.
   sys.stdout.flush()
 
-  logging.info('Result: %r' % stdout_text)
+  logger.info('Result: %r' % stdout_text)
   return stdout_text

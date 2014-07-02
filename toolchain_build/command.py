@@ -164,8 +164,8 @@ class Runnable(object):
       return False
     return True
 
-  def Invoke(self, subst):
-    return self._func(subst, *self._args, **self._kwargs)
+  def Invoke(self, logger, subst):
+    return self._func(logger, subst, *self._args, **self._kwargs)
 
 
 def Command(command, stdout=None, run_cond=None, **kwargs):
@@ -182,7 +182,7 @@ def Command(command, stdout=None, run_cond=None, **kwargs):
   'path_dirs', the directories therein will be added to the paths searched for
   the command. Any other kwargs will be passed to check_call.
   """
-  def runcmd(subst, command, stdout, **kwargs):
+  def runcmd(logger, subst, command, stdout, **kwargs):
     check_call_kwargs = kwargs.copy()
     command = command[:]
 
@@ -208,7 +208,8 @@ def Command(command, stdout=None, run_cond=None, **kwargs):
     if stdout is not None:
       stdout = subst.SubstituteAbsPaths(stdout)
 
-    pynacl.log_tools.CheckCall(command, stdout=stdout, **check_call_kwargs)
+    pynacl.log_tools.CheckCall(command, stdout=stdout, logger=logger,
+                               **check_call_kwargs)
 
   return Runnable(run_cond, runcmd, command, stdout, **kwargs)
 
@@ -234,8 +235,9 @@ def SkipForIncrementalCommand(command, run_cond=None, **kwargs):
 
 def Mkdir(path, parents=False, run_cond=None):
   """Convenience method for generating mkdir commands."""
-  def mkdir(subst, path):
+  def mkdir(logger, subst, path):
     path = subst.SubstituteAbsPaths(path)
+    logger.debug('Making Directory: %s', path)
     if parents:
       os.makedirs(path)
     else:
@@ -245,15 +247,18 @@ def Mkdir(path, parents=False, run_cond=None):
 
 def Copy(src, dst, run_cond=None):
   """Convenience method for generating cp commands."""
-  def copy(subst, src, dst):
-    shutil.copyfile(subst.SubstituteAbsPaths(src),
-                    subst.SubstituteAbsPaths(dst))
+  def copy(logger, subst, src, dst):
+    src = subst.SubstituteAbsPaths(src)
+    dst = subst.SubstituteAbsPaths(dst)
+    logger.debug('Copying: %s -> %s', src, dst)
+    shutil.copyfile(src, dst)
+
   return Runnable(run_cond, copy, src, dst)
 
 
 def CopyTree(src, dst, exclude=[], run_cond=None):
   """Copy a directory tree, excluding a list of top-level entries."""
-  def copyTree(subst, src, dst, exclude):
+  def copyTree(logger, subst, src, dst, exclude):
     src = subst.SubstituteAbsPaths(src)
     dst = subst.SubstituteAbsPaths(dst)
     def ignoreExcludes(dir, files):
@@ -261,6 +266,7 @@ def CopyTree(src, dst, exclude=[], run_cond=None):
         return exclude
       else:
         return []
+    logger.debug('Copying Tree: %s -> %s', src, dst)
     pynacl.file_tools.RemoveDirectoryIfPresent(dst)
     shutil.copytree(src, dst, symlinks=True, ignore=ignoreExcludes)
   return Runnable(run_cond, copyTree, src, dst, exclude)
@@ -268,36 +274,45 @@ def CopyTree(src, dst, exclude=[], run_cond=None):
 
 def RemoveDirectory(path, run_cond=None):
   """Convenience method for generating a command to remove a directory tree."""
-  def remove(subst, path):
-    pynacl.file_tools.RemoveDirectoryIfPresent(subst.SubstituteAbsPaths(path))
+  def remove(logger, subst, path):
+    path = subst.SubstituteAbsPaths(path)
+    logger.debug('Removing Directory: %s', path)
+    pynacl.file_tools.RemoveDirectoryIfPresent(path)
   return Runnable(run_cond, remove, path)
 
 
 def Remove(*args):
   """Convenience method for generating a command to remove files."""
-  def remove(subst, *args):
+  def remove(logger, subst, *args):
     for arg in args:
       path = subst.SubstituteAbsPaths(arg)
+      logger.debug('Removing Pattern: %s', path)
       expanded = glob.glob(path)
       if len(expanded) == 0:
-        logging.debug('command.Remove: argument %s (substituted from %s) '
-                      'does not match any file' %
+        logger.debug('command.Remove: argument %s (substituted from %s) '
+                     'does not match any file' %
                       (path, arg))
       for f in expanded:
+        logger.debug('Removing File: %s', f)
         os.remove(f)
   return Runnable(None, remove, *args)
 
 
 def Rename(src, dst, run_cond=None):
   """Convenience method for generating a command to rename a file."""
-  def rename(subst, src, dst):
-    os.rename(subst.SubstituteAbsPaths(src), subst.SubstituteAbsPaths(dst))
+  def rename(logger, subst, src, dst):
+    src = subst.SubstituteAbsPaths(src)
+    dst = subst.SubstituteAbsPaths(dst)
+    logger.debug('Renaming: %s -> %s', src, dst)
+    os.rename(src, dst)
   return Runnable(run_cond, rename, src, dst)
 
 
 def WriteData(data, dst, run_cond=None):
   """Convenience method to write a file with fixed contents."""
-  def writedata(subst, dst, data):
+  def writedata(logger, subst, dst, data):
+    dst = subst.SubstituteAbsPaths(dst)
+    logger.debug('Writing Data to File: %s', dst)
     with open(subst.SubstituteAbsPaths(dst), 'wb') as f:
       f.write(data)
   return Runnable(run_cond, writedata, dst, data)
@@ -333,7 +348,7 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
   Returns:
     List of commands, this is a little different from the other command funcs.
   """
-  def update_valid_mirrors(subst, url, push_url, directory,
+  def update_valid_mirrors(logger, subst, url, push_url, directory,
                            known_mirrors, push_mirrors):
     if push_url is None:
       push_url = url
@@ -343,12 +358,14 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
     if os.path.exists(git_dir):
       fetch_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
                                                        include_fetch=True,
-                                                       include_push=False)
+                                                       include_push=False,
+                                                       logger=logger)
       tracked_fetch_url = dict(fetch_list).get('origin', 'None')
 
       push_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
                                                       include_fetch=False,
-                                                      include_push=True)
+                                                      include_push=True,
+                                                      logger=logger)
       tracked_push_url = dict(push_list).get('origin', 'None')
 
       if ((known_mirrors and tracked_fetch_url != url) or
@@ -365,50 +382,58 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
 
         if ((updated_fetch_url != tracked_fetch_url) or
             (updated_push_url != tracked_push_url)):
-          logging.warn('Your git repo is using an old mirror: %s', abs_dir)
-          logging.warn('Updating git repo using known mirror:')
-          logging.warn('  [FETCH] %s -> %s',
-                       tracked_fetch_url, updated_fetch_url)
-          logging.warn('  [PUSH] %s -> %s',
-                       tracked_push_url, updated_push_url)
+          logger.warn('Your git repo is using an old mirror: %s', abs_dir)
+          logger.warn('Updating git repo using known mirror:')
+          logger.warn('  [FETCH] %s -> %s',
+                      tracked_fetch_url, updated_fetch_url)
+          logger.warn('  [PUSH] %s -> %s',
+                      tracked_push_url, updated_push_url)
           pynacl.repo_tools.GitSetRemoteRepo(updated_fetch_url, abs_dir,
-                                             push_url=updated_push_url)
+                                             push_url=updated_push_url,
+                                             logger=logger)
 
-  def populate_cache(subst, git_cache, url):
+  def populate_cache(logger, subst, git_cache, url):
     if git_cache:
       abs_git_cache = subst.SubstituteAbsPaths(git_cache)
+      logger.debug('Populating Cache: %s [%s]', abs_git_cache, url)
       if abs_git_cache:
-        pynacl.repo_tools.PopulateGitCache(abs_git_cache, [url])
+        pynacl.repo_tools.PopulateGitCache(abs_git_cache, [url],
+                                           logger=logger)
 
-  def validate(subst, url, directory):
+  def validate(logger, subst, url, directory):
+    abs_dir = subst.SubstituteAbsPaths(directory)
+    logger.debug('Validating Repo: %s [%s]', abs_dir, url)
     pynacl.repo_tools.ValidateGitRepo(url,
                                       subst.SubstituteAbsPaths(directory),
-                                      clobber_mismatch=True)
+                                      clobber_mismatch=True,
+                                      logger=logger)
 
-  def sync(subst, url, dest, revision, reclone, clean, pathspec, git_cache,
-           push_url):
+  def sync(logger, subst, url, dest, revision, reclone, clean, pathspec,
+           git_cache, push_url):
     abs_dest = subst.SubstituteAbsPaths(dest)
     if git_cache:
       git_cache = subst.SubstituteAbsPaths(git_cache)
 
+    logger.debug('Syncing Git Repo: %s [%s]', abs_dest, url)
     try:
       pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision,
                                     reclone=reclone, clean=clean,
                                     pathspec=pathspec, git_cache=git_cache,
-                                    push_url=push_url)
+                                    push_url=push_url, logger=logger)
     except pynacl.repo_tools.InvalidRepoException, e:
-      remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest))
+      remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest,
+                                                              logger=logger))
       tracked_url = remote_repos.get('origin', 'None')
-      logging.error('Invalid Git Repo: %s' % e)
-      logging.error('Destination Directory: %s', abs_dest)
-      logging.error('Currently Tracked Repo: %s', tracked_url)
-      logging.error('Expected Repo: %s', e.expected_repo)
-      logging.warn('Possible solutions:')
-      logging.warn('  1. The simplest way if you have no local changes is to'
-                   ' simply delete the directory and let the tool resync.')
-      logging.warn('  2. If the tracked repo is merely a mirror, simply go to'
-                   ' the directory and run "git remote set-url origin %s"',
-                   e.expected_repo)
+      logger.error('Invalid Git Repo: %s' % e)
+      logger.error('Destination Directory: %s', abs_dest)
+      logger.error('Currently Tracked Repo: %s', tracked_url)
+      logger.error('Expected Repo: %s', e.expected_repo)
+      logger.warn('Possible solutions:')
+      logger.warn('  1. The simplest way if you have no local changes is to'
+                  ' simply delete the directory and let the tool resync.')
+      logger.warn('  2. If the tracked repo is merely a mirror, simply go to'
+                  ' the directory and run "git remote set-url origin %s"',
+                  e.expected_repo)
       raise Exception('Could not validate local git repository.')
 
   def ClobberInvalidRepoCondition(cmd_opts):
@@ -434,10 +459,11 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
 
 def CleanGitWorkingDir(directory, path, run_cond=None):
   """Clean a path in a git checkout, if the checkout directory exists."""
-  def clean(subst, directory, path):
+  def clean(logger, subst, directory, path):
     directory = subst.SubstituteAbsPaths(directory)
+    logger.debug('Cleaning Git Working Directory: %s', directory)
     if os.path.exists(directory) and len(os.listdir(directory)) > 0:
-      pynacl.repo_tools.CleanGitWorkingDir(directory, path)
+      pynacl.repo_tools.CleanGitWorkingDir(directory, path, logger=logger)
   return Runnable(run_cond, clean, directory, path)
 
 
@@ -459,9 +485,11 @@ def GenerateGitPatches(git_dir, info, run_cond=None):
     <upstream-name>[-g<commit-abbrev>]-nacl.patch: From the result of that
       (or from 'upstream-base' if none above) to 'rev'.
   """
-  def generatePatches(subst, git_dir, info, run_cond=None):
-    git_dir_flag = '--git-dir=' + subst.SubstituteAbsPaths(git_dir)
+  def generatePatches(logger, subst, git_dir, info, run_cond=None):
+    git_dir = subst.SubstituteAbsPaths(git_dir)
+    git_dir_flag = '--git-dir=' + git_dir
     basename = info['upstream-name']
+    logger.debug('Generating Git Patches: %s', git_dir)
 
     patch_files = []
 
@@ -477,7 +505,8 @@ def GenerateGitPatches(git_dir, info, run_cond=None):
                   src_rev, dst_rev]
       pynacl.log_tools.CheckCall(
           pynacl.repo_tools.GitCmd() + git_args,
-          stdout=patch_file
+          stdout=patch_file,
+          logger=logger,
       )
       patch_files.append((description, patch_name))
 

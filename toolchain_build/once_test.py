@@ -59,7 +59,7 @@ class TestOnce(unittest.TestCase):
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       self.GenerateTestData('HitsCacheSecondTime', work_dir)
       self._tally = 0
-      def Copy(subst, src, dst):
+      def Copy(logger, subst, src, dst):
         self._tally += 1
         shutil.copyfile(subst.SubstituteAbsPaths(src),
                         subst.SubstituteAbsPaths(dst))
@@ -176,7 +176,7 @@ class TestOnce(unittest.TestCase):
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       self.GenerateTestData('UseCachedResultsFalse', work_dir)
       self._tally = 0
-      def Copy(subst, src, dst):
+      def Copy(logger, subst, src, dst):
         self._tally += 1
         shutil.copyfile(subst.SubstituteAbsPaths(src),
                         subst.SubstituteAbsPaths(dst))
@@ -240,7 +240,7 @@ class TestOnce(unittest.TestCase):
       self.GenerateTestData('NumCores', work_dir)
       o = once.Once(storage=pynacl.fake_storage.FakeStorage(),
                     system_summary='test')
-      def CheckCores(subst):
+      def CheckCores(logger, subst):
         self.assertNotEquals(0, int(subst.Substitute('%(cores)s')))
       o.Run('test', {}, self._output_dirs[0], [command.Runnable(None,
                                                                 CheckCores)])

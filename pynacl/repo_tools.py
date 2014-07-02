@@ -51,7 +51,7 @@ def SvnCmd():
     return ['svn']
 
 
-def ValidateGitRepo(url, directory, clobber_mismatch=False):
+def ValidateGitRepo(url, directory, clobber_mismatch=False, logger=None):
   """Validates a git repository tracks a particular URL.
 
   Given a git directory, this function will validate if the git directory
@@ -64,6 +64,8 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
   clobber_mismatch: If True, will delete invalid directories instead of raising
                     an exception.
   """
+  if logger is None:
+    logger = pynacl.log_tools.GetConsoleLogger()
   git_dir = os.path.join(directory, '.git')
   if os.path.exists(git_dir):
     try:
@@ -71,15 +73,15 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
                                include_push=False):
         return
 
-      logging.warn('Local git repo (%s) does not track url (%s)',
+      logger.warn('Local git repo (%s) does not track url (%s)',
                    directory, url)
     except:
-      logging.error('Invalid git repo: %s', directory)
+      logger.error('Invalid git repo: %s', directory)
 
     if not clobber_mismatch:
       raise InvalidRepoException(url, 'Invalid local git repo: %s', directory)
     else:
-      logging.debug('Clobbering invalid git repo %s' % directory)
+      logger.debug('Clobbering invalid git repo %s' % directory)
       file_tools.RemoveDirectoryIfPresent(directory)
   elif os.path.exists(directory) and len(os.listdir(directory)) != 0:
     if not clobber_mismatch:
@@ -87,12 +89,12 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
                                  'Invalid non-empty repository destination %s',
                                  directory)
     else:
-      logging.debug('Clobbering intended repository destination: %s', directory)
+      logger.debug('Clobbering intended repository destination: %s', directory)
       file_tools.RemoveDirectoryIfPresent(directory)
 
 
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None, git_cache=None, push_url=None):
+                pathspec=None, git_cache=None, push_url=None, logger=None):
   """Sync an individual git repo.
 
   Args:
@@ -110,8 +112,10 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
              directory specified and sets the fetch URL to be from the
              git_cache.
   """
+  if logger is None:
+    logger = pynacl.log_tools.GetConsoleLogger()
   if reclone:
-    logging.debug('Clobbering source directory %s' % destination)
+    logger.debug('Clobbering source directory %s' % destination)
     file_tools.RemoveDirectoryIfPresent(destination)
 
   if git_cache:
@@ -129,9 +133,10 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
       if git_cache_url and IsURLInRemoteRepoList(git_cache_url, destination,
                                                  include_fetch=True,
                                                  include_push=False):
-        GitSetRemoteRepo(url, destination, push_url=push_url)
+        GitSetRemoteRepo(url, destination, push_url=push_url,
+                         logger=logger)
       else:
-        logging.error('Git Repo (%s) does not track URL: %s',
+        logger.error('Git Repo (%s) does not track URL: %s',
                       destination, url)
         raise InvalidRepoException(url, 'Could not sync git repo: %s',
                                    destination)
@@ -143,20 +148,23 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
 
   git = GitCmd()
   if not os.path.exists(git_dir):
-    logging.info('Cloning %s...' % url)
+    logger.info('Cloning %s...' % url)
 
     file_tools.MakeDirectoryIfAbsent(destination)
     clone_args = ['clone', '-n']
     if git_cache_url:
       clone_args.extend(['--reference', git_cache_url])
 
-    log_tools.CheckCall(git + clone_args + [url, '.'], cwd=destination)
+    log_tools.CheckCall(git + clone_args + [url, '.'],
+                        logger=logger, cwd=destination)
 
     if url != push_url:
-      GitSetRemoteRepo(url, destination, push_url=push_url)
+      GitSetRemoteRepo(url, destination, push_url=push_url, logger=logger)
   elif clean:
-    log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
-    log_tools.CheckCall(git + ['reset', '--hard', 'HEAD'], cwd=destination)
+    log_tools.CheckCall(git + ['clean', '-dffx'],
+                        logger=logger, cwd=destination)
+    log_tools.CheckCall(git + ['reset', '--hard', 'HEAD'],
+                        logger=logger, cwd=destination)
 
   # If a git cache URL is supplied, make sure it is setup as a git alternate.
   if git_cache_url:
@@ -164,29 +172,31 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
   else:
     git_alternates = []
 
-  GitSetRepoAlternates(destination, git_alternates, append=False)
+  GitSetRepoAlternates(destination, git_alternates, append=False, logger=logger)
 
   if revision is not None:
-    logging.info('Checking out pinned revision...')
-    log_tools.CheckCall(git + ['fetch', '--all'], cwd=destination)
+    logger.info('Checking out pinned revision...')
+    log_tools.CheckCall(git + ['fetch', '--all'],
+                        logger=logger, cwd=destination)
     checkout_flags = ['-f'] if clean else []
     path = [pathspec] if pathspec else []
     log_tools.CheckCall(
         git + ['checkout'] + checkout_flags + [revision] + path,
-        cwd=destination)
+        logger=logger, cwd=destination)
 
 
-def CleanGitWorkingDir(directory, path):
+def CleanGitWorkingDir(directory, path, logger=None):
   """Clean a particular path of an existing git checkout.
 
      Args:
      directory: Directory where the git repo is currently checked out
      path: path to clean, relative to the repo directory
   """
-  log_tools.CheckCall(GitCmd() + ['clean', '-f', path], cwd=directory)
+  log_tools.CheckCall(GitCmd() + ['clean', '-f', path],
+                      logger=logger, cwd=directory)
 
 
-def PopulateGitCache(cache_dir, url_list):
+def PopulateGitCache(cache_dir, url_list, logger=None):
   """Fetches a git repo that combines a list of git repos.
 
   This is an interface to the "git cache" command found within depot_tools.
@@ -203,10 +213,10 @@ def PopulateGitCache(cache_dir, url_list):
     git = GitCmd()
     for url in url_list:
       log_tools.CheckCall(git + ['cache', 'populate', '-c', '.', url],
-                          cwd=cache_dir)
+                          logger=logger, cwd=cache_dir)
 
 
-def GetGitCacheURL(cache_dir, url):
+def GetGitCacheURL(cache_dir, url, logger=None):
   """Converts a regular git URL to a git cache URL within a cache directory.
 
   Args:
@@ -228,7 +238,8 @@ def GetGitCacheURL(cache_dir, url):
 
   git_url = log_tools.CheckOutput(GitCmd() + ['cache', 'exists',
                                               '-c', cache_dir,
-                                              url]).strip()
+                                              url],
+                                  logger=logger).strip()
 
   # For windows, make sure the git cache URL is a posix path.
   if platform.IsWindows():
@@ -287,7 +298,8 @@ def GetAuthenticatedGitURL(url):
   return urlsplit.geturl()
 
 
-def GitRemoteRepoList(directory, include_fetch=True, include_push=True):
+def GitRemoteRepoList(directory, include_fetch=True, include_push=True,
+                      logger=None):
   """Returns a list of remote git repos associated with a directory.
 
   Args:
@@ -296,7 +308,7 @@ def GitRemoteRepoList(directory, include_fetch=True, include_push=True):
       List of (repo_name, repo_url) for tracked remote repos.
   """
   remote_repos = log_tools.CheckOutput(GitCmd() + ['remote', '-v'],
-                                       cwd=directory)
+                                       logger=logger, cwd=directory)
 
   repo_set = set()
   for remote_repo_line in remote_repos.splitlines():
@@ -309,7 +321,8 @@ def GitRemoteRepoList(directory, include_fetch=True, include_push=True):
   return sorted(repo_set)
 
 
-def GitSetRemoteRepo(url, directory, push_url=None, repo_name='origin'):
+def GitSetRemoteRepo(url, directory, push_url=None,
+                     repo_name='origin', logger=None):
   """Sets the remotely tracked URL for a git repository.
 
   Args:
@@ -321,20 +334,20 @@ def GitSetRemoteRepo(url, directory, push_url=None, repo_name='origin'):
   git = GitCmd()
   try:
     log_tools.CheckCall(git + ['remote', 'set-url', repo_name, url],
-                        cwd=directory)
+                        logger=logger, cwd=directory)
   except subprocess.CalledProcessError:
     # If setting the URL failed, repo_name may be new. Try adding the URL.
     log_tools.CheckCall(git + ['remote', 'add', repo_name, url],
-                        cwd=directory)
+                        logger=logger, cwd=directory)
 
   if push_url:
     log_tools.CheckCall(git + ['remote', 'set-url', '--push',
                                repo_name, push_url],
-                        cwd=directory)
+                        logger=logger, cwd=directory)
 
 
 def IsURLInRemoteRepoList(url, directory, include_fetch=True, include_push=True,
-                          try_authenticated_url=True):
+                          try_authenticated_url=True, logger=None):
   """Returns whether or not a url is a remote repo in a local git directory.
 
   Args:
@@ -348,7 +361,8 @@ def IsURLInRemoteRepoList(url, directory, include_fetch=True, include_push=True,
 
   remote_repo_list = GitRemoteRepoList(directory,
                                        include_fetch=include_fetch,
-                                       include_push=include_push)
+                                       include_push=include_push,
+                                       logger=logger)
   return len([repo_name for
               repo_name, repo_url in remote_repo_list
               if repo_url in valid_urls]) > 0
@@ -379,7 +393,7 @@ def GitGetRepoAlternates(directory):
   return []
 
 
-def GitSetRepoAlternates(directory, alternates_list, append=True):
+def GitSetRepoAlternates(directory, alternates_list, append=True, logger=None):
   """Sets the list of git alternates for a local git repo.
 
   Args:
@@ -387,6 +401,8 @@ def GitSetRepoAlternates(directory, alternates_list, append=True):
       alternates_list: List of local git repositories for the git alternates.
       append: If True, will append the list to currently set list of alternates.
   """
+  if logger is None:
+    logger = pynacl.log_tools.GetConsoleLogger()
   git_alternates_file = os.path.join(directory, GIT_ALTERNATES_PATH)
   git_alternates_dir = os.path.dirname(git_alternates_file)
   if not os.path.isdir(git_alternates_dir):
@@ -400,7 +416,7 @@ def GitSetRepoAlternates(directory, alternates_list, append=True):
 
   if set(original_alternates_list) != set(alternates_list):
     lines = [posixpath.join(line, 'objects') + '\n' for line in alternates_list]
-    logging.info('Setting git alternates:\n\t%s', '\t'.join(lines))
+    logger.info('Setting git alternates:\n\t%s', '\t'.join(lines))
 
     with open(git_alternates_file, 'wb') as f:
       f.writelines(lines)

@@ -22,6 +22,7 @@ import pynacl.directory_storage
 import pynacl.file_tools
 import pynacl.gsd_storage
 import pynacl.hashing_tools
+import pynacl.log_tools
 import pynacl.working_directory
 
 import command
@@ -258,13 +259,37 @@ class Once(object):
       commands = [command for command in commands
                   if command.CheckRunCond(cmd_options)]
 
+      # Create a logger that will save the log for each command.
+      # This logger will process any messages and then pass the results
+      # up to the base logger.
+      base_logger = pynacl.log_tools.GetConsoleLogger()
+      cmd_logger = base_logger.getChild('OnceCmdLogger')
+      cmd_logger.setLevel(logging.DEBUG)
+
+      log_file = os.path.join(work_dir, '%s.log' % package)
+      file_log_handler = logging.FileHandler(log_file, 'wb')
+      file_log_handler.setLevel(logging.DEBUG)
+      file_log_handler.setFormatter(
+          logging.Formatter(fmt='[%(levelname)s - %(asctime)s] %(message)s'))
+      cmd_logger.addHandler(file_log_handler)
+
+      # Log some helpful information
+      cmd_logger.propagate = False
+      cmd_logger.debug('Hostname: %s', platform.node())
+      cmd_logger.debug('Machine: %s', platform.machine())
+      cmd_logger.debug('Platform: %s', sys.platform)
+      cmd_logger.propagate = True
+
       for command in commands:
         paths = inputs.copy()
         paths.update(self._extra_paths)
         paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
-        command.Invoke(subst)
+        command.Invoke(cmd_logger, subst)
+
+      # Uninstall the file log handler
+      cmd_logger.removeHandler(file_log_handler)
 
     # Confirm that we aren't hitting something we've cached.
     for path in self._path_hash_cache:

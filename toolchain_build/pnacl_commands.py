@@ -32,37 +32,49 @@ DRIVER_UTILS = [name + '.py' for name in
                      'driver_tools', 'elftools', 'filetype', 'ldtools',
                      'loader', 'nativeld', 'pathtools', 'shelltools')]
 
-def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
+def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
                          host_64bit=False, extra_config=[]):
   srcdir = subst.SubstituteAbsPaths(srcdir)
   dstdir = subst.SubstituteAbsPaths(dstdir)
+  logger.debug('Installing Driver Scripts: %s -> %s', srcdir, dstdir)
+
   pynacl.file_tools.MakeDirectoryIfAbsent(os.path.join(dstdir, 'pydir'))
   for name in DRIVER_TOOLS + DRIVER_UTILS:
-    shutil.copy(os.path.join(srcdir, name), os.path.join(dstdir, 'pydir'))
+    source = os.path.join(srcdir, name)
+    destination = os.path.join(dstdir, 'pydir')
+    logger.debug('  Installing: %s -> %s', source, destination)
+    shutil.copy(source, destination)
   # Install redirector sh/bat scripts
   for name in DRIVER_TOOLS:
     # Chop the .py off the name
-    nopy_name = os.path.join(dstdir, os.path.splitext(name)[0])
-    shutil.copy(os.path.join(srcdir, 'redirect.sh'), nopy_name)
-    os.chmod(nopy_name,
+    source = os.path.join(srcdir, 'redirect.sh')
+    destination = os.path.join(dstdir, os.path.splitext(name)[0])
+    logger.debug('  Installing: %s -> %s', source, destination)
+    shutil.copy(source, destination)
+    os.chmod(destination,
              stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IRGRP |
              stat.S_IWGRP | stat.S_IXGRP)
 
     if host_windows:
       # Windows gets both sh and bat extensions so it works w/cygwin and without
-      batch_script = nopy_name + '.bat'
-      shutil.copy(os.path.join(srcdir, 'redirect.bat'), batch_script)
+      batch_script = destination + '.bat'
+      logger.debug('  Installing: %s -> %s', source, batch_script)
+      shutil.copy(source, batch_script)
       os.chmod(batch_script,
                stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IRGRP |
                stat.S_IWGRP | stat.S_IXGRP)
   # Install the driver.conf file
-  with open(os.path.join(dstdir, 'driver.conf'), 'w') as f:
+  driver_conf = os.path.join(dstdir, 'driver.conf')
+  logger.debug('  Installing: %s', driver_conf)
+  with open(driver_conf, 'w') as f:
     print >> f, 'HAS_FRONTEND=1'
     print >> f, 'HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32'
     for line in extra_config:
       print >> f, subst.Substitute(line)
   # Install the REV file
-  with open(os.path.join(dstdir, 'REV'), 'w') as f:
+  rev_file = os.path.join(dstdir, 'REV')
+  logger.debug('  Installing: %s', rev_file)
+  with open(rev_file, 'w') as f:
     try:
       url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
       repotype = 'GIT'
@@ -100,5 +112,7 @@ def CheckoutGitBundleForTrybot(repo, destination):
         cwd=destination
     )
 
-def CmdCheckoutGitBundleForTrybot(subst, repo, destination):
-  return CheckoutGitBundleForTrybot(repo, subst.SubstituteAbsPaths(destination))
+def CmdCheckoutGitBundleForTrybot(logger, subst, repo, destination):
+  destination = subst.SubstituteAbsPaths(destination)
+  logger.debug('Checking out Git Bundle for Trybot: %s [%s]', destination, repo)
+  return CheckoutGitBundleForTrybot(repo, destination)
