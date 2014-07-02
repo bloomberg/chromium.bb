@@ -75,7 +75,6 @@ const char kApprovalKey[] = "extensions.webstore_installer";
 const char kInvalidIdError[] = "Invalid id";
 const char kDownloadDirectoryError[] = "Could not create download directory";
 const char kDownloadCanceledError[] = "Download canceled";
-const char kInstallCanceledError[] = "Install canceled";
 const char kDownloadInterruptedError[] = "Download interrupted";
 const char kInvalidDownloadError[] =
     "Download was not a valid extension or user script";
@@ -241,6 +240,7 @@ WebstoreInstaller::Approval::CreateForSharedModule(Profile* profile) {
   scoped_ptr<Approval> result(new Approval());
   result->profile = profile;
   result->skip_install_dialog = true;
+  result->skip_post_install_ui = true;
   result->manifest_check_level = MANIFEST_CHECK_LEVEL_NONE;
   return result.Pass();
 }
@@ -290,8 +290,6 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
-  registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  content::Source<CrxInstaller>(NULL));
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
@@ -362,20 +360,6 @@ void WebstoreInstaller::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
-      if (crx_installer_.get() == installer) {
-        crx_installer_ = NULL;
-        // ReportFailure releases a reference to this object so it must be the
-        // last operation in this method.
-        if (extension == NULL)
-          ReportFailure(kInstallCanceledError, FAILURE_REASON_CANCELLED);
-      }
-      break;
-    }
-
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
       CHECK(crx_installer);
@@ -409,6 +393,14 @@ void WebstoreInstaller::OnExtensionInstalled(
   if (extension->id() != info.extension_id)
     return;
   pending_modules_.pop_front();
+
+  // Clean up local state from the current download.
+  if (download_item_) {
+    download_item_->RemoveObserver(this);
+    download_item_->Remove();
+    download_item_ = NULL;
+  }
+  crx_installer_ = NULL;
 
   if (pending_modules_.empty()) {
     CHECK_EQ(extension->id(), id_);
@@ -489,9 +481,7 @@ void WebstoreInstaller::OnDownloadStarted(
 }
 
 void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
-  // DownloadItemImpl calls the observer for a completed item, ignore it.
-  if (download_item_ != download)
-    return;
+  CHECK_EQ(download_item_, download);
 
   switch (download->GetState()) {
     case DownloadItem::CANCELLED:
@@ -510,7 +500,7 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
           return;  // DownloadItemImpl calls the observer twice, ignore it.
         StartCrxInstaller(*download);
 
-        if (pending_modules_.empty()) {
+        if (pending_modules_.size() == 1) {
           // The download is the last module - the extension main module.
           if (delegate_)
             delegate_->OnExtensionDownloadProgress(id_, download);
@@ -575,7 +565,7 @@ void WebstoreInstaller::DownloadCrx(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDownloadFilePath, download_directory, id_,
+      base::Bind(&GetDownloadFilePath, download_directory, extension_id,
         base::Bind(&WebstoreInstaller::StartDownload, this)));
 }
 
@@ -659,9 +649,12 @@ void WebstoreInstaller::UpdateDownloadProgress() {
   }
 
   int percent = download_item_->PercentComplete();
-  // Only report progress if precent is more than 0
+  // Only report progress if percent is more than 0 or we have finished
+  // downloading at least one of the pending modules.
+  int finished_modules = total_modules_ - pending_modules_.size();
+  if (finished_modules > 0 && percent < 0)
+    percent = 0;
   if (percent >= 0) {
-    int finished_modules = total_modules_ - pending_modules_.size();
     percent = (percent + (finished_modules * 100)) / total_modules_;
     extensions::InstallTracker* tracker =
         extensions::InstallTrackerFactory::GetForProfile(profile_);
