@@ -121,7 +121,6 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class ApplyStyleCommand; // Editing has to only reveal unvisited info.
     friend class EditingStyle; // Editing has to only reveal unvisited info.
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.
-    friend class PropertyWrapperMaybeInvalidStyleColor; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
 
@@ -129,7 +128,6 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class CSSToStyleMap;
     friend class FilterOperationResolver;
     friend class StyleBuilderConverter;
-    friend class StyleBuilder;
     friend class StyleResolverState;
     friend class StyleResolver;
 protected:
