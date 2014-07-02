@@ -70,7 +70,7 @@ WeakNodeMap::~WeakNodeMap()
 
 void WeakNodeMap::put(Node* node, int value)
 {
-    ASSERT(!m_nodeToValue.contains(node));
+    ASSERT(node && !m_nodeToValue.contains(node));
     m_nodeToValue.set(node, value);
     m_valueToNode.set(value, node);
 
