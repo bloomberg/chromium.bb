@@ -1898,13 +1898,13 @@ void RenderObject::handleDynamicFloatPositionChange()
     }
 }
 
-StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
+StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff) const
 {
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform && isSVG())
+    if (diff.transformChanged() && isSVG())
         diff.setNeedsFullLayout();
 
     // If transform changed, and the layer does not paint into its own separate backing, then we need to invalidate paints.
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
+    if (diff.transformChanged()) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
@@ -1913,19 +1913,19 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
     // ignoring text nodes)
-    if (contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) {
+    if (diff.opacityChanged() || diff.zIndexChanged()) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
             diff.setNeedsRepaintLayer();
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
-    if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer()) {
+    if (diff.filterChanged() && hasLayer()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
             diff.setNeedsRepaintLayer();
     }
 
-    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && !diff.needsRepaint()
+    if (diff.textOrColorChanged() && !diff.needsRepaint()
         && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
         diff.setNeedsRepaintObject();
 
@@ -2009,11 +2009,10 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     }
 
     StyleDifference diff;
-    unsigned contextSensitiveProperties = ContextSensitivePropertyNone;
     if (m_style)
-        diff = m_style->visualInvalidationDiff(*style, contextSensitiveProperties);
+        diff = m_style->visualInvalidationDiff(*style);
 
-    diff = adjustStyleDifference(diff, contextSensitiveProperties);
+    diff = adjustStyleDifference(diff);
 
     styleWillChange(diff, *style);
 
@@ -2041,7 +2040,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 
     // Now that the layer (if any) has been updated, we need to adjust the diff again,
     // check whether we should layout now, and decide if we need to invalidate paints.
-    StyleDifference updatedDiff = adjustStyleDifference(diff, contextSensitiveProperties);
+    StyleDifference updatedDiff = adjustStyleDifference(diff);
 
     if (!diff.needsFullLayout()) {
         if (updatedDiff.needsFullLayout())
@@ -2050,7 +2049,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             setNeedsPositionedMovementLayout();
     }
 
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform && !needsLayout()) {
+    if (diff.transformChanged() && !needsLayout()) {
         if (RenderBlock* container = containingBlock())
             container->setNeedsOverflowRecalcAfterStyleChange();
     }

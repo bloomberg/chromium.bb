@@ -357,8 +357,7 @@ public:
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
-    // Computes how much visual invalidation the style change causes: layout, repaint or recomposite.
-    StyleDifference visualInvalidationDiff(const RenderStyle&, unsigned& changedContextSensitiveProperties) const;
+    StyleDifference visualInvalidationDiff(const RenderStyle&) const;
 
     enum IsAtShadowBoundary {
         AtShadowBoundary,
@@ -1819,7 +1818,7 @@ private:
     bool diffNeedsRepaintLayer(const RenderStyle& other) const;
     bool diffNeedsRepaintObject(const RenderStyle& other) const;
     bool diffNeedsRecompositeLayer(const RenderStyle& other) const;
-    unsigned computeChangedContextSensitiveProperties(const RenderStyle& other, StyleDifference) const;
+    void updatePropertySpecificDifferences(const RenderStyle& other, StyleDifference&) const;
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.

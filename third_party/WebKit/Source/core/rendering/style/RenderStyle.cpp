@@ -364,7 +364,7 @@ static bool positionedObjectMovedOnly(const LengthBox& a, const LengthBox& b, co
     return true;
 }
 
-StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const
+StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) const
 {
     // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
     // compare, which is duplicate work when we're going to compare each property inside
@@ -400,7 +400,7 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
     else if (diffNeedsRepaintObject(other))
         diff.setNeedsRepaintObject();
 
-    changedContextSensitiveProperties = computeChangedContextSensitiveProperties(other, diff);
+    updatePropertySpecificDifferences(other, diff);
 
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any repaint or layout.
@@ -664,45 +664,41 @@ bool RenderStyle::diffNeedsRepaintObject(const RenderStyle& other) const
     return false;
 }
 
-unsigned RenderStyle::computeChangedContextSensitiveProperties(const RenderStyle& other, StyleDifference diff) const
+void RenderStyle::updatePropertySpecificDifferences(const RenderStyle& other, StyleDifference& diff) const
 {
-    unsigned changedContextSensitiveProperties = ContextSensitivePropertyNone;
-
     // StyleAdjuster has ensured that zIndex is non-auto only if it's applicable.
     if (m_box->zIndex() != other.m_box->zIndex() || m_box->hasAutoZIndex() != other.m_box->hasAutoZIndex())
-        changedContextSensitiveProperties |= ContextSensitivePropertyZIndex;
+        diff.setZIndexChanged();
 
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
         if (!transformDataEquivalent(other))
-            changedContextSensitiveProperties |= ContextSensitivePropertyTransform;
+            diff.setTransformChanged();
 
         if (rareNonInheritedData->opacity != other.rareNonInheritedData->opacity)
-            changedContextSensitiveProperties |= ContextSensitivePropertyOpacity;
+            diff.setOpacityChanged();
 
         if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
-            changedContextSensitiveProperties |= ContextSensitivePropertyFilter;
+            diff.setFilterChanged();
     }
 
     if (!diff.needsRepaint()) {
         if (inherited->color != other.inherited->color
             || inherited_flags.m_textUnderline != other.inherited_flags.m_textUnderline
             || visual->textDecoration != other.visual->textDecoration) {
-            changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+            diff.setTextOrColorChanged();
         } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
             if (rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
                 || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor)
-                changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+                diff.setTextOrColorChanged();
         } else if (rareInheritedData.get() != other.rareInheritedData.get()) {
             if (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
                 || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
                 || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
                 || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill
                 || rareInheritedData->appliedTextDecorations != other.rareInheritedData->appliedTextDecorations)
-                changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+                diff.setTextOrColorChanged();
         }
     }
-
-    return changedContextSensitiveProperties;
 }
 
 void RenderStyle::setClip(const Length& top, const Length& right, const Length& bottom, const Length& left)

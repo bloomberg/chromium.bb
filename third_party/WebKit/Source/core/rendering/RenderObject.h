@@ -1104,7 +1104,7 @@ private:
     bool hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const;
 
     RenderStyle* cachedFirstLineStyle() const;
-    StyleDifference adjustStyleDifference(StyleDifference, unsigned contextSensitiveProperties) const;
+    StyleDifference adjustStyleDifference(StyleDifference) const;
 
     Color selectionColor(int colorProperty) const;
 
