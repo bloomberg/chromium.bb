@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -94,7 +95,8 @@ void StartupPagesHandler::InitializeHandler() {
       base::Bind(&StartupPagesHandler::UpdateStartupPages,
                  base::Unretained(this)));
 
-  autocomplete_controller_.reset(new AutocompleteController(profile, this,
+  autocomplete_controller_.reset(new AutocompleteController(profile,
+      TemplateURLServiceFactory::GetForProfile(profile), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 

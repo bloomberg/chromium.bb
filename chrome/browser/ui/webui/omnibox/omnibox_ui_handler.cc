@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/search_engines/template_url.h"
@@ -180,6 +181,8 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
 }
 
 void OmniboxUIHandler::ResetController() {
-  controller_.reset(new AutocompleteController(profile_, this,
+  controller_.reset(new AutocompleteController(profile_,
+          TemplateURLServiceFactory::GetForProfile(profile_),
+          this,
           AutocompleteClassifier::kDefaultOmniboxProviders));
 }

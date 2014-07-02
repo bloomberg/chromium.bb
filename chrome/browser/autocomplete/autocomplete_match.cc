@@ -13,10 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/search_engines/template_url.h"
-#include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 
 namespace {
@@ -345,7 +342,8 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
 }
 
-void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
+void AutocompleteMatch::ComputeStrippedDestinationURL(
+    TemplateURLService* template_url_service) {
   stripped_destination_url = destination_url;
   if (!stripped_destination_url.is_valid())
     return;
@@ -355,18 +353,19 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
   // to eliminate cases like past search URLs from history that differ only
   // by some obscure query param from each other or from the search/keyword
   // provider matches.
-  TemplateURL* template_url = GetTemplateURL(profile, true);
-  UIThreadSearchTermsData search_terms_data(profile);
+  TemplateURL* template_url = GetTemplateURL(template_url_service, true);
   if (template_url != NULL &&
-      template_url->SupportsReplacement(search_terms_data)) {
+      template_url->SupportsReplacement(
+          template_url_service->search_terms_data())) {
     base::string16 search_terms;
-    if (template_url->ExtractSearchTermsFromURL(stripped_destination_url,
-                                                search_terms_data,
-                                                &search_terms)) {
+    if (template_url->ExtractSearchTermsFromURL(
+        stripped_destination_url,
+        template_url_service->search_terms_data(),
+        &search_terms)) {
       stripped_destination_url =
           GURL(template_url->url_ref().ReplaceSearchTerms(
               TemplateURLRef::SearchTermsArgs(search_terms),
-              search_terms_data));
+              template_url_service->search_terms_data()));
     }
   }
 
@@ -399,29 +398,32 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
         replacements);
 }
 
-void AutocompleteMatch::GetKeywordUIState(Profile* profile,
-                                          base::string16* keyword,
-                                          bool* is_keyword_hint) const {
+void AutocompleteMatch::GetKeywordUIState(
+    TemplateURLService* template_url_service,
+    base::string16* keyword,
+    bool* is_keyword_hint) const {
   *is_keyword_hint = associated_keyword.get() != NULL;
   keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
-      GetSubstitutingExplicitlyInvokedKeyword(profile));
+      GetSubstitutingExplicitlyInvokedKeyword(template_url_service));
 }
 
 base::string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
-    Profile* profile) const {
-  if (transition != content::PAGE_TRANSITION_KEYWORD)
+    TemplateURLService* template_url_service) const {
+  if (transition != content::PAGE_TRANSITION_KEYWORD ||
+      template_url_service == NULL) {
     return base::string16();
-  const TemplateURL* t_url = GetTemplateURL(profile, false);
+  }
+
+  const TemplateURL* t_url = GetTemplateURL(template_url_service, false);
   return (t_url &&
-          t_url->SupportsReplacement(UIThreadSearchTermsData(profile))) ?
+          t_url->SupportsReplacement(
+              template_url_service->search_terms_data())) ?
       keyword : base::string16();
 }
 
 TemplateURL* AutocompleteMatch::GetTemplateURL(
-    Profile* profile, bool allow_fallback_to_destination_host) const {
-  DCHECK(profile);
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
+    TemplateURLService* template_url_service,
+    bool allow_fallback_to_destination_host) const {
   if (template_url_service == NULL)
     return NULL;
   TemplateURL* template_url = keyword.empty() ? NULL :

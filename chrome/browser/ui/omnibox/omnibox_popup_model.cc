@@ -159,7 +159,9 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // eliminated and just become a call to the observer on the edit.
   base::string16 keyword;
   bool is_keyword_hint;
-  match.GetKeywordUIState(edit_model_->profile(), &keyword, &is_keyword_hint);
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(edit_model_->profile());
+  match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
     edit_model_->OnPopupDataChanged(match.inline_autocompletion, NULL,
@@ -242,7 +244,9 @@ void OmniboxPopupModel::TryDeletingCurrentItem() {
 gfx::Image OmniboxPopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   Profile* profile = edit_model_->profile();
-  const TemplateURL* template_url = match.GetTemplateURL(profile, false);
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  const TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url &&
       (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
     return extensions::OmniboxAPI::Get(profile)->GetOmniboxPopupIcon(

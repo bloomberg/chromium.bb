@@ -15,6 +15,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -73,7 +74,8 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
     : omnibox_edit_model_(omnibox_edit_model),
       profile_(profile),
       popup_(NULL),
-      autocomplete_controller_(new AutocompleteController(profile, this,
+      autocomplete_controller_(new AutocompleteController(profile,
+          TemplateURLServiceFactory::GetForProfile(profile), this,
           AutocompleteClassifier::kDefaultOmniboxProviders)) {
 }
 
