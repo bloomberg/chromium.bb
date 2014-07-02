@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -86,8 +87,9 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   views::Checkbox* menu_check_box_;
   views::Checkbox* quick_launch_check_box_;
 
-  // Target shortcut info.
+  // Target shortcut and file handler info.
   web_app::ShortcutInfo shortcut_info_;
+  extensions::FileHandlersInfo file_handlers_info_;
   // If false, the shortcut will be created in the root level of the Start Menu.
   bool create_in_chrome_apps_subdir_;
 
@@ -143,7 +145,10 @@ class CreateChromeApplicationShortcutView
   virtual bool Cancel() OVERRIDE;
 
  private:
-  void OnShortcutInfoLoaded(const web_app::ShortcutInfo& shortcut_info);
+  // Called when the app's ShortcutInfo (with icon) and FileHandlersInfo is
+  // loaded.
+  void OnAppInfoLoaded(const web_app::ShortcutInfo& shortcut_info,
+                       const extensions::FileHandlersInfo& file_handlers_info);
 
   base::Callback<void(bool)> close_callback_;
 

@@ -27,7 +27,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -394,11 +393,10 @@ bool CreateApplicationShortcutView::Accept() {
   creation_locations.in_quick_launch_bar = false;
 #endif
 
-  // TODO(mgiuca): Pass the correct file handlers info.
   web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
                                    creation_locations,
                                    shortcut_info_,
-                                   extensions::FileHandlersInfo());
+                                   file_handlers_info_);
   return true;
 }
 
@@ -522,12 +520,12 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 
   InitControls(DIALOG_LAYOUT_APP_SHORTCUT);
 
-  // Get shortcut information and icon; they are needed for creating the
-  // shortcut.
-  web_app::GetShortcutInfoForApp(
+  // Get shortcut, icon and file handler information; they are needed for
+  // creating the shortcut.
+  web_app::GetInfoForApp(
       app,
       profile,
-      base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
+      base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -545,8 +543,9 @@ bool CreateChromeApplicationShortcutView::Cancel() {
   return CreateApplicationShortcutView::Cancel();
 }
 
-// Called when the app's ShortcutInfo (with icon) is loaded.
-void CreateChromeApplicationShortcutView::OnShortcutInfoLoaded(
-    const web_app::ShortcutInfo& shortcut_info) {
+void CreateChromeApplicationShortcutView::OnAppInfoLoaded(
+    const web_app::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   shortcut_info_ = shortcut_info;
+  file_handlers_info_ = file_handlers_info;
 }
