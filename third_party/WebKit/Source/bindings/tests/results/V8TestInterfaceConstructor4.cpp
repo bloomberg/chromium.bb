@@ -54,7 +54,6 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_INTERNAL(testInterface4Arg, V8TestInterfaceConstructor4::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(testInterface4Arg);
-
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
@@ -71,7 +70,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(scalarValueStringArg, toScalarValueString(info[0], exceptionState), exceptionState);
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(scalarValueStringArg);
-
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);

@@ -15,6 +15,12 @@
 
 namespace WebCore {
 
+class V8TestInterfaceConstructorConstructor {
+public:
+    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static const WrapperTypeInfo wrapperTypeInfo;
+};
+
 class V8TestInterfaceConstructor {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);

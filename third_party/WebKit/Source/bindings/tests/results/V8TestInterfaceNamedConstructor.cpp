@@ -108,7 +108,12 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
             defaultNullStringOptionalstringArg = nullptr;
         }
         if (UNLIKELY(info.Length() <= 5)) {
+            Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
+            if (exceptionState.hadException()) {
+                exceptionState.throwIfNeeded();
+                return;
+            }
             v8::Handle<v8::Object> wrapper = info.Holder();
             V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
             v8SetReturnValue(info, wrapper);
@@ -116,11 +121,12 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         }
         TOSTRING_VOID_INTERNAL(optionalStringArg, info[5]);
     }
-    Document& document = *toDocument(currentExecutionContext(isolate));
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
-
+    }
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);

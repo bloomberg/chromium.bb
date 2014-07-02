@@ -227,13 +227,21 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {# Local variables #}
 {% if method.is_call_with_script_state %}
+{# [CallWith=ScriptState] #}
 ScriptState* scriptState = ScriptState::current(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_execution_context %}
+{# [ConstructorCallWith=ExecutionContext] #}
+{# [CallWith=ExecutionContext] #}
 ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
+{# [CallWith=ScriptArguments] #}
 RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, {{method.number_of_arguments}}));
+{% endif %}
+{% if method.is_call_with_document %}
+{# [ConstructorCallWith=Document] #}
+Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}
@@ -540,6 +548,7 @@ static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_de
 static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
+    {# FIXME: remove local variables 'isolate' here and other locations #}
     {% if constructor.is_named_constructor %}
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), isolate);
@@ -565,19 +574,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% if constructor.arguments %}
     {{generate_arguments(constructor) | indent}}
     {% endif %}
-    {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* executionContext = currentExecutionContext(isolate);
-    {% endif %}
-    {% if is_constructor_call_with_document %}
-    Document& document = *toDocument(currentExecutionContext(isolate));
-    {% endif %}
-    {{constructor.cpp_type}} impl = {{constructor.cpp_value}};
-    {% if is_constructor_raises_exception %}
-    if (exceptionState.throwIfNeeded())
-        return;
-    {% endif %}
-
-    {{generate_constructor_wrapper(constructor) | indent}}
+    {{cpp_method_call(constructor, constructor.v8_set_return_value, constructor.cpp_value) | indent}}
 }
 {% endmacro %}
 

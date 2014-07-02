@@ -167,7 +167,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     RefPtrWillBeRawPtr<TestNode> impl = TestNode::create();
-
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestNode>(impl.release(), &V8TestNode::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);

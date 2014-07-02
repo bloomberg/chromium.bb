@@ -50,12 +50,13 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
-    ExecutionContext* executionContext = currentExecutionContext(isolate);
-    Document& document = *toDocument(currentExecutionContext(isolate));
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
-
+    }
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
@@ -95,12 +96,72 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
     }
-    ExecutionContext* executionContext = currentExecutionContext(isolate);
-    Document& document = *toDocument(currentExecutionContext(isolate));
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    v8SetReturnValue(info, wrapper);
+}
 
+static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
+    V8StringResource<> arg;
+    V8StringResource<> optArg;
+    {
+        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        if (UNLIKELY(info.Length() <= 1)) {
+            ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+            Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, exceptionState);
+            if (exceptionState.hadException()) {
+                exceptionState.throwIfNeeded();
+                return;
+            }
+            v8::Handle<v8::Object> wrapper = info.Holder();
+            V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+            v8SetReturnValue(info, wrapper);
+            return;
+        }
+        TOSTRING_VOID_INTERNAL(optArg, info[1]);
+    }
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, optArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    v8SetReturnValue(info, wrapper);
+}
+
+static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
+    V8StringResource<> arg;
+    V8StringResource<> arg2;
+    V8StringResource<> arg3;
+    {
+        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        TOSTRING_VOID_INTERNAL(arg2, info[1]);
+        TOSTRING_VOID_INTERNAL(arg3, info[2]);
+    }
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, arg2, arg3, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
@@ -114,6 +175,24 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     case 0:
         if (true) {
             TestInterfaceConstructorV8Internal::constructor1(info);
+            return;
+        }
+        break;
+    case 1:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 2:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 3:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor4(info);
             return;
         }
         break;
@@ -137,7 +216,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     default:
         if (info.Length() >= 0) {
-            throwArityTypeError(exceptionState, "[0, 6, 7, 8]", info.Length());
+            throwArityTypeError(exceptionState, "[0, 1, 2, 3, 6, 7, 8]", info.Length());
             return;
         }
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
@@ -149,6 +228,74 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 }
 
 } // namespace TestInterfaceConstructorV8Internal
+
+const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructorConstructor::domTemplate, V8TestInterfaceConstructor::derefObject, 0, 0, 0, V8TestInterfaceConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, RefCountedObject };
+
+static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), isolate);
+        return;
+    }
+
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    V8StringResource<> arg;
+    V8StringResource<> optArg;
+    {
+        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        if (UNLIKELY(info.Length() <= 1)) {
+            ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+            Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(executionContext, document, arg, exceptionState);
+            if (exceptionState.hadException()) {
+                exceptionState.throwIfNeeded();
+                return;
+            }
+            v8::Handle<v8::Object> wrapper = info.Holder();
+            V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+            v8SetReturnValue(info, wrapper);
+            return;
+        }
+        TOSTRING_VOID_INTERNAL(optArg, info[1]);
+    }
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(executionContext, document, arg, optArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    v8SetReturnValue(info, wrapper);
+}
+
+v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructorConstructor::domTemplate(v8::Isolate* isolate)
+{
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(&domTemplateKey);
+    if (!result.IsEmpty())
+        return result;
+
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
+    result = v8::FunctionTemplate::New(isolate, V8TestInterfaceConstructorConstructorCallback);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(V8TestInterfaceConstructor::internalFieldCount);
+    result->SetClassName(v8AtomicString(isolate, "TestInterfaceConstructor"));
+    result->Inherit(V8TestInterfaceConstructor::domTemplate(isolate));
+    data->setDOMTemplate(&domTemplateKey, result);
+    return result;
+}
 
 void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {

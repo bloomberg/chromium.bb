@@ -38,8 +38,7 @@ enum BinaryType { "blob", "arraybuffer" };
 [
     ActiveDOMObject,
     // FIXME: should be optional union type http://crbug.com/240176
-    Constructor(DOMString url),
-    Constructor(DOMString url, DOMString protocol),
+    Constructor(DOMString url, optional DOMString protocol),
     Constructor(DOMString url, sequence<DOMString> protocols),
     ConstructorCallWith=ExecutionContext,
     Exposed=Window&Worker,

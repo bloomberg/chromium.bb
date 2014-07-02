@@ -216,10 +216,6 @@ def interface_context(interface):
         'has_event_constructor': has_event_constructor,
         'interface_length':
             interface_length(interface, constructors + custom_constructors),
-        'is_constructor_call_with_document': has_extended_attribute_value(
-            interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]
-        'is_constructor_call_with_execution_context': has_extended_attribute_value(
-            interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExecutionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'named_constructor': named_constructor,
     })
@@ -854,6 +850,10 @@ def constructor_context(interface, constructor):
     arguments_need_try_catch = any(v8_methods.argument_needs_try_catch(argument)
                                    for argument in constructor.arguments)
 
+    # [RaisesException=Constructor]
+    is_constructor_raises_exception = \
+        interface.extended_attributes.get('RaisesException') == 'Constructor'
+
     return {
         'arguments': [v8_methods.argument_context(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
@@ -864,13 +864,21 @@ def constructor_context(interface, constructor):
         'cpp_value': v8_methods.cpp_value(
             interface, constructor, len(constructor.arguments)),
         'has_exception_state':
-            # [RaisesException=Constructor]
-            interface.extended_attributes.get('RaisesException') == 'Constructor' or
+            is_constructor_raises_exception or
             any(argument for argument in constructor.arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
                    argument.idl_type.may_raise_exception_on_conversion),
+        'is_call_with_document':
+            # [ConstructorCallWith=Document]
+            has_extended_attribute_value(interface,
+                'ConstructorCallWith', 'Document'),
+        'is_call_with_execution_context':
+            # [ConstructorCallWith=ExecutionContext]
+            has_extended_attribute_value(interface,
+                'ConstructorCallWith', 'ExecutionContext'),
         'is_constructor': True,
         'is_named_constructor': False,
+        'is_raises_exception': is_constructor_raises_exception,
         'number_of_required_arguments':
             number_of_required_arguments(constructor),
     }
