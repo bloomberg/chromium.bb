@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test that the overlay play button respects the controls attribute</title>
+        <script src="media-controls.js"></script>
+        <script src="media-file.js"></script>
+        <script src="video-test.js"></script>
+        <script>
+            function start()
+            {
+                window.internals.settings.setMediaControlsOverlayPlayButtonEnabled(true);
+
+                findMediaElement();
+
+                video.controls = true;
+
+                button = mediaControlsButton(video, 'overlay-play-button')
+                testExpected('getComputedStyle(button).display', 'flex');
+
+                waitForEventOnce('loadeddata', loadeddata);
+                video.src = findMediaFile('video', 'content/test');
+            }
+
+            function loadeddata()
+            {
+                waitForEventOnce('play', play1);
+                run('video.play()');
+            }
+
+            function play1()
+            {
+                testExpected('getComputedStyle(button).display', 'none');
+
+                waitForEventOnce('pause', pause1);
+                run('video.pause()');
+            }
+
+            function pause1()
+            {
+                testExpected('getComputedStyle(button).display', 'flex');
+
+                video.controls = false;
+                testExpected('getComputedStyle(button).display', 'none');
+
+                waitForEventOnce('play', play2);
+                run('video.play()');
+            }
+
+            function play2()
+            {
+                testExpected('getComputedStyle(button).display', 'none');
+
+                waitForEventOnce('pause', pause2);
+                run('video.pause()');
+            }
+
+            function pause2()
+            {
+                testExpected('getComputedStyle(button).display', 'none');
+
+                video.controls = true;
+                testExpected('getComputedStyle(button).display', 'flex');
+
+                endTest();
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <p>Test that the overlay play button respects the controls attribute</p>
+        <video></video>
+    </body>
+</html>
