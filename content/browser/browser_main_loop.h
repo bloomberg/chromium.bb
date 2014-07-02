@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer/timer.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 
@@ -104,6 +106,12 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   bool is_tracing_startup() const { return is_tracing_startup_; }
 
+  const base::FilePath& startup_trace_file() const {
+    return startup_trace_file_;
+  }
+
+  void StopStartupTracingTimer();
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   DeviceMonitorMac* device_monitor_mac() const {
     return device_monitor_mac_.get();
@@ -130,8 +138,10 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   void MainMessageLoopRun();
 
+  base::FilePath GetStartupTraceFileName(
+      const base::CommandLine& command_line) const;
   void InitStartupTracing(const base::CommandLine& command_line);
-  void EndStartupTracing(const base::FilePath& trace_file);
+  void EndStartupTracing();
 
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
@@ -190,6 +200,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<base::debug::TraceEventSystemStatsMonitor> system_stats_monitor_;
 
   bool is_tracing_startup_;
+  base::FilePath startup_trace_file_;
+
+  // This timer initiates trace file saving.
+  base::OneShotTimer<BrowserMainLoop> startup_trace_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

@@ -130,13 +130,28 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // If leaks are found, the process will exit here.
     __lsan_do_leak_check();
 #endif
+    // If startup tracing has not been finished yet, replace it's dumper
+    // with special version, which would save trace file on exit (i.e.
+    // startup tracing becomes a version of shutdown tracing).
+    scoped_ptr<BrowserShutdownProfileDumper> startup_profiler;
+    if (main_loop_->is_tracing_startup()) {
+      main_loop_->StopStartupTracingTimer();
+      if (main_loop_->startup_trace_file() !=
+          base::FilePath().AppendASCII("none")) {
+        startup_profiler.reset(
+            new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
+      }
+    }
+
     // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
     // needs to write the result to disc. For that a dumper needs to get created
     // which will dump the traces to disc when it gets destroyed.
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    scoped_ptr<BrowserShutdownProfileDumper> profiler;
-    if (command_line.HasSwitch(switches::kTraceShutdown))
-      profiler.reset(new BrowserShutdownProfileDumper());
+    scoped_ptr<BrowserShutdownProfileDumper> shutdown_profiler;
+    if (command_line.HasSwitch(switches::kTraceShutdown)) {
+      shutdown_profiler.reset(new BrowserShutdownProfileDumper(
+          BrowserShutdownProfileDumper::GetShutdownProfileFileName()));
+    }
 
     {
       // The trace event has to stay between profiler creation and destruction.

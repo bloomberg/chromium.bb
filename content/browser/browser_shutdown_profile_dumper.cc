@@ -18,17 +18,18 @@
 
 namespace content {
 
-BrowserShutdownProfileDumper::BrowserShutdownProfileDumper()
-    : blocks_(0),
+BrowserShutdownProfileDumper::BrowserShutdownProfileDumper(
+    const base::FilePath& dump_file_name)
+    : dump_file_name_(dump_file_name),
+      blocks_(0),
       dump_file_(NULL) {
 }
 
 BrowserShutdownProfileDumper::~BrowserShutdownProfileDumper() {
-  WriteTracesToDisc(GetFileName());
+  WriteTracesToDisc();
 }
 
-void BrowserShutdownProfileDumper::WriteTracesToDisc(
-    const base::FilePath& file_name) {
+void BrowserShutdownProfileDumper::WriteTracesToDisc() {
   // Note: I have seen a usage of 0.000xx% when dumping - which fits easily.
   // Since the tracer stops when the trace buffer is filled, we'd rather save
   // what we have than nothing since we might see from the amount of events
@@ -37,10 +38,10 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc(
       base::debug::TraceLog::GetInstance()->GetBufferPercentFull() <<
       " full.";
   DCHECK(!dump_file_);
-  dump_file_ = base::OpenFile(file_name, "w+");
+  dump_file_ = base::OpenFile(dump_file_name_, "w+");
   if (!IsFileValid()) {
-    LOG(ERROR) << "Failed to open performance trace file: " <<
-        file_name.value();
+    LOG(ERROR) << "Failed to open performance trace file: "
+               << dump_file_name_.value();
     return;
   }
   WriteString("{\"traceEvents\":");
@@ -72,7 +73,8 @@ void BrowserShutdownProfileDumper::EndTraceAndFlush(
                  base::Unretained(flush_complete_event)));
 }
 
-base::FilePath BrowserShutdownProfileDumper::GetFileName() {
+// static
+base::FilePath BrowserShutdownProfileDumper::GetShutdownProfileFileName() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   base::FilePath trace_file =
       command_line.GetSwitchValuePath(switches::kTraceShutdownFile);
@@ -122,8 +124,9 @@ void BrowserShutdownProfileDumper::WriteChars(const char* chars, size_t size) {
 
   size_t written = fwrite(chars, 1, size, dump_file_);
   if (written != size) {
-    LOG(ERROR) << "Error " << ferror(dump_file_) <<
-        " in fwrite() to trace file";
+    LOG(ERROR) << "Error " << ferror(dump_file_)
+               << " in fwrite() to trace file '" << dump_file_name_.value()
+               << "'";
     CloseFile();
   }
 }

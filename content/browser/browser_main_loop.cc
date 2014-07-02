@@ -903,6 +903,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 }
 
+void BrowserMainLoop::StopStartupTracingTimer() {
+  startup_trace_timer_.Stop();
+}
+
 void BrowserMainLoop::InitializeMainThread() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread");
   const char* kThreadName = "CrBrowserMain";
@@ -1107,16 +1111,15 @@ void BrowserMainLoop::MainMessageLoopRun() {
 #endif
 }
 
-void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
-  DCHECK(is_tracing_startup_);
-
+base::FilePath BrowserMainLoop::GetStartupTraceFileName(
+    const base::CommandLine& command_line) const {
   base::FilePath trace_file = command_line.GetSwitchValuePath(
       switches::kTraceStartupFile);
   // trace_file = "none" means that startup events will show up for the next
   // begin/end tracing (via about:tracing or AutomationProxy::BeginTracing/
   // EndTracing, for example).
   if (trace_file == base::FilePath().AppendASCII("none"))
-    return;
+    return trace_file;
 
   if (trace_file.empty()) {
 #if defined(OS_ANDROID)
@@ -1127,6 +1130,14 @@ void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
 #endif
   }
 
+  return trace_file;
+}
+
+void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
+  DCHECK(is_tracing_startup_);
+
+  startup_trace_file_ = GetStartupTraceFileName(parsed_command_line_);
+
   std::string delay_str = command_line.GetSwitchValueASCII(
       switches::kTraceStartupDuration);
   int delay_secs = 5;
@@ -1136,17 +1147,16 @@ void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
     delay_secs = 5;
   }
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserMainLoop::EndStartupTracing,
-                 base::Unretained(this), trace_file),
-      base::TimeDelta::FromSeconds(delay_secs));
+  startup_trace_timer_.Start(FROM_HERE,
+                             base::TimeDelta::FromSeconds(delay_secs),
+                             this,
+                             &BrowserMainLoop::EndStartupTracing);
 }
 
-void BrowserMainLoop::EndStartupTracing(const base::FilePath& trace_file) {
+void BrowserMainLoop::EndStartupTracing() {
   is_tracing_startup_ = false;
   TracingController::GetInstance()->DisableRecording(
-      trace_file, base::Bind(&OnStoppedStartupTracing));
+      startup_trace_file_, base::Bind(&OnStoppedStartupTracing));
 }
 
 }  // namespace content

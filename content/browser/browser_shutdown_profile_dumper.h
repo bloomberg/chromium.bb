@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "content/common/content_export.h"
@@ -29,18 +30,18 @@ namespace content {
 // |SequencedWorkerPool| will get killed in the shutdown process.
 class BrowserShutdownProfileDumper {
  public:
-  BrowserShutdownProfileDumper();
+  explicit BrowserShutdownProfileDumper(const base::FilePath& dump_file_name);
 
   ~BrowserShutdownProfileDumper();
 
+  // Returns the file name where we should save the shutdown trace dump to.
+  static base::FilePath GetShutdownProfileFileName();
+
  private:
   // Writes all traces which happened to disk.
-  void WriteTracesToDisc(const base::FilePath& file_name);
+  void WriteTracesToDisc();
 
   void EndTraceAndFlush(base::WaitableEvent* flush_complete_event);
-
-  // Returns the file name where we should save the trace dump to.
-  base::FilePath GetFileName();
 
   // The callback for the |TraceLog::Flush| function. It saves all traces to
   // disc.
@@ -60,6 +61,9 @@ class BrowserShutdownProfileDumper {
 
   // Closes the dump file.
   void CloseFile();
+
+  // The name of the dump file.
+  const base::FilePath dump_file_name_;
 
   // The number of blocks we have already written.
   int blocks_;
