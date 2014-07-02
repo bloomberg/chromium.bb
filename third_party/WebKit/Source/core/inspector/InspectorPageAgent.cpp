@@ -1167,7 +1167,7 @@ void InspectorPageAgent::didScroll()
 
 void InspectorPageAgent::viewportChanged()
 {
-    if (!m_enabled)
+    if (!m_enabled || !m_deviceMetricsOverridden)
         return;
     IntSize contentsSize = m_page->deprecatedLocalMainFrame()->view()->contentsSize();
     IntRect viewRect = m_page->deprecatedLocalMainFrame()->view()->visibleContentRect();
