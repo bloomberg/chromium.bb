@@ -4132,49 +4132,47 @@ void RenderBox::addVisualEffectOverflow()
     if (!style()->hasVisualOverflowingEffect())
         return;
 
-    LayoutRect borderBox = borderBoxRect();
-    LayoutUnit overflowMinX = borderBox.x();
-    LayoutUnit overflowMaxX = borderBox.maxX();
-    LayoutUnit overflowMinY = borderBox.y();
-    LayoutUnit overflowMaxY = borderBox.maxY();
+    // Add in the final overflow with shadows, outsets and outline combined.
+    LayoutRect visualEffectOverflow = borderBoxRect();
+    visualEffectOverflow.expand(computeVisualEffectOverflowExtent());
+    addVisualOverflow(visualEffectOverflow);
+}
 
-    // Compute box-shadow overflow first.
+LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
+{
+    ASSERT(style()->hasVisualOverflowingEffect());
+
+    LayoutUnit top;
+    LayoutUnit right;
+    LayoutUnit bottom;
+    LayoutUnit left;
+
     if (style()->boxShadow()) {
-        LayoutUnit shadowLeft;
-        LayoutUnit shadowRight;
-        LayoutUnit shadowTop;
-        LayoutUnit shadowBottom;
-        style()->getBoxShadowExtent(shadowTop, shadowRight, shadowBottom, shadowLeft);
+        style()->getBoxShadowExtent(top, right, bottom, left);
 
-        // Note that box-shadow extent's left and top are negative when extends to left and top, respectively.
-        overflowMinX = borderBox.x() + shadowLeft;
-        overflowMaxX = borderBox.maxX() + shadowRight;
-        overflowMinY = borderBox.y() + shadowTop;
-        overflowMaxY = borderBox.maxY() + shadowBottom;
+        // Box shadow extent's top and left are negative when extend to left and top direction, respectively.
+        // Negate to make them positive.
+        top = -top;
+        left = -left;
     }
 
-    // Now compute border-image-outset overflow.
     if (style()->hasBorderImageOutsets()) {
         LayoutBoxExtent borderOutsets = style()->borderImageOutsets();
-
-        overflowMinX = std::min(overflowMinX, borderBox.x() - borderOutsets.left());
-        overflowMaxX = std::max(overflowMaxX, borderBox.maxX() + borderOutsets.right());
-        overflowMinY = std::min(overflowMinY, borderBox.y() - borderOutsets.top());
-        overflowMaxY = std::max(overflowMaxY, borderBox.maxY() + borderOutsets.bottom());
+        top = std::max(top, borderOutsets.top());
+        right = std::max(right, borderOutsets.right());
+        bottom = std::max(bottom, borderOutsets.bottom());
+        left = std::max(left, borderOutsets.left());
     }
 
     if (style()->hasOutline()) {
         LayoutUnit outlineSize = style()->outlineSize();
-
-        overflowMinX = std::min(overflowMinX, borderBox.x() - outlineSize);
-        overflowMaxX = std::max(overflowMaxX, borderBox.maxX() + outlineSize);
-        overflowMinY = std::min(overflowMinY, borderBox.y() - outlineSize);
-        overflowMaxY = std::max(overflowMaxY, borderBox.maxY() + outlineSize);
+        top = std::max(top, outlineSize);
+        right = std::max(right, outlineSize);
+        bottom = std::max(bottom, outlineSize);
+        left = std::max(left, outlineSize);
     }
 
-    // Add in the final overflow with shadows, outsets and outline combined.
-    LayoutRect visualEffectOverflow(overflowMinX, overflowMinY, overflowMaxX - overflowMinX, overflowMaxY - overflowMinY);
-    addVisualOverflow(visualEffectOverflow);
+    return LayoutBoxExtent(top, right, bottom, left);
 }
 
 void RenderBox::addOverflowFromChild(RenderBox* child, const LayoutSize& delta)
