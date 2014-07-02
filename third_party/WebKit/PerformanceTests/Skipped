@@ -57,9 +57,6 @@ Canvas/draw-video-to-hw-accelerated-canvas-2d.html
 Canvas/upload-video-to-sub-texture.html
 Canvas/upload-video-to-texture.html
 
-# Times out on Nexus10. crbug.com/385313
-Canvas/draw-static-canvas-2d-to-hw-accelerated-canvas-2d.html
-
 # Microbenchmark that we aren't interested in monitoring.
 Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
