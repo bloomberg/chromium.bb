@@ -273,6 +273,11 @@ class IOThread : public content::BrowserThreadDelegate {
   //                                specifies a different value via SETTINGS.
   void EnableSpdy(const std::string& mode);
 
+  // Configures available SPDY protocol versions from the given trial.
+  // Used only if no command-line configuration was present.
+  static void ConfigureSpdyFromTrial(const std::string& spdy_trial_group,
+                                     Globals* globals);
+
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.
   void InitSystemRequestContext();

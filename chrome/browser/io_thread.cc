@@ -127,8 +127,18 @@ const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
 const char kQuicFieldTrialTimeBasedLossDetectionSuffix[] =
     "WithTimeBasedLossDetection";
 
+// The SPDY trial composes two different trial plus control groups:
+//  * A "holdback" group with SPDY disabled, and corresponding control
+//  (SPDY/3.1). The primary purpose of the holdback group is to encourage site
+//  operators to do feature detection rather than UA-sniffing. As such, this
+//  trial runs continuously.
+//  * A SPDY/4 experiment, for SPDY/4 (aka HTTP/2) vs SPDY/3.1 comparisons and
+//  eventual SPDY/4 deployment.
 const char kSpdyFieldTrialName[] = "SPDY";
-const char kSpdyFieldTrialDisabledGroupName[] = "SpdyDisabled";
+const char kSpdyFieldTrialHoldbackGroupName[] = "SpdyDisabled";
+const char kSpdyFieldTrialHoldbackControlGroupName[] = "Control";
+const char kSpdyFieldTrialSpdy4GroupName[] = "Spdy4Enabled";
+const char kSpdyFieldTrialSpdy4ControlGroupName[] = "Spdy4Control";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
@@ -779,9 +789,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     if (trial)
       trial->Disable();
   } else {
-    std::string spdy_trial_group =
-        base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
-
     if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
       globals_->trusted_spdy_proxy.set(
           command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
@@ -802,15 +809,14 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       globals_->next_protos = net::NextProtosHttpOnly();
       globals_->use_alternate_protocols.set(false);
+    } else if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+      // Use the current SPDY default (SPDY/3.1).
+      globals_->next_protos = net::NextProtosSpdy31();
+      globals_->use_alternate_protocols.set(true);
     } else {
-      if (spdy_trial_group == kSpdyFieldTrialDisabledGroupName &&
-          !command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
-        net::HttpStreamFactory::set_spdy_enabled(false);
-      } else {
-        // Use SPDY/3.1 by default.
-        globals_->next_protos = net::NextProtosSpdy31();
-        globals_->use_alternate_protocols.set(true);
-      }
+      // No SPDY command-line flags have been specified. Examine trial groups.
+      ConfigureSpdyFromTrial(
+          base::FieldTrialList::FindFullName(kSpdyFieldTrialName), globals_);
     }
 
     if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy))
@@ -823,6 +829,29 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
   // HttpNetworkSession::Params.
   if (command_line.HasSwitch(switches::kEnableTcpFastOpen))
     net::SetTCPFastOpenEnabled(true);
+}
+
+void IOThread::ConfigureSpdyFromTrial(const std::string& spdy_trial_group,
+                                      Globals* globals) {
+  if (spdy_trial_group == kSpdyFieldTrialHoldbackGroupName) {
+    // TODO(jgraettinger): Use net::NextProtosHttpOnly() instead?
+    net::HttpStreamFactory::set_spdy_enabled(false);
+  } else if (spdy_trial_group == kSpdyFieldTrialHoldbackControlGroupName) {
+    // Use the current SPDY default (SPDY/3.1).
+    globals->next_protos = net::NextProtosSpdy31();
+    globals->use_alternate_protocols.set(true);
+  } else if (spdy_trial_group == kSpdyFieldTrialSpdy4GroupName) {
+    globals->next_protos = net::NextProtosSpdy4Http2();
+    globals->use_alternate_protocols.set(true);
+  } else if (spdy_trial_group == kSpdyFieldTrialSpdy4ControlGroupName) {
+    // This control group is pinned at SPDY/3.1.
+    globals->next_protos = net::NextProtosSpdy31();
+    globals->use_alternate_protocols.set(true);
+  } else {
+    // Use the current SPDY default (SPDY/3.1).
+    globals->next_protos = net::NextProtosSpdy31();
+    globals->use_alternate_protocols.set(true);
+  }
 }
 
 void IOThread::EnableSpdy(const std::string& mode) {

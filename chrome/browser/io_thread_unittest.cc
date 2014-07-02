@@ -7,9 +7,12 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_protocol.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace test {
+
+using ::testing::ElementsAre;
 
 class IOThreadPeer {
  public:
@@ -26,6 +29,11 @@ class IOThreadPeer {
       const IOThread::Globals& globals,
       net::HttpNetworkSession::Params* params) {
     IOThread::InitializeNetworkSessionParamsFromGlobals(globals, params);
+  }
+
+  static void ConfigureSpdyFromTrial(const std::string& trial_group,
+                                     IOThread::Globals* globals) {
+    IOThread::ConfigureSpdyFromTrial(trial_group, globals);
   }
 };
 
@@ -59,6 +67,49 @@ TEST_F(IOThreadTest, InitializeNetworkSessionParamsFromGlobals) {
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(globals_.quic_connection_options,
             params.quic_connection_options);
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialHoldbackEnabled) {
+  net::HttpStreamFactory::set_spdy_enabled(true);
+  IOThreadPeer::ConfigureSpdyFromTrial("SpdyDisabled", &globals_);
+  EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialHoldbackControl) {
+  bool use_alternate_protocols = false;
+  IOThreadPeer::ConfigureSpdyFromTrial("Control", &globals_);
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11,
+                          net::kProtoQUIC1SPDY3,
+                          net::kProtoSPDY3,
+                          net::kProtoSPDY31));
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
+  bool use_alternate_protocols = false;
+  IOThreadPeer::ConfigureSpdyFromTrial("Spdy4Enabled", &globals_);
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11,
+                          net::kProtoQUIC1SPDY3,
+                          net::kProtoSPDY3,
+                          net::kProtoSPDY31,
+                          net::kProtoSPDY4));
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Control) {
+  bool use_alternate_protocols = false;
+  IOThreadPeer::ConfigureSpdyFromTrial("Spdy4Control", &globals_);
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11,
+                          net::kProtoQUIC1SPDY3,
+                          net::kProtoSPDY3,
+                          net::kProtoSPDY31));
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
 }
 
 TEST_F(IOThreadTest, DisableQuicByDefault) {
