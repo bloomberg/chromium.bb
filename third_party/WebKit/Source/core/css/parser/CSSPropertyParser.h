@@ -41,22 +41,15 @@
 
 namespace WebCore {
 
-// FIXME: Many of these may not be used.
-class CSSArrayFunctionValue;
 class CSSBorderImageSliceValue;
 class CSSPrimitiveValue;
-class CSSSelectorList;
 class CSSValue;
 class CSSValueList;
 class CSSBasicShape;
 class CSSBasicShapeInset;
 class CSSGridLineNamesValue;
-class Document;
-class Element;
 class ImmutableStylePropertySet;
-class StyleKeyframe;
 class StylePropertyShorthand;
-class StyleKeyframe;
 class UseCounter;
 
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
