@@ -93,12 +93,12 @@ def destdir_configure_make_install(parsed_arguments, environment,
   # files below.
   destdir = '%s/debian/instrumented_build' % os.getcwd()
   # Some makefiles use BUILDROOT instead of DESTDIR.
-  make_command = 'make -j%s DESTDIR=%s BUILDROOT=%s' % (
-      parsed_arguments.jobs, destdir, destdir),
+  make_command = 'make DESTDIR=%s BUILDROOT=%s' % (destdir, destdir)
   run_shell_commands([
       configure_command,
-      make_command,
-      '%s install' % make_command,
+      '%s -j%s' % (make_command, parsed_arguments.jobs),
+      # Parallel install is flaky for some packages.
+      '%s install -j1' % make_command,
       # Kill the .la files. They contain absolute paths, and will cause build
       # errors in dependent libraries.
       'rm %s/lib/*.la -f' % destdir,
