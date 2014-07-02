@@ -221,20 +221,6 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
 }  // namespace
 
 VariationsService::VariationsService(
-    PrefService* local_state,
-    metrics::MetricsStateManager* state_manager)
-    : local_state_(local_state),
-      state_manager_(state_manager),
-      policy_pref_service_(local_state),
-      seed_store_(local_state),
-      create_trials_from_seed_called_(false),
-      initial_request_completed_(false),
-      resource_request_allowed_notifier_(new ResourceRequestAllowedNotifier),
-      weak_ptr_factory_(this) {
-  resource_request_allowed_notifier_->Init(this);
-}
-
-VariationsService::VariationsService(
     ResourceRequestAllowedNotifier* notifier,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager)
@@ -401,7 +387,8 @@ scoped_ptr<VariationsService> VariationsService::Create(
     return result.Pass();
   }
 #endif
-  result.reset(new VariationsService(local_state, state_manager));
+  result.reset(new VariationsService(
+      new ResourceRequestAllowedNotifier, local_state, state_manager));
   return result.Pass();
 }
 

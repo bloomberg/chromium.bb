@@ -142,10 +142,11 @@ class VariationsService
                          const std::string& seed_signature,
                          const base::Time& date_fetched);
 
-  // This constructor exists for injecting a mock notifier. It is meant for
-  // testing only. This instance will take ownership of |notifier|. Does not
-  // take ownership of |state_manager|. Caller should ensure that
-  // |state_manager| is valid for the lifetime of this class.
+  // Creates the VariationsService with the given |local_state| prefs service
+  // and |state_manager|. This instance will take ownership of |notifier|.
+  // Does not take ownership of |state_manager|. Caller should ensure that
+  // |state_manager| is valid for the lifetime of this class. Use the |Create|
+  // factory method to create a VariationsService.
   VariationsService(ResourceRequestAllowedNotifier* notifier,
                     PrefService* local_state,
                     metrics::MetricsStateManager* state_manager);
@@ -155,13 +156,6 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedStoredWhenOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedNotStoredWhenNonOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedDateUpdatedOn304Status);
-
-  // Creates the VariationsService with the given |local_state| prefs service
-  // and |state_manager|. Does not take ownership of |state_manager|. Caller
-  // should ensure that |state_manager| is valid for the lifetime of this class.
-  // Use the |Create| factory method to create a VariationsService.
-  VariationsService(PrefService* local_state,
-                    metrics::MetricsStateManager* state_manager);
 
   // Checks if prerequisites for fetching the Variations seed are met, and if
   // so, performs the actual fetch using |DoActualFetch|.
