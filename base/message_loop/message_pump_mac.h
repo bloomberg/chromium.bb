@@ -58,7 +58,6 @@
 
 namespace base {
 
-class MessagePumpInstrumentation;
 class RunLoop;
 class TimeTicks;
 
@@ -112,11 +111,6 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   // objects autoreleased by work to fall into the current autorelease pool.
   virtual AutoreleasePoolType* CreateAutoreleasePool();
 
-  // Enables instrumentation of the MessagePump. See MessagePumpInstrumentation
-  // in the implementation for details.
-  void EnableInstrumentation();
-  WeakPtr<MessagePumpInstrumentation> instrumentation_;
-
  private:
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
   // work, but it signals work_source_ so that delayed work can be performed
@@ -130,11 +124,11 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   static void RunWorkSource(void* info);
   bool RunWork();
 
-  // Perform idle-priority work.  This is normally called by
-  // StartOrEndWaitObserver, but is also associated with idle_work_source_. When
-  // this function actually does perform idle work, it will resignal that
-  // source.  The static method calls the instance method; the instance method
-  // returns true if idle work was done.
+  // Perform idle-priority work.  This is normally called by PreWaitObserver,
+  // but is also associated with idle_work_source_.  When this function
+  // actually does perform idle work, it will resignal that source.  The
+  // static method calls the instance method; the instance method returns
+  // true if idle work was done.
   static void RunIdleWorkSource(void* info);
   bool RunIdleWork();
 
@@ -156,8 +150,8 @@ class MessagePumpCFRunLoopBase : public MessagePump {
 
   // Observer callback responsible for performing idle-priority work, before
   // the run loop goes to sleep.  Associated with idle_work_observer_.
-  static void StartOrEndWaitObserver(CFRunLoopObserverRef observer,
-                                     CFRunLoopActivity activity, void* info);
+  static void PreWaitObserver(CFRunLoopObserverRef observer,
+                              CFRunLoopActivity activity, void* info);
 
   // Observer callback called before the run loop processes any sources.
   // Associated with pre_source_observer_.

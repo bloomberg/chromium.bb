@@ -12,7 +12,6 @@
 
 namespace base {
 
-class TimeDelta;
 class TimeTicks;
 
 class BASE_EXPORT MessagePump : public NonThreadSafe {
@@ -42,19 +41,6 @@ class BASE_EXPORT MessagePump : public NonThreadSafe {
     // Called from within Run just before the message pump goes to sleep.
     // Returns true to indicate that idle work was done.
     virtual bool DoIdleWork() = 0;
-
-    // Via the two required out pointers, returns the length of the Delegate's
-    // work queue and the length of time that the first item in the queue has
-    // been waiting to run. If the work queue is empty, the count and delay
-    // will both be zero.
-    // Note that this only counts the tasks in the ready-to-run queue and not
-    // the incoming queue that is used by other threads to post tasks. The
-    // latter queue requires holding a lock, which is deemed too expensive for
-    // instrumentation code. Under normal conditions, the incoming queue should
-    // be small or zero, but under heavy loads it may be much larger and
-    // |queue_count| may be up to 1/4 the size of the incoming queue.
-    virtual void GetQueueingInformation(size_t* queue_count,
-                                        TimeDelta* queueing_delay) {}
   };
 
   MessagePump();
