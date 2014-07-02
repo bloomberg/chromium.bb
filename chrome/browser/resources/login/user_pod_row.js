@@ -538,7 +538,7 @@ cr.define('login', function() {
       } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
         // filter makes it look in disabled state.
-        this.classList.add('not-focusable');
+        this.classList.add('multiprofiles-policy-applied');
         this.setUserPodIconType('policy');
 
         this.querySelector('.mp-policy-title').hidden = false;
@@ -617,6 +617,10 @@ cr.define('login', function() {
           this.parentNode.focusPod(undefined, true);
           this.actionBoxAreaElement.focus();
         }
+
+        // Hide user-type-bubble.
+        this.userTypeBubbleElement.classList.remove('bubble-shown');
+
         this.actionBoxAreaElement.classList.add('active');
       } else {
         this.actionBoxAreaElement.classList.remove('active');
@@ -785,8 +789,10 @@ cr.define('login', function() {
      */
     reset: function(takeFocus) {
       this.passwordElement.value = '';
-      if (takeFocus)
-        this.focusInput();  // This will set a custom tab order.
+      if (takeFocus) {
+        if (!this.multiProfilesPolicyApplied)
+          this.focusInput();  // This will set a custom tab order.
+      }
       else
         this.resetTabOrder();
     },
@@ -830,7 +836,8 @@ cr.define('login', function() {
           e.stopPropagation();
           break;
         case 'U+0009':  // Tab
-          this.parentNode.focusPod();
+          if (!this.parentNode.alwaysFocusSinglePod)
+            this.parentNode.focusPod();
         default:
           this.isActionBoxMenuActive = false;
           break;
@@ -1996,14 +2003,6 @@ cr.define('login', function() {
         return;
       }
 
-      // Make sure that we don't focus pods that are not allowed to be focused.
-      // TODO(nkostylev): Fix various keyboard focus related issues caused
-      // by this approach. http://crbug.com/339042
-      if (podToFocus && podToFocus.classList.contains('not-focusable')) {
-        this.keyboardActivated_ = false;
-        return;
-      }
-
       // Make sure there's only one focusPod operation happening at a time.
       if (this.insideFocusPod_) {
         this.keyboardActivated_ = false;
@@ -2037,7 +2036,13 @@ cr.define('login', function() {
       if (podToFocus) {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
-        podToFocus.reset(true);  // Reset and give focus.
+        if (!podToFocus.multiProfilesPolicyApplied)
+          podToFocus.reset(true);  // Reset and give focus.
+        else {
+          podToFocus.userTypeBubbleElement.classList.add('bubble-shown');
+          podToFocus.focus();
+        }
+
         // focusPod() automatically loads wallpaper
         if (!podToFocus.user.isApp)
           chrome.send('focusPod', [podToFocus.user.username]);
@@ -2106,9 +2111,14 @@ cr.define('login', function() {
      */
     get preselectedPod() {
       var lockedPod = this.lockedPod;
-      var preselectedPod = PRESELECT_FIRST_POD ?
-          lockedPod || this.pods[0] : lockedPod;
-      return preselectedPod;
+      if (lockedPod || !PRESELECT_FIRST_POD)
+        return lockedPod;
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (!pod.multiProfilesPolicyApplied) {
+          return pod;
+        }
+      }
+      return this.pods[0];
     },
 
     /**
@@ -2125,7 +2135,7 @@ cr.define('login', function() {
      * Restores input focus to current selected pod, if there is any.
      */
     refocusCurrentPod: function() {
-      if (this.focusedPod_) {
+      if (this.focusedPod_ && !this.focusedPod_.multiProfilesPolicyApplied) {
         this.focusedPod_.focusInput();
       }
     },
@@ -2189,6 +2199,7 @@ cr.define('login', function() {
       // Return focus back to single pod.
       if (this.alwaysFocusSinglePod) {
         this.focusPod(this.focusedPod_, true /* force */);
+        this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
         if (!pod)
           this.focusedPod_.isActionBoxMenuHovered = false;
       }
@@ -2233,9 +2244,12 @@ cr.define('login', function() {
         return;
       if (e.target.parentNode == this) {
         // Focus on a pod
-        if (e.target.classList.contains('focused'))
-          e.target.focusInput();
-        else
+        if (e.target.classList.contains('focused')) {
+          if (!e.target.multiProfilesPolicyApplied)
+            e.target.focusInput();
+          else
+            e.target.userTypeBubbleElement.classList.add('bubble-shown');
+        } else
           this.focusPod(e.target);
         return;
       }
@@ -2246,6 +2260,7 @@ cr.define('login', function() {
         if (!pod.classList.contains('focused') &&
             !e.target.classList.contains('action-box-button')) {
           this.focusPod(pod);
+          pod.userTypeBubbleElement.classList.remove('bubble-shown');
           e.target.focus();
         }
         return;
@@ -2258,6 +2273,11 @@ cr.define('login', function() {
       // input field/button will always be visible.
       if (!this.alwaysFocusSinglePod)
         this.focusPod();
+      else {
+        // Hide user-type-bubble in case this is one pod and we lost focus of
+        // it.
+        this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
+      }
     },
 
     /**
@@ -2349,7 +2369,13 @@ cr.define('login', function() {
       if (this.podPlacementPostponed_) {
         this.podPlacementPostponed_ = false;
         this.placePods_();
-        this.focusPod(this.preselectedPod);
+        pod = this.preselectedPod;
+        this.focusPod(pod);
+        // Hide user-type-bubble in case all user pods are disabled and we focus
+        // first pod.
+        if (pod && pod.multiProfilesPolicyApplied) {
+          pod.userTypeBubbleElement.classList.remove('bubble-shown');
+        }
       }
     },
 

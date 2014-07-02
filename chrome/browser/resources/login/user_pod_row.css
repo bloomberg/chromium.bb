@@ -90,7 +90,7 @@ podrow[ncolumns='6'] .pod {
   opacity: 1;
 }
 
-.pod.not-focusable .user-image {
+.pod.multiprofiles-policy-applied .user-image {
   -webkit-filter: grayscale(100%);
 }
 
@@ -134,6 +134,10 @@ podrow[ncolumns='6'] .pod {
 
 .pod.need-password.focused .name {
   display: none;
+}
+
+.pod.need-password.multiprofiles-policy-applied .name {
+  display: block;
 }
 
 .password-area {
@@ -186,6 +190,10 @@ podrow[ncolumns='6'] .pod {
 
 .pod.need-password.focused .password-area {
   display: -webkit-box;
+}
+
+.pod.need-password.multiprofiles-policy-applied .password-area {
+  display: none;
 }
 
 .pod .signin-button,
@@ -300,7 +308,7 @@ html[dir=rtl] .user-type-icon-area {
   background-image: url('chrome://theme/IDR_KIOSK_APP_USER_POD_ICON');
 }
 
-.bubble-shown,
+.bubble-shown.user-type-bubble,
 .user-type-icon-area.policy:hover ~ .user-type-bubble {
   opacity: 1;
   visibility: visible;
