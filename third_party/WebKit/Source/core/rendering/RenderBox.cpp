@@ -4092,7 +4092,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paint
         LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
             rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(rightRect), InvalidationIncremental);
+            invalidatePaintUsingContainer(paintInvalidationContainer, rightRect, InvalidationIncremental);
         }
     }
 
@@ -4113,7 +4113,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paint
         LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
             bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(bottomRect), InvalidationIncremental);
+            invalidatePaintUsingContainer(paintInvalidationContainer, bottomRect, InvalidationIncremental);
         }
     }
 }

@@ -1919,11 +1919,14 @@ struct SetContentsNeedsDisplayInRectFunctor {
 };
 
 // r is in the coordinate space of the layer's render object
-void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
+void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r)
 {
     // FIXME: need to split out repaints for the background.
     ASSERT(!paintsIntoCompositedAncestor());
-    SetContentsNeedsDisplayInRectFunctor functor = { r };
+
+    SetContentsNeedsDisplayInRectFunctor functor = {
+        pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())
+    };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 

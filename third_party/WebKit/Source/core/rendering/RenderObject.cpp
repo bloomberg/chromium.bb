@@ -1466,7 +1466,7 @@ template<typename T> void addJsonObjectForRect(TracedValue& value, const char* n
         .endDictionary();
 }
 
-static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvalidationInfo(const IntRect& rect, const String& invalidationReason)
+static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
     TracedValue value;
     addJsonObjectForRect(value, "rect", rect);
@@ -1479,7 +1479,7 @@ LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObje
     return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
-void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const IntRect& r, InvalidationReason invalidationReason) const
+void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, InvalidationReason invalidationReason) const
 {
     if (r.isEmpty())
         return;
@@ -1532,7 +1532,7 @@ void RenderObject::paintInvalidationForWholeRenderer() const
     DisableCompositingQueryAsserts disabler;
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     LayoutRect paintInvalidationRect = boundsRectForPaintInvalidation(paintInvalidationContainer);
-    invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(paintInvalidationRect), InvalidationPaint);
+    invalidatePaintUsingContainer(paintInvalidationContainer, paintInvalidationRect, InvalidationPaint);
 }
 
 LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
@@ -1554,7 +1554,7 @@ void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
 
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     RenderLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
-    invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(dirtyRect), InvalidationPaintRectangle);
+    invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, InvalidationPaintRectangle);
 }
 
 IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
@@ -1698,23 +1698,23 @@ void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject* pa
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
     if (deltaRight > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), InvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), InvalidationIncremental);
     else if (deltaRight < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), InvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), InvalidationIncremental);
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), InvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), InvalidationIncremental);
     else if (deltaBottom < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), InvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), InvalidationIncremental);
 }
 
 void RenderObject::fullyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     // Otherwise do full paint invalidation.
-    invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds), invalidationReason);
+    invalidatePaintUsingContainer(paintInvalidationContainer, oldBounds, invalidationReason);
     if (newBounds != oldBounds)
-        invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(newBounds), invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, newBounds, invalidationReason);
 }
 
 void RenderObject::invalidatePaintForOverflow()

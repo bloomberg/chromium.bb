@@ -833,7 +833,7 @@ public:
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
     // If |paintInvalidationContainer| is 0, invalidate paints via the view.
     // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
-    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const IntRect&, InvalidationReason) const;
+    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, InvalidationReason) const;
 
     // Invalidate the paint of the entire object. Called when, e.g., the color of a border changes, or when a border
     // style changes.
