@@ -56,6 +56,10 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
           [[internal::Forward(a$(ARG))]]);
   }
 
+  bool is_null() const {
+    return !sink_.get();
+  }
+
  private:
   template <typename Sink>
   struct Adapter : public Runnable {
