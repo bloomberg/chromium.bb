@@ -494,7 +494,7 @@ void RenderLayer::updatePagination()
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (hasCompositedLayerMapping() || !parent())
+    if (compositingState() != NotComposited || !parent())
         return; // FIXME: We will have to deal with paginated compositing layers someday.
                 // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
 
@@ -864,7 +864,10 @@ bool RenderLayer::updateLayerPosition()
             localPoint += offset;
         }
     } else if (parent()) {
-        if (hasCompositedLayerMapping()) {
+        // Called when scrolling, via RenderLayerScrollableArea::setScrollOffset -> updateLayerPositionsAfterOverflowScroll.
+        DisableCompositingQueryAsserts disabler;
+
+        if (compositingState() != NotComposited) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             if (!parent()->renderer()->hasColumns() && parent()->renderer()->isDocumentElement() && renderer()->view()->hasColumns())
@@ -3454,7 +3457,8 @@ bool RenderLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& local
     RenderLayerStackingNodeReverseIterator revertseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
     while (RenderLayerStackingNode* child = revertseIterator.next()) {
         const RenderLayer* childLayer = child->layer();
-        if (childLayer->hasCompositedLayerMapping())
+        // Stop at composited paint boundaries.
+        if (childLayer->isPaintInvalidationContainer())
             continue;
 
         if (!childLayer->canUseConvertToLayerCoords())
