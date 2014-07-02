@@ -42,7 +42,7 @@ const TestNameInfo kTestNameInfo[] = {
     {"PathUserData", "User data path"},
     {"Version", "Chrome version test"},
     {"SQLiteIntegrityAppCache", "Application cache database"},
-    {"SQLiteIntegrityArchivedHistory", "Archived history database"},
+    {"SQLiteIntegrityArchivedHistory", "Archived history database (obsolete)"},
     {"SQLiteIntegrityCookie", "Cookie database"},
     {"SQLiteIntegrityDatabaseTracker", "Database tracker database"},
     {"SQLiteIntegrityHistory", "History database"},
@@ -94,7 +94,7 @@ std::string GetTestDescription(DiagnosticsTestId id) {
   TEST_CASE(name, DIAGNOSTICS_PATH_USER_DATA_TEST);                    \
   TEST_CASE(name, DIAGNOSTICS_VERSION_TEST);                           \
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_APP_CACHE_TEST);        \
-  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_ARCHIVED_HISTORY_TEST); \
+  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_ARCHIVED_HISTORY_TEST_OBSOLETE);\
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_COOKIE_TEST);           \
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_DATABASE_TRACKER_TEST); \
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_HISTORY_TEST);          \
