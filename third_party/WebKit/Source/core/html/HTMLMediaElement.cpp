@@ -2960,6 +2960,9 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     if (m_nextChildNodeToConsider)
         return;
 
+    if (m_loadState != WaitingForSource)
+        return;
+
     // 4.8.9.5, resource selection algorithm, source elements section:
     // 21. Wait until the node after pointer is a node other than the end of the list. (This step might wait forever.)
     // 22. Asynchronously await a stable state...

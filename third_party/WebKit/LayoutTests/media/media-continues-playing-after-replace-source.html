@@ -44,17 +44,16 @@
             ++timeupdateEventCount;
 
             if (timeupdateEventCount-skippedCount == 1) {
-                // First time update after source replacement should be 0.
-                // We allow one late time update to come in from the previous
-                // source element. This was done to help the cr-linux test
-                // pass, and does not necessarily indicate a problem.
+                // If the media play has started it should continue even if
+                // source was replaced. Wait for two timeupdate events to
+                // make sure the same source keeps playing.
                 if (sourceReplaced) {
-                    if (skippedCount >= 1 || this.currentTime == 0) {
+                    if (skippedCount >= 1 || this.currentTime > 0) {
                         testElement = this;
-                        testExpected("testElement.currentTime", 0);
+                        testExpected("testElement.currentTime", 0, '>');
                     } else {
-                        // The time is not 0 as expected. Hope this is a
-                        // late update from the previous source.
+                        // The time is not 0 as expected. Make sure same
+                        // source keeps playing by waiting for one more event.
                         ++skippedCount;
                     }
                 }
