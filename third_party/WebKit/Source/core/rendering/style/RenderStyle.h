@@ -1627,6 +1627,7 @@ public:
     static EJustifyContent initialJustifyContent() { return JustifyFlexStart; }
     static ItemPosition initialJustifyItems() { return ItemPositionAuto; }
     static OverflowAlignment initialJustifyItemsOverflowAlignment() { return OverflowAlignmentDefault; }
+    static ItemPositionType initialJustifyItemsPositionType() { return NonLegacyPosition; }
     static ItemPosition initialJustifySelf() { return ItemPositionAuto; }
     static OverflowAlignment initialJustifySelfOverflowAlignment() { return OverflowAlignmentDefault; }
     static int initialMarqueeLoopCount() { return -1; }

@@ -5,8 +5,8 @@
 // Note: Mandatory blank line to skip parameter parsing phase
 
 align-content
-align-items custom_value
-align-self custom_value
+align-items custom_all
+align-self custom_all
 background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all
@@ -83,8 +83,8 @@ justify-content
 image-rendering
 internal-callback custom_all
 isolation
-justify-items custom_value
-justify-self custom_value
+justify-items custom_all
+justify-self custom_all
 left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
 line-height getter=specifiedLineHeight, custom_value

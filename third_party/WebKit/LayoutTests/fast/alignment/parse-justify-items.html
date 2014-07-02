@@ -295,38 +295,27 @@ checkBadValues(element, "justifyItems", "justify-items",  "legacy left right");
 
 debug("");
 debug("Test the value 'initial'");
-checkInitialValues(element, "justifyItems", "justify-items");
+checkInitialValues(element, "justifyItems", "justify-items", "", "legacy center");
 
 debug("");
 debug("Test the value 'initial' for grid containers");
-checkInitialValues(element, "justifyItems", "justify-items", "grid");
+checkInitialValues(element, "justifyItems", "justify-items", "grid", "left safe");
 
 debug("");
 debug("Test the value 'initial' for flex containers");
-checkInitialValues(element, "justifyItems", "justify-items", "flex");
+checkInitialValues(element, "justifyItems", "justify-items", "flex", "right true");
 
 debug("");
 debug("Test the value 'inherit'");
-parentElement = document.createElement("div");
-document.body.appendChild(parentElement);
-parentElement.style.justifyItems = "end";
-checkValues(parentElement, "justifyItems", "justify-items",  "end", "end");
-
-element = document.createElement("div");
-parentElement.appendChild(element);
-element.style.justifyItems = "inherit";
-checkValues(element, "justifyItems", "justify-items",  "inherit", "end");
+checkInheritValues(element, "justifyItems", "justify-items", "end");
+checkInheritValues(element, "justifyItems", "justify-items", "left safe");
+checkInheritValues(element, "justifyItems", "justify-items", "legacy center");
 
 debug("");
 debug("Test the value 'legacy'");
-parentElement = document.createElement("div");
-document.body.appendChild(parentElement);
-parentElement.style.justifyItems = "legacy right";
-checkValues(parentElement, "justifyItems", "justify-items",  "legacy right", "legacy right");
-
-element = document.createElement("div");
-parentElement.appendChild(element);
-checkValues(element, "justifyItems", "justify-items",  "", "legacy right");
+checkLegacyValues(element, "justifyItems", "justify-items", "legacy left");
+checkLegacyValues(element, "justifyItems", "justify-items", "legacy center");
+checkLegacyValues(element, "justifyItems", "justify-items", "legacy right");
 
 </script>
 </body>

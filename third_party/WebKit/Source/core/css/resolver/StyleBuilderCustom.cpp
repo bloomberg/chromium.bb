@@ -203,6 +203,37 @@ void StyleBuilderFunctions::applyValueCSSPropertyColor(StyleResolverState& state
         state.style()->setVisitedLinkColor(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), true));
 }
 
+void StyleBuilderFunctions::applyInitialCSSPropertyJustifyItems(StyleResolverState& state)
+{
+    state.style()->setJustifyItems(RenderStyle::initialJustifyItems());
+    state.style()->setJustifyItemsOverflowAlignment(RenderStyle::initialJustifyItemsOverflowAlignment());
+    state.style()->setJustifyItemsPositionType(RenderStyle::initialJustifyItemsPositionType());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyJustifyItems(StyleResolverState& state)
+{
+    state.style()->setJustifyItems(state.parentStyle()->justifyItems());
+    state.style()->setJustifyItemsOverflowAlignment(state.parentStyle()->justifyItemsOverflowAlignment());
+    state.style()->setJustifyItemsPositionType(state.parentStyle()->justifyItemsPositionType());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyJustifyItems(StyleResolverState& state, CSSValue* value)
+{
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (Pair* pairValue = primitiveValue->getPairValue()) {
+        if (pairValue->first()->getValueID() == CSSValueLegacy) {
+            state.style()->setJustifyItemsPositionType(LegacyPosition);
+            state.style()->setJustifyItems(*pairValue->second());
+        } else {
+            state.style()->setJustifyItems(*pairValue->first());
+            state.style()->setJustifyItemsOverflowAlignment(*pairValue->second());
+        }
+    } else {
+        state.style()->setJustifyItems(*primitiveValue);
+    }
+}
+
 void StyleBuilderFunctions::applyInitialCSSPropertyCursor(StyleResolverState& state)
 {
     state.style()->clearCursorList();

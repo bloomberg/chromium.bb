@@ -554,6 +554,19 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {{apply_value_shape('CSSPropertyShapeOutside')}}
 
 {% macro apply_alignment(property_id, alignment_type) %}
+{% set property = properties[property_id] %}
+{{declare_initial_function(property_id)}}
+{
+    state.style()->set{{alignment_type}}(RenderStyle::initial{{alignment_type}}());
+    state.style()->set{{alignment_type}}OverflowAlignment(RenderStyle::initial{{alignment_type}}OverflowAlignment());
+}
+
+{{declare_inherit_function(property_id)}}
+{
+    state.style()->set{{alignment_type}}(state.parentStyle()->{{property.getter}}());
+    state.style()->set{{alignment_type}}OverflowAlignment(state.parentStyle()->{{property.getter}}OverflowAlignment());
+}
+
 {{declare_value_function(property_id)}}
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -568,25 +581,6 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {{apply_alignment('CSSPropertyJustifySelf', 'JustifySelf')}}
 {{apply_alignment('CSSPropertyAlignItems', 'AlignItems')}}
 {{apply_alignment('CSSPropertyAlignSelf', 'AlignSelf')}}
-
-{% macro apply_alignment_with_legacy_keyword(property_id, alignment_type) %}
-{{declare_value_function(property_id)}}
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (Pair* pairValue = primitiveValue->getPairValue()) {
-        if (pairValue->first()->getValueID() == CSSValueLegacy) {
-            state.style()->set{{alignment_type}}PositionType(LegacyPosition);
-            state.style()->set{{alignment_type}}(*pairValue->second());
-        } else {
-            state.style()->set{{alignment_type}}(*pairValue->first());
-            state.style()->set{{alignment_type}}OverflowAlignment(*pairValue->second());
-        }
-    } else {
-        state.style()->set{{alignment_type}}(*primitiveValue);
-    }
-}
-{% endmacro %}
-{{apply_alignment_with_legacy_keyword('CSSPropertyJustifyItems', 'JustifyItems')}}
 
 {% macro apply_svg_paint(property_id, paint_type) %}
 {% set property = properties[property_id] %}
