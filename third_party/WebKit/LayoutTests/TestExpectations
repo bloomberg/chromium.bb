@@ -993,6 +993,7 @@ crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.h
 
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
+crbug.com/375162 svg/filters/feTurbulence-scale.svg [ NeedsRebaseline ]
 
 crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
 
