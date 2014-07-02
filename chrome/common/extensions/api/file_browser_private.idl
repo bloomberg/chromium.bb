@@ -576,10 +576,8 @@ interface Functions {
 
   // Gets the list of tasks that can be performed over selected files.
   // |fileUrls| Array of selected file URLs
-  // |mimeTypes| Array of selected file MIME types
   // |callback|
   static void getFileTasks(DOMString[] fileUrls,
-                           DOMString[] mimeTypes,
                            GetFileTasksCallback callback);
 
   // Gets localized strings and initialization data.

@@ -84,8 +84,6 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
  * Complete the initialization.
  *
  * @param {Array.<Entry>} entries List of file entries.
- * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
- *     of the files.
  */
 FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   this.entries_ = entries;
@@ -93,10 +91,8 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
 
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
   var urls = util.entriesToURLs(entries);
-  if (urls.length > 0) {
-    chrome.fileBrowserPrivate.getFileTasks(urls, this.mimeTypes_,
-        this.onTasks_.bind(this));
-  }
+  if (urls.length > 0)
+    chrome.fileBrowserPrivate.getFileTasks(urls, this.onTasks_.bind(this));
 };
 
 /**

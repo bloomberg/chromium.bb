@@ -108,9 +108,8 @@ function testPromise(promise) {
  */
 function launchWithEntries(entries) {
   var urls = entries.map(function(entry) { return entry.toURL(); });
-  var mimeTypes = urls.map(function() { return ''; });
   var tasksPromise = new Promise(function(fulfill) {
-    chrome.fileBrowserPrivate.getFileTasks(urls, mimeTypes, fulfill);
+    chrome.fileBrowserPrivate.getFileTasks(urls, fulfill);
   }).then(function(tasks) {
     chrome.test.assertEq(1, tasks.length);
     chrome.test.assertEq('kidcpjlbjdmcnmccjhjdckhbngnhnepk|app|textAction',
