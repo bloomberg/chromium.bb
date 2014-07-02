@@ -31,6 +31,7 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
     { "about://", URLPattern::PARSE_ERROR_WRONG_SCHEME_SEPARATOR },
     { "http://", URLPattern::PARSE_ERROR_EMPTY_HOST },
     { "http:///", URLPattern::PARSE_ERROR_EMPTY_HOST },
+    { "http:// /", URLPattern::PARSE_ERROR_EMPTY_HOST },
     { "http://*foo/bar", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD },
     { "http://foo.*.bar/baz", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD },
     { "http://fo.*.ba:123/baz", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD },
