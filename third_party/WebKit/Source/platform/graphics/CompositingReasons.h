@@ -43,41 +43,42 @@ const uint64_t CompositingReasonSquashingFilterAncestorMismatch          = UINT6
 const uint64_t CompositingReasonSquashingWouldBreakPaintOrder            = UINT64_C(1) << 24;
 const uint64_t CompositingReasonSquashingVideoIsDisallowed               = UINT64_C(1) << 25;
 const uint64_t CompositingReasonSquashedLayerClipsCompositingDescendants = UINT64_C(1) << 26;
-const uint64_t CompositedReasonSquashingRenderPart                       = UINT64_C(1) << 27;
+const uint64_t CompositingReasonSquashingRenderPartIsDisallowed          = UINT64_C(1) << 27;
+const uint64_t CompositingReasonSquashingReflectionIsDisallowed          = UINT64_C(1) << 28;
 
 // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
-const uint64_t CompositingReasonTransformWithCompositedDescendants       = UINT64_C(1) << 28;
-const uint64_t CompositingReasonOpacityWithCompositedDescendants         = UINT64_C(1) << 29;
-const uint64_t CompositingReasonMaskWithCompositedDescendants            = UINT64_C(1) << 30;
-const uint64_t CompositingReasonReflectionWithCompositedDescendants      = UINT64_C(1) << 31;
-const uint64_t CompositingReasonFilterWithCompositedDescendants          = UINT64_C(1) << 32;
-const uint64_t CompositingReasonBlendingWithCompositedDescendants        = UINT64_C(1) << 33;
-const uint64_t CompositingReasonClipsCompositingDescendants              = UINT64_C(1) << 34;
-const uint64_t CompositingReasonPerspectiveWith3DDescendants             = UINT64_C(1) << 35;
-const uint64_t CompositingReasonPreserve3DWith3DDescendants              = UINT64_C(1) << 36;
-const uint64_t CompositingReasonReflectionOfCompositedParent             = UINT64_C(1) << 37;
-const uint64_t CompositingReasonIsolateCompositedDescendants             = UINT64_C(1) << 38;
+const uint64_t CompositingReasonTransformWithCompositedDescendants       = UINT64_C(1) << 29;
+const uint64_t CompositingReasonOpacityWithCompositedDescendants         = UINT64_C(1) << 30;
+const uint64_t CompositingReasonMaskWithCompositedDescendants            = UINT64_C(1) << 31;
+const uint64_t CompositingReasonReflectionWithCompositedDescendants      = UINT64_C(1) << 32;
+const uint64_t CompositingReasonFilterWithCompositedDescendants          = UINT64_C(1) << 33;
+const uint64_t CompositingReasonBlendingWithCompositedDescendants        = UINT64_C(1) << 34;
+const uint64_t CompositingReasonClipsCompositingDescendants              = UINT64_C(1) << 35;
+const uint64_t CompositingReasonPerspectiveWith3DDescendants             = UINT64_C(1) << 36;
+const uint64_t CompositingReasonPreserve3DWith3DDescendants              = UINT64_C(1) << 37;
+const uint64_t CompositingReasonReflectionOfCompositedParent             = UINT64_C(1) << 38;
+const uint64_t CompositingReasonIsolateCompositedDescendants             = UINT64_C(1) << 39;
 
 // The root layer is a special case that may be forced to be a layer, but also it needs to be
 // a layer if anything else in the subtree is composited.
-const uint64_t CompositingReasonRoot                                     = UINT64_C(1) << 39;
+const uint64_t CompositingReasonRoot                                     = UINT64_C(1) << 40;
 
 // CompositedLayerMapping internal hierarchy reasons
-const uint64_t CompositingReasonLayerForAncestorClip                     = UINT64_C(1) << 40;
-const uint64_t CompositingReasonLayerForDescendantClip                   = UINT64_C(1) << 41;
-const uint64_t CompositingReasonLayerForPerspective                      = UINT64_C(1) << 42;
-const uint64_t CompositingReasonLayerForHorizontalScrollbar              = UINT64_C(1) << 43;
-const uint64_t CompositingReasonLayerForVerticalScrollbar                = UINT64_C(1) << 44;
-const uint64_t CompositingReasonLayerForScrollCorner                     = UINT64_C(1) << 45;
-const uint64_t CompositingReasonLayerForScrollingContents                = UINT64_C(1) << 46;
-const uint64_t CompositingReasonLayerForScrollingContainer               = UINT64_C(1) << 47;
-const uint64_t CompositingReasonLayerForSquashingContents                = UINT64_C(1) << 48;
-const uint64_t CompositingReasonLayerForSquashingContainer               = UINT64_C(1) << 49;
-const uint64_t CompositingReasonLayerForForeground                       = UINT64_C(1) << 50;
-const uint64_t CompositingReasonLayerForBackground                       = UINT64_C(1) << 51;
-const uint64_t CompositingReasonLayerForMask                             = UINT64_C(1) << 52;
-const uint64_t CompositingReasonLayerForClippingMask                     = UINT64_C(1) << 53;
-const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT64_C(1) << 54;
+const uint64_t CompositingReasonLayerForAncestorClip                     = UINT64_C(1) << 41;
+const uint64_t CompositingReasonLayerForDescendantClip                   = UINT64_C(1) << 42;
+const uint64_t CompositingReasonLayerForPerspective                      = UINT64_C(1) << 43;
+const uint64_t CompositingReasonLayerForHorizontalScrollbar              = UINT64_C(1) << 44;
+const uint64_t CompositingReasonLayerForVerticalScrollbar                = UINT64_C(1) << 45;
+const uint64_t CompositingReasonLayerForScrollCorner                     = UINT64_C(1) << 46;
+const uint64_t CompositingReasonLayerForScrollingContents                = UINT64_C(1) << 47;
+const uint64_t CompositingReasonLayerForScrollingContainer               = UINT64_C(1) << 48;
+const uint64_t CompositingReasonLayerForSquashingContents                = UINT64_C(1) << 49;
+const uint64_t CompositingReasonLayerForSquashingContainer               = UINT64_C(1) << 50;
+const uint64_t CompositingReasonLayerForForeground                       = UINT64_C(1) << 51;
+const uint64_t CompositingReasonLayerForBackground                       = UINT64_C(1) << 52;
+const uint64_t CompositingReasonLayerForMask                             = UINT64_C(1) << 53;
+const uint64_t CompositingReasonLayerForClippingMask                     = UINT64_C(1) << 54;
+const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT64_C(1) << 55;
 
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
@@ -138,7 +139,8 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     | CompositingReasonSquashingWouldBreakPaintOrder
     | CompositingReasonSquashingVideoIsDisallowed
     | CompositingReasonSquashedLayerClipsCompositingDescendants
-    | CompositedReasonSquashingRenderPart
+    | CompositingReasonSquashingRenderPartIsDisallowed
+    | CompositingReasonSquashingReflectionIsDisallowed
     | CompositingReasonTransformWithCompositedDescendants
     | CompositingReasonOpacityWithCompositedDescendants
     | CompositingReasonMaskWithCompositedDescendants
@@ -208,7 +210,6 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonPositionFixed,
         "positionFixed",
         "Is fixed position" },
-    { 0, 0, 0 }, // Available.
     { CompositingReasonOverflowScrollingTouch,
         "overflowScrollingTouch",
         "Is a scrollable overflow element" },
@@ -224,7 +225,6 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonWillChangeCompositingHint,
         "willChange",
         "Has a will-change compositing hint" },
-    { 0, 0, 0 }, // Available.
     { CompositingReasonAssumedOverlap,
         "assumedOverlap",
         "Might overlap other composited content" },
@@ -261,9 +261,12 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonSquashedLayerClipsCompositingDescendants,
         "squashedLayerClipsCompositingDescendants",
         "Squashing a layer that clips composited descendants is not supported." },
-    { CompositedReasonSquashingRenderPart,
-        "sompositedReasonSquashingRenderPart",
+    { CompositingReasonSquashingRenderPartIsDisallowed,
+        "squashingRenderPartIsDisallowed",
         "Squashing a frame, iframe or plugin is not supported." },
+    { CompositingReasonSquashingReflectionIsDisallowed,
+        "squashingReflectionDisallowed",
+        "Squashing a element with a reflection is not supported." },
     { CompositingReasonTransformWithCompositedDescendants,
         "transformWithCompositedDescendants",
         "Has a transform that needs to be known by compositor because of composited descendants" },

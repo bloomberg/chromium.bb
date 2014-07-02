@@ -134,7 +134,10 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     // Don't squash iframes, frames or plugins.
     // FIXME: this is only necessary because there is frame code that assumes that composited frames are not squashed.
     if (layer->renderer()->isRenderPart())
-        return CompositedReasonSquashingRenderPart;
+        return CompositingReasonSquashingRenderPartIsDisallowed;
+
+    if (layer->reflectionInfo())
+        return CompositingReasonSquashingReflectionIsDisallowed;
 
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return CompositingReasonSquashingSparsityExceeded;
