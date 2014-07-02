@@ -260,7 +260,8 @@ class USBImager(object):
     except cros_build_lib.RunCommandError:
       cmd_base = 'cat'
 
-    cmd = '%s %s | dd of=%s bs=4M oflag=sync' % (cmd_base, image, device)
+    cmd = '%s %s | dd of=%s bs=4M iflag=fullblock oflag=sync' % (
+        cmd_base, image, device)
     cros_build_lib.SudoRunCommand(cmd, shell=True)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
