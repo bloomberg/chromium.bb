@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
 #elif defined(OS_ANDROID)
   expected_mode = DELEGATED;
 #elif defined(OS_MACOSX)
-  expected_mode = DELEGATED;
+  expected_mode = THREADED;
   // Lion and SnowLeopard have compositing blacklisted when using the Apple
   // software renderer, so results will vary depending if this test is being
   // run in a VM versus actual hardware.
