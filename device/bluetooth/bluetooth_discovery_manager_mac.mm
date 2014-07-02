@@ -124,7 +124,7 @@ class BluetoothDiscoveryManagerMacClassic
   void DeviceFound(IOBluetoothDeviceInquiry* inquiry,
                    IOBluetoothDevice* device) {
     DCHECK(observer_);
-    observer_->DeviceFound(this, device);
+    observer_->DeviceFound(device);
   }
 
   void DeviceInquiryComplete(IOBluetoothDeviceInquiry* inquiry,
@@ -138,7 +138,7 @@ class BluetoothDiscoveryManagerMacClassic
     // If discovery is no longer desired, notify observers that discovery
     // has stopped and return.
     if (!should_do_discovery_) {
-      observer_->DiscoveryStopped(this, false /* unexpected */);
+      observer_->DiscoveryStopped(false /* unexpected */);
       return;
     }
 
@@ -147,7 +147,7 @@ class BluetoothDiscoveryManagerMacClassic
     if (error != kIOReturnSuccess) {
       DVLOG(1) << "Inquiry has stopped with an error: " << error;
       should_do_discovery_ = false;
-      observer_->DiscoveryStopped(this, true /* unexpected */);
+      observer_->DiscoveryStopped(true /* unexpected */);
       return;
     }
 
@@ -161,7 +161,7 @@ class BluetoothDiscoveryManagerMacClassic
     DVLOG(1) << "Failed to restart discovery";
     should_do_discovery_ = false;
     DCHECK(observer_);
-    observer_->DiscoveryStopped(this, true /* unexpected */);
+    observer_->DiscoveryStopped(true /* unexpected */);
   }
 
  private:

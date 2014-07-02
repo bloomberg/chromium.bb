@@ -232,6 +232,10 @@ void BluetoothDeviceMac::StartConnectionMonitor(
   NOTIMPLEMENTED();
 }
 
+NSDate* BluetoothDeviceMac::GetLastInquiryUpdate() {
+  return [device_ getLastInquiryUpdate];
+}
+
 int BluetoothDeviceMac::GetHostTransmitPower(
     BluetoothHCITransmitPowerLevelType power_level_type) const {
   IOBluetoothHostController* controller =

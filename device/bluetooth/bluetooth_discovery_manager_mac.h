@@ -19,17 +19,15 @@ class BluetoothDiscoveryManagerMac {
   // Interface for being notified of events during a device discovery session.
   class Observer {
    public:
-    // Called when |manager| has found a device through classic device inquiry
-    // in the form of a IOBluetoothDevice.
-    virtual void DeviceFound(BluetoothDiscoveryManagerMac* manager,
-                             IOBluetoothDevice* device) {}
+    // Called when |this| manager has found a device through classic device
+    // inquiry in the form of an IOBluetoothDevice.
+    virtual void DeviceFound(IOBluetoothDevice* device) = 0;
 
     // Called when device discovery is no longer running, due to either a call
     // to BluetoothDiscoveryManagerMac::StopDiscovery or an unexpected reason,
     // such as when a user disables the controller, in which case the value of
     // |unexpected| will be true.
-    virtual void DiscoveryStopped(BluetoothDiscoveryManagerMac* manager,
-                                  bool unexpected) {}
+    virtual void DiscoveryStopped(bool unexpected) = 0;
   };
 
   virtual ~BluetoothDiscoveryManagerMac();

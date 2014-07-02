@@ -69,6 +69,10 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
+  // Returns the timestamp when the device was last seen during an inquiry.
+  // Returns nil if the device has never been seen during an inquiry.
+  NSDate* GetLastInquiryUpdate();
+
   // Returns the Bluetooth address for the |device|. The returned address has a
   // normalized format (see below).
   static std::string GetDeviceAddress(IOBluetoothDevice* device);

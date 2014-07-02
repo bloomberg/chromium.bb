@@ -70,10 +70,8 @@ class BluetoothAdapterMac : public BluetoothAdapter,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
 
   // BluetoothDiscoveryManagerMac::Observer overrides
-  virtual void DeviceFound(BluetoothDiscoveryManagerMac* manager,
-                           IOBluetoothDevice* device) OVERRIDE;
-  virtual void DiscoveryStopped(BluetoothDiscoveryManagerMac* manager,
-                                bool unexpected) OVERRIDE;
+  virtual void DeviceFound(IOBluetoothDevice* device) OVERRIDE;
+  virtual void DiscoveryStopped(bool unexpected) OVERRIDE;
 
   // Registers that a new |device| has connected to the local host.
   void DeviceConnected(IOBluetoothDevice* device);
@@ -101,6 +99,10 @@ class BluetoothAdapterMac : public BluetoothAdapter,
   void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   void PollAdapter();
 
+  // Registers that a new |device| has replied to an Inquiry, is paired, or has
+  // connected to the local host.
+  void DeviceAdded(IOBluetoothDevice* device);
+
   // Updates |devices_| to include the currently paired devices, as well as any
   // connected, but unpaired, devices. Notifies observers if any previously
   // paired or connected devices are no longer present.
@@ -114,15 +116,6 @@ class BluetoothAdapterMac : public BluetoothAdapter,
 
   // Discovery manager for Bluetooth Classic.
   scoped_ptr<BluetoothDiscoveryManagerMac> classic_discovery_manager_;
-
-  // A list of discovered device addresses.
-  // This list is used to check if the same device is discovered twice during
-  // the discovery between consecutive inquiries.
-  base::hash_set<std::string> discovered_devices_;
-
-  // Timestamp for the recently accessed device.
-  // Used to determine if |devices_| needs an update.
-  base::scoped_nsobject<NSDate> recently_accessed_device_timestamp_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
