@@ -28,24 +28,26 @@ FetchHeaderList::~FetchHeaderList()
 void FetchHeaderList::append(const String& name, const String& value)
 {
     // "To append a name/value (|name|/|value|) pair to a header list (|list|),
-    // append a new header whose name is |name| and value is |value|, to
-    // |list|."
-    m_headerList.append(adoptPtr(new Header(name, value)));
+    // append a new header whose name is |name|, byte lowercased, and value is
+    // |value|, to |list|."
+    m_headerList.append(adoptPtr(new Header(name.lower(), value)));
 }
 
 void FetchHeaderList::set(const String& name, const String& value)
 {
     // "To set a name/value (|name|/|value|) pair in a header list (|list|), run
     // these steps:
-    // 1. If there are any headers in |list| whose name is |name|, set the value
+    // 1. Byte lowercase |name|.
+    // 2. If there are any headers in |list| whose name is |name|, set the value
     //    of the first such header to |value| and remove the others.
-    // 2. Otherwise, append a new header whose name is |name| and value is
+    // 3. Otherwise, append a new header whose name is |name| and value is
     //    |value|, to |list|."
+    const String lowercasedName = name.lower();
     for (size_t i = 0; i < m_headerList.size(); ++i) {
-        if (m_headerList[i]->first == name) {
+        if (m_headerList[i]->first == lowercasedName) {
             m_headerList[i]->second = value;
             for (size_t j = i + 1; j < m_headerList.size(); ) {
-                if (m_headerList[j]->first == name)
+                if (m_headerList[j]->first == lowercasedName)
                     m_headerList.remove(j);
                 else
                     ++j;
@@ -53,7 +55,7 @@ void FetchHeaderList::set(const String& name, const String& value)
             return;
         }
     }
-    m_headerList.append(adoptPtr(new Header(name, value)));
+    m_headerList.append(adoptPtr(new Header(lowercasedName, value)));
 }
 
 size_t FetchHeaderList::size() const
@@ -63,8 +65,11 @@ size_t FetchHeaderList::size() const
 
 void FetchHeaderList::remove(const String& name)
 {
+    // "To delete a name (|name|) from a header list (|list|), remove all headers
+    // whose name is |name|, byte lowercased, from |list|."
+    const String lowercasedName = name.lower();
     for (size_t i = 0; i < m_headerList.size(); ) {
-        if (m_headerList[i]->first == name)
+        if (m_headerList[i]->first == lowercasedName)
             m_headerList.remove(i);
         else
             ++i;
@@ -73,8 +78,9 @@ void FetchHeaderList::remove(const String& name)
 
 bool FetchHeaderList::get(const String& name, String& result) const
 {
+    const String lowercasedName = name.lower();
     for (size_t i = 0; i < m_headerList.size(); ++i) {
-        if (m_headerList[i]->first == name) {
+        if (m_headerList[i]->first == lowercasedName) {
             result = m_headerList[i]->second;
             return true;
         }
@@ -84,17 +90,19 @@ bool FetchHeaderList::get(const String& name, String& result) const
 
 void FetchHeaderList::getAll(const String& name, Vector<String>& result) const
 {
+    const String lowercasedName = name.lower();
     result.clear();
     for (size_t i = 0; i < m_headerList.size(); ++i) {
-        if (m_headerList[i]->first == name)
+        if (m_headerList[i]->first == lowercasedName)
             result.append(m_headerList[i]->second);
     }
 }
 
 bool FetchHeaderList::has(const String& name) const
 {
+    const String lowercasedName = name.lower();
     for (size_t i = 0; i < m_headerList.size(); ++i) {
-        if (m_headerList[i]->first == name)
+        if (m_headerList[i]->first == lowercasedName)
             return true;
     }
     return false;
@@ -107,8 +115,8 @@ void FetchHeaderList::clearList()
 
 bool FetchHeaderList::isValidHeaderName(const String& name)
 {
-    // FIXME: According to the spec (http://fetch.spec.whatwg.org/) should we
-    // accept all characters in the range 0x00 to 0x7F?
+    // "A name is a case-insensitive byte sequence that matches the field-name
+    // token production."
     return isValidHTTPToken(name);
 }
 
@@ -116,7 +124,7 @@ bool FetchHeaderList::isValidHeaderValue(const String& value)
 {
     // "A value is a byte sequence that matches the field-value token production
     // and contains no 0x0A or 0x0D bytes."
-    return (value.find('\r') == kNotFound) && (value.find('\n') == kNotFound);
+    return isValidHTTPHeaderValue(value);
 }
 
 bool FetchHeaderList::isSimpleHeader(const String& name, const String& value)

@@ -2,15 +2,15 @@ importScripts('worker-test-helpers.js');
 
 test(function() {
     var expectedMap = {
-        'Content-Language': 'ja',
-        'Content-Type': 'text/html; charset=UTF-8',
-        'X-ServiceWorker-Test': 'response test field'
+        'content-language': 'ja',
+        'content-type': 'text/html; charset=UTF-8',
+        'x-serviceworker-test': 'response test field'
     };
 
     var headers = new Headers;
-    Object.keys(expectedMap).forEach(function(key) {
-        headers.set(key, expectedMap[key]);
-    });
+    headers.set('Content-Language', 'ja');
+    headers.set('Content-Type', 'text/html; charset=UTF-8');
+    headers.set('X-ServiceWorker-Test', 'text/html; charset=UTF-8');
 
     // 'size'
     assert_equals(headers.size, 3, 'headers.size should match');
@@ -18,7 +18,9 @@ test(function() {
     // 'has()', 'get()'
     var key = 'Content-Type';
     assert_true(headers.has(key));
-    assert_equals(headers.get(key), expectedMap[key]);
+    assert_true(headers.has(key.toUpperCase()));
+    assert_equals(headers.get(key), expectedMap[key.toLowerCase()]);
+    assert_equals(headers.get(key.toUpperCase()), expectedMap[key.toLowerCase()]);
     assert_equals(headers.get('dummy'), null);
     assert_false(headers.has('dummy'));
 
@@ -27,7 +29,7 @@ test(function() {
     headers.delete(deleteKey);
     assert_equals(headers.size, 2, 'headers.size should have -1 size');
     Object.keys(expectedMap).forEach(function(key) {
-        if (key == deleteKey)
+        if (key == deleteKey.toLowerCase())
             assert_false(headers.has(key));
         else
             assert_true(headers.has(key));
@@ -51,12 +53,10 @@ test(function() {
           expectedValue: '12345',
           isNewEntry: true },
 
-        // For case-sensitivity test. (FIXME: if we want HeaderMap to
-        // work in an case-insensitive way (as we do for headers in XHR)
-        // update the test and code)
+        // For case-insensitivity test.
         { key: 'content-language',
           value: 'fi',
-          isNewEntry: true }
+          isUpdate: true }
     ];
 
     var expectedHeaderSize = headers.size;
@@ -70,16 +70,16 @@ test(function() {
         assert_true(headers.has(key));
         assert_equals(headers.get(key), expectedValue);
         if (testCase.isUpdate)
-            assert_true(headers.get(key) != expectedMap[key]);
+            assert_true(headers.get(key) != expectedMap[key.toLowerCase()]);
         assert_equals(headers.size, expectedHeaderSize);
 
         // Update expectedMap too for forEach() test below.
-        expectedMap[key] = expectedValue;
+        expectedMap[key.toLowerCase()] = expectedValue;
     });
 
     // 'forEach()'
     headers.forEach(function(value, key) {
-        assert_true(key != deleteKey);
+        assert_true(key != deleteKey.toLowerCase());
         assert_true(key in expectedMap);
         assert_equals(headers.get(key), expectedMap[key]);
     });
@@ -87,25 +87,25 @@ test(function() {
     // 'append()', 'getAll()'
     var allValues = headers.getAll('X-ServiceWorker-Test');
     assert_equals(allValues.length, 1);
-    assert_equals(headers.size, 5);
-    headers.append('X-ServiceWorker-Test', 'response test field - append');
-    assert_equals(headers.size, 6, 'headers.size should increase by 1.');
-    assert_equals(headers.get('X-ServiceWorker-Test'),
+    assert_equals(headers.size, 4);
+    headers.append('X-SERVICEWORKER-TEST', 'response test field - append');
+    assert_equals(headers.size, 5, 'headers.size should increase by 1.');
+    assert_equals(headers.get('X-SERVICEWORKER-Test'),
                   'response test field - updated',
                   'the value of the first header added should be returned.');
-    allValues = headers.getAll('X-ServiceWorker-Test');
+    allValues = headers.getAll('X-SERVICEWorker-TEST');
     assert_equals(allValues.length, 2);
     assert_equals(allValues[0], 'response test field - updated');
     assert_equals(allValues[1], 'response test field - append');
-    headers.set('X-ServiceWorker-Test', 'response test field - set');
-    assert_equals(headers.size, 5, 'the second header should be deleted');
+    headers.set('X-SERVICEWorker-Test', 'response test field - set');
+    assert_equals(headers.size, 4, 'the second header should be deleted');
     allValues = headers.getAll('X-ServiceWorker-Test');
     assert_equals(allValues.length, 1, 'the second header should be deleted');
     assert_equals(allValues[0], 'response test field - set');
-    headers.append('X-ServiceWorker-Test', 'response test field - append');
-    assert_equals(headers.size, 6, 'headers.size should increase by 1.')
-    headers.delete('X-ServiceWorker-Test');
-    assert_equals(headers.size, 4, 'two headers should be deleted.')
+    headers.append('X-ServiceWorker-TEST', 'response test field - append');
+    assert_equals(headers.size, 5, 'headers.size should increase by 1.')
+    headers.delete('X-ServiceWORKER-Test');
+    assert_equals(headers.size, 3, 'two headers should be deleted.')
 
     // new Headers with sequence<sequence<ByteString>>
     headers = new Headers([['a', 'b'], ['c', 'd'], ['c', 'e']]);
