@@ -10,14 +10,11 @@ from telemetry.timeline import model
 class ImageDecoding(page_measurement.PageMeasurement):
   def __init__(self):
     super(ImageDecoding, self).__init__()
-    self._power_metric = None
+    self._power_metric = power.PowerMetric()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     power.PowerMetric.CustomizeBrowserOptions(options)
-
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
 
   def WillNavigateToPage(self, page, tab):
     tab.ExecuteJavaScript("""

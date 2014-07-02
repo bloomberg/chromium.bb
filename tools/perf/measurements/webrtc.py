@@ -15,10 +15,7 @@ class WebRTC(page_measurement.PageMeasurement):
     super(WebRTC, self).__init__('RunWebrtc')
     self._cpu_metric = None
     self._memory_metric = None
-    self._power_metric = None
-
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
+    self._power_metric = power.PowerMetric()
 
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)

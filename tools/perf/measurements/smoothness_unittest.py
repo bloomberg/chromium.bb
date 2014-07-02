@@ -62,7 +62,6 @@ class SmoothnessUnitTest(
 
     tab = FakeTab()
     measurement = smoothness.Smoothness()
-    measurement.WillStartBrowser(tab.browser)
     measurement.WillRunActions(test_page, tab)
 
     expected_category_filter = [

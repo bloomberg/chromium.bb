@@ -10,10 +10,7 @@ class Memory(page_measurement.PageMeasurement):
   def __init__(self):
     super(Memory, self).__init__('RunStressMemory')
     self._memory_metric = None
-    self._power_metric = None
-
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
+    self._power_metric = power.PowerMetric()
 
   def DidStartBrowser(self, browser):
     self._memory_metric = memory.MemoryMetric(browser)

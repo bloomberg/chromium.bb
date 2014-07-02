@@ -19,13 +19,10 @@ def _Mean(l):
 class _KrakenMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(_KrakenMeasurement, self).__init__()
-    self._power_metric = None
+    self._power_metric = power.PowerMetric()
 
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
-
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)
