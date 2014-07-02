@@ -175,8 +175,7 @@ bool GamepadProvider::PadState::Match(const WebGamepad& pad) const {
 }
 
 void GamepadProvider::PadState::SetPad(const WebGamepad& pad) {
-  DCHECK(pad.connected);
-  connected_ = true;
+  connected_ = pad.connected;
   axes_length_ = pad.axesLength;
   buttons_length_ = pad.buttonsLength;
   memcpy(id_, pad.id, arraysize(id_));
@@ -230,8 +229,6 @@ void GamepadProvider::DoPoll() {
     hwbuf->sequence.WriteEnd();
   }
 
-  CheckForUserGesture();
-
   if (ever_had_user_gesture_) {
     for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
       WebGamepad& pad = hwbuf->buffer.items[i];
@@ -248,6 +245,8 @@ void GamepadProvider::DoPoll() {
       }
     }
   }
+
+  CheckForUserGesture();
 
   // Schedule our next interval of polling.
   ScheduleDoPoll();
@@ -308,13 +307,21 @@ void GamepadProvider::CheckForUserGesture() {
   if (user_gesture_observers_.empty() && ever_had_user_gesture_)
     return;
 
-  if (GamepadsHaveUserGesture(SharedMemoryAsHardwareBuffer()->buffer)) {
+  bool had_gesture_before = ever_had_user_gesture_;
+  const WebGamepads& pads = SharedMemoryAsHardwareBuffer()->buffer;
+  if (GamepadsHaveUserGesture(pads)) {
     ever_had_user_gesture_ = true;
     for (size_t i = 0; i < user_gesture_observers_.size(); i++) {
       user_gesture_observers_[i].message_loop->PostTask(FROM_HERE,
           user_gesture_observers_[i].closure);
     }
     user_gesture_observers_.clear();
+  }
+  if (!had_gesture_before && ever_had_user_gesture_) {
+    // Initialize pad_states_ for the first time.
+    for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+      pad_states_.get()[i].SetPad(pads.items[i]);
+    }
   }
 }
 

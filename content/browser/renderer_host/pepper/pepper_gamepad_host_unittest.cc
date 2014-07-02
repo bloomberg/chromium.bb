@@ -140,29 +140,19 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
             gamepad_host.OnResourceMessageReceived(
                 PpapiHostMsg_Gamepad_RequestMemory(), &context));
 
-  // Wait for the gamepad background thread to read twice to make sure we
-  // don't get a message yet (see below for why).
   MockGamepadDataFetcher* fetcher = service_->data_fetcher();
-  fetcher->WaitForDataRead();
-  fetcher->WaitForDataRead();
+  fetcher->WaitForDataReadAndCallbacksIssued();
 
   // It should not have sent the callback message.
   service_->message_loop().RunUntilIdle();
   EXPECT_EQ(0u, sink().message_count());
 
   // Set a button down and wait for it to be read twice.
-  //
-  // We wait for two reads before calling RunAllPending because the provider
-  // will read the data on the background thread (setting the event) and *then*
-  // will issue the callback on our thread. Waiting for it to read twice
-  // ensures that it was able to issue callbacks for the first read (if it
-  // issued one) before we try to check for it.
   blink::WebGamepads button_down_data = default_data;
   button_down_data.items[0].buttons[0].value = 1.f;
   button_down_data.items[0].buttons[0].pressed = true;
   fetcher->SetTestData(button_down_data);
-  fetcher->WaitForDataRead();
-  fetcher->WaitForDataRead();
+  fetcher->WaitForDataReadAndCallbacksIssued();
 
   // It should have sent a callback.
   service_->message_loop().RunUntilIdle();

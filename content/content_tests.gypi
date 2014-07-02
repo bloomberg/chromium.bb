@@ -471,6 +471,7 @@
         'browser/frame_host/render_widget_host_view_child_frame_unittest.cc',
         'browser/frame_host/render_widget_host_view_guest_unittest.cc',
         'browser/gamepad/gamepad_provider_unittest.cc',
+        'browser/gamepad/gamepad_service_unittest.cc',
         'browser/gamepad/gamepad_test_helpers.cc',
         'browser/gamepad/gamepad_test_helpers.h',
         'browser/geolocation/geolocation_provider_unittest.cc',

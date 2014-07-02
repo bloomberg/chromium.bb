@@ -33,6 +33,11 @@ class MockGamepadDataFetcher : public GamepadDataFetcher {
   // fetcher on the background thread.
   void WaitForDataRead();
 
+  // Blocks the current thread until the GamepadProvider reads from this
+  // fetcher on the background thread and issued all callbacks related to the
+  // read on the client's thread.
+  void WaitForDataReadAndCallbacksIssued();
+
   // Updates the test data.
   void SetTestData(const blink::WebGamepads& new_data);
 

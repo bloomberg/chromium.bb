@@ -30,6 +30,15 @@ void MockGamepadDataFetcher::WaitForDataRead() {
   return read_data_.Wait();
 }
 
+void MockGamepadDataFetcher::WaitForDataReadAndCallbacksIssued() {
+  // The provider will read the data on the background thread (setting the
+  // event) and *then* will issue the callback on the client thread. Waiting for
+  // it to read twice is a simple way to ensure that it was able to issue
+  // callbacks for the first read (if it issued one).
+  WaitForDataRead();
+  WaitForDataRead();
+}
+
 void MockGamepadDataFetcher::SetTestData(const blink::WebGamepads& new_data) {
   base::AutoLock lock(lock_);
   test_data_ = new_data;

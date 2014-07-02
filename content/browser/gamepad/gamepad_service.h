@@ -82,6 +82,7 @@ class CONTENT_EXPORT GamepadService {
  private:
   friend struct DefaultSingletonTraits<GamepadService>;
   friend class GamepadServiceTestConstructor;
+  friend class GamepadServiceTest;
 
   GamepadService();
 
@@ -90,6 +91,8 @@ class CONTENT_EXPORT GamepadService {
   GamepadService(scoped_ptr<GamepadDataFetcher> fetcher);
 
   virtual ~GamepadService();
+
+  void SetInstance();
 
   void OnUserGesture();
 

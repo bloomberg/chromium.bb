@@ -131,26 +131,16 @@ TEST_F(GamepadProviderTest, UserGesture) {
   GamepadProvider* provider = CreateProvider(no_button_data);
   provider->Resume();
 
-  // Register for a user gesture and make sure the provider reads it twice
-  // see below for why).
   provider->RegisterForUserGesture(listener.GetClosure());
-  mock_data_fetcher_->WaitForDataRead();
-  mock_data_fetcher_->WaitForDataRead();
+  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
   // It should not have issued our callback.
   message_loop().RunUntilIdle();
   EXPECT_FALSE(listener.has_user_gesture());
 
   // Set a button down and wait for it to be read twice.
-  //
-  // We wait for two reads before calling RunAllPending because the provider
-  // will read the data on the background thread (setting the event) and *then*
-  // will issue the callback on our thread. Waiting for it to read twice
-  // ensures that it was able to issue callbacks for the first read (if it
-  // issued one) before we try to check for it.
   mock_data_fetcher_->SetTestData(button_down_data);
-  mock_data_fetcher_->WaitForDataRead();
-  mock_data_fetcher_->WaitForDataRead();
+  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
   // It should have issued our callback.
   message_loop().RunUntilIdle();
