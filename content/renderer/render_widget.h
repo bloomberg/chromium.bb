@@ -226,6 +226,7 @@ class CONTENT_EXPORT RenderWidget
       const blink::WebDeviceEmulationParams& params);
   void DisableScreenMetricsEmulation();
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
+  gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
   void ScheduleCompositeWithForcedRedraw();
 
