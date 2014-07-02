@@ -255,6 +255,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/openssl': [  # http://crbug.com/98451
         'UNKNOWN',
     ],
+    'third_party/boringssl': [
+        # There are some files in BoringSSL which came from OpenSSL and have no
+        # license in them. We don't wish to add the license header ourselves
+        # thus we don't expect to pass license checks.
+        'UNKNOWN',
+    ],
     'third_party/ots/tools/ttf-checksum.py': [  # http://code.google.com/p/ots/issues/detail?id=2
         'UNKNOWN',
     ],
