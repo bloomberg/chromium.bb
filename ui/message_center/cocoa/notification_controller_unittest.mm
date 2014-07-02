@@ -405,8 +405,7 @@ TEST_F(NotificationControllerTest, MessageSize) {
 
   // Message, image and no title: 2 lines.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(2, 2);
   bitmap.eraseColor(SK_ColorGREEN);
   notification->set_title(ASCIIToUTF16(""));
   notification->set_image(gfx::Image::CreateFrom1xBitmap(bitmap));

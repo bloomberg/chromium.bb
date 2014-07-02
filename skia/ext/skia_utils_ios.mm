@@ -18,13 +18,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image, CGSize size, bool is_opaque) {
   if (!image)
     return bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   size.width,
-                   size.height,
-                   0,
-                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-
-  if (!bitmap.allocPixels())
+  if (!bitmap.allocN32Pixels(size.width, size.height, is_opaque))
     return bitmap;
 
   void* data = bitmap.getPixels();

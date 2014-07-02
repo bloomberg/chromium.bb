@@ -257,14 +257,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
     #define SK_SUPPORT_LEGACY_BITMAP_CONFIG
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_N32_NAME
-    #define SK_SUPPORT_LEGACY_N32_NAME
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_SETCONFIG
-    #define SK_SUPPORT_LEGACY_SETCONFIG
-#endif
-
 // ===== End Chrome-specific definitions =====
 
 #endif

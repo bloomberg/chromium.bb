@@ -27,8 +27,7 @@ gfx::ImageSkia CreateTestImage(const gfx::Size& size) {
   SkBitmap src;
   int w = size.width();
   int h = size.height();
-  src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  src.allocPixels();
+  src.allocN32Pixels(w, h);
 
   // Fill bitmap with data.
   for (int y = 0; y < h; ++y) {

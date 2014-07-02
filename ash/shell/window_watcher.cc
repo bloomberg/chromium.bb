@@ -105,8 +105,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   id_to_window_[id] = new_window;
 
   SkBitmap icon_bitmap;
-  icon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  icon_bitmap.allocPixels();
+  icon_bitmap.allocN32Pixels(16, 16);
   icon_bitmap.eraseARGB(255,
                         image_count == 0 ? 255 : 0,
                         image_count == 1 ? 255 : 0,

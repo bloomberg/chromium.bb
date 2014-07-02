@@ -28,11 +28,8 @@ ShellExtensionSystem* GetShellExtensionSystem(
 
 gfx::ImageSkia CreateFlatColorImage(SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config,
-      extension_misc::EXTENSION_ICON_MEDIUM,
-      extension_misc::EXTENSION_ICON_MEDIUM);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(extension_misc::EXTENSION_ICON_MEDIUM,
+                        extension_misc::EXTENSION_ICON_MEDIUM);
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }

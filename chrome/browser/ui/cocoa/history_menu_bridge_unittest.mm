@@ -343,8 +343,7 @@ TEST_F(HistoryMenuBridgeTest, GetFaviconForHistoryItem) {
 TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   // Create a dummy bitmap.
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 25, 25);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(25, 25);
   bitmap.eraseARGB(255, 255, 0, 0);
 
   // Set up the HistoryItem.

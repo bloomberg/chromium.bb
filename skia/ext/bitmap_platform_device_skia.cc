@@ -53,7 +53,7 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
 
 SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
                                                    Usage /*usage*/) {
-  SkASSERT(info.colorType() == kPMColor_SkColorType);
+  SkASSERT(info.colorType() == kN32_SkColorType);
   return BitmapPlatformDevice::Create(info.width(), info.height(),
                                       info.isOpaque());
 }

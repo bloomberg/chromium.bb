@@ -79,11 +79,6 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
   void LoadClipRegion();
 
  protected:
-#ifdef SK_SUPPORT_LEGACY_COMPATIBLEDEVICE_CONFIG
-  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                                 int height, bool isOpaque,
-                                                 Usage usage) OVERRIDE;
-#endif
   virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
                                        Usage usage) OVERRIDE;
 

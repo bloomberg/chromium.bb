@@ -462,7 +462,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   SkBitmap bitmap;
   const int kTestImageSize = 10;
   const int kTargetImageSize = 48;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, kTestImageSize, kTestImageSize);
+  bitmap.setInfo(SkImageInfo::MakeN32Premul(kTestImageSize, kTestImageSize));
   item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), false);
   icon_size = [[button image] size];
   // Icon should always be resized to 48x48.

@@ -63,11 +63,7 @@ class TestDiscardableShader : public SkShader {
 };
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
-  const SkImageInfo info = {
-    size.width(), size.height(), kPMColor_SkColorType, kPremul_SkAlphaType
-  };
-
-  bitmap->allocPixels(info);
+  bitmap->allocN32Pixels(size.width(), size.height());
   bitmap->pixelRef()->setImmutable();
   bitmap->pixelRef()->setURI(uri);
 }

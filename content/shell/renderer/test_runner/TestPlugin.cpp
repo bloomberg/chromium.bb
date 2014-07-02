@@ -429,9 +429,10 @@ void TestPlugin::drawSceneSoftware(void* memory, size_t bytes) {
                            m_scene.backgroundColor[1],
                            m_scene.backgroundColor[2]);
 
+    const SkImageInfo info = SkImageInfo::MakeN32Premul(m_rect.width,
+                                                        m_rect.height);
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, m_rect.width, m_rect.height);
-    bitmap.setPixels(memory);
+    bitmap.installPixels(info, memory, info.minRowBytes());
     SkCanvas canvas(bitmap);
     canvas.clear(backgroundColor);
 

@@ -30,10 +30,8 @@ namespace {
 SkBitmap CreateBlankBitmapForScale(int size_dip, ui::ScaleFactor scale_factor) {
   SkBitmap bitmap;
   const float scale = ui::GetScaleForScaleFactor(scale_factor);
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   static_cast<int>(size_dip * scale),
-                   static_cast<int>(size_dip * scale));
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(static_cast<int>(size_dip * scale),
+                        static_cast<int>(size_dip * scale));
   bitmap.eraseColor(SkColorSetARGB(0, 0, 0, 0));
   return bitmap;
 }

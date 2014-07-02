@@ -66,8 +66,7 @@ std::string EncodeBitmapAsPNGBase64(const SkBitmap& bitmap) {
 
 SkBitmap MakeBitmap(int width, int height) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseColor(SK_ColorBLUE);
   return bitmap;
 }

@@ -202,8 +202,7 @@ const SkBitmap GetEmptyBitmap(const gfx::Size pixel_size) {
     return iter->second;
 
   SkBitmap empty;
-  empty.setConfig(SkBitmap::kARGB_8888_Config, key.first, key.second);
-  empty.allocPixels();
+  empty.allocN32Pixels(key.first, key.second);
   empty.eraseARGB(0, 0, 0, 0);
   (*s_empty_bitmaps)[key] = empty;
   return empty;

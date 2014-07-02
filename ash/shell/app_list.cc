@@ -67,8 +67,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
 
     const int kIconSize = 128;
     SkBitmap icon;
-    icon.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
-    icon.allocPixels();
+    icon.allocN32Pixels(kIconSize, kIconSize);
     icon.eraseColor(kColors[static_cast<int>(type) % arraysize(kColors)]);
     return gfx::ImageSkia::CreateFrom1xBitmap(icon);
   }

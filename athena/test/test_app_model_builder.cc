@@ -78,8 +78,7 @@ class DummyItem : public app_list::AppListItem {
         break;
     }
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(kIconSize, kIconSize);
     bitmap.eraseColor(color);
     return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   }

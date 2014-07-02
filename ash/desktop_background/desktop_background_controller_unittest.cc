@@ -94,8 +94,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   // Creates an image of size |size|.
   gfx::ImageSkia CreateImage(int width, int height, SkColor color) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-    bitmap.allocPixels();
+    bitmap.allocN32Pixels(width, height);
     bitmap.eraseColor(color);
     gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     return image;
