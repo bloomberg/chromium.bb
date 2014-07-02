@@ -96,7 +96,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
 
             const RenderLayer* parent = layer->parent();
             properties.opacityAncestor = parent->isTransparent() ? parent : parent->compositingInputs().opacityAncestor;
-            properties.transformAncestor = parent->hasTransform() ? parent : parent->compositingInputs().transformAncestor;
+            properties.transformAncestor = parent->transform() ? parent : parent->compositingInputs().transformAncestor;
             properties.filterAncestor = parent->hasFilter() ? parent : parent->compositingInputs().filterAncestor;
 
             if (info.hasAncestorWithClipOrOverflowClip) {

@@ -1,0 +1,34 @@
+<!doctype html>
+<div style="-webkit-transform-style: preserve-3d">
+  <div style="width: 100px; height: 100px; background:lightgray; transform:translateZ(0)"></div>
+  <div id="target" style="position: absolute; top: 20px; left: 20px; height: 100px; width: 100px; background:lightblue"></div>
+</div>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+if (testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+if (window.internals)
+    internals.settings.setLayerSquashingEnabled(true);
+
+// Test that squashing works properly when inside of a transform-style: preserve-3d element. In the bug that this layout test
+// was added to fix, the coordinates of the squashing layer paint invalidation rects were not recorded correctly, because some of
+// the code computed transformed ancestors incorrectly (it should *not* include the preserve-3d element).
+
+runAfterDisplay(function() {
+    if (internals)
+        window.internals.startTrackingRepaints(document);
+
+    var target = document.getElementById('target');
+    target.style.background = 'red';
+
+    if (testRunner)
+        testRunner.setCustomTextOutput(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
+    if (internals)
+        window.internals.stopTrackingRepaints(document);
+
+    if (testRunner)
+        testRunner.notifyDone();
+});
+</script>
