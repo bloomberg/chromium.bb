@@ -28,7 +28,6 @@ class SmoothnessToughWebGLCases(benchmark.Benchmark):
   page_set = page_sets.ToughWebglCasesPageSet
 
 
-@benchmark.Disabled
 class SmoothnessMaps(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.MapsPageSet
