@@ -230,22 +230,30 @@ def split_server_request_url(url):
   return urlhost, urlpath
 
 
-def get_http_service(urlhost):
+def get_http_service(urlhost, allow_cached=False, use_count_key=None):
   """Returns existing or creates new instance of HttpService that can send
   requests to given base urlhost.
   """
+  def new_service():
+    return HttpService(
+        urlhost,
+        engine=RequestsLibEngine(get_cacerts_bundle()),
+        authenticator=create_authenticator(urlhost),
+        use_count_key=use_count_key)
+
   # Ensure consistency in url naming.
   urlhost = str(urlhost).lower().rstrip('/')
+
   # Do not use COUNT_KEY with Google Storage (since it breaks a signature).
-  use_count_key = not GS_STORAGE_HOST_URL_RE.match(urlhost)
+  if use_count_key is None:
+    use_count_key = not GS_STORAGE_HOST_URL_RE.match(urlhost)
+
+  if not allow_cached:
+    return new_service()
   with _http_services_lock:
     service = _http_services.get(urlhost)
     if not service:
-      service = HttpService(
-          urlhost,
-          engine=RequestsLibEngine(get_cacerts_bundle()),
-          authenticator=create_authenticator(urlhost),
-          use_count_key=use_count_key)
+      service = new_service()
       _http_services[urlhost] = service
     return service
 

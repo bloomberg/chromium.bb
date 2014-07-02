@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to a server."""
 
-__version__ = '0.3.3'
+__version__ = '0.3.4'
 
 import functools
 import hashlib
@@ -29,6 +29,7 @@ from third_party.depot_tools import subcommand
 
 from utils import file_path
 from utils import net
+from utils import on_error
 from utils import threading_utils
 from utils import tools
 
@@ -2337,6 +2338,7 @@ def process_isolate_server_options(parser, options):
       new[2] = ''
     new[2] = new[2].rstrip('/')
     options.isolate_server = urlparse.urlunparse(new)
+    on_error.report_on_exception_exit(options.isolate_server)
     return
 
   if file_path.is_url(options.indir):
@@ -2392,11 +2394,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
 
 def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  try:
-    return dispatcher.execute(OptionParserIsolateServer(), args)
-  except Exception as e:
-    tools.report_error(e)
-    return 1
+  return dispatcher.execute(OptionParserIsolateServer(), args)
 
 
 if __name__ == '__main__':

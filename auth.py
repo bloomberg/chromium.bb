@@ -5,7 +5,7 @@
 
 """Client tool to perform various authentication related tasks."""
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 import optparse
 import sys
@@ -14,6 +14,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import on_error
 from utils import net
 from utils import oauth
 from utils import tools
@@ -132,16 +133,13 @@ class OptionParserAuth(tools.OptionParserWithLogging):
     options.service = options.service.rstrip('/')
     if not options.service:
       self.error('--service is required.')
+    on_error.report_on_exception_exit(options.service)
     return options, args
 
 
 def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  try:
-    return dispatcher.execute(OptionParserAuth(version=__version__), args)
-  except Exception as e:
-    tools.report_error(e)
-    return 1
+  return dispatcher.execute(OptionParserAuth(version=__version__), args)
 
 
 if __name__ == '__main__':

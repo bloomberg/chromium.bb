@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 import ctypes
 import logging
@@ -31,6 +31,7 @@ import time
 from third_party.depot_tools import fix_encoding
 
 from utils import lru
+from utils import on_error
 from utils import threading_utils
 from utils import tools
 from utils import zip_package
@@ -674,8 +675,8 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
           cache=cache,
           outdir=run_dir,
           require_command=True)
-    except isolateserver.ConfigError as e:
-      tools.report_error(e)
+    except isolateserver.ConfigError:
+      on_error.report(None)
       return 1
 
     change_tree_read_only(run_dir, settings.read_only)
@@ -704,8 +705,8 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
         logging.info(
             'Command finished with exit code %d (%s)',
             result, hex(0xffffffff & result))
-    except OSError as e:
-      tools.report_error('Failed to run %s; cwd=%s: %s' % (command, cwd, e))
+    except OSError:
+      on_error.report('Failed to run %s; cwd=%s' % (command, cwd))
       result = 1
 
   finally:
@@ -815,21 +816,15 @@ def main(args):
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
 
-  try:
-    # |options.cache| path may not exist until DiskCache() instance is created.
-    cache = DiskCache(
-        options.cache, policies, isolateserver.get_hash_algo(options.namespace))
-    remote = options.isolate_server or options.indir
-    with isolateserver.get_storage(remote, options.namespace) as storage:
-      # Hashing schemes used by |storage| and |cache| MUST match.
-      assert storage.hash_algo == cache.hash_algo
-      return run_tha_test(
-          options.isolated or options.hash, storage, cache, args)
-  except Exception as e:
-    # Make sure any exception is logged.
-    tools.report_error(e)
-    logging.exception(e)
-    return 1
+  # |options.cache| path may not exist until DiskCache() instance is created.
+  cache = DiskCache(
+      options.cache, policies, isolateserver.get_hash_algo(options.namespace))
+  remote = options.isolate_server or options.indir
+  with isolateserver.get_storage(remote, options.namespace) as storage:
+    # Hashing schemes used by |storage| and |cache| MUST match.
+    assert storage.hash_algo == cache.hash_algo
+    return run_tha_test(
+        options.isolated or options.hash, storage, cache, args)
 
 
 if __name__ == '__main__':

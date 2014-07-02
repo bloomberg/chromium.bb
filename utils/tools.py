@@ -13,7 +13,6 @@ import os
 import re
 import sys
 import time
-import traceback
 
 
 class OptionParserWithLogging(optparse.OptionParser):
@@ -152,26 +151,6 @@ def format_json(data, dense):
   buf = cStringIO.StringIO()
   write_json(buf, data, dense)
   return buf.getvalue()
-
-
-def report_error(error):
-  """Prints a error to stderr, wrapping it into header and footer.
-
-  That way errors can be reliably extracted from logs. It's indented to be used
-  only for non recoverable unexpected errors. Is should NOT be used for input
-  validation, command line argument errors, etc.
-
-  Arguments:
-    error: error message string (possibly multiple lines) or an instance of
-           Exception subclass. In the later case a traceback will also be
-           reported. It's assumed that |report_error| is called in an except
-           block where |error| was caught.
-  """
-  print >> sys.stderr, '[------ Swarming Error ------]'
-  print >> sys.stderr, str(error)
-  if isinstance(error, Exception):
-    print >> sys.stderr, traceback.format_exc(),
-  print >> sys.stderr, '[----------------------------]'
 
 
 def gen_blacklist(regexes):

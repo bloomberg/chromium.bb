@@ -13,6 +13,8 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
+__version__ = '0.3.2'
+
 import datetime
 import logging
 import optparse
@@ -33,10 +35,8 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import on_error
 from utils import tools
-
-
-__version__ = '0.3.1'
 
 
 class ExecutionError(Exception):
@@ -1047,6 +1047,7 @@ def CMDarchive(parser, args):
   isolateserver.process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported argument: %s' % args)
+  on_error.report_on_exception_exit(options.isolate_server)
   cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False
@@ -1512,11 +1513,7 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
 
 def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  try:
-    return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
-  except Exception as e:
-    tools.report_error(e)
-    return 1
+  return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
 
 
 if __name__ == '__main__':

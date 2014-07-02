@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.10'
+__version__ = '0.4.11'
 
 import datetime
 import getpass
@@ -28,6 +28,7 @@ from third_party.depot_tools import subcommand
 from utils import file_path
 from third_party.chromium import natsort
 from utils import net
+from utils import on_error
 from utils import threading_utils
 from utils import tools
 from utils import zip_package
@@ -555,8 +556,7 @@ def upload_zip_bundle(isolate_server, bundle):
     bundle: instance of ZipPackage to upload.
 
   Returns:
-    URL to get the file from on success.
-    None on failure.
+    URL to get the file from.
   """
   # Swarming bot would need to be able to grab the file from the storage
   # using raw HTTP GET. Use 'default' namespace so that the raw data returned
@@ -564,17 +564,13 @@ def upload_zip_bundle(isolate_server, bundle):
   # data yet. This namespace have nothing to do with |namespace| passed to
   # run_isolated.py that is used to store files for isolated task.
   logging.info('Zipping up and uploading files...')
-  try:
-    start_time = now()
-    isolate_item = isolateserver.BufferItem(
-        bundle.zip_into_buffer(), high_priority=True)
-    with isolateserver.get_storage(isolate_server, 'default') as storage:
-      uploaded = storage.upload_items([isolate_item])
-      bundle_url = storage.get_fetch_url(isolate_item)
-    elapsed = now() - start_time
-  except (IOError, OSError) as exc:
-    tools.report_error('Failed to upload the zip file: %s' % exc)
-    return None
+  start_time = now()
+  isolate_item = isolateserver.BufferItem(
+      bundle.zip_into_buffer(), high_priority=True)
+  with isolateserver.get_storage(isolate_server, 'default') as storage:
+    uploaded = storage.upload_items([isolate_item])
+    bundle_url = storage.get_fetch_url(isolate_item)
+  elapsed = now() - start_time
   if isolate_item in uploaded:
     logging.info('Upload complete, time elapsed: %f', elapsed)
   else:
@@ -596,17 +592,16 @@ def trigger_by_manifest(swarming, manifest):
   manifest_text = manifest.to_json()
   result = net.url_read(swarming + '/test', data={'request': manifest_text})
   if not result:
-    tools.report_error('Failed to trigger task %s' % manifest.task_name)
+    on_error.report('Failed to trigger task %s' % manifest.task_name)
     return None
   try:
     data = json.loads(result)
-  except (ValueError, TypeError) as e:
+  except (ValueError, TypeError):
     msg = '\n'.join((
         'Failed to trigger task %s' % manifest.task_name,
         'Manifest: %s' % manifest_text,
-        'Bad response: %s' % result,
-        str(e)))
-    tools.report_error(msg)
+        'Bad response: %s' % result))
+    on_error.report(msg)
     return None, None
   if not data:
     return None, None
@@ -653,8 +648,10 @@ def trigger_task_shards(
     manifests.append(manifest)
 
   # Upload zip bundle file to get its URL.
-  bundle_url = upload_zip_bundle(isolate_server, bundle)
-  if not bundle_url:
+  try:
+    bundle_url = upload_zip_bundle(isolate_server, bundle)
+  except (IOError, OSError):
+    on_error.report('Failed to upload the zip file for task %s' % task_name)
     return None, None
 
   # Attach that file to all manifests.
@@ -697,13 +694,13 @@ def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
   if arg.endswith('.isolated'):
     file_hash = archive(isolate_server, namespace, arg, algo, verbose)
     if not file_hash:
-      tools.report_error('Archival failure %s' % arg)
+      on_error.report('Archival failure %s' % arg)
       return None, True
     return file_hash, True
   elif isolateserver.is_valid_hash(arg, algo):
     return arg, False
   else:
-    tools.report_error('Invalid hash %s' % arg)
+    on_error.report('Invalid hash %s' % arg)
     return None, False
 
 
@@ -959,8 +956,8 @@ def CMDcollect(parser, args):
         options.decorate,
         options.print_status_updates,
         options.task_output_dir)
-  except Failure as e:
-    tools.report_error(e)
+  except Failure:
+    on_error.report(None)
     return 1
 
 
@@ -1048,12 +1045,12 @@ def CMDrun(parser, args):
         profile=options.profile,
         priority=options.priority)
   except Failure as e:
-    tools.report_error(
+    on_error.report(
         'Failed to trigger %s(%s): %s' %
         (options.task_name, args[0], e.args[0]))
     return 1
   if not tasks:
-    tools.report_error('Failed to trigger the task.')
+    on_error.report('Failed to trigger the task.')
     return 1
   if task_name != options.task_name:
     print('Triggered task: %s' % task_name)
@@ -1067,8 +1064,8 @@ def CMDrun(parser, args):
         options.decorate,
         options.print_status_updates,
         options.task_output_dir)
-  except Failure as e:
-    tools.report_error(e)
+  except Failure:
+    on_error.report(None)
     return 1
 
 
@@ -1120,8 +1117,8 @@ def CMDtrigger(parser, args):
         }
         tools.write_json(options.dump_json, data, True)
     return int(not tasks)
-  except Failure as e:
-    tools.report_error(e)
+  except Failure:
+    on_error.report(None)
     return 1
 
 
@@ -1149,11 +1146,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
 
 def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  try:
-    return dispatcher.execute(OptionParserSwarming(version=__version__), args)
-  except Exception as e:
-    tools.report_error(e)
-    return 1
+  return dispatcher.execute(OptionParserSwarming(version=__version__), args)
 
 
 if __name__ == '__main__':
