@@ -339,7 +339,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         break;
       }
       case STATE_GET_CHANNEL_ID_COMPLETE:
-        if (!channel_id_key_) {
+        if (!channel_id_key_.get()) {
           CloseConnectionWithDetails(QUIC_INVALID_CHANNEL_ID_SIGNATURE,
                                      "Channel ID lookup failed");
           return;
