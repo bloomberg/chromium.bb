@@ -196,6 +196,7 @@ crbug.com/390605 virtual/softwarecompositing/squashing/selection-repaint-with-ga
 crbug.com/390605 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
 
 crbug.com/391044 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
+crbug.com/391052 editing/inserting/return-key-with-selection-003.html [ NeedsRebaseline ]
 
 crbug.com/380217 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
