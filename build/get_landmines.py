@@ -54,6 +54,7 @@ def print_landmines(target):
   if (platform() != 'ios'):
     print 'Clobber to get rid of obselete test plugin after r248358'
     print 'Clobber to rebuild GN files for V8'
+  print 'Need to clobber everything due to build_nexe change in nacl r13424'
 
 
 def main():
