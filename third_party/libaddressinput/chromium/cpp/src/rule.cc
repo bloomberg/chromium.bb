@@ -55,9 +55,6 @@ bool ParseToken(char c, AddressField* field) {
     case 'A':
       *field = STREET_ADDRESS;
       return true;
-    case 'O':
-      *field = ORGANIZATION;
-      return true;
     case 'N':
       *field = RECIPIENT;
       return true;
@@ -73,7 +70,6 @@ bool ParseToken(char c, AddressField* field) {
 // It includes the allowed fields prefixed with %, newlines denoted %n, and the
 // extra text that should be included on an envelope. It is parsed into:
 // {
-//     {ORGANIZATION},
 //     {RECIPIENT},
 //     {STREET_ADDRESS},
 //     {"AX-", POSTAL_CODE, " ", LOCALITY},
@@ -110,7 +106,7 @@ void ParseAddressFieldsFormat(const std::string& format,
     AddressField field = COUNTRY;
     if (ParseToken(control_character, &field)) {
       lines->back().push_back(FormatElement(field));
-    } else if (control_character == 'n') {
+    } else if (control_character == 'n' && !lines->back().empty()) {
       lines->push_back(std::vector<FormatElement>());
     }
 

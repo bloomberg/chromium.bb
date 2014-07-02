@@ -31,7 +31,6 @@ using i18n::addressinput::ADMIN_AREA;
 using i18n::addressinput::COUNTRY;
 using i18n::addressinput::FormatElement;
 using i18n::addressinput::LOCALITY;
-using i18n::addressinput::ORGANIZATION;
 using i18n::addressinput::POSTAL_CODE;
 using i18n::addressinput::RECIPIENT;
 using i18n::addressinput::RegionDataConstants;
@@ -169,8 +168,6 @@ TEST(RuleTest, ParseFormatWithNewLines) {
 
   std::vector<std::vector<FormatElement> > expected_format;
   expected_format.push_back(
-      std::vector<FormatElement>(1, FormatElement(ORGANIZATION)));
-  expected_format.push_back(
       std::vector<FormatElement>(1, FormatElement(RECIPIENT)));
   expected_format.push_back(
       std::vector<FormatElement>(1, FormatElement(STREET_ADDRESS)));
@@ -224,7 +221,6 @@ TEST(RuleTest, ParseRequiredFields) {
   Rule rule;
   ASSERT_TRUE(rule.ParseSerializedRule("{\"require\":\"ONAZC\"}"));
   std::vector<AddressField> expected;
-  expected.push_back(ORGANIZATION);
   expected.push_back(RECIPIENT);
   expected.push_back(STREET_ADDRESS);
   expected.push_back(POSTAL_CODE);

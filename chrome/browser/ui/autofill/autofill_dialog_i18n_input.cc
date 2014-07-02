@@ -50,11 +50,6 @@ void BuildAddressInputs(common::AddressType address_type,
 
   for (size_t i = 0; i < components.size(); ++i) {
     const AddressUiComponent& component = components[i];
-    if (component.field == ::i18n::addressinput::ORGANIZATION) {
-      // TODO(dbeam): figure out when we actually need this.
-      continue;
-    }
-
     ServerFieldType server_type = TypeForField(component.field, address_type);
     DetailInput::Length length = LengthFromHint(component.length_hint);
     base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
@@ -133,8 +128,6 @@ ServerFieldType TypeForField(AddressField address_field,
                        ADDRESS_HOME_STREET_ADDRESS;
     case ::i18n::addressinput::RECIPIENT:
       return billing ? NAME_BILLING_FULL : NAME_FULL;
-    case ::i18n::addressinput::ORGANIZATION:
-      return COMPANY_NAME;
   }
   NOTREACHED();
   return UNKNOWN_TYPE;
@@ -181,10 +174,6 @@ bool FieldForType(ServerFieldType server_type,
     case ADDRESS_HOME_LINE2:
       if (field)
         *field = ::i18n::addressinput::STREET_ADDRESS;
-      return true;
-    case COMPANY_NAME:
-      if (field)
-        *field = ::i18n::addressinput::ORGANIZATION;
       return true;
     case NAME_BILLING_FULL:
     case NAME_FULL:

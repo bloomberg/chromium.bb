@@ -530,7 +530,6 @@ TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
   address.postal_code = "90291";
   address.sorting_code = "123";
   address.address_lines.push_back("123 Main St");
-  address.organization = "Google";
   address.recipient = "Jon Smith";
 
   // Fields that should not have suggestions in US.
@@ -540,7 +539,6 @@ TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
     DEPENDENT_LOCALITY,
     SORTING_CODE,
     STREET_ADDRESS,
-    ORGANIZATION,
     RECIPIENT
   };
 

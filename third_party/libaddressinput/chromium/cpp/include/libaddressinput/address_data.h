@@ -30,7 +30,6 @@ namespace addressinput {
 // Stores an address. Sample usage:
 //    AddressData address;
 //    address.recipient = "Chen-Kang Yang";
-//    address.organization = "Google";
 //    address.address_lines.push_back("1098 Alta Ave");
 //    address.administrative_area = "CA";
 //    address.locality = "Mountain View";
@@ -94,9 +93,6 @@ struct AddressData {
 
   // The free format street address lines.
   std::vector<std::string> address_lines;
-
-  // The firm, company, or organization.
-  std::string organization;
 
   // The name of the recipient or contact person. Not present in xAL.
   std::string recipient;

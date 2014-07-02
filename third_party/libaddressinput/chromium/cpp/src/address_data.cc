@@ -46,8 +46,6 @@ const std::string* GetMemberForField(const AddressData& address,
       return &address.sorting_code;
     case POSTAL_CODE:
       return &address.postal_code;
-    case ORGANIZATION:
-      return &address.organization;
     case RECIPIENT:
       return &address.recipient;
     case STREET_ADDRESS:

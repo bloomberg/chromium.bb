@@ -38,7 +38,6 @@ TEST(AddressDataTest, FormatForDisplayUs) {
   address.postal_code = "77005";
   address.address_lines.push_back("123 Main St");
   address.address_lines.push_back("Apt 2");
-  address.organization = "ACME Corp.";
   address.recipient = "John Doe";
 
   std::vector<std::string> actual;
@@ -46,7 +45,6 @@ TEST(AddressDataTest, FormatForDisplayUs) {
 
   std::vector<std::string> expected;
   expected.push_back(address.recipient);
-  expected.push_back(address.organization);
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());
@@ -64,7 +62,6 @@ TEST(AddressDataTest, FormatForDisplayAr) {
   address.postal_code = "C1001AFB";
   address.address_lines.push_back("Su Calle 123");
   address.address_lines.push_back("5° Piso");
-  address.organization = "Empresa Ejemplo";
   address.recipient = "Juan Perez";
 
   std::vector<std::string> actual;
@@ -72,7 +69,6 @@ TEST(AddressDataTest, FormatForDisplayAr) {
 
   std::vector<std::string> expected;
   expected.push_back(address.recipient);
-  expected.push_back(address.organization);
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());
@@ -91,7 +87,6 @@ TEST(AddressDataTest, FormatForDisplayJp) {
   address.postal_code = "150-8512";
   address.address_lines.push_back("桜丘町26-1");
   address.address_lines.push_back("セルリアンタワー6階");
-  address.organization = "グーグル株式会社";
   address.recipient = "村上 美紀";
 
   std::vector<std::string> actual;
@@ -103,7 +98,6 @@ TEST(AddressDataTest, FormatForDisplayJp) {
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());
-  expected.push_back(address.organization);
   expected.push_back(address.recipient);
 
   EXPECT_EQ(expected, actual);
@@ -118,7 +112,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatn) {
   address.postal_code = "150-8512";
   address.address_lines.push_back("26-1 Sakuragaoka-cho");
   address.address_lines.push_back("Cerulean Tower 6F");
-  address.organization = "Google Japan Inc.";
   address.recipient = "Miki Murakami";
 
   std::vector<std::string> actual;
@@ -126,7 +119,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatn) {
 
   std::vector<std::string> expected;
   expected.push_back(address.recipient);
-  expected.push_back(address.organization);
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());
@@ -145,7 +137,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatnCapitalized) {
   address.postal_code = "150-8512";
   address.address_lines.push_back("26-1 Sakuragaoka-cho");
   address.address_lines.push_back("Cerulean Tower 6F");
-  address.organization = "Google Japan Inc.";
   address.recipient = "Miki Murakami";
 
   std::vector<std::string> actual;
@@ -153,7 +144,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatnCapitalized) {
 
   std::vector<std::string> expected;
   expected.push_back(address.recipient);
-  expected.push_back(address.organization);
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());
@@ -172,7 +162,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatnUs) {
   address.postal_code = "150-8512";
   address.address_lines.push_back("26-1 Sakuragaoka-cho");
   address.address_lines.push_back("Cerulean Tower 6F");
-  address.organization = "Google Japan Inc.";
   address.recipient = "Miki Murakami";
 
   std::vector<std::string> actual;
@@ -180,7 +169,6 @@ TEST(AddressDataTest, FormatForDisplayJpLatnUs) {
 
   std::vector<std::string> expected;
   expected.push_back(address.recipient);
-  expected.push_back(address.organization);
   expected.insert(expected.end(),
                   address.address_lines.begin(),
                   address.address_lines.end());

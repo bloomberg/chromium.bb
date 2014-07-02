@@ -110,7 +110,6 @@ class ExampleAddressValidatorTest
     fields_json->GetStringValueForKey("locality", &address.dependent_locality);
     fields_json->GetStringValueForKey("sorting_code", &address.sorting_code);
     fields_json->GetStringValueForKey("zip", &address.postal_code);
-    fields_json->GetStringValueForKey("organization", &address.organization);
     fields_json->GetStringValueForKey("name", &address.recipient);
 
     AddressProblems problems;
