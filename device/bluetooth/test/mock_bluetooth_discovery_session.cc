@@ -4,11 +4,19 @@
 
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 
-#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
 namespace device {
 
-MockBluetoothDiscoverySession::MockBluetoothDiscoverySession() {}
+// Note: Because |this| class mocks out all the interesting method calls, the
+// mock BluetoothAdapter will not be used, except for a trivial call from the
+// destructor. It's passed in simply because the base class expects one, and
+// it's nice not to need to complicate production code for the sake of simpler
+// test code.
+MockBluetoothDiscoverySession::MockBluetoothDiscoverySession()
+    : BluetoothDiscoverySession(
+        scoped_refptr<BluetoothAdapter>(
+            new testing::NiceMock<MockBluetoothAdapter>())) {}
 MockBluetoothDiscoverySession::~MockBluetoothDiscoverySession() {}
 
 }  // namespace device

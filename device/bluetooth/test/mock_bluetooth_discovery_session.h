@@ -11,8 +11,6 @@
 
 namespace device {
 
-class BluetoothAdapter;
-
 class MockBluetoothDiscoverySession : public BluetoothDiscoverySession {
  public:
   MockBluetoothDiscoverySession();

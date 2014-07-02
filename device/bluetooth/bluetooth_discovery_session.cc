@@ -15,17 +15,11 @@ BluetoothDiscoverySession::BluetoothDiscoverySession(
   DCHECK(adapter_.get());
 }
 
-BluetoothDiscoverySession::BluetoothDiscoverySession()
-    : active_(false), weak_ptr_factory_(this) {}
-
 BluetoothDiscoverySession::~BluetoothDiscoverySession() {
-  // |adapter_| may be NULL if this instance was initialized as a mock.
-  if (!adapter_.get()) {
-    DCHECK(!active_);
-    return;
+  if (active_) {
+    Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+    MarkAsInactive();
   }
-  Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
-  MarkAsInactive();
 }
 
 bool BluetoothDiscoverySession::IsActive() const {
@@ -41,7 +35,6 @@ void BluetoothDiscoverySession::Stop(
     return;
   }
   VLOG(1) << "Stopping device discovery session.";
-  DCHECK(adapter_.get());
   adapter_->RemoveDiscoverySession(
       base::Bind(&BluetoothDiscoverySession::OnStop,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -58,7 +51,6 @@ void BluetoothDiscoverySession::MarkAsInactive() {
   if (!active_)
     return;
   active_ = false;
-  DCHECK(adapter_.get());
   adapter_->DiscoverySessionBecameInactive(this);
 }
 

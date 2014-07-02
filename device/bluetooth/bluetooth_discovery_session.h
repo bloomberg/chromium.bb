@@ -58,11 +58,10 @@ class BluetoothDiscoverySession {
                     const ErrorCallback& error_callback);
 
  protected:
-  BluetoothDiscoverySession();  // Called by mock.
+  explicit BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter> adapter);
 
  private:
   friend class BluetoothAdapter;
-  explicit BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter> adapter);
 
   // Internal callback invoked when a call to Stop has succeeded.
   void OnStop(const base::Closure& callback);
