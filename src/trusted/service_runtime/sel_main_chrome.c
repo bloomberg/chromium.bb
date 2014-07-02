@@ -139,8 +139,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   NaClDescUnref(nd);
 }
 
-int NaClChromeMainLoad(struct NaClApp *nap,
-                       struct NaClChromeMainArgs *args) {
+static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClErrorCode errcode = LOAD_OK;
   int skip_qualification;
 
@@ -230,8 +229,7 @@ int NaClChromeMainLoad(struct NaClApp *nap,
     /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
-      NaClLog(LOG_FATAL, "NaClChromeMainLoad: "
-              "Failed to set up Mach exception handler\n");
+      NaClLog(LOG_FATAL, "LoadApp: Failed to set up Mach exception handler\n");
     }
 #elif NACL_WINDOWS
     nap->attach_debug_exception_handler_func =
@@ -353,7 +351,7 @@ done:
   return errcode;
 }
 
-void NaClChromeMainStart(struct NaClApp *nap) {
+static void StartApp(struct NaClApp *nap) {
   int ac = 1;
   char *av[1];
   int ret_code;
@@ -416,7 +414,7 @@ void NaClChromeMainStart(struct NaClApp *nap) {
 
 void NaClChromeMainStartApp(struct NaClApp *nap,
                             struct NaClChromeMainArgs *args) {
-  if (NaClChromeMainLoad(nap, args) != 0)
+  if (LoadApp(nap, args) != 0)
     NaClExit(1);
-  NaClChromeMainStart(nap);
+  StartApp(nap);
 }
