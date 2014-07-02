@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "components/autocomplete/autocomplete_input.h"
@@ -136,6 +137,7 @@ OmniboxProvider::OmniboxProvider(Profile* profile)
     : profile_(profile),
       controller_(new AutocompleteController(
           profile,
+          TemplateURLServiceFactory::GetForProfile(profile),
           this,
           AutocompleteClassifier::kDefaultOmniboxProviders &
               ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {

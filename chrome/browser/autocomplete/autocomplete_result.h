@@ -16,7 +16,7 @@
 
 class AutocompleteInput;
 class AutocompleteProvider;
-class Profile;
+class TemplateURLService;
 
 // All matches from all providers for a particular query.  This also tracks
 // what the default match should be if the user doesn't manually select another
@@ -67,7 +67,7 @@ class AutocompleteResult {
   // comments in code for specifics.
   void CopyOldMatches(const AutocompleteInput& input,
                       const AutocompleteResult& old_matches,
-                      Profile* profile);
+                      TemplateURLService* template_url_service);
 
   // Adds a new set of matches to the result set.  Does not re-sort.
   void AppendMatches(const ACMatches& matches);
@@ -75,7 +75,8 @@ class AutocompleteResult {
   // Removes duplicates, puts the list in sorted order and culls to leave only
   // the best kMaxMatches matches.  Sets the default match to the best match
   // and updates the alternate nav URL.
-  void SortAndCull(const AutocompleteInput& input, Profile* profile);
+  void SortAndCull(const AutocompleteInput& input,
+                   TemplateURLService* template_url_service);
 
   // Returns true if at least one match was copied from the last result.
   bool HasCopiedMatches() const;

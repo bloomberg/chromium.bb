@@ -9,6 +9,8 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "components/infobars/core/infobar_delegate.h"
 
+class Profile;
+
 namespace content {
 class WebContents;
 }

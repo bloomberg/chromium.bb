@@ -28,6 +28,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autocomplete/autocomplete_input.h"
@@ -158,7 +159,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     if (relevance) {
       matches_.push_back(ShortcutToACMatch(it->second, relevance, input,
                                            fixed_up_input, input_as_gurl));
-      matches_.back().ComputeStrippedDestinationURL(profile_);
+      matches_.back().ComputeStrippedDestinationURL(
+          TemplateURLServiceFactory::GetForProfile(profile_));
     }
   }
   // Remove duplicates.  Duplicates don't need to be preserved in the matches

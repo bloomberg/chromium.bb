@@ -143,7 +143,9 @@ void TestProvider::AddResultsWithSearchTermsArgs(
         new TemplateURLRef::SearchTermsArgs(search_terms_args));
     if (!match_keyword_.empty()) {
       match.keyword = match_keyword_;
-      ASSERT_TRUE(match.GetTemplateURL(profile_, false) != NULL);
+      TemplateURLService* service =
+          TemplateURLServiceFactory::GetForProfile(profile_);
+      ASSERT_TRUE(match.GetTemplateURL(service, false) != NULL);
     }
 
     matches_.push_back(match);
@@ -215,8 +217,10 @@ class AutocompleteProviderTest : public testing::Test,
 void AutocompleteProviderTest::RegisterTemplateURL(
     const base::string16 keyword,
     const std::string& template_url) {
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+  if (TemplateURLServiceFactory::GetForProfile(&profile_) == NULL) {
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+  }
   TemplateURLData data;
   data.SetURL(template_url);
   data.SetKeyword(keyword);
@@ -268,7 +272,8 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   providers.push_back(provider2);
 
   // Reset the controller to contain our new providers.
-  controller_.reset(new AutocompleteController(&profile_, NULL, 0));
+  controller_.reset(new AutocompleteController(
+      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL, 0));
   // We're going to swap the providers vector, but the old vector should be
   // empty so no elements need to be freed at this point.
   EXPECT_TRUE(controller_->providers_.empty());
@@ -314,7 +319,7 @@ void AutocompleteProviderTest::
   ASSERT_NE(0, keyword_t_url->id());
 
   controller_.reset(new AutocompleteController(
-      &profile_, NULL,
+      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL,
       AutocompleteProvider::TYPE_KEYWORD | AutocompleteProvider::TYPE_SEARCH));
 }
 
@@ -343,7 +348,8 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   ASSERT_NE(0, keyword_t_url->id());
 
   controller_.reset(new AutocompleteController(
-      &profile_, NULL, AutocompleteProvider::TYPE_KEYWORD));
+      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL,
+      AutocompleteProvider::TYPE_KEYWORD));
 }
 
 void AutocompleteProviderTest::RunTest() {

@@ -177,7 +177,9 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURL* template_url = match.GetTemplateURL(template_url_service, false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != NULL) {

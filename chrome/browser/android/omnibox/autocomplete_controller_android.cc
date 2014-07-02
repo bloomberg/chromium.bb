@@ -82,7 +82,8 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
 
 ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
     : controller_(new AutocompleteController(
-          profile, this, AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
+          profile, TemplateURLServiceFactory::GetForProfile(profile), this,
+          AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
   // AutocompleteInput object.
   base::string16 fake_request_source(base::ASCIIToUTF16(
@@ -115,7 +116,8 @@ void ZeroSuggestPrefetcher::OnResultChanged(bool default_match_changed) {
 
 AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     : autocomplete_controller_(new AutocompleteController(
-          profile, this, kAndroidAutocompleteProviders)),
+          profile, TemplateURLServiceFactory::GetForProfile(profile), this,
+          kAndroidAutocompleteProviders)),
       inside_synchronous_start_(false),
       profile_(profile) {
 }
