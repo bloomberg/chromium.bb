@@ -204,11 +204,11 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
     DocumentFragment::removedFrom(insertionPoint);
 }
 
-void ShadowRoot::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void ShadowRoot::childrenChanged(const ChildrenChange& change)
 {
-    ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    ContainerNode::childrenChanged(change);
 
-    checkForSiblingStyleChanges(false, beforeChange, afterChange, childCountDelta);
+    checkForSiblingStyleChanges(change.type == ChildRemoved ? SiblingRemoved : Other, change.siblingBeforeChange, change.siblingAfterChange);
 
     if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
         if (ShadowRoot* root = point->containingShadowRoot())

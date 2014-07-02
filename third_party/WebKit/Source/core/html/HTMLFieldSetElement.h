@@ -53,7 +53,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool recalcWillValidate() const OVERRIDE { return false; }
-    virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     static void invalidateDisabledStateUnder(Element&);

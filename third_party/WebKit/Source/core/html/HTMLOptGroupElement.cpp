@@ -54,10 +54,10 @@ bool HTMLOptGroupElement::rendererIsFocusable() const
     return renderStyle() && renderStyle()->display() != NONE;
 }
 
-void HTMLOptGroupElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLOptGroupElement::childrenChanged(const ChildrenChange& change)
 {
     recalcSelectOptions();
-    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLElement::childrenChanged(change);
 }
 
 void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

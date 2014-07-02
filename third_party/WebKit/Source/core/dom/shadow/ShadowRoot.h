@@ -134,7 +134,7 @@ private:
     virtual void dispose() OVERRIDE;
 #endif
 
-    virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
 
     ShadowRootRareData* ensureShadowRootRareData();
 

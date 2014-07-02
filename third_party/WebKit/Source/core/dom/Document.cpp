@@ -736,9 +736,9 @@ Location* Document::location() const
     return &domWindow()->location();
 }
 
-void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void Document::childrenChanged(const ChildrenChange& change)
 {
-    ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    ContainerNode::childrenChanged(change);
     m_documentElement = ElementTraversal::firstWithin(*this);
 }
 

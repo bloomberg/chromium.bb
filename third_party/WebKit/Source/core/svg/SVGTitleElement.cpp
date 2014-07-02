@@ -51,9 +51,9 @@ void SVGTitleElement::removedFrom(ContainerNode* rootParent)
         document().removeTitle(this);
 }
 
-void SVGTitleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGTitleElement::childrenChanged(const ChildrenChange& change)
 {
-    SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    SVGElement::childrenChanged(change);
     if (inDocument() && document().isSVGDocument())
         document().setTitleElement(textContent(), this);
 }

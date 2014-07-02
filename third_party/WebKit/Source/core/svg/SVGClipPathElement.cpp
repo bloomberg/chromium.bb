@@ -77,11 +77,11 @@ void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
         renderer->invalidateCacheAndMarkForLayout();
 }
 
-void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGClipPathElement::childrenChanged(const ChildrenChange& change)
 {
-    SVGGraphicsElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    SVGGraphicsElement::childrenChanged(change);
 
-    if (changedByParser)
+    if (change.byParser)
         return;
 
     if (RenderObject* object = renderer())

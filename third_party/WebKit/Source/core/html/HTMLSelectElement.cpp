@@ -392,13 +392,13 @@ void HTMLSelectElement::updateListItemSelectedStates()
     setNeedsValidityCheck();
 }
 
-void HTMLSelectElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
 {
     setRecalcListItems();
     setNeedsValidityCheck();
     m_lastOnChangeSelection.clear();
 
-    HTMLFormControlElementWithState::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLFormControlElementWithState::childrenChanged(change);
 }
 
 void HTMLSelectElement::optionElementChildrenChanged()

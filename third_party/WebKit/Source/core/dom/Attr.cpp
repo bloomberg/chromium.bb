@@ -165,7 +165,7 @@ bool Attr::childTypeAllowed(NodeType type) const
     return TEXT_NODE == type;
 }
 
-void Attr::childrenChanged(bool, Node*, Node*, int)
+void Attr::childrenChanged(const ChildrenChange&)
 {
     if (m_ignoreChildrenChanged > 0)
         return;

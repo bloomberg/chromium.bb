@@ -1096,7 +1096,7 @@ private:
 
     virtual bool isDocument() const OVERRIDE FINAL { return true; }
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
 
     virtual String nodeName() const OVERRIDE FINAL;
     virtual NodeType nodeType() const OVERRIDE FINAL;

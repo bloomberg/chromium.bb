@@ -1796,13 +1796,13 @@ void Element::checkForEmptyStyleChange()
         setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
-void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void Element::childrenChanged(const ChildrenChange& change)
 {
-    ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    ContainerNode::childrenChanged(change);
 
     checkForEmptyStyleChange();
-    if (!changedByParser)
-        checkForSiblingStyleChanges(false, beforeChange, afterChange, childCountDelta);
+    if (!change.byParser)
+        checkForSiblingStyleChanges(change.type == ChildRemoved ? SiblingRemoved : Other, change.siblingBeforeChange, change.siblingAfterChange);
 
     if (ElementShadow* shadow = this->shadow())
         shadow->setNeedsDistributionRecalc();
@@ -1812,7 +1812,7 @@ void Element::finishParsingChildren()
 {
     setIsFinishedParsingChildren(true);
     checkForEmptyStyleChange();
-    checkForSiblingStyleChanges(true, lastChild(), 0, 0);
+    checkForSiblingStyleChanges(FinishedParsingChildren, lastChild(), nullptr);
 }
 
 #ifndef NDEBUG

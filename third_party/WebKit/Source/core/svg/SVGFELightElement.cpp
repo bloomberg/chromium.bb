@@ -154,11 +154,11 @@ void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-void SVGFELightElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGFELightElement::childrenChanged(const ChildrenChange& change)
 {
-    SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    SVGElement::childrenChanged(change);
 
-    if (!changedByParser) {
+    if (!change.byParser) {
         if (ContainerNode* parent = parentNode()) {
             RenderObject* renderer = parent->renderer();
             if (renderer && renderer->isSVGResourceFilterPrimitive())

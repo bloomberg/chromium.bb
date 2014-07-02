@@ -118,9 +118,9 @@ void HTMLStyleElement::didNotifySubtreeInsertionsToDocument()
     StyleElement::processStyleSheet(document(), this);
 }
 
-void HTMLStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLStyleElement::childrenChanged(const ChildrenChange& change)
 {
-    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLElement::childrenChanged(change);
     StyleElement::childrenChanged(this);
 }
 

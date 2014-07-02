@@ -55,10 +55,10 @@ PassRefPtrWillBeRawPtr<HTMLCollection> HTMLDataListElement::options()
     return ensureCachedHTMLCollection(DataListOptions);
 }
 
-void HTMLDataListElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLDataListElement::childrenChanged(const ChildrenChange& change)
 {
-    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (!changedByParser)
+    HTMLElement::childrenChanged(change);
+    if (!change.byParser)
         treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
 }
 

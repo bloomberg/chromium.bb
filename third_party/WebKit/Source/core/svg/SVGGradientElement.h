@@ -66,7 +66,7 @@ protected:
 private:
     virtual bool needsPendingResourceHandling() const OVERRIDE FINAL { return false; }
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE FINAL;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE FINAL;
 
     RefPtr<SVGAnimatedTransformList> m_gradientTransform;
     RefPtr<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;

@@ -64,7 +64,7 @@ private:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE FINAL;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE FINAL;
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 

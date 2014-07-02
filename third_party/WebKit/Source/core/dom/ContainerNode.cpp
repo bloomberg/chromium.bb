@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -304,7 +304,8 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
 
     ChildListMutationScope(*this).childAdded(*newChild);
 
-    childrenChanged(true, newChild->previousSibling(), &nextChild, 1);
+    ChildrenChange change = {ChildInserted, newChild->previousSibling(), &nextChild, ChildrenChangeSourceParser};
+    childrenChanged(change);
 
     notifyNodeInserted(*newChild);
 }
@@ -483,7 +484,8 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
         removeBetween(prev, next, *child);
-        childrenChanged(false, prev, next, -1);
+        ChildrenChange change = {ChildRemoved, prev, next, ChildrenChangeSourceAPI};
+        childrenChanged(change);
         notifyNodeRemoved(*child);
     }
     dispatchSubtreeModifiedEvent();
@@ -529,7 +531,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
 
     removeBetween(prev, next, oldChild);
 
-    childrenChanged(true, prev, next, -1);
+    ChildrenChange change = {ChildRemoved, prev, next, ChildrenChangeSourceParser};
+    childrenChanged(change);
     notifyNodeRemoved(oldChild);
 }
 
@@ -578,7 +581,8 @@ void ContainerNode::removeChildren()
             }
         }
 
-        childrenChanged(false, 0, 0, -static_cast<int>(removedChildren.size()));
+        ChildrenChange change = {AllChildrenRemoved, nullptr, nullptr, ChildrenChangeSourceAPI};
+        childrenChanged(change);
 
         for (size_t i = 0; i < removedChildren.size(); ++i)
             notifyNodeRemoved(*removedChildren[i]);
@@ -667,7 +671,8 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
         ChildListMutationScope(*this).childAdded(*newChild);
     }
 
-    childrenChanged(true, last, 0, 1);
+    ChildrenChange change = {ChildInserted, last, nullptr, ChildrenChangeSourceParser};
+    childrenChanged(change);
     notifyNodeInserted(*newChild);
 }
 
@@ -741,13 +746,13 @@ void ContainerNode::detach(const AttachContext& context)
     Node::detach(context);
 }
 
-void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int childCountDelta)
+void ContainerNode::childrenChanged(const ChildrenChange& change)
 {
     document().incDOMTreeVersion();
-    if (!changedByParser && childCountDelta)
+    if (!change.byParser && change.type != TextChanged)
         document().updateRangesAfterChildrenChanged(this);
     invalidateNodeListCachesInAncestors();
-    if (childCountDelta > 0 && !childNeedsStyleRecalc()) {
+    if (change.type == ChildInserted && !childNeedsStyleRecalc()) {
         setChildNeedsStyleRecalc();
         markAncestorsWithChildNeedsStyleRecalc();
     }
@@ -1094,7 +1099,8 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
 
     ChildListMutationScope(*this).childAdded(child);
 
-    childrenChanged(false, child.previousSibling(), child.nextSibling(), 1);
+    ChildrenChange change = {ChildInserted, child.previousSibling(), child.nextSibling(), ChildrenChangeSourceAPI};
+    childrenChanged(change);
 
     notifyNodeInserted(child);
 
@@ -1144,7 +1150,7 @@ void ContainerNode::checkForChildrenAdjacentRuleChanges()
     }
 }
 
-void ContainerNode::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* beforeChange, Node* afterChange, int childCountDelta)
+void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Node* beforeChange, Node* afterChange)
 {
     if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || styleChangeType() >= SubtreeStyleChange)
         return;
@@ -1183,7 +1189,7 @@ void ContainerNode::checkForSiblingStyleChanges(bool finishedParsingCallback, No
             firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
 
         // We also have to handle node removal.
-        if (childCountDelta < 0 && newFirstChild == firstElementAfterInsertion && newFirstChild && (!newFirstChildStyle || !newFirstChildStyle->firstChildState()))
+        if (changeType == SiblingRemoved && newFirstChild == firstElementAfterInsertion && newFirstChild && (!newFirstChildStyle || !newFirstChildStyle->firstChildState()))
             newFirstChild->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
@@ -1203,7 +1209,7 @@ void ContainerNode::checkForSiblingStyleChanges(bool finishedParsingCallback, No
 
         // We also have to handle node removal. The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
-        if ((childCountDelta < 0 || finishedParsingCallback) && newLastChild == lastElementBeforeInsertion && newLastChild && (!newLastChildStyle || !newLastChildStyle->lastChildState()))
+        if ((changeType == SiblingRemoved || changeType == FinishedParsingChildren) && newLastChild == lastElementBeforeInsertion && newLastChild && (!newLastChildStyle || !newLastChildStyle->lastChildState()))
             newLastChild->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 

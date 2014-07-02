@@ -324,12 +324,12 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
     invalidateInstances();
 }
 
-void SVGElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGElement::childrenChanged(const ChildrenChange& change)
 {
-    Element::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    Element::childrenChanged(change);
 
     // Invalidate all instances associated with us.
-    if (!changedByParser)
+    if (!change.byParser)
         invalidateInstances();
 }
 

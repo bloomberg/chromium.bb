@@ -64,9 +64,9 @@ const QualifiedName& HTMLScriptElement::subResourceAttributeName() const
     return srcAttr;
 }
 
-void HTMLScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 {
-    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLElement::childrenChanged(change);
     m_loader->childrenChanged();
 }
 

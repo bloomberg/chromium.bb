@@ -47,7 +47,7 @@ public:
 
 private:
     HTMLDataListElement(Document&);
-    virtual void childrenChanged(bool, Node*, Node*, int) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
     virtual void finishParsingChildren() OVERRIDE;
 };
 

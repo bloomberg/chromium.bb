@@ -189,9 +189,9 @@ bool InsertionPoint::rendererIsNeeded(const RenderStyle& style)
     return !isActive() && HTMLElement::rendererIsNeeded(style);
 }
 
-void InsertionPoint::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void InsertionPoint::childrenChanged(const ChildrenChange& change)
 {
-    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLElement::childrenChanged(change);
     if (ShadowRoot* root = containingShadowRoot()) {
         if (ElementShadow* rootOwner = root->owner())
             rootOwner->setNeedsDistributionRecalc();

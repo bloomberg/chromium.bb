@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -76,8 +76,10 @@ void CharacterData::parserAppendData(const String& string)
 
     document().incDOMTreeVersion();
 
-    if (parentNode())
-        parentNode()->childrenChanged();
+    if (parentNode()) {
+        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceParser};
+        parentNode()->childrenChanged(change);
+    }
 }
 
 void CharacterData::appendData(const String& data)
@@ -192,8 +194,10 @@ void CharacterData::didModifyData(const String& oldData)
     if (OwnPtrWillBeRawPtr<MutationObserverInterestGroup> mutationRecipients = MutationObserverInterestGroup::createForCharacterDataMutation(*this))
         mutationRecipients->enqueueMutationRecord(MutationRecord::createCharacterData(this, oldData));
 
-    if (parentNode())
-        parentNode()->childrenChanged();
+    if (parentNode()) {
+        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceAPI};
+        parentNode()->childrenChanged(change);
+    }
 
     if (!isInShadowTree()) {
         if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))

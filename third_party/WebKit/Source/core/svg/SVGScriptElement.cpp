@@ -113,9 +113,9 @@ void SVGScriptElement::didNotifySubtreeInsertionsToDocument()
     }
 }
 
-void SVGScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGScriptElement::childrenChanged(const ChildrenChange& change)
 {
-    SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    SVGElement::childrenChanged(change);
     m_loader->childrenChanged();
 }
 

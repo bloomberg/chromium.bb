@@ -58,9 +58,9 @@ PassRefPtrWillBeRawPtr<CSSValueList> SVGFontFaceSrcElement::srcValue() const
     return list;
 }
 
-void SVGFontFaceSrcElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void SVGFontFaceSrcElement::childrenChanged(const ChildrenChange& change)
 {
-    SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    SVGElement::childrenChanged(change);
     if (isSVGFontFaceElement(parentNode()))
         toSVGFontFaceElement(*parentNode()).rebuildFontFace();
 }

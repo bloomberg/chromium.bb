@@ -79,9 +79,9 @@ void HTMLOutputElement::setFor(const AtomicString& value)
     m_tokens->setValue(value);
 }
 
-void HTMLOutputElement::childrenChanged(bool createdByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+void HTMLOutputElement::childrenChanged(const ChildrenChange& change)
 {
-    HTMLFormControlElement::childrenChanged(createdByParser, beforeChange, afterChange, childCountDelta);
+    HTMLFormControlElement::childrenChanged(change);
 
     if (m_isDefaultValueMode)
         m_defaultValue = textContent();

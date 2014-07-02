@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011, 2013 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -150,16 +150,26 @@ public:
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
     void checkForChildrenAdjacentRuleChanges();
-    void checkForSiblingStyleChanges(bool finishedParsingCallback, Node* beforeChange, Node* afterChange, int childCountDelta);
+    enum SiblingCheckType { FinishedParsingChildren, SiblingRemoved, Other };
+    void checkForSiblingStyleChanges(SiblingCheckType, Node* beforeChange, Node* afterChange);
 
     bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see core/dom/Node.h for more notification methods)
 
+    enum ChildrenChangeType { ChildInserted, ChildRemoved, AllChildrenRemoved, TextChanged };
+    enum ChildrenChangeSource { ChildrenChangeSourceAPI, ChildrenChangeSourceParser };
+    struct ChildrenChange {
+        ChildrenChangeType type;
+        Node* siblingBeforeChange;
+        Node* siblingAfterChange;
+        ChildrenChangeSource byParser;
+    };
+
     // Notifies the node that it's list of children have changed (either by adding or removing child nodes), or a child
     // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
-    virtual void childrenChanged(bool createdByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(const ChildrenChange&);
 
     void disconnectDescendantFrames();
 
