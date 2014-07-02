@@ -6,6 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [0, 200, 200, 100],
         [0, 150, 20, 20],
         [0, 100, 20, 20]
       ]
@@ -20,7 +21,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 0, 200, 300],
+        [0, 0, 300, 300],
         [0, 0, 200, 300]
       ]
     }
@@ -34,7 +35,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 250, 300, 50],
         [0, 150, 20, 20],
         [0, 125, 20, 20]
       ]

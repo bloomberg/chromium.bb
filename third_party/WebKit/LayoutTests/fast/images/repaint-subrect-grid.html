@@ -39,8 +39,8 @@
             mask.style.left = pos[currentPos][1];
             ++currentPos;
 
-            // Force a style recalc.
-            document.body.offsetWidth;
+            if (window.internals)
+                internals.forceCompositingUpdate(document);
 
             if (window.testRunner)
                 repaintTest();

@@ -4,10 +4,8 @@ var loadCount = 0;
 function loaded()
 {
     loadCount++;
-    if (loadCount == 2) {
-        document.body.offsetTop;
+    if (loadCount == 2)
         runRepaintTest();
-    }
 }
 
 function repaintTest()
