@@ -16,13 +16,12 @@ import android.util.Log;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * This class is responsible for fetching a third party token from the user using the OAuth2
- * implicit flow.  It pops up a third party login page located at |tokenurl|.  It relies on the
- * |ThirdPartyTokenFetcher$OAuthRedirectActivity| to intercept the access token from the redirect at
- * |REDIRECT_URI_SCHEME|://|REDIRECT_URI_HOST| upon successful login.
+ * implicit flow.  It directs the user to a third party login page located at |tokenUrl|.  It relies
+ * on the |ThirdPartyTokenFetcher$OAuthRedirectActivity| to intercept the access token from the
+ * redirect at intent://|REDIRECT_URI_PATH|#Intent;...end; upon successful login.
  */
 public class ThirdPartyTokenFetcher {
     /** Callback for receiving the token. */
@@ -30,8 +29,8 @@ public class ThirdPartyTokenFetcher {
         void onTokenFetched(String code, String accessToken);
     }
 
-    /** Redirect URI. See http://tools.ietf.org/html/rfc6749#section-3.1.2. */
-    private static final String REDIRECT_URI_HOST = "oauthredirect";
+    /** The path of the Redirect URI. */
+    private static final String REDIRECT_URI_PATH = "/oauthredirect/";
 
     /**
      * Request both the authorization code and access token from the server.  See
@@ -71,7 +70,14 @@ public class ThirdPartyTokenFetcher {
         this.mTokenUrlPatterns = tokenUrlPatterns;
 
         this.mRedirectUriScheme = context.getApplicationContext().getPackageName();
-        this.mRedirectUri = mRedirectUriScheme + "://" + REDIRECT_URI_HOST;
+
+        // We don't follow the OAuth spec (http://tools.ietf.org/html/rfc6749#section-3.1.2) of the
+        // redirect URI as it is possible for the other applications to intercept the redirect URI.
+        // Instead, we use the intent scheme URI, which can restrict a specific package to handle
+        // the intent.  See https://developer.chrome.com/multidevice/android/intents.
+        this.mRedirectUri = "intent://" + REDIRECT_URI_PATH + "#Intent;" +
+            "package=" + mRedirectUriScheme + ";" +
+            "scheme=" + mRedirectUriScheme + ";end;";
     }
 
     /**
@@ -130,7 +136,7 @@ public class ThirdPartyTokenFetcher {
         if (data != null) {
             return Intent.ACTION_VIEW.equals(action) &&
                    this.mRedirectUriScheme.equals(data.getScheme()) &&
-                   REDIRECT_URI_HOST.equals(data.getHost());
+                   REDIRECT_URI_PATH.equals(data.getPath());
         }
         return false;
     }
@@ -143,12 +149,9 @@ public class ThirdPartyTokenFetcher {
             return false;
         }
 
-        Uri data = intent.getData();
-        HashMap<String, String> params = getFragmentParameters(data);
-
-        String accessToken = params.get("access_token");
-        String code = params.get("code");
-        String state = params.get("state");
+        String accessToken = intent.getStringExtra("access_token");
+        String code = intent.getStringExtra("code");
+        String state = intent.getStringExtra("state");
 
         if (!mState.equals(state)) {
             failFetchToken("Ignoring redirect with invalid state.");
@@ -183,29 +186,9 @@ public class ThirdPartyTokenFetcher {
         return Base64.encodeToString(bytes, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
     }
 
-    /** Parses the fragment string into a key value pair. */
-    private static HashMap<String, String> getFragmentParameters(Uri uri) {
-        assert uri != null;
-        HashMap<String, String> result = new HashMap<String, String>();
-
-        String fragment = uri.getFragment();
-
-        if (fragment != null) {
-            String[] parts = fragment.split("&");
-
-            for (String part : parts) {
-                String keyValuePair[] = part.split("=", 2);
-                if (keyValuePair.length == 2) {
-                    result.put(keyValuePair[0], keyValuePair[1]);
-                }
-            }
-        }
-        return result;
-    };
-
     /**
      * In the OAuth2 implicit flow, the browser will be redirected to
-     * |REDIRECT_URI_SCHEME|://|REDIRECT_URI_HOST| upon a successful login. OAuthRedirectActivity
+     * intent://|REDIRECT_URI_PATH|#Intent;...end; upon a successful login. OAuthRedirectActivity
      * uses an intent filter in the manifest to intercept the URL and launch the chromoting app.
      *
      * Unfortunately, most browsers on Android, e.g. chrome, reload the URL when a browser
