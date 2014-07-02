@@ -678,10 +678,11 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
 
   this.processNewEntriesQueue_.run(function(callbackOuter) {
     var finish = function() {
-      // Update the filelist without waiting the metadata.
-      this.fileList_.push.apply(this.fileList_, entriesFiltered);
-      cr.dispatchSimpleEvent(this, 'scan-updated');
-
+      if (!this.scanCancelled_) {
+        // Update the filelist without waiting the metadata.
+        this.fileList_.push.apply(this.fileList_, entriesFiltered);
+        cr.dispatchSimpleEvent(this, 'scan-updated');
+      }
       callbackOuter();
     }.bind(this);
     // Because the prefetchMetadata can be slow, throttling by splitting entries
