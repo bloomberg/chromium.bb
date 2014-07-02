@@ -7,6 +7,7 @@
 #include <string.h>
 #include <vector>
 
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "url/url_canon_internal.h"
 #include "url/url_file.h"
@@ -383,6 +384,7 @@ void AddStandardScheme(const char* new_scheme) {
   // Dulicate the scheme into a new buffer and add it to the list of standard
   // schemes. This pointer will be leaked on shutdown.
   char* dup_scheme = new char[scheme_len + 1];
+  ANNOTATE_LEAKING_OBJECT_PTR(dup_scheme);
   memcpy(dup_scheme, new_scheme, scheme_len + 1);
 
   InitStandardSchemes();
