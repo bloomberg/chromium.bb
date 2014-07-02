@@ -161,7 +161,7 @@
                 'class_whitelist_regex':
                     'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',
                 'category_whitelist_regex':
-                    'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
+                    'WebCoreFocusRingDrawing|WebCoreTheme',
               },
               'action': [
                 '../build/scripts/check_objc_rename.sh',
@@ -318,6 +318,8 @@
           ['include', 'mac/ScrollElasticityController\\.mm$'],
           ['include', 'mac/ThemeMac\\.h$'],
           ['include', 'mac/ThemeMac\\.mm$'],
+          ['include', 'mac/WebCoreNSCellExtras\\.h$'],
+          ['include', 'mac/WebCoreNSCellExtras\\.mm$'],
  
           # Mac uses only ScrollAnimatorMac.
           ['exclude', 'scroll/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],

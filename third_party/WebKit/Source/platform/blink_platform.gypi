@@ -671,6 +671,7 @@
       'mac/ThemeMac.h',
       'mac/ThemeMac.mm',
       'mac/WebCoreNSCellExtras.h',
+      'mac/WebCoreNSCellExtras.mm',
       'mac/WebFontCache.h',
       'mac/WebFontCache.mm',
       'mediastream/MediaStreamCenter.cpp',

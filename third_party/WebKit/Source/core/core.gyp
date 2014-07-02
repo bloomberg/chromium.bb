@@ -487,7 +487,7 @@
                   'class_whitelist_regex':
                       'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',
                   'category_whitelist_regex':
-                      'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
+                      'WebCoreFocusRingDrawing|WebCoreTheme',
                 },
                 'action': [
                   '../build/scripts/check_objc_rename.sh',
