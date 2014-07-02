@@ -343,7 +343,10 @@ static void workerGlobalScopeDidConnect(ExecutionContext* context, PassRefPtrWil
 void WorkerThreadableWebSocketChannel::Peer::didConnect(const String& subprotocol, const String& extensions)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidConnect, m_workerClientWrapper.get(), subprotocol, extensions));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidConnect, m_workerClientWrapper.get(), subprotocol, extensions);
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, const String& message)
@@ -355,7 +358,10 @@ static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, PassRe
 void WorkerThreadableWebSocketChannel::Peer::didReceiveMessage(const String& message)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidReceiveMessage, m_workerClientWrapper.get(), message));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidReceiveMessage, m_workerClientWrapper.get(), message);
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidReceiveBinaryData(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassOwnPtr<Vector<char> > binaryData)
@@ -367,7 +373,10 @@ static void workerGlobalScopeDidReceiveBinaryData(ExecutionContext* context, Pas
 void WorkerThreadableWebSocketChannel::Peer::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidReceiveBinaryData, m_workerClientWrapper.get(), binaryData));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidReceiveBinaryData, m_workerClientWrapper.get(), binaryData);
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, unsigned long consumed)
@@ -379,7 +388,10 @@ static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context,
 void WorkerThreadableWebSocketChannel::Peer::didConsumeBufferedAmount(unsigned long consumed)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidConsumeBufferedAmount, m_workerClientWrapper.get(), consumed));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidConsumeBufferedAmount, m_workerClientWrapper.get(), consumed);
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidStartClosingHandshake(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
@@ -391,7 +403,10 @@ static void workerGlobalScopeDidStartClosingHandshake(ExecutionContext* context,
 void WorkerThreadableWebSocketChannel::Peer::didStartClosingHandshake()
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidStartClosingHandshake, m_workerClientWrapper.get()));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidStartClosingHandshake, m_workerClientWrapper.get());
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidClose(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
@@ -404,7 +419,10 @@ void WorkerThreadableWebSocketChannel::Peer::didClose(ClosingHandshakeCompletion
 {
     ASSERT(isMainThread());
     m_mainWebSocketChannel = nullptr;
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidClose, m_workerClientWrapper.get(), closingHandshakeCompletion, code, reason));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidClose, m_workerClientWrapper.get(), closingHandshakeCompletion, code, reason);
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 static void workerGlobalScopeDidReceiveMessageError(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
@@ -416,7 +434,10 @@ static void workerGlobalScopeDidReceiveMessageError(ExecutionContext* context, P
 void WorkerThreadableWebSocketChannel::Peer::didReceiveMessageError()
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidReceiveMessageError, m_workerClientWrapper.get()));
+    // It is important to seprate task creation from posting
+    // the task. See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&workerGlobalScopeDidReceiveMessageError, m_workerClientWrapper.get());
+    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
 }
 
 void WorkerThreadableWebSocketChannel::Peer::trace(Visitor* visitor)
@@ -455,10 +476,16 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
 #if ENABLE(OILPAN)
-    if (!waitForMethodCompletion(createCallbackTask(&Peer::initialize, &m_peer, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper.get(), sourceURL, lineNumber, syncHelper.get()))) {
+    // In order to assure all temporary objects to be destroyed before
+    // posting the task, we separate task creation and posting.
+    // In other words, it is dangerous to have a complicated expression
+    // as a waitForMethodCompletion argument.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&Peer::initialize, &m_peer, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper.get(), sourceURL, lineNumber, syncHelper.get());
 #else
-    if (!waitForMethodCompletion(createCallbackTask(&Peer::initialize, reference, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper.get(), sourceURL, lineNumber, syncHelper.get()))) {
+    // See the above comment.
+    OwnPtr<ExecutionContextTask> task = createCallbackTask(&Peer::initialize, reference, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper.get(), sourceURL, lineNumber, syncHelper.get());
 #endif
+    if (!waitForMethodCompletion(task.release())) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -470,7 +497,10 @@ bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const St
         return false;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy()))))
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy()));
+    if (!waitForMethodCompletion(task.release()))
         return false;
 
     return m_syncHelper->connectRequestResult();
@@ -482,7 +512,10 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
         return WebSocketChannel::SendFail;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(CallClosureTask::create(bind(&Peer::send, m_peer, message.isolatedCopy()))))
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::send, m_peer, message.isolatedCopy()));
+    if (!waitForMethodCompletion(task.release()))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -499,7 +532,10 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(CallClosureTask::create(bind(&Peer::sendArrayBuffer, m_peer, data.release()))))
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::sendArrayBuffer, m_peer, data.release()));
+    if (!waitForMethodCompletion(task.release()))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -511,7 +547,10 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(Pass
         return WebSocketChannel::SendFail;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(CallClosureTask::create(bind(&Peer::sendBlob, m_peer, data))))
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::sendBlob, m_peer, data));
+    if (!waitForMethodCompletion(task.release()))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -522,7 +561,10 @@ void WorkerThreadableWebSocketChannel::Bridge::close(int code, const String& rea
     if (hasTerminatedPeer())
         return;
 
-    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::close, m_peer, code, reason.isolatedCopy())));
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::close, m_peer, code, reason.isolatedCopy()));
+    m_loaderProxy.postTaskToLoader(task.release());
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -530,7 +572,10 @@ void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, Messag
     if (hasTerminatedPeer())
         return;
 
-    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::fail, m_peer, reason.isolatedCopy(), level, sourceURL.isolatedCopy(), lineNumber)));
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::fail, m_peer, reason.isolatedCopy(), level, sourceURL.isolatedCopy(), lineNumber));
+    m_loaderProxy.postTaskToLoader(task.release());
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::disconnect()
@@ -569,14 +614,18 @@ bool WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion(PassOwnPt
 void WorkerThreadableWebSocketChannel::Bridge::terminatePeer()
 {
     ASSERT(!hasTerminatedPeer());
+
+    // It is important to seprate task creation from calling
+    // waitForMethodCompletion. See the above comment.
+    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::destroy, m_peer));
 #if ENABLE(OILPAN)
     // The worker thread has to wait for the main thread to complete Peer::destroy,
     // because the worker thread has to make sure that the main thread does not have any
     // references to on-heap objects allocated in the thread heap of the worker thread
     // before the worker thread shuts down.
-    waitForMethodCompletion(CallClosureTask::create(bind(&Peer::destroy, m_peer)));
+    waitForMethodCompletion(task.release());
 #else
-    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::destroy, m_peer)));
+    m_loaderProxy.postTaskToLoader(task.release());
 #endif
 
     // Peer::destroy() deletes m_peer and then m_syncHelper will be released.
