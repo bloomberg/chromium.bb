@@ -44,7 +44,8 @@ def main ():
     print cmd
   if not opts.impotent:
     try:
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0)
+      p = subprocess.Popen(
+          cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
       out, err = p.communicate()
       if p.returncode:
         raise Exception('Failed to run d8', out, err)
