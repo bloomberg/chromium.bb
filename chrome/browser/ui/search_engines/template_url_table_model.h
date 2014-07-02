@@ -14,7 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
 
-class ModelEntry;
+class FaviconService;
 class TemplateURL;
 class TemplateURLService;
 
@@ -36,7 +36,8 @@ class ImageSkia;
 class TemplateURLTableModel : public ui::TableModel,
                                      TemplateURLServiceObserver {
  public:
-  explicit TemplateURLTableModel(TemplateURLService* template_url_service);
+  TemplateURLTableModel(TemplateURLService* template_url_service,
+                        FaviconService* favicon_service);
 
   virtual ~TemplateURLTableModel();
 
@@ -91,10 +92,6 @@ class TemplateURLTableModel : public ui::TableModel,
   // If there is an observer, it's notified the selected row has changed.
   void NotifyChanged(int index);
 
-  TemplateURLService* template_url_service() const {
-    return template_url_service_;
-  }
-
   // Returns the index of the last entry shown in the search engines group.
   int last_search_engine_index() const { return last_search_engine_index_; }
 
@@ -103,7 +100,7 @@ class TemplateURLTableModel : public ui::TableModel,
   int last_other_engine_index() const { return last_other_engine_index_; }
 
  private:
-  friend class ModelEntry;
+  class ModelEntry;
 
   // Notification that a model entry has fetched its icon.
   void FaviconAvailable(ModelEntry* entry);
@@ -124,6 +121,8 @@ class TemplateURLTableModel : public ui::TableModel,
 
   // The model we're displaying entries from.
   TemplateURLService* template_url_service_;
+
+  FaviconService* favicon_service_;
 
   // Index of the last search engine in entries_. This is used to determine the
   // group boundaries.

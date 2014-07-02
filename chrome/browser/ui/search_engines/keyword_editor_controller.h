@@ -50,6 +50,9 @@ class KeywordEditorController {
   // Remove the TemplateURL at the specified index in the TableModel.
   void RemoveTemplateURL(int index);
 
+  // Returns the default search provider.
+  TemplateURL* GetDefaultSearchProvider();
+
   // Make the TemplateURL at the specified index (into the TableModel) the
   // default search provider.  Return the new index, or -1 if nothing was done.
   int MakeDefaultTemplateURL(int index);
@@ -64,11 +67,8 @@ class KeywordEditorController {
     return table_model_.get();
   }
 
-  TemplateURLService* url_model() const;
-
  private:
-  // The profile.
-  Profile* profile_;
+  TemplateURLService* url_model_;
 
   // Model for the TableView.
   scoped_ptr<TemplateURLTableModel> table_model_;

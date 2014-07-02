@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
 #include "base/prefs/pref_registry_simple.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
@@ -17,9 +16,10 @@
 using base::UserMetricsAction;
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
-    : profile_(profile) {
+    : url_model_(TemplateURLServiceFactory::GetForProfile(profile)) {
   table_model_.reset(new TemplateURLTableModel(
-      TemplateURLServiceFactory::GetForProfile(profile)));
+      url_model_,
+      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)));
 }
 
 KeywordEditorController::~KeywordEditorController() {
@@ -69,16 +69,16 @@ void KeywordEditorController::ModifyTemplateURL(TemplateURL* template_url,
 
 bool KeywordEditorController::CanEdit(const TemplateURL* url) const {
   return (url->GetType() != TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
-      (!url_model()->is_default_search_managed() ||
-       (url != url_model()->GetDefaultSearchProvider()));
+      (!url_model_->is_default_search_managed() ||
+       (url != url_model_->GetDefaultSearchProvider()));
 }
 
 bool KeywordEditorController::CanMakeDefault(const TemplateURL* url) const {
-  return url_model()->CanMakeDefault(url);
+  return url_model_->CanMakeDefault(url);
 }
 
 bool KeywordEditorController::CanRemove(const TemplateURL* url) const {
-  return url != url_model()->GetDefaultSearchProvider();
+  return url != url_model_->GetDefaultSearchProvider();
 }
 
 void KeywordEditorController::RemoveTemplateURL(int index) {
@@ -86,18 +86,18 @@ void KeywordEditorController::RemoveTemplateURL(int index) {
   content::RecordAction(UserMetricsAction("KeywordEditor_RemoveKeyword"));
 }
 
+TemplateURL* KeywordEditorController::GetDefaultSearchProvider() {
+  return url_model_->GetDefaultSearchProvider();
+}
+
 int KeywordEditorController::MakeDefaultTemplateURL(int index) {
   return table_model_->MakeDefaultTemplateURL(index);
 }
 
 bool KeywordEditorController::loaded() const {
-  return url_model()->loaded();
+  return url_model_->loaded();
 }
 
 TemplateURL* KeywordEditorController::GetTemplateURL(int index) {
   return table_model_->GetTemplateURL(index);
-}
-
-TemplateURLService* KeywordEditorController::url_model() const {
-  return table_model_->template_url_service();
 }

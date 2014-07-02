@@ -5,20 +5,14 @@
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/search_engines/template_url.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -38,7 +32,7 @@ static const int kExtensionGroupID = 2;
 // Icon used while loading, or if a specific favicon can't be found.
 static const gfx::ImageSkia* default_icon = NULL;
 
-class ModelEntry {
+class TemplateURLTableModel::ModelEntry {
  public:
   ModelEntry(TemplateURLTableModel* model, TemplateURL* template_url)
       : template_url_(template_url),
@@ -79,15 +73,13 @@ class ModelEntry {
 
   void LoadFavicon() {
     load_state_ = LOADED;
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        model_->template_url_service()->profile(), Profile::EXPLICIT_ACCESS);
-    if (!favicon_service)
+    if (!model_->favicon_service_)
       return;
     GURL favicon_url = template_url()->favicon_url();
     if (!favicon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
       if (template_url_->url_ref().IsValid(
-              model_->template_url_service()->search_terms_data())) {
+              model_->template_url_service_->search_terms_data())) {
         GURL url(template_url_->url());
         if (url.is_valid())
           favicon_url = TemplateURL::GenerateFaviconURL(url);
@@ -96,7 +88,7 @@ class ModelEntry {
         return;
     }
     load_state_ = LOADING;
-    favicon_service->GetFaviconImage(
+    model_->favicon_service_->GetFaviconImage(
         favicon_url,
         favicon_base::FAVICON,
         gfx::kFaviconSize,
@@ -125,9 +117,11 @@ class ModelEntry {
 // TemplateURLTableModel -----------------------------------------
 
 TemplateURLTableModel::TemplateURLTableModel(
-    TemplateURLService* template_url_service)
+    TemplateURLService* template_url_service,
+    FaviconService* favicon_service)
     : observer_(NULL),
-      template_url_service_(template_url_service) {
+      template_url_service_(template_url_service),
+      favicon_service_(favicon_service) {
   DCHECK(template_url_service);
   template_url_service_->Load();
   template_url_service_->AddObserver(this);
@@ -381,7 +375,8 @@ void TemplateURLTableModel::OnTemplateURLServiceChanged() {
   Reload();
 }
 
-scoped_ptr<ModelEntry> TemplateURLTableModel::RemoveEntry(int index) {
+scoped_ptr<TemplateURLTableModel::ModelEntry>
+TemplateURLTableModel::RemoveEntry(int index) {
   scoped_ptr<ModelEntry> entry(entries_[index]);
   entries_.erase(index + entries_.begin());
   if (index < last_search_engine_index_)

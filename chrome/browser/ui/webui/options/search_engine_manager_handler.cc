@@ -118,7 +118,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
 
   // Find the default engine.
   const TemplateURL* default_engine =
-      list_controller_->url_model()->GetDefaultSearchProvider();
+      list_controller_->GetDefaultSearchProvider();
   int default_index = list_controller_->table_model()->IndexOfTemplateURL(
       default_engine);
 
