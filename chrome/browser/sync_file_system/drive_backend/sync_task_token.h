@@ -29,9 +29,11 @@ class SyncTaskToken {
   static scoped_ptr<SyncTaskToken> CreateForTesting(
       const SyncStatusCallback& callback);
   static scoped_ptr<SyncTaskToken> CreateForForegroundTask(
-      const base::WeakPtr<SyncTaskManager>& manager);
+      const base::WeakPtr<SyncTaskManager>& manager,
+      base::SequencedTaskRunner* task_runner);
   static scoped_ptr<SyncTaskToken> CreateForBackgroundTask(
       const base::WeakPtr<SyncTaskManager>& manager,
+      base::SequencedTaskRunner* task_runner,
       int64 token_id,
       scoped_ptr<BlockingFactor> blocking_factor);
 
@@ -64,11 +66,13 @@ class SyncTaskToken {
 
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
+                base::SequencedTaskRunner* task_runner,
                 int64 token_id,
                 scoped_ptr<BlockingFactor> blocking_factor,
                 const SyncStatusCallback& callback);
 
   base::WeakPtr<SyncTaskManager> manager_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   tracked_objects::Location location_;
   int64 token_id_;
   SyncStatusCallback callback_;
