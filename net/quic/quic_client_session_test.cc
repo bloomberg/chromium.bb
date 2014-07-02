@@ -6,11 +6,15 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/rand_util.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/test_completion_callback.h"
+#include "net/base/test_data_directory.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -20,6 +24,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/cert_test_util.h"
 #include "net/udp/datagram_client_socket.h"
 
 using testing::_;
@@ -28,7 +33,7 @@ namespace net {
 namespace test {
 namespace {
 
-const char kServerHostname[] = "www.example.com";
+const char kServerHostname[] = "www.example.org";
 const uint16 kServerPort = 80;
 
 class TestPacketWriter : public QuicDefaultPacketWriter {
@@ -59,6 +64,20 @@ class TestPacketWriter : public QuicDefaultPacketWriter {
  private:
   QuicVersion version_;
   QuicPacketHeader header_;
+};
+
+class FakeChannelIDKey : public ChannelIDKey {
+ public:
+  // ChannelIDKey implementation
+  virtual bool Sign(base::StringPiece signed_data,
+                    std::string* out_signature) const OVERRIDE {
+    *out_signature = "";
+    return true;
+  }
+
+  virtual std::string SerializeKey() const OVERRIDE {
+    return "";
+  }
 };
 
 class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
@@ -164,6 +183,52 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   // streams.
   session_.OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
   EXPECT_EQ(NULL, session_.CreateOutgoingDataStream());
+}
+
+TEST_P(QuicClientSessionTest, CanPool) {
+  // Load a cert that is valid for:
+  //   www.example.org
+  //   mail.example.org
+  //   www.example.com
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  CertVerifyResult result;
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem");
+  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+
+  session_.OnProofVerifyDetailsAvailable(details);
+  CompleteCryptoHandshake();
+
+
+  EXPECT_TRUE(session_.CanPool("www.example.org"));
+  EXPECT_TRUE(session_.CanPool("mail.example.org"));
+  EXPECT_TRUE(session_.CanPool("mail.example.com"));
+  EXPECT_FALSE(session_.CanPool("mail.google.com"));
+}
+
+TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
+  // Load a cert that is valid for:
+  //   www.example.org
+  //   mail.example.org
+  //   www.example.com
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  CertVerifyResult result;
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem");
+  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+
+  session_.OnProofVerifyDetailsAvailable(details);
+  CompleteCryptoHandshake();
+  QuicClientSessionPeer::SetChannelIDKey(&session_, new FakeChannelIDKey);
+
+  EXPECT_TRUE(session_.CanPool("www.example.org"));
+  EXPECT_TRUE(session_.CanPool("mail.example.org"));
+  EXPECT_FALSE(session_.CanPool("mail.example.com"));
+  EXPECT_FALSE(session_.CanPool("mail.google.com"));
 }
 
 }  // namespace

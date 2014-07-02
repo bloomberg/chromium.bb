@@ -109,6 +109,12 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
 }
 
+bool QuicCryptoClientStream::WasChannelIDSent() const {
+  // TODO(rch): we should replace this with a boolean member so we
+  // can free the memory associated with the key after we're finished with it.
+  return channel_id_key_.get() != NULL;
+}
+
 // kMaxClientHellos is the maximum number of times that we'll send a client
 // hello. The value 3 accounts for:
 //   * One failure due to an incorrect or missing source-address token.

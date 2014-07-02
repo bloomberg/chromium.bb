@@ -20,6 +20,7 @@ class QuicClientSessionBase;
 
 namespace test {
 class CryptoTestUtils;
+class QuicClientSessionPeer;
 }  // namespace test
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
@@ -43,6 +44,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // have been sent. If the handshake has completed then this is one greater
   // than the number of round-trips needed for the handshake.
   int num_sent_client_hellos() const;
+
+  // Returns true if a channel ID was sent on this connection.
+  bool WasChannelIDSent() const;
 
  private:
   // ChannelIDSourceCallbackImpl is passed as the callback method to
@@ -86,6 +90,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   };
 
   friend class test::CryptoTestUtils;
+  friend class test::QuicClientSessionPeer;
 
   enum State {
     STATE_IDLE,

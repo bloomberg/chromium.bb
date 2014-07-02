@@ -9,6 +9,7 @@
 
 namespace net {
 
+class ChannelIDKey;
 class QuicClientSession;
 
 namespace test {
@@ -18,6 +19,9 @@ class QuicClientSessionPeer {
   static void SetMaxOpenStreams(QuicClientSession* session,
                                 size_t max_streams,
                                 size_t default_streams);
+
+  static void SetChannelIDKey(QuicClientSession* session,
+                              ChannelIDKey* channel_id_key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicClientSessionPeer);
