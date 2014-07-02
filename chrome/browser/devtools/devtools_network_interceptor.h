@@ -54,6 +54,8 @@ class DevToolsNetworkInterceptor {
   void ArmTimer(base::TimeTicks now);
   void OnTimer();
 
+  void FireThrottledCallback(DevToolsNetworkTransaction* transaction);
+
   typedef std::set<DevToolsNetworkTransaction*> Transactions;
   Transactions transactions_;
 
