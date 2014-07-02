@@ -10,5 +10,6 @@ PASS: doc.getElementsByTagName('title').length should be 1 and is.
 PASS: doc.getElementsByTagName('body').length should be 1 and is.
 [document with title '']
 PASS: doc.title should be and is.
+PASS: doc.getElementsByTagName('title').item(0).firstChild.data should be and is.
 [document with null title]
 PASS: doc.title should be null and is.

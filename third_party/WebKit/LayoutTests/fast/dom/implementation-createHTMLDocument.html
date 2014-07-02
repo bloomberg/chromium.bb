@@ -42,6 +42,7 @@ function test()
     print("[document with title '']");
     doc = document.implementation.createHTMLDocument("");
     shouldBe("doc.title", "");
+    shouldBe("doc.getElementsByTagName('title').item(0).firstChild.data", "");
 
     print("[document with null title]");
     doc = document.implementation.createHTMLDocument(null);

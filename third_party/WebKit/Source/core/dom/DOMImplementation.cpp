@@ -36,12 +36,15 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/Text.h"
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLTitleElement.h"
 #include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/ImageDocument.h"
 #include "core/html/MediaDocument.h"
@@ -324,9 +327,14 @@ PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const
         .withRegistrationContext(document().registrationContext());
     RefPtrWillBeRawPtr<HTMLDocument> d = HTMLDocument::create(init);
     d->open();
-    d->write("<!doctype html><html><body></body></html>");
-    if (!title.isNull())
-        d->setTitle(title);
+    d->write("<!doctype html><html><head></head><body></body></html>");
+    if (!title.isNull()) {
+        HTMLHeadElement* headElement = d->head();
+        ASSERT(headElement);
+        RefPtrWillBeRawPtr<HTMLTitleElement> titleElement = HTMLTitleElement::create(*d);
+        headElement->appendChild(titleElement);
+        titleElement->appendChild(d->createTextNode(title), IGNORE_EXCEPTION);
+    }
     d->setSecurityOrigin(document().securityOrigin()->isolatedCopy());
     d->setContextFeatures(document().contextFeatures());
     return d.release();
