@@ -20,7 +20,6 @@ using metrics::OmniboxEventProto;
 
 TEST(AutocompleteInputTest, InputType) {
   // TODO(mukai): Fix this scheme setup.
-  url::Initialize();
   url::AddStandardScheme("chrome");
   url::AddStandardScheme("chrome-devtools");
   url::AddStandardScheme("chrome-search");
@@ -155,8 +154,6 @@ TEST(AutocompleteInputTest, InputType) {
                             true, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
   }
-
-  url::Shutdown();
 }
 
 TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
