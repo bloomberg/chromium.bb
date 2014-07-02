@@ -39,6 +39,7 @@ group("all_components") {
   if (is_android) {
     deps -= [
       "//components/cloud_devices/common",  # Should work, needs checking.
+      "//components/dom_distiller/core",  # Blocked on content.
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
       "//components/user_prefs",  # Blocked on content.
