@@ -311,10 +311,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # dependency.  It is read from the actual DEPS file so cannot be set on
     # class instantiation.
     self.recursion_override = None
-    # recurselist is a mutable value that selectively overrides the default
+    # recursedeps is a mutable value that selectively overrides the default
     # 'no recursion' setting on a dep-by-dep basis.  It will replace
     # recursion_override.
-    self.recurselist = None
+    self.recursedeps = None
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
@@ -356,19 +356,19 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return requirements
 
   @property
-  def try_recurselist(self):
+  def try_recursedeps(self):
     """Returns False if recursion_override is ever specified."""
     if self.recursion_override is not None:
       return False
-    return self.parent.try_recurselist
+    return self.parent.try_recursedeps
 
   @property
   def recursion_limit(self):
     """Returns > 0 if this dependency is not too recursed to be processed."""
-    # We continue to support the absence of recurselist until tools and DEPS
+    # We continue to support the absence of recursedeps until tools and DEPS
     # using recursion_override are updated.
-    if self.try_recurselist and self.parent.recurselist != None:
-      if self.name in self.parent.recurselist:
+    if self.try_recursedeps and self.parent.recursedeps != None:
+      if self.name in self.parent.recursedeps:
         return 1
 
     if self.recursion_override is not None:
@@ -593,9 +593,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
           'Setting %s recursion to %d.', self.name, self.recursion_limit)
-    self.recurselist = local_scope.get('recurselist', None)
-    if 'recurselist' in local_scope:
-      logging.warning('Found recurselist %r.', repr(self.recurselist))
+    self.recursedeps = local_scope.get('recursedeps', None)
+    if 'recursedeps' in local_scope:
+      logging.warning('Found recursedeps %r.', repr(self.recursedeps))
     # If present, save 'target_os' in the local_target_os property.
     if 'target_os' in local_scope:
       self.local_target_os = local_scope['target_os']
@@ -1490,8 +1490,8 @@ want to set 'managed': False in .gclient.
     return self._recursion_limit
 
   @property
-  def try_recurselist(self):
-    """Whether to attempt using recurselist-style recursion processing."""
+  def try_recursedeps(self):
+    """Whether to attempt using recursedeps-style recursion processing."""
     return True
 
   @property
