@@ -107,7 +107,7 @@ public:
     virtual void sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message) OVERRIDE;
     virtual void flush() OVERRIDE;
 
-    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow, float scale, float offsetX, float offsetY) OVERRIDE;
+    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) OVERRIDE;
     virtual void clearDeviceMetricsOverride() OVERRIDE;
     virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
@@ -134,8 +134,8 @@ private:
     virtual void willProcessTask() OVERRIDE;
     virtual void didProcessTask() OVERRIDE;
 
-    void enableViewportEmulation();
-    void disableViewportEmulation();
+    void enableMobileEmulation();
+    void disableMobileEmulation();
     void updatePageScaleFactorLimits();
 
     WebCore::InspectorController* inspectorController();
@@ -151,7 +151,7 @@ private:
     bool m_webViewDidLayoutOnceAfterLoad;
 
     bool m_deviceMetricsEnabled;
-    bool m_emulateViewportEnabled;
+    bool m_emulateMobileEnabled;
     bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
 

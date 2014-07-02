@@ -90,10 +90,10 @@ void InspectorClientImpl::updateInspectorStateCookie(const WTF::String& inspecto
         agent->updateInspectorStateCookie(inspectorState);
 }
 
-void InspectorClientImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow, float scale, float offsetX, float offsetY)
+void InspectorClientImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->setDeviceMetricsOverride(width, height, deviceScaleFactor, emulateViewport, fitWindow, scale, offsetX, offsetY);
+        agent->setDeviceMetricsOverride(width, height, deviceScaleFactor, mobile, fitWindow, scale, offsetX, offsetY);
 }
 
 void InspectorClientImpl::clearDeviceMetricsOverride()

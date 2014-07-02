@@ -108,7 +108,7 @@ public:
     virtual void hasTouchInputs(ErrorString*, bool* result) OVERRIDE;
     virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) OVERRIDE;
     virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html) OVERRIDE;
-    virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) OVERRIDE;
+    virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) OVERRIDE;
     virtual void clearDeviceMetricsOverride(ErrorString*) OVERRIDE;
     virtual void resetScrollAndPageScaleFactor(ErrorString*) OVERRIDE;
     virtual void setShowPaintRects(ErrorString*, bool show) OVERRIDE;
@@ -174,9 +174,9 @@ private:
     class GetResourceContentLoadListener;
 
     InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
-    bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY);
+    bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
     void updateViewMetricsFromState();
-    void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double scale, double offsetX, double offsetY);
+    void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
     void updateTouchEventEmulationInPage(bool);
     bool compositingEnabled(ErrorString*);
 
@@ -204,7 +204,7 @@ private:
     bool m_enabled;
     bool m_ignoreScriptsEnabledNotification;
     bool m_deviceMetricsOverridden;
-    bool m_emulateViewportEnabled;
+    bool m_emulateMobileEnabled;
 
     bool m_touchEmulationEnabled;
     bool m_originalTouchEnabled;

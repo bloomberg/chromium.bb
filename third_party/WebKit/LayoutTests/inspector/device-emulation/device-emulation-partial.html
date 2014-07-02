@@ -40,7 +40,7 @@ function test()
 
     function testPartialOverride(name, value, next)
     {
-        var params = {width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: false};
+        var params = {width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: false};
         if (name === null) {
             PageAgent.clearDeviceMetricsOverride(getPageMetrics.bind(null, check));
         } else {

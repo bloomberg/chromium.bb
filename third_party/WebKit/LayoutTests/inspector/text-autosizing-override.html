@@ -61,13 +61,13 @@
       },
 
       function checkAutosizedWithDeviceMetrics(next) {
-        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: true, fitWindow: true}, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: true}, function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkNotAutosizedWithDeviceMetrics(next) {
-        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: true}, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: true}, function() {
           assertAutosizingResult(false, next);
         });
       },
@@ -88,7 +88,7 @@
 
       function checkAutosizedWhenDeviceMetricsOverrideSettings(next) {
         InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: true, fitWindow: true}, function() {
+          PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: true}, function() {
             assertAutosizingResult(true, next);
           });
         });

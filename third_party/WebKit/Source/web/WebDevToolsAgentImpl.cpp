@@ -208,7 +208,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_generatingEvent(false)
     , m_webViewDidLayoutOnceAfterLoad(false)
     , m_deviceMetricsEnabled(false)
-    , m_emulateViewportEnabled(false)
+    , m_emulateMobileEnabled(false)
     , m_originalViewportEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
     , m_originalMinimumPageScaleFactor(0)
@@ -307,7 +307,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     // FIXME: This workaround is required for touch emulation on Mac, where
     // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
     bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
-    if (isPinch && m_touchEventEmulationEnabled && m_emulateViewportEnabled) {
+    if (isPinch && m_touchEventEmulationEnabled && m_emulateMobileEnabled) {
         FrameView* frameView = page->deprecatedLocalMainFrame()->view();
         PlatformGestureEventBuilder gestureEvent(frameView, *static_cast<const WebGestureEvent*>(&inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
@@ -360,19 +360,19 @@ void WebDevToolsAgentImpl::didLayout()
     m_webViewDidLayoutOnceAfterLoad = true;
 }
 
-void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow, float scale, float offsetX, float offsetY)
+void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
 {
     if (!m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = true;
         m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
     }
-    if (emulateViewport)
-        enableViewportEmulation();
+    if (mobile)
+        enableMobileEmulation();
     else
-        disableViewportEmulation();
+        disableMobileEmulation();
 
     WebDeviceEmulationParams params;
-    params.screenPosition = emulateViewport ? WebDeviceEmulationParams::Mobile : WebDeviceEmulationParams::Desktop;
+    params.screenPosition = mobile ? WebDeviceEmulationParams::Mobile : WebDeviceEmulationParams::Desktop;
     params.deviceScaleFactor = deviceScaleFactor;
     params.viewSize = WebSize(width, height);
     params.fitToView = fitWindow;
@@ -386,7 +386,7 @@ void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
     if (m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = false;
         m_webViewImpl->setBackgroundColorOverride(Color::transparent);
-        disableViewportEmulation();
+        disableMobileEmulation();
         m_client->disableDeviceEmulation();
     }
 }
@@ -398,11 +398,11 @@ void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
     updatePageScaleFactorLimits();
 }
 
-void WebDevToolsAgentImpl::enableViewportEmulation()
+void WebDevToolsAgentImpl::enableMobileEmulation()
 {
-    if (m_emulateViewportEnabled)
+    if (m_emulateMobileEnabled)
         return;
-    m_emulateViewportEnabled = true;
+    m_emulateMobileEnabled = true;
     m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
@@ -415,9 +415,9 @@ void WebDevToolsAgentImpl::enableViewportEmulation()
     updatePageScaleFactorLimits();
 }
 
-void WebDevToolsAgentImpl::disableViewportEmulation()
+void WebDevToolsAgentImpl::disableMobileEmulation()
 {
-    if (!m_emulateViewportEnabled)
+    if (!m_emulateMobileEnabled)
         return;
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
     RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
@@ -426,19 +426,19 @@ void WebDevToolsAgentImpl::disableViewportEmulation()
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
     m_webViewImpl->setIgnoreViewportTagScaleLimits(false);
     m_webViewImpl->setZoomFactorOverride(0);
-    m_emulateViewportEnabled = false;
+    m_emulateMobileEnabled = false;
     updatePageScaleFactorLimits();
 }
 
 void WebDevToolsAgentImpl::updatePageScaleFactorLimits()
 {
-    if (m_touchEventEmulationEnabled || m_emulateViewportEnabled) {
+    if (m_touchEventEmulationEnabled || m_emulateMobileEnabled) {
         if (!m_pageScaleLimitsOverriden) {
             m_originalMinimumPageScaleFactor = m_webViewImpl->minimumPageScaleFactor();
             m_originalMaximumPageScaleFactor = m_webViewImpl->maximumPageScaleFactor();
             m_pageScaleLimitsOverriden = true;
         }
-        if (m_emulateViewportEnabled) {
+        if (m_emulateMobileEnabled) {
             m_webViewImpl->setPageScaleFactorLimits(-1, -1);
             m_webViewImpl->setInitialPageScaleOverride(-1);
         } else {
