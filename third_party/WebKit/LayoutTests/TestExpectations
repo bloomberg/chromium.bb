@@ -1103,5 +1103,3 @@ crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-only.h
 
 crbug.com/390204 inspector/console/console-viewport-selection.html [ Pass Failure ]
 
-Bug(bungeman) [ Mac ] virtual/antialiasedtext/fast/text/emphasis-vertical.html [ NeedsRebaseline ]
-
