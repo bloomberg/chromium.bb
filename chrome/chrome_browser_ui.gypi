@@ -148,6 +148,7 @@
       'browser/ui/browser_window.h',
       'browser/ui/browser_window_state.cc',
       'browser/ui/browser_window_state.h',
+      'browser/ui/browser_window_testing_views.h',
       'browser/ui/chrome_select_file_policy.cc',
       'browser/ui/chrome_select_file_policy.h',
       'browser/ui/cocoa/accelerator_utils_cocoa.mm',
