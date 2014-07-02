@@ -75,6 +75,11 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Whether to show the menu on press of the Up or Down arrow keys.
+     */
+    respondToArrowKeys: true,
+
+    /**
      * Handles event callbacks.
      * @param {Event} e The event object.
      */
@@ -223,6 +228,8 @@ cr.define('cr.ui', function() {
       switch (e.keyIdentifier) {
         case 'Down':
         case 'Up':
+          if (!this.respondToArrowKeys)
+            break;
         case 'Enter':
         case 'U+0020': // Space
           if (!this.isMenuShown())

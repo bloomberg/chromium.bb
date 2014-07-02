@@ -421,6 +421,7 @@ html[dir='rtl'] .site-domain {
 }
 
 .entry-box:hover,
+.entry-box.lead,
 .entry-box.contains-focus {
   background-color: rgba(0, 0, 0, .05);
 }
