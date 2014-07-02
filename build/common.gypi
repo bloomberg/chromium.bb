@@ -3384,9 +3384,14 @@
             ],
             'cflags': [
               '-O>(debug_optimize)',
-              '-g',
+              '-gdwarf-4',
             ],
             'conditions' : [
+              ['fastbuild==0', {
+                'cflags': [
+                  '-g3',
+                ],
+              }],
               ['OS=="android"', {
                 'ldflags': [
                   # Warn in case of text relocations.
