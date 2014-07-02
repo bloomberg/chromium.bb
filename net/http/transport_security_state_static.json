@@ -151,6 +151,29 @@
       "static_spki_hashes": [
         "Libertylavabitcom"
       ]
+    },
+    {
+      "name": "dropbox",
+      "static_spki_hashes": [
+        "DigiCertAssuredIDRoot",
+        "DigiCertGlobalRoot",
+        "DigiCertEVRoot",
+        "EntrustRootEC1",
+        "Entrust_G2",
+        "Entrust_EV",
+        "Entrust_2048",
+        "GeoTrustGlobal",
+        "GeoTrustPrimary_G2",
+        "GeoTrustPrimary_G3",
+        "GeoTrustPrimary",
+        "TheGoDaddyGroupClass2",
+        "GoDaddyRoot_G2",
+        "GoDaddySecure",
+        "ThawtePremiumServer",
+        "ThawtePrimaryRootCA_G2",
+        "ThawtePrimaryRootCA_G3",
+        "ThawtePrimaryRootCA"
+      ]
     }
   ],
 
@@ -789,6 +812,8 @@
     { "name": "z.ai", "include_subdomains": true, "mode": "force-https" },
     { "name": "wildbee.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "portal.tirol.gv.at", "include_subdomains": true, "mode": "force-https" },
+    { "name": "dropbox.com", "mode": "force-https", "pins": "dropbox" },
+    { "name": "www.dropbox.com", "include_subdomains": true, "mode": "force-https", "pins": "dropbox" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },

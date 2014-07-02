@@ -226,6 +226,38 @@ static const char kSPKIHash_GlobalSignRootCA_R3[] =
     "\xf7\x93\x19\xef\xdf\xc1\xf5\x20\xfb\xac"
     "\x85\x55\x2c\xf2\xd2\x8f\x5a\xb9\xca\x0b";
 
+static const char kSPKIHash_EntrustRootEC1[] =
+    "\x07\x23\x2d\x45\x65\x87\xb9\xd7\xb1\xd9"
+    "\x7d\xd1\xc5\xfb\x65\xc5\x89\xbf\x92\x96";
+
+static const char kSPKIHash_TheGoDaddyGroupClass2[] =
+    "\xee\xe5\x9f\x1e\x2a\xa5\x44\xc3\xcb\x25"
+    "\x43\xa6\x9a\x5b\xd4\x6a\x25\xbc\xbb\x8e";
+
+static const char kSPKIHash_GoDaddyRoot_G2[] =
+    "\x21\x0f\x2c\x89\xf7\xc4\xcd\x5d\x1b\x82"
+    "\x5e\x38\xd6\xc6\x59\x3b\xa6\x93\x75\xae";
+
+static const char kSPKIHash_GoDaddySecure[] =
+    "\xba\x2e\xb5\xa8\x3e\x13\x23\xd9\x53\x4b"
+    "\x5e\x65\xbc\xe7\xa3\x13\x5d\xd0\xa9\x96";
+
+static const char kSPKIHash_ThawtePremiumServer[] =
+    "\x5f\xf3\x24\x6c\x8f\x91\x24\xaf\x9b\x5f"
+    "\x3e\xb0\x34\x6a\xf4\x2d\x5c\xa8\x5d\xcc";
+
+static const char kSPKIHash_ThawtePrimaryRootCA_G2[] =
+    "\x6a\x25\x23\x9d\x62\x75\xcd\x52\x21\x69"
+    "\x5c\x31\xe9\x89\xc4\xd5\x38\xb8\xc4\xea";
+
+static const char kSPKIHash_ThawtePrimaryRootCA_G3[] =
+    "\xab\x76\x88\xf4\xe5\xe1\x38\xc9\xe9\x50"
+    "\x17\xcd\xcd\xb3\x18\x17\xb3\x3e\x8c\xf5";
+
+static const char kSPKIHash_ThawtePrimaryRootCA[] =
+    "\x6c\xca\xbd\x7d\xb4\x7e\x94\xa5\x75\x99"
+    "\x01\xb6\xa7\xdf\xd4\x5d\x1c\x09\x1c\xcc";
+
 // The following is static data describing the hosts that are hardcoded with
 // certificate pins or HSTS information.
 
@@ -373,6 +405,32 @@ static const char* const kLavabitAcceptableCerts[] = {
 };
 #define kLavabitPins { \
   kLavabitAcceptableCerts, \
+  kNoRejectedPublicKeys, \
+}
+
+static const char* const kDropboxAcceptableCerts[] = {
+  kSPKIHash_DigiCertAssuredIDRoot,
+  kSPKIHash_DigiCertGlobalRoot,
+  kSPKIHash_DigiCertEVRoot,
+  kSPKIHash_EntrustRootEC1,
+  kSPKIHash_Entrust_G2,
+  kSPKIHash_Entrust_EV,
+  kSPKIHash_Entrust_2048,
+  kSPKIHash_GeoTrustGlobal,
+  kSPKIHash_GeoTrustPrimary_G2,
+  kSPKIHash_GeoTrustPrimary_G3,
+  kSPKIHash_GeoTrustPrimary,
+  kSPKIHash_TheGoDaddyGroupClass2,
+  kSPKIHash_GoDaddyRoot_G2,
+  kSPKIHash_GoDaddySecure,
+  kSPKIHash_ThawtePremiumServer,
+  kSPKIHash_ThawtePrimaryRootCA_G2,
+  kSPKIHash_ThawtePrimaryRootCA_G3,
+  kSPKIHash_ThawtePrimaryRootCA,
+  NULL,
+};
+#define kDropboxPins { \
+  kDropboxAcceptableCerts, \
   kNoRejectedPublicKeys, \
 }
 
@@ -995,6 +1053,8 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {6, true, "\001z\002ai", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\007wildbee\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {20, true, "\006portal\005tirol\002gv\002at", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, false, "\007dropbox\003com", true, kDropboxPins, DOMAIN_DROPBOX_COM },
+  {17, true, "\003www\007dropbox\003com", true, kDropboxPins, DOMAIN_DROPBOX_COM },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
