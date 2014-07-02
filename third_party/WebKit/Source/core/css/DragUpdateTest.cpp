@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/dom/Element.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"

@@ -24,6 +24,7 @@
 #include "core/svg/SVGAnimateMotionElement.h"
 
 #include "core/SVGNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"

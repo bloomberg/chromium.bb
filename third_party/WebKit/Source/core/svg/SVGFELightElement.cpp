@@ -24,6 +24,7 @@
 #include "core/svg/SVGFELightElement.h"
 
 #include "core/SVGNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGFEDiffuseLightingElement.h"

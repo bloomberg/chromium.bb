@@ -26,9 +26,9 @@
 #ifndef RenderObject_h
 #define RenderObject_h
 
+#include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
-#include "core/dom/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/rendering/HitTestRequest.h"
@@ -777,8 +777,10 @@ public:
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
     RenderStyle* style() const { return m_style.get(); }
-    RenderStyle* firstLineStyle() const { return document().styleEngine()->usesFirstLineRules() ? cachedFirstLineStyle() : style(); }
-    RenderStyle* style(bool firstLine) const { return firstLine ? firstLineStyle() : style(); }
+
+    /* The two following methods are inlined in RenderObjectInlines.h */
+    RenderStyle* firstLineStyle() const;
+    RenderStyle* style(bool firstLine) const;
 
     inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty) const
     {

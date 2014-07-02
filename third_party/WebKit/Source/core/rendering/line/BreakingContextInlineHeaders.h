@@ -30,6 +30,7 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/break_lines.h"
 #include "core/rendering/line/LineBreaker.h"

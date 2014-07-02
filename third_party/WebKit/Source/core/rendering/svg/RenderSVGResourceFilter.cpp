@@ -25,6 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
+#include "core/dom/ElementTraversal.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"

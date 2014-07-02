@@ -37,6 +37,7 @@
 #include "core/HTMLNames.h"
 #include "core/UserAgentStyleSheets.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"

@@ -22,6 +22,7 @@
 
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
+#include "core/dom/ElementTraversal.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFitToViewBox.h"

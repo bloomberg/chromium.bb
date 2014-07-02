@@ -21,6 +21,7 @@
 #include "core/rendering/RootInlineBox.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/StyleEngine.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"

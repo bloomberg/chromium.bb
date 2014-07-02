@@ -25,6 +25,7 @@
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
 #include "core/SVGNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"

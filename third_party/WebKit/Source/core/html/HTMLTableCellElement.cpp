@@ -29,6 +29,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/rendering/RenderTableCell.h"
 

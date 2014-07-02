@@ -8,6 +8,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/Page.h"

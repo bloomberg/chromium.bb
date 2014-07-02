@@ -25,6 +25,7 @@
 #include "core/html/HTMLFrameElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/rendering/RenderFrame.h"
 

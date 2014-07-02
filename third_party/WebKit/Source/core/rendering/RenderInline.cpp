@@ -24,6 +24,7 @@
 #include "core/rendering/RenderInline.h"
 
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/StyleEngine.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/rendering/GraphicsContextAnnotator.h"

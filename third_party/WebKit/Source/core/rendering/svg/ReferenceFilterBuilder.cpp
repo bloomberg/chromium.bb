@@ -33,6 +33,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/svg/SVGDocumentExtensions.h"

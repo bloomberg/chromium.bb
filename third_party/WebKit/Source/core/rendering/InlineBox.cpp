@@ -23,6 +23,7 @@
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RootInlineBox.h"
 #include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"
