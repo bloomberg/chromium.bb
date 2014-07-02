@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/task_runner_util.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -54,12 +55,14 @@ void GoogleUpdateMetricsProviderWin::GetGoogleUpdateData(
 
   // Schedules a task on a blocking pool thread to gather Google Update
   // statistics (requires Registry reads).
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
       base::Bind(
-          &GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool,
-          weak_ptr_factory_.GetWeakPtr()),
-      done_callback);
+          &GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool),
+      base::Bind(
+          &GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,
+          weak_ptr_factory_.GetWeakPtr(), done_callback));
 }
 
 void GoogleUpdateMetricsProviderWin::ProvideSystemProfileMetrics(
@@ -101,20 +104,32 @@ GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics::GoogleUpdateMetrics()
 GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics::~GoogleUpdateMetrics() {
 }
 
-void GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool() {
+// static
+GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics
+GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool() {
+  GoogleUpdateMetrics google_update_metrics;
+
   if (!IsOfficialBuild())
-    return;
+    return google_update_metrics;
 
   const bool is_system_install = GoogleUpdateSettings::IsSystemInstall();
-  google_update_metrics_.is_system_install = is_system_install;
-  google_update_metrics_.last_started_automatic_update_check =
+  google_update_metrics.is_system_install = is_system_install;
+  google_update_metrics.last_started_automatic_update_check =
       GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(is_system_install);
-  google_update_metrics_.last_checked =
+  google_update_metrics.last_checked =
       GoogleUpdateSettings::GetGoogleUpdateLastChecked(is_system_install);
   GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(
       is_system_install,
-      &google_update_metrics_.google_update_data);
+      &google_update_metrics.google_update_data);
   GoogleUpdateSettings::GetUpdateDetail(
       is_system_install,
-      &google_update_metrics_.product_data);
+      &google_update_metrics.product_data);
+  return google_update_metrics;
+}
+
+void GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData(
+    const base::Closure& done_callback,
+    const GoogleUpdateMetrics& google_update_metrics) {
+  google_update_metrics_ = google_update_metrics;
+  done_callback.Run();
 }
