@@ -40,6 +40,7 @@ static_library("common") {
     "//chrome/app/theme:theme_resources",
     "//chrome/common:constants",
     "//chrome/common/net",
+    "//chrome/common/safe_browsing:proto",
     #"//components/cloud_devices:common",  TODO(GYP)
     #"//components/json_schema",  TODO(GYP)
     "//components/metrics",  

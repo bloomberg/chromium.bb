@@ -24,6 +24,7 @@ class IncidentReportUploader {
     UPLOAD_CANCELLED = 3,         // The upload was cancelled.
     UPLOAD_REQUEST_FAILED = 4,    // Upload failed.
     UPLOAD_INVALID_RESPONSE = 5,  // The response was not recognized.
+    UPLOAD_NO_DOWNLOAD = 6,       // No last download was found.
     NUM_UPLOAD_RESULTS
   };
 

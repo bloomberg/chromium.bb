@@ -2660,6 +2660,8 @@
       'browser/safe_browsing/incident_report_uploader.h',
       'browser/safe_browsing/incident_report_uploader_impl.cc',
       'browser/safe_browsing/incident_report_uploader_impl.h',
+      'browser/safe_browsing/last_download_finder.cc',
+      'browser/safe_browsing/last_download_finder.h',
       'browser/safe_browsing/path_sanitizer.cc',
       'browser/safe_browsing/path_sanitizer.h',
       'browser/safe_browsing/pe_image_reader_win.cc',

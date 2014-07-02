@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/add_incident_callback.h"
 #include "chrome/browser/safe_browsing/incident_report_uploader.h"
+#include "chrome/browser/safe_browsing/last_download_finder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -54,10 +55,10 @@ class ClientIncidentReport_IncidentData;
 // Incidents reported from a profile that is loading are held until the profile
 // is fully created. Incidents originating from profiles that do not participate
 // in safe browsing are dropped. Following the addition of an incident that is
-// not dropped, the service collects environmental data and waits a bit.
-// Additional incidents that arrive during this time are collated with the
-// initial incident. Finally, already-reported incidents are pruned and any
-// remaining are uploaded in an incident report.
+// not dropped, the service collects environmental data, finds the most recent
+// binary download, and waits a bit. Additional incidents that arrive during
+// this time are collated with the initial incident. Finally, already-reported
+// incidents are pruned and any remaining are uploaded in an incident report.
 class IncidentReportingService : public content::NotificationObserver {
  public:
   IncidentReportingService(SafeBrowsingService* safe_browsing_service,
@@ -94,11 +95,18 @@ class IncidentReportingService : public content::NotificationObserver {
       CollectEnvironmentDataFn collect_environment_data_hook,
       const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // Handles the creation of a new profile. Creates a new context for |profile|
-  // if one does not exist, and drops any received incidents for the profile if
-  // the profile is not participating in safe browsing. Overridden by unit tests
+  // Handles the addition of a new profile to the ProfileManager. Creates a new
+  // context for |profile| if one does not exist, drops any received incidents
+  // for the profile if the profile is not participating in safe browsing, and
+  // initiates a new search for the most recent download if a report is being
+  // assembled and the most recent has not been found. Overridden by unit tests
   // to inject incidents prior to creation.
-  virtual void OnProfileCreated(Profile* profile);
+  virtual void OnProfileAdded(Profile* profile);
+
+  // Initiates a search for the most recent binary download. Overriden by unit
+  // tests to provide a fake finder.
+  virtual scoped_ptr<LastDownloadFinder> CreateDownloadFinder(
+      const LastDownloadFinder::LastDownloadCallback& callback);
 
   // Initiates an upload. Overridden by unit tests to provide a fake uploader.
   virtual scoped_ptr<IncidentReportUploader> StartReportUpload(
@@ -131,6 +139,9 @@ class IncidentReportingService : public content::NotificationObserver {
   // Starts a task to collect environment data in the blocking pool.
   void BeginEnvironmentCollection();
 
+  // Returns true if the environment collection task is outstanding.
+  bool WaitingForEnvironmentCollection();
+
   // Cancels any pending environment collection task and drops any data that has
   // already been collected.
   void CancelEnvironmentCollection();
@@ -141,6 +152,10 @@ class IncidentReportingService : public content::NotificationObserver {
   void OnEnvironmentDataCollected(
       scoped_ptr<ClientIncidentReport_EnvironmentData> environment_data);
 
+  // Returns true if the service is waiting for additional incidents before
+  // uploading a report.
+  bool WaitingToCollateIncidents();
+
   // Cancels the collection timeout.
   void CancelIncidentCollection();
 
@@ -149,10 +164,23 @@ class IncidentReportingService : public content::NotificationObserver {
   // environment data to arrive or by sending an incident report.
   void OnCollectionTimeout();
 
-  // Populates |download_details| with information about the most recent
-  // download.
-  void CollectDownloadDetails(
-      ClientIncidentReport_DownloadDetails* download_details);
+  // Starts the asynchronous process of finding the most recent executable
+  // download if one is not currently being search for and/or has not already
+  // been found.
+  void BeginDownloadCollection();
+
+  // True if the service is waiting to discover the most recent download either
+  // because a task to do so is outstanding, or because one or more profiles
+  // have yet to be added to the ProfileManager.
+  bool WaitingForMostRecentDownload();
+
+  // Cancels the search for the most recent executable download.
+  void CancelDownloadCollection();
+
+  // A callback invoked on the UI thread by the last download finder when the
+  // search for the most recent binary download is complete.
+  void OnLastDownloadFound(
+      scoped_ptr<ClientIncidentReport_DownloadDetails> last_download);
 
   // Uploads an incident report if all data collection is complete. Incidents
   // originating from profiles that do not participate in safe browsing are
@@ -227,11 +255,18 @@ class IncidentReportingService : public content::NotificationObserver {
   // The time at which environmental data collection was initiated.
   base::TimeTicks environment_collection_begin_;
 
+  // The time at which download collection was initiated.
+  base::TimeTicks last_download_begin_;
+
   // Context data for all on-the-record profiles.
   ProfileContextCollection profiles_;
 
   // The collection of uploads in progress.
   ScopedVector<UploadContext> uploads_;
+
+  // An object that asynchronously searches for the most recent binary download.
+  // Non-NULL while such a search is outstanding.
+  scoped_ptr<LastDownloadFinder> last_download_finder_;
 
   // A factory for handing out weak pointers for AddIncident callbacks.
   base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_;

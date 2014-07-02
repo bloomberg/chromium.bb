@@ -1251,6 +1251,7 @@
         'browser/safe_browsing/environment_data_collection_win_unittest.cc',
         'browser/safe_browsing/incident_report_uploader_impl_unittest.cc',
         'browser/safe_browsing/incident_reporting_service_unittest.cc',
+        'browser/safe_browsing/last_download_finder_unittest.cc',
         'browser/safe_browsing/local_two_phase_testserver.cc',
         'browser/safe_browsing/malware_details_unittest.cc',
         'browser/safe_browsing/path_sanitizer_unittest.cc',

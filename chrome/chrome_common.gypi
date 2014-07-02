@@ -288,6 +288,7 @@
         'common_net',
         'common_version',
         'installer_util',
+        'safe_browsing_proto',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_prefs',
