@@ -38,7 +38,7 @@
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
 
-    [RaisesException] Blob slice(optional long long start, optional long long end, [TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString contentType);
+    [RaisesException] Blob slice(optional long long start, optional long long end, [TreatUndefinedAs=NullString] optional DOMString? contentType);
     [RaisesException, CallWith=ExecutionContext, RuntimeEnabled=FileAPIBlobClose] void close();
 };
 

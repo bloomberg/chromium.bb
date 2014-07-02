@@ -140,11 +140,11 @@
 
     // DOM Level 2 Style Interface
     CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
-                                                            [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString pseudoElement);
+                                         [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
 
     // WebKit extensions
     [MeasureAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
-                                                                  [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString pseudoElement);
+                                                                  [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
 
     [Replaceable] readonly attribute double devicePixelRatio;
 

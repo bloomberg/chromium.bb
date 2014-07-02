@@ -40,7 +40,7 @@
     [Custom] any restart();
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
-    [CallWith=ScriptState] any setVariableValue([Default=Undefined] optional long scopeIndex, [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString variableName, [Default=Undefined] optional any newValue);
+    [CallWith=ScriptState] any setVariableValue([Default=Undefined] optional long scopeIndex, [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? variableName, [Default=Undefined] optional any newValue);
 
     readonly attribute JavaScriptCallFrame caller;
     readonly attribute long sourceID;

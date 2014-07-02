@@ -67,7 +67,7 @@
 
     void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
 
-    [RaisesException] RTCDataChannel createDataChannel([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString label, optional Dictionary options);
+    [RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
 
     [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
 

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 partial interface HTMLMediaElement {
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaGenerateKeyRequest] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaAddKey] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, optional DOMString sessionId = null);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaCancelKeyRequest] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional DOMString sessionId = null);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaGenerateKeyRequest] void webkitGenerateKeyRequest([TreatUndefinedAs=NullString] DOMString? keySystem, optional Uint8Array initData);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaAddKey] void webkitAddKey([TreatUndefinedAs=NullString] DOMString? keySystem, Uint8Array key, optional Uint8Array initData, optional DOMString sessionId = null);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaCancelKeyRequest] void webkitCancelKeyRequest([TreatUndefinedAs=NullString] DOMString? keySystem, optional DOMString sessionId = null);
 
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;

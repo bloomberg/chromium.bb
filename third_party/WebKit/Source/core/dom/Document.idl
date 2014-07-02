@@ -98,7 +98,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [CustomElementCallbacks]
     boolean            execCommand([Default=Undefined] optional DOMString command,
                                    [Default=Undefined] optional boolean userInterface,
-                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString value);
+                                   [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? value);
 
     boolean            queryCommandEnabled([Default=Undefined] optional DOMString command);
     boolean            queryCommandIndeterm([Default=Undefined] optional DOMString command);
