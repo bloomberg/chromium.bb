@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import ast
 import contextlib
 import fnmatch
 import json
@@ -13,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+
 
 CHROMIUM_SRC = os.path.normpath(
     os.path.join(os.path.dirname(__file__),
@@ -66,6 +68,10 @@ def FindInDirectories(directories, filename_filter):
   return all_files
 
 
+def ParseGnList(gn_string):
+  return ast.literal_eval(gn_string)
+
+
 def ParseGypList(gyp_string):
   # The ninja generator doesn't support $ in strings, so use ## to
   # represent $.
@@ -73,6 +79,9 @@ def ParseGypList(gyp_string):
   # https://code.google.com/p/gyp/issues/detail?id=327
   # is addressed.
   gyp_string = gyp_string.replace('##', '$')
+
+  if gyp_string.startswith('['):
+    return ParseGnList(gyp_string)
   return shlex.split(gyp_string)
 
 
@@ -252,3 +261,45 @@ def WriteDepfile(path, dependencies):
     depfile.write(': ')
     depfile.write(' '.join(dependencies))
     depfile.write('\n')
+
+
+def ExpandFileArgs(args):
+  """Replaces file-arg placeholders in args.
+
+  These placeholders have the form:
+    @(filename:key1:key2:...:keyn)
+
+  The value of such a placeholder is calculated by reading 'filename' as json.
+  And then extracting the value at [key1][key2]...[keyn].
+
+  Note: This intentionally does not return the list of files that appear in such
+  placeholders. An action that uses file-args *must* know the paths of those
+  files prior to the parsing of the arguments (typically by explicitly listing
+  them in the action's inputs in build files).
+  """
+  new_args = list(args)
+  file_jsons = dict()
+  for i, arg in enumerate(args):
+    start = arg.find('@(')
+    if start < 0:
+      continue
+    end = arg[start:].find(')')
+    if end < 0:
+      continue
+    end += start
+
+    if '@(' in arg[end:]:
+      raise Exception('Only one file-lookup-expansion is allowed in each arg.')
+
+    lookup_path = arg[start + 2:end].split(':')
+    file_path = lookup_path[0]
+    if not file_path in file_jsons:
+      file_jsons[file_path] = ReadJson(file_path)
+
+    expansion = file_jsons[file_path]
+    for k in lookup_path[1:]:
+      expansion = expansion[k]
+
+    new_args[i] = arg[:start] + str(expansion) + arg[end + 1:]
+  return new_args
+

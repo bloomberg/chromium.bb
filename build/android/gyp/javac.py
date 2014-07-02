@@ -52,23 +52,22 @@ def ColorJavacOutput(output):
 
   return '\n'.join(map(ApplyColor, output.split('\n')))
 
+
 def DoJavac(
-    classpath, javac_includes, classes_dir, chromium_code, java_files):
-  if javac_includes:
-    javac_includes = build_utils.ParseGypList(javac_includes)
-    filtered_java_files = []
-    for f in java_files:
-      for include in javac_includes:
-        if fnmatch.fnmatch(f, include):
-          filtered_java_files.append(f)
-          break
-    java_files = filtered_java_files
+    classpath, classes_dir, chromium_code, java_files):
+  """Runs javac.
+
+  Builds |java_files| with the provided |classpath| and puts the generated
+  .class files into |classes_dir|. If |chromium_code| is true, extra lint
+  checking will be enabled.
+  """
 
   # Compiling guava with certain orderings of input files causes a compiler
   # crash... Sorted order works, so use that.
   # See https://code.google.com/p/guava-libraries/issues/detail?id=950
+  # TODO(cjhopman): Remove this when we have update guava or the compiler to a
+  # version without this problem.
   java_files.sort()
-  classpath = build_utils.ParseGypList(classpath)
 
   jar_inputs = []
   for path in classpath:
@@ -107,8 +106,10 @@ def DoJavac(
       input_strings=javac_cmd)
 
 
-def main():
+def main(argv):
   colorama.init()
+
+  argv = build_utils.ExpandFileArgs(argv)
 
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -116,13 +117,21 @@ def main():
   parser.add_option(
       '--src-gendirs',
       help='Directories containing generated java files.')
-  parser.add_option('--classpath', help='Classpath for javac.')
+  parser.add_option(
+      '--java-srcjars',
+      help='List of srcjars to include in compilation.')
+  parser.add_option(
+      '--classpath',
+      action='append',
+      help='Classpath for javac. If this is specified multiple times, they '
+      'will all be appended to construct the classpath.')
   parser.add_option(
       '--javac-includes',
-      help='A list of file patterns. If provided, only java files that match' +
+      help='A list of file patterns. If provided, only java files that match'
       'one of the patterns will be compiled.')
   parser.add_option(
       '--jar-excluded-classes',
+      default='',
       help='List of .class file patterns to exclude from the jar.')
 
   parser.add_option(
@@ -138,17 +147,39 @@ def main():
 
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(argv)
+
+  classpath = []
+  for arg in options.classpath:
+    classpath += build_utils.ParseGypList(arg)
 
   java_files = args
   if options.src_gendirs:
     src_gendirs = build_utils.ParseGypList(options.src_gendirs)
     java_files += build_utils.FindInDirectories(src_gendirs, '*.java')
 
-  with build_utils.TempDir() as classes_dir:
+  with build_utils.TempDir() as temp_dir:
+    classes_dir = os.path.join(temp_dir, 'classes')
+    os.makedirs(classes_dir)
+    if options.java_srcjars:
+      java_dir = os.path.join(temp_dir, 'java')
+      os.makedirs(java_dir)
+      for srcjar in build_utils.ParseGypList(options.java_srcjars):
+        build_utils.ExtractAll(srcjar, path=java_dir)
+      java_files += build_utils.FindInDirectory(java_dir, '*.java')
+
+    if options.javac_includes:
+      javac_includes = build_utils.ParseGypList(options.javac_includes)
+      filtered_java_files = []
+      for f in java_files:
+        for include in javac_includes:
+          if fnmatch.fnmatch(f, include):
+            filtered_java_files.append(f)
+            break
+      java_files = filtered_java_files
+
     DoJavac(
-        options.classpath,
-        options.javac_includes,
+        classpath,
         classes_dir,
         options.chromium_code,
         java_files)
@@ -170,13 +201,13 @@ def main():
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        build_utils.GetPythonDependencies())
+        classpath + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
 
 

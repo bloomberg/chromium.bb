@@ -9,6 +9,9 @@ if (is_android) {
     # Absolute directory containing the Android source code.
     android_src = ""
 
+    android_sdk_root = "//third_party/android_tools/sdk"
+    android_sdk_version = "19"
+
     # This is set when building the Android WebView inside the Android build
     # system, using the 'android' gyp backend. The WebView code is still built
     # when this is unset, but builds using the normal chromium build system.
@@ -46,9 +49,10 @@ if (is_android) {
   # than just the current one) since these are needed by the Android toolchain
   # file to define toolchains for all possible targets in one pass.
 
+  android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
+
   # Path to the Android NDK and SDK.
   android_ndk_root = "//third_party/android_tools/ndk"
-  android_sdk_root = "//third_party/android_tools/sdk"
 
   # Path to the SDK's android.jar
   android_sdk_jar = "$android_sdk_root/platforms/android-19/android.jar"

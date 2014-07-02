@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("config.gni")
-import("internal_rules.gni")
+import("//build/config/android/config.gni")
+import("//build/config/android/internal_rules.gni")
 
 # Declare a jni target
 #
@@ -91,6 +91,8 @@ template("generate_jni") {
 #   jar_file: the path to the .jar. If not provided, will default to the sdk's
 #     android.jar
 #
+#   deps, forward_dependent_configs_from: As normal
+#
 # Example
 #   generate_jar_jni("foo_jni") {
 #     classes = [
@@ -171,9 +173,9 @@ template("generate_jar_jni") {
 # sources will be compiled using the C pre-processor. If include_path is
 # specified, it will be passed (with --I) to the pre-processor.
 #
-# This target will create a single .srcjar. Adding this target to a library
-# target's srcjar_deps will make the generated java files be included in that
-# library's final outputs.
+# This target will create a single .srcjar. Adding this target to an
+# android_library target's srcjar_deps will make the generated java files be
+# included in that library's final outputs.
 #
 # Variables
 #   sources: list of files to be processed by the C pre-processor. For each
@@ -247,3 +249,69 @@ template("java_cpp_template") {
     ]
   }
 }
+
+# Declare an Android library target
+#
+# This target creates an Android library containing java code and Android
+# resources.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be added to the javac classpath.
+#   java_files: List of .java files included in this library.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#     will be added to java_files and be included in this library.
+#
+#   jar_excluded_patterns: List of patterns of .class files to exclude from the final jar.
+#
+# Example
+#   android_library("foo_java") {
+#     java_files = [
+#       "android/org/chromium/foo/Foo.java",
+#       "android/org/chromium/foo/FooInterface.java",
+#       "android/org/chromium/foo/FooService.java",
+#     ]
+#     deps = [
+#       ":bar_java"
+#     ]
+#     srcjar_deps = [
+#       ":foo_generated_enum"
+#     ]
+#     jar_excluded_patterns = [
+#       "*/FooService.class", "*/FooService##*.class"
+#     ]
+#   }
+template("android_library") {
+  #TODO(cjhopman): resources
+
+  assert(defined(invoker.java_files))
+  dep = ":${target_name}"
+  base_path = get_label_info(dep, "target_gen_dir") + "/" + target_name
+  build_config = base_path + ".build_config"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_library"
+
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    # base_path
+  }
+
+  jar_path = base_path + ".jar"
+  android_java_library(target_name) {
+    java_files = invoker.java_files
+    build_config = build_config
+
+    if (defined(invoker.jar_excluded_patterns)) {
+      jar_excluded_patterns = invoker.jar_excluded_patterns
+    }
+
+    if (defined(invoker.srcjar_deps)) {
+      srcjar_deps = invoker.srcjar_deps
+    }
+  }
+}
+

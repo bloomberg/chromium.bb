@@ -1,3 +1,65 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+
+
+# Write the target's .build_config file. This is a json file that contains a
+# dictionary of information about how to build this target (things that
+# require knowledge about this target's dependencies and cannot be calculated
+# at gn-time). There is a special syntax to add a value in that dictionary to
+# an action/action_foreachs args:
+#   --python-arg=@($rebased_build_config_path:key0:key1)
+# At runtime, such an arg will be replaced by the value in the build_config.
+# See build/android/gyp/write_build_config.py and
+# build/android/gyp/util/build_utils.py:ExpandFileArgs
+template("write_build_config") {
+  assert(defined(invoker.type))
+  assert(defined(invoker.base_path))
+
+  base_path = invoker.base_path
+  type = invoker.type
+  build_config = base_path + ".build_config"
+
+  assert(type == "android_library" || type == "android_binary")
+
+  action(target_name) {
+    script = "//build/android/gyp/write_build_config.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    outputs = [
+      depfile,
+      build_config
+    ]
+
+    possible_deps_configs = []
+    foreach(d, deps) {
+      dep_gen_dir = get_label_info(d, "target_gen_dir")
+      dep_name = get_label_info(d, "name")
+      possible_deps_configs += [ "$dep_gen_dir/$dep_name.build_config" ]
+    }
+    rebase_possible_deps_configs = rebase_path(possible_deps_configs)
+    args = [
+      "--type", type,
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--possible-deps-configs=$rebase_possible_deps_configs",
+      "--build-config", rebase_path(build_config, root_build_dir),
+    ]
+
+    if (type == "android_library") {
+      jar_path = base_path + ".jar"
+      args += [
+        "--jar-path", rebase_path(jar_path, root_build_dir),
+      ]
+    }
+  }
+}
 
 # Creates a zip archive of the inputs.
 # If base_dir is provided, the archive paths will be relative to it.
@@ -5,13 +67,16 @@ template("zip") {
   assert(defined(invoker.inputs))
   assert(defined(invoker.output))
 
-  rebase_inputs = rebase_path(invoker.inputs)
-  rebase_output = rebase_path(invoker.output)
+  rebase_inputs = rebase_path(invoker.inputs, root_build_dir)
+  rebase_output = rebase_path(invoker.output, root_build_dir)
   action(target_name) {
     script = "//build/android/gn/zip.py"
     depfile = "$target_gen_dir/$target_name.d"
     source_prereqs = invoker.inputs
-    outputs = [depfile, invoker.output]
+    outputs = [
+      depfile,
+      invoker.output
+    ]
     args = [
       "--depfile", rebase_path(depfile, root_build_dir),
       "--inputs=$rebase_inputs",
@@ -19,9 +84,151 @@ template("zip") {
     ]
     if (defined(invoker.base_dir)) {
       args += [
-        "--base-dir", rebase_path(invoker.base_dir)
+        "--base-dir", rebase_path(invoker.base_dir, root_build_dir)
       ]
     }
   }
 }
 
+# Compiles and jars a set of java_files.
+#
+# Outputs:
+#  $jar_path.jar
+#  $jar_path.jar.TOC
+#
+# Variables
+#   java_files: List of .java files to compile.
+#   java_deps: List of java dependencies. These should all have a .jar output
+#     at "${target_gen_dir}/${target_name}.jar.
+#   chromium_code: If 1, enable extra warnings.
+#   srcjar_deps: List of srcjar dependencies. The .java files contained in the
+#     dependencies srcjar outputs will be compiled and added to the output jar.
+#   jar_path: Use this to explicitly set the output jar path. Defaults to
+#     "${target_gen_dir}/${target_name}.jar.
+template("java_library") {
+  assert(defined(invoker.java_files))
+  assert(defined(invoker.build_config))
+  assert(defined(invoker.jar_path))
+
+  java_files = invoker.java_files
+  jar_path = invoker.jar_path
+  jar_toc_path = jar_path + ".TOC"
+
+  build_config = invoker.build_config
+
+  jar_excluded_patterns = []
+  if (defined(invoker.jar_excluded_patterns)) {
+    jar_excluded_patterns += invoker.jar_excluded_patterns
+  }
+
+  chromium_code = false
+  if (defined(invoker.chromium_code)) {
+    chromium_code = chromium_code || invoker.chromium_code
+  }
+
+  srcjar_deps = []
+  if (defined(invoker.srcjar_deps)) {
+    srcjar_deps += invoker.srcjar_deps
+  }
+
+  java_srcjars = []
+  foreach(dep, srcjar_deps) {
+    dep_gen_dir = get_label_info(dep, "target_gen_dir")
+    dep_name = get_label_info(dep, "name")
+    java_srcjars += [ "$dep_gen_dir/$dep_name.srcjar" ]
+  }
+  # Mark srcjar_deps as used.
+  assert(srcjar_deps == [] || srcjar_deps != [])
+
+  rebase_jar_path = rebase_path(jar_path, root_build_dir)
+
+  system_jars = [ "${android_sdk}/android.jar" ]
+  action("${target_name}__javac") {
+    script = "//build/android/gyp/javac.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      jar_path,
+      jar_path + ".md5.stamp"
+    ]
+    sources = java_files + java_srcjars
+    source_prereqs = system_jars + [ build_config ]
+
+    rebase_system_jars = rebase_path(system_jars, root_build_dir)
+    rebase_java_srcjars = rebase_path(java_srcjars, root_build_dir)
+    rebase_build_config = rebase_path(build_config, root_build_dir)
+    rebase_depfile = rebase_path(depfile, root_build_dir)
+    args = [
+      "--depfile=$rebase_depfile",
+      "--classpath=$rebase_system_jars",
+      "--classpath=@($rebase_build_config:javac:classpath)",
+      "--jar-path=$rebase_jar_path",
+      "--java-srcjars=$rebase_java_srcjars",
+      "--jar-excluded-classes=$jar_excluded_patterns",
+    ]
+    if (chromium_code) {
+      args += [ "--chromium-code" ]
+    }
+
+    args += rebase_path(java_files, root_build_dir)
+  }
+
+  # TODO(cjhopman): proguard
+
+  rebase_jar_toc_path = rebase_path(jar_toc_path, root_build_dir)
+  action("${target_name}__jar_toc") {
+    script = "//build/android/gyp/jar_toc.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      jar_toc_path,
+      jar_toc_path + ".md5.stamp"
+    ]
+    source_prereqs = [ jar_path ]
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--jar-path=${rebase_jar_path}",
+      "--toc-path=${rebase_jar_toc_path}",
+    ]
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__javac",
+      ":${target_name}__jar_toc",
+    ]
+  }
+}
+
+# This adds Android-specific parts to the java_library template.
+#
+# Runs Android lint against the compiled java files.
+# Dexes the output jar for inclusion in an APK.
+template("android_java_library") {
+  assert(defined(invoker.java_files))
+
+  assert(defined(invoker.build_config))
+  assert(defined(invoker.jar_path))
+
+  java_library("${target_name}__java_library") {
+    if (defined(invoker.jar_excluded_patterns)) {
+      jar_excluded_patterns = invoker.jar_excluded_patterns
+    }
+    build_config = invoker.build_config
+    java_files = invoker.java_files
+    jar_path = invoker.jar_path
+
+    if (defined(invoker.srcjar_deps)) {
+      srcjar_deps = invoker.srcjar_deps
+    }
+  }
+
+  # TODO(cjhopman): lint
+  # TODO(cjhopman): dex
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__java_library"
+    ]
+  }
+}
