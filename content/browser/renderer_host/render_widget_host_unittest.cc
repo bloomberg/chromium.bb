@@ -9,6 +9,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -28,13 +29,16 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
 #include "content/browser/compositor/image_transport_factory.h"
+#include "ui/compositor/test/in_process_context_factory.h"
+#endif
+
+#if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
 #endif
 
@@ -450,9 +454,13 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
+#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+    if (IsDelegatedRendererEnabled()) {
+      ImageTransportFactory::InitializeForUnitTests(
+          scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
+    }
+#endif
 #if defined(USE_AURA)
-    ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
     aura::Env::CreateInstance(true);
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
@@ -474,7 +482,10 @@ class RenderWidgetHostTest : public testing::Test {
 #if defined(USE_AURA)
     aura::Env::DeleteInstance();
     screen_.reset();
-    ImageTransportFactory::Terminate();
+#endif
+#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+    if (IsDelegatedRendererEnabled())
+      ImageTransportFactory::Terminate();
 #endif
 
     // Process all pending tasks to avoid leaks.

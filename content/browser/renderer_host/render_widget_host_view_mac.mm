@@ -398,7 +398,7 @@ namespace content {
 // DelegatedFrameHost, public:
 
 ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
-  if (browser_compositor_view_->IsValid())
+  if (browser_compositor_view_)
     return browser_compositor_view_->GetCompositor();
   return NULL;
 }
@@ -413,7 +413,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  if (browser_compositor_view_->IsValid())
+  if (browser_compositor_view_)
     browser_compositor_view_->GetCompositor()->ScheduleFullRedraw();
 }
 
@@ -454,6 +454,30 @@ void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
   if (!render_widget_host_)
     return;
 
+  // If the latency info is requesting a screenshot, wait a fixed delay of
+  // 1/6th of a second (simulating 10 60fps frames) before reporting that the
+  // frame was received to the browser. This is to allow the changes to flush
+  // through to the window server before screenshots are taken.
+  bool should_defer = false;
+  for (auto latency_info : all_latency_info) {
+    if (latency_info.FindLatency(
+            ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+            render_widget_host_->GetLatencyComponentId(),
+            NULL)) {
+      should_defer = true;
+    }
+  }
+  if (should_defer) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostViewMac::SendPendingLatencyInfoToHost,
+                   weak_factory_.GetWeakPtr()),
+        10 * base::TimeDelta::FromSecondsD(1. / 60));
+    pending_latency_info_.insert(pending_latency_info_.end(),
+        all_latency_info.begin(), all_latency_info.end());
+    return;
+  }
+
   for (auto latency_info : all_latency_info) {
     latency_info.AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
@@ -485,7 +509,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
-      browser_compositor_view_(BrowserCompositorViewMac::CreateInvalid()),
+      browser_compositor_view_placeholder_(
+          new BrowserCompositorViewPlaceholderMac),
       pending_latency_info_delay_(0),
       pending_latency_info_delay_weak_ptr_factory_(this),
       backing_store_scale_factor_(1),
@@ -606,14 +631,13 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
 void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   if (!delegated_frame_host_)
     return;
-  if (browser_compositor_view_->IsValid())
+  if (browser_compositor_view_)
     return;
 
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::EnsureBrowserCompositorView");
 
-  browser_compositor_view_.reset(BrowserCompositorViewMac::CreateForClient(
-      this));
+  browser_compositor_view_.reset(new BrowserCompositorViewMac(this));
   delegated_frame_host_->AddedToWindow();
   delegated_frame_host_->WasShown();
 }
@@ -621,12 +645,12 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
 void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::DestroyBrowserCompositorView");
-  if (!browser_compositor_view_->IsValid())
+  if (!browser_compositor_view_)
     return;
 
   delegated_frame_host_->WasHidden();
   delegated_frame_host_->RemovingFromWindow();
-  browser_compositor_view_.reset(BrowserCompositorViewMac::CreateInvalid());
+  browser_compositor_view_.reset();
 }
 
 void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
@@ -1086,6 +1110,7 @@ void RenderWidgetHostViewMac::Destroy() {
   DestroyBrowserCompositorView();
   delegated_frame_host_.reset();
   root_layer_.reset();
+  browser_compositor_view_placeholder_.reset();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained

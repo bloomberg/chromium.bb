@@ -27,8 +27,13 @@ class BrowserCompositorViewCocoaHelper;
   scoped_ptr<content::BrowserCompositorViewCocoaHelper> helper_;
 }
 
-// Change the client and superview of the view.
+// Change the client and superview of the view. If this is set to NULL then
+// the compositor will be prepared to be recycled.
 - (void)setClient:(content::BrowserCompositorViewMacClient*)client;
+
+// This is called to destroy the underlying ui::Compositor, if it is known
+// that this will not be recycled again.
+- (void)destroyCompositor;
 
 // Access the underlying ui::Compositor for this view.
 - (ui::Compositor*)compositor;

@@ -54,11 +54,17 @@
 
   client_ = client;
   if (client_) {
+    DCHECK(compositor_);
     compositor_->SetRootLayer(client_->BrowserCompositorRootLayer());
     [client_->BrowserCompositorSuperview() addSubview:self];
   } else {
     compositor_->SetRootLayer(NULL);
   }
+}
+
+- (void)destroyCompositor {
+  DCHECK(!client_);
+  compositor_.reset();
 }
 
 - (void)gotAcceleratedLayerError {

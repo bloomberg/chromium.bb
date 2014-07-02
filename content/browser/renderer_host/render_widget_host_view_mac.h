@@ -439,9 +439,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
 
-  // Container for the NSView drawn by the browser compositor. This will never
-  // be NULL, but may be invalid (see its IsValid method).
+  // Container for the NSView drawn by the browser compositor.
   scoped_ptr<BrowserCompositorViewMac> browser_compositor_view_;
+
+  // Placeholder that is allocated while browser_compositor_view_ is NULL,
+  // indicating that a BrowserCompositorViewMac may be allocated. This is to
+  // help in recycling the internals of BrowserCompositorViewMac.
+  scoped_ptr<BrowserCompositorViewPlaceholderMac>
+      browser_compositor_view_placeholder_;
 
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;

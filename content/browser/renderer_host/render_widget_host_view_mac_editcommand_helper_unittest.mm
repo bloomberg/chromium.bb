@@ -8,6 +8,8 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input_messages.h"
@@ -17,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/layout.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 
 using content::RenderWidgetHostViewMac;
 
@@ -94,6 +97,17 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
 };
 
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
+ protected:
+  virtual void SetUp() {
+    if (IsDelegatedRendererEnabled()) {
+      ImageTransportFactory::InitializeForUnitTests(
+          scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
+    }
+  }
+  virtual void TearDown() {
+    if (IsDelegatedRendererEnabled())
+      ImageTransportFactory::Terminate();
+  }
 };
 
 }  // namespace

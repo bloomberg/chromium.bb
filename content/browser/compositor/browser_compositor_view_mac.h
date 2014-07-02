@@ -63,20 +63,8 @@ class BrowserCompositorViewMac {
  public:
   // This will install the NSView which is drawn by the ui::Compositor into
   // the NSView provided by the client.
-  static BrowserCompositorViewMac* CreateForClient(
-      BrowserCompositorViewMacClient* client);
-
-  // This is used as a placeholder to indicate that the owner may want a full
-  // instance soon. One recycled instance of BrowserCompositorViewCocoa will
-  // be kept around as long as a non-zero number of invalid instances are
-  // present.
-  static BrowserCompositorViewMac* CreateInvalid();
-
+  explicit BrowserCompositorViewMac(BrowserCompositorViewMacClient* client);
   ~BrowserCompositorViewMac();
-
-  // Returns true if this was created with CreateForClient, as opposed to
-  // CreateInvalid.
-  bool IsValid() const { return client_; }
 
   // The ui::Compositor being used to render the NSView.
   ui::Compositor* GetCompositor() const;
@@ -85,10 +73,18 @@ class BrowserCompositorViewMac {
   BrowserCompositorViewMacClient* GetClient() const { return client_; }
 
  private:
-  BrowserCompositorViewMac(BrowserCompositorViewMacClient* client);
-
   BrowserCompositorViewMacClient* client_;
   base::scoped_nsobject<BrowserCompositorViewCocoa> cocoa_view_;
+};
+
+// A class to keep around whenever a BrowserCompositorViewMac may be created.
+// While at least one instance of this class exists, a spare
+// BrowserCompositorViewCocoa will be kept around to be recycled so that the
+// next BrowserCompositorViewMac to be created will be be created quickly.
+class BrowserCompositorViewPlaceholderMac {
+ public:
+  BrowserCompositorViewPlaceholderMac();
+  ~BrowserCompositorViewPlaceholderMac();
 };
 
 }  // namespace content

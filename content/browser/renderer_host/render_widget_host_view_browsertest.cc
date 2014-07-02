@@ -620,16 +620,16 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                                     video_frame,
                                                     callback);
     } else {
-#if defined(USE_AURA)
-      if (!content::GpuDataManager::GetInstance()
-               ->CanUseGpuBrowserCompositor()) {
-        // Skia rendering can cause color differences, particularly in the
-        // middle two columns.
-        SetAllowableError(2);
-        SetExcludeRect(
-            gfx::Rect(output_size.width() / 2 - 1, 0, 2, output_size.height()));
+      if (IsDelegatedRendererEnabled()) {
+        if (!content::GpuDataManager::GetInstance()
+                 ->CanUseGpuBrowserCompositor()) {
+          // Skia rendering can cause color differences, particularly in the
+          // middle two columns.
+          SetAllowableError(2);
+          SetExcludeRect(gfx::Rect(
+              output_size.width() / 2 - 1, 0, 2, output_size.height()));
+        }
       }
-#endif
 
       base::Callback<void(bool, const SkBitmap&)> callback =
           base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
