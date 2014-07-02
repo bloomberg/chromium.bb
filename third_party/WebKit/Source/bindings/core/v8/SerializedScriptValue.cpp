@@ -1594,6 +1594,7 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
 
 // Interface used by Reader to create objects of composite types.
 class CompositeCreator {
+    STACK_ALLOCATED();
 public:
     virtual ~CompositeCreator() { }
 
@@ -2780,7 +2781,7 @@ private:
     Vector<v8::Local<v8::Value> > m_stack;
     Vector<v8::Handle<v8::Value> > m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
-    MessagePortArray* m_transferredMessagePorts;
+    RawPtrWillBeMember<MessagePortArray> m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
     Vector<v8::Handle<v8::Object> > m_arrayBuffers;
     uint32_t m_version;
