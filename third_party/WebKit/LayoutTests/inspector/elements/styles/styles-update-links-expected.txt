@@ -31,6 +31,10 @@ padding: 1em;
 box-sizing: border-box;
 
 [expanded] 
+.left-intact  { (styles-update-links-2.css:19 -> styles-update-links-2.css:19:1)
+line-height: 1;
+
+[expanded] 
 div  { (user agent stylesheet)
 display: block;
 
@@ -71,6 +75,10 @@ padding: 1em;
 box-sizing: border-box;
 
 [expanded] 
+.left-intact  { (styles-update-links-2.css:19 -> styles-update-links-2.css:19:1)
+line-height: 1;
+
+[expanded] 
 div  { (user agent stylesheet)
 display: block;
 
@@ -79,6 +87,7 @@ display: block;
 4 rule ranges are equal.
 3 rule ranges are equal.
 4 rule ranges are equal.
+3 rule ranges are equal.
 3 rule ranges are equal.
 3 rule ranges are equal.
 0 rule ranges are equal.
@@ -118,6 +127,10 @@ padding: 1em;
 box-sizing: border-box;
 
 [expanded] 
+.left-intact  { (styles-update-links-2.css:19 -> styles-update-links-2.css:19:1)
+line-height: 1;
+
+[expanded] 
 div  { (user agent stylesheet)
 display: block;
 
@@ -126,6 +139,7 @@ display: block;
 4 rule ranges are equal.
 4 rule ranges are equal.
 4 rule ranges are equal.
+3 rule ranges are equal.
 3 rule ranges are equal.
 3 rule ranges are equal.
 0 rule ranges are equal.
@@ -165,6 +179,10 @@ padding: 1em;
 box-sizing: border-box;
 
 [expanded] 
+.left-intact  { (styles-update-links-2.css:19 -> styles-update-links-2.css:19:1)
+line-height: 1;
+
+[expanded] 
 div  { (user agent stylesheet)
 display: block;
 
@@ -173,6 +191,7 @@ display: block;
 4 rule ranges are equal.
 4 rule ranges are equal.
 4 rule ranges are equal.
+3 rule ranges are equal.
 3 rule ranges are equal.
 3 rule ranges are equal.
 0 rule ranges are equal.
