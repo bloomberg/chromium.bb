@@ -608,6 +608,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
 
     switch (input_memory_type_) {
       case V4L2_MEMORY_USERPTR:
+        qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
         qbuf.m.planes[i].m.userptr =
             reinterpret_cast<unsigned long>(frame->data(i));
         DCHECK(qbuf.m.planes[i].m.userptr);
