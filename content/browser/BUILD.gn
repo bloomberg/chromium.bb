@@ -378,7 +378,7 @@ source_set("browser") {
     deps += [ "//ui/compositor" ]
   }
 
-  if (enable_speech_input) {
+  if (enable_web_speech) {
     deps += [
       "//third_party/flac",
       "//third_party/speex",

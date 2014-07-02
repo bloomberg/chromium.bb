@@ -223,7 +223,7 @@
             'test/ppapi_unittest.cc',
           ],
         }],
-        ['input_speech==0', {
+        ['enable_web_speech==0', {
           'sources!': [
             'test/mock_google_streaming_server.cc',
           ],
@@ -824,7 +824,7 @@
             ['exclude', '^renderer/media/media_stream_'],
           ],
         }],
-        ['input_speech==0', {
+        ['enable_web_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
           ]
@@ -1296,7 +1296,7 @@
                 '../ppapi/ppapi_internal.gyp:ppapi_tests',
               ]
             }],
-            ['input_speech==0', {
+            ['enable_web_speech==0', {
               'sources/': [
                 ['exclude', '^browser/speech/'],
               ]

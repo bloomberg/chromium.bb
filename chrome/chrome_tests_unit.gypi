@@ -2255,7 +2255,7 @@
             ['exclude', '^browser/policy/'],
           ],
         }],
-        ['input_speech==0', {
+        ['enable_web_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
           ],

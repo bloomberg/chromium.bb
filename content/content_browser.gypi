@@ -1726,11 +1726,6 @@
         ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
         ['exclude', '^browser/tracing/trace_uploader\\.(cc|h)$'],
         ['exclude', '^browser/tracing/tracing_ui\\.(cc|h)$'],
-        ['exclude', '^browser/speech/'],
-        ['include', '^browser/speech/speech_recognition_dispatcher_host\\.(cc|h)$'],
-        ['include', '^browser/speech/speech_recognition_manager_impl\\.(cc|h)$'],
-        ['include', '^browser/speech/speech_recognizer\\.h$'],
-        ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
       ],
       'sources': [
         '<@(android_browser_sources)',
@@ -1811,10 +1806,19 @@
         '<@(plugin_browser_sources)',
       ],
     }],
-    ['input_speech==1', {
+    ['enable_web_speech==1', {
       'dependencies': [
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',
+      ],
+    }],
+    ['enable_web_speech==0 and OS=="android"', {
+      'sources/': [
+        ['exclude', '^browser/speech/'],
+        ['include', '^browser/speech/speech_recognition_dispatcher_host\\.(cc|h)$'],
+        ['include', '^browser/speech/speech_recognition_manager_impl\\.(cc|h)$'],
+        ['include', '^browser/speech/speech_recognizer\\.h$'],
+        ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
       ],
     }],
     ['OS == "win"', {

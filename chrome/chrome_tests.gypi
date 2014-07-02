@@ -1804,7 +1804,7 @@
             'browser/ui/webui/policy_ui_browsertest.cc',
           ],
         }],
-        ['input_speech==0', {
+        ['enable_web_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
             ['exclude', '^../content/browser/speech/'],

@@ -71,10 +71,7 @@ enable_notifications = !is_android
 # TODO(brettw) this should be moved to net and only dependents get this define.
 disable_ftp_support = is_ios
 
-# Speech input is compiled in by default. Set to 0 to disable.
-# TODO(tommyw): Speech Input doesn't exist anymore. Clarify the scope
-# of this flag (and probably rename it).
-enable_speech_input = true
+enable_web_speech = (!is_android && !is_ios)
 
 use_dbus = is_linux
 

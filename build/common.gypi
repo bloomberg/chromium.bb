@@ -329,10 +329,8 @@
       # existing safe browsing logic.
       'safe_browsing%': 1,
 
-      # Speech input is compiled in by default. Set to 0 to disable.
-      # TODO(tommyw): Speech Input doesn't exist anymore. Clarify the scope
-      # of this flag (and probably rename it).
-      'input_speech%': 1,
+      # Web speech is enabled by default. Set to 0 to disable.
+      'enable_web_speech%': 1,
 
       # Notifications are compiled in by default. Set to 0 to disable.
       'notifications%' : 1,
@@ -1057,7 +1055,7 @@
     'chromium_win_pch%': '<(chromium_win_pch)',
     'configuration_policy%': '<(configuration_policy)',
     'safe_browsing%': '<(safe_browsing)',
-    'input_speech%': '<(input_speech)',
+    'enable_web_speech%': '<(enable_web_speech)',
     'notifications%': '<(notifications)',
     'clang_use_chrome_plugins%': '<(clang_use_chrome_plugins)',
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
@@ -1567,7 +1565,7 @@
         'disable_nacl%': 1,
         'enable_background%': 0,
         'icu_use_data_file_flag%': 1,
-        'input_speech%': 0,
+        'enable_web_speech%': 0,
         'use_system_libxml%': 1,
         'use_system_sqlite%': 1,
         'locales==': [
@@ -1720,7 +1718,7 @@
 
         'proprietary_codecs%': '<(proprietary_codecs)',
         'safe_browsing%': 2,
-        'input_speech%': 0,
+        'enable_web_speech%': 0,
         'java_bridge%': 1,
         'build_ffmpegsumo%': 0,
         'use_allocator%': 'none',
