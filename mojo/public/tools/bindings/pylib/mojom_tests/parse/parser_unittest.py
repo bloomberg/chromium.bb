@@ -643,5 +643,32 @@ class ParserTest(unittest.TestCase):
                ast.Parameter('bool', 'b', ast.Ordinal(None))])])])]
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
+  def testInvalidMethods(self):
+    """Tests that invalid method declarations are correctly detected."""
+
+    # No trailing commas.
+    source1 = """\
+        interface MyInterface {
+          MyMethod(string a,);
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '\)':\n"
+            r" *MyMethod\(string a,\);$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    # No leading commas.
+    source2 = """\
+        interface MyInterface {
+          MyMethod(, string a);
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected ',':\n"
+            r" *MyMethod\(, string a\);$"):
+      parser.Parse(source2, "my_file.mojom")
+
 if __name__ == "__main__":
   unittest.main()

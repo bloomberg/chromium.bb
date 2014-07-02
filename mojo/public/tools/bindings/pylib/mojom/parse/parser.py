@@ -70,6 +70,22 @@ class Parser(object):
     self.source = source
     self.filename = filename
 
+  # Names of functions
+  #
+  # In general, we name functions after the left-hand-side of the rule(s) that
+  # they handle. E.g., |p_foo_bar| for a rule |foo_bar : ...|.
+  #
+  # There may be multiple functions handling rules for the same left-hand-side;
+  # then we name the functions |p_foo_bar_N| (for left-hand-side |foo_bar|),
+  # where N is a number (numbered starting from 1). Note that using multiple
+  # functions is actually more efficient than having single functions handle
+  # multiple rules (and, e.g., distinguishing them by examining |len(p)|).
+  #
+  # It's also possible to have a function handling multiple rules with different
+  # left-hand-sides. We do not do this.
+  #
+  # See http://www.dabeaz.com/ply/ply.html#ply_nn25 for more details.
+
   def p_root(self, p):
     """root : import root
             | module
@@ -177,16 +193,22 @@ class Parser(object):
     """method : NAME ordinal LPAREN parameter_list RPAREN response SEMI"""
     p[0] = ('METHOD', p[1], p[4], p[2], p[6])
 
-  def p_parameter_list(self, p):
-    """parameter_list : parameter
-                      | parameter COMMA parameter_list
-                      | """
-    if len(p) == 1:
-      p[0] = []
-    elif len(p) == 2:
-      p[0] = [p[1]]
-    else:
-      p[0] = [p[1]] + p[3]
+  def p_parameter_list_1(self, p):
+    """parameter_list : """
+    p[0] = []
+
+  def p_parameter_list_2(self, p):
+    """parameter_list : nonempty_parameter_list"""
+    p[0] = p[1]
+
+  def p_nonempty_parameter_list_1(self, p):
+    """nonempty_parameter_list : parameter"""
+    p[0] = [p[1]]
+
+  def p_nonempty_parameter_list_2(self, p):
+    """nonempty_parameter_list : nonempty_parameter_list COMMA parameter"""
+    p[0] = p[1]
+    p[0].append(p[3])
 
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
