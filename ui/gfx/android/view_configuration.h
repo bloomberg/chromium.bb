@@ -30,6 +30,7 @@ class GFX_EXPORT ViewConfiguration {
 
   static int GetMinScalingSpanInPixels();
   static int GetMinScalingTouchMajorInPixels();
+  static bool ShouldUseTouchMajorInScalingSpan();
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);

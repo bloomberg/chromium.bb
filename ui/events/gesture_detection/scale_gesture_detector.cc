@@ -32,7 +32,8 @@ const float kScaleFactor = .5f;
 // versions found in Android's ViewConfiguration.
 ScaleGestureDetector::Config::Config()
     : min_scaling_touch_major(48),
-      min_scaling_span(200),
+      min_scaling_span(100),
+      use_touch_major_in_span(false),
       quick_scale_enabled(true),
       min_pinch_update_span_delta(0) {
 }
@@ -69,19 +70,21 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       in_progress_(0),
       span_slop_(0),
       min_span_(0),
+      use_touch_major_in_span_(config.use_touch_major_in_span),
       touch_upper_(0),
       touch_lower_(0),
       touch_history_last_accepted_(0),
       touch_history_direction_(0),
       touch_min_major_(0),
+      touch_max_major_(0),
       double_tap_focus_x_(0),
       double_tap_focus_y_(0),
       double_tap_mode_(DOUBLE_TAP_MODE_NONE),
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
-  span_slop_ =
-      (config.gesture_detector_config.touch_slop + kSlopEpsilon) * 2;
+  span_slop_ = (config.gesture_detector_config.touch_slop + kSlopEpsilon) * 2;
   touch_min_major_ = config.min_scaling_touch_major;
+  touch_max_major_ = std::min(config.min_scaling_span, 2.f * touch_min_major_);
   min_span_ = config.min_scaling_span + kSlopEpsilon;
   ResetTouchHistory();
   SetQuickScaleEnabled(config.quick_scale_enabled);
@@ -159,7 +162,8 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     focus_y = sum_y * inverse_unreleased_point_count;
   }
 
-  AddTouchHistory(event);
+  if (use_touch_major_in_span_)
+    AddTouchHistory(event);
 
   // Determine average deviation from focal point.
   float dev_sum_x = 0, dev_sum_y = 0;
@@ -172,10 +176,11 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
   // Convert the resulting diameter into a radius, to include touch
   // radius in overall deviation.
-  const float touch_size = touch_history_last_accepted_ / 2;
+  const float touch_radius =
+      use_touch_major_in_span_ ? touch_history_last_accepted_ / 2 : 0;
 
-  const float dev_x = (dev_sum_x * inverse_unreleased_point_count) + touch_size;
-  const float dev_y = (dev_sum_y * inverse_unreleased_point_count) + touch_size;
+  const float dev_x = dev_sum_x * inverse_unreleased_point_count + touch_radius;
+  const float dev_y = dev_sum_y * inverse_unreleased_point_count + touch_radius;
 
   // Span is the average distance between touch points through the focal point;
   // i.e. the diameter of the circle with a radius of the average deviation from
@@ -328,6 +333,8 @@ void ScaleGestureDetector::AddTouchHistory(const MotionEvent& ev) {
       }
       if (major < touch_min_major_)
         major = touch_min_major_;
+      if (major > touch_max_major_)
+        major = touch_max_major_;
       total += major;
 
       if (base::IsNaN(touch_upper_) || major > touch_upper_) {

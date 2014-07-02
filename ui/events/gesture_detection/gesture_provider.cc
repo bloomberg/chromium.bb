@@ -107,6 +107,24 @@ GestureEventDetails CreateTapGestureDetails(EventType type) {
   return tap_details;
 }
 
+gfx::RectF ClampBoundingBox(const gfx::RectF& bounds,
+                            float min_length,
+                            float max_length) {
+  float width = bounds.width();
+  float height = bounds.height();
+  if (min_length) {
+    width = std::max(min_length, width);
+    height = std::max(min_length, height);
+  }
+  if (max_length) {
+    width = std::min(max_length, width);
+    height = std::min(max_length, height);
+  }
+  const gfx::PointF center = bounds.CenterPoint();
+  return gfx::RectF(
+      center.x() - width / 2.f, center.y() - height / 2.f, width, height);
+}
+
 }  // namespace
 
 // GestureProvider:::Config
@@ -115,7 +133,8 @@ GestureProvider::Config::Config()
     : display(gfx::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
       disable_click_delay(false),
       gesture_begin_end_types_enabled(false),
-      min_gesture_bounds_length(0) {}
+      min_gesture_bounds_length(0),
+      max_gesture_bounds_length(0) {}
 
 GestureProvider::Config::~Config() {}
 
@@ -550,8 +569,11 @@ GestureProvider::GestureProvider(const Config& config,
       double_tap_support_for_page_(true),
       double_tap_support_for_platform_(true),
       gesture_begin_end_types_enabled_(config.gesture_begin_end_types_enabled),
-      min_gesture_bounds_length_(config.min_gesture_bounds_length) {
+      min_gesture_bounds_length_(config.min_gesture_bounds_length),
+      max_gesture_bounds_length_(config.max_gesture_bounds_length) {
   DCHECK(client);
+  DCHECK(!min_gesture_bounds_length_ || !max_gesture_bounds_length_ ||
+         min_gesture_bounds_length_ <= max_gesture_bounds_length_);
   InitGestureDetectors(config);
 }
 
@@ -659,12 +681,10 @@ void GestureProvider::Send(GestureEventData gesture) {
 
   // TODO(jdduke): Provide a way of skipping this clamping for stylus and/or
   // mouse-based input, perhaps by exposing the source type on MotionEvent.
-  const gfx::RectF& gesture_bounds = gesture.details.bounding_box_f();
-  gesture.details.set_bounding_box(gfx::RectF(
-      gesture_bounds.x(),
-      gesture_bounds.y(),
-      std::max(min_gesture_bounds_length_, gesture_bounds.width()),
-      std::max(min_gesture_bounds_length_, gesture_bounds.height())));
+  gesture.details.set_bounding_box(
+      ClampBoundingBox(gesture.details.bounding_box_f(),
+                       min_gesture_bounds_length_,
+                       max_gesture_bounds_length_));
 
   switch (gesture.type()) {
     case ET_GESTURE_LONG_PRESS:
