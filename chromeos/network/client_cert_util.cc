@@ -13,6 +13,7 @@
 
 #include "base/values.h"
 #include "chromeos/network/certificate_pattern.h"
+#include "chromeos/network/network_event_log.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -231,12 +232,19 @@ void SetShillProperties(const client_cert::ConfigType cert_config_type,
     case CONFIG_TYPE_EAP: {
       tpm_pin_property = shill::kEapPinProperty;
       if (pkcs11_id) {
+        std::string key_id;
+        if (tpm_slot.empty())
+          NET_LOG_ERROR("Missing TPM slot id", "");
+        else
+          key_id = tpm_slot + ":";
+        key_id.append(*pkcs11_id);
         // Shill requires both CertID and KeyID for TLS connections, despite the
-        // fact that by convention they are the same ID.
+        // fact that by convention they are the same ID, because one identifies
+        // the certificate and the other the private key.
         properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                                  *pkcs11_id);
+                                                  key_id);
         properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
-                                                  *pkcs11_id);
+                                                  key_id);
       }
       break;
     }

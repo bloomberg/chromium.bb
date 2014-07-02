@@ -48,6 +48,7 @@ class ClientCertResolverTest : public testing::Test {
  public:
   ClientCertResolverTest() : service_test_(NULL),
                              profile_test_(NULL),
+                             cert_loader_(NULL),
                              user_(kUserHash) {
   }
   virtual ~ClientCertResolverTest() {}
@@ -79,7 +80,7 @@ class ClientCertResolverTest : public testing::Test {
     TPMTokenLoader::InitializeForTest();
 
     CertLoader::Initialize();
-    CertLoader* cert_loader_ = CertLoader::Get();
+    cert_loader_ = CertLoader::Get();
     cert_loader_->force_hardware_backed_for_test();
     cert_loader_->StartWithNSSDB(test_nssdb_.get());
   }
@@ -130,7 +131,10 @@ class ClientCertResolverTest : public testing::Test {
         test_nssdb_->ImportFromPKCS12(
             module, pkcs12_data, base::string16(), false, &client_cert_list));
     ASSERT_TRUE(!client_cert_list.empty());
-    test_pkcs11_id_ = CertLoader::GetPkcs11IdForCert(*client_cert_list[0]);
+    test_pkcs11_id_ = base::StringPrintf(
+        "%i:%s",
+        cert_loader_->TPMTokenSlotID(),
+        CertLoader::GetPkcs11IdForCert(*client_cert_list[0]).c_str());
     ASSERT_TRUE(!test_pkcs11_id_.empty());
   }
 
@@ -237,6 +241,7 @@ class ClientCertResolverTest : public testing::Test {
     CERT_DestroyCertList(cert_list);
   }
 
+  CertLoader* cert_loader_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
