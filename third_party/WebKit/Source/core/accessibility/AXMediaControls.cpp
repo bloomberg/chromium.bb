@@ -208,12 +208,11 @@ String AXMediaControlsContainer::helpText() const
 
 bool AXMediaControlsContainer::controllingVideoElement() const
 {
-    if (!m_renderer->node())
+    Node* node = m_renderer->node();
+    if (!node)
         return true;
 
-    MediaControlTimeDisplayElement* element = static_cast<MediaControlTimeDisplayElement*>(m_renderer->node());
-
-    return isHTMLVideoElement(toParentMediaElement(element));
+    return isHTMLVideoElement(toParentMediaElement(node));
 }
 
 bool AXMediaControlsContainer::computeAccessibilityIsIgnored() const
