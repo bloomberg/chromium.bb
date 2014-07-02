@@ -216,8 +216,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
     ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 }
 
+// http://crbug.com/390979
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
-                       RemoveListenerAndModifyGallery) {
+                       DISABLED_RemoveListenerAndModifyGallery) {
   if (!GalleryWatchesSupported())
     return;
 
