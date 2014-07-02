@@ -222,6 +222,8 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
       scopes_(scopes),
       token_service_provider_(token_service_provider.Pass()) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!account_id.empty());
+  DCHECK(!scopes.empty());
   DCHECK(token_service_provider_);
 }
 

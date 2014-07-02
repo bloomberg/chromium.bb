@@ -64,17 +64,6 @@ class StubAttachmentService : public AttachmentService,
         FROM_HERE, base::Bind(callback, AttachmentService::STORE_SUCCESS));
   }
 
-  virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE {
-    CalledOnValidThread();
-    Increment();
-  }
-
-  virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
-                                const SyncData& updated_sync_data) OVERRIDE {
-    CalledOnValidThread();
-    Increment();
-  }
-
   virtual base::WeakPtr<AttachmentService> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -186,15 +175,6 @@ class AttachmentServiceProxyTest : public testing::Test,
   // number of times callback_store was invoked
   int count_callback_store;
 };
-
-// Verify that each of AttachmentServiceProxy's regular methods (those that
-// don't take callbacks) are invoked on the stub.
-TEST_F(AttachmentServiceProxyTest, MethodsAreProxied) {
-  proxy->OnSyncDataDelete(sync_data_delete);
-  proxy->OnSyncDataUpdate(AttachmentIdList(), sync_data);
-  WaitForStubThread();
-  EXPECT_EQ(2, stub->GetCallCount());
-}
 
 // Verify that each of AttachmentServiceProxy's callback methods (those that
 // take callbacks) are invoked on the stub and that the passed callbacks are

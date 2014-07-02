@@ -49,6 +49,8 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
       account_id_(account_id),
       oauth2_scopes_(scopes),
       token_service_provider_(token_service_provider.Pass()) {
+  DCHECK(!account_id.empty());
+  DCHECK(!scopes.empty());
   DCHECK(token_service_provider_);
   DCHECK(url_request_context_getter_);
 }

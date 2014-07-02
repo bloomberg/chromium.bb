@@ -624,37 +624,44 @@ scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     const syncer::UserShare& user_share,
     syncer::AttachmentService::Delegate* delegate) {
-  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
-      token_service_provider(new TokenServiceProvider(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::UI),
-          token_service_));
-
-  // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
-  // AttachmentUploader and AttachmentDownloader instead of creating a new one
-  // per AttachmentService (bug 369536).
-  scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
-      new syncer::AttachmentUploaderImpl(sync_service_url_,
-                                         url_request_context_getter_,
-                                         user_share.sync_credentials.email,
-                                         user_share.sync_credentials.scope_set,
-                                         token_service_provider.Pass()));
-
-  token_service_provider.reset(new TokenServiceProvider(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
-      token_service_));
-  scoped_ptr<syncer::AttachmentDownloader> attachment_downloader(
-      syncer::AttachmentDownloader::Create(
-          sync_service_url_,
-          url_request_context_getter_,
-          user_share.sync_credentials.email,
-          user_share.sync_credentials.scope_set,
-          token_service_provider.Pass()));
 
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+
+  scoped_ptr<syncer::AttachmentUploader> attachment_uploader;
+  scoped_ptr<syncer::AttachmentDownloader> attachment_downloader;
+  // Only construct an AttachmentUploader and AttachmentDownload if we have sync
+  // credentials. We may not have sync credentials because there may not be a
+  // signed in sync user (e.g. sync is running in "backup" mode).
+  if (!user_share.sync_credentials.email.empty() &&
+      !user_share.sync_credentials.scope_set.empty()) {
+    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+        token_service_provider(new TokenServiceProvider(
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::UI),
+            token_service_));
+    // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
+    // AttachmentUploader and AttachmentDownloader instead of creating a new one
+    // per AttachmentService (bug 369536).
+    attachment_uploader.reset(new syncer::AttachmentUploaderImpl(
+        sync_service_url_,
+        url_request_context_getter_,
+        user_share.sync_credentials.email,
+        user_share.sync_credentials.scope_set,
+        token_service_provider.Pass()));
+
+    token_service_provider.reset(new TokenServiceProvider(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI),
+        token_service_));
+    attachment_downloader = syncer::AttachmentDownloader::Create(
+        sync_service_url_,
+        url_request_context_getter_,
+        user_share.sync_credentials.email,
+        user_share.sync_credentials.scope_set,
+        token_service_provider.Pass());
+  }
 
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(attachment_store.Pass(),

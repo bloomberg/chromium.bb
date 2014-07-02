@@ -118,7 +118,6 @@ AttachmentServiceImpl::AttachmentServiceImpl(
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_store_);
-  DCHECK(attachment_uploader_);
 }
 
 AttachmentServiceImpl::~AttachmentServiceImpl() {
@@ -170,31 +169,16 @@ void AttachmentServiceImpl::StoreAttachments(const AttachmentList& attachments,
                            base::Bind(&AttachmentServiceImpl::WriteDone,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       callback));
-  for (AttachmentList::const_iterator iter = attachments.begin();
-       iter != attachments.end();
-       ++iter) {
-    attachment_uploader_->UploadAttachment(
-        *iter,
-        base::Bind(&AttachmentServiceImpl::UploadDone,
-                   weak_ptr_factory_.GetWeakPtr()));
+  if (attachment_uploader_.get()) {
+    for (AttachmentList::const_iterator iter = attachments.begin();
+         iter != attachments.end();
+         ++iter) {
+      attachment_uploader_->UploadAttachment(
+          *iter,
+          base::Bind(&AttachmentServiceImpl::UploadDone,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
   }
-}
-
-void AttachmentServiceImpl::OnSyncDataDelete(const SyncData& sync_data) {
-  DCHECK(CalledOnValidThread());
-  // TODO(maniscalco): One or more of sync_data's attachments may no longer be
-  // referenced anywhere. We should probably delete them at this point (bug
-  // 356351).
-}
-
-void AttachmentServiceImpl::OnSyncDataUpdate(
-    const AttachmentIdList& old_attachment_ids,
-    const SyncData& updated_sync_data) {
-  DCHECK(CalledOnValidThread());
-  // TODO(maniscalco): At this point we need to ensure we write all new
-  // attachments referenced by updated_sync_data to local storage and schedule
-  // them up upload to the server. We also need to remove any no unreferenced
-  // attachments from local storage (bug 356351).
 }
 
 void AttachmentServiceImpl::ReadDone(
@@ -208,18 +192,24 @@ void AttachmentServiceImpl::ReadDone(
        ++iter) {
     state->AddAttachment(iter->second);
   }
-  // Try to download locally unavailable attachments.
-  for (AttachmentIdList::const_iterator iter =
-           unavailable_attachment_ids->begin();
-       iter != unavailable_attachment_ids->end();
-       ++iter) {
-    attachment_downloader_->DownloadAttachment(
-        *iter,
-        base::Bind(&AttachmentServiceImpl::DownloadDone,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   state,
-                   *iter));
-    ;
+
+  AttachmentIdList::const_iterator iter = unavailable_attachment_ids->begin();
+  AttachmentIdList::const_iterator end = unavailable_attachment_ids->end();
+  if (attachment_downloader_.get()) {
+    // Try to download locally unavailable attachments.
+    for (; iter != end; ++iter) {
+      attachment_downloader_->DownloadAttachment(
+          *iter,
+          base::Bind(&AttachmentServiceImpl::DownloadDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     state,
+                     *iter));
+    }
+  } else {
+    // No downloader so all locally unavailable attachments are unavailable.
+    for (; iter != end; ++iter) {
+      state->AddUnavailableAttachmentId(*iter);
+    }
   }
 }
 

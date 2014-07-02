@@ -85,17 +85,6 @@ class SYNC_EXPORT AttachmentService {
   // storage.
   virtual void StoreAttachments(const AttachmentList& attachments,
                                 const StoreCallback& callback) = 0;
-
-  // This method should be called when a SyncData is about to be deleted from
-  // the sync database so we can remove any unreferenced attachments from local
-  // storage.
-  virtual void OnSyncDataDelete(const SyncData& sync_data) = 0;
-
-  // This method should be called when a SyncData is about to be updated so we
-  // can remove unreferenced attachments from local storage and ensure new
-  // attachments are persisted and uploaded to the sync server.
-  virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
-                                const SyncData& updated_sync_data) = 0;
 };
 
 }  // namespace syncer

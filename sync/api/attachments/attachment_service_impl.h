@@ -24,6 +24,15 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
   // provided. AttachmentService doesn't take ownership of delegate, the pointer
   // must be valid throughout AttachmentService lifetime.
+  //
+  // |attachment_uploader| is optional. If null, attachments will never be
+  // uploaded to the sync server and |delegate|'s OnAttachmentUploaded will
+  // never be invoked.
+  //
+  // |attachment_downloader| is optional. If null, attachments will never be
+  // downloaded. Only attachments in |attachment_store| will be returned from
+  // GetOrDownloadAttachments.
+
   AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
                         scoped_ptr<AttachmentDownloader> attachment_downloader,
@@ -41,9 +50,6 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                const DropCallback& callback) OVERRIDE;
   virtual void StoreAttachments(const AttachmentList& attachments,
                                 const StoreCallback& callback) OVERRIDE;
-  virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE;
-  virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
-                                const SyncData& updated_sync_data) OVERRIDE;
 
  private:
   class GetOrDownloadState;
@@ -64,9 +70,16 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                     scoped_ptr<Attachment> attachment);
 
   const scoped_ptr<AttachmentStore> attachment_store_;
+
+  // May be null.
   const scoped_ptr<AttachmentUploader> attachment_uploader_;
+
+  // May be null.
   const scoped_ptr<AttachmentDownloader> attachment_downloader_;
+
+  // May be null.
   Delegate* delegate_;
+
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;
 

@@ -60,9 +60,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
                                const DropCallback& callback) OVERRIDE;
   virtual void StoreAttachments(const AttachmentList& attachment,
                                 const StoreCallback& callback) OVERRIDE;
-  virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE;
-  virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
-                                const SyncData& updated_sync_data) OVERRIDE;
 
  protected:
   // Core does the work of proxying calls to AttachmentService methods from one
@@ -92,9 +89,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
                                  const DropCallback& callback) OVERRIDE;
     virtual void StoreAttachments(const AttachmentList& attachment,
                                   const StoreCallback& callback) OVERRIDE;
-    virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE;
-    virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
-                                  const SyncData& updated_sync_data) OVERRIDE;
 
    protected:
     friend class base::RefCountedThreadSafe<Core>;

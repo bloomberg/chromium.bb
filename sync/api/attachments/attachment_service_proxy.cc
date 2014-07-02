@@ -107,25 +107,6 @@ void AttachmentServiceProxy::StoreAttachments(const AttachmentList& attachments,
                  proxy_callback));
 }
 
-void AttachmentServiceProxy::OnSyncDataDelete(const SyncData& sync_data) {
-  DCHECK(wrapped_task_runner_);
-  wrapped_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AttachmentService::OnSyncDataDelete, core_, sync_data));
-}
-
-void AttachmentServiceProxy::OnSyncDataUpdate(
-    const AttachmentIdList& old_attachment_ids,
-    const SyncData& updated_sync_data) {
-  DCHECK(wrapped_task_runner_);
-  wrapped_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AttachmentService::OnSyncDataUpdate,
-                 core_,
-                 old_attachment_ids,
-                 updated_sync_data));
-}
-
 AttachmentServiceProxy::Core::Core(
     const base::WeakPtr<syncer::AttachmentService>& wrapped)
     : wrapped_(wrapped) {
@@ -159,22 +140,6 @@ void AttachmentServiceProxy::Core::StoreAttachments(
     return;
   }
   wrapped_->StoreAttachments(attachments, callback);
-}
-
-void AttachmentServiceProxy::Core::OnSyncDataDelete(const SyncData& sync_data) {
-  if (!wrapped_) {
-    return;
-  }
-  wrapped_->OnSyncDataDelete(sync_data);
-}
-
-void AttachmentServiceProxy::Core::OnSyncDataUpdate(
-    const AttachmentIdList& old_attachment_ids,
-    const SyncData& updated_sync_data) {
-  if (!wrapped_) {
-    return;
-  }
-  wrapped_->OnSyncDataUpdate(old_attachment_ids, updated_sync_data);
 }
 
 }  // namespace syncer
