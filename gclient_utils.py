@@ -655,6 +655,19 @@ def GetBuildtoolsPath():
   This is based on the root of the checkout containing the current directory."""
   gclient_root = FindGclientRoot(os.getcwd())
   if not gclient_root:
+    # Some projects might not use .gclient. Try to see whether we're in a git
+    # checkout.
+    top_dir = [os.getcwd()]
+    def filter_fn(line):
+      top_dir[0] = os.path.normpath(line.rstrip('\n'))
+    try:
+      CheckCallAndFilter(["git", "rev-parse", "--show-toplevel"],
+                         print_stdout=False, filter_fn=filter_fn)
+    except Exception:
+      pass
+    top_dir = top_dir[0]
+    if os.path.exists(os.path.join(top_dir, 'buildtools')):
+      return os.path.join(top_dir, 'buildtools')
     return None
   return os.path.join(gclient_root, 'src', 'buildtools')
 

@@ -23,22 +23,14 @@ class NotFoundError(Exception):
         '  %s' % e)
 
 
-def _FindChromiumSourceRoot():
-  """Return the source root of the current chromium checkout, or die trying."""
-  # The use of .gn is somewhat incongruous here, but we need a file uniquely
-  # existing at src/. GN does the same thing at least.
-  source_root = gclient_utils.FindFileUpwards('.gn')
-  if not source_root:
-    raise NotFoundError(
-        '.gn file not found in any parent of the current path.')
-  return source_root
-
-
 def FindClangFormatToolInChromiumTree():
   """Return a path to the clang-format executable, or die trying."""
-  tool_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
-                           'clang_format', 'bin',
-                           gclient_utils.GetMacWinOrLinux(),
+  bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
+  if not bin_path:
+    raise NotFoundError(
+        'Could not find checkout in any parent of the current path.')
+
+  tool_path = os.path.join(bin_path,
                            'clang-format' + gclient_utils.GetExeSuffix())
   if not os.path.exists(tool_path):
     raise NotFoundError('File does not exist: %s' % tool_path)
@@ -47,8 +39,11 @@ def FindClangFormatToolInChromiumTree():
 
 def FindClangFormatScriptInChromiumTree(script_name):
   """Return a path to a clang-format helper script, or die trying."""
-  script_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
-                             'clang_format', 'script', script_name)
+  tools_path = gclient_utils.GetBuildtoolsPath()
+  if not tools_path:
+    raise NotFoundError(
+        'Could not find checkout in any parent of the current path.')
+  script_path = os.path.join(tools_path, 'clang_format', 'script', script_name)
   if not os.path.exists(script_path):
     raise NotFoundError('File does not exist: %s' % script_path)
   return script_path
