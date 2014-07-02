@@ -35,6 +35,11 @@
       ['OS=="mac"', {
         # On Mac only clang is new enough to build the trusted code.
         'clang%': 1,
+        # The Mac SDK is set for iOS builds and passed through to Mac
+        # sub-builds. This allows the Mac sub-build SDK in an iOS build to be
+        # overridden from the command line the same way it is for a Mac build.
+        'mac_sdk%': '<!(python <(DEPTH)/native_client/build/mac/find_sdk.py 10.6)',
+
       }],
       # Set ARM float abi compilation flag.
       ['OS=="android"', {
@@ -69,9 +74,6 @@
     # Set ARM fpu compilation flags (only meaningful if arm_version==7 and
     # arm_neon==0).
     'arm_fpu%': 'vfpv3',
-
-    # Version of the mac sdk to use.
-    'mac_sdk%': '10.6',
 
     'mac_deployment_target%': '10.6',
 
