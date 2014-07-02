@@ -6607,7 +6607,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
-  service()->UpdateExternalExtensionAlert();
+  service()->external_install_manager()->UpdateExternalExtensionAlert();
   // Should return false, meaning there aren't any extensions that the user
   // needs to know about.
   EXPECT_FALSE(
@@ -6719,19 +6719,22 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalInstallMultiple) {
 
   service()->EnableExtension(page_action);
   EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service()->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_FALSE(service()
+                   ->external_install_manager()
+                   ->HasExternalInstallBubbleForTesting());
 
   service()->EnableExtension(theme_crx);
   EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service()->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_FALSE(service()
+                   ->external_install_manager()
+                   ->HasExternalInstallBubbleForTesting());
 
   service()->EnableExtension(good_crx);
   EXPECT_FALSE(
       service()->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service()->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_FALSE(service()
+                   ->external_install_manager()
+                   ->HasExternalInstallBubbleForTesting());
 }
 
 // Test that there is a bubble for external extensions that update
@@ -6762,8 +6765,9 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
   service()->CheckForExternalUpdates();
   observer.Wait();
   EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
-  EXPECT_TRUE(
-      service()->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_TRUE(service()
+                  ->external_install_manager()
+                  ->HasExternalInstallBubbleForTesting());
   EXPECT_FALSE(service()->IsExtensionEnabled(updates_from_webstore));
 }
 
@@ -6790,8 +6794,9 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
   service()->CheckForExternalUpdates();
   observer.Wait();
   EXPECT_TRUE(service()->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service()->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_FALSE(service()
+                   ->external_install_manager()
+                   ->HasExternalInstallBubbleForTesting());
   EXPECT_FALSE(service()->IsExtensionEnabled(updates_from_webstore));
 }
 

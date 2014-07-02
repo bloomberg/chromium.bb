@@ -12,8 +12,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-class GlobalErrorService;
-
 namespace content {
 class BrowserContext;
 class NotificationDetails;
@@ -23,18 +21,15 @@ class NotificationSource;
 namespace extensions {
 class Extension;
 class ExtensionRegistry;
+class ExtensionPrefs;
 class ExternalInstallError;
 
 class ExternalInstallManager : public ExtensionRegistryObserver,
                                public content::NotificationObserver {
  public:
-  explicit ExternalInstallManager(content::BrowserContext* browser_context);
+  ExternalInstallManager(content::BrowserContext* browser_context,
+                         bool is_first_run);
   virtual ~ExternalInstallManager();
-
-  // Adds a global error informing the user that an external extension was
-  // installed. If |is_new_profile| is true, then this error is from the first
-  // time our profile checked for new extensions.
-  void AddExternalInstallError(const Extension* extension, bool is_new_profile);
 
   // Removes the global error, if one existed.
   void RemoveExternalInstallError();
@@ -42,9 +37,16 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   // Returns true if there is a global error for an external install.
   bool HasExternalInstallError() const;
 
+  // Checks if there are any new external extensions to notify the user about.
+  void UpdateExternalExtensionAlert();
+
+  // Given a (presumably just-installed) extension id, mark that extension as
+  // acknowledged.
+  void AcknowledgeExternalExtension(const std::string& extension_id);
+
   // Returns true if there is a global error with a bubble view for an external
   // install. Used for testing.
-  bool HasExternalInstallBubble() const;
+  bool HasExternalInstallBubbleForTesting() const;
 
   // Returns the current install error, if one exists.
   const ExternalInstallError* error() { return error_.get(); }
@@ -56,14 +58,33 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Adds a global error informing the user that an external extension was
+  // installed. If |is_new_profile| is true, then this error is from the first
+  // time our profile checked for new extensions.
+  void AddExternalInstallError(const Extension* extension, bool is_new_profile);
+
+  // Returns true if this extension is an external one that has yet to be
+  // marked as acknowledged.
+  bool IsUnacknowledgedExternalExtension(const Extension* extension) const;
+
   // The associated BrowserContext.
   content::BrowserContext* browser_context_;
+
+  // Whether or not this is the first run for the profile.
+  bool is_first_run_;
+
+  // The associated ExtensionPrefs.
+  ExtensionPrefs* extension_prefs_;
 
   // The current ExternalInstallError, if one exists.
   scoped_ptr<ExternalInstallError> error_;

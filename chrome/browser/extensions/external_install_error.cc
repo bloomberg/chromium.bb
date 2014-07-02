@@ -295,15 +295,6 @@ void ExternalInstallError::InstallUIAbort(bool user_initiated) {
   }
 }
 
-void ExternalInstallError::AcknowledgeExtension() {
-  const Extension* extension = GetExtension();
-  if (extension) {
-    ExtensionSystem::Get(browser_context_)
-        ->extension_service()
-        ->AcknowledgeExternalExtension(extension->id());
-  }
-}
-
 void ExternalInstallError::ShowDialog(Browser* browser) {
   DCHECK(install_ui_.get());
   DCHECK(prompt_.get());

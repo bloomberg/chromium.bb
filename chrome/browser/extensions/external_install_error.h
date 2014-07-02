@@ -54,9 +54,6 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
-  // Acknowledge the associated external extension.
-  void AcknowledgeExtension();
-
   // Show the associated dialog. This should only be called once the dialog is
   // ready.
   void ShowDialog(Browser* browser);

@@ -313,13 +313,6 @@ class ExtensionService
   // Changes sequenced task runner for crx installation tasks to |task_runner|.
   void SetFileTaskRunnerForTesting(base::SequencedTaskRunner* task_runner);
 
-  // Checks if there are any new external extensions to notify the user about.
-  void UpdateExternalExtensionAlert();
-
-  // Given a (presumably just-installed) extension id, mark that extension as
-  // acknowledged.
-  void AcknowledgeExternalExtension(const std::string& id);
-
   // Postpone installations so that we don't have to worry about race
   // conditions.
   void OnGarbageCollectIsolatedStorageStart();
@@ -470,11 +463,6 @@ class ExtensionService
   // Called once all external providers are ready. Checks for unclaimed
   // external extensions.
   void OnAllExternalProvidersReady();
-
-  // Returns true if this extension is an external one that has yet to be
-  // marked as acknowledged.
-  bool IsUnacknowledgedExternalExtension(
-      const extensions::Extension* extension);
 
   // Return true if the sync type of |extension| matches |type|.
   void OnExtensionInstallPrefChanged();
