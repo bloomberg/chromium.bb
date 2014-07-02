@@ -287,9 +287,6 @@ deps = {
   "src/tools/deps2git":
     "/trunk/tools/deps2git@276439",
 
-  "src/third_party/clang_format/script":
-    Var("llvm_url") + "/cfe/trunk/tools/clang-format@206068",
-
   "src/third_party/webpagereplay":
     Var("chromium_git") + "/external/web-page-replay.git@" +
     "b62c02d3b64cf00a2f65a82cca0721aa42c3d6ad",
@@ -744,39 +741,14 @@ hooks = [
                 "-s", "src/buildtools/linux64/clang-format.sha1",
     ],
   },
-  # TODO(jochen): remove these after a week.
   {
-    "name": "clang_format_win_old",
+    # Remove clang-format binaries from third_party/clang_format/bin that
+    # aren't used anymore.
+    # TODO(jochen) remove this and the .gitignore entry after the end of July,
+    # 2014.
+    "name": "remove_old_clang_format_binaries",
     "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=win32",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "src/third_party/clang_format/bin/win/clang-format.exe.sha1",
-    ],
-  },
-  {
-    "name": "clang_format_mac_old",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=darwin",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "src/third_party/clang_format/bin/mac/clang-format.sha1",
-    ],
-  },
-  {
-    "name": "clang_format_linux_old",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "src/third_party/clang_format/bin/linux/clang-format.sha1",
-    ],
+    "action": ["python", "src/third_party/clang_format/bin/rm_binaries.py"],
   },
   # Pull binutils for linux, enabled debug fission for faster linking /
   # debugging when used with clang on Ubuntu Precise.

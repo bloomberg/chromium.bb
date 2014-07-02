@@ -8,7 +8,7 @@
 " current line.)
 
 let s:script = expand('<sfile>:p:h') .
-  \'/../../third_party/clang_format/script/clang-format.py'
+  \'/../../buildtools/clang_format/script/clang-format.py'
 echo s:script
 
 if has('mac')
