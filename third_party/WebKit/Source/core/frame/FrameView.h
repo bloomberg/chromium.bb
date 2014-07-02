@@ -219,6 +219,8 @@ public:
     void updateLayoutAndStyleForPainting();
     void updateLayoutAndStyleIfNeededRecursive();
 
+    void invalidateTreeIfNeededRecursive();
+
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
@@ -361,7 +363,7 @@ private:
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
-    void invalidateTree(RenderObject* root);
+    void invalidateTreeIfNeeded();
 
     void gatherDebugLayoutRects(RenderObject* layoutRoot);
 
