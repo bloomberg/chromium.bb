@@ -766,11 +766,14 @@ def FixChromiumRevForBlink(revisions_final, revisions, self, rev):
   revisions_final.sort()
   return rev
 
-def GetChromiumRevision(url):
+def GetChromiumRevision(context, url):
   """Returns the chromium revision read from given URL."""
   try:
     # Location of the latest build revision number
-    return int(urllib.urlopen(url).read())
+    latest_revision = urllib.urlopen(url).read()
+    if latest_revision.isdigit():
+      return int(latest_revision)
+    return context.GetSVNRevisionFromGitHash(latest_revision)
   except Exception, e:
     print('Could not determine latest revision. This could be bad...')
     return 999999999
@@ -871,7 +874,7 @@ def main():
   else:
     bad_rev = '999.0.0.0'
     if not opts.official_builds:
-      bad_rev = GetChromiumRevision(context.GetLastChangeURL())
+      bad_rev = GetChromiumRevision(context, context.GetLastChangeURL())
 
   # Find out when we were good.
   if opts.good:
