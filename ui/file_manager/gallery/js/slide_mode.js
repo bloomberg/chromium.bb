@@ -8,8 +8,6 @@
  * Slide mode displays a single image and has a set of controls to navigate
  * between the images and to edit an image.
  *
- * TODO(kaznacheev): Introduce a parameter object.
- *
  * @param {Element} container Main container element.
  * @param {Element} content Content container element.
  * @param {Element} toolbar Toolbar element.
@@ -206,8 +204,7 @@ SlideMode.prototype.initDom_ = function() {
 
   this.imageView_ = new ImageView(
       this.imageContainer_,
-      this.viewport_,
-      this.metadataCache_);
+      this.viewport_);
 
   this.editor_ = new ImageEditor(
       this.viewport_,
@@ -261,7 +258,7 @@ SlideMode.prototype.enter = function(
     // If the items are empty, just show the error message.
     if (this.getItemCount_() === 0) {
       this.displayedIndex_ = -1;
-      //TODO(kaznacheev) Show this message in the grid mode too.
+      //TODO(hirono) Show this message in the grid mode too.
       this.showErrorBanner_('GALLERY_NO_IMAGES');
       fulfill();
       return;
@@ -893,68 +890,37 @@ SlideMode.prototype.updateThumbnails = function() {
  * @private
  */
 SlideMode.prototype.saveCurrentImage_ = function(callback) {
-  var item = this.getSelectedItem();
-  var oldEntry = item.getEntry();
-  var oldMetadata = item.getMetadata();
-  var canvas = this.imageView_.getCanvas();
-
   this.showSpinner_(true);
-  var metadataEncoder = ImageEncoder.encodeMetadata(
-      item.getMetadata(), canvas, 1 /* quality */);
-  var newMetadata = ContentProvider.ConvertContentMetadata(
-      metadataEncoder.getMetadata(),
-      MetadataCache.cloneMetadata(item.getMetadata()));
-  if (newMetadata.filesystem)
-    newMetadata.filesystem.modificationTime = new Date();
-  item.setMetadata(newMetadata);
 
-  item.saveToFile(
-      this.context_.saveDirEntry,
-      this.shouldOverwriteOriginal_(),
-      canvas,
-      metadataEncoder,
-      function(success) {
-        // TODO(kaznacheev): Implement write error handling.
-        // Until then pretend that the save succeeded.
-        this.showSpinner_(false);
-        this.flashSavedLabel_();
+  var item = this.getSelectedItem();
+  var savedPromise = this.dataModel_.saveItem(
+      item,
+      this.imageView_.getCanvas(),
+      this.shouldOverwriteOriginal_());
 
-        var event = new Event('content');
-        event.item = item;
-        event.oldEntry = oldEntry;
-        event.metadata = newMetadata;
-        this.dataModel_.dispatchEvent(event);
+  savedPromise.catch(function(error) {
+    // TODO(hirono): Implement write error handling.
+    // Until then pretend that the save succeeded.
+    console.error(error.stack || error);
+  }).then(function() {
+    this.showSpinner_(false);
+    this.flashSavedLabel_();
 
-        // Allow changing the 'Overwrite original' setting only if the user
-        // used Undo to restore the original image AND it is not a copy.
-        // Otherwise lock the setting in its current state.
-        var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal();
-        ImageUtil.setAttribute(this.options_, 'saved', !mayChangeOverwrite);
+    // Allow changing the 'Overwrite original' setting only if the user
+    // used Undo to restore the original image AND it is not a copy.
+    // Otherwise lock the setting in its current state.
+    var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal();
+    ImageUtil.setAttribute(this.options_, 'saved', !mayChangeOverwrite);
 
-        if (this.imageView_.getContentRevision() === 1) {  // First edit.
-          ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
-        }
+    // Record UMA for the first edit.
+    if (this.imageView_.getContentRevision() === 1)
+      ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
 
-        if (util.isSameEntry(oldEntry, item.getEntry())) {
-          this.metadataCache_.set(
-              item.getEntry(),
-              Gallery.METADATA_TYPE,
-              newMetadata);
-        } else {
-          this.dataModel_.splice(
-              this.getSelectedIndex(),
-              0,
-              new Gallery.Item(oldEntry, oldMetadata));
-          // The ribbon will ignore the splice above and redraw after the
-          // select call below (while being obscured by the Editor toolbar,
-          // so there is no need for nice animation here).
-          // SlideMode will ignore the selection change as the displayed item
-          // index has not changed.
-          this.select(++this.displayedIndex_);
-        }
-        callback();
-        cr.dispatchSimpleEvent(this, 'image-saved');
-      }.bind(this));
+    callback();
+    cr.dispatchSimpleEvent(this, 'image-saved');
+  }.bind(this)).catch(function(error) {
+    console.error(error.stack || error);
+  });
 };
 
 /**

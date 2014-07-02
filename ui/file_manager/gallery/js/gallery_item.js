@@ -8,9 +8,11 @@
  * Object representing an image item (a photo).
  *
  * @param {FileEntry} entry Image entry.
+ * @param {function():Promise} fethcedMediaProvider Function to provide the
+ *     fetchedMedia metadata.
  * @constructor
  */
-Gallery.Item = function(entry, metadata) {
+Gallery.Item = function(entry, metadata, metadataCache) {
   /**
    * @type {FileEntry}
    * @private
@@ -22,6 +24,11 @@ Gallery.Item = function(entry, metadata) {
    * @private
    */
   this.metadata_ = Object.freeze(metadata);
+
+  /**
+   * @type {MetadataCache}
+   */
+  this.metadataCache_ = metadataCache;
 
   /**
    * @type {boolean}
@@ -40,7 +47,28 @@ Gallery.Item.prototype.getEntry = function() { return this.entry_; };
 /**
  * @return {Object} Metadata.
  */
-Gallery.Item.prototype.getMetadata = function() { return this.metadata_;  };
+Gallery.Item.prototype.getMetadata = function() { return this.metadata_; };
+
+/**
+ * Obtains the latest media metadata.
+ *
+ * This is a heavy operation since it forces to load the image data to obtain
+ * the metadata.
+ * @return {Promise} Promise to be fulfilled with fetched metadata.
+ */
+Gallery.Item.prototype.getFetchedMedia = function() {
+  return new Promise(function(fulfill, reject) {
+    this.metadataCache_.getLatest(
+        [this.entry_],
+        'fetchedMedia',
+        function(metadata) {
+          if (metadata[0])
+            fulfill(metadata[0]);
+          else
+            reject('Failed to load metadata.');
+        });
+  }.bind(this));
+};
 
 /**
  * Sets the metadata.
@@ -160,13 +188,16 @@ Gallery.Item.prototype.saveToFile = function(
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
     this.entry_ = entry;
-    if (opt_callback) opt_callback(true);
+    this.metadataCache_.clear([this.entry_], 'fetchedMedia');
+    if (opt_callback)
+      opt_callback(true);
   }.bind(this);
 
   function onError(error) {
     console.error('Error saving from gallery', name, error);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
-    if (opt_callback) opt_callback(false);
+    if (opt_callback)
+      opt_callback(false);
   }
 
   function doSave(newFile, fileEntry) {

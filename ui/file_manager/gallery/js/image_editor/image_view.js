@@ -9,10 +9,9 @@
  *
  * @param {HTMLElement} container The container element.
  * @param {Viewport} viewport The viewport.
- * @param {MetadataCache} metadataCache The metadataCache.
  * @constructor
  */
-function ImageView(container, viewport, metadataCache) {
+function ImageView(container, viewport) {
   this.container_ = container;
   this.viewport_ = viewport;
   this.document_ = container.ownerDocument;
@@ -44,12 +43,6 @@ function ImageView(container, viewport, metadataCache) {
    * @private
    */
   this.screenImage_ = null;
-
-  this.localImageTransformFetcher_ = function(entry, callback) {
-    metadataCache.getOne(entry, 'fetchedMedia', function(fetchedMedia) {
-      callback(fetchedMedia.imageTransform);
-    });
-  };
 }
 
 /**
@@ -396,7 +389,6 @@ ImageView.prototype.load =
 
     self.imageLoader_.load(
         item,
-        self.localImageTransformFetcher_,
         displayMainImage.bind(null, loadType, previewShown),
         delay);
   }
@@ -452,11 +444,7 @@ ImageView.prototype.prefetch = function(item, delay) {
     // strain on memory.
     this.contentCache_.evictLRU();
 
-    this.prefetchLoader_.load(
-        item,
-        this.localImageTransformFetcher_,
-        prefetchDone,
-        delay);
+    this.prefetchLoader_.load(item, prefetchDone, delay);
   }
 };
 
