@@ -42,13 +42,12 @@ public:
     void setExplicitValue(int value);
     void clearExplicitValue();
 
-    void setNotInList(bool notInList) { m_notInList = notInList; }
+    void setNotInList(bool);
     bool notInList() const { return m_notInList; }
 
     const String& markerText() const;
 
     void updateListMarkerNumbers();
-    void updateMarkerLocation();
 
     static void updateItemValuesForOrderedList(const HTMLOListElement*);
     static unsigned itemCountForOrderedList(const HTMLOListElement*);
@@ -68,6 +67,10 @@ private:
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual void layout() OVERRIDE;
+
+    // Returns true if we re-attached and updated the location of the marker.
+    bool updateMarkerLocation();
+    void updateMarkerLocationAndInvalidateWidth();
 
     void positionListMarker();
 
