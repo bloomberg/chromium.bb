@@ -97,8 +97,7 @@
         'buildtype%': 'Dev',
 
         'conditions': [
-          # Compute the architecture that we're building for. Default to the
-          # architecture that we're building on.
+          # Compute the architecture that we're building on.
           ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
             # This handles the Linux platforms we generally deal with. Anything
             # else gets passed through, which probably won't work very well;
@@ -110,20 +109,22 @@
             #    to mean x86 -> arm cross compile. When actually running on an
             #    arm board, we'll generate ia32 for now, so that the generation
             #    succeeds.
-            'target_arch%':
+            'host_arch%':
                 '<!(echo "<!pymod_do_main(detect_nacl_host_arch)" | sed -e "s/arm.*/ia32/")',
 
           }, {  # OS!="linux"
-            'target_arch%': 'ia32',
+            'host_arch%': 'ia32',
           }],
         ]
       },
       # These come from the above variable scope.
       'nacl_standalone%': '<(nacl_standalone)',
-      'target_arch%': '<(target_arch)',
-      'host_arch%': '<(target_arch)',
+      'host_arch%': '<(host_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
+
+      # By default, build for the architecture that we're building on.
+      'target_arch%': '<(host_arch)',
 
       'conditions': [
         # The system root for cross-compiles. Default: none.
@@ -150,6 +151,7 @@
     },
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
+    'host_arch%': '<(host_arch)',
     'sysroot%': '<(sysroot)',
     'nacl_standalone%': '<(nacl_standalone)',
     'branding%': '<(branding)',
@@ -406,16 +408,32 @@
                 }
               },],
             ],
-            'asflags': [
-              '<(mbits_flag)',
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'asflags': [ '<(mbits_flag)', ],
+                'cflags': [ '<(mbits_flag)', ],
+                'ldflags': [ '<(mbits_flag)', ],
+              }],
             ],
             'cflags': [
-              '<(mbits_flag)',
               '-fno-exceptions',
               '-Wall',
             ],
-            'ldflags': [
-              '<(mbits_flag)',
+          }],
+          ['host_arch=="ia32" or host_arch=="x64"', {
+            'conditions': [
+              ['host_arch=="x64"', {
+                'variables': { 'host_mbits_flag': '-m64', },
+              }, {
+                'variables': { 'host_mbits_flag': '-m32', }
+              }],
+            ],
+            'target_conditions': [
+              ['_toolset=="host"', {
+                'asflags': [ '<(host_mbits_flag)', ],
+                'cflags': [ '<(host_mbits_flag)', ],
+                'ldflags': [ '<(host_mbits_flag)', ],
+              }],
             ],
           }],
         ],
