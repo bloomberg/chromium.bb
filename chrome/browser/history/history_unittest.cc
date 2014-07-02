@@ -1300,12 +1300,14 @@ TEST_F(HistoryTest, MakeIntranetURLsTyped) {
 }
 
 TEST_F(HistoryTest, Typed) {
+  const ContextID context_id = reinterpret_cast<ContextID>(1);
+
   ASSERT_TRUE(history_service_.get());
 
   // Add the page once as typed.
   const GURL test_url("http://www.google.com/");
   history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
+      test_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
@@ -1316,7 +1318,7 @@ TEST_F(HistoryTest, Typed) {
 
   // Add the page again not typed.
   history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
+      test_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_LINK,
       history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
@@ -1327,7 +1329,7 @@ TEST_F(HistoryTest, Typed) {
 
   // Add the page again as a generated URL.
   history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
+      test_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_GENERATED,
       history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
@@ -1338,7 +1340,7 @@ TEST_F(HistoryTest, Typed) {
 
   // Add the page again as a reload.
   history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
+      test_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_RELOAD,
       history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
@@ -1386,7 +1388,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   const GURL url3("http://www.google.com/url3/");
   const GURL url4("http://www.google.com/url4/");
 
-  static ContextID context_id = static_cast<ContextID>(this);
+  const ContextID context_id = reinterpret_cast<ContextID>(1);
 
   // Add two pages.
   history_service_->AddPage(

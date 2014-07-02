@@ -1179,7 +1179,7 @@ TEST_F(DownloadProtectionServiceTest,
     HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
         ->AddPage(tab_url,
                   base::Time::Now(),
-                  static_cast<void*>(this),
+                  reinterpret_cast<history::ContextID>(1),
                   0,
                   GURL(),
                   redirects,

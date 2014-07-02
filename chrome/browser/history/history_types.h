@@ -28,6 +28,10 @@
 
 class PageUsageData;
 
+namespace content {
+class WebContents;
+}
+
 namespace history {
 
 // Forward declaration for friend statements.
@@ -45,8 +49,11 @@ typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
-// Identifier for a context to scope page ids.
-typedef const void* ContextID;
+// Identifier for a context to scope page ids. (ContextIDs are used in
+// comparisons only and are never dereferenced.)
+// NB: The use of WebContents here is temporary; when the dependency on content
+// is broken, some other type will take its place.
+typedef content::WebContents* ContextID;
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item

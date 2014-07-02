@@ -157,5 +157,6 @@ void HistoryTabHelper::WebContentsDestroyed() {
       hs->UpdateWithPageEndTime(tab, entry->GetPageID(), tab->GetURL(),
                                 base::Time::Now());
     }
+    hs->ClearCachedDataForContextID(tab);
   }
 }
