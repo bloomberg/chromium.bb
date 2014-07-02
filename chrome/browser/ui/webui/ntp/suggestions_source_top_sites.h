@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "chrome/browser/common/cancelable_request.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
@@ -36,9 +36,7 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
   virtual void FetchItems(Profile* profile) OVERRIDE;
   virtual void SetCombiner(SuggestionsCombiner* combiner) OVERRIDE;
 
-  void OnSuggestionsUrlsAvailable(
-      CancelableRequestProvider::Handle handle,
-      const history::FilteredURLList& data);
+  void OnSuggestionsUrlsAvailable(const history::FilteredURLList* data);
 
  private:
 
@@ -60,7 +58,7 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
   // Whether the source should provide additional debug information or not.
   bool debug_;
 
-  CancelableRequestConsumer history_consumer_;
+  base::CancelableTaskTracker history_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceTopSites);
 };

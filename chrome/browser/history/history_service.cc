@@ -849,18 +849,24 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
       base::Bind(callback, base::Owned(result)));
 }
 
-HistoryService::Handle HistoryService::QueryFilteredURLs(
+base::CancelableTaskTracker::TaskId HistoryService::QueryFilteredURLs(
     int result_count,
     const history::VisitFilter& filter,
     bool extended_info,
-    CancelableRequestConsumerBase* consumer,
-    const QueryFilteredURLsCallback& callback) {
+    const QueryFilteredURLsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL,
-                  &HistoryBackend::QueryFilteredURLs,
-                  consumer,
-                  new history::QueryFilteredURLsRequest(callback),
-                  result_count, filter, extended_info);
+  history::FilteredURLList* result = new history::FilteredURLList();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::QueryFilteredURLs,
+                 history_backend_.get(),
+                 result_count,
+                 filter,
+                 extended_info,
+                 base::Unretained(result)),
+      base::Bind(callback, base::Owned(result)));
 }
 
 void HistoryService::Observe(int type,

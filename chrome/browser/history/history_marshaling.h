@@ -25,10 +25,6 @@ typedef CancelableRequest1<HistoryService::QueryMostVisitedURLsCallback,
                            history::MostVisitedURLList>
     QueryMostVisitedURLsRequest;
 
-typedef CancelableRequest1<HistoryService::QueryFilteredURLsCallback,
-                           history::FilteredURLList>
-    QueryFilteredURLsRequest;
-
 // Generic operations ---------------------------------------------------------
 
 // The argument here is an input value, which is the task to run on the

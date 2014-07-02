@@ -323,15 +323,15 @@ class HistoryService : public CancelableRequestProvider,
   // more expensive as additional data points are added in future changes, and
   // not useful in most cases. Set |extended_info| to true only if you
   // explicitly require the additional data.
-  typedef base::Callback<void(Handle, const history::FilteredURLList&)>
+  typedef base::Callback<void(const history::FilteredURLList*)>
       QueryFilteredURLsCallback;
 
-  Handle QueryFilteredURLs(
+  base::CancelableTaskTracker::TaskId QueryFilteredURLs(
       int result_count,
       const history::VisitFilter& filter,
       bool extended_info,
-      CancelableRequestConsumerBase* consumer,
-      const QueryFilteredURLsCallback& callback);
+      const QueryFilteredURLsCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Database management operations --------------------------------------------
 

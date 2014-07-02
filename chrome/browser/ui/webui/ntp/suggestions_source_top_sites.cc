@@ -61,7 +61,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
   DCHECK(combiner_);
   STLDeleteElements(&items_);
 
-  history_consumer_.CancelAllRequests();
+  history_tracker_.TryCancelAll();
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
   // |history| may be null during unit tests.
@@ -71,9 +71,13 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
     time_filter.SetFilterWidth(GetFilterWidth());
     time_filter.set_sorting_order(GetSortingOrder());
 
-    history->QueryFilteredURLs(0, time_filter, debug_, &history_consumer_,
+    history->QueryFilteredURLs(
+        0,
+        time_filter,
+        debug_,
         base::Bind(&SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &history_tracker_);
   }
 }
 
@@ -83,11 +87,11 @@ void SuggestionsSourceTopSites::SetCombiner(SuggestionsCombiner* combiner) {
 }
 
 void SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable(
-    CancelableRequestProvider::Handle handle,
-    const history::FilteredURLList& data) {
+    const history::FilteredURLList* data) {
+  DCHECK(data);
   DCHECK(combiner_);
-  for (size_t i = 0; i < data.size(); i++) {
-    const history::FilteredURL& suggested_url = data[i];
+  for (size_t i = 0; i < data->size(); i++) {
+    const history::FilteredURL& suggested_url = (*data)[i];
     if (suggested_url.url.is_empty())
       continue;
 

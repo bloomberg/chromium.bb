@@ -17,7 +17,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/common/thumbnail_score.h"
@@ -37,10 +36,6 @@ namespace history {
 // Forward declaration for friend statements.
 class HistoryBackend;
 class URLDatabase;
-
-// Structure to hold redirect lists for URLs.  For a redirect chain
-// A -> B -> C, and entry in the map would look like "A => {B -> C}".
-typedef std::map<GURL, scoped_refptr<RefCountedVector<GURL> > > RedirectMap;
 
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;

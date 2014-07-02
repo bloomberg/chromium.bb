@@ -1306,19 +1306,16 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
   }
 }
 
-void HistoryBackend::QueryFilteredURLs(
-      scoped_refptr<QueryFilteredURLsRequest> request,
-      int result_count,
-      const history::VisitFilter& filter,
-      bool extended_info)  {
-  if (request->canceled())
-    return;
-
+void HistoryBackend::QueryFilteredURLs(int result_count,
+                                       const history::VisitFilter& filter,
+                                       bool extended_info,
+                                       history::FilteredURLList* result) {
+  DCHECK(result);
   base::Time request_start = base::Time::Now();
 
+  result->clear();
   if (!db_) {
     // No History Database - return an empty list.
-    request->ForwardResult(request->handle(), FilteredURLList());
     return;
   }
 
@@ -1355,7 +1352,6 @@ void HistoryBackend::QueryFilteredURLs(
     }
   }
 
-  FilteredURLList& result = request->value;
   for (size_t i = 0; i < data.size(); ++i) {
     PageUsageData* current_data = data[i];
     FilteredURL url(*current_data);
@@ -1375,7 +1371,7 @@ void HistoryBackend::QueryFilteredURLs(
         // TODO(macourteau): implement the url.extended_info.visits stat.
       }
     }
-    result.push_back(url);
+    result->push_back(url);
   }
 
   int delta_time = std::max(1, std::min(999,
@@ -1385,8 +1381,6 @@ void HistoryBackend::QueryFilteredURLs(
       Add(delta_time),
       base::LinearHistogram::FactoryGet("NewTabPage.SuggestedSitesLoadTime",
           1, 1000, 100, base::Histogram::kUmaTargetedHistogramFlag));
-
-  request->ForwardResult(request->handle(), result);
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(
