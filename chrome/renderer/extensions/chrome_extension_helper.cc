@@ -34,13 +34,11 @@ bool ChromeExtensionHelper::OnMessageReceived(
   return handled;
 }
 
-void ChromeExtensionHelper::OnGetApplicationInfo(int page_id) {
+void ChromeExtensionHelper::OnGetApplicationInfo() {
   WebApplicationInfo app_info;
-  if (page_id == render_view()->GetPageId()) {
-    base::string16 error;
-    web_apps::ParseWebAppFromWebDocument(
-        render_view()->GetWebView()->mainFrame(), &app_info, &error);
-  }
+  base::string16 error;
+  web_apps::ParseWebAppFromWebDocument(
+      render_view()->GetWebView()->mainFrame(), &app_info, &error);
 
   // Prune out any data URLs in the set of icons.  The browser process expects
   // any icon with a data URL to have originated from a favicon.  We don't want
@@ -53,8 +51,8 @@ void ChromeExtensionHelper::OnGetApplicationInfo(int page_id) {
     }
   }
 
-  Send(new ChromeExtensionHostMsg_DidGetApplicationInfo(
-      routing_id(), page_id, app_info));
+  Send(
+      new ChromeExtensionHostMsg_DidGetApplicationInfo(routing_id(), app_info));
 }
 
 }  // namespace extensions

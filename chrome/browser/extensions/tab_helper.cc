@@ -101,10 +101,13 @@ TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       extension_app_(NULL),
       extension_function_dispatcher_(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()), this),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          this),
       pending_web_app_action_(NONE),
-      script_executor_(new ScriptExecutor(web_contents,
-                                          &script_execution_observers_)),
+      last_committed_page_id_(-1),
+      update_shortcut_on_load_complete_(false),
+      script_executor_(
+          new ScriptExecutor(web_contents, &script_execution_observers_)),
       location_bar_controller_(new LocationBarController(web_contents)),
       image_loader_ptr_factory_(this),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()) {
@@ -136,30 +139,16 @@ TabHelper::~TabHelper() {
 
 void TabHelper::CreateApplicationShortcuts() {
   DCHECK(CanCreateApplicationShortcuts());
-  NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return;
-
-  pending_web_app_action_ = CREATE_SHORTCUT;
-
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
-  GetApplicationInfo(entry->GetPageID());
+  GetApplicationInfo(CREATE_SHORTCUT);
 }
 
 void TabHelper::CreateHostedAppFromWebContents() {
   DCHECK(CanCreateBookmarkApp());
-  NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return;
-
-  pending_web_app_action_ = CREATE_HOSTED_APP;
-
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
-  GetApplicationInfo(entry->GetPageID());
+  GetApplicationInfo(CREATE_HOSTED_APP);
 }
 
 bool TabHelper::CanCreateApplicationShortcuts() const {
@@ -327,15 +316,15 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 
-void TabHelper::OnDidGetApplicationInfo(int32 page_id,
-                                        const WebApplicationInfo& info) {
+void TabHelper::OnDidGetApplicationInfo(const WebApplicationInfo& info) {
 #if !defined(OS_MACOSX)
   web_app_info_ = info;
 
   NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || (entry->GetPageID() != page_id))
+  if (!entry || last_committed_page_id_ != entry->GetPageID())
     return;
+  last_committed_page_id_ = -1;
 
   switch (pending_web_app_action_) {
     case CREATE_SHORTCUT: {
@@ -536,32 +525,34 @@ WebContents* TabHelper::GetAssociatedWebContents() const {
   return web_contents();
 }
 
-void TabHelper::GetApplicationInfo(int32 page_id) {
-  Send(new ChromeExtensionMsg_GetApplicationInfo(routing_id(), page_id));
+void TabHelper::GetApplicationInfo(WebAppAction action) {
+  NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  pending_web_app_action_ = action;
+  last_committed_page_id_ = entry->GetPageID();
+
+  Send(new ChromeExtensionMsg_GetApplicationInfo(routing_id()));
 }
 
 void TabHelper::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_LOAD_STOP: {
-      const NavigationController& controller =
-          *content::Source<NavigationController>(source).ptr();
-      DCHECK_EQ(controller.GetWebContents(), web_contents());
+  DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
+  const NavigationController& controller =
+      *content::Source<NavigationController>(source).ptr();
+  DCHECK_EQ(controller.GetWebContents(), web_contents());
 
-      if (pending_web_app_action_ == UPDATE_SHORTCUT) {
-        // Schedule a shortcut update when web application info is available if
-        // last committed entry is not NULL. Last committed entry could be NULL
-        // when an interstitial page is injected (e.g. bad https certificate,
-        // malware site etc). When this happens, we abort the shortcut update.
-        NavigationEntry* entry = controller.GetLastCommittedEntry();
-        if (entry)
-          GetApplicationInfo(entry->GetPageID());
-        else
-          pending_web_app_action_ = NONE;
-      }
-      break;
-    }
+  if (update_shortcut_on_load_complete_) {
+    update_shortcut_on_load_complete_ = false;
+    // Schedule a shortcut update when web application info is available if
+    // last committed entry is not NULL. Last committed entry could be NULL
+    // when an interstitial page is injected (e.g. bad https certificate,
+    // malware site etc). When this happens, we abort the shortcut update.
+    if (controller.GetLastCommittedEntry())
+      GetApplicationInfo(UPDATE_SHORTCUT);
   }
 }
 

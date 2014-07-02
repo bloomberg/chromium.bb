@@ -42,8 +42,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.app_url = url;
 
   RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
+      rvh(), ChromeExtensionHostMsg_DidGetApplicationInfo(0, web_app_info));
   web_app::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(web_contents(), &info);
 

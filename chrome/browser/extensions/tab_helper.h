@@ -49,15 +49,6 @@ class TabHelper : public content::WebContentsObserver,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
  public:
-  // Different types of action when web app info is available.
-  // OnDidGetApplicationInfo uses this to dispatch calls.
-  enum WebAppAction {
-    NONE,              // No action at all.
-    CREATE_SHORTCUT,   // Bring up create application shortcut dialog.
-    CREATE_HOSTED_APP, // Create and install a hosted app.
-    UPDATE_SHORTCUT    // Update icon for app shortcut.
-  };
-
   // Observer base class for classes that need to be notified when content
   // scripts and/or tabs.executeScript calls run on a page.
   class ScriptExecutionObserver {
@@ -102,8 +93,8 @@ class TabHelper : public content::WebContentsObserver,
   bool CanCreateApplicationShortcuts() const;
   bool CanCreateBookmarkApp() const;
 
-  void set_pending_web_app_action(WebAppAction action) {
-    pending_web_app_action_ = action;
+  void UpdateShortcutOnLoadComplete() {
+    update_shortcut_on_load_complete_ = true;
   }
 
   // App extensions ------------------------------------------------------------
@@ -164,6 +155,15 @@ class TabHelper : public content::WebContentsObserver,
       WebstoreInlineInstallerFactory* factory);
 
  private:
+  // Different types of action when web app info is available.
+  // OnDidGetApplicationInfo uses this to dispatch calls.
+  enum WebAppAction {
+    NONE,               // No action at all.
+    CREATE_SHORTCUT,    // Bring up create application shortcut dialog.
+    CREATE_HOSTED_APP,  // Create and install a hosted app.
+    UPDATE_SHORTCUT     // Update icon for app shortcut.
+  };
+
   explicit TabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabHelper>;
 
@@ -191,7 +191,7 @@ class TabHelper : public content::WebContentsObserver,
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // Message handlers.
-  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
+  void OnDidGetApplicationInfo(const WebApplicationInfo& info);
   void OnInlineWebstoreInstall(int install_id,
                                int return_route_id,
                                const std::string& webstore_item_id,
@@ -234,7 +234,7 @@ class TabHelper : public content::WebContentsObserver,
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetApplicationInfo when
   // the data is available.
-  void GetApplicationInfo(int32 page_id);
+  void GetApplicationInfo(WebAppAction action);
 
   // Sends our tab ID to |render_view_host|.
   void SetTabId(content::RenderViewHost* render_view_host);
@@ -262,6 +262,13 @@ class TabHelper : public content::WebContentsObserver,
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a WebContents.
   WebAppAction pending_web_app_action_;
+
+  // Which page id was active when the GetApplicationInfo request was sent, for
+  // verification when the reply returns.
+  int32 last_committed_page_id_;
+
+  // Whether to trigger an update when the page load completes.
+  bool update_shortcut_on_load_complete_;
 
   content::NotificationRegistrar registrar_;
 

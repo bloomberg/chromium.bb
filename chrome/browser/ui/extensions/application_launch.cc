@@ -457,14 +457,7 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
   if (!tab)
     return NULL;
 
-  // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
-  // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
-  // the web app info is available, extensions::TabHelper notifies Browser via
-  // OnDidGetApplicationInfo, which calls
-  // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
-  // pending web app action.
-  extensions::TabHelper::FromWebContents(tab)->set_pending_web_app_action(
-      extensions::TabHelper::UPDATE_SHORTCUT);
+  extensions::TabHelper::FromWebContents(tab)->UpdateShortcutOnLoadComplete();
 
   return tab;
 }

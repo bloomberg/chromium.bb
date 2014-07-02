@@ -35,8 +35,7 @@ IPC_STRUCT_TRAITS_END()
 
 // Requests application info for the page. The renderer responds back with
 // ExtensionHostMsg_DidGetApplicationInfo.
-IPC_MESSAGE_ROUTED1(ChromeExtensionMsg_GetApplicationInfo,
-                    int32 /* page_id */)
+IPC_MESSAGE_ROUTED0(ChromeExtensionMsg_GetApplicationInfo)
 
 // Sent by the renderer to implement chrome.webstore.install().
 IPC_MESSAGE_ROUTED5(ExtensionHostMsg_InlineWebstoreInstall,
@@ -65,6 +64,5 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_ROUTED2(ChromeExtensionHostMsg_DidGetApplicationInfo,
-                    int32 /* page_id */,
+IPC_MESSAGE_ROUTED1(ChromeExtensionHostMsg_DidGetApplicationInfo,
                     WebApplicationInfo)

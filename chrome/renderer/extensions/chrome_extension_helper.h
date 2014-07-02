@@ -28,7 +28,7 @@ class ChromeExtensionHelper
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC message handlers.
-  void OnGetApplicationInfo(int page_id);
+  void OnGetApplicationInfo();
 
   // The app info that we are processing. This is used when installing an app
   // via application definition. The in-progress web app is stored here while
