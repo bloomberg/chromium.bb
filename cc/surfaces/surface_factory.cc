@@ -19,12 +19,11 @@ SurfaceFactory::~SurfaceFactory() {
   DCHECK_EQ(0u, surface_map_.size());
 }
 
-SurfaceId SurfaceFactory::Create(const gfx::Size& size) {
-  SurfaceId id = manager_->AllocateId();
-  scoped_ptr<Surface> surface(new Surface(id, size, this));
+void SurfaceFactory::Create(SurfaceId surface_id, const gfx::Size& size) {
+  scoped_ptr<Surface> surface(new Surface(surface_id, size, this));
   manager_->RegisterSurface(surface.get());
-  surface_map_.add(id, surface.Pass());
-  return id;
+  DCHECK(!surface_map_.count(surface_id));
+  surface_map_.add(surface_id, surface.Pass());
 }
 
 void SurfaceFactory::Destroy(SurfaceId surface_id) {

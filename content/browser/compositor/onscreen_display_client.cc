@@ -15,17 +15,14 @@ OnscreenDisplayClient::OnscreenDisplayClient(
     const scoped_refptr<cc::ContextProvider>& onscreen_context_provider,
     scoped_ptr<cc::OutputSurface> software_surface,
     cc::SurfaceManager* manager)
-    : manager_(manager),
-      onscreen_context_provider_(onscreen_context_provider),
-      software_surface_(software_surface.Pass()) {
+    : onscreen_context_provider_(onscreen_context_provider),
+      software_surface_(software_surface.Pass()),
+      display_(new cc::Display(this,
+                               manager,
+                               HostSharedBitmapManager::current())) {
 }
 
 OnscreenDisplayClient::~OnscreenDisplayClient() {
-}
-
-void OnscreenDisplayClient::CreateDisplay(cc::SurfaceFactory* factory) {
-  display_.reset(new cc::Display(
-      this, manager_, factory, HostSharedBitmapManager::current()));
 }
 
 scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {

@@ -504,6 +504,8 @@
         'surfaces/surface_factory.h',
         'surfaces/surface_factory_client.h',
         'surfaces/surface_id.h',
+        'surfaces/surface_id_allocator.cc',
+        'surfaces/surface_id_allocator.h',
         'surfaces/surface_manager.cc',
         'surfaces/surface_manager.h',
         'surfaces/surface_resource_holder.cc',

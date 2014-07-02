@@ -5,7 +5,7 @@
 module mojo.surfaces {
 
 struct SurfaceId {
-  int32 id;
+  uint64 id;
 };
 
 }

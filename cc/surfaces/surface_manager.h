@@ -19,7 +19,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   SurfaceManager();
   ~SurfaceManager();
 
-  SurfaceId AllocateId();
   void RegisterSurface(Surface* surface);
   void DeregisterSurface(SurfaceId surface_id);
 
@@ -28,8 +27,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
  private:
   typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;
-
-  int next_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

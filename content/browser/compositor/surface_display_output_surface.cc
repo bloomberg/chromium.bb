@@ -14,12 +14,14 @@ namespace content {
 
 SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     cc::SurfaceManager* surface_manager,
+    uint32_t surface_id_namespace,
     const scoped_refptr<cc::ContextProvider>& context_provider)
     : cc::OutputSurface(context_provider,
                         scoped_ptr<cc::SoftwareOutputDevice>()),
       display_(NULL),
       surface_manager_(surface_manager),
-      factory_(surface_manager, this) {
+      factory_(surface_manager, this),
+      allocator_(surface_id_namespace) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -30,14 +32,19 @@ SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
 void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
-  display_->Resize(frame_size);
-  cc::SurfaceId surface_id = display_->CurrentSurfaceId();
-  if (surface_id.is_null())
-    return;
+  if (frame_size != display_size_) {
+    if (!surface_id_.is_null()) {
+      factory_.Destroy(surface_id_);
+    }
+    surface_id_ = allocator_.GenerateId();
+    factory_.Create(surface_id_, frame_size);
+    display_size_ = frame_size;
+    display_->Resize(surface_id_, frame_size);
+  }
 
   scoped_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame());
   frame->AssignTo(frame_copy.get());
-  factory_.SubmitFrame(surface_id, frame_copy.Pass());
+  factory_.SubmitFrame(surface_id_, frame_copy.Pass());
 
   if (!display_->Draw())
     return;

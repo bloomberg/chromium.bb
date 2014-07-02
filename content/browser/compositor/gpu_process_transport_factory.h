@@ -86,6 +86,7 @@ class GpuProcessTransportFactory
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
   scoped_ptr<cc::SurfaceManager> surface_manager_;
+  uint32_t next_surface_id_namespace_;
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.

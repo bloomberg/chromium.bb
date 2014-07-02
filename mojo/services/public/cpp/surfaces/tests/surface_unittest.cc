@@ -29,7 +29,7 @@ TEST(SurfaceLibTest, SurfaceIdConverterValidId) {
   cc::SurfaceId round_trip =
       surfaces::SurfaceId::From(valid_id).To<cc::SurfaceId>();
   EXPECT_FALSE(round_trip.is_null());
-  EXPECT_EQ(7, round_trip.id);
+  EXPECT_EQ(valid_id, round_trip);
 }
 
 TEST(SurfaceLibTest, Color) {

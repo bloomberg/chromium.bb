@@ -39,9 +39,9 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
 
 class SurfaceFactoryTest : public testing::Test {
  public:
-  SurfaceFactoryTest()
-      : factory_(&manager_, &client_),
-        surface_id_(factory_.Create(gfx::Size(5, 5))) {}
+  SurfaceFactoryTest() : factory_(&manager_, &client_), surface_id_(3) {
+    factory_.Create(surface_id_, gfx::Size(5, 5));
+  }
 
   virtual ~SurfaceFactoryTest() { factory_.Destroy(surface_id_); }
 

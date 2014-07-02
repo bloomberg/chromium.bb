@@ -10,6 +10,7 @@
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
@@ -28,10 +29,11 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
  public:
-  SurfacesPixelTest() : factory_(&manager_, &client_) {}
+  SurfacesPixelTest() : allocator_(1u), factory_(&manager_, &client_) {}
 
  protected:
   SurfaceManager manager_;
+  SurfaceIdAllocator allocator_;
   EmptySurfaceFactoryClient client_;
   SurfaceFactory factory_;
 };
@@ -83,7 +85,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-  SurfaceId root_surface_id = factory_.Create(device_viewport_size_);
+  SurfaceId root_surface_id = allocator_.GenerateId();
+  factory_.Create(root_surface_id, device_viewport_size_);
   factory_.SubmitFrame(root_surface_id, root_frame.Pass());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get());
@@ -103,9 +106,10 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
 // Draws a frame with simple surface embedding.
 TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
-  SurfaceId child_surface_id = factory_.Create(child_size);
-  SurfaceId root_surface_id = factory_.Create(device_viewport_size_);
-
+  SurfaceId child_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id = allocator_.GenerateId();
+  factory_.Create(child_surface_id, child_size);
+  factory_.Create(root_surface_id, device_viewport_size_);
   {
     gfx::Rect rect(device_viewport_size_);
     RenderPass::Id id(1, 1);
@@ -193,9 +197,12 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   //                 bottom_blue_quad (100x100 @ 0x100)
   //   right_child -> top_blue_quad (100x100 @ 0x0),
   //                  bottom_green_quad (100x100 @ 0x100)
-  SurfaceId left_child_id = factory_.Create(child_size);
-  SurfaceId right_child_id = factory_.Create(child_size);
-  SurfaceId root_surface_id = factory_.Create(device_viewport_size_);
+  SurfaceId left_child_id = allocator_.GenerateId();
+  SurfaceId right_child_id = allocator_.GenerateId();
+  SurfaceId root_surface_id = allocator_.GenerateId();
+  factory_.Create(left_child_id, child_size);
+  factory_.Create(right_child_id, child_size);
+  factory_.Create(root_surface_id, device_viewport_size_);
 
   {
     gfx::Rect rect(device_viewport_size_);

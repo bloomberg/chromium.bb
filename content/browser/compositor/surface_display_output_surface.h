@@ -8,6 +8,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
 
 namespace cc {
 class Display;
@@ -25,6 +26,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
   // The underlying cc::Display and cc::SurfaceManager must outlive this class.
   SurfaceDisplayOutputSurface(
       cc::SurfaceManager* surface_manager,
+      uint32_t surface_id_namespace,
       const scoped_refptr<cc::ContextProvider>& context_provider);
   virtual ~SurfaceDisplayOutputSurface();
 
@@ -42,6 +44,9 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
   cc::Display* display_;
   cc::SurfaceManager* surface_manager_;
   cc::SurfaceFactory factory_;
+  gfx::Size display_size_;
+  cc::SurfaceId surface_id_;
+  cc::SurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDisplayOutputSurface);
 };

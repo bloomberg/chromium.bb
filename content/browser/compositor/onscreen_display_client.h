@@ -28,15 +28,12 @@ class OnscreenDisplayClient : cc::DisplayClient {
       cc::SurfaceManager* manager);
   virtual ~OnscreenDisplayClient();
 
-  void CreateDisplay(cc::SurfaceFactory* factory);
-
   cc::Display* display() { return display_.get(); }
 
   // cc::DisplayClient implementation.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
 
  private:
-  cc::SurfaceManager* manager_;
   scoped_refptr<cc::ContextProvider> onscreen_context_provider_;
   scoped_ptr<cc::OutputSurface> software_surface_;
   scoped_ptr<cc::Display> display_;

@@ -15,6 +15,7 @@
 #include "cc/surfaces/surface_aggregator_test_helpers.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -57,7 +58,8 @@ class SurfaceAggregatorTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
-  SurfaceId one_id = factory_.Create(SurfaceSize());
+  SurfaceId one_id(7);
+  factory_.Create(one_id, SurfaceSize());
   scoped_ptr<CompositorFrame> frame = aggregator_.Aggregate(one_id);
   EXPECT_FALSE(frame);
   factory_.Destroy(one_id);
@@ -65,11 +67,12 @@ TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
 
 class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  public:
-  SurfaceAggregatorValidSurfaceTest() {}
+  SurfaceAggregatorValidSurfaceTest() : allocator_(1u) {}
 
   virtual void SetUp() {
     SurfaceAggregatorTest::SetUp();
-    root_surface_id_ = factory_.Create(SurfaceSize());
+    root_surface_id_ = allocator_.GenerateId();
+    factory_.Create(root_surface_id_, SurfaceSize());
   }
 
   virtual void TearDown() {
@@ -119,6 +122,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
  protected:
   SurfaceId root_surface_id_;
+  SurfaceIdAllocator allocator_;
 };
 
 // Tests that a very simple frame containing only two solid color quads makes it
@@ -151,7 +155,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
 // embedded_surface has a frame containing only a solid color quad. The solid
 // color quad should be aggregated into the final frame.
 TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
-  SurfaceId embedded_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId embedded_surface_id = allocator_.GenerateId();
+  factory_.Create(embedded_surface_id, SurfaceSize());
 
   test::Quad embedded_quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN)};
   test::Pass embedded_passes[] = {
@@ -178,7 +183,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
 
 // This tests referencing a surface that has multiple render passes.
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
-  SurfaceId embedded_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId embedded_surface_id = allocator_.GenerateId();
+  factory_.Create(embedded_surface_id, SurfaceSize());
 
   RenderPass::Id pass_ids[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2),
                                RenderPass::Id(1, 3)};
@@ -328,7 +334,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, InvalidSurfaceReference) {
 // Tests a reference to a valid surface with no submitted frame. This quad
 // should also just be dropped.
 TEST_F(SurfaceAggregatorValidSurfaceTest, ValidSurfaceReferenceWithNoFrame) {
-  SurfaceId surface_with_no_frame_id = factory_.Create(gfx::Size(5, 5));
+  SurfaceId surface_with_no_frame_id = allocator_.GenerateId();
+  factory_.Create(surface_with_no_frame_id, gfx::Size(5, 5));
   test::Quad quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN),
                         test::Quad::SurfaceQuad(surface_with_no_frame_id),
                         test::Quad::SolidColorQuad(SK_ColorBLUE)};
@@ -361,7 +368,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleCyclicalReference) {
 
 // Tests a more complex cycle with one intermediate surface.
 TEST_F(SurfaceAggregatorValidSurfaceTest, TwoSurfaceCyclicalReference) {
-  SurfaceId child_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId child_surface_id = allocator_.GenerateId();
+  factory_.Create(child_surface_id, SurfaceSize());
 
   test::Quad parent_quads[] = {test::Quad::SolidColorQuad(SK_ColorBLUE),
                                test::Quad::SurfaceQuad(child_surface_id),
@@ -397,7 +405,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, TwoSurfaceCyclicalReference) {
 // Tests that we map render pass IDs from different surfaces into a unified
 // namespace and update RenderPassDrawQuad's id references to match.
 TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
-  SurfaceId child_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId child_surface_id = allocator_.GenerateId();
+  factory_.Create(child_surface_id, SurfaceSize());
 
   RenderPass::Id child_pass_id[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2)};
   test::Quad child_quad[][1] = {{test::Quad::SolidColorQuad(SK_ColorGREEN)},
@@ -525,7 +534,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   };
 
   RenderPass::Id pass_id(1, 1);
-  SurfaceId grandchild_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId grandchild_surface_id = allocator_.GenerateId();
+  factory_.Create(grandchild_surface_id, SurfaceSize());
   scoped_ptr<RenderPass> grandchild_pass = RenderPass::Create();
   gfx::Rect output_rect(SurfaceSize());
   gfx::Rect damage_rect(SurfaceSize());
@@ -536,7 +546,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       SurfaceSize(), grandchild_pass.get(), blend_modes[2]);
   QueuePassAsFrame(grandchild_pass.Pass(), grandchild_surface_id);
 
-  SurfaceId child_one_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId child_one_surface_id = allocator_.GenerateId();
+  factory_.Create(child_one_surface_id, SurfaceSize());
 
   scoped_ptr<RenderPass> child_one_pass = RenderPass::Create();
   child_one_pass->SetNew(
@@ -555,7 +566,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       SurfaceSize(), child_one_pass.get(), blend_modes[3]);
   QueuePassAsFrame(child_one_pass.Pass(), child_one_surface_id);
 
-  SurfaceId child_two_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId child_two_surface_id = allocator_.GenerateId();
+  factory_.Create(child_two_surface_id, SurfaceSize());
 
   scoped_ptr<RenderPass> child_two_pass = RenderPass::Create();
   child_two_pass->SetNew(
@@ -632,7 +644,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 // contributing render pass' transform in the aggregate frame should not be
 // affected.
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
-  SurfaceId child_surface_id = factory_.Create(SurfaceSize());
+  SurfaceId child_surface_id = allocator_.GenerateId();
+  factory_.Create(child_surface_id, SurfaceSize());
   RenderPass::Id child_pass_id[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2)};
   test::Quad child_quads[][1] = {
       {test::Quad::SolidColorQuad(SK_ColorGREEN)},
@@ -846,7 +859,8 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface_id = factory.Create(SurfaceSize());
+  SurfaceId surface_id(7u);
+  factory.Create(surface_id, SurfaceSize());
 
   ResourceProvider::ResourceId ids[] = {11, 12, 13};
   SubmitFrameWithResources(ids, arraysize(ids), &factory, surface_id);

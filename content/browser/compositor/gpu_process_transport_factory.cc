@@ -67,7 +67,8 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : callback_factory_(this) {
+    : callback_factory_(this),
+      next_surface_id_namespace_(1u) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
 #if defined(OS_CHROMEOS)
@@ -188,8 +189,9 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
           "Offscreen-Compositor");
     }
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
-        new SurfaceDisplayOutputSurface(manager, offscreen_context_provider));
-    display_client->CreateDisplay(output_surface->factory());
+        new SurfaceDisplayOutputSurface(manager,
+          next_surface_id_namespace_++,
+          offscreen_context_provider));
     output_surface->set_display(display_client->display());
     data->display_client = display_client.Pass();
     return output_surface.PassAs<cc::OutputSurface>();

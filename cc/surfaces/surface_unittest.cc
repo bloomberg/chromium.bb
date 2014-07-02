@@ -15,10 +15,9 @@ TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceManager manager;
   SurfaceFactory factory(&manager, NULL);
 
-  SurfaceId surface_id;
+  SurfaceId surface_id(6);
   {
-    surface_id = factory.Create(gfx::Size(5, 5));
-    EXPECT_TRUE(!surface_id.is_null());
+    factory.Create(surface_id, gfx::Size(5, 5));
     EXPECT_TRUE(!!manager.GetSurfaceForId(surface_id));
     factory.Destroy(surface_id);
   }

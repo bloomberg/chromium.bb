@@ -9,16 +9,11 @@
 
 namespace cc {
 
-SurfaceManager::SurfaceManager() : next_surface_id_(1) {
+SurfaceManager::SurfaceManager() {
 }
 
 SurfaceManager::~SurfaceManager() {
   DCHECK_EQ(0u, surface_map_.size());
-}
-
-SurfaceId SurfaceManager::AllocateId() {
-  int surface_id = next_surface_id_++;
-  return SurfaceId(surface_id);
 }
 
 void SurfaceManager::RegisterSurface(Surface* surface) {

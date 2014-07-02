@@ -14,29 +14,20 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
-#include "cc/surfaces/surface_factory.h"
 
 namespace cc {
 
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
-                 SurfaceFactory* factory,
                  SharedBitmapManager* bitmap_manager)
-    : client_(client),
-      manager_(manager),
-      bitmap_manager_(bitmap_manager),
-      factory_(factory) {
+    : client_(client), manager_(manager), bitmap_manager_(bitmap_manager) {
 }
 
 Display::~Display() {
 }
 
-void Display::Resize(const gfx::Size& size) {
-  if (size == current_surface_size_)
-    return;
-  if (!current_surface_id_.is_null())
-    factory_->Destroy(current_surface_id_);
-  current_surface_id_ = factory_->Create(size);
+void Display::Resize(SurfaceId id, const gfx::Size& size) {
+  current_surface_id_ = id;
   current_surface_size_ = size;
 }
 
