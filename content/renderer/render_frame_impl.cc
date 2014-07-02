@@ -72,6 +72,7 @@
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
+#include "content/renderer/push_messaging_dispatcher.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -406,6 +407,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       cdm_manager_(NULL),
 #endif
       geolocation_dispatcher_(NULL),
+      push_messaging_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
@@ -2746,6 +2748,12 @@ blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
   if (!geolocation_dispatcher_)
     geolocation_dispatcher_ = new GeolocationDispatcher(this);
   return geolocation_dispatcher_;
+}
+
+blink::WebPushClient* RenderFrameImpl::pushClient() {
+  if (!push_messaging_dispatcher_)
+    push_messaging_dispatcher_ = new PushMessagingDispatcher(this);
+  return push_messaging_dispatcher_;
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

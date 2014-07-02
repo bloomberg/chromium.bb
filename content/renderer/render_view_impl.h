@@ -137,7 +137,6 @@ class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
 class PepperPluginInstanceImpl;
-class PushMessagingDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
@@ -1038,9 +1037,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store
   // weak references.
-
-  // The push messaging dispatcher attached to this view, lazily initialized.
-  PushMessagingDispatcher* push_messaging_dispatcher_;
 
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.

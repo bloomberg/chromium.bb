@@ -5,7 +5,6 @@
 #include "content/renderer/push_messaging_dispatcher.h"
 
 #include "content/common/push_messaging_messages.h"
-#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
@@ -16,8 +15,9 @@ using blink::WebString;
 
 namespace content {
 
-PushMessagingDispatcher::PushMessagingDispatcher(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view) {}
+PushMessagingDispatcher::PushMessagingDispatcher(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {
+}
 
 PushMessagingDispatcher::~PushMessagingDispatcher() {}
 

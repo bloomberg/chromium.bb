@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/id_map.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebPushClient.h"
 
 class GURL;
@@ -22,16 +22,14 @@ class WebString;
 }  // namespace blink
 
 namespace content {
-class RenderViewImpl;
-
-class PushMessagingDispatcher : public RenderViewObserver,
+class PushMessagingDispatcher : public RenderFrameObserver,
                                 public blink::WebPushClient {
  public:
-  explicit PushMessagingDispatcher(RenderViewImpl* render_view);
+  explicit PushMessagingDispatcher(RenderFrame* render_frame);
   virtual ~PushMessagingDispatcher();
 
  private:
-  // RenderView::Observer implementation.
+  // RenderFrame::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebPushClient implementation.

@@ -25,15 +25,15 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnRegister(int render_view_id,
+  void OnRegister(int render_frame_id,
                   int callbacks_id,
                   const std::string& sender_id);
 
-  void DoRegister(int render_view_id,
+  void DoRegister(int render_frame_id,
                   int callbacks_id,
                   const std::string& sender_id);
 
-  void DidRegister(int render_view_id,
+  void DidRegister(int render_frame_id,
                    int callbacks_id,
                    const GURL& endpoint,
                    const std::string& registration_id,
@@ -42,7 +42,9 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   PushMessagingService* service();
 
   int render_process_id_;
-  PushMessagingService* service_; // Not owned.
+
+  // Owned by the content embedder's browsing context.
+  PushMessagingService* service_;
 
   base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_;
 

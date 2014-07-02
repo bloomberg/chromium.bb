@@ -19,7 +19,8 @@ PushMessagingMessageFilter::PushMessagingMessageFilter(int render_process_id)
     : BrowserMessageFilter(PushMessagingMsgStart),
       render_process_id_(render_process_id),
       service_(NULL),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
 
@@ -33,65 +34,57 @@ bool PushMessagingMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void PushMessagingMessageFilter::OnRegister(int render_view_id,
+void PushMessagingMessageFilter::OnRegister(int render_frame_id,
                                             int callbacks_id,
                                             const std::string& sender_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(mvanouwerkerk): Validate arguments?
-  // TODO(mvanouwerkerk): A WebContentsObserver could avoid this PostTask
-  //                      by receiving the IPC on the UI thread.
-  // TODO(mvanouwerkerk): move WebPushClient to WebFrameClient and its
-  // content implementation to RenderFrameObserver instead of
-  // RenderViewObserver
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&PushMessagingMessageFilter::DoRegister,
                                      weak_factory_.GetWeakPtr(),
-                                     render_view_id,
+                                     render_frame_id,
                                      callbacks_id,
                                      sender_id));
 }
 
-void PushMessagingMessageFilter::DoRegister(int render_view_id,
+void PushMessagingMessageFilter::DoRegister(int render_frame_id,
                                             int callbacks_id,
                                             const std::string& sender_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service()) {
-    DidRegister(render_view_id, callbacks_id, GURL(), "", false);
+    DidRegister(render_frame_id, callbacks_id, GURL(), "", false);
     return;
   }
   // TODO(mvanouwerkerk): Pass in a real app ID based on Service Worker ID.
   std::string app_id = "https://example.com 0";
-  service_->Register(app_id,
-                     sender_id,
-                     render_process_id_,
-                     render_view_id,
-                     base::Bind(&PushMessagingMessageFilter::DidRegister,
-                                weak_factory_.GetWeakPtr(),
-                                render_view_id,
-                                callbacks_id));
+  service()->Register(app_id,
+                      sender_id,
+                      render_process_id_,
+                      render_frame_id,
+                      base::Bind(&PushMessagingMessageFilter::DidRegister,
+                                 weak_factory_.GetWeakPtr(),
+                                 render_frame_id,
+                                 callbacks_id));
 }
 
-void PushMessagingMessageFilter::DidRegister(int render_view_id,
+void PushMessagingMessageFilter::DidRegister(int render_frame_id,
                                              int callbacks_id,
                                              const GURL& endpoint,
                                              const std::string& registration_id,
                                              bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (success) {
-    Send(new PushMessagingMsg_RegisterSuccess(render_view_id,
-                                              callbacks_id,
-                                              endpoint,
-                                              registration_id));
+    Send(new PushMessagingMsg_RegisterSuccess(
+        render_frame_id, callbacks_id, endpoint, registration_id));
   } else {
-    Send(new PushMessagingMsg_RegisterError(render_view_id, callbacks_id));
+    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
   }
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {
   if (!service_) {
-    RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
-        RenderProcessHost::FromID(render_process_id_));
+    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
     if (!host)
       return NULL;
     service_ = host->GetBrowserContext()->GetPushMessagingService();

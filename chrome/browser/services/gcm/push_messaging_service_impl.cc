@@ -16,11 +16,11 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/push_messaging_permission_context.h"
 #include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace gcm {
@@ -133,7 +133,7 @@ void PushMessagingServiceImpl::Register(
     const std::string& app_id,
     const std::string& sender_id,
     int renderer_id,
-    int render_view_id,
+    int render_frame_id,
     const content::PushMessagingService::RegisterCallback& callback) {
   if (!gcm_profile_service_->driver()) {
     NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
@@ -150,10 +150,17 @@ void PushMessagingServiceImpl::Register(
   if (gcm_profile_service_->driver()->GetAppHandler(kAppIdPrefix) != this)
     gcm_profile_service_->driver()->AddAppHandler(kAppIdPrefix, this);
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(renderer_id, render_view_id);
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(renderer_id, render_frame_id);
 
-  // The page doesn't exist any more.
+  // The frame doesn't exist any more, or we received a bad frame id.
+  if (!render_frame_host)
+    return;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // The page doesn't exist any more or we got a bad render frame host.
   if (!web_contents)
     return;
 
@@ -161,9 +168,10 @@ void PushMessagingServiceImpl::Register(
   // implemented.
   int bridge_id = -1;
 
-  const PermissionRequestID id(renderer_id, render_view_id, bridge_id, GURL());
+  const PermissionRequestID id(
+      renderer_id, web_contents->GetRoutingID(), bridge_id, GURL());
 
-  GURL embedder = web_contents->GetURL();
+  GURL embedder = web_contents->GetLastCommittedURL();
   gcm::PushMessagingPermissionContext* permission_context =
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
 

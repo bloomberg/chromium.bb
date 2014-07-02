@@ -92,7 +92,6 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mhtml_generator.h"
-#include "content/renderer/push_messaging_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -637,7 +636,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       top_controls_constraints_(cc::BOTH),
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
-      push_messaging_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
@@ -3681,9 +3679,9 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 }
 
 blink::WebPushClient* RenderViewImpl::webPushClient() {
-  if (!push_messaging_dispatcher_)
-    push_messaging_dispatcher_ = new PushMessagingDispatcher(this);
-  return push_messaging_dispatcher_;
+  // TODO(mvanouwerkerk): Remove this method once the Push API code in Blink
+  // has also switched over to Frame.
+  return main_render_frame_->pushClient();
 }
 
 void RenderViewImpl::draggableRegionsChanged() {

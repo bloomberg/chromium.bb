@@ -41,6 +41,7 @@ class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
 class WebNotificationPresenter;
+class WebPushClient;
 class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
@@ -61,6 +62,7 @@ class MediaStreamRendererFactory;
 class MidiDispatcher;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
+class PushMessagingDispatcher;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
 class RendererPpapiHost;
@@ -369,6 +371,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebSocketStreamHandle* handle);
   virtual void willOpenWebSocket(blink::WebSocketHandle* handle);
   virtual blink::WebGeolocationClient* geolocationClient();
+  virtual blink::WebPushClient* pushClient();
   virtual void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
@@ -635,12 +638,16 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererCdmManager* cdm_manager_;
 #endif
 
-  // The geolocation dispatcher attached to this view, lazily initialized.
+  // The geolocation dispatcher attached to this frame, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
+
+  // The push messaging dispatcher attached to this frame, lazily initialized.
+  PushMessagingDispatcher* push_messaging_dispatcher_;
 
   ServiceRegistryImpl service_registry_;
 
-  // The screen orientation dispatcher attached to the view, lazily initialized.
+  // The screen orientation dispatcher attached to the frame, lazily
+  // initialized.
   ScreenOrientationDispatcher* screen_orientation_dispatcher_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
