@@ -32,8 +32,6 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace WebCore {
 
 const float SmoothingTimeConstant = 0.020f; // 20ms

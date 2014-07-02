@@ -38,8 +38,6 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace WebCore {
 
 const double DefaultGrainDuration = 0.020; // 20ms
@@ -226,7 +224,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
         double loopStartFrame = m_loopStart * buffer()->sampleRate();
         double loopEndFrame = m_loopEnd * buffer()->sampleRate();
 
-        virtualEndFrame = min(loopEndFrame, virtualEndFrame);
+        virtualEndFrame = std::min(loopEndFrame, virtualEndFrame);
         virtualDeltaFrames = virtualEndFrame - loopStartFrame;
     }
 
@@ -256,8 +254,8 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
         endFrame = static_cast<unsigned>(virtualEndFrame);
         while (framesToProcess > 0) {
             int framesToEnd = endFrame - readIndex;
-            int framesThisTime = min(framesToProcess, framesToEnd);
-            framesThisTime = max(0, framesThisTime);
+            int framesThisTime = std::min(framesToProcess, framesToEnd);
+            framesThisTime = std::max(0, framesThisTime);
 
             for (unsigned i = 0; i < numberOfChannels; ++i)
                 memcpy(destinationChannels[i] + writeIndex, sourceChannels[i] + readIndex, sizeof(float) * framesThisTime);
@@ -392,14 +390,14 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
     // Do sanity checking of grain parameters versus buffer size.
     double bufferDuration = buffer()->duration();
 
-    grainOffset = max(0.0, grainOffset);
-    grainOffset = min(bufferDuration, grainOffset);
+    grainOffset = std::max(0.0, grainOffset);
+    grainOffset = std::min(bufferDuration, grainOffset);
     m_grainOffset = grainOffset;
 
     double maxDuration = bufferDuration - grainOffset;
 
-    grainDuration = max(0.0, grainDuration);
-    grainDuration = min(maxDuration, grainDuration);
+    grainDuration = std::max(0.0, grainDuration);
+    grainDuration = std::min(maxDuration, grainDuration);
     m_grainDuration = grainDuration;
 
     m_isGrain = true;
@@ -431,10 +429,10 @@ double AudioBufferSourceNode::totalPitchRate()
     double totalRate = dopplerRate * sampleRateFactor * basePitchRate;
 
     // Sanity check the total rate.  It's very important that the resampler not get any bad rate values.
-    totalRate = max(0.0, totalRate);
+    totalRate = std::max(0.0, totalRate);
     if (!totalRate)
         totalRate = 1; // zero rate is considered illegal
-    totalRate = min(MaxRate, totalRate);
+    totalRate = std::min(MaxRate, totalRate);
 
     bool isTotalRateValid = !std::isnan(totalRate) && !std::isinf(totalRate);
     ASSERT(isTotalRateValid);

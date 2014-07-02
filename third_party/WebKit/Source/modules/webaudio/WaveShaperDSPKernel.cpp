@@ -34,8 +34,6 @@
 
 const unsigned RenderingQuantum = 128;
 
-using namespace std;
-
 namespace WebCore {
 
 WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)

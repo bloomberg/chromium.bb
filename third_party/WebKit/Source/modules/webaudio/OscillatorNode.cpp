@@ -37,8 +37,6 @@
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace VectorMath;

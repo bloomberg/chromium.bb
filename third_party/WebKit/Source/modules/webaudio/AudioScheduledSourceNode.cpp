@@ -36,8 +36,6 @@
 #include <algorithm>
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace WebCore {
 
 const double AudioScheduledSourceNode::UnknownTime = -1;
@@ -93,7 +91,7 @@ void AudioScheduledSourceNode::updateSchedulingInfo(size_t quantumFrameSize,
     }
 
     quantumFrameOffset = startFrame > quantumStartFrame ? startFrame - quantumStartFrame : 0;
-    quantumFrameOffset = min(quantumFrameOffset, quantumFrameSize); // clamp to valid range
+    quantumFrameOffset = std::min(quantumFrameOffset, quantumFrameSize); // clamp to valid range
     nonSilentFramesToProcess = quantumFrameSize - quantumFrameOffset;
 
     if (!nonSilentFramesToProcess) {
@@ -162,7 +160,7 @@ void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
         // stop() can be called more than once, with the last call to stop taking effect, unless the
         // source has already stopped due to earlier calls to stop. No exceptions are thrown in any
         // case.
-        when = max(0.0, when);
+        when = std::max(0.0, when);
         m_endTime = when;
     }
 }
