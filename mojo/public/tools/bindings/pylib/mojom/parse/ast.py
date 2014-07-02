@@ -10,6 +10,8 @@
 
 
 class BaseNode(object):
+  """Base class for nodes in the AST."""
+
   def __init__(self, filename=None, lineno=None):
     self.filename = filename
     self.lineno = lineno
@@ -17,6 +19,7 @@ class BaseNode(object):
 
 class Ordinal(BaseNode):
   """Represents an ordinal value labeling, e.g., a struct field."""
+
   def __init__(self, value, **kwargs):
     BaseNode.__init__(self, **kwargs)
     self.value = value
@@ -24,8 +27,10 @@ class Ordinal(BaseNode):
   def __eq__(self, other):
     return self.value == other.value
 
+
 class Parameter(BaseNode):
   """Represents a method request or response parameter."""
+
   def __init__(self, typename, name, ordinal, **kwargs):
     assert isinstance(ordinal, Ordinal)
     BaseNode.__init__(self, **kwargs)
