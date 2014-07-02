@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
@@ -59,6 +58,10 @@
 #define AUDIO_STREAM_MONITORING
 #include "chrome/browser/media/audio_stream_monitor.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#endif
 
 using content::BrowserThread;
 using content::MediaCaptureDevices;
@@ -532,10 +535,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
   content::MediaStreamDevices devices;
   scoped_ptr<content::MediaStreamUI> ui;
 
-#if defined(OS_ANDROID)
-  // Tab capture is not supported on Android.
-  callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE, ui.Pass());
-#else  // defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extensions::TabCaptureRegistry* tab_capture_registry =
@@ -574,6 +574,8 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
     devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
                       content::MEDIA_DEVICE_OK,
     ui.Pass());
+#else  // defined(ENABLE_EXTENSIONS)
+  callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE, ui.Pass());
 #endif  // !defined(OS_ANDROID)
 }
 

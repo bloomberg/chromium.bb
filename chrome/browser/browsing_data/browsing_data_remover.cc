@@ -16,24 +16,16 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user.h"
-#endif
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
-#if defined(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc_log_list.h"
-#include "chrome/browser/media/webrtc_log_util.h"
-#endif
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -56,12 +48,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/domain_reliability/service.h"
 #include "components/password_manager/core/browser/password_store.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/attestation/attestation_constants.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#endif
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -88,6 +74,24 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/quota/quota_types.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/attestation/attestation_constants.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+#endif
+
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_log_list.h"
+#include "chrome/browser/media/webrtc_log_util.h"
+#endif
 
 using base::UserMetricsAction;
 using content::BrowserContext;

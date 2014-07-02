@@ -9,7 +9,6 @@
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
@@ -38,7 +37,9 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+// TODO(thestig): Remove this when extensions are fully removed on mobile.
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #endif
@@ -234,8 +235,12 @@ bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
 
 ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
     content::BrowserContext* context) {
+#if defined(ENABLE_EXTENSIONS)
   // The ActivityLog monitors and records function calls and events.
   return ActivityLog::GetInstance(context);
+#else
+  return NULL;
+#endif
 }
 
 ExtensionSystemProvider*
