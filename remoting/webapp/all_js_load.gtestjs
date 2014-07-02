@@ -73,6 +73,7 @@ AllJsLoadTest.prototype = {
 };
 
 // Basic test to verify that all the JS files load without console errors.
-TEST_F('AllJsLoadTest', 'TestNoConsoleErrors', function() {
+// Currently disabled. crbug.com/390814
+TEST_F('AllJsLoadTest', 'DISABLED_TestNoConsoleErrors', function() {
   assertTrue(true);
 });
