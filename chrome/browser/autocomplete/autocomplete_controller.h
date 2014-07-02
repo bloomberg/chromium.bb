@@ -21,7 +21,6 @@ class HistoryURLProvider;
 class KeywordProvider;
 class Profile;
 class SearchProvider;
-class TemplateURLService;
 class ZeroSuggestProvider;
 
 // The AutocompleteController is the center of the autocomplete system.  A
@@ -48,10 +47,8 @@ class AutocompleteController : public AutocompleteProviderListener {
  public:
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
-  // instantiated. |template_url_service| is used to create URLs from the
-  // autocomplete results.
+  // instantiated.
   AutocompleteController(Profile* profile,
-                         TemplateURLService* template_url_service,
                          AutocompleteControllerDelegate* delegate,
                          int provider_types);
   ~AutocompleteController();
@@ -240,7 +237,7 @@ class AutocompleteController : public AutocompleteProviderListener {
   // notifications until Start() has been invoked on all providers.
   bool in_start_;
 
-  TemplateURLService* template_url_service_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };

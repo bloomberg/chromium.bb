@@ -687,9 +687,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = content::PAGE_TRANSITION_LINK;
   }
 
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  const TemplateURL* template_url = match.GetTemplateURL(service, false);
+  const TemplateURL* template_url = match.GetTemplateURL(profile_, false);
   if (template_url && template_url->url_ref().HasGoogleBaseURLs(
           UIThreadSearchTermsData(profile_))) {
     GoogleURLTracker* tracker =
@@ -786,9 +784,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       << "An omnibox focus should have occurred before opening a match.";
   UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
 
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  TemplateURL* template_url = match.GetTemplateURL(service, false);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
   if (template_url) {
     if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
       // The user is using a non-substituting keyword or is explicitly in
@@ -1269,9 +1265,7 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // OnPopupDataChanged use their previous state to detect changes.
   base::string16 keyword;
   bool is_keyword_hint;
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
+  match.GetKeywordUIState(profile_, &keyword, &is_keyword_hint);
   if (popup_model())
     popup_model()->OnResultChanged();
   // OnPopupDataChanged() resets OmniboxController's |current_match_| early

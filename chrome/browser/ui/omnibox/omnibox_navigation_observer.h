@@ -15,7 +15,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class Profile;
 class ShortcutsBackend;
 
 namespace net {

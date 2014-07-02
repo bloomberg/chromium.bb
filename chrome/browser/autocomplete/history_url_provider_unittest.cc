@@ -295,10 +295,8 @@ void HistoryURLProviderTest::RunTest(
 
   matches_ = autocomplete_->matches();
   if (sort_matches_) {
-    TemplateURLService* service =
-        TemplateURLServiceFactory::GetForProfile(profile_.get());
     for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
-      i->ComputeStrippedDestinationURL(service);
+      i->ComputeStrippedDestinationURL(profile_.get());
     AutocompleteResult::DedupMatchesByDestination(
         input.current_page_classification(), false, &matches_);
     std::sort(matches_.begin(), matches_.end(),

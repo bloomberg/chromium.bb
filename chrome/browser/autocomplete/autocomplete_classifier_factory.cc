@@ -33,8 +33,7 @@ KeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   return new AutocompleteClassifier(
       make_scoped_ptr(new AutocompleteController(
-          profile, TemplateURLServiceFactory::GetForProfile(profile), NULL,
-          AutocompleteClassifier::kDefaultOmniboxProviders)),
+          profile, NULL, AutocompleteClassifier::kDefaultOmniboxProviders)),
       scoped_ptr<AutocompleteSchemeClassifier>(
           new ChromeAutocompleteSchemeClassifier(profile)));
 }

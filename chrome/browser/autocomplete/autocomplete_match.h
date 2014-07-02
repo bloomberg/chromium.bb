@@ -16,8 +16,8 @@
 #include "url/gurl.h"
 
 class AutocompleteProvider;
+class Profile;
 class TemplateURL;
-class TemplateURLService;
 
 namespace base {
 class Time;
@@ -174,11 +174,11 @@ struct AutocompleteMatch {
   // remove likely duplicates; these URLs are not used as actual
   // destination URLs.  This method is invoked internally by the
   // AutocompleteResult and does not normally need to be invoked.
-  // If |template_url_service| is not NULL, it is used to get a template URL
-  // corresponding to this match.  The template is used to strip off query args
-  // other than the search terms themselves that would otherwise prevent from
-  // proper deduping.
-  void ComputeStrippedDestinationURL(TemplateURLService* template_url_service);
+  // If |profile| is not NULL, it is used to get a template URL corresponding
+  // to this match.  The template is used to strip off query args other than
+  // the search terms themselves that would otherwise prevent from proper
+  // deduping.
+  void ComputeStrippedDestinationURL(Profile* profile);
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.
@@ -192,7 +192,7 @@ struct AutocompleteMatch {
   // is non-empty -- such as with non-substituting keywords or matches that
   // represent searches using the default search engine.  See also
   // GetSubstitutingExplicitlyInvokedKeyword().
-  void GetKeywordUIState(TemplateURLService* template_url_service,
+  void GetKeywordUIState(Profile* profile,
                          base::string16* keyword,
                          bool* is_keyword_hint) const;
 
@@ -203,7 +203,7 @@ struct AutocompleteMatch {
   // this function returns a non-empty string in the same cases as when the UI
   // should show up as being "in keyword mode".
   base::string16 GetSubstitutingExplicitlyInvokedKeyword(
-      TemplateURLService* template_url_service) const;
+      Profile* profile) const;
 
   // Returns the TemplateURL associated with this match.  This may be NULL if
   // the match has no keyword OR if the keyword no longer corresponds to a valid
@@ -211,7 +211,7 @@ struct AutocompleteMatch {
   // If |allow_fallback_to_destination_host| is true and the keyword does
   // not map to a valid TemplateURL, we'll then check for a TemplateURL that
   // corresponds to the destination_url's hostname.
-  TemplateURL* GetTemplateURL(TemplateURLService* template_url_service,
+  TemplateURL* GetTemplateURL(Profile* profile,
                               bool allow_fallback_to_destination_host) const;
 
   // Adds optional information to the |additional_info| dictionary.

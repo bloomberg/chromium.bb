@@ -132,10 +132,9 @@ AutocompleteResult::AutocompleteResult() {
 
 AutocompleteResult::~AutocompleteResult() {}
 
-void AutocompleteResult::CopyOldMatches(
-    const AutocompleteInput& input,
-    const AutocompleteResult& old_matches,
-    TemplateURLService* template_url_service) {
+void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
+                                        const AutocompleteResult& old_matches,
+                                        Profile* profile) {
   if (old_matches.empty())
     return;
 
@@ -171,7 +170,7 @@ void AutocompleteResult::CopyOldMatches(
                            i->second, matches_per_provider[i->first]);
   }
 
-  SortAndCull(input, template_url_service);
+  SortAndCull(input, profile);
 }
 
 void AutocompleteResult::AppendMatches(const ACMatches& matches) {
@@ -187,11 +186,10 @@ void AutocompleteResult::AppendMatches(const ACMatches& matches) {
   alternate_nav_url_ = GURL();
 }
 
-void AutocompleteResult::SortAndCull(
-    const AutocompleteInput& input,
-    TemplateURLService* template_url_service) {
+void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
+                                     Profile* profile) {
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
-    i->ComputeStrippedDestinationURL(template_url_service);
+    i->ComputeStrippedDestinationURL(profile);
 
   DedupMatchesByDestination(input.current_page_classification(), true,
                             &matches_);

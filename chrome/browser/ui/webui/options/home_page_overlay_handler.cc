@@ -12,7 +12,6 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/web_ui.h"
@@ -36,8 +35,7 @@ void HomePageOverlayHandler::RegisterMessages() {
 
 void HomePageOverlayHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  autocomplete_controller_.reset(new AutocompleteController(profile,
-      TemplateURLServiceFactory::GetForProfile(profile), this,
+  autocomplete_controller_.reset(new AutocompleteController(profile, this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
