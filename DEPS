@@ -525,7 +525,7 @@ deps_os = {
 
    "src/third_party/elfutils/src":
       Var("chromium_git") + "/external/elfutils.git" +
-      "@43a97297be82feab4b3176a094ed701ad3ccb308",
+      "@249673729a7e5dbd5de4f3760bdcaa3d23d154d7",
 
     "src/third_party/httpcomponents-client":
       "/trunk/deps/third_party/httpcomponents-client@170888",

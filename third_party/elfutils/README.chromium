@@ -16,4 +16,8 @@ the host, to support host build tools.  It is not linked into chrome.
 Local Modifications:
 
 config.h created by running configure and then anonymizing MODVERSION.
-No other local code changes.
+
+
+The following local patches have also been applied:
+
+ - clang.patch (for http://crbug.com/385553)
