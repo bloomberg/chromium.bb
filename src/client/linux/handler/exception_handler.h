@@ -252,7 +252,11 @@ class ExceptionHandler {
 
   MinidumpDescriptor minidump_descriptor_;
 
-  HandlerCallback crash_handler_;
+  // Must be volatile. The compiler is unaware of the code which runs in
+  // the signal handler which reads this variable. Without volatile the
+  // compiler is free to optimise away writes to this variable which it
+  // believes are never read.
+  volatile HandlerCallback crash_handler_;
 
   // The global exception handler stack. This is need becuase there may exist
   // multiple ExceptionHandler instances in a process. Each will have itself
