@@ -434,8 +434,6 @@
           'sources/': [
             ['exclude', '^common/chrome_version_info_posix.cc'],
             ['exclude', '^common/importer/'],
-            ['include', '^common/importer/imported_favicon_usage.cc$'],
-            ['include', '^common/importer/imported_favicon_usage.h$'],
             ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/service_'],
           ],

@@ -1072,6 +1072,8 @@ TEST_F(HistoryBackendTest, SetPageTitleFiresNotificationWithCorrectDetails) {
   EXPECT_EQ(stored_row2.id(), details->changed_urls[0].id());
 }
 
+// There's no importer on Android.
+#if !defined(OS_ANDROID)
 TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Setup test data - two Urls in the history, one with favicon assigned and
   // one without.
@@ -1147,6 +1149,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
   EXPECT_TRUE(url_row3.visit_count() == 0);
 }
+#endif  // !defined(OS_ANDROID)
 
 TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
   ASSERT_TRUE(backend_.get());
