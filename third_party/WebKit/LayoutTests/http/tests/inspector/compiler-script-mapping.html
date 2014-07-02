@@ -53,9 +53,10 @@ function test()
                 0         1         2         3
                 012345678901234567890123456789012345
                 function add(a,b){return a+b}var global="foo";
+                foo
             */
             var mappingPayload = {
-                "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;",
+                "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;A",
                 "sources":["example.js"]
             };
             var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
@@ -66,6 +67,7 @@ function test()
             checkMapping(0, 18, "example.js", 2, 4, mapping);
             checkMapping(0, 25, "example.js", 2, 11, mapping);
             checkMapping(0, 27, "example.js", 2, 24, mapping);
+            checkMapping(1, 0, undefined, undefined, undefined, mapping);
 
             checkReverseMapping(0, 0, "example.js", 0, mapping);
             checkReverseMapping(0, 17, "example.js", 1, mapping);
