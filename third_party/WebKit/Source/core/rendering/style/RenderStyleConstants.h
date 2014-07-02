@@ -44,20 +44,6 @@ enum PrintColorAdjust {
     PrintColorAdjustExact
 };
 
-// When some style properties change, different amounts of work have to be done depending on
-// context (e.g. whether the property is changing on an element which has a compositing layer).
-// A simple StyleDifference does not provide enough information so we return a bit mask of
-// StyleDifferenceContextSensitiveProperties from RenderStyle::visualInvalidationDiff() too.
-enum StyleDifferenceContextSensitiveProperty {
-    ContextSensitivePropertyNone = 0,
-    ContextSensitivePropertyTransform = (1 << 0),
-    ContextSensitivePropertyOpacity = (1 << 1),
-    ContextSensitivePropertyZIndex = (1 << 2),
-    ContextSensitivePropertyFilter = (1 << 3),
-    // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
-    ContextSensitivePropertyTextOrColor = (1 << 4)
-};
-
 // Static pseudo styles. Dynamic ones are produced on the fly.
 enum PseudoId {
     // The order must be NOP ID, public IDs, and then internal IDs.
