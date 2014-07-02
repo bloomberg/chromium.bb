@@ -705,6 +705,8 @@ class GClientSmokeSVN(GClientSmokeBase):
            '    "deps_file"   : "DEPS.alt",\n'
            '    "managed"     : True,\n'
            '    "custom_deps" : {\n'
+           '      "foo/bar": None,\n'
+           '      "invalid": None,\n'
            '      "src/other2": \'%(base)s/other@2\',\n'
            '    },\n'
            '    "safesync_url": "",\n'

@@ -809,6 +809,66 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testGitDeps(self):
+    """Verifies gclient respects a .DEPS.git deps file.
+
+    Along the way, we also test that if both DEPS and .DEPS.git are present,
+    that gclient does not read the DEPS file.  This will reliably catch bugs
+    where gclient is always hitting the wrong file (DEPS).
+    """
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', '.DEPS.git'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/foo/bar',
+        ],
+        self._get_processed())
+
+  def testGitDepsFallback(self):
+    """Verifies gclient respects fallback to DEPS upon missing deps file."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/foo/bar',
+        ],
+        self._get_processed())
+
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)

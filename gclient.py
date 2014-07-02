@@ -535,14 +535,26 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     deps_content = None
     use_strict = False
-    filepath = os.path.join(self.root.root_dir, self.name, self.deps_file)
-    if not os.path.isfile(filepath):
+
+    # First try to locate the configured deps file.  If it's missing, fallback
+    # to DEPS.
+    deps_files = [self.deps_file]
+    if 'DEPS' not in deps_files:
+      deps_files.append('DEPS')
+    for deps_file in deps_files:
+      filepath = os.path.join(self.root.root_dir, self.name, deps_file)
+      if os.path.isfile(filepath):
+        logging.info(
+            'ParseDepsFile(%s): %s file found at %s', self.name, deps_file,
+            filepath)
+        break
       logging.info(
-          'ParseDepsFile(%s): No %s file found at %s' % (
-            self.name, self.deps_file, filepath))
-    else:
+          'ParseDepsFile(%s): No %s file found at %s', self.name, deps_file,
+          filepath)
+
+    if os.path.isfile(filepath):
       deps_content = gclient_utils.FileRead(filepath)
-      logging.debug('ParseDepsFile(%s) read:\n%s' % (self.name, deps_content))
+      logging.debug('ParseDepsFile(%s) read:\n%s', self.name, deps_content)
       use_strict = 'use strict' in deps_content.splitlines()[0]
 
     local_scope = {}
