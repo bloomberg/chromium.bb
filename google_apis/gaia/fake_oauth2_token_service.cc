@@ -77,6 +77,18 @@ void FakeOAuth2TokenService::IssueAllTokensForAccount(
   }
 }
 
+void FakeOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  // Walk the requests and notify the callbacks.
+  for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
+       it != pending_requests_.end();
+       ++it) {
+    if (it->request && (account_id == it->account_id)) {
+      it->request->InformConsumer(auth_error, std::string(), base::Time());
+    }
+  }
+}
 
 OAuth2AccessTokenFetcher* FakeOAuth2TokenService::CreateAccessTokenFetcher(
     const std::string& account_id,

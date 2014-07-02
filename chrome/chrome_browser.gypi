@@ -1233,6 +1233,8 @@
       'browser/search_engines/ui_thread_search_terms_data_android.h',
       'browser/search_engines/util.cc',
       'browser/search_engines/util.h',
+      'browser/services/gcm/gcm_account_tracker.cc',
+      'browser/services/gcm/gcm_account_tracker.h',
       'browser/services/gcm/gcm_profile_service.cc',
       'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',

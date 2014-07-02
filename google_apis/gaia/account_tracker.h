@@ -83,6 +83,10 @@ class AccountTracker : public OAuth2TokenService::Observer,
 
   IdentityProvider* identity_provider() { return identity_provider_; }
 
+  // Indicates if all user information has been fetched. If the result is false,
+  // there are still unfininshed fetchers.
+  virtual bool IsAllUserInfoFetched() const;
+
  private:
   struct AccountState {
     AccountIds ids;

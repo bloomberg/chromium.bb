@@ -27,10 +27,14 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
   void AddAccount(const std::string& account_id);
   void RemoveAccount(const std::string& account_id);
 
-  // Helper routines to issue tokens for pending requests.
+  // Helper routines to issue tokens for pending requests or complete them with
+  // error.
   void IssueAllTokensForAccount(const std::string& account_id,
                                 const std::string& access_token,
                                 const base::Time& expiration);
+  void IssueErrorForAllPendingRequestsForAccount(
+      const std::string& account_id,
+      const GoogleServiceAuthError& auth_error);
 
   void set_request_context(net::URLRequestContextGetter* request_context) {
     request_context_ = request_context;

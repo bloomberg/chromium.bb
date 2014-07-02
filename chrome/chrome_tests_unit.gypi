@@ -1293,6 +1293,7 @@
         'browser/search_engines/template_url_unittest.cc',
         'browser/services/gcm/fake_signin_manager.cc',
         'browser/services/gcm/fake_signin_manager.h',
+        'browser/services/gcm/gcm_account_tracker_unittest.cc',
         'browser/services/gcm/gcm_profile_service_unittest.cc',
         'browser/sessions/persistent_tab_restore_service_unittest.cc',
         'browser/sessions/restore_on_startup_policy_handler_unittest.cc',

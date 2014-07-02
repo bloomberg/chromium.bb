@@ -31,6 +31,10 @@ void AccountTracker::Shutdown() {
   identity_provider_->RemoveObserver(this);
 }
 
+bool AccountTracker::IsAllUserInfoFetched() const {
+  return user_info_requests_.empty();
+}
+
 void AccountTracker::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
