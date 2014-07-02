@@ -77,7 +77,7 @@ void SimplifyMarkupCommand::doApply()
             }
 
             unsigned context;
-            if (currentNode->renderStyle()->visualInvalidationDiff(*startingStyle, context).hasNoChange() && !context)
+            if (!currentNode->renderStyle()->visualInvalidationDiff(*startingStyle, context).hasDifference() && !context)
                 topNodeWithStartingStyle = currentNode;
 
         }

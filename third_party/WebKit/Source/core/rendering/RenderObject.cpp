@@ -1909,8 +1909,6 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
             diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
     }
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
@@ -1918,8 +1916,6 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     if (contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
             diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
@@ -1927,8 +1923,6 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
             diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
     }
 
     if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && !diff.needsRepaint()

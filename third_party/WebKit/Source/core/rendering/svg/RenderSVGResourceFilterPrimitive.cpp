@@ -40,7 +40,7 @@ void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
         return;
     ASSERT(filter->isSVGResourceFilter());
 
-    if (diff.hasNoChange() || !oldStyle)
+    if (!diff.hasDifference() || !oldStyle)
         return;
 
     const SVGRenderStyle* newStyle = this->style()->svgStyle();

@@ -9,24 +9,14 @@
 
 namespace WebCore {
 
-// This class represents the difference between two computed styles (RenderStyle).
-// The difference can be combination of 3 types according to the actions needed:
-// - Difference needing layout
-// - Difference needing repaint
-// - Difference needing recompositing layers
 class StyleDifference {
 public:
     StyleDifference()
-        : m_needsRecompositeLayer(false)
-        , m_repaintType(NoRepaint)
-        , m_layoutType(NoLayout) { }
+        : m_repaintType(NoRepaint)
+        , m_layoutType(NoLayout)
+    { }
 
-    // The two styles are identical.
-    bool hasNoChange() const { return !m_needsRecompositeLayer && !m_repaintType && !m_layoutType; }
-
-    // The layer needs its position and transform updated. Implied by other repaint and layout flags.
-    bool needsRecompositeLayer() const { return m_needsRecompositeLayer || needsRepaint() || needsLayout(); }
-    void setNeedsRecompositeLayer() { m_needsRecompositeLayer = true; }
+    bool hasDifference() const { return m_repaintType || m_layoutType; }
 
     bool needsRepaint() const { return m_repaintType != NoRepaint; }
     void clearNeedsRepaint() { m_repaintType = NoRepaint; }
@@ -58,8 +48,6 @@ public:
     void setNeedsFullLayout() { m_layoutType = FullLayout; }
 
 private:
-    unsigned m_needsRecompositeLayer : 1;
-
     enum RepaintType {
         NoRepaint = 0,
         RepaintObject,

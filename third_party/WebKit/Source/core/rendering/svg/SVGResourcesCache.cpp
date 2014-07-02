@@ -122,7 +122,7 @@ void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifferen
     ASSERT(renderer->node());
     ASSERT(renderer->node()->isSVGElement());
 
-    if (diff.hasNoChange() || !renderer->parent())
+    if (!diff.hasDifference() || !renderer->parent())
         return;
 
     // In this case the proper SVGFE*Element will decide whether the modified CSS properties require a relayout or repaint.

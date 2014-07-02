@@ -402,9 +402,6 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
 
     changedContextSensitiveProperties = computeChangedContextSensitiveProperties(other, diff);
 
-    if (diff.hasNoChange() && diffNeedsRecompositeLayer(other))
-        diff.setNeedsRecompositeLayer();
-
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any repaint or layout.
 
@@ -661,21 +658,6 @@ bool RenderStyle::diffNeedsRepaintObject(const RenderStyle& other) const
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
             || rareNonInheritedData->m_shapeOutside != other.rareNonInheritedData->m_shapeOutside
             || rareNonInheritedData->m_clipPath != other.rareNonInheritedData->m_clipPath)
-            return true;
-    }
-
-    return false;
-}
-
-bool RenderStyle::diffNeedsRecompositeLayer(const RenderStyle& other) const
-{
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (rareNonInheritedData->m_transformStyle3D != other.rareNonInheritedData->m_transformStyle3D
-            || rareNonInheritedData->m_backfaceVisibility != other.rareNonInheritedData->m_backfaceVisibility
-            || rareNonInheritedData->m_perspective != other.rareNonInheritedData->m_perspective
-            || rareNonInheritedData->m_perspectiveOriginX != other.rareNonInheritedData->m_perspectiveOriginX
-            || rareNonInheritedData->m_perspectiveOriginY != other.rareNonInheritedData->m_perspectiveOriginY
-            || hasWillChangeCompositingHint() != other.hasWillChangeCompositingHint())
             return true;
     }
 
