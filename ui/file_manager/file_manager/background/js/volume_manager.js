@@ -150,6 +150,7 @@ VolumeInfo.prototype = {
  * @param {function(DirectoryEntry)} onSuccess Success callback with the
  *     display root directory as an argument.
  * @param {function(FileError)} onFailure Failure callback.
+ * @return {Promise}
  */
 VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
   if (!this.displayRootPromise_) {
@@ -172,7 +173,9 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
       this.displayRoot_ = displayRoot;
     }.bind(this));
   }
-  this.displayRootPromise_.then(onSuccess, onFailure);
+  if (onSuccess)
+    this.displayRootPromise_.then(onSuccess, onFailure);
+  return this.displayRootPromise_;
 };
 
 /**
@@ -496,25 +499,29 @@ VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
 VolumeManager.instance_ = null;
 
 /**
+ * @type {Promise}
+ */
+VolumeManager.instancePromise_ = null;
+
+/**
  * Returns the VolumeManager instance asynchronously. If it is not created or
  * under initialization, it will waits for the finish of the initialization.
  * @param {function(VolumeManager)} callback Called with the VolumeManager
- *     instance.
+ *     instance. TODO(hirono): Remove the callback and use Promise instead.
+ * @return {Promise} Promise to be fulfilled with the volume manager.
  */
 VolumeManager.getInstance = function(callback) {
-  VolumeManager.getInstanceQueue_.run(function(continueCallback) {
-    if (VolumeManager.instance_) {
-      callback(VolumeManager.instance_);
-      continueCallback();
-      return;
-    }
-
+  if (!VolumeManager.instancePromise_) {
     VolumeManager.instance_ = new VolumeManager();
-    VolumeManager.instance_.initialize_(function() {
-      callback(VolumeManager.instance_);
-      continueCallback();
+    VolumeManager.instancePromise_ = new Promise(function(fulfill) {
+      VolumeManager.instance_.initialize_(function() {
+        return fulfill(VolumeManager.instance_);
+      });
     });
-  });
+  }
+  if (callback)
+    VolumeManager.instancePromise_.then(callback);
+  return VolumeManager.instancePromise_;
 };
 
 /**

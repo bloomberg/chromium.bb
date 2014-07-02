@@ -28,6 +28,7 @@ function setUp() {
     REMOVABLE_DEVICE_SCANNING_MESSAGE: 'Scanning...',
     DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
     DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
+    DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
     DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
     MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
     EXTERNAL_STORAGE_DISABLED_MESSAGE: 'EXTERNAL_STORAGE_DISABLED',
@@ -418,5 +419,6 @@ function testDeviceHardUnplugged() {
   });
   assertEquals(1, Object.keys(chrome.notifications.items).length);
   assertEquals('DEVICE_HARD_UNPLUGGED_MESSAGE',
-               chrome.notifications.items['deviceFail:/device/path'].message);
+               chrome.notifications.items[
+                   'hardUnplugged:/device/path'].message);
 }
