@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -187,12 +186,14 @@ class TemplateURLService::LessWithPrefix {
 // TemplateURLService ---------------------------------------------------------
 
 TemplateURLService::TemplateURLService(Profile* profile,
-                                       rappor::RapporService* rappor_service)
+                                       rappor::RapporService* rappor_service,
+                                       const base::Closure& dsp_change_callback)
     : provider_map_(new SearchHostToURLsMap),
       profile_(profile),
       prefs_(profile ? profile->GetPrefs() : NULL),
       rappor_service_(rappor_service),
       search_terms_data_(new UIThreadSearchTermsData(profile)),
+      dsp_change_callback_(dsp_change_callback),
       loaded_(false),
       load_failed_(false),
       load_handle_(0),
@@ -1863,12 +1864,9 @@ void TemplateURLService::ApplyDefaultSearchChange(
       "Search.DefaultSearchChangeOrigin", dsp_change_origin_, DSP_CHANGE_MAX);
 
   if (GetDefaultSearchProvider() &&
-      GetDefaultSearchProvider()->HasGoogleBaseURLs(search_terms_data())) {
-#if defined(ENABLE_RLZ)
-    RLZTracker::RecordProductEvent(
-        rlz_lib::CHROME, RLZTracker::ChromeOmnibox(), rlz_lib::SET_TO_GOOGLE);
-#endif
-  }
+      GetDefaultSearchProvider()->HasGoogleBaseURLs(search_terms_data()) &&
+      !dsp_change_callback_.is_null())
+    dsp_change_callback_.Run();
 }
 
 bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(

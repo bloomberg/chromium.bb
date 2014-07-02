@@ -31,7 +31,7 @@ class TestingTemplateURLService : public TemplateURLService {
   }
 
   explicit TestingTemplateURLService(Profile* profile)
-      : TemplateURLService(profile, NULL) {
+      : TemplateURLService(profile, NULL, base::Closure()) {
   }
 
   base::string16 GetAndClearSearchTerm() {

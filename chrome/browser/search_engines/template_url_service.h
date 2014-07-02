@@ -92,7 +92,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   };
 
   TemplateURLService(Profile* profile,
-                     rappor::RapporService* rappor_service);
+                     rappor::RapporService* rappor_service,
+                     const base::Closure& dsp_change_callback);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
   virtual ~TemplateURLService();
@@ -682,6 +683,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   rappor::RapporService* rappor_service_;
 
   scoped_ptr<SearchTermsData> search_terms_data_;
+
+  // This closure is run when the default search provider is set to Google.
+  base::Closure dsp_change_callback_;
 
   // Whether the keywords have been loaded.
   bool loaded_;

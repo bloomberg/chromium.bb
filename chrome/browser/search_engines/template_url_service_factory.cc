@@ -6,11 +6,13 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -32,8 +34,17 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 // static
 KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
+  base::Closure dsp_change_callback;
+#if defined(ENABLE_RLZ)
+  dsp_change_callback =
+      base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
+                 rlz_lib::CHROME,
+                 RLZTracker::ChromeOmnibox(),
+                 rlz_lib::SET_TO_GOOGLE);
+#endif
   return new TemplateURLService(static_cast<Profile*>(profile),
-                                g_browser_process->rappor_service());
+                                g_browser_process->rappor_service(),
+                                dsp_change_callback);
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()
