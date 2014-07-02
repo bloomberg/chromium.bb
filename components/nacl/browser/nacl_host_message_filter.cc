@@ -48,6 +48,8 @@ ppapi::PpapiPermissions GetPpapiPermissions(uint32 permission_bits,
       content::RenderProcessHost::FromID(render_process_id);
   content::RenderViewHost* view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!view_host)
+    return ppapi::PpapiPermissions();
   GURL document_url;
   content::WebContents* contents =
       content::WebContents::FromRenderViewHost(view_host);
