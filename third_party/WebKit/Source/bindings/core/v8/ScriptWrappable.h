@@ -208,11 +208,24 @@ public:
 protected:
     ~ScriptWrappable()
     {
+        // In Oilpan we don't need to call the destructor.
+        //
+        // - 'RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper())' is not needed
+        // because Oilpan is not using reference counting at all. If containsWrapper() is true,
+        // it means that ScriptWrappable still has a wrapper. In this case, the destructor
+        // must not be called since the wrapper has a persistent handle back to this ScriptWrappable object.
+        // Assuming that Oilpan's GC is correct (If we cannot assume this, a lot of more things are
+        // already broken), we must not hit the RELEASE_ASSERT.
+        //
+        // - 'm_wrapperOrTypeInfo = 0' is not needed because Oilpan's GC zeros out memory when
+        // the memory is collected and added to a free list.
+#if !ENABLE(OILPAN)
         // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
         // counting somewhere. Crash here instead of crashing during a later gc cycle.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper());
         ASSERT(m_wrapperOrTypeInfo); // Assert initialization via init() even if not subsequently wrapped.
         m_wrapperOrTypeInfo = 0; // Break UAF attempts to wrap.
+#endif
     }
 
 private:
