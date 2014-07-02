@@ -6,6 +6,9 @@ import logging
 
 from pylib import content_settings
 
+_LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'
+PASSWORD_QUALITY_UNSPECIFIED = '0'
+
 
 def ConfigureContentSettingsDict(device, desired_settings):
   """Configures device content setings from a dictionary.
@@ -46,6 +49,55 @@ def ConfigureContentSettingsDict(device, desired_settings):
       logging.info('\n%s %s', table, (80 - len(table)) * '-')
       for key, value in sorted(settings.iteritems()):
         logging.info('\t%s: %s', key, value)
+
+
+def SetLockScreenSettings(device):
+  """Sets lock screen settings on the device.
+
+  On certain device/Android configurations we need to disable the lock screen in
+  a different database. Additionally, the password type must be set to
+  DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED.
+  Lock screen settings are stored in sqlite on the device in:
+      /data/system/locksettings.db
+
+  IMPORTANT: The first column is used as a primary key so that all rows with the
+  same value for that column are removed from the table prior to inserting the
+  new values.
+
+  Args:
+    device: A DeviceUtils instance for the device to configure.
+
+  Raises:
+    Exception if the setting was not properly set.
+  """
+  if (not device.old_interface.FileExistsOnDevice(_LOCK_SCREEN_SETTINGS_PATH) or
+      device.old_interface.GetBuildType() != 'userdebug'):
+    return
+
+  db = _LOCK_SCREEN_SETTINGS_PATH
+  locksettings = [('locksettings', 'lockscreen.disabled', '1'),
+                  ('locksettings', 'lockscreen.password_type',
+                   PASSWORD_QUALITY_UNSPECIFIED),
+                  ('locksettings', 'lockscreen.password_type_alternate',
+                   PASSWORD_QUALITY_UNSPECIFIED)]
+  for table, key, value in locksettings:
+    # Set the lockscreen setting for default user '0'
+    columns = ['name', 'user', 'value']
+    values = [key, '0', value]
+
+    cmd = """begin transaction;
+delete from '%(table)s' where %(primary_key)s='%(primary_value)s';
+insert into '%(table)s' (%(columns)s) values (%(values)s);
+commit transaction;""" % {
+      'table': table,
+      'primary_key': columns[0],
+      'primary_value': values[0],
+      'columns': ', '.join(columns),
+      'values': ', '.join(["'%s'" % value for value in values])
+    }
+    output_msg = device.RunShellCommand('\'sqlite3 %s "%s"\'' % (db, cmd))
+    if output_msg:
+      print ' '.join(output_msg)
 
 
 ENABLE_LOCATION_SETTING = {

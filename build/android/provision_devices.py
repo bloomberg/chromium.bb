@@ -164,6 +164,7 @@ def ProvisionDevices(options):
     else:
       device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
     device_settings.ConfigureContentSettingsDict(device, device_settings_map)
+    device_settings.SetLockScreenSettings(device)
     if is_perf:
       # TODO(tonyg): We eventually want network on. However, currently radios
       # can cause perfbots to drain faster than they charge.
