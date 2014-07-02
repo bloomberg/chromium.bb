@@ -7046,7 +7046,8 @@ TEST_F(HTTPSFallbackTest, TLSv1FallbackReset) {
 }
 #endif  // !OS_ANDROID
 
-// Tests that we don't fallback with servers that implement TLS_FALLBACK_SCSV.
+// Tests that we don't fallback on handshake failure with servers that implement
+// TLS_FALLBACK_SCSV. Also ensure that the original error code is reported.
 #if defined(USE_OPENSSL)
 TEST_F(HTTPSFallbackTest, DISABLED_FallbackSCSV) {
 #else
@@ -7069,6 +7070,31 @@ TEST_F(HTTPSFallbackTest, FallbackSCSV) {
   // that caused the fallback should be returned, which should be
   // ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
+}
+
+// Tests that we don't fallback on connection closed with servers that implement
+// TLS_FALLBACK_SCSV. Also ensure that the original error code is reported.
+#if defined(USE_OPENSSL)
+TEST_F(HTTPSFallbackTest, DISABLED_FallbackSCSVClosed) {
+#else
+TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
+#endif
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
+  // a version fallback.
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  ssl_options.tls_intolerance_type =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
+  // Have the server process TLS_FALLBACK_SCSV so that version fallback
+  // connections are rejected.
+  ssl_options.fallback_scsv_enabled = true;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+
+  // The original error should be replayed on rejected fallback.
+  ExpectFailure(ERR_CONNECTION_CLOSED);
 }
 
 // Tests that the SSLv3 fallback triggers on alert.

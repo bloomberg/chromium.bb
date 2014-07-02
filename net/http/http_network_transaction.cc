@@ -1306,6 +1306,7 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
   uint16 version_max = server_ssl_config_.version_max;
 
   switch (error) {
+    case ERR_CONNECTION_CLOSED:
     case ERR_SSL_PROTOCOL_ERROR:
     case ERR_SSL_VERSION_OR_CIPHER_MISMATCH:
       if (version_max >= SSL_PROTOCOL_VERSION_TLS1 &&
@@ -1326,6 +1327,26 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         // While SSL 3.0 fallback should be eliminated because of security
         // reasons, there is a high risk of breaking the servers if this is
         // done in general.
+        should_fallback = true;
+      }
+      break;
+    case ERR_CONNECTION_RESET:
+      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_1 &&
+          version_max > server_ssl_config_.version_min) {
+        // Some network devices that inspect application-layer packets seem to
+        // inject TCP reset packets to break the connections when they see TLS
+        // 1.1 in ClientHello or ServerHello. See http://crbug.com/130293.
+        //
+        // Only allow ERR_CONNECTION_RESET to trigger a fallback from TLS 1.1 or
+        // 1.2. We don't lose much in this fallback because the explicit IV for
+        // CBC mode in TLS 1.1 is approximated by record splitting in TLS
+        // 1.0. The fallback will be more painful for TLS 1.2 when we have GCM
+        // support.
+        //
+        // ERR_CONNECTION_RESET is a common network error, so we don't want it
+        // to trigger a version fallback in general, especially the TLS 1.0 ->
+        // SSL 3.0 fallback, which would drop TLS extensions.
+        version_max--;
         should_fallback = true;
       }
       break;

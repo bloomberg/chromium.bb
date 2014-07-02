@@ -474,18 +474,6 @@ int MapNSSClientError(PRErrorCode err) {
   }
 }
 
-// Map NSS error code from the first SSL handshake to network error code.
-int MapNSSClientHandshakeError(PRErrorCode err) {
-  switch (err) {
-    // If the server closed on us, it is a protocol error.
-    // Some TLS-intolerant servers do this when we request TLS.
-    case PR_END_OF_FILE_ERROR:
-      return ERR_SSL_PROTOCOL_ERROR;
-    default:
-      return MapNSSClientError(err);
-  }
-}
-
 }  // namespace
 
 // SSLClientSocketNSS::Core provides a thread-safe, ref-counted core that is
@@ -720,7 +708,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   // Handles an NSS error generated while handshaking or performing IO.
   // Returns a network error code mapped from the original NSS error.
-  int HandleNSSError(PRErrorCode error, bool handshake_error);
+  int HandleNSSError(PRErrorCode error);
 
   int DoHandshakeLoop(int last_io_result);
   int DoReadLoop(int result);
@@ -1683,12 +1671,10 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
                             nss_handshake_state_));
 }
 
-int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error,
-                                             bool handshake_error) {
+int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
   DCHECK(OnNSSTaskRunner());
 
-  int net_error = handshake_error ? MapNSSClientHandshakeError(nss_error) :
-                                    MapNSSClientError(nss_error);
+  int net_error = MapNSSClientError(nss_error);
 
 #if defined(OS_WIN)
   // On Windows, a handle to the HCRYPTPROV is cached in the X509Certificate
@@ -1846,24 +1832,7 @@ int SSLClientSocketNSS::Core::DoHandshake() {
     }
   } else {
     PRErrorCode prerr = PR_GetError();
-    net_error = HandleNSSError(prerr, true);
-
-    // Some network devices that inspect application-layer packets seem to
-    // inject TCP reset packets to break the connections when they see
-    // TLS 1.1 in ClientHello or ServerHello. See http://crbug.com/130293.
-    //
-    // Only allow ERR_CONNECTION_RESET to trigger a fallback from TLS 1.1 or
-    // 1.2. We don't lose much in this fallback because the explicit IV for CBC
-    // mode in TLS 1.1 is approximated by record splitting in TLS 1.0. The
-    // fallback will be more painful for TLS 1.2 when we have GCM support.
-    //
-    // ERR_CONNECTION_RESET is a common network error, so we don't want it
-    // to trigger a version fallback in general, especially the TLS 1.0 ->
-    // SSL 3.0 fallback, which would drop TLS extensions.
-    if (prerr == PR_CONNECT_RESET_ERROR &&
-        ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_1) {
-      net_error = ERR_SSL_PROTOCOL_ERROR;
-    }
+    net_error = HandleNSSError(prerr);
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
@@ -1990,7 +1959,7 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
       // If *next_result == 0, then that indicates EOF, and no special error
       // handling is needed.
       pending_read_nss_error_ = PR_GetError();
-      *next_result = HandleNSSError(pending_read_nss_error_, false);
+      *next_result = HandleNSSError(pending_read_nss_error_);
       if (rv > 0 && *next_result == ERR_IO_PENDING) {
         // If at least some data was read from PR_Read(), do not treat
         // insufficient data as an error to return in the next call to
@@ -2052,7 +2021,7 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
   if (prerr == PR_WOULD_BLOCK_ERROR)
     return ERR_IO_PENDING;
 
-  rv = HandleNSSError(prerr, false);
+  rv = HandleNSSError(prerr);
   PostOrRunCallback(
       FROM_HERE,
       base::Bind(&AddLogEventWithCallback, weak_net_log_,
