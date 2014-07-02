@@ -86,7 +86,7 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
     audio_converter_.RemoveInput(this);
   }
 
-  void Push(const media::AudioBus* audio_source) {
+  void Push(media::AudioBus* audio_source) {
     // Called on the audio thread, which is the capture audio thread for
     // |MediaStreamAudioProcessor::capture_converter_|, and render audio thread
     // for |MediaStreamAudioProcessor::render_converter_|.
@@ -95,7 +95,7 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
     fifo_->Push(audio_source);
   }
 
-  bool Convert(webrtc::AudioFrame* out, bool audio_mirroring) {
+  bool Convert(webrtc::AudioFrame* out) {
     // Called on the audio thread, which is the capture audio thread for
     // |MediaStreamAudioProcessor::capture_converter_|, and render audio thread
     // for |MediaStreamAudioProcessor::render_converter_|.
@@ -110,18 +110,10 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 
     // Convert data to the output format, this will trigger ProvideInput().
     audio_converter_.Convert(audio_wrapper_.get());
-    DCHECK_EQ(audio_wrapper_->frames(), sink_params_.frames_per_buffer());
-
-    // Swap channels before interleaving the data if |audio_mirroring| is
-    // set to true.
-    if (audio_mirroring &&
-        sink_params_.channel_layout() == media::CHANNEL_LAYOUT_STEREO) {
-      // Swap the first and second channels.
-      audio_wrapper_->SwapChannels(0, 1);
-    }
 
     // TODO(xians): Figure out a better way to handle the interleaved and
     // deinterleaved format switching.
+    DCHECK_EQ(audio_wrapper_->frames(), sink_params_.frames_per_buffer());
     audio_wrapper_->ToInterleaved(audio_wrapper_->frames(),
                                   sink_params_.bits_per_sample() / 8,
                                   out->data_);
@@ -214,13 +206,19 @@ void MediaStreamAudioProcessor::OnCaptureFormatChanged(
   capture_thread_checker_.DetachFromThread();
 }
 
-void MediaStreamAudioProcessor::PushCaptureData(
-    const media::AudioBus* audio_source) {
+void MediaStreamAudioProcessor::PushCaptureData(media::AudioBus* audio_source) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(audio_source->channels(),
             capture_converter_->source_parameters().channels());
   DCHECK_EQ(audio_source->frames(),
             capture_converter_->source_parameters().frames_per_buffer());
+
+  if (audio_mirroring_ &&
+      capture_converter_->source_parameters().channel_layout() ==
+          media::CHANNEL_LAYOUT_STEREO) {
+    // Swap the first and second channels.
+    audio_source->SwapChannels(0, 1);
+  }
 
   capture_converter_->Push(audio_source);
 }
@@ -231,7 +229,7 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessAndConsumeData");
 
-  if (!capture_converter_->Convert(&capture_frame_, audio_mirroring_))
+  if (!capture_converter_->Convert(&capture_frame_))
     return false;
 
   *new_volume = ProcessData(&capture_frame_, capture_delay, volume,
@@ -312,7 +310,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                     audio_bus->frames());
 
   render_converter_->Push(audio_bus);
-  while (render_converter_->Convert(&render_frame_, false))
+  while (render_converter_->Convert(&render_frame_))
     audio_processing_->AnalyzeReverseStream(&render_frame_);
 }
 
