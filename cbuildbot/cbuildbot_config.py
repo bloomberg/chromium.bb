@@ -1882,13 +1882,13 @@ internal_brillo_paladin.add_config('duck-paladin',
   trybot_list=True,
 )
 
-external_brillo_paladin = paladin.derive(brillo)
-
-external_brillo_paladin.add_config('gizmo-paladin',
+internal_brillo_paladin.add_config('gizmo-paladin',
   boards=['gizmo'],
   paladin_builder_name='gizmo paladin',
   trybot_list=True,
 )
+
+external_brillo_paladin = paladin.derive(brillo)
 
 external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
