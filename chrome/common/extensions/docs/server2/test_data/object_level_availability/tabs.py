@@ -13,7 +13,8 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
     'docs': {
       'templates': {
         'json': {
-          'api_availabilities.json': '{}'
+          'api_availabilities.json': '{}',
+          'intro_tables.json': '{}'
         }
       }
     },
@@ -26,27 +27,56 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
         'types': [
           {
             'id': 'Tab',
+            'type': 'any',
             'properties': {
-              'url': {},
-              'index': {},
-              'selected': {},
-              'id': {},
-              'windowId': {}
+              'url': {
+                'type': 'any'
+              },
+              'index': {
+                'type': 'any'
+              },
+              'selected': {
+                'type': 'any'
+              },
+              'id': {
+                'type': 'any'
+              },
+              'windowId': {
+                'type': 'any'
+              }
             }
           },
           {
+            'id': 'InlinedType',
+            'type': 'any',
+            'inline_doc': True
+          },
+          {
             'id': 'InjectDetails',
+            'type': 'any',
             'properties': {
-              'allFrames': {},
-              'code': {},
-              'file': {}
+              'allFrames': {
+                'type': 'any'
+              },
+              'code': {
+                'type': 'any'
+              },
+              'file': {
+                'type':'any'
+              }
             }
           }
         ],
         'properties': {
-          'fakeTabsProperty1': {},
-          'fakeTabsProperty2': {},
-          'fakeTabsProperty3': {}
+          'fakeTabsProperty1': {
+            'type': 'any'
+          },
+          'fakeTabsProperty2': {
+            'type': 'any'
+          },
+          'fakeTabsProperty3': {
+            'type': 'any'
+          }
         },
         'functions': [
           {
@@ -54,9 +84,11 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'parameters': [
               {
                 'name': 'callback',
+                'type': 'function',
                 'parameters': [
                   {
-                    'name': 'tab'
+                    'name': 'tab',
+                    'type': 'any'
                   }
                 ]
               }
@@ -67,14 +99,17 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'parameters': [
               {
                 'name': 'callback',
+                'type': 'function',
                 'parameters': [
                   {
-                    'name': 'tab'
+                    'name': 'tab',
+                    'type': 'any'
                   }
                 ]
               },
               {
-                'name': 'tabId'
+                'name': 'tabId',
+                'type': 'any'
               }
             ]
           }
@@ -82,30 +117,44 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
         'events': [
           {
             'name': 'onActivated',
+            'type': 'event',
             'parameters': [
               {
                 'name': 'activeInfo',
+                'type': 'any',
                 'properties': {
-                  'tabId': {},
-                  'windowId': {}
+                  'tabId': {
+                    'type': 'any'
+                  },
+                  'windowId': {
+                    'type': 'any'
+                  }
                 }
               }
             ]
           },
           {
             'name': 'onUpdated',
+            'type': 'event',
             'parameters': [
               {
-                'name': 'tabId'
+                'name': 'tabId',
+                'type': 'any'
               },
               {
-                'name': 'tab'
+                'name': 'tab',
+                'type': 'any'
               },
               {
                 'name': 'changeInfo',
+                'type': 'any',
                 'properties': {
-                  'pinned': {},
-                  'status': {}
+                  'pinned': {
+                    'type': 'any'
+                  },
+                  'status': {
+                    'type': 'any'
+                  }
                 }
               }
             ]

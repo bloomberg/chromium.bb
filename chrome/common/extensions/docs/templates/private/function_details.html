@@ -5,6 +5,9 @@
                                api:api/}}
 </div>
 <div class="description">
+  {{?availability}}
+  <span class="availability">{{+availability.partial content:availability/}}</span>
+  {{/availability}}
   {{?description}}
   <p>
     {{{description}}}

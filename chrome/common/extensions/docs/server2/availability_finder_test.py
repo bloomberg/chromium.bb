@@ -247,6 +247,11 @@ class AvailabilityFinderTest(unittest.TestCase):
           lookup_result(True, self._branch_utility.GetStableChannelInfo(25)),
           availability_graph.Lookup('tabs', 'types', 'InjectDetails'))
 
+      # Test inlined type.
+      self.assertEquals(
+          lookup_result(True, self._branch_utility.GetChannelInfo('trunk')),
+          availability_graph.Lookup('tabs', 'types', 'InlinedType'))
+
       # Nothing new in version 24 or 23.
 
       self.assertEquals(

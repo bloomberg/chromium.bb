@@ -20,6 +20,10 @@ from environment import IsPreviewServer
 from third_party.json_schema_compiler.memoize import memoize
 
 
+# The set of possible categories a node may belong to.
+_NODE_CATEGORIES = ('types', 'functions', 'events', 'properties')
+
+
 def _CreateId(node, prefix):
   if node.parent is not None and not isinstance(node.parent, model.Namespace):
     return '-'.join([prefix, node.parent.simple_name, node.simple_name])
@@ -43,7 +47,7 @@ def _GetByNameDict(namespace):
   namespace['events'], and namespace['properties'].
   '''
   by_name = {}
-  for item_type in ('types', 'functions', 'events', 'properties'):
+  for item_type in _NODE_CATEGORIES:
     if item_type in namespace:
       old_size = len(by_name)
       by_name.update(
@@ -65,6 +69,162 @@ def _GetEventByNameFromEvents(events):
   return _GetByNameDict(event_list[0])
 
 
+class _APINodeCursor(object):
+  '''An abstract representation of a node in an APISchemaGraph.
+  The current position in the graph is represented by a path into the
+  underlying dictionary. So if the APISchemaGraph is:
+
+    {
+      'tabs': {
+        'types': {
+          'Tab': {
+            'properties': {
+              'url': {
+                ...
+              }
+            }
+          }
+        }
+      }
+    }
+
+  then the 'url' property would be represented by:
+
+    ['tabs', 'types', 'Tab', 'properties', 'url']
+  '''
+
+  def __init__(self, availability_finder, namespace_name):
+    self._lookup_path = []
+    self._node_availabilities = availability_finder.GetAPINodeAvailability(
+        namespace_name)
+    self._namespace_name = namespace_name
+
+  def _AssertIsValidCategory(self, category):
+    assert category in _NODE_CATEGORIES, \
+        '%s is not a valid category. Full path: %s' % (category,
+                                                       self._lookup_path)
+
+  def _GetParentPath(self):
+    '''Returns the path pointing to this node's parent.
+    '''
+    assert len(self._lookup_path) > 1, \
+        'Tried to look up parent for the top-level node.'
+
+    # lookup_path[-1] is the name of the current node. If this lookup_path
+    # describes a regular node, then lookup_path[-2] will be a node category.
+    # Otherwise, it's an event callback or a function parameter.
+    if self._lookup_path[-2] not in _NODE_CATEGORIES:
+      if self._lookup_path[-1] == 'callback':
+        # This is an event callback, so lookup_path[-2] is the event
+        # node name, thus lookup_path[-3] must be 'events'.
+        assert self._lookup_path[-3] == 'events'
+        return self._lookup_path[:-1]
+      # This is a function parameter.
+      assert self._lookup_path[-2] == 'parameters'
+      return self._lookup_path[:-2]
+    # This is a regular node, so lookup_path[-2] should
+    # be a node category.
+    self._AssertIsValidCategory(self._lookup_path[-2])
+    return self._lookup_path[:-2]
+
+  def _LookupNodeAvailability(self):
+    '''Returns the ChannelInfo object for this node.
+    '''
+    return self._node_availabilities.Lookup(self._namespace_name,
+                                            *self._lookup_path).annotation
+
+  def _LookupParentNodeAvailability(self):
+    '''Returns the ChannelInfo object for this node's parent.
+    '''
+    return self._node_availabilities.Lookup(self._namespace_name,
+                                            *self._GetParentPath()).annotation
+
+  def _CheckNamespacePrefix(self):
+    '''API schemas may prepend the namespace name to top-level types
+    (e.g. declarativeWebRequest > types > declarativeWebRequest.IgnoreRules),
+    but just the base name (here, 'IgnoreRules') will be in the |lookup_path|.
+    Try creating an alternate |lookup_path| by adding the namespace name.
+    '''
+    # lookup_path[0] is always the node category (e.g. types, functions, etc.).
+    # Thus, lookup_path[1] is always the top-level node name.
+    self._AssertIsValidCategory(self._lookup_path[0])
+    base_name = self._lookup_path[1]
+    self._lookup_path[1] = '%s.%s' % (self._namespace_name, base_name)
+    try:
+      node_availability = self._LookupNodeAvailability()
+      if node_availability is not None:
+        return node_availability
+    finally:
+      # Restore lookup_path.
+      self._lookup_path[1] = base_name
+    return None
+
+  def _CheckEventCallback(self):
+    '''Within API schemas, an event has a list of 'properties' that the event's
+    callback expects. The callback itself is not explicitly represented in the
+    schema. However, when creating an event node in _JSCModel, a callback node
+    is generated and acts as the parent for the event's properties.
+    Modify |lookup_path| to check the original schema format.
+    '''
+    if 'events' in self._lookup_path:
+      assert 'callback' in self._lookup_path
+      callback_index = self._lookup_path.index('callback')
+      try:
+        self._lookup_path.pop(callback_index)
+        node_availability = self._LookupNodeAvailability()
+      finally:
+        self._lookup_path.insert(callback_index, 'callback')
+      return node_availability
+    return None
+
+  def _LookupAvailability(self):
+    '''Runs all the lookup checks on self._lookup_path and
+    returns the node availability if found, None otherwise.
+    '''
+    for lookup in (self._LookupNodeAvailability,
+                   self._CheckEventCallback,
+                   self._CheckNamespacePrefix):
+      node_availability = lookup()
+      if node_availability is not None:
+        return node_availability
+    return None
+
+  def GetAvailability(self):
+    '''Returns availability information for this node.
+    '''
+    node_availability = self._LookupAvailability()
+    if node_availability is None:
+      logging.warning('No availability found for: %s > %s' %
+          (self._namespace_name, ' > '.join(self._lookup_path)))
+      return None
+
+    try:
+      current_path = self._lookup_path
+      self._lookup_path = self._GetParentPath()
+      parent_node_availability = self._LookupAvailability()
+    finally:
+      self._lookup_path = current_path
+    # If the parent node availability couldn't be found, something
+    # is very wrong.
+    assert parent_node_availability is not None
+
+    # Only render this node's availability if it differs from the parent
+    # node's availability.
+    if node_availability == parent_node_availability:
+      return None
+    return node_availability
+
+  def Descend(self, *path):
+    '''Moves down the APISchemaGraph, following |path|.
+    '''
+    class scope(object):
+      def __enter__(self2):
+        self._lookup_path.extend(path)
+      def __exit__(self2, _, __, ___):
+        self._lookup_path[:] = self._lookup_path[:-len(path)]
+    return scope()
+
+
 class _JSCModel(object):
   '''Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
@@ -78,6 +238,7 @@ class _JSCModel(object):
                features_bundle,
                event_byname_future):
     self._availability = availability_finder.GetAPIAvailability(namespace.name)
+    self._current_node = _APINodeCursor(availability_finder, namespace.name)
     self._api_availabilities = json_cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'api_availabilities.json'))
     self._intro_tables = json_cache.GetFromFile(
@@ -127,95 +288,103 @@ class _JSCModel(object):
     return self._namespace.name.startswith('experimental')
 
   def _GenerateTypes(self, types):
-    return [self._GenerateType(t) for t in types]
+    with self._current_node.Descend('types'):
+      return [self._GenerateType(t) for t in types]
 
   def _GenerateType(self, type_):
-    type_dict = {
-      'name': type_.simple_name,
-      'description': type_.description,
-      'properties': self._GenerateProperties(type_.properties),
-      'functions': self._GenerateFunctions(type_.functions),
-      'events': self._GenerateEvents(type_.events),
-      'id': _CreateId(type_, 'type')
-    }
-    self._RenderTypeInformation(type_, type_dict)
-    return type_dict
+    with self._current_node.Descend(type_.simple_name):
+      type_dict = {
+        'name': type_.simple_name,
+        'description': type_.description,
+        'properties': self._GenerateProperties(type_.properties),
+        'functions': self._GenerateFunctions(type_.functions),
+        'events': self._GenerateEvents(type_.events),
+        'id': _CreateId(type_, 'type'),
+      }
+      self._RenderTypeInformation(type_, type_dict)
+      return type_dict
 
   def _GenerateFunctions(self, functions):
-    return [self._GenerateFunction(f) for f in functions.values()]
+    with self._current_node.Descend('functions'):
+      return [self._GenerateFunction(f) for f in functions.values()]
 
   def _GenerateFunction(self, function):
-    function_dict = {
-      'name': function.simple_name,
-      'description': function.description,
-      'callback': self._GenerateCallback(function.callback),
-      'parameters': [],
-      'returns': None,
-      'id': _CreateId(function, 'method')
-    }
-    self._AddCommonProperties(function_dict, function)
-    if function.returns:
-      function_dict['returns'] = self._GenerateType(function.returns)
-    for param in function.params:
-      function_dict['parameters'].append(self._GenerateProperty(param))
-    if function.callback is not None:
-      # Show the callback as an extra parameter.
-      function_dict['parameters'].append(
-          self._GenerateCallbackProperty(function.callback))
-    if len(function_dict['parameters']) > 0:
-      function_dict['parameters'][-1]['last'] = True
-    return function_dict
+    with self._current_node.Descend(function.simple_name):
+      function_dict = {
+        'name': function.simple_name,
+        'description': function.description,
+        'callback': self._GenerateCallback(function.callback),
+        'parameters': [],
+        'returns': None,
+        'id': _CreateId(function, 'method'),
+        'availability': self._GetAvailabilityTemplate()
+      }
+      self._AddCommonProperties(function_dict, function)
+      if function.returns:
+        function_dict['returns'] = self._GenerateType(function.returns)
+      for param in function.params:
+        function_dict['parameters'].append(self._GenerateProperty(param))
+      if function.callback is not None:
+        # Show the callback as an extra parameter.
+        function_dict['parameters'].append(
+            self._GenerateCallbackProperty(function.callback))
+      if len(function_dict['parameters']) > 0:
+        function_dict['parameters'][-1]['last'] = True
+      return function_dict
 
   def _GenerateEvents(self, events):
-    return [self._GenerateEvent(e) for e in events.values()
-            if not e.supports_dom]
+    with self._current_node.Descend('events'):
+      return [self._GenerateEvent(e) for e in events.values()
+              if not e.supports_dom]
 
   def _GenerateDomEvents(self, events):
-    return [self._GenerateEvent(e) for e in events.values()
-            if e.supports_dom]
+    with self._current_node.Descend('events'):
+      return [self._GenerateEvent(e) for e in events.values()
+              if e.supports_dom]
 
   def _GenerateEvent(self, event):
-    event_dict = {
-      'name': event.simple_name,
-      'description': event.description,
-      'filters': [self._GenerateProperty(f) for f in event.filters],
-      'conditions': [self._GetLink(condition)
-                     for condition in event.conditions],
-      'actions': [self._GetLink(action) for action in event.actions],
-      'supportsRules': event.supports_rules,
-      'supportsListeners': event.supports_listeners,
-      'properties': [],
-      'id': _CreateId(event, 'event'),
-      'byName': {},
-    }
-    self._AddCommonProperties(event_dict, event)
-    # Add the Event members to each event in this object.
-    if self._event_byname_future:
-      event_dict['byName'].update(self._event_byname_future.Get())
-    # We need to create the method description for addListener based on the
-    # information stored in |event|.
-    if event.supports_listeners:
-      callback_object = model.Function(parent=event,
-                                       name='callback',
-                                       json={},
-                                       namespace=event.parent,
-                                       origin='')
-      callback_object.params = event.params
-      if event.callback:
-        callback_object.callback = event.callback
-      callback_parameters = self._GenerateCallbackProperty(callback_object)
-      callback_parameters['last'] = True
-      event_dict['byName']['addListener'] = {
-        'name': 'addListener',
-        'callback': self._GenerateFunction(callback_object),
-        'parameters': [callback_parameters]
+    with self._current_node.Descend(event.simple_name):
+      event_dict = {
+        'name': event.simple_name,
+        'description': event.description,
+        'filters': [self._GenerateProperty(f) for f in event.filters],
+        'conditions': [self._GetLink(condition)
+                       for condition in event.conditions],
+        'actions': [self._GetLink(action) for action in event.actions],
+        'supportsRules': event.supports_rules,
+        'supportsListeners': event.supports_listeners,
+        'properties': [],
+        'id': _CreateId(event, 'event'),
+        'byName': {},
       }
-    if event.supports_dom:
-      # Treat params as properties of the custom Event object associated with
-      # this DOM Event.
-      event_dict['properties'] += [self._GenerateProperty(param)
-                                   for param in event.params]
-    return event_dict
+      self._AddCommonProperties(event_dict, event)
+      # Add the Event members to each event in this object.
+      if self._event_byname_future:
+        event_dict['byName'].update(self._event_byname_future.Get())
+      # We need to create the method description for addListener based on the
+      # information stored in |event|.
+      if event.supports_listeners:
+        callback_object = model.Function(parent=event,
+                                         name='callback',
+                                         json={},
+                                         namespace=event.parent,
+                                         origin='')
+        callback_object.params = event.params
+        if event.callback:
+          callback_object.callback = event.callback
+        callback_parameters = self._GenerateCallbackProperty(callback_object)
+        callback_parameters['last'] = True
+        event_dict['byName']['addListener'] = {
+          'name': 'addListener',
+          'callback': self._GenerateFunction(callback_object),
+          'parameters': [callback_parameters]
+        }
+      if event.supports_dom:
+        # Treat params as properties of the custom Event object associated with
+        # this DOM Event.
+        event_dict['properties'] += [self._GenerateProperty(param)
+                                     for param in event.params]
+      return event_dict
 
   def _GenerateCallback(self, callback):
     if not callback:
@@ -257,7 +426,7 @@ class _JSCModel(object):
       'functions': self._GenerateFunctions(type_.functions),
       'parameters': [],
       'returns': None,
-      'id': _CreateId(property_, 'property')
+      'id': _CreateId(property_, 'property'),
     }
     self._AddCommonProperties(property_dict, property_)
 
@@ -336,6 +505,23 @@ class _JSCModel(object):
 
     return intro_rows
 
+  def _GetAvailabilityTemplate(self, status=None, version=None, scheduled=None):
+    '''Returns an object that the templates use to display availability
+    information.
+    '''
+    if status is None:
+      availability_info = self._current_node.GetAvailability()
+      if availability_info is None:
+        return None
+      status = availability_info.channel
+      version = availability_info.version
+    return {
+      'partial': self._template_cache.GetFromFile(
+          '%sintro_tables/%s_message.html' % (PRIVATE_TEMPLATES, status)).Get(),
+      'scheduled': scheduled,
+      'version': version
+    }
+
   def _GetIntroDescriptionRow(self):
     ''' Generates the 'Description' row data for an API intro table.
     '''
@@ -359,14 +545,11 @@ class _JSCModel(object):
       scheduled = self._availability.scheduled
     return {
       'title': 'Availability',
-      'content': [{
-        'partial': self._template_cache.GetFromFile(
-          posixpath.join(PRIVATE_TEMPLATES,
-                         'intro_tables',
-                         '%s_message.html' % status)).Get(),
-        'version': version,
-        'scheduled': scheduled
-      }]
+      'content': [
+        self._GetAvailabilityTemplate(status=status,
+                                      version=version,
+                                      scheduled=scheduled)
+      ]
     }
 
   def _GetIntroDependencyRows(self):

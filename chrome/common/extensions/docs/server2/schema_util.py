@@ -89,10 +89,10 @@ def InlineDocs(schema):
   apply_inline(schema)
 
 
-def ProcessSchema(path, file_data):
-  '''Parses |file_data| using a method determined by checking the
-  extension of the file at the given |path|. Then, trims 'nodoc' and handles
-  inlineable types from the parsed schema data.
+def ProcessSchema(path, file_data, inline=False):
+  '''Parses |file_data| using a method determined by checking the extension of
+  the file at the given |path|. Then, trims 'nodoc' and if |inline| is given
+  and True, handles inlineable types from the parsed schema data.
   '''
   def trim_and_inline(schema, is_idl=False):
     '''Modifies an API schema in place by removing nodes that shouldn't be
@@ -102,9 +102,10 @@ def ProcessSchema(path, file_data):
       # A return of True signifies that the entire schema should not be
       # documented. Otherwise, only nodes that request 'nodoc' are removed.
       return None
-    if is_idl:
-      DetectInlineableTypes(schema)
-    InlineDocs(schema)
+    if inline:
+      if is_idl:
+        DetectInlineableTypes(schema)
+      InlineDocs(schema)
     return schema
 
   if path.endswith('.idl'):
