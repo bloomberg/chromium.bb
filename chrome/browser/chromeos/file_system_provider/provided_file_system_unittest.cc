@@ -57,7 +57,7 @@ class FakeEventRouter : public extensions::EventRouter {
 
 class EventLogger {
  public:
-  EventLogger() : weak_ptr_factory_(this) {}
+  EventLogger() {}
   virtual ~EventLogger() {}
 
   void OnStatusCallback(base::File::Error error) {
@@ -66,14 +66,8 @@ class EventLogger {
 
   base::File::Error* error() { return error_.get(); }
 
-  base::WeakPtr<EventLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   scoped_ptr<base::File::Error> error_;
-
-  base::WeakPtrFactory<EventLogger> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
@@ -111,7 +105,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
   EventLogger logger;
 
   provided_file_system_->RequestUnmount(
-      base::Bind(&EventLogger::OnStatusCallback, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatusCallback, base::Unretained(logger)));
   base::RunLoop().RunUntilIdle();
 
   // Verify that the event has been sent to the providing extension.
@@ -150,7 +144,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Error) {
   EventLogger logger;
 
   provided_file_system_->RequestUnmount(
-      base::Bind(&EventLogger::OnStatusCallback, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatusCallback, base::Unretained(logger)));
   base::RunLoop().RunUntilIdle();
 
   // Verify that the event has been sent to the providing extension.

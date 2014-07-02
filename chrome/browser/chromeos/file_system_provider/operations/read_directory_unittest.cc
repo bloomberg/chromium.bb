@@ -74,7 +74,7 @@ class CallbackLogger {
     DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
-  CallbackLogger() : weak_ptr_factory_(this) {}
+  CallbackLogger() {}
   virtual ~CallbackLogger() {}
 
   void OnReadDirectory(base::File::Error result,
@@ -85,14 +85,9 @@ class CallbackLogger {
 
   ScopedVector<Event>& events() { return events_; }
 
-  base::WeakPtr<CallbackLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   ScopedVector<Event> events_;
   bool dispatch_reply_;
-  base::WeakPtrFactory<CallbackLogger> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
@@ -123,7 +118,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
                                file_system_info_,
                                base::FilePath::FromUTF8Unsafe(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
-                                          callback_logger.GetWeakPtr()));
+                                          base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -162,7 +157,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute_NoListener) {
                                file_system_info_,
                                base::FilePath::FromUTF8Unsafe(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
-                                          callback_logger.GetWeakPtr()));
+                                          base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -181,7 +176,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
                                file_system_info_,
                                base::FilePath::FromUTF8Unsafe(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
-                                          callback_logger.GetWeakPtr()));
+                                          base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -249,7 +244,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
                                file_system_info_,
                                base::FilePath::FromUTF8Unsafe(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
-                                          callback_logger.GetWeakPtr()));
+                                          base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

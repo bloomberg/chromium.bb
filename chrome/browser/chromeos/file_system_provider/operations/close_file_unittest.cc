@@ -52,21 +52,15 @@ class LoggingDispatchEventImpl {
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
  public:
-  CallbackLogger() : weak_ptr_factory_(this) {}
+  CallbackLogger() {}
   virtual ~CallbackLogger() {}
 
   void OnCloseFile(base::File::Error result) { events_.push_back(result); }
 
   std::vector<base::File::Error>& events() { return events_; }
 
-  base::WeakPtr<CallbackLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   std::vector<base::File::Error> events_;
-  base::WeakPtrFactory<CallbackLogger> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
 
@@ -92,11 +86,11 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, Execute) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  CloseFile close_file(
-      NULL,
-      file_system_info_,
-      kOpenRequestId,
-      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  CloseFile close_file(NULL,
+                       file_system_info_,
+                       kOpenRequestId,
+                       base::Bind(&CallbackLogger::OnCloseFile,
+                                  base::Unretained(&callback_logger)));
   close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -131,11 +125,11 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, Execute_NoListener) {
   LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  CloseFile close_file(
-      NULL,
-      file_system_info_,
-      kOpenRequestId,
-      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  CloseFile close_file(NULL,
+                       file_system_info_,
+                       kOpenRequestId,
+                       base::Bind(&CallbackLogger::OnCloseFile,
+                                  base::Unretained(&callback_logger)));
   close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -147,11 +141,11 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, OnSuccess) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  CloseFile close_file(
-      NULL,
-      file_system_info_,
-      kOpenRequestId,
-      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  CloseFile close_file(NULL,
+                       file_system_info_,
+                       kOpenRequestId,
+                       base::Bind(&CallbackLogger::OnCloseFile,
+                                  base::Unretained(&callback_logger)));
   close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -169,11 +163,11 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, OnError) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  CloseFile close_file(
-      NULL,
-      file_system_info_,
-      kOpenRequestId,
-      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  CloseFile close_file(NULL,
+                       file_system_info_,
+                       kOpenRequestId,
+                       base::Bind(&CallbackLogger::OnCloseFile,
+                                  base::Unretained(&callback_logger)));
   close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

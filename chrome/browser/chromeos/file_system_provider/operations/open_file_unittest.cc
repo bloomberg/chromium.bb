@@ -68,7 +68,7 @@ class CallbackLogger {
     DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
-  CallbackLogger() : weak_ptr_factory_(this) {}
+  CallbackLogger() {}
   virtual ~CallbackLogger() {}
 
   void OnOpenFile(int file_handle, base::File::Error result) {
@@ -77,14 +77,9 @@ class CallbackLogger {
 
   ScopedVector<Event>& events() { return events_; }
 
-  base::WeakPtr<CallbackLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   ScopedVector<Event> events_;
   bool dispatch_reply_;
-  base::WeakPtrFactory<CallbackLogger> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
@@ -111,13 +106,13 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
+  OpenFile open_file(NULL,
+                     file_system_info_,
+                     base::FilePath::FromUTF8Unsafe(kFilePath),
+                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     false /* create */,
+                     base::Bind(&CallbackLogger::OnOpenFile,
+                                base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -163,13 +158,13 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {
   LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
+  OpenFile open_file(NULL,
+                     file_system_info_,
+                     base::FilePath::FromUTF8Unsafe(kFilePath),
+                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     false /* create */,
+                     base::Bind(&CallbackLogger::OnOpenFile,
+                                base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -181,13 +176,13 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
+  OpenFile open_file(NULL,
+                     file_system_info_,
+                     base::FilePath::FromUTF8Unsafe(kFilePath),
+                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     false /* create */,
+                     base::Bind(&CallbackLogger::OnOpenFile,
+                                base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -207,13 +202,13 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
+  OpenFile open_file(NULL,
+                     file_system_info_,
+                     base::FilePath::FromUTF8Unsafe(kFilePath),
+                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     false /* create */,
+                     base::Bind(&CallbackLogger::OnOpenFile,
+                                base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

@@ -50,21 +50,16 @@ class LoggingDispatchEventImpl {
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
  public:
-  CallbackLogger() : weak_ptr_factory_(this) {}
+  CallbackLogger() {}
   virtual ~CallbackLogger() {}
 
   void OnUnmount(base::File::Error result) { events_.push_back(result); }
 
   std::vector<base::File::Error>& events() { return events_; }
 
-  base::WeakPtr<CallbackLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   std::vector<base::File::Error> events_;
   bool dispatch_reply_;
-  base::WeakPtrFactory<CallbackLogger> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
@@ -91,10 +86,10 @@ TEST_F(FileSystemProviderOperationsUnmountTest, Execute) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  Unmount unmount(
-      NULL,
-      file_system_info_,
-      base::Bind(&CallbackLogger::OnUnmount, callback_logger.GetWeakPtr()));
+  Unmount unmount(NULL,
+                  file_system_info_,
+                  base::Bind(&CallbackLogger::OnUnmount,
+                             base::Unretained(&callback_logger)));
   unmount.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -125,10 +120,10 @@ TEST_F(FileSystemProviderOperationsUnmountTest, Execute_NoListener) {
   LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  Unmount unmount(
-      NULL,
-      file_system_info_,
-      base::Bind(&CallbackLogger::OnUnmount, callback_logger.GetWeakPtr()));
+  Unmount unmount(NULL,
+                  file_system_info_,
+                  base::Bind(&CallbackLogger::OnUnmount,
+                             base::Unretained(&callback_logger)));
   unmount.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -143,10 +138,10 @@ TEST_F(FileSystemProviderOperationsUnmountTest, OnSuccess) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  Unmount unmount(
-      NULL,
-      file_system_info_,
-      base::Bind(&CallbackLogger::OnUnmount, callback_logger.GetWeakPtr()));
+  Unmount unmount(NULL,
+                  file_system_info_,
+                  base::Bind(&CallbackLogger::OnUnmount,
+                             base::Unretained(&callback_logger)));
   unmount.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -165,10 +160,10 @@ TEST_F(FileSystemProviderOperationsUnmountTest, OnError) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  Unmount unmount(
-      NULL,
-      file_system_info_,
-      base::Bind(&CallbackLogger::OnUnmount, callback_logger.GetWeakPtr()));
+  Unmount unmount(NULL,
+                  file_system_info_,
+                  base::Bind(&CallbackLogger::OnUnmount,
+                             base::Unretained(&callback_logger)));
   unmount.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
