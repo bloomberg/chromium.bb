@@ -247,6 +247,28 @@ public class ContentView extends FrameLayout
         mContentViewCore.onVisibilityChanged(changedView, visibility);
     }
 
+    /**
+     * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
+     * from the rectangle area defined by starting positions (x and y), and width height.
+     *
+     * NOTE: Some platforms may call this function to extract smart clip data.
+     * You should not remove it even when there is no caller in the code base.
+     */
+    public void extractSmartClipData(int x, int y, int width, int height) {
+        mContentViewCore.extractSmartClipData(x, y, width, height);
+    }
+
+    /**
+     * Register a listener for smart clip data extraction. Once extraction is done,
+     * the listener's onSmartClipDataExtracted callback will be called.
+     *
+     * NOTE: Some platforms may call this function to extract smart clip data.
+     * You should not remove it even when there is no caller in the code base.
+     */
+    public void setSmartClipDataListener(ContentViewCore.SmartClipDataListener listener) {
+        mContentViewCore.setSmartClipDataListener(listener);
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //              Start Implementation of ContentViewCore.InternalAccessDelegate               //
     ///////////////////////////////////////////////////////////////////////////////////////////////
