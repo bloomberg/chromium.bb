@@ -66,10 +66,13 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 #define PRELOAD_DEBUG 0
+
+using blink::WebURLRequest;
 
 namespace WebCore {
 
@@ -186,39 +189,40 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
         initiatorWindow->performance().addResourceTiming(*info, initiatorDocument);
 }
 
-static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetcher, const ResourceRequest& request, Resource::Type type)
+static WebURLRequest::RequestContext requestContextFromType(const ResourceFetcher* fetcher, Resource::Type type)
 {
     switch (type) {
     case Resource::MainResource:
         if (fetcher->frame()->tree().parent())
-            return ResourceRequest::TargetIsSubframe;
-        return ResourceRequest::TargetIsMainFrame;
+            return WebURLRequest::RequestContextChildDocument;
+        return WebURLRequest::RequestContextDocument;
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::CSSStyleSheet:
-        return ResourceRequest::TargetIsStyleSheet;
+        return WebURLRequest::RequestContextStyle;
     case Resource::Script:
-        return ResourceRequest::TargetIsScript;
+        return WebURLRequest::RequestContextScript;
     case Resource::Font:
-        return ResourceRequest::TargetIsFont;
+        return WebURLRequest::RequestContextFont;
     case Resource::Image:
-        return ResourceRequest::TargetIsImage;
+        return WebURLRequest::RequestContextImage;
     case Resource::Raw:
+        return WebURLRequest::RequestContextSubresource;
     case Resource::ImportResource:
-        return ResourceRequest::TargetIsSubresource;
+        return WebURLRequest::RequestContextScript;
     case Resource::LinkPrefetch:
-        return ResourceRequest::TargetIsPrefetch;
+        return WebURLRequest::RequestContextPrefetch;
     case Resource::LinkSubresource:
-        return ResourceRequest::TargetIsSubresource;
+        return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
-        return ResourceRequest::TargetIsTextTrack;
+        return WebURLRequest::RequestContextTextTrack;
     case Resource::SVGDocument:
-        return ResourceRequest::TargetIsImage;
-    case Resource::Media:
-        return ResourceRequest::TargetIsMedia;
+        return WebURLRequest::RequestContextImage;
+    case Resource::Media: // TODO: Split this.
+        return WebURLRequest::RequestContextVideo;
     }
     ASSERT_NOT_REACHED();
-    return ResourceRequest::TargetIsSubresource;
+    return WebURLRequest::RequestContextSubresource;
 }
 
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
@@ -778,10 +782,10 @@ void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* tim
     }
 }
 
-void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Type type)
+void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
 {
-    ResourceRequest::TargetType targetType = requestTargetType(this, request, type);
-    request.setTargetType(targetType);
+    WebURLRequest::RequestContext requestContext = requestContextFromType(this, type);
+    request.setRequestContext(requestContext);
 }
 
 ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type)
@@ -823,8 +827,8 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
 
     if (request.cachePolicy() == UseProtocolCachePolicy)
         request.setCachePolicy(resourceRequestCachePolicy(request, type));
-    if (request.targetType() == ResourceRequest::TargetIsUnspecified)
-        determineTargetType(request, type);
+    if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
+        determineRequestContext(request, type);
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
         request.setHTTPHeaderField("Purpose", "prefetch");
 

@@ -14,6 +14,7 @@
 #include "platform/network/FormData.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceRequest.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
@@ -21,7 +22,7 @@ namespace WebCore {
 void BeaconLoader::prepareRequest(LocalFrame* frame, ResourceRequest& request)
 {
     // NOTE: do not distinguish Beacon by target type.
-    request.setTargetType(ResourceRequest::TargetIsPing);
+    request.setRequestContext(blink::WebURLRequest::RequestContextPing);
     request.setHTTPMethod("POST");
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     request.setAllowStoredCredentials(true);

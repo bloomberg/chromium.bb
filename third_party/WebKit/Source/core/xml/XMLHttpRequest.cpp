@@ -55,6 +55,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/Assertions.h"
@@ -837,7 +838,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
 
     ResourceRequest request(m_url);
     request.setHTTPMethod(m_method);
-    request.setTargetType(ResourceRequest::TargetIsXHR);
+    request.setRequestContext(blink::WebURLRequest::RequestContextConnect);
 
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 

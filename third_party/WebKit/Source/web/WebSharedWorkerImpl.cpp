@@ -58,6 +58,7 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
@@ -92,7 +93,7 @@ public:
         ASSERT(loadingContext);
         m_receiveResponseCallback = receiveResponseCallback;
         m_finishCallback = finishCallback;
-        m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
+        m_scriptLoader->setRequestContext(blink::WebURLRequest::RequestContextSharedWorker);
         m_scriptLoader->loadAsynchronously(
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }

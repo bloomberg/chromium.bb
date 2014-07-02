@@ -184,7 +184,7 @@ private:
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
     RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource) const;
 
-    void determineTargetType(ResourceRequest&, Resource::Type);
+    void determineRequestContext(ResourceRequest&, Resource::Type);
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 

@@ -48,6 +48,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "public/web/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebSettings.h"
@@ -81,7 +82,7 @@ public:
     {
         ASSERT(loadingContext);
         m_callback = callback;
-        m_scriptLoader->setTargetType(ResourceRequest::TargetIsServiceWorker);
+        m_scriptLoader->setRequestContext(blink::WebURLRequest::RequestContextServiceWorker);
         m_scriptLoader->loadAsynchronously(
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }

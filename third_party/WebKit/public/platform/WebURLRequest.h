@@ -88,6 +88,33 @@ public:
         TargetIsUnspecified = 17,
     };
 
+    // FIXME: Drop the TargetType enum once embedders are updated upstream.
+    enum RequestContext {
+        RequestContextUnspecified = 0,
+        RequestContextAudio,
+        RequestContextChildDocument,
+        RequestContextConnect,
+        RequestContextDocument,
+        RequestContextDownload,
+        RequestContextFavicon,
+        RequestContextFont,
+        RequestContextForm,
+        RequestContextImage,
+        RequestContextManifest,
+        RequestContextObject,
+        RequestContextObjectRequest,
+        RequestContextPing,
+        RequestContextPrefetch,
+        RequestContextScript,
+        RequestContextServiceWorker,
+        RequestContextSharedWorker,
+        RequestContextStyle,
+        RequestContextSubresource,
+        RequestContextTextTrack,
+        RequestContextVideo,
+        RequestContextWorker
+    };
+
     class ExtraData {
     public:
         virtual ~ExtraData() { }
@@ -154,8 +181,12 @@ public:
     BLINK_PLATFORM_EXPORT bool reportRawHeaders() const;
     BLINK_PLATFORM_EXPORT void setReportRawHeaders(bool);
 
+    // FIXME: Remove these once content/ and net/ are updated.
     BLINK_PLATFORM_EXPORT TargetType targetType() const;
     BLINK_PLATFORM_EXPORT void setTargetType(TargetType);
+
+    BLINK_PLATFORM_EXPORT RequestContext requestContext() const;
+    BLINK_PLATFORM_EXPORT void setRequestContext(RequestContext);
 
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
@@ -203,6 +234,9 @@ public:
     BLINK_PLATFORM_EXPORT const WebCore::ResourceRequest& toResourceRequest() const;
 #endif
 
+    // FIXME: Drop these once we replace TargetType upstream.
+    static RequestContext requestContextFromTargetType(TargetType);
+    static TargetType targetTypeFromRequestContext(RequestContext);
 protected:
     BLINK_PLATFORM_EXPORT void assign(WebURLRequestPrivate*);
 

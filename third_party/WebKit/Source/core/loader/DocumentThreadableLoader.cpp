@@ -49,6 +49,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -424,7 +425,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
 
         FetchRequest newRequest(request, m_options.initiator, resourceLoaderOptions);
         ASSERT(!resource());
-        if (request.targetType() == ResourceRequest::TargetIsMedia)
+        if (request.requestContext() == blink::WebURLRequest::RequestContextVideo || request.requestContext() == blink::WebURLRequest::RequestContextAudio)
             setResource(m_document.fetcher()->fetchMedia(newRequest));
         else
             setResource(m_document.fetcher()->fetchRawResource(newRequest));

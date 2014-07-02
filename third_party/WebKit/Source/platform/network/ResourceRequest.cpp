@@ -27,6 +27,7 @@
 #include "config.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace WebCore {
 
@@ -52,7 +53,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setRequestorID(data->m_requestorID);
     request->setRequestorProcessID(data->m_requestorProcessID);
     request->setAppCacheHostID(data->m_appCacheHostID);
-    request->setTargetType(data->m_targetType);
+    request->setRequestContext(data->m_requestContext);
     request->m_referrerPolicy = data->m_referrerPolicy;
     return request.release();
 }
@@ -78,7 +79,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_requestorID = m_requestorID;
     data->m_requestorProcessID = m_requestorProcessID;
     data->m_appCacheHostID = m_appCacheHostID;
-    data->m_targetType = m_targetType;
+    data->m_requestContext = m_requestContext;
     data->m_referrerPolicy = m_referrerPolicy;
     return data.release();
 }
@@ -397,7 +398,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_requestorID = 0;
     m_requestorProcessID = 0;
     m_appCacheHostID = 0;
-    m_targetType = TargetIsUnspecified;
+    m_requestContext = blink::WebURLRequest::RequestContextUnspecified;
     m_referrerPolicy = ReferrerPolicyDefault;
 }
 

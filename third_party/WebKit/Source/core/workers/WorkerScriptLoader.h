@@ -32,6 +32,7 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -76,7 +77,7 @@ namespace WebCore {
         virtual void didFail(const ResourceError&) OVERRIDE;
         virtual void didFailRedirectCheck() OVERRIDE;
 
-        void setTargetType(ResourceRequest::TargetType targetType) { m_targetType = targetType; }
+        void setRequestContext(blink::WebURLRequest::RequestContext requestContext) { m_requestContext = requestContext; }
 
     private:
         friend class WTF::RefCounted<WorkerScriptLoader>;
@@ -97,7 +98,7 @@ namespace WebCore {
         bool m_failed;
         unsigned long m_identifier;
         bool m_finishing;
-        ResourceRequest::TargetType m_targetType;
+        blink::WebURLRequest::RequestContext m_requestContext;
     };
 
 } // namespace WebCore

@@ -34,6 +34,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
 #include "platform/network/ResourceResponse.h"
+#include "public/platform/WebURLRequest.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -45,7 +46,7 @@ WorkerScriptLoader::WorkerScriptLoader()
     , m_failed(false)
     , m_identifier(0)
     , m_finishing(false)
-    , m_targetType(ResourceRequest::TargetIsWorker)
+    , m_requestContext(blink::WebURLRequest::RequestContextWorker)
 {
 }
 
@@ -105,7 +106,7 @@ PassOwnPtr<ResourceRequest> WorkerScriptLoader::createResourceRequest()
 {
     OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(m_url));
     request->setHTTPMethod("GET");
-    request->setTargetType(m_targetType);
+    request->setRequestContext(m_requestContext);
     return request.release();
 }
 

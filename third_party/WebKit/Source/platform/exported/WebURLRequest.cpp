@@ -224,13 +224,9 @@ bool WebURLRequest::reportRawHeaders() const
     return m_private->m_resourceRequest->reportRawHeaders();
 }
 
-WebURLRequest::TargetType WebURLRequest::targetType() const
+WebURLRequest::RequestContext WebURLRequest::requestContext() const
 {
-    // FIXME: Temporary special case until downstream chromium.org knows of the new TargetTypes.
-    TargetType targetType = static_cast<TargetType>(m_private->m_resourceRequest->targetType());
-    if (targetType == TargetIsTextTrack || targetType == TargetIsUnspecified)
-        return TargetIsSubresource;
-    return targetType;
+    return m_private->m_resourceRequest->requestContext();
 }
 
 WebReferrerPolicy WebURLRequest::referrerPolicy() const
@@ -253,10 +249,9 @@ void WebURLRequest::setHasUserGesture(bool hasUserGesture)
     m_private->m_resourceRequest->setHasUserGesture(hasUserGesture);
 }
 
-void WebURLRequest::setTargetType(TargetType targetType)
+void WebURLRequest::setRequestContext(RequestContext requestContext)
 {
-    m_private->m_resourceRequest->setTargetType(
-        static_cast<ResourceRequest::TargetType>(targetType));
+    m_private->m_resourceRequest->setRequestContext(requestContext);
 }
 
 int WebURLRequest::requestorID() const
@@ -350,5 +345,120 @@ void WebURLRequest::assign(WebURLRequestPrivate* p)
         m_private->dispose();
     m_private = p;
 }
+
+WebURLRequest::RequestContext WebURLRequest::requestContextFromTargetType(WebURLRequest::TargetType targetType)
+{
+    switch (targetType) {
+    case TargetIsMainFrame:
+        return RequestContextDocument;
+    case TargetIsSubframe:
+        return RequestContextChildDocument;
+    case TargetIsSubresource:
+        return RequestContextSubresource;
+    case TargetIsStyleSheet:
+        return RequestContextStyle;
+    case TargetIsScript:
+        return RequestContextScript;
+    case TargetIsFontResource:
+        return RequestContextFont;
+    case TargetIsImage:
+        return RequestContextImage;
+    case TargetIsObject:
+        return RequestContextObject;
+    case TargetIsMedia:
+        // FIXME: Split this out.
+        return RequestContextVideo;
+    case TargetIsWorker:
+        return RequestContextWorker;
+    case TargetIsSharedWorker:
+        return RequestContextSharedWorker;
+    case TargetIsPrefetch:
+        return RequestContextPrefetch;
+    case TargetIsFavicon:
+        return RequestContextFavicon;
+    case TargetIsXHR:
+        return RequestContextConnect;
+    case TargetIsTextTrack:
+        return RequestContextTextTrack;
+    case TargetIsPing:
+        return RequestContextPing;
+    case TargetIsServiceWorker:
+        return RequestContextServiceWorker;
+    case TargetIsUnspecified:
+        return RequestContextUnspecified;
+    }
+    ASSERT_NOT_REACHED();
+    return RequestContextSubresource;
+}
+
+WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContext(WebURLRequest::RequestContext requestContext)
+{
+    switch (requestContext) {
+    case RequestContextUnspecified:
+        return TargetIsUnspecified;
+    case RequestContextAudio:
+        return TargetIsMedia;
+    case RequestContextChildDocument:
+        return TargetIsSubframe;
+    case RequestContextConnect:
+        return TargetIsXHR;
+    case RequestContextDocument:
+        return TargetIsMainFrame;
+    case RequestContextDownload:
+        return TargetIsSubresource;
+    case RequestContextFavicon:
+        return TargetIsFavicon;
+    case RequestContextFont:
+        return TargetIsFontResource;
+    case RequestContextForm:
+        return TargetIsMainFrame;
+    case RequestContextImage:
+        return TargetIsImage;
+    case RequestContextManifest:
+        return TargetIsSubresource;
+    case RequestContextObject:
+        return TargetIsObject;
+    case RequestContextObjectRequest:
+        return TargetIsSubresource;
+    case RequestContextPing:
+        return TargetIsPing;
+    case RequestContextPrefetch:
+        return TargetIsPrefetch;
+    case RequestContextScript:
+        return TargetIsScript;
+    case RequestContextServiceWorker:
+        return TargetIsServiceWorker;
+    case RequestContextSharedWorker:
+        return TargetIsSharedWorker;
+    case RequestContextStyle:
+        return TargetIsStyleSheet;
+    case RequestContextSubresource:
+        return TargetIsSubresource;
+    case RequestContextTextTrack:
+        return TargetIsTextTrack;
+    case RequestContextVideo:
+        return TargetIsMedia;
+    case RequestContextWorker:
+        return TargetIsWorker;
+    }
+    ASSERT_NOT_REACHED();
+    return TargetIsSubresource;
+}
+
+// FIXME: Drop these two methods once embedders are updated to use RequestContexts.
+WebURLRequest::TargetType WebURLRequest::targetType() const
+{
+    // FIXME: Temporary special case until downstream chromium.org knows of the new TargetTypes.
+    TargetType targetType = WebURLRequest::targetTypeFromRequestContext(requestContext());
+    if (targetType == TargetIsTextTrack || targetType == TargetIsUnspecified)
+        return TargetIsSubresource;
+    return targetType;
+}
+
+void WebURLRequest::setTargetType(TargetType targetType)
+{
+    setRequestContext(WebURLRequest::requestContextFromTargetType(targetType));
+}
+
 
 } // namespace blink
