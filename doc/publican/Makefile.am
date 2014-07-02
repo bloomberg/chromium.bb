@@ -96,7 +96,7 @@ Wayland: $(publican_targets)
 	$(AM_V_GEN)$(PUBLICAN) rename --name Wayland \
 		--version "$(WAYLAND_VERSION_MAJOR).$(WAYLAND_VERSION_MINOR)" \
 		--config $(builddir)/publican-copy.cfg
-	$(AM_V_GEN)$(PUBLICAN) build --quiet --langs en-US --formats html,pdf \
+	$(AM_V_GEN)$(PUBLICAN) build --quiet --langs en-US --pdftool fop --formats html,pdf \
 		--config $(builddir)/publican-copy.cfg
 	@touch Wayland
 
