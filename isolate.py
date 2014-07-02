@@ -35,7 +35,6 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
-from utils import on_error
 from utils import tools
 
 
@@ -1047,7 +1046,6 @@ def CMDarchive(parser, args):
   isolateserver.process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  on_error.report_on_exception_exit(options.isolate_server)
   cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False
