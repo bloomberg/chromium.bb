@@ -14,14 +14,10 @@ public:
     StyleDifference()
         : m_repaintType(NoRepaint)
         , m_layoutType(NoLayout)
-        , m_transformChanged(false)
-        , m_opacityChanged(false)
-        , m_zIndexChanged(false)
-        , m_filterChanged(false)
-        , m_textOrColorChanged(false)
+        , m_propertySpecificDifferences(0)
     { }
 
-    bool hasDifference() const { return m_repaintType || m_layoutType || m_transformChanged || m_opacityChanged || m_zIndexChanged || m_filterChanged || m_textOrColorChanged; }
+    bool hasDifference() const { return m_repaintType || m_layoutType || m_propertySpecificDifferences; }
 
     bool needsRepaint() const { return m_repaintType != NoRepaint; }
     void clearNeedsRepaint() { m_repaintType = NoRepaint; }
@@ -52,20 +48,20 @@ public:
     bool needsFullLayout() const { return m_layoutType == FullLayout; }
     void setNeedsFullLayout() { m_layoutType = FullLayout; }
 
-    bool transformChanged() const { return m_transformChanged; }
-    void setTransformChanged() { m_transformChanged = true; }
+    bool transformChanged() const { return m_propertySpecificDifferences & TransformChanged; }
+    void setTransformChanged() { m_propertySpecificDifferences |= TransformChanged; }
 
-    bool opacityChanged() const { return m_opacityChanged; }
-    void setOpacityChanged() { m_opacityChanged = true; }
+    bool opacityChanged() const { return m_propertySpecificDifferences & OpacityChanged; }
+    void setOpacityChanged() { m_propertySpecificDifferences |= OpacityChanged; }
 
-    bool zIndexChanged() const { return m_zIndexChanged; }
-    void setZIndexChanged() { m_zIndexChanged = true; }
+    bool zIndexChanged() const { return m_propertySpecificDifferences & ZIndexChanged; }
+    void setZIndexChanged() { m_propertySpecificDifferences |= ZIndexChanged; }
 
-    bool filterChanged() const { return m_filterChanged; }
-    void setFilterChanged() { m_filterChanged = true; }
+    bool filterChanged() const { return m_propertySpecificDifferences & FilterChanged; }
+    void setFilterChanged() { m_propertySpecificDifferences |= FilterChanged; }
 
-    bool textOrColorChanged() const { return m_textOrColorChanged; }
-    void setTextOrColorChanged() { m_textOrColorChanged = true; }
+    bool textOrColorChanged() const { return m_propertySpecificDifferences & TextOrColorChanged; }
+    void setTextOrColorChanged() { m_propertySpecificDifferences |= TextOrColorChanged; }
 
 private:
     enum RepaintType {
@@ -82,12 +78,16 @@ private:
     };
     unsigned m_layoutType : 2;
 
-    unsigned m_transformChanged : 1;
-    unsigned m_opacityChanged : 1;
-    unsigned m_zIndexChanged : 1;
-    unsigned m_filterChanged : 1;
-    // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
-    unsigned m_textOrColorChanged : 1;
+    enum PropertyDifference {
+        TransformChanged = 1 << 0,
+        OpacityChanged = 1 << 1,
+        ZIndexChanged = 1 << 2,
+        FilterChanged = 1 << 3,
+        // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
+        TextOrColorChanged = 1 << 4,
+    };
+
+    unsigned m_propertySpecificDifferences : 5;
 };
 
 } // namespace WebCore
