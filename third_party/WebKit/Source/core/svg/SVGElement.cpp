@@ -55,20 +55,6 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace SVGNames;
 
-void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName)
-{
-    // FIXME: when CSS supports "transform-origin" the special case for transform_originAttr can be removed.
-    // FIXME: It's not clear the above is strictly true, as -webkit-transform-origin has non-standard behavior.
-    CSSPropertyID propertyId = cssPropertyID(attrName.localName());
-    if (!propertyId && attrName == transform_originAttr) {
-        propertyId = CSSPropertyWebkitTransformOrigin; // cssPropertyID("-webkit-transform-origin")
-    } else if (propertyId == CSSPropertyTransformOrigin) {
-        propertyId = CSSPropertyWebkitTransformOrigin;
-    }
-    ASSERT(propertyId > 0);
-    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
-}
-
 SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : Element(tagName, &document, constructionType)
 #if ASSERT_ENABLED
@@ -331,6 +317,13 @@ void SVGElement::childrenChanged(const ChildrenChange& change)
     // Invalidate all instances associated with us.
     if (!change.byParser)
         invalidateInstances();
+}
+
+void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName)
+{
+    CSSPropertyID propertyId = cssPropertyID(attrName.localName());
+    ASSERT(propertyId > 0);
+    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
 }
 
 CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
