@@ -633,4 +633,41 @@ const char* RenderMultiColumnSet::renderName() const
     return "RenderMultiColumnSet";
 }
 
+void RenderMultiColumnSet::insertedIntoTree()
+{
+    RenderRegion::insertedIntoTree();
+
+    attachRegion();
+}
+
+void RenderMultiColumnSet::willBeRemovedFromTree()
+{
+    RenderRegion::willBeRemovedFromTree();
+
+    detachRegion();
+}
+
+void RenderMultiColumnSet::attachRegion()
+{
+    if (documentBeingDestroyed())
+        return;
+
+    // A region starts off invalid.
+    setIsValid(false);
+
+    if (!m_flowThread)
+        return;
+
+    // Only after adding the region to the thread, the region is marked to be valid.
+    m_flowThread->addRegionToThread(this);
+}
+
+void RenderMultiColumnSet::detachRegion()
+{
+    if (m_flowThread) {
+        m_flowThread->removeRegionFromThread(this);
+        m_flowThread = 0;
+    }
+}
+
 }

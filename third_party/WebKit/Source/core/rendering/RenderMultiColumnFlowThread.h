@@ -128,14 +128,14 @@ private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
 
     virtual const char* renderName() const OVERRIDE;
-    virtual void addRegionToThread(RenderRegion*) OVERRIDE;
+    virtual void addRegionToThread(RenderMultiColumnSet*) OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
     virtual void updateLogicalWidth() OVERRIDE FINAL;
     virtual void layout() OVERRIDE FINAL;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
-    virtual RenderRegion* regionAtBlockOffset(LayoutUnit) const OVERRIDE;
+    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const OVERRIDE;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) OVERRIDE;
     virtual bool isPageLogicalHeightKnown() const OVERRIDE;
 

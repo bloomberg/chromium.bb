@@ -58,12 +58,6 @@ LayoutUnit RenderRegion::pageLogicalHeight() const
     return m_flowThread->isHorizontalWritingMode() ? contentHeight() : contentWidth();
 }
 
-LayoutUnit RenderRegion::logicalHeightOfAllFlowThreadContent() const
-{
-    ASSERT(m_flowThread);
-    return m_flowThread->isHorizontalWritingMode() ? contentHeight() : contentWidth();
-}
-
 LayoutRect RenderRegion::flowThreadPortionOverflowRect() const
 {
     return overflowRectForFlowThreadPortion(flowThreadPortionRect(), isFirstRegion(), isLastRegion());
@@ -97,11 +91,6 @@ LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flow
     return clipRect;
 }
 
-LayoutUnit RenderRegion::pageLogicalTopForOffset(LayoutUnit /* offset */) const
-{
-    return flowThread()->isHorizontalWritingMode() ? flowThreadPortionRect().y() : flowThreadPortionRect().x();
-}
-
 bool RenderRegion::isFirstRegion() const
 {
     ASSERT(isValid());
@@ -130,11 +119,6 @@ void RenderRegion::layoutBlock(bool relayoutChildren)
     // RenderFlowThread itself).
 }
 
-void RenderRegion::repaintFlowThreadContent(const LayoutRect& repaintRect) const
-{
-    repaintFlowThreadContentRectangle(repaintRect, flowThreadPortionRect(), flowThreadPortionOverflowRect(), contentBoxRect().location());
-}
-
 void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const
 {
     ASSERT(isValid());
@@ -160,29 +144,6 @@ void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRe
     invalidatePaintRectangle(clippedRect);
 }
 
-void RenderRegion::attachRegion()
-{
-    if (documentBeingDestroyed())
-        return;
-
-    // A region starts off invalid.
-    setIsValid(false);
-
-    if (!m_flowThread)
-        return;
-
-    // Only after adding the region to the thread, the region is marked to be valid.
-    m_flowThread->addRegionToThread(this);
-}
-
-void RenderRegion::detachRegion()
-{
-    if (m_flowThread) {
-        m_flowThread->removeRegionFromThread(this);
-        m_flowThread = 0;
-    }
-}
-
 LayoutUnit RenderRegion::logicalTopOfFlowThreadContentRect(const LayoutRect& rect) const
 {
     ASSERT(isValid());
@@ -193,20 +154,6 @@ LayoutUnit RenderRegion::logicalBottomOfFlowThreadContentRect(const LayoutRect& 
 {
     ASSERT(isValid());
     return flowThread()->isHorizontalWritingMode() ? rect.maxY() : rect.maxX();
-}
-
-void RenderRegion::insertedIntoTree()
-{
-    RenderBlockFlow::insertedIntoTree();
-
-    attachRegion();
-}
-
-void RenderRegion::willBeRemovedFromTree()
-{
-    RenderBlockFlow::willBeRemovedFromTree();
-
-    detachRegion();
 }
 
 void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

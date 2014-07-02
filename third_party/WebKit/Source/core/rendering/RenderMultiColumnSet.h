@@ -110,20 +110,32 @@ public:
     // overflow. Only to be called on the last set.
     void expandToEncompassFlowThreadContentsIfNeeded();
 
+    void attachRegion();
+    void detachRegion();
+
+    // This method represents the logical height of the entire flow thread portion used by the region or set.
+    // For RenderRegions it matches logicalPaginationHeight(), but for sets it is the height of all the pages
+    // or columns added together.
+    LayoutUnit logicalHeightOfAllFlowThreadContent() const { return logicalHeightInFlowThread(); }
+
+    void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
+
+    // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
+    // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
+    // page.
+    LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
+
+    void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
+
 private:
     RenderMultiColumnSet(RenderFlowThread*);
+
+    virtual void insertedIntoTree() OVERRIDE FINAL;
+    virtual void willBeRemovedFromTree() OVERRIDE FINAL;
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
     virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) OVERRIDE;
-
-    virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const OVERRIDE;
-
-    virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const OVERRIDE { return logicalHeightInFlowThread(); }
-
-    virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const OVERRIDE;
-
-    virtual void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) OVERRIDE;
 
     virtual void addOverflowFromChildren() OVERRIDE;
 

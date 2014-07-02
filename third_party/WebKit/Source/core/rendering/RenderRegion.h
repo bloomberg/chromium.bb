@@ -49,9 +49,6 @@ public:
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
     LayoutRect flowThreadPortionOverflowRect() const;
 
-    void attachRegion();
-    void detachRegion();
-
     RenderFlowThread* flowThread() const { return m_flowThread; }
 
     // Valid regions do not create circular dependencies with other flows.
@@ -72,20 +69,6 @@ public:
     LayoutUnit logicalTopForFlowThreadContent() const { return logicalTopOfFlowThreadContentRect(flowThreadPortionRect()); };
     LayoutUnit logicalBottomForFlowThreadContent() const { return logicalBottomOfFlowThreadContentRect(flowThreadPortionRect()); };
 
-    // This method represents the logical height of the entire flow thread portion used by the region or set.
-    // For RenderRegions it matches logicalPaginationHeight(), but for sets it is the height of all the pages
-    // or columns added together.
-    virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const;
-
-    // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
-    // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
-    // page.
-    virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
-
-    virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
-
-    virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }
-
     virtual bool canHaveChildren() const OVERRIDE FINAL { return false; }
     virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return true; }
 
@@ -99,9 +82,6 @@ protected:
         const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
 
 private:
-    virtual void insertedIntoTree() OVERRIDE FINAL;
-    virtual void willBeRemovedFromTree() OVERRIDE FINAL;
-
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
 
 protected:

@@ -41,9 +41,10 @@ namespace WebCore {
 struct LayerFragment;
 typedef Vector<LayerFragment, 1> LayerFragments;
 class RenderFlowThread;
+class RenderMultiColumnSet;
 class RenderRegion;
 
-typedef ListHashSet<RenderRegion*> RenderRegionList;
+typedef ListHashSet<RenderMultiColumnSet*> RenderMultiColumnSetList;
 
 // RenderFlowThread is used to collect all the render objects that participate in a
 // flow thread. It will also help in doing the layout. However, it will not render
@@ -67,17 +68,16 @@ public:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual void addRegionToThread(RenderRegion*) = 0;
-    virtual void removeRegionFromThread(RenderRegion*);
-    const RenderRegionList& renderRegionList() const { return m_regionList; }
+    virtual void addRegionToThread(RenderMultiColumnSet*) = 0;
+    virtual void removeRegionFromThread(RenderMultiColumnSet*);
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
-    bool hasRegions() const { return m_regionList.size(); }
+    bool hasRegions() const { return m_multiColumnSetList.size(); }
 
     void validateRegions();
     void invalidateRegions();
-    bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_regionList.isEmpty(); }
+    bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
     void repaintRectangleInRegions(const LayoutRect&) const;
 
@@ -90,15 +90,13 @@ public:
     virtual void setPageBreak(LayoutUnit /*offset*/, LayoutUnit /*spaceShortage*/) { }
     virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }
 
-    virtual RenderRegion* regionAtBlockOffset(LayoutUnit) const;
-
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
+    // FIXME: These 2 functions should return a RenderMultiColumnSet.
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
     void setRegionRangeForBox(const RenderBox*, LayoutUnit offsetFromLogicalTopOfFirstPage);
-    void getRegionRangeForBox(const RenderBox*, RenderRegion*& startRegion, RenderRegion*& endRegion) const;
 
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
 
@@ -121,42 +119,46 @@ protected:
     void updateRegionsFlowThreadPortionRect();
     bool shouldRepaint(const LayoutRect&) const;
 
+    void getRegionRangeForBox(const RenderBox*, RenderMultiColumnSet*& startColumnSet, RenderMultiColumnSet*& endColumnSet) const;
+
+    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
+
     bool cachedOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit&) const;
     void setOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit);
     void clearOffsetFromLogicalTopOfFirstRegion(const RenderBox*);
 
     const RenderBox* currentStatePusherRenderBox() const;
 
-    RenderRegionList m_regionList;
+    RenderMultiColumnSetList m_multiColumnSetList;
 
-    class RenderRegionRange {
+    class RenderMultiColumnSetRange {
     public:
-        RenderRegionRange()
+        RenderMultiColumnSetRange()
         {
             setRange(0, 0);
         }
 
-        RenderRegionRange(RenderRegion* start, RenderRegion* end)
+        RenderMultiColumnSetRange(RenderMultiColumnSet* start, RenderMultiColumnSet* end)
         {
             setRange(start, end);
         }
 
-        void setRange(RenderRegion* start, RenderRegion* end)
+        void setRange(RenderMultiColumnSet* start, RenderMultiColumnSet* end)
         {
-            m_startRegion = start;
-            m_endRegion = end;
+            m_startColumnSet = start;
+            m_endColumnSet = end;
         }
 
-        RenderRegion* startRegion() const { return m_startRegion; }
-        RenderRegion* endRegion() const { return m_endRegion; }
+        RenderMultiColumnSet* startColumnSet() const { return m_startColumnSet; }
+        RenderMultiColumnSet* endColumnSet() const { return m_endColumnSet; }
 
     private:
-        RenderRegion* m_startRegion;
-        RenderRegion* m_endRegion;
+        RenderMultiColumnSet* m_startColumnSet;
+        RenderMultiColumnSet* m_endColumnSet;
     };
 
-    typedef PODInterval<LayoutUnit, RenderRegion*> RegionInterval;
-    typedef PODIntervalTree<LayoutUnit, RenderRegion*> RegionIntervalTree;
+    typedef PODInterval<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetInterval;
+    typedef PODIntervalTree<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetIntervalTree;
 
     class RegionSearchAdapter {
     public:
@@ -168,7 +170,7 @@ protected:
 
         const LayoutUnit& lowValue() const { return m_offset; }
         const LayoutUnit& highValue() const { return m_offset; }
-        void collectIfNeeded(const RegionInterval&);
+        void collectIfNeeded(const MultiColumnSetInterval&);
 
         RenderRegion* result() const { return m_result; }
 
@@ -178,8 +180,8 @@ protected:
     };
 
     // A maps from RenderBox
-    typedef HashMap<const RenderBox*, RenderRegionRange> RenderRegionRangeMap;
-    RenderRegionRangeMap m_regionRangeMap;
+    typedef HashMap<const RenderBox*, RenderMultiColumnSetRange> RenderMultiColumnSetRangeMap;
+    RenderMultiColumnSetRangeMap m_multiColumnSetRangeMap;
 
     // Stack of objects that pushed a LayoutState object on the RenderView. The
     // objects on the stack are the ones that are curently in the process of being
@@ -188,7 +190,7 @@ protected:
     typedef HashMap<const RenderBox*, LayoutUnit> RenderBoxToOffsetMap;
     RenderBoxToOffsetMap m_boxesToOffsetMap;
 
-    RegionIntervalTree m_regionIntervalTree;
+    MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
 
     bool m_regionsInvalidated : 1;
     bool m_regionsHaveUniformLogicalHeight : 1;
@@ -213,8 +215,8 @@ template <> struct ValueToString<LayoutUnit> {
     static String string(const LayoutUnit value) { return String::number(value.toFloat()); }
 };
 
-template <> struct ValueToString<RenderRegion*> {
-    static String string(const RenderRegion* value) { return String::format("%p", value); }
+template <> struct ValueToString<RenderMultiColumnSet*> {
+    static String string(const RenderMultiColumnSet* value) { return String::format("%p", value); }
 };
 #endif
 

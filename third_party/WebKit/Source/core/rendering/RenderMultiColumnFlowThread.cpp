@@ -130,10 +130,10 @@ LayoutSize RenderMultiColumnFlowThread::columnOffset(const LayoutPoint& point) c
     LayoutPoint flowThreadPoint(point);
     flipForWritingMode(flowThreadPoint);
     LayoutUnit blockOffset = isHorizontalWritingMode() ? flowThreadPoint.y() : flowThreadPoint.x();
-    RenderRegion* renderRegion = regionAtBlockOffset(blockOffset);
-    if (!renderRegion)
+    RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(blockOffset);
+    if (!columnSet)
         return LayoutSize(0, 0);
-    return toRenderMultiColumnSet(renderRegion)->flowThreadTranslationAtOffset(blockOffset);
+    return columnSet->flowThreadTranslationAtOffset(blockOffset);
 }
 
 bool RenderMultiColumnFlowThread::needsNewWidth() const
@@ -232,17 +232,16 @@ const char* RenderMultiColumnFlowThread::renderName() const
     return "RenderMultiColumnFlowThread";
 }
 
-void RenderMultiColumnFlowThread::addRegionToThread(RenderRegion* renderRegion)
+void RenderMultiColumnFlowThread::addRegionToThread(RenderMultiColumnSet* columnSet)
 {
-    RenderMultiColumnSet* columnSet = toRenderMultiColumnSet(renderRegion);
     if (RenderMultiColumnSet* nextSet = columnSet->nextSiblingMultiColumnSet()) {
-        RenderRegionList::iterator it = m_regionList.find(nextSet);
-        ASSERT(it != m_regionList.end());
-        m_regionList.insertBefore(it, columnSet);
+        RenderMultiColumnSetList::iterator it = m_multiColumnSetList.find(nextSet);
+        ASSERT(it != m_multiColumnSetList.end());
+        m_multiColumnSetList.insertBefore(it, columnSet);
     } else {
-        m_regionList.add(columnSet);
+        m_multiColumnSetList.add(columnSet);
     }
-    renderRegion->setIsValid(true);
+    columnSet->setIsValid(true);
 }
 
 void RenderMultiColumnFlowThread::willBeRemovedFromTree()
@@ -286,17 +285,17 @@ void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spa
     if (spaceShortage <= 0)
         return;
 
-    if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset)))
+    if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
         multicolSet->recordSpaceShortage(spaceShortage);
 }
 
 void RenderMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
 {
-    if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset)))
+    if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
         multicolSet->updateMinimumColumnHeight(minHeight);
 }
 
-RenderRegion* RenderMultiColumnFlowThread::regionAtBlockOffset(LayoutUnit /*offset*/) const
+RenderMultiColumnSet* RenderMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit /*offset*/) const
 {
     // For now there's only one column set, so this is easy:
     return firstMultiColumnSet();
@@ -304,7 +303,7 @@ RenderRegion* RenderMultiColumnFlowThread::regionAtBlockOffset(LayoutUnit /*offs
 
 bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, RenderObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)
 {
-    if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset))) {
+    if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset)) {
         multicolSet->addContentRun(offset);
         if (offsetBreakAdjustment)
             *offsetBreakAdjustment = pageLogicalHeightForOffset(offset) ? pageRemainingLogicalHeightForOffset(offset, IncludePageBoundary) : LayoutUnit();
