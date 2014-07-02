@@ -386,6 +386,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewCommitsDeferred(false)
+    , m_layerTreeViewClosed(false)
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
     , m_flingModifier(0)
@@ -2437,6 +2438,7 @@ void WebViewImpl::willCloseLayerTreeView()
 {
     setIsAcceleratedCompositingActive(false);
     m_layerTreeView = 0;
+    m_layerTreeViewClosed = true;
 }
 
 void WebViewImpl::didAcquirePointerLock()
@@ -3908,6 +3910,10 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         return;
 
     if (!m_client)
+        return;
+
+    // In the middle of shutting down; don't try to spin back up a compositor.
+    if (m_layerTreeViewClosed)
         return;
 
     if (!active) {
