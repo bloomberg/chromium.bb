@@ -116,7 +116,6 @@ scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
                                old_storage->quota_manager_proxy_));
 }
 
-
 void ServiceWorkerStorage::FindRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {
@@ -683,6 +682,7 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
 void ServiceWorkerStorage::DidStoreRegistration(
     const StatusCallback& callback,
     const GURL& origin,
+    int64 deleted_version_id,
     const std::vector<int64>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::STATUS_OK) {
@@ -692,7 +692,8 @@ void ServiceWorkerStorage::DidStoreRegistration(
   }
   registered_origins_.insert(origin);
   callback.Run(SERVICE_WORKER_OK);
-  StartPurgingResources(newly_purgeable_resources);
+
+  SchedulePurgeResources(deleted_version_id, newly_purgeable_resources);
 }
 
 void ServiceWorkerStorage::DidUpdateToActiveState(
@@ -709,6 +710,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     const GURL& origin,
     const StatusCallback& callback,
     bool origin_is_deletable,
+    int64 version_id,
     const std::vector<int64>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::STATUS_OK) {
@@ -719,7 +721,8 @@ void ServiceWorkerStorage::DidDeleteRegistration(
   if (origin_is_deletable)
     registered_origins_.erase(origin);
   callback.Run(SERVICE_WORKER_OK);
-  StartPurgingResources(newly_purgeable_resources);
+
+  SchedulePurgeResources(version_id, newly_purgeable_resources);
 }
 
 scoped_refptr<ServiceWorkerRegistration>
@@ -829,29 +832,55 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
   ServiceWorkerHistograms::CountInitDiskCacheResult(rv == net::OK);
 }
 
+void ServiceWorkerStorage::OnNoControllees(ServiceWorkerVersion* version) {
+  std::map<int64, std::vector<int64> >::iterator it =
+      deleted_version_resource_ids_.find(version->version_id());
+  DCHECK(it != deleted_version_resource_ids_.end());
+  StartPurgingResources(it->second);
+  deleted_version_resource_ids_.erase(it);
+  version->RemoveListener(this);
+}
+
+void ServiceWorkerStorage::SchedulePurgeResources(
+    int64 version_id,
+    const std::vector<int64>& resources) {
+  DCHECK(deleted_version_resource_ids_.find(version_id) ==
+         deleted_version_resource_ids_.end());
+  if (resources.empty())
+    return;
+  scoped_refptr<ServiceWorkerVersion> version =
+      context_ ? context_->GetLiveVersion(version_id) : NULL;
+  if (version && version->HasControllee()) {
+    deleted_version_resource_ids_[version_id] = resources;
+    version->AddListener(this);
+  } else {
+    StartPurgingResources(resources);
+  }
+}
+
 void ServiceWorkerStorage::StartPurgingResources(
     const std::vector<int64>& ids) {
   for (size_t i = 0; i < ids.size(); ++i)
-    purgeable_reource_ids_.push_back(ids[i]);
+    purgeable_resource_ids_.push_back(ids[i]);
   ContinuePurgingResources();
 }
 
 void ServiceWorkerStorage::StartPurgingResources(
     const ResourceList& resources) {
   for (size_t i = 0; i < resources.size(); ++i)
-    purgeable_reource_ids_.push_back(resources[i].resource_id);
+    purgeable_resource_ids_.push_back(resources[i].resource_id);
   ContinuePurgingResources();
 }
 
 void ServiceWorkerStorage::ContinuePurgingResources() {
-  if (purgeable_reource_ids_.empty() || is_purge_pending_)
+  if (purgeable_resource_ids_.empty() || is_purge_pending_)
     return;
 
   // Do one at a time until we're done, use RunSoon to avoid recursion when
   // DoomEntry returns immediately.
   is_purge_pending_ = true;
-  int64 id = purgeable_reource_ids_.front();
-  purgeable_reource_ids_.pop_front();
+  int64 id = purgeable_resource_ids_.front();
+  purgeable_resource_ids_.pop_front();
   RunSoon(FROM_HERE,
           base::Bind(&ServiceWorkerStorage::PurgeResource,
                      weak_factory_.GetWeakPtr(), id));
@@ -911,13 +940,17 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
     const DeleteRegistrationCallback& callback) {
   DCHECK(database);
 
+  int64 version_id = kInvalidServiceWorkerVersionId;
   std::vector<int64> newly_purgeable_resources;
-  ServiceWorkerDatabase::Status status =
-      database->DeleteRegistration(registration_id, origin,
-                                   &newly_purgeable_resources);
+  ServiceWorkerDatabase::Status status = database->DeleteRegistration(
+      registration_id, origin, &version_id, &newly_purgeable_resources);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, false, std::vector<int64>(), status));
+    original_task_runner->PostTask(FROM_HERE,
+                                   base::Bind(callback,
+                                              false,
+                                              kInvalidServiceWorkerVersionId,
+                                              std::vector<int64>(),
+                                              status));
     return;
   }
 
@@ -926,15 +959,20 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
   std::vector<ServiceWorkerDatabase::RegistrationData> registrations;
   status = database->GetRegistrationsForOrigin(origin, &registrations);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, false, std::vector<int64>(), status));
+    original_task_runner->PostTask(FROM_HERE,
+                                   base::Bind(callback,
+                                              false,
+                                              kInvalidServiceWorkerVersionId,
+                                              std::vector<int64>(),
+                                              status));
     return;
   }
 
   bool deletable = registrations.empty();
   original_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, deletable,
-                            newly_purgeable_resources, status));
+      FROM_HERE,
+      base::Bind(
+          callback, deletable, version_id, newly_purgeable_resources, status));
 }
 
 void ServiceWorkerStorage::WriteRegistrationInDB(
@@ -944,13 +982,16 @@ void ServiceWorkerStorage::WriteRegistrationInDB(
     const ResourceList& resources,
     const WriteRegistrationCallback& callback) {
   DCHECK(database);
+  int64 deleted_version_id = kInvalidServiceWorkerVersionId;
   std::vector<int64> newly_purgeable_resources;
-  ServiceWorkerDatabase::Status status =
-      database->WriteRegistration(data, resources, &newly_purgeable_resources);
-  original_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(callback, data.script.GetOrigin(),
-                 newly_purgeable_resources, status));
+  ServiceWorkerDatabase::Status status = database->WriteRegistration(
+      data, resources, &deleted_version_id, &newly_purgeable_resources);
+  original_task_runner->PostTask(FROM_HERE,
+                                 base::Bind(callback,
+                                            data.script.GetOrigin(),
+                                            deleted_version_id,
+                                            newly_purgeable_resources,
+                                            status));
 }
 
 void ServiceWorkerStorage::FindForDocumentInDB(

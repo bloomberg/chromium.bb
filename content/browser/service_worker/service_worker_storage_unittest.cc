@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -485,65 +486,86 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_TRUE(all_registrations.empty());
 }
 
-TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
-  storage()->LazyInitialize(base::Bind(&base::DoNothing));
-  base::RunLoop().RunUntilIdle();
-  const GURL kScope("http://www.test.not/scope/*");
-  const GURL kScript("http://www.test.not/script.js");
-  const GURL kImport("http://www.test.not/import.js");
-  const GURL kDocumentUrl("http://www.test.not/scope/document.html");
-  const int64 kRegistrationId = storage()->NewRegistrationId();
-  const int64 kVersionId = storage()->NewVersionId();
-  const int64 kResourceId1 = storage()->NewResourceId();
-  const int64 kResourceId2 = storage()->NewResourceId();
+class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
+  virtual void SetUp() OVERRIDE {
+    ServiceWorkerStorageTest::SetUp();
 
-  // Cons up a new registration+version with two script resources.
-  RegistrationData data;
-  data.registration_id = kRegistrationId;
-  data.scope = kScope;
-  data.script = kScript;
-  data.version_id = kVersionId;
-  data.is_active = false;
-  std::vector<ResourceRecord> resources;
-  resources.push_back(ResourceRecord(kResourceId1, kScript));
-  resources.push_back(ResourceRecord(kResourceId2, kImport));
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      storage()->GetOrCreateRegistration(data, resources);
-  registration->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
+    storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+    scope_ = GURL("http://www.test.not/scope/*");
+    script_ = GURL("http://www.test.not/script.js");
+    import_ = GURL("http://www.test.not/import.js");
+    document_url_ = GURL("http://www.test.not/scope/document.html");
+    registration_id_ = storage()->NewRegistrationId();
+    version_id_ = storage()->NewVersionId();
+    resource_id1_ = storage()->NewResourceId();
+    resource_id2_ = storage()->NewResourceId();
 
-  // Add the resources ids to the uncommitted list.
-  std::set<int64> resource_ids;
-  resource_ids.insert(kResourceId1);
-  resource_ids.insert(kResourceId2);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->WriteUncommittedResourceIds(resource_ids));
+    // Cons up a new registration+version with two script resources.
+    RegistrationData data;
+    data.registration_id = registration_id_;
+    data.scope = scope_;
+    data.script = script_;
+    data.version_id = version_id_;
+    data.is_active = false;
+    std::vector<ResourceRecord> resources;
+    resources.push_back(ResourceRecord(resource_id1_, script_));
+    resources.push_back(ResourceRecord(resource_id2_, import_));
+    registration_ = storage()->GetOrCreateRegistration(data, resources);
+    registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
-  // And dump something in the disk cache for them.
-  WriteBasicResponse(storage(), kResourceId1);
-  WriteBasicResponse(storage(), kResourceId2);
-  EXPECT_TRUE(VerifyBasicResponse(storage(), kResourceId1, true));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), kResourceId2, true));
+    // Add the resources ids to the uncommitted list.
+    std::set<int64> resource_ids;
+    resource_ids.insert(resource_id1_);
+    resource_ids.insert(resource_id2_);
+    EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+              storage()->database_->WriteUncommittedResourceIds(resource_ids));
 
-  // Storing the registration/version should take the resources ids out
-  // of the uncommitted list.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            StoreRegistration(registration, registration->waiting_version()));
-  std::set<int64> verify_ids;
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetUncommittedResourceIds(&verify_ids));
-  EXPECT_TRUE(verify_ids.empty());
+    // And dump something in the disk cache for them.
+    WriteBasicResponse(storage(), resource_id1_);
+    WriteBasicResponse(storage(), resource_id2_);
+    EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+    EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
-  // Deleting it should result in the resources being added to the
-  // purgeable list and then doomed in the disk cache and removed from
-  // that list.
+    // Storing the registration/version should take the resources ids out
+    // of the uncommitted list.
+    EXPECT_EQ(
+        SERVICE_WORKER_OK,
+        StoreRegistration(registration_, registration_->waiting_version()));
+    std::set<int64> verify_ids;
+    EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+              storage()->database_->GetUncommittedResourceIds(&verify_ids));
+    EXPECT_TRUE(verify_ids.empty());
+  }
+
+ protected:
+  GURL scope_;
+  GURL script_;
+  GURL import_;
+  GURL document_url_;
+  int64 registration_id_;
+  int64 version_id_;
+  int64 resource_id1_;
+  int64 resource_id2_;
+  scoped_refptr<ServiceWorkerRegistration> registration_;
+};
+
+TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
-  verify_ids.clear();
+  std::set<int64> verify_ids;
+
+  // Deleting the registration should result in the resources being added to the
+  // purgeable list and then doomed in the disk cache and removed from that
+  // list.
   storage()->DeleteRegistration(
-      registration->id(), kScope.GetOrigin(),
+      registration_->id(),
+      scope_.GetOrigin(),
       base::Bind(&VerifyPurgeableListStatusCallback,
                  base::Unretained(storage()->database_.get()),
-                 &verify_ids, &was_called, &result));
+                 &verify_ids,
+                 &was_called,
+                 &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -553,8 +575,117 @@ TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
             storage()->database_->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
-  EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId1, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId2, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
+TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
+  // Promote the worker to active and add a controllee.
+  registration_->set_active_version(registration_->waiting_version());
+  registration_->set_waiting_version(NULL);
+  storage()->UpdateToActiveState(
+      registration_, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    1 /* dummy provider_id */,
+                                    context_->AsWeakPtr(),
+                                    NULL));
+  registration_->active_version()->AddControllee(host.get());
+
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+  std::set<int64> verify_ids;
+
+  // Deleting the registration should move the resources to the purgeable list
+  // but keep them available.
+  storage()->DeleteRegistration(
+      registration_->id(),
+      scope_.GetOrigin(),
+      base::Bind(&VerifyPurgeableListStatusCallback,
+                 base::Unretained(storage()->database_.get()),
+                 &verify_ids,
+                 &was_called,
+                 &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_EQ(2u, verify_ids.size());
+
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+
+  // Removing the controllee should cause the resources to be deleted.
+  registration_->active_version()->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
+
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
+TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
+  // Promote the worker to active worker and add a controllee.
+  registration_->set_active_version(registration_->waiting_version());
+  registration_->set_waiting_version(NULL);
+  storage()->UpdateToActiveState(
+      registration_, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    1 /* dummy provider_id */,
+                                    context_->AsWeakPtr(),
+                                    NULL));
+  registration_->active_version()->AddControllee(host.get());
+
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+  std::set<int64> verify_ids;
+
+  // Make an updated registration.
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      registration_, storage()->NewVersionId(), context_ptr_);
+  live_version->SetStatus(ServiceWorkerVersion::NEW);
+  registration_->set_waiting_version(live_version);
+
+  // Writing the registration should move the old version's resources to the
+  // purgeable list but keep them available.
+  storage()->StoreRegistration(
+      registration_,
+      registration_->waiting_version(),
+      base::Bind(&VerifyPurgeableListStatusCallback,
+                 base::Unretained(storage()->database_.get()),
+                 &verify_ids,
+                 &was_called,
+                 &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_EQ(2u, verify_ids.size());
+
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+
+  // Removing the controllee should cause the old version's resources to be
+  // deleted.
+  registration_->active_version()->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
+
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
 TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {

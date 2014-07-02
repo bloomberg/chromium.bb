@@ -114,14 +114,17 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   // Writes |registration| and |resources| into the database and does following
   // things:
-  //   - Deletes an old version of the registration if exists.
+  //   - If an old version of the registration exists, deletes it and sets
+  //   |deleted_version_id| to the old version id and
+  //   |newly_purgeable_resources| to its resources. Otherwise, sets
+  //   |deleted_version_id| to -1.
   //   - Bumps the next registration id and the next version id if needed.
   //   - Removes |resources| from the uncommitted list if exist.
   // Returns OK they are successfully written. Otherwise, returns an error.
-  Status WriteRegistration(
-      const RegistrationData& registration,
-      const std::vector<ResourceRecord>& resources,
-      std::vector<int64>* newly_purgeable_resources);
+  Status WriteRegistration(const RegistrationData& registration,
+                           const std::vector<ResourceRecord>& resources,
+                           int64* deleted_version_id,
+                           std::vector<int64>* newly_purgeable_resources);
 
   // Updates a registration for |registration_id| to an active state. Returns OK
   // if it's successfully updated. Otherwise, returns an error.
@@ -137,12 +140,15 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const base::Time& time);
 
   // Deletes a registration for |registration_id| and moves resource records
-  // associated with it into the purgeable list. Returns OK if it's successfully
-  // deleted or not found in the database. Otherwise, returns an error.
-  Status DeleteRegistration(
-      int64 registration_id,
-      const GURL& origin,
-      std::vector<int64>* newly_purgeable_resources);
+  // associated with it into the purgeable list. If deletion occurred, sets
+  // |version_id| to the id of the version that was deleted and
+  // |newly_purgeable_resources| to its resources; otherwise, sets |version_id|
+  // to -1. Returns OK if it's successfully deleted or not found in the
+  // database. Otherwise, returns an error.
+  Status DeleteRegistration(int64 registration_id,
+                            const GURL& origin,
+                            int64* version_id,
+                            std::vector<int64>* newly_purgeable_resources);
 
   // As new resources are put into the diskcache, they go into an uncommitted
   // list. When a registration is saved that refers to those ids, they're

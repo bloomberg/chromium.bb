@@ -28,7 +28,7 @@ class ServiceWorkerRegistration;
 // ServiceWorkerRegistration (therefore they're guaranteed to be alive while
 // this handle is around).
 class CONTENT_EXPORT ServiceWorkerHandle
-    : public ServiceWorkerVersion::Listener {
+    : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
  public:
   // Creates a handle for a live version. The version's corresponding
   // registration must be also alive.

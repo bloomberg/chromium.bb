@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -37,11 +38,11 @@ class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationInfo;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
-class ServiceWorkerVersion;
 
 // This class provides an interface to store and retrieve ServiceWorker
 // registration data.
-class CONTENT_EXPORT ServiceWorkerStorage {
+class CONTENT_EXPORT ServiceWorkerStorage
+    : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
  public:
   typedef std::vector<ServiceWorkerDatabase::ResourceRecord> ResourceList;
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
@@ -55,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       void(ServiceWorkerStatusCode status, int result)>
           CompareCallback;
 
-  ~ServiceWorkerStorage();
+  virtual ~ServiceWorkerStorage();
 
   static scoped_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& path,
@@ -103,10 +104,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerRegistration* registration,
       const StatusCallback& callback);
 
-  // Deletes the registration data for |registration_id|, the
-  // script resources for the registration's stored version
-  // will remain available until either a browser restart or
-  // DeleteVersionResources is called.
+  // Deletes the registration data for |registration_id|. The script resources
+  // for the registration's stored version will remain available until that
+  // version no longer controls a page.
   void DeleteRegistration(int64 registration_id,
                           const GURL& origin,
                           const StatusCallback& callback);
@@ -144,9 +144,13 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   bool IsDisabled() const;
 
  private:
-  friend class ServiceWorkerStorageTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStorageTest,
-                           ResourceIdsAreStoredAndPurged);
+  friend class ServiceWorkerResourceStorageTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
+                           DeleteRegistration_WaitingVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
+                           DeleteRegistration_ActiveVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
+                           UpdateRegistration);
 
   struct InitialData {
     int64 next_registration_id;
@@ -164,14 +168,16 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   typedef base::Callback<void(
       InitialData* data,
       ServiceWorkerDatabase::Status status)> InitializeCallback;
-  typedef base::Callback<void(
-      const GURL& origin,
-      const std::vector<int64>& newly_purgeable_resources,
-      ServiceWorkerDatabase::Status status)> WriteRegistrationCallback;
-  typedef base::Callback<void(
-      bool origin_is_deletable,
-      const std::vector<int64>& newly_purgeable_resources,
-      ServiceWorkerDatabase::Status status)> DeleteRegistrationCallback;
+  typedef base::Callback<
+      void(const GURL& origin,
+           int64 deleted_version_id,
+           const std::vector<int64>& newly_purgeable_resources,
+           ServiceWorkerDatabase::Status status)> WriteRegistrationCallback;
+  typedef base::Callback<
+      void(bool origin_is_deletable,
+           int64 version_id,
+           const std::vector<int64>& newly_purgeable_resources,
+           ServiceWorkerDatabase::Status status)> DeleteRegistrationCallback;
   typedef base::Callback<void(
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
@@ -212,11 +218,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const GetAllRegistrationInfosCallback& callback,
       RegistrationList* registrations,
       ServiceWorkerDatabase::Status status);
-  void DidStoreRegistration(
-      const StatusCallback& callback,
-      const GURL& origin,
-      const std::vector<int64>& newly_purgeable_resources,
-      ServiceWorkerDatabase::Status status);
+  void DidStoreRegistration(const StatusCallback& callback,
+                            const GURL& origin,
+                            int64 deleted_version_id,
+                            const std::vector<int64>& newly_purgeable_resources,
+                            ServiceWorkerDatabase::Status status);
   void DidUpdateToActiveState(
       const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
@@ -224,6 +230,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const GURL& origin,
       const StatusCallback& callback,
       bool origin_is_deletable,
+      int64 version_id,
       const std::vector<int64>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
 
@@ -241,6 +248,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   ServiceWorkerDiskCache* disk_cache();
   void OnDiskCacheInitialized(int rv);
 
+  // ServiceWorkerVersion::Listener override
+  virtual void OnNoControllees(ServiceWorkerVersion* version) OVERRIDE;
+
+  void SchedulePurgeResources(int64 version_id,
+                              const std::vector<int64>& resources);
   void StartPurgingResources(const std::vector<int64>& ids);
   void StartPurgingResources(const ResourceList& resources);
   void ContinuePurgingResources();
@@ -320,8 +332,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   scoped_refptr<base::MessageLoopProxy> disk_cache_thread_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
-  std::deque<int64> purgeable_reource_ids_;
+  std::deque<int64> purgeable_resource_ids_;
   bool is_purge_pending_;
+  std::map<int64, std::vector<int64> > deleted_version_resource_ids_;
 
   base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;
 

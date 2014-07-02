@@ -387,14 +387,10 @@ void ServiceWorkerVersion::RemoveControllee(
   controllee_by_id_.Remove(found->second);
   controllee_map_.erase(found);
   RemoveProcessFromWorker(provider_host->process_id());
-  if (!HasControllee())
+  if (!HasControllee()) {
     ScheduleStopWorker();
-  // TODO(kinuko): Fire NoControllees notification when the # of controllees
-  // reaches 0, so that a new pending version can be activated (which will
-  // deactivate this version).
-  // TODO(michaeln): On no controllees call storage DeleteVersionResources
-  // if this version has been deactivated. Probably storage can listen for
-  // NoControllees for versions that have been deleted.
+    FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
+  }
 }
 
 void ServiceWorkerVersion::AddWaitingControllee(
