@@ -561,10 +561,12 @@ void ServiceWorkerVersion::OnActivateEventFinished(
     return;
   }
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected)
+  if (result == blink::WebServiceWorkerEventResultRejected) {
     status = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
-  else
+    SetStatus(REDUNDANT);
+  } else {
     SetStatus(ACTIVE);
+  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);
@@ -580,10 +582,12 @@ void ServiceWorkerVersion::OnInstallEventFinished(
     return;
   }
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected)
+  if (result == blink::WebServiceWorkerEventResultRejected) {
     status = SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED;
-  else
+    SetStatus(REDUNDANT);
+  } else {
     SetStatus(INSTALLED);
+  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);
