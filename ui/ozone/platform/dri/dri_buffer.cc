@@ -41,6 +41,7 @@ uint8_t GetColorDepth(SkColorType type) {
 
 void DestroyDumbBuffer(int fd, uint32_t handle) {
   struct drm_mode_destroy_dumb destroy_request;
+  memset(&destroy_request, 0, sizeof(destroy_request));
   destroy_request.handle = handle;
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
@@ -50,6 +51,7 @@ bool CreateDumbBuffer(int fd,
                       uint32_t* handle,
                       uint32_t* stride) {
   struct drm_mode_create_dumb request;
+  memset(&request, 0, sizeof(request));
   request.width = info.width();
   request.height = info.height();
   request.bpp = info.bytesPerPixel() << 3;

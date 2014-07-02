@@ -113,6 +113,7 @@ bool MapDumbBuffer(int fd,
                    uint32_t size,
                    void** pixels) {
   struct drm_mode_map_dumb map_request;
+  memset(&map_request, 0, sizeof(map_request));
   map_request.handle = handle;
   if (drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
     DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
