@@ -31,6 +31,11 @@
 
 namespace WebCore {
 
+PassRefPtrWillBeRawPtr<MediaQueryMatcher> MediaQueryMatcher::create(Document& document)
+{
+    return adoptRefWillBeNoop(new MediaQueryMatcher(document));
+}
+
 MediaQueryMatcher::MediaQueryMatcher(Document& document)
     : m_document(&document)
 {
