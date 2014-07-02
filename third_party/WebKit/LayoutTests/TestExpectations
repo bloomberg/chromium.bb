@@ -190,7 +190,6 @@ crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
 
-crbug.com/391044 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
 crbug.com/391052 editing/inserting/return-key-with-selection-003.html [ NeedsRebaseline ]
 
 crbug.com/380217 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
