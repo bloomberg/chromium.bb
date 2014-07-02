@@ -51,9 +51,16 @@ void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(const Stri
 
 InspectorResourceContentLoader::InspectorResourceContentLoader(Page* page)
     : m_allRequestsStarted(false)
+    , m_started(false)
+    , m_page(page)
 {
+}
+
+void InspectorResourceContentLoader::start()
+{
+    m_started = true;
     Vector<Document*> documents;
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(frame);
@@ -88,8 +95,10 @@ InspectorResourceContentLoader::InspectorResourceContentLoader(Page* page)
     checkDone();
 }
 
-void InspectorResourceContentLoader::addListener(PassOwnPtr<VoidCallback> callback)
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<VoidCallback> callback)
 {
+    if (!m_started)
+        start();
     m_callbacks.append(callback);
     checkDone();
 }

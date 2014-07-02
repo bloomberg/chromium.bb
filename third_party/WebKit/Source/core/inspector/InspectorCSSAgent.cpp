@@ -422,7 +422,7 @@ void InspectorCSSAgent::enable(ErrorString*, PassRefPtr<EnableCallback> prpCallb
         prpCallback->sendSuccess();
         return;
     }
-    m_pageAgent->resourceContentLoader()->addListener(adoptPtr(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback)));
+    m_pageAgent->resourceContentLoader()->ensureResourcesContentLoaded(adoptPtr(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback)));
 }
 
 void InspectorCSSAgent::wasEnabled()
