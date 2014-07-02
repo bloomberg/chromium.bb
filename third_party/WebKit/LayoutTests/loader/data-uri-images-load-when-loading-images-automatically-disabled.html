@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+data:uri images should load if loadsImagesAutomatically is disabled<br/>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+    if (window.internals)
+        internals.settings.setLoadsImagesAutomatically(false);
+</script>
+  This test verifies that data: uri images are loaded regardless of loadsImagesAutomatically setting value.
+  On success, the image must be loaded, and &quot;PASS&quot; message printed.
+  FAIL
+  <img onload="document.write('PASS')" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAnklEQVR42u3QMQEAAAgDoGlyo1vBzwciUJlw1ApkyZIlS5YsBbJkyZIlS5YCWbJkyZIlS4EsWbJkyZKlQJYsWbJkyVIgS5YsWbJkKZAlS5YsWbIUyJIlS5YsWQpkyZIlS5YsBbJkyZIlS5YCWbJkyZIlS4EsWbJkyZKlQJYsWbJkyVIgS5YsWbJkKZAlS5YsWbIUyJIlS5YsWQpkyfq2MosBSIeKONMAAAAASUVORK5CYII=">
+</body>
+</html>

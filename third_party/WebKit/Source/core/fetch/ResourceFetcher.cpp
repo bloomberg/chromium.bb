@@ -295,7 +295,8 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
         preCacheDataURIImage(request);
 
     request.setDefer(clientDefersImage(request.resourceRequest().url()) ? FetchRequest::DeferredByClient : FetchRequest::NoDefer);
-    return toImageResource(requestResource(Resource::Image, request));
+    ResourcePtr<Resource> resource = requestResource(Resource::Image, request);
+    return resource && resource->type() == Resource::Image ? toImageResource(resource) : 0;
 }
 
 void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
@@ -1209,7 +1210,12 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
     request.setCharset(encoding);
     request.setForPreload(true);
 
-    ResourcePtr<Resource> resource = requestResource(type, request);
+    ResourcePtr<Resource> resource;
+    // Loading images involves several special cases, so use dedicated fetch method instead.
+    if (type == Resource::Image)
+        resource = fetchImage(request);
+    if (!resource)
+        resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
         return;
     TRACE_EVENT_ASYNC_STEP_INTO0("net", "Resource", resource.get(), "Preload");
