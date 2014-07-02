@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/services/test_service/test_service_impl.h"
+#include "mojo/services/test_service/test_time_service_impl.h"
 
 namespace mojo {
 namespace test {
@@ -22,6 +23,7 @@ TestServiceApplication::~TestServiceApplication() {
 bool TestServiceApplication::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService<TestServiceImpl>(this);
+  connection->AddService<TestTimeServiceImpl>();
   return true;
 }
 

@@ -4,8 +4,18 @@
 
 module mojo.test {
 
-interface ITestService {
+interface TestService {
   Ping() => ();
+  // Connect to a TestTimeService at |app_url| and ferry the data back
+  // in |response|.
+  ConnectToAppAndGetTime(string app_url) => (int64 time_usec);
+  StartTrackingRequests() => ();
+};
+
+interface TestTimeService {
+  // Provides a constant time value.
+  GetPartyTime() => (int64 time_usec);
+  StartTrackingRequests() => ();
 };
 
 }  // module mojo.test

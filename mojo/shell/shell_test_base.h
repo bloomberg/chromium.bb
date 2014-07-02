@@ -24,10 +24,11 @@ class ShellTestBase : public testing::Test {
   ShellTestBase();
   virtual ~ShellTestBase();
 
-  // Launches the given service in-process; |service_url| should typically be a
-  // mojo: URL (the origin will be set to an "appropriate" file: URL).
-  ScopedMessagePipeHandle LaunchServiceInProcess(
-      const GURL& service_url,
+  // |application_url| should typically be a mojo: URL (the origin will be set
+  // to an "appropriate" file: URL).
+  // TODO(tim): Should the test base be a ServiceProvider?
+  ScopedMessagePipeHandle ConnectToService(
+      const GURL& application_url,
       const std::string& service_name);
 
   base::MessageLoop* message_loop() { return &message_loop_; }

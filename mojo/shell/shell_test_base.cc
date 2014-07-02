@@ -23,8 +23,8 @@ ShellTestBase::ShellTestBase() {
 ShellTestBase::~ShellTestBase() {
 }
 
-ScopedMessagePipeHandle ShellTestBase::LaunchServiceInProcess(
-    const GURL& service_url,
+ScopedMessagePipeHandle ShellTestBase::ConnectToService(
+    const GURL& application_url,
     const std::string& service_name) {
   base::FilePath base_dir;
   CHECK(PathService::Get(base::DIR_EXE, &base_dir));
@@ -42,7 +42,7 @@ ScopedMessagePipeHandle ShellTestBase::LaunchServiceInProcess(
       net::FilePathToFileURL(service_dir).spec());
 
   return shell_context_.service_manager()->ConnectToServiceByName(
-      service_url, service_name).Pass();
+      application_url, service_name).Pass();
 }
 
 }  // namespace test

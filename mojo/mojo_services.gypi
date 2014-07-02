@@ -448,7 +448,9 @@
       'target_name': 'mojo_test_service_bindings',
       'type': 'static_library',
       'sources': [
+         # TODO(tim): Move to services/public/interfaces?
         'services/test_service/test_service.mojom',
+        'services/test_service/test_request_tracker.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -459,7 +461,7 @@
       ],
     },
     {
-      'target_name': 'mojo_test_service',
+      'target_name': 'mojo_test_app',
       'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
@@ -471,10 +473,37 @@
       ],
       'sources': [
         'public/cpp/application/lib/mojo_main_standalone.cc',
+        'services/test_service/test_request_tracker_client_impl.cc',
+        'services/test_service/test_request_tracker_client_impl.h',
         'services/test_service/test_service_application.cc',
         'services/test_service/test_service_application.h',
         'services/test_service/test_service_impl.cc',
         'services/test_service/test_service_impl.h',
+        'services/test_service/test_time_service_impl.cc',
+        'services/test_service/test_time_service_impl.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_test_request_tracker_app',
+      'type': 'loadable_module',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_application',
+        'mojo_environment_standalone',
+        'mojo_test_service_bindings',
+        'mojo_system',
+        'mojo_utility',
+      ],
+      'sources': [
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+        'services/test_service/test_request_tracker_client_impl.cc',
+        'services/test_service/test_request_tracker_client_impl.h',
+        'services/test_service/test_request_tracker_application.cc',
+        'services/test_service/test_request_tracker_application.h',
+        'services/test_service/test_time_service_impl.cc',
+        'services/test_service/test_time_service_impl.h',
+        'services/test_service/test_request_tracker_impl.cc',
+        'services/test_service/test_request_tracker_impl.h',
       ],
     },
     {

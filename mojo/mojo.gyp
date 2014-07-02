@@ -63,7 +63,8 @@
         'mojo_system',
         'mojo_system_impl',
         'mojo_system_unittests',
-        'mojo_test_service',
+        'mojo_test_app',
+        'mojo_test_request_tracker_app',
         'mojo_utility',
         'mojo_view_manager_lib',
         'mojo_view_manager_lib_unittests',
@@ -610,6 +611,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         # TODO(vtl): We don't currently need this, but I imagine we will soon.
@@ -620,7 +622,8 @@
         'mojo_service_manager',
         'mojo_shell_lib',
         'mojo_system_impl',
-        'mojo_test_service',
+        'mojo_test_app',
+        'mojo_test_request_tracker_app',
         'mojo_test_service_bindings',
       ],
       'sources': [
