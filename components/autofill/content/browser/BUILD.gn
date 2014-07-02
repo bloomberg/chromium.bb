@@ -1,0 +1,88 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+# GYP version: components/autofill.gypi:autofill_content_browser
+static_library("browser") {
+  sources = [
+    "content_autofill_driver.cc",
+    "content_autofill_driver.h",
+    "request_autocomplete_manager.cc",
+    "request_autocomplete_manager.h",
+    "risk/fingerprint.cc",
+    "risk/fingerprint.h",
+    "wallet/form_field_error.cc",
+    "wallet/form_field_error.h",
+    "wallet/full_wallet.cc",
+    "wallet/full_wallet.h",
+    "wallet/gaia_account.cc",
+    "wallet/gaia_account.h",
+    "wallet/instrument.cc",
+    "wallet/instrument.h",
+    "wallet/required_action.cc",
+    "wallet/required_action.h",
+    "wallet/wallet_address.cc",
+    "wallet/wallet_address.h",
+    "wallet/wallet_client.cc",
+    "wallet/wallet_client.h",
+    "wallet/wallet_client_delegate.h",
+    "wallet/wallet_items.cc",
+    "wallet/wallet_items.h",
+    "wallet/wallet_service_url.cc",
+    "wallet/wallet_service_url.h",
+    "wallet/wallet_signin_helper.cc",
+    "wallet/wallet_signin_helper.h",
+  ]
+
+  deps = [
+    ":risk_proto",
+    "//base",
+    "//base:i18n",
+    "//base:prefs",
+    "//components/autofill/content/common",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:regexes",
+    "//components/autofill/core/common",
+    "//components/os_crypt",
+    "//components/resources",
+    "//components/strings",
+    "//content/public/browser",
+    "//content/public/common",
+    "//google_apis",
+    "//ipc",
+    "//skia",
+    "//sql",
+    "//third_party/icu",
+    "//third_party/libphonenumber",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//url",
+    #"../third_party/libjingle/libjingle.gyp:libjingle",  TODO(GYP)
+    #"user_prefs",  TODO(GYP)
+    #"webdata_common",  TODO(GYP)
+  ]
+}
+
+proto_library("risk_proto") {
+  sources = [
+    "risk/proto/fingerprint.proto",
+  ]
+  proto_in_dir = "risk/proto"
+  proto_out_dir = "components/autofill/content/browser/risk/proto"
+}
+
+static_library("test_support") {
+  sources = [
+    "wallet/mock_wallet_client.cc",
+    "wallet/mock_wallet_client.h",
+    "wallet/wallet_test_util.cc",
+    "wallet/wallet_test_util.h",
+  ]
+
+  deps = [
+    "//testing/gmock",
+  ]
+}

@@ -45,7 +45,7 @@ static_library("common") {
     "//components/metrics",  
     #"//components/components.gyp:policy_component_common",  TODO(GYP)
     "//components/translate:translate_core_common",
-    #"//components/variations",  TODO(GYP)
+    "//components/variations",
     "//content/public/common",
     "//crypto",
     "//extensions:extensions_resources",

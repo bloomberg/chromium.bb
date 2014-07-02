@@ -1,0 +1,34 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("variations") {
+  sources = [
+    "active_field_trials.cc",
+    "active_field_trials.h",
+    "caching_permuted_entropy_provider.cc",
+    "caching_permuted_entropy_provider.h",
+    "entropy_provider.cc",
+    "entropy_provider.h",
+    "metrics_util.cc",
+    "metrics_util.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "processed_study.cc",
+    "processed_study.h",
+    "study_filtering.cc",
+    "study_filtering.h",
+    "variations_associated_data.cc",
+    "variations_associated_data.h",
+    "variations_seed_processor.cc",
+    "variations_seed_processor.h",
+    "variations_seed_simulator.cc",
+    "variations_seed_simulator.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/variations/proto",
+    "//third_party/mt19937ar",
+  ]
+}

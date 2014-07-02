@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/variations
       'target_name': 'variations',
       'type': 'static_library',
       'include_dirs': [

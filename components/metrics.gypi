@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/metrics
       'target_name': 'metrics',
       'type': 'static_library',
       'include_dirs': [
@@ -63,6 +64,7 @@
       ],
     },
     {
+      # GN version: //components/metrics:net
       'target_name': 'metrics_net',
       'type': 'static_library',
       'include_dirs': [
@@ -80,7 +82,7 @@
     {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
       #
-      # GN version: //component/metrics/proto:proto
+      # GN version: //components/metrics/proto:proto
       'target_name': 'component_metrics_proto',
       'type': 'static_library',
       'sources': [
@@ -103,6 +105,7 @@
     {
       # TODO(isherman): Remove all //chrome dependencies on this target, and
       # merge the files in this target with components_unittests.
+      # GN version: //components/metrics:test_support
       'target_name': 'metrics_test_support',
       'type': 'static_library',
       'include_dirs': [

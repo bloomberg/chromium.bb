@@ -31,6 +31,7 @@
     'core/browser/url_blacklist_manager.h',
   ],
   'conditions': [
+    # GN version: //components/policy/core/browser
     ['configuration_policy==1', {
       'dependencies': [
         'autofill_core_browser',

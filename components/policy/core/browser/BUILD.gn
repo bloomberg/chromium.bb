@@ -1,0 +1,64 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+# GYP version: components/policy.gypi:policy_component_core_browser
+source_set("browser") {
+  sources = [
+    # Note that these sources are always included, even for builds that disable
+    # policy. Most source files should go in the conditional sources list
+    # below. url_blacklist_manager.h is used by managed mode.
+    "url_blacklist_manager.cc",
+    "url_blacklist_manager.h",
+  ]
+
+  defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//base:prefs",
+    "//base/third_party/dynamic_annotations",
+    "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/strings",
+    "//components/url_matcher",
+    "//net",
+    "//ui/base",
+    #'bookmarks_browser',  TODO(GYP)
+  ]
+
+  if (enable_configuration_policy) {
+    sources += [
+      "autofill_policy_handler.cc",
+      "autofill_policy_handler.h",
+      "browser_policy_connector.cc",
+      "browser_policy_connector.h",
+      "browser_policy_connector_ios.h",
+      "browser_policy_connector_ios.mm",
+      "cloud/message_util.cc",
+      "cloud/message_util.h",
+      "configuration_policy_handler.cc",
+      "configuration_policy_handler.h",
+      "configuration_policy_handler_list.cc",
+      "configuration_policy_handler_list.h",
+      "configuration_policy_pref_store.cc",
+      "configuration_policy_pref_store.h",
+      "managed_bookmarks_tracker.cc",
+      "managed_bookmarks_tracker.h",
+      "policy_error_map.cc",
+      "policy_error_map.h",
+      "url_blacklist_policy_handler.cc",
+      "url_blacklist_policy_handler.h",
+    ]
+
+    deps += [
+      "//components/autofill/core/browser",
+      "//components/autofill/core/common",
+      "//components/policy",
+      "//components/policy/proto",
+      "//third_party/icu",
+    ]
+  }
+}

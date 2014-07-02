@@ -30,6 +30,9 @@
 #       String listing an extra include that should be passed.
 #       Example: cc_include = "foo/bar.h"
 #
+#   deps (optional)
+#       Additional dependencies.
+#
 # Parameters for compiling the generated code:
 #
 #   defines (optional)
@@ -125,6 +128,10 @@ template("proto_library") {
     ]
 
     deps = [ protoc_label ]
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 
   source_set(target_name) {

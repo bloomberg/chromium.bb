@@ -1,0 +1,187 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//third_party/protobuf/proto_library.gni")
+import("//tools/grit/grit_rule.gni")
+
+if (is_component_build) {
+  component("policy_component") {
+    deps = [
+      "//components/policy/core/browser",
+      "//components/policy/core/common",
+    ]
+  }
+  group("policy_component_browser") {
+    deps = [ ":policy_component" ]
+  }
+  group("policy_component_common") {
+    deps = [ ":policy_component" ]
+  }
+} else {  # Compile to separate libraries.
+  group("policy_component") {
+    deps = [
+      ":policy_component_browser",
+      ":policy_component_common",
+    ]
+  }
+  component("policy_component_browser") {
+    deps = [ "//components/policy/core/browser" ]
+  }
+  component("policy_component_common") {
+    deps = [ "//components/policy/core/common" ]
+  }
+}
+
+if (enable_configuration_policy) {
+  # TODO(brettw) this component should use target_gen_dir instead but the GYP
+  # build puts everything into the following directory. We do the same for now.
+  policy_gen_dir = "$root_gen_dir/policy"
+
+  # This protobuf is equivalent to chrome_settings.proto but shares messages
+  # for policies of the same type, so that less classes have to be generated
+  # and compiled.
+  cloud_policy_proto_path = "$policy_gen_dir/cloud_policy.proto"
+
+  # This is the "full" protobuf, which defines one protobuf message per
+  # policy. It is also the format currently used by the server.
+  chrome_settings_proto_path = "$policy_gen_dir/chrome_settings.proto"
+
+  constants_header_path = "$policy_gen_dir/policy_constants.h"
+  constants_source_path = "$policy_gen_dir/policy_constants.cc"
+  protobuf_decoder_path = "$policy_gen_dir/cloud_policy_generated.cc"
+
+  action("cloud_policy_code_generate") {
+    script = "tools/generate_policy_source.py"
+
+    if (is_chromeos) {
+      chromeos_flag = "1"
+    } else {
+      chromeos_flag = "0"
+    }
+
+    source_prereqs = [
+      "resources/policy_templates.json",
+    ]
+    outputs = [
+      constants_header_path,
+      constants_source_path,
+      protobuf_decoder_path,
+      chrome_settings_proto_path,
+      cloud_policy_proto_path,
+    ]
+
+    args = [
+      "--policy-constants-header=" +
+          rebase_path(constants_header_path, root_build_dir),
+      "--policy-constants-source=" +
+          rebase_path(constants_source_path, root_build_dir),
+      "--chrome-settings-protobuf=" +
+          rebase_path(chrome_settings_proto_path, root_build_dir),
+      "--cloud-policy-protobuf=" +
+          rebase_path(cloud_policy_proto_path, root_build_dir),
+      "--cloud-policy-decoder=" +
+          rebase_path(protobuf_decoder_path, root_build_dir),
+      os,
+      chromeos_flag,
+      rebase_path("resources/policy_templates.json", root_build_dir),
+    ]
+  }
+
+  proto_library("cloud_policy_proto_generated_compile") {
+    sources = [ cloud_policy_proto_path ]
+
+    proto_in_dir = policy_gen_dir
+    proto_out_dir = "policy/proto"
+    cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
+    cc_include = "components/policy/policy_proto_export.h"
+    defines = [ "POLICY_PROTO_COMPILATION" ]
+
+    deps = [
+      ":cloud_policy_code_generate",
+    ]
+  }
+
+  # This target builds the "full" protobuf, used for tests only.
+  proto_library("chrome_settings_proto_generated_compile") {
+    sources = [ chrome_settings_proto_path ]
+    proto_in_dir = policy_gen_dir
+    proto_out_dir = "policy/proto"
+
+    deps = [
+      ":cloud_policy_code_generate",
+      ":cloud_policy_proto_generated_compile",
+    ]
+  }
+
+  static_library("policy") {
+    sources = [
+      constants_header_path,
+      constants_source_path,
+      protobuf_decoder_path,
+    ]
+
+    defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
+
+    deps = [
+      ":cloud_policy_code_generate",
+      ":cloud_policy_proto_generated_compile",
+      "//base",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+
+  group("test_support") {
+    deps = [
+      ":chrome_settings_proto_generated_compile",
+      ":policy",
+    ]
+  }
+
+  static_library("policy_component_test_support") {
+    sources = [
+      "core/browser/configuration_policy_pref_store_test.cc",
+      "core/browser/configuration_policy_pref_store_test.h",
+      "core/common/cloud/mock_cloud_external_data_manager.cc",
+      "core/common/cloud/mock_cloud_external_data_manager.h",
+      "core/common/cloud/mock_cloud_policy_client.cc",
+      "core/common/cloud/mock_cloud_policy_client.h",
+      "core/common/cloud/mock_cloud_policy_store.cc",
+      "core/common/cloud/mock_cloud_policy_store.h",
+      "core/common/cloud/mock_device_management_service.cc",
+      "core/common/cloud/mock_device_management_service.h",
+      "core/common/cloud/mock_user_cloud_policy_store.cc",
+      "core/common/cloud/mock_user_cloud_policy_store.h",
+      "core/common/cloud/policy_builder.cc",
+      "core/common/cloud/policy_builder.h",
+      "core/common/configuration_policy_provider_test.cc",
+      "core/common/configuration_policy_provider_test.h",
+      "core/common/mock_configuration_policy_provider.cc",
+      "core/common/mock_configuration_policy_provider.h",
+      "core/common/mock_policy_service.cc",
+      "core/common/mock_policy_service.h",
+      "core/common/policy_test_utils.cc",
+      "core/common/policy_test_utils.h",
+      "core/common/preferences_mock_mac.cc",
+      "core/common/preferences_mock_mac.h",
+    ]
+
+    if (is_chromeos) {
+      sources -= [
+        "core/common/cloud/mock_user_cloud_policy_store.cc",
+        "core/common/cloud/mock_user_cloud_policy_store.h",
+      ]
+    }
+
+    deps = [
+      ":policy_component",
+      ":test_support",
+      "//components/policy/proto",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+}
+
+#TODO(GYP) policy templates, chrome_manifest_bundle

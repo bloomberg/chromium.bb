@@ -34,6 +34,7 @@
     ['component=="static_library"', {
       'targets': [
         {
+          # GN version: //components/policy:policy_component
           'target_name': 'policy_component',
           'type': 'none',
           'dependencies': [
@@ -42,6 +43,7 @@
           ],
         },
         {
+          # GN version: //components/policy:policy_component_common
           'target_name': 'policy_component_common',
           'type': 'static_library',
           'includes': [
@@ -49,6 +51,7 @@
           ],
         },
         {
+          # GN version: //components/policy:policy_component_browser
           'target_name': 'policy_component_browser',
           'type': 'static_library',
           'dependencies': [
@@ -62,6 +65,7 @@
     }, {  # component=="static_library"
       'targets': [
         {
+          # GN version: //components/policy:policy_component
           'target_name': 'policy_component',
           'type': 'shared_library',
           'includes': [
@@ -70,6 +74,7 @@
           ],
         },
         {
+          # GN version: //components/policy:policy_component_common
           'target_name': 'policy_component_common',
           'type': 'none',
           'dependencies': [
@@ -77,6 +82,7 @@
           ],
         },
         {
+          # GN version: //components/policy:policy_component_browser
           'target_name': 'policy_component_browser',
           'type': 'none',
           'dependencies': [
@@ -88,6 +94,7 @@
     ['configuration_policy==1', {
       'targets': [
         {
+          # GN version: //components/policy:cloud_policy_code_generate
           'target_name': 'cloud_policy_code_generate',
           'type': 'none',
           'actions': [
@@ -127,6 +134,7 @@
           },
         },
         {
+          # GN version: //components/policy:cloud_policy_proto_generated_compile
           'target_name': 'cloud_policy_proto_generated_compile',
           'type': '<(component)',
           'sources': [
@@ -152,6 +160,7 @@
         },
         {
           # This target builds the "full" protobuf, used for tests only.
+          # GN version: //components/policy:chrome_settings_proto_generated_compile
           'target_name': 'chrome_settings_proto_generated_compile',
           'type': 'static_library',
           'sources': [
@@ -170,6 +179,7 @@
           ],
         },
         {
+          # GN version: //components/policy
           'target_name': 'policy',
           'type': 'static_library',
           'hard_dependency': 1,
@@ -233,6 +243,7 @@
           ],
         },
         {
+          # GN version: //components/policy:test_support
           'target_name': 'policy_test_support',
           'type': 'none',
           'hard_dependency': 1,
@@ -248,6 +259,7 @@
           ],
         },
         {
+          # GN version: //components/policy:policy_component_test_support
           'target_name': 'policy_component_test_support',
           'type': 'static_library',
           # This must be undefined so that POLICY_EXPORT works correctly in

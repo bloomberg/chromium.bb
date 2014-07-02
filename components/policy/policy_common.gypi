@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 {
+  # GN version: //components/policy/core/common
   'dependencies': [
     '../base/base.gyp:base',
   ],

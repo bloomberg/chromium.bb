@@ -36,6 +36,7 @@ generated_extensions_api("api") {
 
   impl_dir = "//chrome/browser/extensions/api"
   root_namespace = "extensions::api"
+  bundle = true
 
   deps = [
     # Different APIs include some headers from chrome/common that in turn

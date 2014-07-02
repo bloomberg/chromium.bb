@@ -2,13 +2,79 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
+    "compression_utils.cc",
+    "compression_utils.h",
+    "cloned_install_detector.cc",
+    "cloned_install_detector.h",
+    "machine_id_provider.h",
+    "machine_id_provider_stub.cc",
+    "machine_id_provider_win.cc",
     "metrics_hashes.cc",
     "metrics_hashes.h",
+    "metrics_log.cc",
+    "metrics_log.h",
+    "metrics_log_uploader.cc",
+    "metrics_log_uploader.h",
+    "metrics_log_manager.cc",
+    "metrics_log_manager.h",
+    "metrics_pref_names.cc",
+    "metrics_pref_names.h",
+    "metrics_provider.h",
+    "metrics_reporting_scheduler.cc",
+    "metrics_reporting_scheduler.h",
+    "metrics_service.cc",
+    "metrics_service.h",
+    "metrics_service_client.h",
+    "metrics_service_observer.cc",
+    "metrics_service_observer.h",
+    "metrics_state_manager.cc",
+    "metrics_state_manager.h",
+    "metrics_switches.cc",
+    "metrics_switches.h",
+    "persisted_logs.cc",
+    "persisted_logs.h",
   ]
 
   deps = [
     "//base",
+    "//components/metrics/proto",
+    "//components/variations",
+    "//third_party/zlib",
   ]
+
+  forward_dependent_configs_from = [ "//components/metrics/proto" ]
 }
+
+# GYP version: components/metrics.gypi:metrics_net
+static_library("net") {
+  sources = [
+    "net/net_metrics_log_uploader.cc",
+    "net/net_metrics_log_uploader.h",
+  ]
+
+  deps = [
+    ":metrics",
+    "//net",
+  ]
+
+  forward_dependent_configs_from = [ ":metrics" ]
+}
+
+# GYP version: components/metrics.gypi:metrics_test_support
+static_library("test_support") {
+  sources = [
+    "test_metrics_service_client.cc",
+    "test_metrics_service_client.h",
+  ]
+
+  deps = [
+    ":metrics",
+  ]
+
+  forward_dependent_configs_from = [ ":metrics" ]
+}
+
+# TODO(GYP): metrics_chromeos

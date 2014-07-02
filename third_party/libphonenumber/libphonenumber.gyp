@@ -35,6 +35,7 @@
   'targets': [{
     # Build a library without metadata so that we can use it with both testing
     # and production metadata. This library should not be used by clients.
+    # GN version: //third_party/libphonenumber:libphonenumber_without_metadata
     'target_name': 'libphonenumber_without_metadata',
     'type': 'static_library',
     'dependencies': [
@@ -93,6 +94,7 @@
   },
   {
     # Library used by clients that includes production metadata.
+    # GN version: //third_party/libphonenumber
     'target_name': 'libphonenumber',
     'type': 'static_library',
     'dependencies': [
@@ -109,6 +111,7 @@
     ],
   },
   {
+    # GN version: //third_party/libphonenumber:libphonenumber_unittests
     'target_name': 'libphonenumber_unittests',
     'type': 'executable',
     'sources': [

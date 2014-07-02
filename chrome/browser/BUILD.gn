@@ -40,7 +40,16 @@ static_library("browser") {
     "//chrome/browser/search/suggestions/proto",
     "//chrome/common",
     "//chrome/common/net",
+    "//components/cloud_devices/common",
+    "//components/metrics:net",
+    "//components/navigation_metrics",
+    "//components/os_crypt",
+    "//components/policy:policy_component",
+    "//components/query_parser",
     "//components/strings",
+    "//components/translate:translate_core_browser",
+    "//components/translate:translate_core_common",
+    "//components/user_prefs",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
@@ -69,8 +78,6 @@ static_library("browser") {
     #"../components/components.gyp:autofill_core_browser",
     #"../components/components.gyp:bookmarks_browser",
     #"../components/components.gyp:captive_portal",
-    #"../components/components.gyp:cloud_devices_common",
-    #"../components/components.gyp:component_metrics_proto",
     #"../components/components.gyp:data_reduction_proxy_browser",
     #"../components/components.gyp:domain_reliability",
     #"../components/components.gyp:favicon_base",
@@ -82,31 +89,18 @@ static_library("browser") {
     #"../components/components.gyp:history_core_common",
     #"../components/components.gyp:infobars_core",
     #"../components/components.gyp:invalidation",
-    #"../components/components.gyp:metrics",
-    #"../components/components.gyp:metrics_net",
-    #"../components/components.gyp:navigation_metrics",
     #"../components/components.gyp:network_time",
     #"../components/components.gyp:omaha_query_params",
-    #"../components/components.gyp:os_crypt",
     #"../components/components.gyp:password_manager_core_browser",
     #"../components/components.gyp:password_manager_core_common",
-    #"../components/components.gyp:policy_component",
     #"../components/components.gyp:precache_core",
-    #"../components/components.gyp:query_parser",
     #"../components/components.gyp:rappor",
     #"../components/components.gyp:search_engines",
     #"../components/components.gyp:search_provider_logos",
     #"../components/components.gyp:signin_core_browser",
     #"../components/components.gyp:startup_metric_utils",
     #"../components/components.gyp:sync_driver",
-    #"../components/components.gyp:translate_core_browser",
-    #"../components/components.gyp:translate_core_common",
     #"../components/components.gyp:url_fixer",
-    #"../components/components.gyp:user_prefs",
-    ## This depends directly on the variations target, rather than just
-    ## transitively via the common target because the proto sources need to
-    ## be generated before code in this target can start building.
-    #"../components/components.gyp:variations",
     #"../components/components.gyp:webdata_common",
     #"../courgette/courgette.gyp:courgette_lib",
     #"../google_apis/google_apis.gyp:google_apis",
@@ -114,6 +108,9 @@ static_library("browser") {
     #"../third_party/libjingle/libjingle.gyp:libjingle",
     #"../ui/message_center/message_center.gyp:message_center",
     #"../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs",
+    # Note: variations dependency from GYP build is omitted because we pick it
+    # up via chrome/common, and GN doesn't have the GYP dependency bug that
+    # made it necessary to include here.
   ]
 
   forward_dependent_configs_from = [
@@ -144,25 +141,29 @@ static_library("browser") {
 
     deps += [
       "//cc",
+      "//chrome/browser/performance_monitor",
+      "//components/keyed_service/content",
+      "//components/url_matcher",
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//net:net_with_v8",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/expat",
       "//third_party/leveldatabase",
+      "//third_party/libaddressinput",
       "//third_party/libyuv",
       "//third_party/npapi",
       "//third_party/re2",
       "//third_party/smhasher:cityhash",
       "//ui/gl",
       "//ui/surface",
+      "//v8",
       "//webkit:resources",
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
       # TODO(GYP)
       #"apps",
-      #"browser/performance_monitor/performance_monitor.gyp:performance_monitor",
       #"browser_extensions",
       #"common/extensions/api/api.gyp:chrome_api",
       #"debugger",
@@ -171,14 +172,12 @@ static_library("browser") {
       #"sync_file_system_proto",
       #"../components/components.gyp:autofill_content_browser",
       #"../components/components.gyp:dom_distiller_content",
-      #"../components/components.gyp:keyed_service_content",
       #"../components/components.gyp:navigation_interception",
       #"../components/components.gyp:password_manager_content_browser",
       #"../components/components.gyp:precache_content",
       #"../components/components.gyp:sessions",
       #"../components/components.gyp:storage_monitor",
       #"../components/components.gyp:translate_content_browser",
-      #"../components/components.gyp:url_matcher",
       #"../components/components.gyp:usb_service",
       #"../components/components.gyp:web_modal",
       #"../media/cast/cast.gyp:cast_transport",
@@ -189,11 +188,9 @@ static_library("browser") {
       #"../mojo/mojo.gyp:mojo_system_impl",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",
-      #"../third_party/libaddressinput/libaddressinput.gyp:libaddressinput",
       # Note: for this one also remove the webrtc_stub_config
       #"../third_party/webrtc/modules/modules.gyp:desktop_capture",
       #"../ui/web_dialogs/web_dialogs.gyp:web_dialogs",
-      #"../v8/tools/gyp/v8.gyp:v8",
     ]
   } else {  # iOS
     sources += rebase_path(gypi_values.chrome_browser_ios_sources,
@@ -316,8 +313,8 @@ static_library("browser") {
         gypi_values.chrome_browser_basic_safe_browsing_sources,
         ".", "//chrome")
     deps += [
-      #"safe_browsing_chunk_proto",  TODO(GYP)
-      #"safe_browsing_report_proto",  TODO(GYP)
+      "//chrome/browser/safe_browsing:chunk_proto",
+      "//chrome/browser/safe_browsing:report_proto",
     ]
     if (safe_browsing_mode == 1) {
       sources += rebase_path(
@@ -325,7 +322,7 @@ static_library("browser") {
           ".", "//chrome")
       defines += [ "FULL_SAFE_BROWSING" ]
       deps += [
-        #"safe_browsing_proto",  TODO(GYP)
+        "//chrome/common/safe_browsing:proto",
       ]
     } else if (safe_browsing_mode == 2) {
       defines += [ "MOBILE_SAFE_BROWSING" ]
@@ -358,14 +355,14 @@ static_library("browser") {
   if (is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_gnome_keyring_sources,
                            ".", "//chrome")
-    #deps += [ "../build/linux/system.gyp:gnome_keyring" ]  TODO(GYP)
+    configs += [ "//build/config/linux:gnome_keyring" ]
   }
   if (use_aura) {
     sources += rebase_path(gypi_values.chrome_browser_aura_sources,
                            ".", "//chrome")
     deps += [
-      #"../ui/aura/aura.gyp:aura",  TODO(GYP)
-      #"../ui/compositor/compositor.gyp:compositor",  TODO(GYP)
+      "//ui/aura",
+      "//ui/compositor",
       #"../ui/keyboard/keyboard.gyp:keyboard",  TODO(GYP)
     ]
   }
@@ -377,9 +374,7 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_x11_sources,
                            ".", "//chrome")
     if (!is_chromeos) {
-      deps += [
-        # "../build/linux/system.gyp:xscrnsaver",  TODO(GYP)
-      ]
+      configs += [ "//build/config/linux:xscrnsaver" ]
     }
   }
   if (is_posix && !is_mac && !is_ios) {
@@ -460,11 +455,11 @@ static_library("browser") {
       #"chrome_browser_jni_headers",  TODO(GYP)
     ]
     deps -= [
+      "//third_party/libaddressinput",
       #"../components/components.gyp:feedback_component",  TODO(GYP)
       #"../components/components.gyp:storage_monitor",  TODO(GYP)
       #"../components/components.gyp:usb_service",  TODO(GYP)
       #"../components/components.gyp:web_modal",  TODO(GYP)
-      #"../third_party/libaddressinput/libaddressinput.gyp:libaddressinput",  TODO(GYP)
     ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_non_android_sources,

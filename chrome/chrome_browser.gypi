@@ -3448,6 +3448,7 @@
     {
       # Protobuf compiler / generator for the safebrowsing chunk
       # protocol buffer.
+      # GN version: //chrome/browser/safe_browsing:chunk_proto
       'target_name': 'safe_browsing_chunk_proto',
       'type': 'static_library',
       'sources': [ 'browser/safe_browsing/chunk.proto' ],
@@ -3460,6 +3461,7 @@
     {
       # Protobuf compiler / generator for the safebrowsing reporting
       # protocol buffer.
+      # GN version: //chrome/browser/safe_browsing:report_proto
       'target_name': 'safe_browsing_report_proto',
       'type': 'static_library',
       'sources': [ 'browser/safe_browsing/report.proto' ],

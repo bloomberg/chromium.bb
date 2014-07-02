@@ -25,10 +25,29 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
+import ("//build/config/crypto.gni")
 import ("//build/config/features.gni")
 import ("//build/config/ui.gni")
 
 grit_defines = []
+
+# Mac and iOS want Title Case strings.
+use_titlecase_in_grd_files = is_mac || is_ios
+if (use_titlecase_in_grd_files) {
+  grit_defines += [ "-D", "use_titlecase" ]
+}
+
+if (is_chrome_branded) {
+  grit_defines += [
+    "-D", "_google_chrome",
+    "-E", "CHROMIUM_BUILD=google_chrome",
+  ]
+} else {
+  grit_defines += [
+    "-D", "_chromium",
+    "-E", "CHROMIUM_BUILD=chromium",
+  ]
+}
 
 if (is_chromeos) {
   grit_defines += [
@@ -41,10 +60,50 @@ if (is_desktop_linux) {
   grit_defines += [ "-D", "desktop_linux" ]
 }
 
+if (toolkit_views) {
+  grit_defines += [ "-D", "toolkit_views" ]
+}
+
+if (use_aura) {
+  grit_defines += [ "-D", "use_aura" ]
+}
+
+if (use_ash) {
+  grit_defines += [ "-D", "use_ash" ]
+}
+
+if (use_nss_certs) {
+  grit_defines += [ "-D", "use_nss" ]
+}
+
+if (use_ozone) {
+  grit_defines += [ "-D", "use_ozone" ]
+}
+
+if (enable_image_loader_extension) {
+  grit_defines += [ "-D", "image_loader_extension" ]
+}
+
+if (enable_remoting) {
+  grit_defines += [ "-D", "remoting" ]
+}
+
 if (is_android) {
   grit_defines += [
     "-t", "android",
     "-E", "ANDROID_JAVA_TAGGED_ONLY=true",
+  ]
+}
+
+if (is_mac || is_ios) {
+  grit_defines += [ "-D", "scale_factors=2x" ]
+}
+
+if (is_ios) {
+  grit_defines += [
+    "-t", "ios",
+    # iOS uses a whitelist to filter resources.
+    "-w", rebase_path("//build/ios/grit_whitelist.txt", root_build_dir),
   ]
 }
 
@@ -54,20 +113,43 @@ if (enable_extensions) {
 if (enable_plugins) {
   grit_defines += [ "-D", "enable_plugins" ]
 }
-if (enable_task_manager) {
-  grit_defines += [ "-D", "enable_task_manager" ]
+if (enable_printing != 0) {
+  grit_defines += [ "-D", "enable_printing" ]
+  if (enable_printing == 1) {
+    grit_defines += [ "-D", "enable_full_printing" ]
+  }
+}
+if (enable_themes) {
+  grit_defines += [ "-D", "enable_themes" ]
 }
 if (enable_app_list) {
   grit_defines += [ "-D", "enable_app_list" ]
 }
-if (enable_service_discovery) {
-  grit_defines += [ "-D", "enable_service_discovery" ]
+if (enable_settings_app) {
+  grit_defines += [ "-D", "enable_settings_app" ]
+}
+if (enable_google_now) {
+  grit_defines += [ "-D", "enable_google_now" ]
+}
+# Note: use_concatenated_impulse_responses is omitted. It is never used and
+# should probably be removed from GYP build.
+if (enable_webrtc) {
+  grit_defines += [ "-D", "enable_webrtc" ]
+}
+# Note: enable_hangout_services_extension is omitted. It is never set in the
+# GYP build. Need to figure out what it's for.
+if (enable_task_manager) {
+  grit_defines += [ "-D", "enable_task_manager" ]
+}
+if (enable_notifications) {
+  grit_defines += [ "-D", "enable_notifications" ]
 }
 if (enable_wifi_bootstrapping) {
   grit_defines += [ "-D", "enable_wifi_bootstrapping" ]
 }
-
-# TODO(GYP) the rest of the grit_defines from the gyp build.
+if (enable_service_discovery) {
+  grit_defines += [ "-D", "enable_service_discovery" ]
+}
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"

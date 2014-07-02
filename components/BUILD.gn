@@ -8,6 +8,9 @@ group("all_components") {
   visibility = "//:*"  # Only for the root targets to bring in.
 
   deps = [
+    "//components/autofill/content/browser",
+    "//components/autofill/content/common",
+    "//components/autofill/content/renderer",
     "//components/cloud_devices/common",
     "//components/dom_distiller/core",
     "//components/favicon_base",
@@ -17,6 +20,7 @@ group("all_components") {
     "//components/navigation_metrics",
     "//components/onc",
     "//components/os_crypt",
+    "//components/policy",
     "//components/pref_registry",
     "//components/query_parser",
     "//components/resources:components_resources",
@@ -27,6 +31,7 @@ group("all_components") {
     "//components/translate:translate_core_common",
     "//components/url_matcher",
     "//components/user_prefs",
+    "//components/variations",
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
     "//components/visitedlink/renderer",  # Blocked on blink
@@ -44,10 +49,14 @@ group("all_components") {
 
   if (is_android) {
     deps -= [
+      "//components/autofill/content/browser",  # Blocked on content/blink.
+      "//components/autofill/content/common",  # Blocked on content.
+      "//components/autofill/content/renderer",  # Blocked on content/blink.
       "//components/cloud_devices/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
+      "//components/policy",  # Blocked on content (indirectly via autofill).
       "//components/user_prefs",  # Blocked on content.
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.

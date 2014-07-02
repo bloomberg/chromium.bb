@@ -56,6 +56,10 @@ pkg_config("dbus") {
   packages = [ "dbus-1" ]
 }
 
+pkg_config("gnome_keyring") {
+  packages = [ "gnome-keyring-1" ]
+}
+
 if (use_evdev_gestures) {
   pkg_config("libevdev-cros") {
     packages = [ "libevdev-cros" ]
@@ -93,6 +97,10 @@ config("xext") {
 
 config("xrandr") {
   libs = [ "xrandr" ]
+}
+
+config("xscrnsaver") {
+  libs = [ "Xss" ]
 }
 
 config("libcap") {

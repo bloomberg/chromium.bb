@@ -1,0 +1,42 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("renderer") {
+  sources = [
+    "autofill_agent.cc",
+    "autofill_agent.h",
+    "form_autofill_util.cc",
+    "form_autofill_util.h",
+    "form_cache.cc",
+    "form_cache.h",
+    "page_click_listener.h",
+    "page_click_tracker.cc",
+    "page_click_tracker.h",
+    "password_autofill_agent.cc",
+    "password_autofill_agent.h",
+    "password_form_conversion_utils.cc",
+    "password_form_conversion_utils.h",
+    "password_generation_agent.cc",
+    "password_generation_agent.h",
+    "renderer_save_password_progress_logger.cc",
+    "renderer_save_password_progress_logger.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/content/common",
+    "//components/autofill/core/common",
+    "//components/strings",
+    "//content/public/common",
+    "//content/public/renderer",
+    "//ipc",
+    "//skia",
+    "//third_party/WebKit/public:blink",
+  ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+}

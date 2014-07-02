@@ -8,6 +8,7 @@
   },
   'targets': [
      {
+      # GN version: //ui/gfx/ipc
       'target_name': 'gfx_ipc',
       'type': '<(component)',
       'dependencies': [

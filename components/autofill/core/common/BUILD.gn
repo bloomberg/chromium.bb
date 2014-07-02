@@ -1,0 +1,55 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("common") {
+  sources = [
+    # TODO(brettw) why are these "browser" files in the "common" target?
+    "../browser/android/auxiliary_profile_loader_android.cc",
+    "../browser/android/auxiliary_profile_loader_android.h",
+    "../browser/android/auxiliary_profiles_android.cc",
+    "../browser/android/auxiliary_profiles_android.h",
+    "../browser/android/component_jni_registrar.cc",
+    "../browser/android/component_jni_registrar.h",
+    "../browser/android/personal_data_manager_android.cc",
+    "autofill_constants.cc",
+    "autofill_constants.h",
+    "autofill_data_validation.cc",
+    "autofill_data_validation.h",
+    "autofill_pref_names.cc",
+    "autofill_pref_names.h",
+    "autofill_switches.cc",
+    "autofill_switches.h",
+    "form_data.cc",
+    "form_data.h",
+    "form_data_predictions.cc",
+    "form_data_predictions.h",
+    "form_field_data.cc",
+    "form_field_data.h",
+    "form_field_data_predictions.cc",
+    "form_field_data_predictions.h",
+    "password_autofill_util.cc",
+    "password_autofill_util.h",
+    "password_form.cc",
+    "password_form.h",
+    "password_form_fill_data.cc",
+    "password_form_fill_data.h",
+    "password_generation_util.cc",
+    "password_generation_util.h",
+    "save_password_progress_logger.cc",
+    "save_password_progress_logger.h",
+    "web_element_descriptor.cc",
+    "web_element_descriptor.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/base",
+    "//ui/gfx",
+    "//url",
+  ]
+
+  if (is_android) {
+    # deps += [ 'autofill_jni_headers' ]  TODO(GYP)
+  }
+}
