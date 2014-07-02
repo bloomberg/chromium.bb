@@ -234,8 +234,7 @@ public:
     static WebLocalFrameImpl* create(WebFrameClient*);
     virtual ~WebLocalFrameImpl();
 
-    // Called by the WebViewImpl to initialize the main frame for the page.
-    void initializeAsMainFrame(WebCore::Page*);
+    PassRefPtr<WebCore::LocalFrame> initializeWebCoreFrame(WebCore::FrameHost*, WebCore::FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
     PassRefPtr<WebCore::LocalFrame> createChildFrame(
         const WebCore::FrameLoadRequest&, WebCore::HTMLFrameOwnerElement*);
@@ -310,8 +309,6 @@ public:
 
     // Invalidates both content area and the scrollbar.
     void invalidateAll() const;
-
-    PassRefPtr<WebCore::LocalFrame> initializeAsChildFrame(WebCore::FrameHost*, WebCore::FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
 private:
     friend class FrameLoaderClientImpl;

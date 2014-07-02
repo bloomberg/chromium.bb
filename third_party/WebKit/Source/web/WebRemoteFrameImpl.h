@@ -12,8 +12,8 @@
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
+class FrameHost;
 class FrameOwner;
-class Page;
 class RemoteFrame;
 }
 
@@ -176,7 +176,7 @@ public:
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) OVERRIDE;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) OVERRIDE;
 
-    void initializeAsMainFrame(WebCore::Page*);
+    void initializeWebCoreFrame(WebCore::FrameHost*, WebCore::FrameOwner*, const AtomicString& name);
 
     void setWebCoreFrame(PassRefPtr<WebCore::RemoteFrame>);
     WebCore::RemoteFrame* frame() const { return m_frame.get(); }

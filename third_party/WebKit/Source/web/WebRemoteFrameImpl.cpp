@@ -130,7 +130,7 @@ WebRemoteFrame* WebRemoteFrameImpl::toWebRemoteFrame()
 
 void WebRemoteFrameImpl::close()
 {
-    ASSERT_NOT_REACHED();
+    deref();
 }
 
 WebString WebRemoteFrameImpl::uniqueName() const
@@ -793,16 +793,17 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebFr
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might
     // need a special initialization function for this case to avoid that duplicate navigation.
-    child->initializeAsChildFrame(frame()->host(), result.storedValue->value.get(), name, AtomicString());
+    child->initializeWebCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
     // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
     // if the parent is remote, it should never be detached synchronously...
     ASSERT(child->frame());
     return child;
 }
 
-void WebRemoteFrameImpl::initializeAsMainFrame(Page* page)
+void WebRemoteFrameImpl::initializeWebCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
 {
-    setWebCoreFrame(RemoteFrame::create(&m_frameClient, &page->frameHost(), 0));
+    setWebCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
+    m_frame->tree().setName(name, nullAtom);
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebFrameClient* client)
@@ -811,9 +812,7 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, Web
     HashMap<WebFrame*, OwnPtr<FrameOwner> >::AddResult result =
         m_ownersForChildren.add(child, adoptPtr(new PlaceholderFrameOwner));
     appendChild(child);
-    RefPtr<RemoteFrame> childFrame = RemoteFrame::create(&child->m_frameClient, frame()->host(), result.storedValue->value.get());
-    child->setWebCoreFrame(childFrame);
-    childFrame->tree().setName(name, AtomicString());
+    child->initializeWebCoreFrame(frame()->host(), result.storedValue->value.get(), name);
     return child;
 }
 

@@ -6,6 +6,7 @@
 #include "public/web/WebFrame.h"
 
 #include "core/frame/RemoteFrame.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
@@ -28,6 +29,12 @@ void WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
 
+    // All child frames must have been detached first.
+    ASSERT(!m_firstChild && !m_lastChild);
+    // The frame being swapped in should not have a WebCore::Frame associated
+    // with it yet.
+    ASSERT(!toWebCoreFrame(frame));
+
     if (m_parent) {
         if (m_parent->m_firstChild == this)
             m_parent->m_firstChild = frame;
@@ -35,6 +42,7 @@ void WebFrame::swap(WebFrame* frame)
             m_parent->m_lastChild = frame;
         swap(m_parent, frame->m_parent);
     }
+
     if (m_previousSibling) {
         m_previousSibling->m_nextSibling = frame;
         swap(m_previousSibling, frame->m_previousSibling);
@@ -43,6 +51,7 @@ void WebFrame::swap(WebFrame* frame)
         m_nextSibling->m_previousSibling = frame;
         swap(m_nextSibling, frame->m_nextSibling);
     }
+
     if (m_opener) {
         m_opener->m_openedFrameTracker->remove(this);
         m_opener->m_openedFrameTracker->add(frame);
@@ -51,6 +60,19 @@ void WebFrame::swap(WebFrame* frame)
     if (!m_openedFrameTracker->isEmpty()) {
         m_openedFrameTracker->updateOpener(frame);
         frame->m_openedFrameTracker.reset(m_openedFrameTracker.release());
+    }
+
+    // Finally, clone the state of the current WebCore::Frame into one matching
+    // the type of the passed in WebFrame.
+    // FIXME: This is a bit clunky; this results in pointless decrements and
+    // increments of connected subframes.
+    WebCore::Frame* oldFrame = toWebCoreFrame(this);
+    WebCore::FrameOwner* owner = oldFrame->owner();
+    oldFrame->disconnectOwnerElement();
+    if (frame->isWebLocalFrame()) {
+        toWebLocalFrameImpl(frame)->initializeWebCoreFrame(oldFrame->host(), owner, oldFrame->tree().name(), nullAtom);
+    } else {
+        toWebRemoteFrameImpl(frame)->initializeWebCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
     }
 }
 

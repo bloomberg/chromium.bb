@@ -317,9 +317,9 @@ void WebView::didExitModalLoop()
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
     if (frame->isWebLocalFrame())
-        toWebLocalFrameImpl(frame)->initializeAsMainFrame(page());
+        toWebLocalFrameImpl(frame)->initializeWebCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
     else
-        toWebRemoteFrameImpl(frame)->initializeAsMainFrame(page());
+        toWebRemoteFrameImpl(frame)->initializeWebCoreFrame(&page()->frameHost(), 0, nullAtom);
 }
 
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)

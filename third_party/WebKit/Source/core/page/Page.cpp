@@ -202,7 +202,11 @@ PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalF
 
 void Page::setMainFrame(Frame* mainFrame)
 {
-    ASSERT(!m_mainFrame); // Should only be called during initialization
+    // Should only be called during initialization or swaps between local and
+    // remote frames.
+    // FIXME: Unfortunately we can't assert on this at the moment, because this
+    // is called in the base constructor for both LocalFrame and RemoteFrame,
+    // when the vtables for the derived classes have not yet been setup.
     m_mainFrame = mainFrame;
 }
 

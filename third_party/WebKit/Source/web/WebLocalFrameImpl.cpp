@@ -1551,13 +1551,16 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
     }
 }
 
-void WebLocalFrameImpl::initializeAsMainFrame(WebCore::Page* page)
+PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeWebCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
-    setWebCoreFrame(LocalFrame::create(&m_frameLoaderClientImpl, &page->frameHost(), 0));
-
+    RefPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
+    setWebCoreFrame(frame);
+    frame->tree().setName(name, fallbackName);
     // We must call init() after m_frame is assigned because it is referenced
-    // during init().
-    m_frame->init();
+    // during init(). Note that this may dispatch JS events; the frame may be
+    // detached after init() returns.
+    frame->init();
+    return frame;
 }
 
 PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
@@ -1571,7 +1574,7 @@ PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadReques
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    RefPtr<LocalFrame> child = webframeChild->initializeAsChildFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    RefPtr<LocalFrame> child = webframeChild->initializeWebCoreFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
     // Initializing the WebCore frame may cause the new child to be detached, since it may dispatch a load event in the parent.
     if (!child->tree().parent())
         return nullptr;
@@ -1852,16 +1855,6 @@ void WebLocalFrameImpl::invalidateAll() const
     FrameView* view = frame()->view();
     view->invalidateRect(view->frameRect());
     invalidateScrollbar();
-}
-
-PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeAsChildFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
-{
-    RefPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
-    setWebCoreFrame(frame);
-    frame->tree().setName(name, fallbackName);
-    // May dispatch JS events; frame may be detached after this.
-    frame->init();
-    return frame;
 }
 
 } // namespace blink

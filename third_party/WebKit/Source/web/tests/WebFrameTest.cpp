@@ -77,6 +77,7 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebRange.h"
+#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSearchableFormData.h"
 #include "public/web/WebSecurityOrigin.h"
@@ -5612,6 +5613,136 @@ TEST_F(WebFrameTest, BrandColor)
     frame->executeScript(WebScriptSource("document.getElementById('bc2').setAttribute('content', '#00FF00');"));
     EXPECT_TRUE(client.didNotify());
     EXPECT_EQ(0xff0000ff, frame->document().brandColor());
+}
+
+class WebFrameSwapTest : public WebFrameTest {
+protected:
+    WebFrameSwapTest()
+    {
+        registerMockedHttpURLLoad("frame-a-b-c.html");
+        registerMockedHttpURLLoad("subframe-a.html");
+        registerMockedHttpURLLoad("subframe-b.html");
+        registerMockedHttpURLLoad("subframe-c.html");
+        registerMockedHttpURLLoad("subframe-hello.html");
+
+        m_webViewHelper.initializeAndLoad(m_baseURL + "frame-a-b-c.html");
+    }
+
+    void reset() { m_webViewHelper.reset(); }
+    WebFrame* mainFrame() const { return m_webViewHelper.webView()->mainFrame(); }
+
+private:
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+};
+
+// FIXME: We should have tests for main frame swaps, but it interacts poorly
+// with the geolocation inspector agent, since the lifetime of the inspector
+// agent is tied to the Page, but the inspector agent is created by the
+// instantiation of the main frame.
+
+void swapAndVerifyFirstChildConsistency(const char* const message, WebFrame* parent, WebFrame* newChild)
+{
+    SCOPED_TRACE(message);
+    parent->firstChild()->swap(newChild);
+
+    EXPECT_EQ(newChild, parent->firstChild());
+    EXPECT_EQ(newChild->parent(), parent);
+    EXPECT_EQ(newChild, parent->lastChild()->previousSibling()->previousSibling());
+    EXPECT_EQ(newChild->nextSibling(), parent->lastChild()->previousSibling());
+}
+
+TEST_F(WebFrameSwapTest, SwapFirstChild)
+{
+    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    swapAndVerifyFirstChildConsistency("local->remote", mainFrame(), remoteFrame);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebFrame* localFrame = WebLocalFrame::create(&client);
+    swapAndVerifyFirstChildConsistency("remote->local", mainFrame(), localFrame);
+
+    // FIXME: This almost certainly fires more load events on the iframe element
+    // than it should.
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    std::string content = localFrame->contentAsText(1024).utf8();
+    EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
+void swapAndVerifyMiddleChildConsistency(const char* const message, WebFrame* parent, WebFrame* newChild)
+{
+    SCOPED_TRACE(message);
+    parent->firstChild()->nextSibling()->swap(newChild);
+
+    EXPECT_EQ(newChild, parent->firstChild()->nextSibling());
+    EXPECT_EQ(newChild, parent->lastChild()->previousSibling());
+    EXPECT_EQ(newChild->parent(), parent);
+    EXPECT_EQ(newChild, parent->firstChild()->nextSibling());
+    EXPECT_EQ(newChild->previousSibling(), parent->firstChild());
+    EXPECT_EQ(newChild, parent->lastChild()->previousSibling());
+    EXPECT_EQ(newChild->nextSibling(), parent->lastChild());
+}
+
+TEST_F(WebFrameSwapTest, SwapMiddleChild)
+{
+    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    swapAndVerifyMiddleChildConsistency("local->remote", mainFrame(), remoteFrame);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebFrame* localFrame = WebLocalFrame::create(&client);
+    swapAndVerifyMiddleChildConsistency("remote->local", mainFrame(), localFrame);
+
+    // FIXME: This almost certainly fires more load events on the iframe element
+    // than it should.
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    std::string content = localFrame->contentAsText(1024).utf8();
+    EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
+void swapAndVerifyLastChildConsistency(const char* const message, WebFrame* parent, WebFrame* newChild)
+{
+    SCOPED_TRACE(message);
+    parent->lastChild()->swap(newChild);
+
+    EXPECT_EQ(newChild, parent->lastChild());
+    EXPECT_EQ(newChild->parent(), parent);
+    EXPECT_EQ(newChild, parent->firstChild()->nextSibling()->nextSibling());
+    EXPECT_EQ(newChild->previousSibling(), parent->firstChild()->nextSibling());
+}
+
+TEST_F(WebFrameSwapTest, SwapLastChild)
+{
+    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    swapAndVerifyLastChildConsistency("local->remote", mainFrame(), remoteFrame);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebFrame* localFrame = WebLocalFrame::create(&client);
+    swapAndVerifyLastChildConsistency("remote->local", mainFrame(), localFrame);
+
+    // FIXME: This almost certainly fires more load events on the iframe element
+    // than it should.
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    std::string content = localFrame->contentAsText(1024).utf8();
+    EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
 }
 
 } // namespace
