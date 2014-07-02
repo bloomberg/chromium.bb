@@ -27,7 +27,7 @@
 
 #include "WebCommon.h"
 
-#define WEB_FILTER_ANIMATION_CURVE_IS_DEFINED 1
+#define WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED 1
 
 namespace blink {
 
@@ -46,6 +46,7 @@ public:
     enum AnimationCurveType {
         AnimationCurveTypeFilter,
         AnimationCurveTypeFloat,
+        AnimationCurveTypeScrollOffset,
         AnimationCurveTypeTransform,
     };
 

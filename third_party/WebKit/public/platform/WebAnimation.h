@@ -47,7 +47,8 @@ public:
     enum TargetProperty {
         TargetPropertyTransform = 0,
         TargetPropertyOpacity,
-        TargetPropertyFilter
+        TargetPropertyFilter,
+        TargetPropertyScrollOffset
     };
 
     virtual ~WebAnimation() { }

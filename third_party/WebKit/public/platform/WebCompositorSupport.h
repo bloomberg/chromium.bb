@@ -27,7 +27,9 @@
 #define WebCompositorSupport_h
 
 #include "WebAnimation.h"
+#include "WebAnimationCurve.h"
 #include "WebCommon.h"
+#include "WebFloatPoint.h"
 #include "WebLayerTreeView.h"
 #include "WebScrollbar.h"
 #include "WebScrollbarThemePainter.h"
@@ -49,6 +51,7 @@ class WebNinePatchLayer;
 class WebLayer;
 class WebScrollbarLayer;
 class WebScrollbarThemeGeometry;
+class WebScrollOffsetAnimationCurve;
 class WebSolidColorLayer;
 class WebThread;
 class WebTransformAnimationCurve;
@@ -89,6 +92,8 @@ public:
     virtual WebFilterAnimationCurve* createFilterAnimationCurve() { return 0; }
 
     virtual WebFloatAnimationCurve* createFloatAnimationCurve() { return 0; }
+
+    virtual WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(WebFloatPoint targetValue, WebAnimationCurve::TimingFunctionType) { return 0; }
 
     virtual WebTransformAnimationCurve* createTransformAnimationCurve() { return 0; }
 
