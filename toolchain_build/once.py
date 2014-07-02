@@ -290,6 +290,7 @@ class Once(object):
 
       # Uninstall the file log handler
       cmd_logger.removeHandler(file_log_handler)
+      file_log_handler.close()
 
     # Confirm that we aren't hitting something we've cached.
     for path in self._path_hash_cache:
