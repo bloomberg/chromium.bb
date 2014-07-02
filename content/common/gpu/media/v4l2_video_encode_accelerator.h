@@ -192,21 +192,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Our original calling message loop for the child thread.
   const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
-  // WeakPtr<> pointing to |this| for use in posting tasks from the encoder or
-  // device worker threads back to the child thread.  Because the worker threads
-  // are members of this class, any task running on those threads is guaranteed
-  // that this object is still alive.  As a result, tasks posted from the child
-  // thread to the encoder or device thread should use base::Unretained(this),
-  // and tasks posted the other way should use |weak_this_|.
-  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
-  base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
-
-  // To expose client callbacks from VideoEncodeAccelerator.
-  // NOTE: all calls to these objects *MUST* be executed on
-  // child_message_loop_proxy_.
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
-  base::WeakPtr<Client> client_;
-
   gfx::Size visible_size_;
   // Input allocated size required by the device.
   gfx::Size input_allocated_size_;
@@ -224,9 +209,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // thread should be the only one managing these.
   //
 
-  // This thread services tasks posted from the VEA API entry points by the
-  // child thread and device service callbacks posted from the device thread.
-  base::Thread encoder_thread_;
   // Encoder state.
   State encoder_state_;
 
@@ -264,16 +246,29 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // since we don't care about ordering.
   std::vector<linked_ptr<BitstreamBufferRef> > encoder_output_queue_;
 
-  //
-  // The device polling thread handles notifications of V4L2 device changes.
-  // TODO(sheu): replace this thread with an TYPE_IO encoder_thread_.
-  //
-
-  // The thread.
-  base::Thread device_poll_thread_;
-
   // Image processor, if one is in use.
   scoped_ptr<V4L2ImageProcessor> image_processor_;
+
+  // This thread services tasks posted from the VEA API entry points by the
+  // child thread and device service callbacks posted from the device thread.
+  base::Thread encoder_thread_;
+
+  // The device polling thread handles notifications of V4L2 device changes.
+  // TODO(sheu): replace this thread with an TYPE_IO encoder_thread_.
+  base::Thread device_poll_thread_;
+
+  // To expose client callbacks from VideoEncodeAccelerator.
+  // NOTE: all calls to these objects *MUST* be executed on
+  // child_message_loop_proxy_.
+  base::WeakPtr<Client> client_;
+  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+
+  // WeakPtr<> pointing to |this| for use in posting tasks from the
+  // image_processor_ back to the child thread.
+  // Tasks posted onto encoder and poll threads can use base::Unretained(this),
+  // as both threads will not outlive this object.
+  base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
+  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VideoEncodeAccelerator);
 };

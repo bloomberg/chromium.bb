@@ -66,13 +66,10 @@ V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord()
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     scoped_ptr<V4L2Device> device)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
-      weak_this_ptr_factory_(this),
-      weak_this_(weak_this_ptr_factory_.GetWeakPtr()),
       output_buffer_byte_size_(0),
       device_input_format_(media::VideoFrame::UNKNOWN),
       input_planes_count_(0),
       output_format_fourcc_(0),
-      encoder_thread_("V4L2EncoderThread"),
       encoder_state_(kUninitialized),
       stream_header_size_(0),
       device_(device.Pass()),
@@ -81,7 +78,10 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       input_memory_type_(V4L2_MEMORY_USERPTR),
       output_streamon_(false),
       output_buffer_queued_count_(0),
-      device_poll_thread_("V4L2EncoderDevicePollThread") {
+      encoder_thread_("V4L2EncoderThread"),
+      device_poll_thread_("V4L2EncoderDevicePollThread"),
+      weak_this_ptr_factory_(this) {
+  weak_this_ = weak_this_ptr_factory_.GetWeakPtr();
 }
 
 V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
@@ -255,6 +255,7 @@ void V4L2VideoEncodeAccelerator::Destroy() {
 
   // We're destroying; cancel all callbacks.
   client_ptr_factory_.reset();
+  weak_this_ptr_factory_.InvalidateWeakPtrs();
 
   if (image_processor_.get())
     image_processor_.release()->Destroy();
