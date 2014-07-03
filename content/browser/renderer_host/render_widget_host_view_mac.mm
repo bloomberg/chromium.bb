@@ -1851,6 +1851,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
           scale_factor, pixel_size);
     }
 
+    SendVSyncParametersToRenderer();
+
     delegated_frame_host_->SwapDelegatedFrame(
         output_surface_id,
         frame->delegated_frame_data.Pass(),
