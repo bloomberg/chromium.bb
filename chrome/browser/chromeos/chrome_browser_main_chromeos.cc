@@ -43,12 +43,8 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/auth/authenticator.h"
-#include "chrome/browser/chromeos/login/auth/key.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -135,59 +131,6 @@ void ChromeOSVersionCallback(const std::string& version) {
 
 // Login -----------------------------------------------------------------------
 
-// Class is used to login using passed username and password.
-// The instance will be deleted upon success or failure.
-class StubLogin : public LoginStatusConsumer,
-                  public LoginUtils::Delegate {
- public:
-  StubLogin(std::string username, std::string password)
-      : profile_prepared_(false) {
-    authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-    UserContext user_context(username);
-    user_context.SetKey(Key(password));
-    authenticator_.get()->AuthenticateToLogin(ProfileHelper::GetSigninProfile(),
-                                              user_context);
-  }
-
-  virtual ~StubLogin() {
-    LoginUtils::Get()->DelegateDeleted(this);
-  }
-
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE {
-    LOG(ERROR) << "Login Failure: " << error.GetErrorString();
-    delete this;
-  }
-
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE {
-    if (!profile_prepared_) {
-      // Will call OnProfilePrepared in the end.
-      LoginUtils::Get()->PrepareProfile(user_context,
-                                        false,          // has_auth_cookies
-                                        true,           // has_active_session
-                                        this);
-    } else {
-      delete this;
-    }
-  }
-
-  // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    const std::string login_user = login::CanonicalizeUserID(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kLoginUser));
-    if (!policy::IsDeviceLocalAccountUser(login_user, NULL)) {
-      profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                     login_user);
-    }
-    profile_prepared_ = true;
-    LoginUtils::Get()->DoBrowserLaunch(profile, NULL);
-    delete this;
-  }
-
-  scoped_refptr<Authenticator> authenticator_;
-  bool profile_prepared_;
-};
-
 bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   return command_line.HasSwitch(switches::kLoginManager) &&
@@ -207,6 +150,13 @@ void RunAutoLaunchKioskApp() {
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
+  std::string login_user = parsed_command_line.
+      GetSwitchValueASCII(chromeos::switches::kLoginUser);
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      login_user == UserManager::kStubUser) {
+    return;
+  }
+
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     RunAutoLaunchKioskApp();
   } else if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
@@ -222,12 +172,6 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
       PrefService* local_state = g_browser_process->local_state();
       local_state->ClearPref(prefs::kRebootAfterUpdate);
     }
-  } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
-             parsed_command_line.HasSwitch(switches::kLoginPassword)) {
-    BootTimesLoader::Get()->RecordLoginAttempted();
-    new StubLogin(
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
   } else {
     if (!parsed_command_line.HasSwitch(::switches::kTestName)) {
       // Enable CrasAudioHandler logging when chrome restarts after crashing.
@@ -475,14 +419,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   if (parsed_command_line().HasSwitch(::switches::kAllowFileAccess))
     ChromeNetworkDelegate::AllowAccessToAllFiles();
 
-  // There are two use cases for kLoginUser:
-  //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"
-  //   2) if passed alone, to signal that the indicated user has already
-  //      logged in and we should behave accordingly.
-  // This handles case 2.
+  // If kLoginUser is passed this indicates that user has already
+  // logged in and we should behave accordingly.
   bool immediate_login =
-      parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword);
+      parsed_command_line().HasSwitch(switches::kLoginUser);
   if (immediate_login){
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
@@ -618,11 +558,11 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Restarting Chrome inside existing user session. Possible cases:
   // 1. Chrome is restarted after crash.
-  // 2. Chrome is started in browser_tests skipping the login flow
-  // 3. Chrome is started on dev machine
-  //    i.e. not on Chrome OS device w/o login flow.
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+  // 2. Chrome is started in browser_tests skipping the login flow.
+  // 3. Chrome is started on dev machine i.e. not on Chrome OS device w/o
+  //    login flow. In that case --login-user=[UserManager::kStubUser] is added.
+  //    See PreEarlyInitialization().
+  if (parsed_command_line().HasSwitch(switches::kLoginUser)) {
     std::string login_user = login::CanonicalizeUserID(
         parsed_command_line().GetSwitchValueASCII(
             chromeos::switches::kLoginUser));

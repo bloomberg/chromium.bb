@@ -63,7 +63,6 @@ CHROMEOS_EXPORT extern const char kHomedir[];
 CHROMEOS_EXPORT extern const char kIgnoreUserProfileMappingForTests[];
 CHROMEOS_EXPORT extern const char kKioskModeScreensaverPath[];
 CHROMEOS_EXPORT extern const char kLoginManager[];
-CHROMEOS_EXPORT extern const char kLoginPassword[];
 CHROMEOS_EXPORT extern const char kLoginProfile[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];

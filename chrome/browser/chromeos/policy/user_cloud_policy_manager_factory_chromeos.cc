@@ -143,8 +143,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   UserAffiliation affiliation = connector->GetUserAffiliation(username);
   const bool is_managed_user = affiliation == USER_AFFILIATION_MANAGED;
   const bool is_browser_restart =
-      command_line->HasSwitch(chromeos::switches::kLoginUser) &&
-      !command_line->HasSwitch(chromeos::switches::kLoginPassword);
+      command_line->HasSwitch(chromeos::switches::kLoginUser);
   const bool wait_for_initial_policy = is_managed_user && !is_browser_restart;
 
   DeviceManagementService* device_management_service =

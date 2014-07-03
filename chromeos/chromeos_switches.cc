@@ -164,11 +164,11 @@ const char kKioskModeScreensaverPath[] = "kiosk-mode-screensaver-path";
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 
-// Specifies a password to be used to login (along with login-user).
-const char kLoginPassword[] = "login-password";
-
-// Specifies the profile to use once a chromeos user is logged in. This is
-// required unless --multi-profile is set.
+// Specifies the profile to use once a chromeos user is logged in.
+// This parameter is ignored if user goes through login screen since user_id
+// hash defines which profile directory to use.
+// In case of browser restart within active session this parameter is used
+// to pass user_id hash for primary user.
 const char kLoginProfile[] = "login-profile";
 
 // Specifies the user which is already logged in.

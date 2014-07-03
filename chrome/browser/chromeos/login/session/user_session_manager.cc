@@ -257,8 +257,7 @@ void UserSessionManager::InitRlz(Profile* profile) {
 bool UserSessionManager::HasBrowserRestarted() const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::SysInfo::IsRunningOnChromeOS() &&
-         command_line->HasSwitch(switches::kLoginUser) &&
-         !command_line->HasSwitch(switches::kLoginPassword);
+         command_line->HasSwitch(switches::kLoginUser);
 }
 
 OAuth2LoginManager::SessionRestoreStrategy
