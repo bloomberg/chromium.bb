@@ -12,20 +12,31 @@ if (!window.testRunner)
 
 window.jsTestIsAsync = true;
 
-shouldBeTrue('!!navigator.push');
-shouldBeTrue('!!navigator.push.register');
-shouldBe('navigator.push.register("senderId").constructor', 'Promise');
+function testPushRegistrationError() {
+    window.testRunner.setMockPushClientError('message');
+    navigator.push.register('senderId').then(function() {
+        testFailed('Success callback invoked unexpectedly.');
+        testPushRegistrationSuccess();
+    }, function(e) {
+        error = e;
+        shouldBeEqualToString('error.name', 'AbortError');
+        testPushRegistrationSuccess();
+    });
+}
+testPushRegistrationError();
 
-// Currently we have an empty implementation that always fails.
-navigator.push.register('senderId').then(function successCallback() {
-    testFailed('Success callback invoked unexpectedly.');
-    finishJSTest();
-}, function errorCallback(e) {
-    error = e;
-    shouldBeEqualToString('error.name', 'AbortError');
-    finishJSTest();
-});
-
+function testPushRegistrationSuccess() {
+    window.testRunner.setMockPushClientSuccess('endpoint', 'registrationId');
+    navigator.push.register('senderId').then(function(reg) {
+        registration = reg;
+        shouldBeEqualToString('registration.pushEndpoint', 'endpoint');
+        shouldBeEqualToString('registration.pushRegistrationId', 'registrationId');
+        finishJSTest();
+    }, function(e) {
+        testFailed('Error callback invoked unexpectedly.');
+        finishJSTest();
+    });
+}
 </script>
 </body>
 </html>

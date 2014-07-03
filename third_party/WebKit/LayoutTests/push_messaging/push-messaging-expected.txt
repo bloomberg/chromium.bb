@@ -3,10 +3,9 @@ Tests for the Push API.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS !!navigator.push is true
-PASS !!navigator.push.register is true
-PASS navigator.push.register("senderId").constructor is Promise
 PASS error.name is "AbortError"
+PASS registration.pushEndpoint is "endpoint"
+PASS registration.pushRegistrationId is "registrationId"
 PASS successfullyParsed is true
 
 TEST COMPLETE

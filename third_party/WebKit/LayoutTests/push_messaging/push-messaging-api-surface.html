@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Tests the Push API surface.');
+
+shouldBeTrue('!!navigator.push');
+shouldBeTrue('!!navigator.push.register');
+shouldBe('navigator.push.register("senderId").constructor', 'Promise');
+</script>
+</body>
+</html>
