@@ -104,7 +104,7 @@ class OzonePlatformGbm : public OzonePlatform {
     vt_manager_.reset(new VirtualTerminalManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
-    surface_factory_ozone_.reset(new GbmSurfaceFactory(NULL, NULL, NULL));
+    surface_factory_ozone_.reset(new GbmSurfaceFactory());
 
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
@@ -119,10 +119,12 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_generator_.reset(new GbmSurfaceGenerator(dri_.get()));
     screen_manager_.reset(new ScreenManager(dri_.get(),
                                             surface_generator_.get()));
-    surface_factory_ozone_.reset(
-        new GbmSurfaceFactory(dri_.get(),
-                              surface_generator_->device(),
-                              screen_manager_.get()));
+    if (!surface_factory_ozone_)
+      surface_factory_ozone_.reset(new GbmSurfaceFactory());
+
+    surface_factory_ozone_->InitializeGpu(dri_.get(),
+                                          surface_generator_->device(),
+                                          screen_manager_.get());
 
     gpu_platform_support_.reset(
         new GpuPlatformSupportGbm(surface_factory_ozone_.get()));

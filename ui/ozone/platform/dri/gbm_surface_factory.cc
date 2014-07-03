@@ -75,13 +75,18 @@ scoped_ptr<gfx::VSyncProvider> GbmSurfaceAdapter::CreateVSyncProvider() {
 
 }  // namespace
 
-GbmSurfaceFactory::GbmSurfaceFactory(DriWrapper* dri,
-                                     gbm_device* device,
-                                     ScreenManager* screen_manager)
-    : DriSurfaceFactory(dri, screen_manager),
-      device_(device) {}
+GbmSurfaceFactory::GbmSurfaceFactory()
+    : DriSurfaceFactory(NULL, NULL),
+      device_(NULL) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
+
+void GbmSurfaceFactory::InitializeGpu(
+    DriWrapper* dri, gbm_device* device, ScreenManager* screen_manager) {
+  drm_ = dri;
+  device_ = device;
+  screen_manager_ = screen_manager;
+}
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   CHECK(state_ == INITIALIZED);
