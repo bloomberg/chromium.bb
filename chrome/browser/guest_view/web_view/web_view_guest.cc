@@ -65,7 +65,7 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
-#if defined(ENABLE_PLUGINS)
+#if defined(ENABLE_PLUGINS) && !defined(OS_ANDROID)
 #include "chrome/browser/guest_view/web_view/plugin_permission_helper.h"
 #endif
 
@@ -167,7 +167,7 @@ void AttachWebViewHelpers(WebContents* contents) {
   FaviconTabHelper::CreateForWebContents(contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
-#if defined(ENABLE_PLUGINS)
+#if defined(ENABLE_PLUGINS) && !defined(OS_ANDROID)
   PluginPermissionHelper::CreateForWebContents(contents);
 #endif
 #if defined(ENABLE_PRINTING)
