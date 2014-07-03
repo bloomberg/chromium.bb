@@ -16,6 +16,8 @@
       'sources': [
         'device_monitor_linux.cc',
         'device_monitor_linux.h',
+        'hid_collection_info.cc',
+        'hid_collection_info.h',
         'hid_connection.cc',
         'hid_connection.h',
         'hid_connection_linux.cc',
@@ -40,8 +42,6 @@
         'hid_service_win.h',
         'hid_usage_and_page.cc',
         'hid_usage_and_page.h',
-        'hid_utils_mac.cc',
-        'hid_utils_mac.h',
         'input_service_linux.cc',
         'input_service_linux.h',
       ],

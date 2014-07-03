@@ -43,30 +43,53 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     int resource_id = device_iter->first;
     device::HidDeviceId device_id = device_iter->second;
     device::HidDeviceInfo device_info;
+
     if (hid_service->GetDeviceInfo(device_id, &device_info)) {
       if (device_info.vendor_id == vendor_id &&
-          device_info.product_id == product_id &&
-          IsDeviceAccessible(device_info)) {
+          device_info.product_id == product_id) {
         api::hid::HidDeviceInfo api_device_info;
         api_device_info.device_id = resource_id;
         api_device_info.vendor_id = device_info.vendor_id;
         api_device_info.product_id = device_info.product_id;
-        for (std::vector<device::HidUsageAndPage>::const_iterator usage_iter =
-                 device_info.usages.begin();
-             usage_iter != device_info.usages.end();
-             ++usage_iter) {
-          api::hid::HidUsageAndPage* usage_and_page =
-              new api::hid::HidUsageAndPage();
-          usage_and_page->usage_page = (*usage_iter).usage_page;
-          usage_and_page->usage = (*usage_iter).usage;
-          linked_ptr<api::hid::HidUsageAndPage> usage_and_page_ptr(
-              usage_and_page);
-          api_device_info.usages.push_back(usage_and_page_ptr);
+        api_device_info.max_input_report_size =
+            device_info.max_input_report_size;
+        api_device_info.max_output_report_size =
+            device_info.max_output_report_size;
+        api_device_info.max_feature_report_size =
+            device_info.max_feature_report_size;
+
+        for (std::vector<device::HidCollectionInfo>::const_iterator
+                 collections_iter = device_info.collections.begin();
+             collections_iter != device_info.collections.end();
+             ++collections_iter) {
+          device::HidCollectionInfo collection = *collections_iter;
+
+          // Don't expose sensitive data.
+          if (collection.usage.IsProtected()) {
+            continue;
+          }
+
+          api::hid::HidCollectionInfo* api_collection =
+              new api::hid::HidCollectionInfo();
+          api_collection->usage_page = collection.usage.usage_page;
+          api_collection->usage = collection.usage.usage;
+
+          api_collection->report_ids.resize(collection.report_ids.size());
+          std::copy(collection.report_ids.begin(),
+                    collection.report_ids.end(),
+                    api_collection->report_ids.begin());
+
+          api_device_info.collections.push_back(
+              make_linked_ptr(api_collection));
         }
-        api_devices->Append(api_device_info.ToValue().release());
+
+        // Expose devices with which user can communicate.
+        if (api_device_info.collections.size() > 0)
+          api_devices->Append(api_device_info.ToValue().release());
       }
     }
   }
+
   return scoped_ptr<base::ListValue>(api_devices);
 }
 
@@ -114,50 +137,6 @@ void HidDeviceManager::UpdateDevices() {
   }
   device_ids_.swap(new_device_ids);
   resource_ids_.swap(new_resource_ids);
-}
-
-// static
-// TODO(rockot): Add some tests for this.
-bool HidDeviceManager::IsDeviceAccessible(
-    const device::HidDeviceInfo& device_info) {
-  for (std::vector<device::HidUsageAndPage>::const_iterator iter =
-           device_info.usages.begin();
-      iter != device_info.usages.end(); ++iter) {
-    if (!IsUsageAccessible(*iter)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// static
-bool HidDeviceManager::IsUsageAccessible(
-    const HidUsageAndPage& usage_and_page) {
-  if (usage_and_page.usage_page == HidUsageAndPage::kPageKeyboard)
-    return false;
-
-  if (usage_and_page.usage_page != HidUsageAndPage::kPageGenericDesktop)
-    return true;
-
-  uint16_t usage = usage_and_page.usage;
-  if (usage == HidUsageAndPage::kGenericDesktopPointer ||
-      usage == HidUsageAndPage::kGenericDesktopMouse ||
-      usage == HidUsageAndPage::kGenericDesktopKeyboard ||
-      usage == HidUsageAndPage::kGenericDesktopKeypad) {
-    return false;
-  }
-
-  if (usage >= HidUsageAndPage::kGenericDesktopSystemControl &&
-      usage <= HidUsageAndPage::kGenericDesktopSystemWarmRestart) {
-    return false;
-  }
-
-  if (usage >= HidUsageAndPage::kGenericDesktopSystemDock &&
-      usage <= HidUsageAndPage::kGenericDesktopSystemDisplaySwap) {
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace extensions

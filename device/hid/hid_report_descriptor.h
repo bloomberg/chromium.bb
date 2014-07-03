@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_report_descriptor_item.h"
-#include "device/hid/hid_usage_and_page.h"
 
 namespace device {
 
@@ -25,9 +25,12 @@ class HidReportDescriptor {
     return items_;
   }
 
-  // Returns HID usages of top-level collections present in the descriptor.
-  void GetTopLevelCollections(
-      std::vector<HidUsageAndPage>* topLevelCollections);
+  // Returns top-level collections present in the descriptor,
+  // together with max report sizes
+  void GetDetails(std::vector<HidCollectionInfo>* top_level_collections,
+                  int* max_input_report_size,
+                  int* max_output_report_size,
+                  int* max_feature_report_size);
 
  private:
   std::vector<linked_ptr<HidReportDescriptorItem> > items_;

@@ -126,7 +126,8 @@ struct HidUsageAndPage {
   uint16_t usage;
   Page usage_page;
 
-  bool operator==(const HidUsageAndPage& other) const;
+  // Indicates whether this usage is protected by Chrome.
+  bool IsProtected() const;
 };
 
 }  // namespace device

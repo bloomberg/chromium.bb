@@ -187,38 +187,50 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
   PHIDP_PREPARSED_DATA preparsed_data;
   if (HidD_GetPreparsedData(device_handle.Get(), &preparsed_data) &&
       preparsed_data) {
-    HIDP_CAPS capabilities;
+    HIDP_CAPS capabilities = {0};
     if (HidP_GetCaps(preparsed_data, &capabilities) == HIDP_STATUS_SUCCESS) {
-      device_info.input_report_size = capabilities.InputReportByteLength;
-      device_info.output_report_size = capabilities.OutputReportByteLength;
-      device_info.feature_report_size = capabilities.FeatureReportByteLength;
-      device_info.usages.push_back(HidUsageAndPage(
-        capabilities.Usage,
-        static_cast<HidUsageAndPage::Page>(capabilities.UsagePage)));
-    }
-    // Detect if the device supports report ids.
-    if (capabilities.NumberInputValueCaps > 0) {
-      scoped_ptr<HIDP_VALUE_CAPS[]> value_caps(
-          new HIDP_VALUE_CAPS[capabilities.NumberInputValueCaps]);
-      USHORT value_caps_length = capabilities.NumberInputValueCaps;
-      if (HidP_GetValueCaps(HidP_Input, &value_caps[0], &value_caps_length,
-                            preparsed_data) == HIDP_STATUS_SUCCESS) {
-        device_info.has_report_id = (value_caps[0].ReportID != 0);
-      }
-    }
-    if (!device_info.has_report_id && capabilities.NumberInputButtonCaps > 0)
-    {
-      scoped_ptr<HIDP_BUTTON_CAPS[]> button_caps(
-        new HIDP_BUTTON_CAPS[capabilities.NumberInputButtonCaps]);
+      device_info.max_input_report_size = capabilities.InputReportByteLength;
+      device_info.max_output_report_size = capabilities.OutputReportByteLength;
+      device_info.max_feature_report_size =
+          capabilities.FeatureReportByteLength;
+      HidCollectionInfo collection_info;
+      collection_info.usage = HidUsageAndPage(
+          capabilities.Usage,
+          static_cast<HidUsageAndPage::Page>(capabilities.UsagePage));
       USHORT button_caps_length = capabilities.NumberInputButtonCaps;
-      if (HidP_GetButtonCaps(HidP_Input,
-                             &button_caps[0],
-                             &button_caps_length,
-                             preparsed_data) == HIDP_STATUS_SUCCESS) {
-        device_info.has_report_id = (button_caps[0].ReportID != 0);
+      if (button_caps_length > 0) {
+        scoped_ptr<HIDP_BUTTON_CAPS[]> button_caps(
+            new HIDP_BUTTON_CAPS[button_caps_length]);
+        if (HidP_GetButtonCaps(HidP_Input,
+                               &button_caps[0],
+                               &button_caps_length,
+                               preparsed_data) == HIDP_STATUS_SUCCESS) {
+          for (int i = 0; i < button_caps_length; i++) {
+            int report_id = button_caps[i].ReportID;
+            if (report_id != 0) {
+              collection_info.report_ids.insert(report_id);
+            }
+          }
+        }
       }
+      USHORT value_caps_length = capabilities.NumberInputValueCaps;
+      if (value_caps_length > 0) {
+        scoped_ptr<HIDP_VALUE_CAPS[]> value_caps(
+            new HIDP_VALUE_CAPS[value_caps_length]);
+        if (HidP_GetValueCaps(HidP_Input,
+                              &value_caps[0],
+                              &value_caps_length,
+                              preparsed_data) == HIDP_STATUS_SUCCESS) {
+          for (int i = 0; i < value_caps_length; i++) {
+            int report_id = value_caps[i].ReportID;
+            if (report_id != 0) {
+              collection_info.report_ids.insert(report_id);
+            }
+          }
+        }
+      }
+      device_info.collections.push_back(collection_info);
     }
-
     HidD_FreePreparsedData(preparsed_data);
   }
 

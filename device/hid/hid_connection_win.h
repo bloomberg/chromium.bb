@@ -9,12 +9,8 @@
 
 #include <set>
 
-#include "base/callback.h"
-#include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread_checker.h"
+#include "base/win/scoped_handle.h"
 #include "device/hid/hid_connection.h"
-#include "device/hid/hid_device_info.h"
 
 namespace device {
 
@@ -24,30 +20,35 @@ class HidConnectionWin : public HidConnection {
  public:
   explicit HidConnectionWin(const HidDeviceInfo& device_info);
 
-  bool available() const;
+  // HidConnection implementation.
+  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                            const IOCallback& callback) OVERRIDE;
+  virtual void PlatformWrite(uint8_t report_id,
+                             scoped_refptr<net::IOBufferWithSize> buffer,
+                             const IOCallback& callback) OVERRIDE;
+  virtual void PlatformGetFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) OVERRIDE;
+  virtual void PlatformSendFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) OVERRIDE;
 
-  virtual void Read(scoped_refptr<net::IOBufferWithSize> buffer,
-                    const IOCallback& callback) OVERRIDE;
-  virtual void Write(uint8_t report_id,
-                     scoped_refptr<net::IOBufferWithSize> buffer,
-                     const IOCallback& callback) OVERRIDE;
-  virtual void GetFeatureReport(uint8_t report_id,
-                                scoped_refptr<net::IOBufferWithSize> buffer,
-                                const IOCallback& callback) OVERRIDE;
-  virtual void SendFeatureReport(uint8_t report_id,
-                                 scoped_refptr<net::IOBufferWithSize> buffer,
-                                 const IOCallback& callback) OVERRIDE;
+ private:
+  friend class HidServiceWin;
+  friend struct PendingHidTransfer;
+
+  ~HidConnectionWin();
+
+  bool available() const { return file_.IsValid(); }
 
   void OnTransferFinished(scoped_refptr<PendingHidTransfer> transfer);
   void OnTransferCanceled(scoped_refptr<PendingHidTransfer> transfer);
 
- private:
-  ~HidConnectionWin();
-
   base::win::ScopedHandle file_;
-  std::set<scoped_refptr<PendingHidTransfer> > transfers_;
 
-  base::ThreadChecker thread_checker_;
+  std::set<scoped_refptr<PendingHidTransfer> > transfers_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionWin);
 };

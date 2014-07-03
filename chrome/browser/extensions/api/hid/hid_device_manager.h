@@ -44,15 +44,6 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
 
   void UpdateDevices();
 
-  // Determines if a given device interface should be accessible to API
-  // consumers. In order for a device interface to be accessible, ALL of its
-  // specified usages must be accessible.
-  static bool IsDeviceAccessible(const device::HidDeviceInfo& device_info);
-
-  // Determines if a given usage is available to API consumers. This is used to
-  // blacklist usages which could be security or privacy concerns.
-  static bool IsUsageAccessible(const device::HidUsageAndPage& usage_and_page);
-
   base::ThreadChecker thread_checker_;
 
   int next_resource_id_;

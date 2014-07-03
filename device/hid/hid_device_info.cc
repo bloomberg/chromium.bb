@@ -12,13 +12,13 @@ const char kInvalidHidDeviceId[] = "";
 
 HidDeviceInfo::HidDeviceInfo()
     : device_id(kInvalidHidDeviceId),
-      bus_type(kHIDBusTypeUSB),
       vendor_id(0),
       product_id(0),
-      input_report_size(0),
-      output_report_size(0),
-      feature_report_size(0),
-      has_report_id(false) {}
+      bus_type(kHIDBusTypeUSB),
+      max_input_report_size(0),
+      max_output_report_size(0),
+      max_feature_report_size(0) {
+}
 
 HidDeviceInfo::~HidDeviceInfo() {}
 

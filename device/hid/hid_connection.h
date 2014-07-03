@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
 
@@ -16,31 +17,65 @@ namespace device {
 
 class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
  public:
+  enum SpecialReportIds {
+    kNullReportId = 0x00,
+    kAnyReportId = 0xFF,
+  };
+
   typedef base::Callback<void(bool success, size_t size)> IOCallback;
 
-  virtual void Read(scoped_refptr<net::IOBufferWithSize> buffer,
-                    const IOCallback& callback) = 0;
-  virtual void Write(uint8_t report_id,
-                     scoped_refptr<net::IOBufferWithSize> buffer,
-                     const IOCallback& callback) = 0;
-  virtual void GetFeatureReport(uint8_t report_id,
-                                scoped_refptr<net::IOBufferWithSize> buffer,
-                                const IOCallback& callback) = 0;
-  virtual void SendFeatureReport(uint8_t report_id,
-                                 scoped_refptr<net::IOBufferWithSize> buffer,
-                                 const IOCallback& callback) = 0;
-
   const HidDeviceInfo& device_info() const { return device_info_; }
+  bool has_protected_collection() const { return has_protected_collection_; }
+  bool has_report_id() const { return has_report_id_; }
+  const base::ThreadChecker& thread_checker() const { return thread_checker_; }
+
+  void Read(scoped_refptr<net::IOBufferWithSize> buffer,
+            const IOCallback& callback);
+  void Write(uint8_t report_id,
+             scoped_refptr<net::IOBufferWithSize> buffer,
+             const IOCallback& callback);
+  void GetFeatureReport(uint8_t report_id,
+                        scoped_refptr<net::IOBufferWithSize> buffer,
+                        const IOCallback& callback);
+  void SendFeatureReport(uint8_t report_id,
+                         scoped_refptr<net::IOBufferWithSize> buffer,
+                         const IOCallback& callback);
 
  protected:
   friend class base::RefCountedThreadSafe<HidConnection>;
-  friend struct HidDeviceInfo;
 
   explicit HidConnection(const HidDeviceInfo& device_info);
   virtual ~HidConnection();
 
+  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                            const IOCallback& callback) = 0;
+  virtual void PlatformWrite(uint8_t report_id,
+                             scoped_refptr<net::IOBufferWithSize> buffer,
+                             const IOCallback& callback) = 0;
+  virtual void PlatformGetFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) = 0;
+  virtual void PlatformSendFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) = 0;
+
+  // PlatformRead implementation must call this method on read
+  // success, rather than directly running the callback.
+  // In case incoming buffer is empty or protected, it is filtered
+  // and this method returns false. Otherwise it runs the callback
+  // and returns true.
+  bool CompleteRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                    const IOCallback& callback);
+
  private:
+  bool IsReportIdProtected(const uint8_t report_id);
+
   const HidDeviceInfo device_info_;
+  bool has_report_id_;
+  bool has_protected_collection_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
 };

@@ -148,7 +148,10 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   device_file.Close();
 
   HidReportDescriptor report_descriptor(rpt_desc.value, rpt_desc.size);
-  report_descriptor.GetTopLevelCollections(&device_info.usages);
+  report_descriptor.GetDetails(&device_info.collections,
+                               &device_info.max_input_report_size,
+                               &device_info.max_output_report_size,
+                               &device_info.max_feature_report_size);
 
   AddDevice(device_info);
 }
