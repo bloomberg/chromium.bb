@@ -36,8 +36,10 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/loader/EmptyClients.h"
@@ -45,7 +47,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
@@ -678,6 +679,8 @@ Page* InspectorOverlay::overlayPage()
     if (m_overlayPage)
         return m_overlayPage.get();
 
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
+
     static FrameLoaderClient* dummyFrameLoaderClient =  new EmptyFrameLoaderClient;
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
@@ -747,6 +750,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize, int scrollX, int scrol
 
 void InspectorOverlay::evaluateInOverlay(const String& method, const String& argument)
 {
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushString(argument);
@@ -755,6 +759,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, const String& arg
 
 void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument)
 {
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushValue(argument);

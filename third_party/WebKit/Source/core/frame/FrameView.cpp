@@ -834,6 +834,8 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(m_frame->view() == this);
     ASSERT(m_frame->page());
 
+    ScriptForbiddenScope forbidScript;
+
     if (isInPerformLayout() || !m_frame->document()->isActive())
         return;
 

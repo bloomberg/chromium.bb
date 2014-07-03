@@ -1755,6 +1755,8 @@ void Document::updateRenderTree(StyleRecalcChange change)
 {
     ASSERT(isMainThread());
 
+    ScriptForbiddenScope forbidScript;
+
     if (change != Force && !needsRenderTreeUpdate())
         return;
 
@@ -1768,6 +1770,8 @@ void Document::updateRenderTree(StyleRecalcChange change)
     RELEASE_ASSERT(!view()->isPainting());
 
     // Script can run below in WidgetUpdates, so protect the LocalFrame.
+    // FIXME: Can this still happen? How does script run inside
+    // UpdateSuspendScope::performDeferredWidgetTreeOperations() ?
     RefPtr<LocalFrame> protect(m_frame);
 
     TRACE_EVENT0("blink", "Document::updateRenderTree");
@@ -1780,11 +1784,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(*this);
-
-    // FIXME: This executes media query listeners which runs script, instead the script
-    // should run at raf timing in ScriptedAnimationController just like resize events.
     evaluateMediaQueryListIfNeeded();
-
     updateUseShadowTreesIfNeeded();
     updateDistributionIfNeeded();
     updateStyleInvalidationIfNeeded();
@@ -1826,7 +1826,6 @@ void Document::updateStyle(StyleRecalcChange change)
 {
     TRACE_EVENT0("blink", "Document::updateStyle");
 
-    ScriptForbiddenScope forbidScript;
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
@@ -1899,6 +1898,8 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 void Document::updateLayout()
 {
     ASSERT(isMainThread());
+
+    ScriptForbiddenScope forbidScript;
 
     RefPtr<FrameView> frameView = view();
     if (frameView && frameView->isInPerformLayout()) {
