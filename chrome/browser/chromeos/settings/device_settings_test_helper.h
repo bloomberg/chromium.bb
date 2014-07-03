@@ -184,6 +184,8 @@ class DeviceSettingsTestBase : public testing::Test {
   policy::DevicePolicyBuilder device_policy_;
 
   DeviceSettingsTestHelper device_settings_test_helper_;
+  // Note that FakeUserManager is used by ProfileHelper, which some of the
+  // tested classes depend on implicitly.
   FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
   scoped_ptr<TestingProfile> profile_;

@@ -19,10 +19,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace chromeos {
-class UserManager;
-}
-
 namespace policy {
 
 // Helper for implementing policies referencing external data: This class
@@ -63,7 +59,6 @@ class CloudExternalDataPolicyObserver
 
   CloudExternalDataPolicyObserver(
       chromeos::CrosSettings* cros_settings,
-      chromeos::UserManager* user_manager,
       DeviceLocalAccountPolicyService* device_local_account_policy_service,
       const std::string& policy,
       Delegate* delegate);
@@ -108,7 +103,6 @@ class CloudExternalDataPolicyObserver
   LoggedInUserObserverMap logged_in_user_observers_;
 
   chromeos::CrosSettings* cros_settings_;
-  chromeos::UserManager* user_manager_;
   DeviceLocalAccountPolicyService* device_local_account_policy_service_;
 
   // The policy that |this| observes.

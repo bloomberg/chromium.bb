@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -122,12 +121,10 @@ CloudExternalDataPolicyObserver::Delegate::~Delegate() {
 
 CloudExternalDataPolicyObserver::CloudExternalDataPolicyObserver(
     chromeos::CrosSettings* cros_settings,
-    chromeos::UserManager* user_manager,
     DeviceLocalAccountPolicyService* device_local_account_policy_service,
     const std::string& policy,
     Delegate* delegate)
     : cros_settings_(cros_settings),
-      user_manager_(user_manager),
       device_local_account_policy_service_(device_local_account_policy_service),
       policy_(policy),
       delegate_(delegate),

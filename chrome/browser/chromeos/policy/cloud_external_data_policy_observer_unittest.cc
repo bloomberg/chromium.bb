@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
@@ -136,7 +135,6 @@ class CloudExternalDataPolicyObserverTest
   std::string avatar_policy_2_;
 
   chromeos::CrosSettings cros_settings_;
-  chromeos::FakeUserManager user_manager_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
   net::TestURLFetcherFactory url_fetcher_factory_;
@@ -238,7 +236,6 @@ void CloudExternalDataPolicyObserverTest::OnExternalDataFetched(
 void CloudExternalDataPolicyObserverTest::CreateObserver() {
   observer_.reset(new CloudExternalDataPolicyObserver(
       &cros_settings_,
-      &user_manager_,
       device_local_account_policy_service_.get(),
       key::kUserAvatarImage,
       this));
@@ -330,7 +327,7 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   profile_ = builder.Build();
   profile_->set_profile_name(user_id);
 
-  user_manager_.AddUser(user_id);
+  user_manager_->AddUser(user_id);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),
@@ -362,7 +359,7 @@ void CloudExternalDataPolicyObserverTest::LogInAsRegularUser() {
   profile_ = builder.Build();
   profile_->set_profile_name(kRegularUserID);
 
-  user_manager_.AddUser(kRegularUserID);
+  user_manager_->AddUser(kRegularUserID);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),

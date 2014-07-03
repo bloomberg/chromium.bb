@@ -211,7 +211,6 @@ UserManagerImpl::UserManagerImpl()
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   avatar_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
       cros_settings_,
-      this,
       connector->GetDeviceLocalAccountPolicyService(),
       policy::key::kUserAvatarImage,
       this));
@@ -219,7 +218,6 @@ UserManagerImpl::UserManagerImpl()
 
   wallpaper_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
       cros_settings_,
-      this,
       connector->GetDeviceLocalAccountPolicyService(),
       policy::key::kWallpaperImage,
       this));
