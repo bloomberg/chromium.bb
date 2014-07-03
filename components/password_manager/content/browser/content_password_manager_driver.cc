@@ -42,9 +42,9 @@ void ContentPasswordManagerDriver::FillPasswordForm(
 }
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
-    autofill::PasswordForm* form) {
+    const autofill::PasswordForm& form) {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), *form));
+  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), form));
 }
 
 void ContentPasswordManagerDriver::AccountCreationFormsFound(

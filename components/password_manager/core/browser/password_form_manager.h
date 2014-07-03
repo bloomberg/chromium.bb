@@ -257,8 +257,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Cleans up when best_matches_ goes out of scope.
   STLValueDeleter<autofill::PasswordFormMap> best_matches_deleter_;
 
-  // The PasswordForm from the page or dialog managed by this.
-  autofill::PasswordForm observed_form_;
+  // The PasswordForm from the page or dialog managed by |this|.
+  const autofill::PasswordForm observed_form_;
 
   // The origin url path of observed_form_ tokenized, for convenience when
   // scoring.

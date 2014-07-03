@@ -53,6 +53,13 @@ void LogPasswordGenerationSubmissionEvent(
                             event, SUBMISSION_EVENT_ENUM_COUNT);
 }
 
+PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
+                                      bool ssl_valid) {
+  PasswordForm result(orig);
+  result.ssl_valid = ssl_valid;
+  return result;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(PasswordManager* password_manager,
@@ -61,7 +68,7 @@ PasswordFormManager::PasswordFormManager(PasswordManager* password_manager,
                                          const PasswordForm& observed_form,
                                          bool ssl_valid)
     : best_matches_deleter_(&best_matches_),
-      observed_form_(observed_form),
+      observed_form_(CopyAndModifySSLValidity(observed_form, ssl_valid)),
       is_new_login_(true),
       has_generated_password_(false),
       password_manager_(password_manager),
@@ -74,7 +81,6 @@ PasswordFormManager::PasswordFormManager(PasswordManager* password_manager,
       submit_result_(kSubmitResultNotSubmitted) {
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
-  observed_form_.ssl_valid = ssl_valid;
 }
 
 PasswordFormManager::~PasswordFormManager() {
@@ -409,7 +415,7 @@ void PasswordFormManager::OnRequestDone(
 
   // If not blacklisted, inform the driver that password generation is allowed
   // for |observed_form_|.
-  driver_->AllowPasswordGenerationForForm(&observed_form_);
+  driver_->AllowPasswordGenerationForForm(observed_form_);
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
@@ -437,7 +443,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     // No result means that we visit this site the first time so we don't need
     // to check whether this site is blacklisted or not. Just send a message
     // to allow password generation.
-    driver_->AllowPasswordGenerationForForm(&observed_form_);
+    driver_->AllowPasswordGenerationForForm(observed_form_);
     return;
   }
   OnRequestDone(results);

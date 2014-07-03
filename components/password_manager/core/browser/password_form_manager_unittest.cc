@@ -48,7 +48,8 @@ void RunAllPendingTasks() {
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
+  MOCK_METHOD1(AllowPasswordGenerationForForm,
+               void(const autofill::PasswordForm&));
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {

@@ -42,7 +42,8 @@ class PasswordManagerDriver {
   virtual bool IsOffTheRecord() = 0;
 
   // Informs the driver that |form| can be used for password generation.
-  virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form) = 0;
+  virtual void AllowPasswordGenerationForForm(
+      const autofill::PasswordForm& form) = 0;
 
   // Notifies the driver that account creation |forms| were found.
   virtual void AccountCreationFormsFound(

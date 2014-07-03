@@ -25,7 +25,7 @@ bool StubPasswordManagerDriver::IsOffTheRecord() {
 }
 
 void StubPasswordManagerDriver::AllowPasswordGenerationForForm(
-    autofill::PasswordForm* form) {
+    const autofill::PasswordForm& form) {
 }
 
 void StubPasswordManagerDriver::AccountCreationFormsFound(

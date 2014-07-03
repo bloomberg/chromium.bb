@@ -37,8 +37,8 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
       OVERRIDE;
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
-  virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
-      OVERRIDE;
+  virtual void AllowPasswordGenerationForForm(
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) OVERRIDE;
   virtual void FillSuggestion(const base::string16& username,
