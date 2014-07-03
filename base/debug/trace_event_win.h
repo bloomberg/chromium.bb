@@ -23,6 +23,8 @@ namespace debug {
 // for the macros above on Windows.
 class BASE_EXPORT TraceEventETWProvider : public base::win::EtwTraceProvider {
  public:
+   static const size_t kUseStrlen = static_cast<size_t>(-1);
+
   // Start logging trace events.
   // This is a noop in this implementation.
   static bool StartTracing();
@@ -32,8 +34,8 @@ class BASE_EXPORT TraceEventETWProvider : public base::win::EtwTraceProvider {
   // Allowing the use of std::string for name or extra is a convenience,
   // whereas passing name or extra as a const char* avoids the construction
   // of temporary std::string instances.
-  // If -1 is passed for name_len or extra_len, the strlen of the string will
-  // be used for length.
+  // If kUseStrlen is passed for name_len or extra_len, the strlen of the string
+  // will be used for length.
   static void Trace(const char* name,
                     size_t name_len,
                     char type,
@@ -46,7 +48,7 @@ class BASE_EXPORT TraceEventETWProvider : public base::win::EtwTraceProvider {
                     char type,
                     const void* id,
                     const std::string& extra) {
-    return Trace(name, -1, type, id, extra.c_str(), extra.length());
+    return Trace(name, kUseStrlen, type, id, extra.c_str(), extra.length());
   }
 
   // Allows passing extra as a const char* to avoid constructing temporary
@@ -55,7 +57,7 @@ class BASE_EXPORT TraceEventETWProvider : public base::win::EtwTraceProvider {
                     char type,
                     const void* id,
                     const char* extra) {
-    return Trace(name, -1, type, id, extra, -1);
+    return Trace(name, kUseStrlen, type, id, extra, kUseStrlen);
   }
 
   // Retrieves the singleton.
@@ -70,8 +72,8 @@ class BASE_EXPORT TraceEventETWProvider : public base::win::EtwTraceProvider {
   // Emit a trace of type |type| containing |name|, |id|, and |extra|.
   // Note: |name| and |extra| must be NULL, or a zero-terminated string of
   //    length |name_len| or |extra_len| respectively.
-  // Note: if name_len or extra_len are -1, the length of the corresponding
-  //    string will be used.
+  // Note: if name_len or extra_len are kUseStrlen, the length of the
+  //    corresponding string will be used.
   void TraceEvent(const char* name,
                   size_t name_len,
                   char type,

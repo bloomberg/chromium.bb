@@ -508,7 +508,7 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
         buffer.Pad(' ', padding, 1);
 
         // Convert the argument to an ASCII character and output it.
-        char ch = static_cast<char>(arg.i);
+        char ch = static_cast<char>(arg.integer.i);
         if (!ch) {
           goto end_of_output_buffer;
         }
@@ -534,7 +534,7 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
             DEBUG_CHECK(arg.type == Arg::INT || arg.type == Arg::UINT);
             goto fail_to_expand;
           }
-          i = arg.i;
+          i = arg.integer.i;
 
           if (ch != 'd') {
             // The Arg() constructor automatically performed sign expansion on
@@ -544,8 +544,8 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
             // We have to do this here, instead of in the Arg() constructor, as
             // the Arg() constructor cannot tell whether we will output a %d
             // or a %x. Only the latter should experience masking.
-            if (arg.width < sizeof(int64_t)) {
-              i &= (1LL << (8*arg.width)) - 1;
+            if (arg.integer.width < sizeof(int64_t)) {
+              i &= (1LL << (8*arg.integer.width)) - 1;
             }
           }
         } else {
@@ -554,8 +554,9 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
             i = reinterpret_cast<uintptr_t>(arg.ptr);
           } else if (arg.type == Arg::STRING) {
             i = reinterpret_cast<uintptr_t>(arg.str);
-          } else if (arg.type == Arg::INT && arg.width == sizeof(NULL) &&
-                     arg.i == 0) {  // Allow C++'s version of NULL
+          } else if (arg.type == Arg::INT &&
+                     arg.integer.width == sizeof(NULL) &&
+                     arg.integer.i == 0) {  // Allow C++'s version of NULL
             i = 0;
           } else {
             DEBUG_CHECK(arg.type == Arg::POINTER || arg.type == Arg::STRING);
@@ -588,8 +589,8 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
         const char *s;
         if (arg.type == Arg::STRING) {
           s = arg.str ? arg.str : "<NULL>";
-        } else if (arg.type == Arg::INT && arg.width == sizeof(NULL) &&
-                   arg.i == 0) {  // Allow C++'s version of NULL
+        } else if (arg.type == Arg::INT && arg.integer.width == sizeof(NULL) &&
+                   arg.integer.i == 0) {  // Allow C++'s version of NULL
           s = "<NULL>";
         } else {
           DEBUG_CHECK(arg.type == Arg::STRING);

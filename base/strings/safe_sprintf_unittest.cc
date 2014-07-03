@@ -27,7 +27,7 @@ TEST(SafeSPrintfTest, Empty) {
   char buf[2] = { 'X', 'X' };
 
   // Negative buffer size should always result in an error.
-  EXPECT_EQ(-1, SafeSNPrintf(buf, -1, ""));
+  EXPECT_EQ(-1, SafeSNPrintf(buf, static_cast<size_t>(-1), ""));
   EXPECT_EQ('X', buf[0]);
   EXPECT_EQ('X', buf[1]);
 
@@ -65,7 +65,7 @@ TEST(SafeSPrintfTest, NoArguments) {
   memcpy(buf, ref, sizeof(buf));
 
   // A negative buffer size should always result in an error.
-  EXPECT_EQ(-1, SafeSNPrintf(buf, -1, text));
+  EXPECT_EQ(-1, SafeSNPrintf(buf, static_cast<size_t>(-1), text));
   EXPECT_TRUE(!memcmp(buf, ref, sizeof(buf)));
 
   // Zero buffer size should always result in an error.
@@ -129,7 +129,7 @@ TEST(SafeSPrintfTest, OneArgument) {
   memcpy(buf, ref, sizeof(buf));
 
   // A negative buffer size should always result in an error.
-  EXPECT_EQ(-1, SafeSNPrintf(buf, -1, fmt, ' '));
+  EXPECT_EQ(-1, SafeSNPrintf(buf, static_cast<size_t>(-1), fmt, ' '));
   EXPECT_TRUE(!memcmp(buf, ref, sizeof(buf)));
 
   // Zero buffer size should always result in an error.

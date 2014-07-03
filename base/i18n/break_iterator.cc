@@ -12,7 +12,7 @@
 namespace base {
 namespace i18n {
 
-const size_t npos = -1;
+const size_t npos = static_cast<size_t>(-1);
 
 BreakIterator::BreakIterator(const string16& str, BreakType break_type)
     : iter_(NULL),

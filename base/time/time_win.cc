@@ -251,7 +251,7 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   // FILETIME in local time if necessary.
   bool success = true;
   // FILETIME in SYSTEMTIME (exploded).
-  SYSTEMTIME st;
+  SYSTEMTIME st = {0};
   if (is_local) {
     SYSTEMTIME utc_st;
     // We don't use FileTimeToLocalFileTime here, since it uses the current

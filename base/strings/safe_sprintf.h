@@ -139,16 +139,46 @@ struct Arg {
   enum Type { INT, UINT, STRING, POINTER };
 
   // Any integer-like value.
-  Arg(signed char c)        : i(c), width(sizeof(char)),      type(INT)  { }
-  Arg(unsigned char c)      : i(c), width(sizeof(char)),      type(UINT) { }
-  Arg(signed short j)       : i(j), width(sizeof(short)),     type(INT)  { }
-  Arg(unsigned short j)     : i(j), width(sizeof(short)),     type(UINT) { }
-  Arg(signed int j)         : i(j), width(sizeof(int)),       type(INT)  { }
-  Arg(unsigned int j)       : i(j), width(sizeof(int)),       type(UINT) { }
-  Arg(signed long j)        : i(j), width(sizeof(long)),      type(INT)  { }
-  Arg(unsigned long j)      : i(j), width(sizeof(long)),      type(UINT) { }
-  Arg(signed long long j)   : i(j), width(sizeof(long long)), type(INT)  { }
-  Arg(unsigned long long j) : i(j), width(sizeof(long long)), type(UINT) { }
+  Arg(signed char c) : type(INT) {
+    integer.i = c;
+    integer.width = sizeof(char);
+  }
+  Arg(unsigned char c) : type(UINT) {
+    integer.i = c;
+    integer.width = sizeof(char);
+  }
+  Arg(signed short j) : type(INT) {
+    integer.i = j;
+    integer.width = sizeof(short);
+  }
+  Arg(unsigned short j) : type(UINT) {
+    integer.i = j;
+    integer.width = sizeof(short);
+  }
+  Arg(signed int j) : type(INT) {
+    integer.i = j;
+    integer.width = sizeof(int);
+  }
+  Arg(unsigned int j) : type(UINT) {
+    integer.i = j;
+    integer.width = sizeof(int);
+  }
+  Arg(signed long j) : type(INT) {
+    integer.i = j;
+    integer.width = sizeof(long);
+  }
+  Arg(unsigned long j) : type(UINT) {
+    integer.i = j;
+    integer.width = sizeof(long);
+  }
+  Arg(signed long long j) : type(INT) {
+    integer.i = j;
+    integer.width = sizeof(long long);
+  }
+  Arg(unsigned long long j) : type(UINT) {
+    integer.i = j;
+    integer.width = sizeof(long long);
+  }
 
   // A C-style text string.
   Arg(const char* s) : str(s), type(STRING) { }
@@ -162,7 +192,7 @@ struct Arg {
     struct {
       int64_t       i;
       unsigned char width;
-    };
+    } integer;
 
     // A C-style text string.
     const char* str;

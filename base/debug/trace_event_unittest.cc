@@ -489,11 +489,14 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   const DictionaryValue* item = NULL;
 
 #define EXPECT_FIND_(string) \
-    EXPECT_TRUE((item = FindTraceEntry(trace_parsed, string)));
+    item = FindTraceEntry(trace_parsed, string); \
+    EXPECT_TRUE(item);
 #define EXPECT_NOT_FIND_(string) \
-    EXPECT_FALSE((item = FindTraceEntry(trace_parsed, string)));
+    item = FindTraceEntry(trace_parsed, string); \
+    EXPECT_FALSE(item);
 #define EXPECT_SUB_FIND_(string) \
-    if (item) EXPECT_TRUE((IsStringInDict(string, item)));
+    if (item) \
+      EXPECT_TRUE(IsStringInDict(string, item));
 
   EXPECT_FIND_("ETW Trace Event");
   EXPECT_FIND_("all");
@@ -513,8 +516,8 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_TRUE((item = FindTraceEntry(trace_parsed, "TRACE_EVENT0 call")));
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
     EXPECT_EQ("X", ph);
-    EXPECT_FALSE((item = FindTraceEntry(trace_parsed, "TRACE_EVENT0 call",
-                                       item)));
+    item = FindTraceEntry(trace_parsed, "TRACE_EVENT0 call", item);
+    EXPECT_FALSE(item);
   }
   EXPECT_FIND_("TRACE_EVENT1 call");
   EXPECT_SUB_FIND_("name1");

@@ -200,12 +200,12 @@ bool WaitForExitCodeWithTimeout(ProcessHandle handle,
 bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
                             base::TimeDelta wait,
                             const ProcessFilter* filter) {
-  const ProcessEntry* entry;
   bool result = true;
   DWORD start_time = GetTickCount();
 
   NamedProcessIterator iter(executable_name, filter);
-  while ((entry = iter.NextProcessEntry())) {
+  for (const ProcessEntry* entry = iter.NextProcessEntry(); entry;
+       entry = iter.NextProcessEntry()) {
     DWORD remaining_wait = std::max<int64>(
         0, wait.InMilliseconds() - (GetTickCount() - start_time));
     HANDLE process = OpenProcess(SYNCHRONIZE,
@@ -213,7 +213,7 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
                                  entry->th32ProcessID);
     DWORD wait_result = WaitForSingleObject(process, remaining_wait);
     CloseHandle(process);
-    result = result && (wait_result == WAIT_OBJECT_0);
+    result &= (wait_result == WAIT_OBJECT_0);
   }
 
   return result;
@@ -221,19 +221,17 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
 
 bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
   int exit_code;
-  if (!WaitForExitCodeWithTimeout(handle, &exit_code, wait))
-    return false;
-  return exit_code == 0;
+  return WaitForExitCodeWithTimeout(handle, &exit_code, wait) && exit_code == 0;
 }
 
 bool CleanupProcesses(const FilePath::StringType& executable_name,
                       base::TimeDelta wait,
                       int exit_code,
                       const ProcessFilter* filter) {
-  bool exited_cleanly = WaitForProcessesToExit(executable_name, wait, filter);
-  if (!exited_cleanly)
-    KillProcesses(executable_name, exit_code, filter);
-  return exited_cleanly;
+  if (WaitForProcessesToExit(executable_name, wait, filter))
+    return true;
+  KillProcesses(executable_name, exit_code, filter);
+  return false;
 }
 
 void EnsureProcessTerminated(ProcessHandle process) {

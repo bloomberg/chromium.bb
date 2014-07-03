@@ -57,7 +57,8 @@ static const struct trim_case_ascii {
 namespace {
 
 // Helper used to test TruncateUTF8ToByteSize.
-bool Truncated(const std::string& input, const size_t byte_size,
+bool Truncated(const std::string& input,
+               const size_t byte_size,
                std::string* output) {
     size_t prev = input.length();
     TruncateUTF8ToByteSize(input, byte_size, output);
@@ -74,7 +75,7 @@ TEST(StringUtilTest, TruncateUTF8ToByteSize) {
   EXPECT_EQ(output, "");
   EXPECT_TRUE(Truncated("\xe1\x80\xbf", 0, &output));
   EXPECT_EQ(output, "");
-  EXPECT_FALSE(Truncated("\xe1\x80\xbf", -1, &output));
+  EXPECT_FALSE(Truncated("\xe1\x80\xbf", static_cast<size_t>(-1), &output));
   EXPECT_FALSE(Truncated("\xe1\x80\xbf", 4, &output));
 
   // Testing the truncation of valid UTF8 correctly

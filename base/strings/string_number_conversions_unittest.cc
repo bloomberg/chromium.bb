@@ -473,7 +473,7 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
   // One additional test to verify that conversion of numbers in strings with
   // embedded NUL characters.  The NUL and extra data after it should be
   // interpreted as junk after the number.
-  const char input[] = "0xc0ffee\09";
+  const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
   int output;
   EXPECT_FALSE(HexStringToInt(input_string, &output));
@@ -533,7 +533,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt) {
   // One additional test to verify that conversion of numbers in strings with
   // embedded NUL characters.  The NUL and extra data after it should be
   // interpreted as junk after the number.
-  const char input[] = "0xc0ffee\09";
+  const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
   uint32 output;
   EXPECT_FALSE(HexStringToUInt(input_string, &output));
@@ -590,7 +590,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
   // One additional test to verify that conversion of numbers in strings with
   // embedded NUL characters.  The NUL and extra data after it should be
   // interpreted as junk after the number.
-  const char input[] = "0xc0ffee\09";
+  const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
   int64 output;
   EXPECT_FALSE(HexStringToInt64(input_string, &output));
@@ -652,7 +652,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
   // One additional test to verify that conversion of numbers in strings with
   // embedded NUL characters.  The NUL and extra data after it should be
   // interpreted as junk after the number.
-  const char input[] = "0xc0ffee\09";
+  const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
   uint64 output;
   EXPECT_FALSE(HexStringToUInt64(input_string, &output));
@@ -747,7 +747,7 @@ TEST(StringNumberConversionsTest, StringToDouble) {
   // One additional test to verify that conversion of numbers in strings with
   // embedded NUL characters.  The NUL and extra data after it should be
   // interpreted as junk after the number.
-  const char input[] = "3.14\0159";
+  const char input[] = "3.14\0" "159";
   std::string input_string(input, arraysize(input) - 1);
   double output;
   EXPECT_FALSE(StringToDouble(input_string, &output));

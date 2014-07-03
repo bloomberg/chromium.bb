@@ -270,11 +270,11 @@ TEST_F(TraceEventWinTest, TraceLog) {
               kEmpty, 0);
 
   TraceEventETWProvider::Trace(NULL,
-                        -1,
+                        TraceEventETWProvider::kUseStrlen,
                         TRACE_EVENT_PHASE_END,
                         kId,
                         NULL,
-                        -1);
+                        TraceEventETWProvider::kUseStrlen);
 
   ExpectEvent(kTraceEventClass32,
               kTraceEventTypeEnd,

@@ -106,9 +106,9 @@ void TraceEventETWProvider::Trace(const char* name,
   TraceEventETWProvider* provider = TraceEventETWProvider::GetInstance();
   if (provider && provider->IsTracing()) {
     // Compute the name & extra lengths if not supplied already.
-    if (name_len == -1)
+    if (name_len == kUseStrlen)
       name_len = (name == NULL) ? 0 : strlen(name);
-    if (extra_len == -1)
+    if (extra_len == kUseStrlen)
       extra_len = (extra == NULL) ? 0 : strlen(extra);
 
     provider->TraceEvent(name, name_len, type, id, extra, extra_len);
