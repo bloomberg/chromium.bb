@@ -41,17 +41,17 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::waiting() {
   return waiting_.get();
 }
 
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::current() {
+ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return current_.get();
+  return controller_.get();
 }
 
 void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     int handle_id,
     blink::WebServiceWorkerState state) {
   ServiceWorkerHandleReference* which = NULL;
-  if (handle_id == current_handle_id()) {
-    which = current_.get();
+  if (handle_id == controller_handle_id()) {
+    which = controller_.get();
   } else if (handle_id == waiting_handle_id()) {
     which = waiting_.get();
   }
@@ -73,22 +73,23 @@ void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
   waiting_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
 }
 
-void ServiceWorkerProviderContext::OnSetCurrentServiceWorker(
+void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   DCHECK_EQ(provider_id_, provider_id);
 
   // This context is is the primary owner of this handle, keeps the
   // initial reference until it goes away.
-  current_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+  controller_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.
 }
 
-int ServiceWorkerProviderContext::current_handle_id() const {
+int ServiceWorkerProviderContext::controller_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return current_ ? current_->info().handle_id : kInvalidServiceWorkerHandleId;
+  return controller_ ? controller_->info().handle_id
+                     : kInvalidServiceWorkerHandleId;
 }
 
 int ServiceWorkerProviderContext::waiting_handle_id() const {

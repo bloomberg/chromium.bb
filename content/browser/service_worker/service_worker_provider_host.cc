@@ -58,7 +58,7 @@ void ServiceWorkerProviderHost::SetActiveVersion(
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
-  dispatcher_host_->Send(new ServiceWorkerMsg_SetCurrentServiceWorker(
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
       kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
 }
 

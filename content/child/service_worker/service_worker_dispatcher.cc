@@ -60,8 +60,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
                         OnSetWaitingServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
-                        OnSetCurrentServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
+                        OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
                         OnPostMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -129,7 +129,7 @@ void ServiceWorkerDispatcher::RemoveProviderContext(
   DCHECK(ContainsKey(provider_contexts_, provider_context->provider_id()));
   provider_contexts_.erase(provider_context->provider_id());
   worker_to_provider_.erase(provider_context->waiting_handle_id());
-  worker_to_provider_.erase(provider_context->current_handle_id());
+  worker_to_provider_.erase(provider_context->controller_handle_id());
 }
 
 void ServiceWorkerDispatcher::AddScriptClient(
@@ -283,13 +283,13 @@ void ServiceWorkerDispatcher::OnSetWaitingServiceWorker(
   }
 }
 
-void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
+void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     int thread_id,
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end()) {
-    provider->second->OnSetCurrentServiceWorker(provider_id, info);
+    provider->second->OnSetControllerServiceWorker(provider_id, info);
     worker_to_provider_[info.handle_id] = provider->second;
   }
 

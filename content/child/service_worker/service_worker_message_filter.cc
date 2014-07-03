@@ -63,7 +63,7 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
                         OnStaleRegistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
                         OnStaleSetServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
                         OnStaleSetServiceWorker)
   IPC_END_MESSAGE_MAP()
 }

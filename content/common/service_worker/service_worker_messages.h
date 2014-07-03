@@ -165,9 +165,9 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetWaitingServiceWorker,
                      int /* provider_id */,
                      content::ServiceWorkerObjectInfo)
 
-// Tells the child process to set the current ServiceWorker for the given
+// Tells the child process to set the controller ServiceWorker for the given
 // provider.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetCurrentServiceWorker,
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetControllerServiceWorker,
                      int /* thread_id */,
                      int /* provider_id */,
                      content::ServiceWorkerObjectInfo)

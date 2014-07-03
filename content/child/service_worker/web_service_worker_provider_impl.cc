@@ -48,13 +48,13 @@ void WebServiceWorkerProviderImpl::setClient(
   GetDispatcher()->AddScriptClient(provider_id_, client);
 
   if (context_->waiting_handle_id() != kInvalidServiceWorkerHandleId) {
-    client->setWaiting(
-        GetDispatcher()->GetServiceWorker(context_->waiting()->info(), false));
+    client->setWaiting(GetDispatcher()->GetServiceWorker(
+        context_->waiting()->info(), false));
   }
 
-  if (context_->current_handle_id() != kInvalidServiceWorkerHandleId) {
-    client->setController(
-        GetDispatcher()->GetServiceWorker(context_->current()->info(), false));
+  if (context_->controller_handle_id() != kInvalidServiceWorkerHandleId) {
+    client->setController(GetDispatcher()->GetServiceWorker(
+        context_->controller()->info(), false));
   }
 }
 

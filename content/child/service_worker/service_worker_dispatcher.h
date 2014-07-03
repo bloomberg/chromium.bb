@@ -123,9 +123,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void OnSetWaitingServiceWorker(int thread_id,
                                  int provider_id,
                                  const ServiceWorkerObjectInfo& info);
-  void OnSetCurrentServiceWorker(int thread_id,
-                                 int provider_id,
-                                 const ServiceWorkerObjectInfo& info);
+  void OnSetControllerServiceWorker(int thread_id,
+                                    int provider_id,
+                                    const ServiceWorkerObjectInfo& info);
   void OnPostMessage(int thread_id,
                      int provider_id,
                      const base::string16& message,
