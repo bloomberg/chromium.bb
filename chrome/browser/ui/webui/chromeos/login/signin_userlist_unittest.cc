@@ -15,8 +15,15 @@
 
 namespace {
 
+const size_t kMaxUsers = 18; // same as in user_selection_screen.cc
 const char* kOwner = "owner@gmail.com";
-const char* kUsers[] = {"a@gmail.com", "b@gmail.com", kOwner};
+const char* kUsersPublic[] = {"public0@gmail.com", "public1@gmail.com"};
+const char* kUsers[] = {
+    "a0@gmail.com", "a1@gmail.com", "a2@gmail.com", "a3@gmail.com",
+    "a4@gmail.com", "a5@gmail.com", "a6@gmail.com", "a7@gmail.com",
+    "a8@gmail.com", "a9@gmail.com", "a10@gmail.com", "a11@gmail.com",
+    "a12@gmail.com", "a13@gmail.com", "a14@gmail.com", "a15@gmail.com",
+    "a16@gmail.com", "a17@gmail.com", kOwner, "a18@gmail.com"};
 
 }  // namespace
 
@@ -42,11 +49,13 @@ class SigninPrepareUserListTest
         this, TestingBrowserProcess::GetGlobal()->local_state()));
     fake_user_manager_->set_multi_profile_user_controller(controller_.get());
 
-    for (size_t i = 0; i < arraysize(kUsers); ++i) {
-      const std::string user_email(kUsers[i]);
-      fake_user_manager_->AddUser(user_email);
-    }
-    fake_user_manager_->set_owner_email(kUsers[2]);
+    for (size_t i = 0; i < arraysize(kUsersPublic); ++i)
+      fake_user_manager_->AddPublicAccountUser(kUsersPublic[i]);
+
+    for (size_t i = 0; i < arraysize(kUsers); ++i)
+      fake_user_manager_->AddUser(kUsers[i]);
+
+    fake_user_manager_->set_owner_email(kOwner);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -68,14 +77,44 @@ class SigninPrepareUserListTest
   DISALLOW_COPY_AND_ASSIGN(SigninPrepareUserListTest);
 };
 
-TEST_F(SigninPrepareUserListTest, BasicList) {
+TEST_F(SigninPrepareUserListTest, AlwaysKeepOwnerInList) {
+  EXPECT_LT(kMaxUsers, fake_user_manager_->GetUsers().size());
   UserList users_to_send = UserSelectionScreen::PrepareUserListForSending(
       fake_user_manager_->GetUsers(),
       kOwner,
       true /* is signin to add */);
 
-  size_t list_length = 3;
-  EXPECT_EQ(list_length, users_to_send.size());
+  EXPECT_EQ(kMaxUsers, users_to_send.size());
+  EXPECT_EQ(kOwner, users_to_send.back()->email());
+
+  fake_user_manager_->RemoveUserFromList("a16@gmail.com");
+  fake_user_manager_->RemoveUserFromList("a17@gmail.com");
+  users_to_send = UserSelectionScreen::PrepareUserListForSending(
+      fake_user_manager_->GetUsers(),
+      kOwner,
+      true /* is signin to add */);
+
+  EXPECT_EQ(kMaxUsers, users_to_send.size());
+  EXPECT_EQ("a18@gmail.com", users_to_send.back()->email());
+  EXPECT_EQ(kOwner, users_to_send[kMaxUsers-2]->email());
+}
+
+TEST_F(SigninPrepareUserListTest, PublicAccounts) {
+  UserList users_to_send = UserSelectionScreen::PrepareUserListForSending(
+      fake_user_manager_->GetUsers(),
+      kOwner,
+      true /* is signin to add */);
+
+  EXPECT_EQ(kMaxUsers, users_to_send.size());
+  EXPECT_EQ("a0@gmail.com", users_to_send.front()->email());
+
+  users_to_send = UserSelectionScreen::PrepareUserListForSending(
+      fake_user_manager_->GetUsers(),
+      kOwner,
+      false /* is signin to add */);
+
+  EXPECT_EQ(kMaxUsers, users_to_send.size());
+  EXPECT_EQ("public0@gmail.com", users_to_send.front()->email());
 }
 
 }  // namespace chromeos
