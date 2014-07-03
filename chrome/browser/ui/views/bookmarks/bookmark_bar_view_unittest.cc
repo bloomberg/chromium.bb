@@ -9,6 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +19,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/search_engines/search_terms_data.h"
 #include "ui/views/controls/button/label_button.h"
 
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
@@ -38,8 +40,10 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
  private:
   static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return new TemplateURLService(static_cast<Profile*>(profile), NULL,
-                                  base::Closure());
+    return new TemplateURLService(
+        static_cast<Profile*>(profile)->GetPrefs(),
+        make_scoped_ptr(new SearchTermsData), NULL,
+        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure());
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewInstantExtendedTest);

@@ -20,6 +20,7 @@
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -28,6 +29,7 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -169,9 +171,13 @@ class HistoryURLProviderTest : public testing::Test,
 
  protected:
   static KeyedService* CreateTemplateURLService(
-      content::BrowserContext* profile) {
-    return new TemplateURLService(static_cast<Profile*>(profile), NULL,
-                                  base::Closure());
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
+    return new TemplateURLService(
+        profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
+        scoped_ptr<TemplateURLServiceClient>(
+            new ChromeTemplateURLServiceClient(profile)),
+        NULL, NULL, base::Closure());
   }
 
   // testing::Test

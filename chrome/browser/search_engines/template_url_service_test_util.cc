@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -31,7 +32,14 @@ class TestingTemplateURLService : public TemplateURLService {
   }
 
   explicit TestingTemplateURLService(Profile* profile)
-      : TemplateURLService(profile, NULL, base::Closure()) {
+      : TemplateURLService(
+            profile->GetPrefs(),
+            scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+            WebDataServiceFactory::GetKeywordWebDataForProfile(
+                profile, Profile::EXPLICIT_ACCESS),
+            scoped_ptr<TemplateURLServiceClient>(
+                new ChromeTemplateURLServiceClient(profile)), NULL, NULL,
+            base::Closure()) {
   }
 
   base::string16 GetAndClearSearchTerm() {

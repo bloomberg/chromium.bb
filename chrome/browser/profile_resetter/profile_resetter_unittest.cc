@@ -19,10 +19,13 @@
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/google/core/browser/google_pref_names.h"
@@ -145,8 +148,13 @@ void ProfileResetterTest::SetUp() {
 // static
 KeyedService* ProfileResetterTest::CreateTemplateURLService(
     content::BrowserContext* context) {
-  return new TemplateURLService(static_cast<Profile*>(context), NULL,
-                                base::Closure());
+  Profile* profile = static_cast<Profile*>(context);
+  return new TemplateURLService(
+      profile->GetPrefs(),
+      scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+      WebDataServiceFactory::GetKeywordWebDataForProfile(
+          profile, Profile::EXPLICIT_ACCESS),
+      scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure());
 }
 
 

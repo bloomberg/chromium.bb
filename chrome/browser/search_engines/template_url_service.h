@@ -23,18 +23,16 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
 class GURL;
 class PrefService;
-class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
 class TemplateURL;
 struct TemplateURLData;
+class TemplateURLServiceClient;
 class TemplateURLServiceObserver;
 
 namespace rappor {
@@ -46,10 +44,6 @@ class SyncData;
 class SyncErrorFactory;
 }
 
-namespace history {
-struct URLVisitedDetails;
-}
-
 // TemplateURLService is the backend for keywords. It's used by
 // KeywordAutocomplete.
 //
@@ -58,8 +52,6 @@ struct URLVisitedDetails;
 // *ALL* mutations to the TemplateURLs must funnel through TemplateURLService.
 // This allows TemplateURLService to notify listeners of changes as well as keep
 // the database in sync.
-//
-// There is a TemplateURLService per Profile.
 //
 // TemplateURLService does not load the vector of TemplateURLs in its
 // constructor (except for testing). Use the Load method to trigger a load.
@@ -73,7 +65,6 @@ struct URLVisitedDetails;
 
 class TemplateURLService : public WebDataServiceConsumer,
                            public KeyedService,
-                           public content::NotificationObserver,
                            public syncer::SyncableService {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
@@ -91,7 +82,16 @@ class TemplateURLService : public WebDataServiceConsumer,
     const char* const content;
   };
 
-  TemplateURLService(Profile* profile,
+  struct URLVisitedDetails {
+    GURL url;
+    bool is_keyword_transition;
+  };
+
+  TemplateURLService(PrefService* prefs,
+                     scoped_ptr<SearchTermsData> search_terms_data,
+                     KeywordWebDataService* web_data_service,
+                     scoped_ptr<TemplateURLServiceClient> client,
+                     GoogleURLTracker* google_url_tracker,
                      rappor::RapporService* rappor_service,
                      const base::Closure& dsp_change_callback);
   // The following is for testing.
@@ -299,10 +299,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   base::string16 GetKeywordShortName(const base::string16& keyword,
                                      bool* is_omnibox_api_extension_keyword);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Called by the history service when a URL is visited.
+  void OnHistoryURLVisited(const URLVisitedDetails& details);
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -515,11 +513,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Iterates through the TemplateURLs to see if one matches the visited url.
   // For each TemplateURL whose url matches the visited url
   // SetKeywordSearchTermsForURL is invoked.
-  void UpdateKeywordSearchTermsForURL(
-      const history::URLVisitedDetails& details);
+  void UpdateKeywordSearchTermsForURL(const URLVisitedDetails& details);
 
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);
+
+  // Requests the Google URL tracker to check the server if necessary.
+  void RequestGoogleURLTrackerServerCheckIfNecessary();
 
   // Invoked when the Google base URL has changed. Updates the mapping for all
   // TemplateURLs that have a replacement term of {google:baseURL} or
@@ -649,7 +649,27 @@ class TemplateURLService : public WebDataServiceConsumer,
   // engine.
   void UpdateExtensionDefaultSearchEngine();
 
-  content::NotificationRegistrar notification_registrar_;
+
+  // ---------- Browser state related members ---------------------------------
+  PrefService* prefs_;
+
+  scoped_ptr<SearchTermsData> search_terms_data_;
+
+  // ---------- Dependencies on other components ------------------------------
+  // Service used to store entries.
+  scoped_refptr<KeywordWebDataService> web_data_service_;
+
+  scoped_ptr<TemplateURLServiceClient> client_;
+
+  GoogleURLTracker* google_url_tracker_;
+
+  // ---------- Metrics related members ---------------------------------------
+  rappor::RapporService* rappor_service_;
+
+  // This closure is run when the default search provider is set to Google.
+  base::Closure dsp_change_callback_;
+
+
   PrefChangeRegistrar pref_change_registrar_;
 
   // Mapping from keyword to the TemplateURL.
@@ -667,20 +687,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // header dependencies.
   scoped_ptr<SearchHostToURLsMap> provider_map_;
 
-  // Used to obtain the WebDataService.
-  // When Load is invoked, if we haven't yet loaded, the WebDataService is
-  // obtained from the Profile. This allows us to lazily access the database.
-  Profile* profile_;
-
-  PrefService* prefs_;
-
-  rappor::RapporService* rappor_service_;
-
-  scoped_ptr<SearchTermsData> search_terms_data_;
-
-  // This closure is run when the default search provider is set to Google.
-  base::Closure dsp_change_callback_;
-
   // Whether the keywords have been loaded.
   bool loaded_;
 
@@ -692,12 +698,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // If non-zero, we're waiting on a load.
   KeywordWebDataService::Handle load_handle_;
 
-  // Service used to store entries.
-  scoped_refptr<KeywordWebDataService> web_data_service_;
-
   // All visits that occurred before we finished loading. Once loaded
   // UpdateKeywordSearchTermsForURL is invoked for each element of the vector.
-  std::vector<history::URLVisitedDetails> visits_to_add_;
+  std::vector<URLVisitedDetails> visits_to_add_;
 
   // Once loaded, the default search provider.  This is a pointer to a
   // TemplateURL owned by |template_urls_|.

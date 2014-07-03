@@ -21,30 +21,22 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/search_engines/util.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
@@ -185,15 +177,22 @@ class TemplateURLService::LessWithPrefix {
 
 // TemplateURLService ---------------------------------------------------------
 
-TemplateURLService::TemplateURLService(Profile* profile,
-                                       rappor::RapporService* rappor_service,
-                                       const base::Closure& dsp_change_callback)
-    : provider_map_(new SearchHostToURLsMap),
-      profile_(profile),
-      prefs_(profile ? profile->GetPrefs() : NULL),
+TemplateURLService::TemplateURLService(
+    PrefService* prefs,
+    scoped_ptr<SearchTermsData> search_terms_data,
+    KeywordWebDataService* web_data_service,
+    scoped_ptr<TemplateURLServiceClient> client,
+    GoogleURLTracker* google_url_tracker,
+    rappor::RapporService* rappor_service,
+    const base::Closure& dsp_change_callback)
+    : prefs_(prefs),
+      search_terms_data_(search_terms_data.Pass()),
+      web_data_service_(web_data_service),
+      client_(client.Pass()),
+      google_url_tracker_(google_url_tracker),
       rappor_service_(rappor_service),
-      search_terms_data_(new UIThreadSearchTermsData(profile)),
       dsp_change_callback_(dsp_change_callback),
+      provider_map_(new SearchHostToURLsMap),
       loaded_(false),
       load_failed_(false),
       load_handle_(0),
@@ -207,17 +206,18 @@ TemplateURLService::TemplateURLService(Profile* profile,
           prefs_,
           base::Bind(&TemplateURLService::OnDefaultSearchChange,
                      base::Unretained(this))) {
-  DCHECK(profile_);
+  DCHECK(search_terms_data_);
   Init(NULL, 0);
 }
 
 TemplateURLService::TemplateURLService(const Initializer* initializers,
                                        const int count)
-    : provider_map_(new SearchHostToURLsMap),
-      profile_(NULL),
-      prefs_(NULL),
+    : prefs_(NULL),
+      search_terms_data_(new SearchTermsData),
+      web_data_service_(NULL),
+      google_url_tracker_(NULL),
       rappor_service_(NULL),
-      search_terms_data_(new UIThreadSearchTermsData(NULL)),
+      provider_map_(new SearchHostToURLsMap),
       loaded_(false),
       load_failed_(false),
       load_handle_(0),
@@ -808,11 +808,6 @@ void TemplateURLService::Load() {
   if (loaded_ || load_handle_)
     return;
 
-  if (!web_data_service_) {
-    web_data_service_ = WebDataServiceFactory::GetKeywordWebDataForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
-  }
-
   if (web_data_service_)
     load_handle_ = web_data_service_->GetKeywords(this);
   else
@@ -908,15 +903,11 @@ base::string16 TemplateURLService::GetKeywordShortName(
   return base::string16();
 }
 
-void TemplateURLService::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URL_VISITED);
-  content::Details<history::URLVisitedDetails> visit_details(details);
+void TemplateURLService::OnHistoryURLVisited(const URLVisitedDetails& details) {
   if (!loaded_)
-    visits_to_add_.push_back(*visit_details.ptr());
+    visits_to_add_.push_back(details);
   else
-    UpdateKeywordSearchTermsForURL(*visit_details.ptr());
+    UpdateKeywordSearchTermsForURL(details);
 }
 
 void TemplateURLService::Shutdown() {
@@ -1413,35 +1404,23 @@ void TemplateURLService::SetKeywordSearchTermsForURL(
     const TemplateURL* t_url,
     const GURL& url,
     const base::string16& term) {
-  HistoryService* history = profile_  ?
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS) :
-      NULL;
-  if (!history)
-    return;
-  history->SetKeywordSearchTermsForURL(url, t_url->id(), term);
+  if (client_)
+    client_->SetKeywordSearchTermsForURL(url, t_url->id(), term);
 }
 
 void TemplateURLService::Init(const Initializer* initializers,
                               int num_initializers) {
-  // Register for notifications.
-  if (profile_) {
-    // TODO(sky): bug 1166191. The keywords should be moved into the history
-    // db, which will mean we no longer need this notification and the history
-    // backend can handle automatically adding the search terms as the user
-    // navigates.
-    content::Source<Profile> profile_source(profile_->GetOriginalProfile());
-    notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                                profile_source);
-    GoogleURLTracker* google_url_tracker =
-        GoogleURLTrackerFactory::GetForProfile(profile_);
+  if (client_)
+    client_->SetOwner(this);
 
-    // GoogleURLTracker is not created in tests.
-    if (google_url_tracker) {
-      google_url_updated_subscription_ =
-          google_url_tracker->RegisterCallback(base::Bind(
-              &TemplateURLService::OnGoogleURLUpdated, base::Unretained(this)));
-    }
+  // GoogleURLTracker is not created in tests.
+  if (google_url_tracker_) {
+    google_url_updated_subscription_ =
+        google_url_tracker_->RegisterCallback(base::Bind(
+            &TemplateURLService::OnGoogleURLUpdated, base::Unretained(this)));
+  }
+
+  if (prefs_) {
     pref_change_registrar_.Init(prefs_);
     pref_change_registrar_.Add(
         prefs::kSyncedDefaultSearchProviderGUID,
@@ -1484,14 +1463,7 @@ void TemplateURLService::Init(const Initializer* initializers,
 
   // Request a server check for the correct Google URL if Google is the
   // default search engine.
-  TemplateURL* default_search_provider = GetDefaultSearchProvider();
-  if (profile_ && default_search_provider &&
-      default_search_provider->HasGoogleBaseURLs(search_terms_data())) {
-    GoogleURLTracker* tracker =
-        GoogleURLTrackerFactory::GetForProfile(profile_);
-    if (tracker)
-      tracker->RequestServerCheck(false);
-  }
+  RequestGoogleURLTrackerServerCheckIfNecessary();
 }
 
 void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
@@ -1746,30 +1718,28 @@ void TemplateURLService::MaybeUpdateDSEAfterSync(TemplateURL* synced_turl) {
 }
 
 void TemplateURLService::UpdateKeywordSearchTermsForURL(
-    const history::URLVisitedDetails& details) {
-  const history::URLRow& row = details.row;
-  if (!row.url().is_valid())
+    const URLVisitedDetails& details) {
+  if (!details.url.is_valid())
     return;
 
   const TemplateURLSet* urls_for_host =
-      provider_map_->GetURLsForHost(row.url().host());
+      provider_map_->GetURLsForHost(details.url.host());
   if (!urls_for_host)
     return;
 
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
     base::string16 search_terms;
-    if ((*i)->ExtractSearchTermsFromURL(row.url(), search_terms_data(),
+    if ((*i)->ExtractSearchTermsFromURL(details.url, search_terms_data(),
                                         &search_terms) &&
         !search_terms.empty()) {
-      if (content::PageTransitionStripQualifier(details.transition) ==
-          content::PAGE_TRANSITION_KEYWORD) {
+      if (details.is_keyword_transition) {
         // The visit is the result of the user entering a keyword, generate a
         // KEYWORD_GENERATED visit for the KEYWORD so that the keyword typed
         // count is boosted.
         AddTabToSearchVisit(**i);
       }
-      SetKeywordSearchTermsForURL(*i, row.url(), search_terms);
+      SetKeywordSearchTermsForURL(*i, details.url, search_terms);
     }
   }
 }
@@ -1782,12 +1752,7 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   if (!t_url.safe_for_autoreplace())
     return;
 
-  if (!profile_)
-    return;
-
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!history)
+  if (!client_)
     return;
 
   GURL url(
@@ -1797,10 +1762,14 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
 
   // Synthesize a visit for the keyword. This ensures the url for the keyword is
   // autocompleted even if the user doesn't type the url in directly.
-  history->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
-                   history::RedirectList(),
-                   content::PAGE_TRANSITION_KEYWORD_GENERATED,
-                   history::SOURCE_BROWSED, false);
+  client_->AddKeywordGeneratedVisit(url);
+}
+
+void TemplateURLService::RequestGoogleURLTrackerServerCheckIfNecessary() {
+  if (default_search_provider_ &&
+      default_search_provider_->HasGoogleBaseURLs(search_terms_data()) &&
+      google_url_tracker_)
+    google_url_tracker_->RequestServerCheck(false);
 }
 
 void TemplateURLService::GoogleBaseURLChanged() {
@@ -1961,14 +1930,8 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
   default_search_provider_source_ = source;
 
   bool changed = default_search_provider_ != previous_default_search_engine;
-
-  if (profile_ && changed && default_search_provider_ &&
-      default_search_provider_->HasGoogleBaseURLs(search_terms_data())) {
-    GoogleURLTracker* tracker =
-        GoogleURLTrackerFactory::GetForProfile(profile_);
-    if (tracker)
-      tracker->RequestServerCheck(false);
-  }
+  if (changed)
+    RequestGoogleURLTrackerServerCheckIfNecessary();
 
   NotifyObservers();
 
@@ -2067,12 +2030,8 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
                               DELETE_ENGINE_USER_ACTION, DELETE_ENGINE_MAX);
   }
 
-  if (loaded_ && profile_) {
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
-    if (history)
-      history->DeleteAllSearchTermsForKeyword(template_url->id());
-  }
+  if (loaded_ && client_)
+    client_->DeleteAllSearchTermsForKeyword(template_url->id());
 
   // We own the TemplateURL and need to delete it.
   delete template_url;

@@ -8,15 +8,19 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/predictors/predictor_database.h"
+#include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_io_thread_state.h"
 #include "components/autocomplete/test_scheme_classifier.h"
+#include "components/search_engines/search_terms_data.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -27,9 +31,16 @@
 namespace {
 
 // Caller owns the returned service.
-KeyedService* CreateTemplateURLService(content::BrowserContext* profile) {
-  return new TemplateURLService(static_cast<Profile*>(profile), NULL,
-                                base::Closure());
+KeyedService* CreateTemplateURLService(content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new TemplateURLService(
+      profile->GetPrefs(),
+      scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+      WebDataServiceFactory::GetKeywordWebDataForProfile(
+          profile, Profile::EXPLICIT_ACCESS),
+      scoped_ptr<TemplateURLServiceClient>(
+          new ChromeTemplateURLServiceClient(profile)),
+      NULL, NULL, base::Closure());
 }
 
 KeyedService* CreateAutocompleteClassifier(content::BrowserContext* context) {
