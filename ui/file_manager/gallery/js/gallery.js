@@ -83,6 +83,8 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
       MetadataCache.cloneMetadata(item.getMetadata()));
   if (newMetadata.filesystem)
     newMetadata.filesystem.modificationTime = new Date();
+  if (newMetadata.drive)
+    newMetadata.drive.present = true;
 
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
@@ -465,7 +467,7 @@ Gallery.getFileBrowserPrivate = function() {
  * @return {boolean} True if some tool is currently active.
  */
 Gallery.prototype.hasActiveTool = function() {
-  return this.currentMode_.hasActiveTool() ||
+  return (this.currentMode_ && this.currentMode_.hasActiveTool()) ||
       this.isSharing_() || this.isRenaming_();
 };
 

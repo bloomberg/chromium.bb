@@ -81,7 +81,7 @@ Viewport.prototype.sizeByFrameAndFit = function(frame) {
 /**
  * @return {number} Scale.
  */
-Viewport.prototype.getScale = function() { return this.scale_ };
+Viewport.prototype.getScale = function() { return this.scale_; };
 
 /**
  * @param {number} scale The new scale.
@@ -117,12 +117,12 @@ Viewport.prototype.fitImage = function() {
 /**
  * @return {number} X-offset of the viewport.
  */
-Viewport.prototype.getOffsetX = function() { return this.offsetX_ };
+Viewport.prototype.getOffsetX = function() { return this.offsetX_; };
 
 /**
  * @return {number} Y-offset of the viewport.
  */
-Viewport.prototype.getOffsetY = function() { return this.offsetY_ };
+Viewport.prototype.getOffsetY = function() { return this.offsetY_; };
 
 /**
  * Set the image offset in the viewport.
@@ -157,7 +157,7 @@ Viewport.prototype.createOffsetSetter = function(
     originalX, originalY, scaleFunc, hitFunc) {
   var originalOffsetX = this.offsetX_;
   var originalOffsetY = this.offsetY_;
-  if (!hitFunc) hitFunc = function() { return true };
+  if (!hitFunc) hitFunc = function() { return true; };
   if (!scaleFunc) scaleFunc = this.getScale.bind(this);
 
   var self = this;
@@ -179,22 +179,24 @@ Viewport.prototype.createOffsetSetter = function(
 /**
  * @return {Rect} The image bounds in image coordinates.
  */
-Viewport.prototype.getImageBounds = function() { return this.imageBounds_ };
+Viewport.prototype.getImageBounds = function() { return this.imageBounds_; };
 
 /**
 * @return {Rect} The screen bounds in screen coordinates.
 */
-Viewport.prototype.getScreenBounds = function() { return this.screenBounds_ };
+Viewport.prototype.getScreenBounds = function() { return this.screenBounds_; };
 
 /**
  * @return {Rect} The visible part of the image, in image coordinates.
  */
-Viewport.prototype.getImageClipped = function() { return this.imageClipped_ };
+Viewport.prototype.getImageClipped = function() { return this.imageClipped_; };
 
 /**
  * @return {Rect} The visible part of the image, in screen coordinates.
  */
-Viewport.prototype.getScreenClipped = function() { return this.screenClipped_ };
+Viewport.prototype.getScreenClipped = function() {
+  return this.screenClipped_;
+};
 
 /**
  * A counter that is incremented with each viewport state change.
@@ -202,12 +204,12 @@ Viewport.prototype.getScreenClipped = function() { return this.screenClipped_ };
  * track of this counter.
  * @return {number} counter.
  */
-Viewport.prototype.getCacheGeneration = function() { return this.generation_ };
+Viewport.prototype.getCacheGeneration = function() { return this.generation_; };
 
 /**
  * Called on event view port state change (even if repaint has not been called).
  */
-Viewport.prototype.invalidateCaches = function() { this.generation_++ };
+Viewport.prototype.invalidateCaches = function() { this.generation_++; };
 
 /**
  * @return {Rect} The image bounds in screen coordinates.
@@ -295,7 +297,7 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 /**
  * @return {number} The number of physical pixels in one CSS pixel.
  */
-Viewport.getDevicePixelRatio = function() { return window.devicePixelRatio };
+Viewport.getDevicePixelRatio = function() { return window.devicePixelRatio; };
 
 /**
  * Convert a rectangle from screen coordinates to 'device' coordinates.

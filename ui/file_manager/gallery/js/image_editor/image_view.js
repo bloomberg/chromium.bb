@@ -92,7 +92,7 @@ ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
  * Draws below overlays with the default zIndex.
  * @return {number} Z-index.
  */
-ImageView.prototype.getZIndex = function() { return -1 };
+ImageView.prototype.getZIndex = function() { return -1; };
 
 /**
  * Draws the image on screen.
