@@ -10,8 +10,8 @@
 
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
@@ -150,7 +150,7 @@ bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
     local_paths_.push_back(file_system_url.path());
   }
 
-  collector_.reset(new file_manager::util::MimeTypeCollector(GetProfile()));
+  collector_.reset(new app_file_handler_util::MimeTypeCollector(GetProfile()));
   collector_->CollectForLocalPaths(
       local_paths_,
       base::Bind(&FileBrowserPrivateGetFileTasksFunction::OnMimeTypesCollected,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/mime_util.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 
 #include <string>
 #include <vector>
@@ -17,8 +17,8 @@
 #include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace file_manager {
-namespace util {
+namespace extensions {
+namespace app_file_handler_util {
 namespace {
 
 const char kOrigin[] = "chrome-extension://cmalghjoncmjoeakimpfhojhpgemgaje";
@@ -46,10 +46,10 @@ fileapi::FileSystemURL CreateNativeLocalFileSystemURL(
 
 }  // namespace
 
-class FileManagerMimeUtilTest : public testing::Test {
+class FileHandlersMimeUtilTest : public testing::Test {
  protected:
-  FileManagerMimeUtilTest() {}
-  virtual ~FileManagerMimeUtilTest() {}
+  FileHandlersMimeUtilTest() {}
+  virtual ~FileHandlersMimeUtilTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -69,7 +69,7 @@ class FileManagerMimeUtilTest : public testing::Test {
   base::FilePath html_mime_file_path_;
 };
 
-TEST_F(FileManagerMimeUtilTest, GetMimeTypeForLocalPath) {
+TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
     GetMimeTypeForLocalPath(
@@ -101,7 +101,7 @@ TEST_F(FileManagerMimeUtilTest, GetMimeTypeForLocalPath) {
   }
 }
 
-TEST_F(FileManagerMimeUtilTest, MimeTypeCollector_ForURLs) {
+TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
   MimeTypeCollector collector(&profile_);
 
   std::vector<fileapi::FileSystemURL> urls;
@@ -126,7 +126,7 @@ TEST_F(FileManagerMimeUtilTest, MimeTypeCollector_ForURLs) {
   EXPECT_EQ("text/html", result[2]);
 }
 
-TEST_F(FileManagerMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
+TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   MimeTypeCollector collector(&profile_);
 
   std::vector<base::FilePath> local_paths;
@@ -148,5 +148,5 @@ TEST_F(FileManagerMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   EXPECT_EQ("text/html", result[2]);
 }
 
-}  // namespace util
-}  // namespace file_manager
+}  // namespace app_file_handler_util
+}  // namespace extensions

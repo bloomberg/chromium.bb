@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,13 +33,10 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "net/base/filename_util.h"
-#include "net/base/mime_sniffer.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 
@@ -101,12 +99,15 @@ class PlatformAppPathLauncher
   PlatformAppPathLauncher(Profile* profile,
                           const Extension* extension,
                           const std::vector<base::FilePath>& file_paths)
-      : profile_(profile), extension_(extension), file_paths_(file_paths) {}
+      : profile_(profile),
+        extension_(extension),
+        file_paths_(file_paths),
+        collector_(profile) {}
 
   PlatformAppPathLauncher(Profile* profile,
                           const Extension* extension,
                           const base::FilePath& file_path)
-      : profile_(profile), extension_(extension) {
+      : profile_(profile), extension_(extension), collector_(profile) {
     if (!file_path.empty())
       file_paths_.push_back(file_path);
   }
@@ -127,12 +128,12 @@ class PlatformAppPathLauncher
           file_paths_,
           profile_,
           false,
-          base::Bind(&PlatformAppPathLauncher::OnFileValid, this),
-          base::Bind(&PlatformAppPathLauncher::OnFileInvalid, this));
+          base::Bind(&PlatformAppPathLauncher::OnFilesValid, this),
+          base::Bind(&PlatformAppPathLauncher::OnFilesInvalid, this));
       return;
     }
 
-    OnFileValid();
+    OnFilesValid();
   }
 
   void LaunchWithHandler(const std::string& handler_id) {
@@ -175,107 +176,14 @@ class PlatformAppPathLauncher
                             base::Bind(&PlatformAppPathLauncher::Launch, this));
   }
 
-  void OnFileValid() {
-    mime_types_.resize(file_paths_.size());
-#if defined(OS_CHROMEOS)
-    GetNextNonNativeMimeType();
-#else
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&PlatformAppPathLauncher::GetMimeTypesAndLaunch, this));
-#endif
+  void OnFilesValid() {
+    collector_.CollectForLocalPaths(
+        file_paths_,
+        base::Bind(&PlatformAppPathLauncher::OnMimeTypesCollected, this));
   }
 
-  void OnFileInvalid(const base::FilePath& /* error_path */) {
+  void OnFilesInvalid(const base::FilePath& /* error_path */) {
     LaunchWithNoLaunchData();
-  }
-
-#if defined(OS_CHROMEOS)
-  void GetNextNonNativeMimeType() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    bool any_native_files = false;
-    for (size_t i = 0; i < mime_types_.size(); ++i) {
-      if (!mime_types_[i].empty())
-        continue;
-      const base::FilePath& file_path = file_paths_[i];
-      if (file_manager::util::IsUnderNonNativeLocalPath(profile_, file_path)) {
-        file_manager::util::GetNonNativeLocalPathMimeType(
-            profile_,
-            file_path,
-            base::Bind(&PlatformAppPathLauncher::OnGotMimeType, this, i));
-        return;
-      }
-      any_native_files = true;
-    }
-
-    // If there are any native files, we need to call GetMimeTypesAndLaunch to
-    // obtain mime types for the files.
-    if (any_native_files) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(&PlatformAppPathLauncher::GetMimeTypesAndLaunch, this));
-      return;
-    }
-
-    // Otherwise, we can call LaunchWithMimeTypes directly.
-    LaunchWithMimeTypes();
-  }
-
-  void OnGotMimeType(size_t index, bool success, const std::string& mime_type) {
-    if (!success) {
-      LaunchWithNoLaunchData();
-      return;
-    }
-    mime_types_[index] = mime_type.empty() ? kFallbackMimeType : mime_type;
-    GetNextNonNativeMimeType();
-  }
-#endif
-
-  void GetMimeTypesAndLaunch() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-    for (size_t i = 0; i < mime_types_.size(); ++i) {
-      if (!this->mime_types_[i].empty())
-        continue;
-      const base::FilePath& file_path = file_paths_[i];
-
-      // If the file doesn't exist, or is a directory, launch with no launch
-      // data.
-      if (!base::PathExists(file_path) || base::DirectoryExists(file_path)) {
-        LOG(WARNING) << "No file exists with path " << file_path.value();
-        BrowserThread::PostTask(
-            BrowserThread::UI,
-            FROM_HERE,
-            base::Bind(&PlatformAppPathLauncher::LaunchWithNoLaunchData, this));
-        return;
-      }
-
-      std::string mime_type;
-      if (!net::GetMimeTypeFromFile(file_path, &mime_type)) {
-        // If MIME type of the file can't be determined by its path,
-        // try to sniff it by its content.
-        std::vector<char> content(net::kMaxBytesToSniff);
-        int bytes_read = base::ReadFile(file_path, &content[0], content.size());
-        if (bytes_read >= 0) {
-          net::SniffMimeType(&content[0],
-                             bytes_read,
-                             net::FilePathToFileURL(file_path),
-                             std::string(),  // type_hint (passes no hint)
-                             &mime_type);
-        }
-        if (mime_type.empty())
-          mime_type = kFallbackMimeType;
-      }
-      mime_types_[i] = mime_type;
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&PlatformAppPathLauncher::LaunchWithMimeTypes, this));
   }
 
   void LaunchWithNoLaunchData() {
@@ -283,8 +191,15 @@ class PlatformAppPathLauncher
     LaunchPlatformAppWithNoData(profile_, extension_);
   }
 
-  void LaunchWithMimeTypes() {
-    DCHECK(file_paths_.size() == mime_types_.size());
+  void OnMimeTypesCollected(scoped_ptr<std::vector<std::string> > mime_types) {
+    DCHECK(file_paths_.size() == mime_types->size());
+
+    // If fetching a mime type failed, then use a fallback one.
+    for (size_t i = 0; i < mime_types->size(); ++i) {
+      const std::string mime_type =
+          !(*mime_types)[i].empty() ? (*mime_types)[i] : kFallbackMimeType;
+      mime_types_.push_back(mime_type);
+    }
 
     // Find file handler from the platform app for the file being opened.
     const extensions::FileHandlerInfo* handler = NULL;
@@ -383,6 +298,7 @@ class PlatformAppPathLauncher
   std::vector<std::string> mime_types_;
   // The ID of the file handler used to launch the app.
   std::string handler_id_;
+  extensions::app_file_handler_util::MimeTypeCollector collector_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };

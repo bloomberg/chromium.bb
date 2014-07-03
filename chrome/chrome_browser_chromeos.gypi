@@ -356,8 +356,6 @@
         'browser/chromeos/file_manager/fileapi_util.h',
         'browser/chromeos/file_manager/filesystem_api_util.cc',
         'browser/chromeos/file_manager/filesystem_api_util.h',
-        'browser/chromeos/file_manager/mime_util.cc',
-        'browser/chromeos/file_manager/mime_util.h',
         'browser/chromeos/file_manager/mounted_disk_monitor.cc',
         'browser/chromeos/file_manager/mounted_disk_monitor.h',
         'browser/chromeos/file_manager/open_util.cc',

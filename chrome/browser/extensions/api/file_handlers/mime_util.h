@@ -4,8 +4,8 @@
 //
 // This file provides MIME related utilities.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_MIME_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_MIME_UTIL_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
+#define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
 class Profile;
 
@@ -25,8 +24,8 @@ namespace fileapi {
 class FileSystemURL;
 }  // namespace fileapi
 
-namespace file_manager {
-namespace util {
+namespace extensions {
+namespace app_file_handler_util {
 
 // Gets a MIME type for a local path and returns it with |callback|. If not
 // found, then the MIME type is an empty string.
@@ -70,7 +69,7 @@ class MimeTypeCollector {
   DISALLOW_COPY_AND_ASSIGN(MimeTypeCollector);
 };
 
-}  // namespace util
-}  // namespace file_manager
+}  // namespace app_file_handler_util
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_MIME_UTIL_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_

@@ -18,13 +18,11 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace file_manager {
-namespace util {
-class MimeTypeCollector;
-}  // namespace util
-}  // namespace file_manager
-
 namespace extensions {
+
+namespace app_file_handler_util {
+class MimeTypeCollector;
+}  // namespace app_file_handler_util
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
 class FileBrowserPrivateExecuteTaskFunction
@@ -66,7 +64,7 @@ class FileBrowserPrivateGetFileTasksFunction
       scoped_ptr<app_file_handler_util::PathAndMimeTypeSet> path_mime_set,
       scoped_ptr<std::vector<GURL> > file_urls);
 
-  scoped_ptr<file_manager::util::MimeTypeCollector> collector_;
+  scoped_ptr<app_file_handler_util::MimeTypeCollector> collector_;
   std::vector<GURL> file_urls_;
   std::vector<base::FilePath> local_paths_;
 };

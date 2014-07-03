@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -131,7 +131,7 @@ void OpenFile(Profile* profile,
               const base::FilePath& path,
               const GURL& url,
               const base::Callback<void(bool)>& callback) {
-  GetMimeTypeForLocalPath(
+  extensions::app_file_handler_util::GetMimeTypeForLocalPath(
       profile,
       path,
       base::Bind(&OpenFileWithMimeType, profile, path, url, callback));
