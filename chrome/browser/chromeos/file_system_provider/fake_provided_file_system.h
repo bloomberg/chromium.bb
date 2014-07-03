@@ -26,6 +26,7 @@ extern const char kFakeFileName[];
 extern const char kFakeFilePath[];
 extern const char kFakeFileText[];
 extern const size_t kFakeFileSize;
+extern const char kFakeFileModificationTime[];
 
 // Fake provided file system implementation. Does not communicate with target
 // extensions. Used for unit tests.

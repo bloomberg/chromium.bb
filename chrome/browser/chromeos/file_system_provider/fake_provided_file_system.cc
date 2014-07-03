@@ -35,6 +35,7 @@ const char kFakeFilePath[] = "/hello.txt";
 const char kFakeFileText[] =
     "This is a testing file. Lorem ipsum dolor sit amet est.";
 const size_t kFakeFileSize = sizeof(kFakeFileText) - 1u;
+const char kFakeFileModificationTime[] = "Fri Apr 25 01:47:53 UTC 2014";
 
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
@@ -74,8 +75,8 @@ void FakeProvidedFileSystem::GetMetadata(
     metadata.size = kFakeFileSize;
     metadata.is_directory = false;
     base::Time modification_time;
-    const bool result = base::Time::FromString("Fri Apr 25 01:47:53 UTC 2014",
-                                               &modification_time);
+    const bool result =
+        base::Time::FromString(kFakeFileModificationTime, &modification_time);
     DCHECK(result);
     metadata.modification_time = modification_time;
     metadata.mime_type = "text/plain";
