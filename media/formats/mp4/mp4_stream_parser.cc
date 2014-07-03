@@ -567,14 +567,13 @@ bool MP4StreamParser::SendAndFlushSamples(BufferQueue* audio_buffers,
   return success;
 }
 
-bool MP4StreamParser::ReadAndDiscardMDATsUntil(const int64 offset) {
+bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64 max_clear_offset) {
   bool err = false;
-  while (mdat_tail_ < offset) {
+  int64 upper_bound = std::min(max_clear_offset, queue_.tail());
+  while (mdat_tail_ < upper_bound) {
     const uint8* buf = NULL;
     int size = 0;
     queue_.PeekAt(mdat_tail_, &buf, &size);
-    if (size <= 0)
-      return false;
 
     FourCC type;
     int box_sz;
@@ -588,7 +587,7 @@ bool MP4StreamParser::ReadAndDiscardMDATsUntil(const int64 offset) {
     }
     mdat_tail_ += box_sz;
   }
-  queue_.Trim(std::min(mdat_tail_, offset));
+  queue_.Trim(std::min(mdat_tail_, upper_bound));
   return !err;
 }
 

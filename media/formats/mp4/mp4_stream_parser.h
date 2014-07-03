@@ -57,10 +57,12 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // To retain proper framing, each 'mdat' atom must be read; to limit memory
   // usage, the atom's data needs to be discarded incrementally as frames are
   // extracted from the stream. This function discards data from the stream up
-  // to |offset|, updating the |mdat_tail_| value so that framing can be
-  // retained after all 'mdat' information has been read.
+  // to |max_clear_offset|, updating the |mdat_tail_| value so that framing can
+  // be retained after all 'mdat' information has been read. |max_clear_offset|
+  // is the upper bound on what can be removed from |queue_|. Anything below
+  // this offset is no longer needed by the parser.
   // Returns 'true' on success, 'false' if there was an error.
-  bool ReadAndDiscardMDATsUntil(const int64 offset);
+  bool ReadAndDiscardMDATsUntil(int64 max_clear_offset);
 
   void ChangeState(State new_state);
 
