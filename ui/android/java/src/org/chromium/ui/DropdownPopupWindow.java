@@ -5,6 +5,7 @@
 package org.chromium.ui;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
@@ -30,6 +31,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private float mAnchorY;
     private OnLayoutChangeListener mLayoutChangeListener;
     private PopupWindow.OnDismissListener mOnDismissListener;
+    ListAdapter mAdapter;
 
     /**
      * Creates an DropdownPopupWindow with specified parameters.
@@ -89,21 +91,32 @@ public class DropdownPopupWindow extends ListPopupWindow {
     }
 
     @Override
+    public void setAdapter(ListAdapter adapter) {
+        mAdapter = adapter;
+        super.setAdapter(adapter);
+    }
+
+    @Override
     public void show() {
         // An ugly hack to keep the popup from expanding on top of the keyboard.
         setInputMethodMode(INPUT_METHOD_NEEDED);
-        super.show();
-        getListView().setDividerHeight(0);
         int contentWidth = measureContentWidth();
         float contentWidthInDip = contentWidth /
                 mContext.getResources().getDisplayMetrics().density;
         if (contentWidthInDip > mAnchorWidth) {
             setContentWidth(contentWidth);
+            final Rect displayFrame = new Rect();
+            mAnchorView.getWindowVisibleDisplayFrame(displayFrame);
+            if (getWidth() > displayFrame.width()) {
+                setWidth(displayFrame.width());
+            }
         } else {
             setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         mViewAndroidDelegate.setAnchorViewPosition(mAnchorView, mAnchorX, mAnchorY, mAnchorWidth,
                 mAnchorHeight);
+        super.show();
+        getListView().setDividerHeight(0);
     }
 
     @Override
@@ -118,13 +131,12 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private int measureContentWidth() {
         int maxWidth = 0;
         View itemView = null;
-        final ListAdapter adapter = getListView().getAdapter();
-        if (adapter == null)
+        if (mAdapter == null)
           return 0;
         final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
-        for (int i = 0; i < adapter.getCount(); i++) {
-            itemView = adapter.getView(i, itemView, null);
+        for (int i = 0; i < mAdapter.getCount(); i++) {
+            itemView = mAdapter.getView(i, itemView, null);
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT);
