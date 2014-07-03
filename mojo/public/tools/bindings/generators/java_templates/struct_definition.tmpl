@@ -1,8 +1,48 @@
 {% from "constant_definition.tmpl" import constant_def %}
 {% from "enum_definition.tmpl" import enum_def %}
 
+{% macro encode(variable, kind, offset, bit, level=0) %}
+{% if kind|is_pointer_array_kind %}
+{% set sub_kind = kind.kind %}
+if ({{variable}} == null) {
+    encoder{{level}}.encodeNullPointer({{offset}});
+} else {
+    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}});
+    for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
+        {{encode(variable~'[i'~level~']', sub_kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~level, 0, level+1)|indent(8)}}
+    }
+}
+{% else %}
+encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
+{% endif %}
+{% endmacro %}
+
+{% macro decode(variable, kind, offset, bit, level=0) %}
+{% if kind|is_struct_kind or kind|is_pointer_array_kind %}
+org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPointer({{offset}});
+{%   if kind|is_struct_kind %}
+{{variable}} = {{kind|java_type}}.decode(decoder{{level+1}});
+{%   else %}{# kind|is_pointer_array_kind #}
+if (decoder{{level+1}} == null) {
+    {{variable}} = null;
+} else {
+    DataHeader si{{level+1}} = decoder{{level+1}}.readDataHeader();
+    {{variable}} = {{kind|new_array('si'~(level+1)~'.numFields')}};
+    for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numFields; ++i{{level+1}}) {
+        {{decode(variable~'[i'~(level+1)~']', kind.kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~(level+1), 0, level+1)|indent(8)}}
+    }
+}
+{%   endif %}
+{% else %}
+{{variable}} = decoder{{level}}.{{kind|decode_method(offset, bit)}};
+{% endif %}
+{% endmacro %}
+
 {% macro struct_def(struct, inner_class=False) %}
 {{'static' if inner_class else 'public'}} final class {{struct|name}} extends org.chromium.mojo.bindings.Struct {
+
+    private static final int STRUCT_SIZE = {{struct.packed|struct_size}};
+    private static final DataHeader DEFAULT_STRUCT_INFO = new DataHeader(STRUCT_SIZE, {{struct.packed.packed_fields|length}});
 {%  for constant in struct.constants %}
 
     {{constant_def(constant)|indent(4)}}
@@ -19,6 +59,7 @@
 {% endif %}
 
     public {{struct|name}}() {
+        super(STRUCT_SIZE);
 {% for field in struct.fields %}
 {%   if field.default %}
         {{field|name}} = {{field|default_value}};
@@ -28,5 +69,34 @@
 {% endfor %}
     }
 
+    public static {{struct|name}} deserialize(org.chromium.mojo.bindings.Message message) {
+        return decode(new org.chromium.mojo.bindings.Decoder(message));
+    }
+
+    public static {{struct|name}} decode(org.chromium.mojo.bindings.Decoder decoder0) {
+        if (decoder0 == null) {
+            return null;
+        }
+        {{struct|name}} result = new {{struct|name}}();
+        DataHeader mainDataHeader = decoder0.readDataHeader();
+{% for byte in struct.bytes %}
+{%   for packed_field in byte.packed_fields %}
+        if (mainDataHeader.numFields > {{packed_field.ordinal}}) {
+            {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(12)}}
+        }
+{%   endfor %}
+{% endfor %}
+        return result;
+    }
+
+    @Override
+    protected final void encode(org.chromium.mojo.bindings.Encoder encoder) {
+        org.chromium.mojo.bindings.Encoder encoder0 = encoder.getEncoderAtDataOffset(DEFAULT_STRUCT_INFO);
+{% for byte in struct.bytes %}
+{%   for packed_field in byte.packed_fields %}
+        {{encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(8)}}
+{%   endfor %}
+{% endfor %}
+    }
 }
 {% endmacro %}

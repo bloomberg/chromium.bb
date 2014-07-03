@@ -17,6 +17,8 @@ from mojom.generate.template_expander import UseJinja
 
 GENERATOR_PREFIX = 'java'
 
+_HEADER_SIZE = 8
+
 _spec_to_java_type = {
   'b':     'boolean',
   'd':     'double',
@@ -35,6 +37,26 @@ _spec_to_java_type = {
   'u32':   'int',
   'u64':   'long',
   'u8':    'byte',
+}
+
+_spec_to_decode_method = {
+  'b':     'readBoolean',
+  'd':     'readDouble',
+  'f':     'readFloat',
+  'h:d:c': 'readConsumerHandle',
+  'h:d:p': 'readProducerHandle',
+  'h:m':   'readMessagePipeHandle',
+  'h':     'readUntypedHandle',
+  'h:s':   'readSharedBufferHandle',
+  'i16':   'readShort',
+  'i32':   'readInt',
+  'i64':   'readLong',
+  'i8':    'readByte',
+  's':     'readString',
+  'u16':   'readShort',
+  'u32':   'readInt',
+  'u64':   'readLong',
+  'u8':    'readByte',
 }
 
 _java_primitive_to_boxed_type = {
@@ -99,6 +121,42 @@ def ParseStringAttribute(attribute):
   assert isinstance(attribute, basestring)
   return attribute
 
+def IsArray(kind):
+  return isinstance(kind, (mojom.Array, mojom.FixedArray))
+
+@contextfilter
+def DecodeMethod(context, kind, offset, bit):
+  def _DecodeMethodName(kind):
+    if IsArray(kind):
+      return _DecodeMethodName(kind.kind) + 's'
+    if isinstance(kind, mojom.Enum):
+      return _DecodeMethodName(mojom.INT32)
+    if isinstance(kind, mojom.InterfaceRequest):
+      return "readInterfaceRequest"
+    if isinstance(kind, mojom.Interface):
+      return "readServiceInterface"
+    return _spec_to_decode_method[kind.spec]
+  methodName = _DecodeMethodName(kind)
+  additionalParams = ''
+  if (kind == mojom.BOOL):
+    additionalParams = ', %d' % bit
+  if isinstance(kind, mojom.Interface):
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
+  if IsArray(kind) and isinstance(kind.kind, mojom.Interface):
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
+  return '%s(%s%s)' % (methodName, offset, additionalParams)
+
+@contextfilter
+def EncodeMethod(context, kind, variable, offset, bit):
+  additionalParams = ''
+  if (kind == mojom.BOOL):
+    additionalParams = ', %d' % bit
+  if isinstance(kind, mojom.Interface):
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
+  if IsArray(kind) and isinstance(kind.kind, mojom.Interface):
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
+  return 'encode(%s, %s%s)' % (variable, offset, additionalParams)
+
 def GetPackage(module):
   if 'JavaPackage' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaPackage'])
@@ -135,7 +193,7 @@ def GetJavaType(context, kind, boxed=False):
   if isinstance(kind, mojom.InterfaceRequest):
     return ("org.chromium.mojo.bindings.InterfaceRequest<%s>" %
             GetNameForKind(context, kind.kind))
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if IsArray(kind):
     return "%s[]" % GetJavaType(context, kind.kind)
   if isinstance(kind, mojom.Enum):
     return "int"
@@ -152,6 +210,12 @@ def DefaultValue(context, field):
     return "new %s()" % GetJavaType(context, field.kind)
   return "(%s) %s" % (GetJavaType(context, field.kind),
                       ExpressionToText(context, field.default))
+
+@contextfilter
+def NewArray(context, kind, size):
+  if IsArray(kind.kind):
+    return NewArray(context, kind.kind, size) + '[]'
+  return 'new %s[%s]' % (GetJavaType(context, kind.kind), size)
 
 @contextfilter
 def ExpressionToText(context, token):
@@ -174,6 +238,12 @@ def ExpressionToText(context, token):
     return token + 'L'
   return token
 
+def IsPointerArrayKind(kind):
+  if not IsArray(kind):
+    return False
+  sub_kind = kind.kind
+  return generator.IsObjectKind(sub_kind)
+
 def GetConstantsMainEntityName(module):
   if 'JavaConstantsClassName' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaConstantsClassName'])
@@ -187,10 +257,16 @@ class Generator(generator.Generator):
   java_filters = {
     "interface_response_name": GetInterfaceResponseName,
     "default_value": DefaultValue,
+    "decode_method": DecodeMethod,
     "expression_to_text": ExpressionToText,
+    "encode_method": EncodeMethod,
     "is_handle": IsHandle,
+    "is_pointer_array_kind": IsPointerArrayKind,
+    "is_struct_kind": lambda kind: isinstance(kind, mojom.Struct),
     "java_type": GetJavaType,
     "name": GetNameForElement,
+    "new_array": NewArray,
+    "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
   }
 
   def GetJinjaExports(self):

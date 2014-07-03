@@ -1,0 +1,458 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.mojo.bindings;
+
+import org.chromium.mojo.bindings.Struct.DataHeader;
+import org.chromium.mojo.system.Core;
+import org.chromium.mojo.system.Handle;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Helper class to encode a mojo struct. It keeps track of the output buffer, resizing it as needed.
+ * It also keeps track of the associated handles, and the offset of the current data section.
+ */
+public class Encoder {
+
+    /**
+     * Container class for all state that must be shared between the main encoder and any used sub
+     * encoder.
+     */
+    private static class EncoderState {
+
+        /**
+         * The core used to encode interfaces.
+         */
+        public final Core core;
+
+        /**
+         * The ByteBuffer to which the message will be encoded.
+         */
+        public ByteBuffer byteBuffer;
+
+        /**
+         * The list of encountered handles.
+         */
+        public final List<Handle> handles = new ArrayList<Handle>();
+
+        /**
+         * The current absolute position for the next data section.
+         */
+        public int dataEnd;
+
+        /**
+         * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
+         *            being encoded contains interfaces, can be |null| otherwise.
+         * @param bufferSize A hint on the size of the message. Used to build the initial byte
+         *            buffer.
+         */
+        private EncoderState(Core core, int bufferSize) {
+            assert bufferSize % BindingsHelper.ALIGNMENT == 0;
+            this.core = core;
+            byteBuffer = ByteBuffer.allocateDirect(
+                    bufferSize > 0 ? bufferSize : INITIAL_BUFFER_SIZE);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            dataEnd = 0;
+        }
+
+        /**
+         * Claim the given amount of memory at the end of the buffer, resizing it if needed.
+         */
+        public void claimMemory(int size) {
+            dataEnd += size;
+            growIfNeeded();
+        }
+
+        /**
+         * Grow the associated ByteBuffer if needed.
+         */
+        private void growIfNeeded() {
+            if (byteBuffer.capacity() >= dataEnd) {
+                return;
+            }
+            int targetSize = byteBuffer.capacity() * 2;
+            while (targetSize < dataEnd) {
+                targetSize *= 2;
+            }
+            ByteBuffer newBuffer = ByteBuffer.allocateDirect(targetSize);
+            newBuffer.order(ByteOrder.nativeOrder());
+            byteBuffer.position(0);
+            byteBuffer.limit(byteBuffer.capacity());
+            newBuffer.put(byteBuffer);
+            byteBuffer = newBuffer;
+        }
+    }
+
+    /**
+     * Default initial size of the data buffer. This must be a multiple of 8 bytes.
+     */
+    private static final int INITIAL_BUFFER_SIZE = 1024;
+
+    /**
+     * Base offset in the byte buffer for writing.
+     */
+    private int mBaseOffset;
+
+    /**
+     * The encoder state shared by the main encoder and all its sub-encoder.
+     */
+    private final EncoderState mEncoderState;
+
+    /**
+     * Returns the result message.
+     */
+    public Message getMessage() {
+        mEncoderState.byteBuffer.position(0);
+        mEncoderState.byteBuffer.limit(mEncoderState.dataEnd);
+        return new Message(mEncoderState.byteBuffer, mEncoderState.handles);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
+     *            being encoded contains interfaces, can be |null| otherwise.
+     * @param sizeHint A hint on the size of the message. Used to build the initial byte buffer.
+     */
+    public Encoder(Core core, int sizeHint) {
+        this(new EncoderState(core, sizeHint));
+    }
+
+    /**
+     * Private constructor for sub-encoders.
+     */
+    private Encoder(EncoderState bufferInformation) {
+        mEncoderState = bufferInformation;
+        mBaseOffset = bufferInformation.dataEnd;
+    }
+
+    /**
+     * Returns a new encoder that will append to the current buffer.
+     */
+    public Encoder getEncoderAtDataOffset(DataHeader dataHeader) {
+        Encoder result = new Encoder(mEncoderState);
+        result.encode(dataHeader);
+        return result;
+
+    }
+
+    /**
+     * Encode a {@link DataHeader} and claim the amount of memory required for the data section
+     * (resizing the buffer if required).
+     */
+    public void encode(DataHeader s) {
+        mEncoderState.claimMemory(s.size);
+        encode(s.size, DataHeader.SIZE_OFFSET);
+        encode(s.numFields, DataHeader.NUM_FIELDS_OFFSET);
+    }
+
+    /**
+     * Encode a byte at the given offset.
+     */
+    public void encode(byte v, int offset) {
+        mEncoderState.byteBuffer.put(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode a boolean at the given offset.
+     */
+    public void encode(boolean v, int offset, int bit) {
+        if (v) {
+            byte encodedValue = mEncoderState.byteBuffer.get(mBaseOffset + offset);
+            encodedValue |= 1 << bit;
+            mEncoderState.byteBuffer.put(mBaseOffset + offset, encodedValue);
+        }
+    }
+
+    /**
+     * Encode a short at the given offset.
+     */
+    public void encode(short v, int offset) {
+        mEncoderState.byteBuffer.putShort(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode an int at the given offset.
+     */
+    public void encode(int v, int offset) {
+        mEncoderState.byteBuffer.putInt(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode a float at the given offset.
+     */
+    public void encode(float v, int offset) {
+        mEncoderState.byteBuffer.putFloat(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode a long at the given offset.
+     */
+    public void encode(long v, int offset) {
+        mEncoderState.byteBuffer.putLong(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode a double at the given offset.
+     */
+    public void encode(double v, int offset) {
+        mEncoderState.byteBuffer.putDouble(mBaseOffset + offset, v);
+    }
+
+    /**
+     * Encode a {@link Struct} at the given offset.
+     */
+    public void encode(Struct v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encodePointerToNextUnclaimedData(offset);
+        v.encode(this);
+    }
+
+    /**
+     * Encodes a String.
+     */
+    public void encode(String v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encode(v.getBytes(Charset.forName("utf8")), offset);
+    }
+
+    /**
+     * Encodes a {@link Handle}.
+     */
+    public void encode(Handle v, int offset) {
+        if (v == null || !v.isValid()) {
+            encode(-1, offset);
+        } else {
+            encode(mEncoderState.handles.size(), offset);
+            mEncoderState.handles.add(v);
+        }
+    }
+
+    /**
+     * Encode an {@link Interface}.
+     */
+    public <T extends Interface> void encode(T v, int offset, Object builder) {
+        if (mEncoderState.core == null) {
+            throw new UnsupportedOperationException(
+                    "The encoder has been created without a Core. It can't encode an interface.");
+        }
+        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
+        throw new UnsupportedOperationException("Unimplemented operation");
+    }
+
+    /**
+     * Encode an {@link InterfaceRequest}.
+     */
+    public <T extends Interface> void encode(InterfaceRequest<T> v, int offset) {
+        if (mEncoderState.core == null) {
+            throw new UnsupportedOperationException(
+                    "The encoder has been created without a Core. It can't encode an interface.");
+        }
+        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
+        throw new UnsupportedOperationException("Unimplemented operation");
+    }
+
+    /**
+     * Returns an {@link Encoder} suitable for encoding an array of pointer of the given length.
+     */
+    public Encoder encodePointerArray(int length, int offset) {
+        return encoderForArray(BindingsHelper.POINTER_SIZE, length, offset);
+    }
+
+    /**
+     * Encodes an array of booleans.
+     */
+    public void encode(boolean[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        byte[] bytes = new byte[(v.length + 7) / BindingsHelper.ALIGNMENT];
+        for (int i = 0; i < bytes.length; ++i) {
+            for (int j = 0; j < BindingsHelper.ALIGNMENT; ++j) {
+                int booleanIndex = BindingsHelper.ALIGNMENT * i + j;
+                if (booleanIndex < v.length && v[booleanIndex]) {
+                    bytes[i] |= (1 << j);
+                }
+            }
+        }
+        encodeByteArray(bytes, v.length, offset);
+    }
+
+    /**
+     * Encodes an array of bytes.
+     */
+    public void encode(byte[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encodeByteArray(v, v.length, offset);
+    }
+
+    /**
+     * Encodes an array of shorts.
+     */
+    public void encode(short[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encoderForArray(2, v.length, offset).append(v);
+    }
+
+    /**
+     * Encodes an array of ints.
+     */
+    public void encode(int[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encoderForArray(4, v.length, offset).append(v);
+    }
+
+    /**
+     * Encodes an array of floats.
+     */
+    public void encode(float[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encoderForArray(4, v.length, offset).append(v);
+    }
+
+    /**
+     * Encodes an array of longs.
+     */
+    public void encode(long[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encoderForArray(8, v.length, offset).append(v);
+    }
+
+    /**
+     * Encodes an array of doubles.
+     */
+    public void encode(double[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        encoderForArray(8, v.length, offset).append(v);
+    }
+
+    /**
+     * Encodes an array of {@link Handle}.
+     */
+    public void encode(Handle[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        for (int i = 0; i < v.length; ++i) {
+            e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
+        }
+    }
+
+    /**
+     * Encodes an array of {@link Interface}.
+     */
+    public <T extends Interface> void encode(T[] v, int offset, Object builder) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        for (int i = 0; i < v.length; ++i) {
+            e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
+                    builder);
+        }
+    }
+
+    /**
+     * Encodes an array of {@link Interface}.
+     */
+    public <T extends Interface> void encode(InterfaceRequest<T>[] v, int offset) {
+        if (v == null) {
+            encodeNullPointer(offset);
+            return;
+        }
+        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        for (int i = 0; i < v.length; ++i) {
+            e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
+        }
+    }
+
+    /**
+     * Encode a <code>null</code> pointer.
+     */
+    public void encodeNullPointer(int offset) {
+        mEncoderState.byteBuffer.putLong(mBaseOffset + offset, 0);
+    }
+
+    private void encodePointerToNextUnclaimedData(int offset) {
+        encode((long) mEncoderState.dataEnd - (mBaseOffset + offset), offset);
+    }
+
+    private Encoder encoderForArray(int elementSizeInByte, int length, int offset) {
+        return encoderForArrayByTotalSize(length * elementSizeInByte, length, offset);
+    }
+
+    private Encoder encoderForArrayByTotalSize(int byteSize, int length, int offset) {
+        encodePointerToNextUnclaimedData(offset);
+        return getEncoderAtDataOffset(
+                new DataHeader(DataHeader.HEADER_SIZE + BindingsHelper.align(byteSize), length));
+    }
+
+    private void encodeByteArray(byte[] bytes, int length, int offset) {
+        encoderForArrayByTotalSize(bytes.length, length, offset).append(bytes);
+    }
+
+    private void append(byte[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.put(v);
+    }
+
+    private void append(short[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.asShortBuffer().put(v);
+    }
+
+    private void append(int[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.asIntBuffer().put(v);
+    }
+
+    private void append(float[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.asFloatBuffer().put(v);
+    }
+
+    private void append(double[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.asDoubleBuffer().put(v);
+    }
+
+    private void append(long[] v) {
+        mEncoderState.byteBuffer.position(mBaseOffset + DataHeader.HEADER_SIZE);
+        mEncoderState.byteBuffer.asLongBuffer().put(v);
+    }
+
+}

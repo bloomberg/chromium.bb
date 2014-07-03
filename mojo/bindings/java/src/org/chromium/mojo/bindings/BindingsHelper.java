@@ -9,9 +9,21 @@ package org.chromium.mojo.bindings;
  */
 public class BindingsHelper {
     /**
-     * Alignment in byte for mojo serialization.
+     * Alignment in bytes for mojo serialization.
      */
     public static final int ALIGNMENT = 8;
+
+    /**
+     * The size, in bytes, of a serialized handle. A handle is serialized as an int representing the
+     * offset of the handle in the list of handles.
+     */
+    public static final int SERIALIZED_HANDLE_SIZE = 4;
+
+    /**
+     * The size, in bytes, of a serialized pointer. A pointer is serializaed as an unsigned long
+     * representing the offset from its position to the pointed elemnt.
+     */
+    public static final int POINTER_SIZE = 8;
 
     /**
      * Align |size| on {@link BindingsHelper#ALIGNMENT}.

@@ -8,25 +8,117 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.TestCase;
 
+import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.bindings.test.mojom.imported.Color;
 import org.chromium.mojo.bindings.test.mojom.imported.Point;
 import org.chromium.mojo.bindings.test.mojom.imported.Shape;
 import org.chromium.mojo.bindings.test.mojom.imported.Thing;
 import org.chromium.mojo.bindings.test.mojom.sample.Bar;
+import org.chromium.mojo.bindings.test.mojom.sample.Bar.Type;
 import org.chromium.mojo.bindings.test.mojom.sample.DefaultsTest;
 import org.chromium.mojo.bindings.test.mojom.sample.Enum;
 import org.chromium.mojo.bindings.test.mojom.sample.Foo;
 import org.chromium.mojo.bindings.test.mojom.sample.InterfaceConstants;
 import org.chromium.mojo.bindings.test.mojom.sample.SampleServiceConstants;
+import org.chromium.mojo.system.DataPipe.ConsumerHandle;
+import org.chromium.mojo.system.DataPipe.ProducerHandle;
 import org.chromium.mojo.system.MessagePipeHandle;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 /**
  * Testing generated classes and associated features.
  */
 public class BindingsTest extends TestCase {
+
+    /**
+     * Create a new typical Bar instance.
+     */
+    private static Bar newBar() {
+        Bar bar = new Bar();
+        bar.alpha = (byte) 0x01;
+        bar.beta = (byte) 0x02;
+        bar.gamma = (byte) 0x03;
+        bar.type = Type.TYPE_BOTH;
+        return bar;
+    }
+
+    /**
+     * Check that 2 Bar instances are equals.
+     */
+    private static void assertBarEquals(Bar bar, Bar bar2) {
+        if (bar == bar2) {
+            return;
+        }
+        assertTrue(bar != null && bar2 != null);
+        assertEquals(bar.alpha, bar2.alpha);
+        assertEquals(bar.beta, bar2.beta);
+        assertEquals(bar.gamma, bar2.gamma);
+        assertEquals(bar.type, bar2.type);
+    }
+
+    /**
+     * Create a new typical Foo instance.
+     */
+    private static Foo createFoo() {
+        Foo foo = new Foo();
+        foo.name = "HELLO WORLD";
+        foo.arrayOfArrayOfBools = new boolean[][] {
+            { true, false, true }, null, {}, { false }, { true } };
+        foo.bar = newBar();
+        foo.a = true;
+        foo.c = true;
+        foo.data = new byte[] { 0x01, 0x02, 0x03 };
+        foo.extraBars = new Bar[] { newBar(), newBar() };
+        String[][][] strings = new String[3][2][1];
+        for (int i0 = 0; i0 < strings.length; ++i0) {
+            for (int i1 = 0; i1 < strings[i0].length; ++i1) {
+                for (int i2 = 0; i2 < strings[i0][i1].length; ++i2) {
+                    strings[i0][i1][i2] = "Hello(" + i0 + ", " + i1 + ", " + i2 + ")";
+                }
+            }
+        }
+        foo.multiArrayOfStrings = strings;
+        ConsumerHandle[] inputStreams = new ConsumerHandle[5];
+        for (int i = 0; i < inputStreams.length; ++i) {
+            inputStreams[i] = new HandleMock();
+        }
+        foo.inputStreams = inputStreams;
+        ProducerHandle[] outputStreams = new ProducerHandle[3];
+        for (int i = 0; i < outputStreams.length; ++i) {
+            outputStreams[i] = new HandleMock();
+        }
+        foo.outputStreams = outputStreams;
+        foo.source = new HandleMock();
+        return foo;
+    }
+
+    /**
+     * Check that 2 Foo instances are equals.
+     */
+    private static void assertFooEquals(Foo foo1, Foo foo2) {
+        assertEquals(foo1.a, foo2.a);
+        assertEquals(foo1.b, foo2.b);
+        assertEquals(foo1.c, foo2.c);
+        assertEquals(foo1.name, foo2.name);
+        assertEquals(foo1.x, foo2.x);
+        assertEquals(foo1.y, foo2.y);
+        TestCase.assertTrue(Arrays.deepEquals(foo1.arrayOfArrayOfBools, foo2.arrayOfArrayOfBools));
+        assertBarEquals(foo1.bar, foo2.bar);
+        assertTrue(Arrays.equals(foo1.data, foo2.data));
+        TestCase.assertTrue(Arrays.deepEquals(foo1.multiArrayOfStrings, foo2.multiArrayOfStrings));
+        assertEquals(foo1.source, foo2.source);
+        TestCase.assertTrue(Arrays.deepEquals(foo1.inputStreams, foo2.inputStreams));
+        TestCase.assertTrue(Arrays.deepEquals(foo1.outputStreams, foo2.outputStreams));
+        if (foo1.extraBars != foo2.extraBars) {
+            assertEquals(foo1.extraBars.length, foo2.extraBars.length);
+            for (int i = 0; i < foo1.extraBars.length; ++i) {
+                assertBarEquals(foo1.extraBars[i], foo2.extraBars[i]);
+            }
+        }
+    }
 
     private static <T> void checkConstantField(
             Field field, Class<T> expectedClass, T value) throws IllegalAccessException {
@@ -126,4 +218,17 @@ public class BindingsTest extends TestCase {
         assertFalse(foo.source.isValid());
         checkField(Foo.class.getField("source"), MessagePipeHandle.class, foo, foo.source);
     }
+
+    /**
+     * Testing serialization of the Foo class.
+     */
+    @SmallTest
+    public void testFooSerialization() {
+        // Checking serialization and deserialization of a Foo object.
+        Foo typicalFoo = createFoo();
+        Message serializedFoo = typicalFoo.serialize(null);
+        Foo deserializedFoo = Foo.deserialize(serializedFoo);
+        assertFooEquals(typicalFoo, deserializedFoo);
+    }
+
 }
