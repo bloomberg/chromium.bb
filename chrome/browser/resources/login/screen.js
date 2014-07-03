@@ -6,8 +6,6 @@
  * @fileoverview Base class for all login WebUI screens.
  */
 cr.define('login', function() {
-  var Screen = cr.ui.define('div');
-
   /** @const */ var CALLBACK_USER_ACTED = 'userActed';
   /** @const */ var CALLBACK_CONTEXT_CHANGED = 'contextChanged';
 
@@ -15,53 +13,38 @@ cr.define('login', function() {
 
   var querySelectorAll = HTMLDivElement.prototype.querySelectorAll;
 
+  var Screen = function(sendPrefix) {
+    this.sendPrefix_ = sendPrefix;
+    this.screenContext_ = null;
+    this.contextObservers_ = {};
+  };
+
   Screen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     /**
      * Prefix added to sent to Chrome messages' names.
      */
-    sendPrefix_: '',
+    sendPrefix_: null,
 
     /**
      * Context used by this screen.
      */
-    context_: null,
+    screenContext_: null,
+
+    get context() {
+      return this.screenContext_;
+    },
 
     /**
      * Dictionary of context observers that are methods of |this| bound to
      * |this|.
      */
-    contextObservers_: {},
-
-    get context() {
-      return this.context_;
-    },
+    contextObservers_: null,
 
     /**
-     * Sends recent context changes to C++ handler.
+     * Called during screen registration.
      */
-    commitContextChanges: function() {
-      if (!this.context_.hasChanges())
-        return;
-      this.send(CALLBACK_CONTEXT_CHANGED, this.context_.getChangesAndReset());
-    },
-
-    /**
-     * Sends message to Chrome, adding needed prefix to message name. All
-     * arguments after |messageName| are packed into message parameters list.
-     *
-     * @param {string} messageName Name of message without a prefix.
-     * @param {...*} varArgs parameters for message.
-     */
-    send: function(messageName, varArgs) {
-      if (arguments.length == 0)
-        throw Error('Message name is not provided.');
-      var fullMessageName = this.sendPrefix_ + messageName;
-      var payload = Array.prototype.slice.call(arguments, 1);
-      chrome.send(fullMessageName, payload);
-    },
-
     decorate: doNothing,
 
     /**
@@ -79,6 +62,49 @@ cr.define('login', function() {
     onWindowResize: doNothing,
 
     /**
+     * @final
+     */
+    initialize: function() {
+      return this.initializeImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @final
+     */
+    send: function() {
+      return this.sendImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @final
+     */
+    addContextObserver: function() {
+      return this.addContextObserverImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @final
+     */
+    removeContextObserver: function() {
+      return this.removeContextObserverImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @final
+     */
+    commitContextChanges: function() {
+      return this.commitContextChangesImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @override
+     * @final
+     */
+    querySelectorAll: function() {
+      return this.querySelectorAllImpl_.apply(this, arguments);
+    },
+
+    /**
      * Does the following things:
      *  * Creates screen context.
      *  * Looks for elements having "alias" property and adds them as the
@@ -87,20 +113,37 @@ cr.define('login', function() {
      *  * Looks for buttons having "action" properties and adds click handlers
      *    to them. These handlers send |CALLBACK_USER_ACTED| messages to
      *    C++ with "action" property's value as payload.
+     * @private
      */
-    initialize: function() {
-      this.context_ = new login.ScreenContext();
-      this.querySelectorAll('[alias]').forEach(function(element) {
+    initializeImpl_: function() {
+      this.screenContext_ = new login.ScreenContext();
+      this.querySelectorAllImpl_('[alias]').forEach(function(element) {
         this[element.getAttribute('alias')] = element;
       }, this);
       var self = this;
-      this.querySelectorAll('button[action]').forEach(function(button) {
+      this.querySelectorAllImpl_('button[action]').forEach(function(button) {
         button.addEventListener('click', function(e) {
           var action = this.getAttribute('action');
           self.send(CALLBACK_USER_ACTED, action);
           e.stopPropagation();
         });
       });
+    },
+
+    /**
+     * Sends message to Chrome, adding needed prefix to message name. All
+     * arguments after |messageName| are packed into message parameters list.
+     *
+     * @param {string} messageName Name of message without a prefix.
+     * @param {...*} varArgs parameters for message.
+     * @private
+     */
+    sendImpl_: function(messageName, varArgs) {
+      if (arguments.length == 0)
+        throw Error('Message name is not provided.');
+      var fullMessageName = this.sendPrefix_ + messageName;
+      var payload = Array.prototype.slice.call(arguments, 1);
+      chrome.send(fullMessageName, payload);
     },
 
     /**
@@ -114,8 +157,9 @@ cr.define('login', function() {
      *   this.addContextObserver('key', this.onKeyChanged_);
      *   ...
      *   this.removeContextObserver('key', this.onKeyChanged_);
+     * @private
      */
-    addContextObserver: function(key, observer) {
+    addContextObserverImpl_: function(key, observer) {
       var realObserver = observer;
       var propertyName = this.getPropertyNameOf_(observer);
       if (propertyName) {
@@ -123,15 +167,16 @@ cr.define('login', function() {
           this.contextObservers_[propertyName] = observer.bind(this);
         realObserver = this.contextObservers_[propertyName];
       }
-      this.context.addObserver(key, realObserver);
+      this.screenContext_.addObserver(key, realObserver);
     },
 
     /**
      * Removes |observer| from the list of context observers. Supports not only
      * regular functions but also screen methods (see comment to
      * |addContextObserver|).
+     * @private
      */
-    removeContextObserver: function(observer) {
+    removeContextObserverImpl_: function(observer) {
       var realObserver = observer;
       var propertyName = this.getPropertyNameOf_(observer);
       if (propertyName) {
@@ -140,14 +185,26 @@ cr.define('login', function() {
         realObserver = this.contextObservers_[propertyName];
         delete this.contextObservers_[propertyName];
       }
-      this.context.removeObserver(realObserver);
+      this.screenContext_.removeObserver(realObserver);
+    },
+
+    /**
+     * Sends recent context changes to C++ handler.
+     * @private
+     */
+    commitContextChangesImpl_: function() {
+      if (!this.screenContext_.hasChanges())
+        return;
+      this.sendImpl_(CALLBACK_CONTEXT_CHANGED,
+                     this.screenContext_.getChangesAndReset());
     },
 
     /**
      * Calls standart |querySelectorAll| method and returns its result converted
      * to Array.
+     * @private
      */
-    querySelectorAll: function(selector) {
+    querySelectorAllImpl_: function(selector) {
       var list = querySelectorAll.call(this, selector);
       return Array.prototype.slice.call(list);
     },
@@ -157,7 +214,7 @@ cr.define('login', function() {
      * @private
      */
     contextChanged_: function(diff) {
-      this.context.applyChanges(diff);
+      this.screenContext_.applyChanges(diff);
     },
 
     /**
@@ -204,49 +261,67 @@ cr.define('login', function() {
      * @param {(function()|Object)} proto Prototype of object or function that
      *     returns prototype.
      */
-    createScreen: function(name, id, proto) {
-      if (typeof proto == 'function')
-        proto = proto();
+    createScreen: function(name, id, template) {
+      if (typeof template == 'function')
+        template = template();
+
+      var apiNames = template.EXTERNAL_API || [];
+      for (var i = 0; i < apiNames.length; ++i) {
+        var methodName = apiNames[i];
+        if (typeof template[methodName] !== 'function')
+          throw Error('External method "' + methodName + '" for screen "' +
+              name + '" not a function or undefined.');
+      }
+
+      function checkPropertyAllowed(propertyName) {
+        if (propertyName.charAt(propertyName.length - 1) === '_' &&
+            (propertyName in login.Screen.prototype)) {
+          throw Error('Property "' + propertyName + '" of "' + id + '" ' +
+              'shadows private property of login.Screen prototype.');
+        }
+      };
+
+      var Constructor = function() {
+        login.Screen.call(this, 'login.' + name + '.');
+      };
+      Constructor.prototype = Object.create(login.Screen.prototype);
+      var api = {};
+
+      Object.getOwnPropertyNames(template).forEach(function(propertyName) {
+        if (propertyName === 'EXTERNAL_API')
+          return;
+
+        checkPropertyAllowed(propertyName);
+
+        var descriptor =
+            Object.getOwnPropertyDescriptor(template, propertyName);
+        Object.defineProperty(Constructor.prototype, propertyName, descriptor);
+
+        if (apiNames.indexOf(propertyName) >= 0) {
+          api[propertyName] = function() {
+              var screen = $(id);
+              return screen[propertyName].apply(screen, arguments);
+          };
+        }
+      });
+
+      Constructor.prototype.name = function() { return id; };
+
+      api.contextChanged = function() {
+        var screen = $(id);
+        screen.contextChanged_.apply(screen, arguments);
+      }
+
+      api.register = function() {
+        var screen = $(id);
+        screen.__proto__ = new Constructor();
+        screen.decorate();
+        Oobe.getInstance().registerScreen(screen);
+      };
+
       cr.define('login', function() {
-        var api = proto.EXTERNAL_API || [];
-        for (var i = 0; i < api.length; ++i) {
-          var methodName = api[i];
-          if (typeof proto[methodName] !== 'function')
-            throw Error('External method "' + methodName + '" for screen "' +
-                name + '" not a function or undefined.');
-        }
-
-        var constructor = cr.ui.define(login.Screen);
-        constructor.prototype = Object.create(login.Screen.prototype);
-        Object.getOwnPropertyNames(proto).forEach(function(propertyName) {
-          var descriptor =
-              Object.getOwnPropertyDescriptor(proto, propertyName);
-          Object.defineProperty(constructor.prototype,
-              propertyName, descriptor);
-          if (api.indexOf(propertyName) >= 0) {
-            constructor[propertyName] = (function(x) {
-              return function() {
-                var screen = $(id);
-                return screen[x].apply(screen, arguments);
-              };
-            })(propertyName);
-          }
-        });
-        constructor.contextChanged = function() {
-          var screen = $(id);
-          screen.contextChanged_.apply(screen, arguments);
-        }
-        constructor.prototype.name = function() { return id; };
-        constructor.prototype.sendPrefix_ = 'login.' + name + '.';
-
-        constructor.register = function() {
-          var screen = $(id);
-          constructor.decorate(screen);
-          Oobe.getInstance().registerScreen(screen);
-        };
-
         var result = {};
-        result[name] = constructor;
+        result[name] = api;
         return result;
       });
     }
