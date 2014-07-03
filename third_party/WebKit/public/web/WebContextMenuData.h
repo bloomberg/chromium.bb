@@ -176,6 +176,7 @@ struct WebContextMenuData {
         , hasImageContents(true)
         , mediaFlags(MediaNone)
         , isSpellCheckingEnabled(false)
+        , misspellingHash(0)
         , isEditable(false)
         , writingDirectionDefault(CheckableMenuItemDisabled)
         , writingDirectionLeftToRight(CheckableMenuItemEnabled)
