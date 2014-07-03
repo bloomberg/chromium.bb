@@ -77,7 +77,7 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-@benchmark.Disabled('android')  # crbug.com/363783
+@benchmark.Disabled('j')  # crbug.com/363783
 class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization
