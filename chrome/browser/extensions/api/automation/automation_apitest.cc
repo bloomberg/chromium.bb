@@ -118,7 +118,14 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// Failing on Linux ASan bot: http://crbug.com/391279
+#define MAYBE_Events DISABLED_Events
+#else
+#define MAYBE_Events Events
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Events) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "events.html"))
       << message_;
