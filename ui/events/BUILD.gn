@@ -115,8 +115,6 @@ component("events") {
     "gestures/unified_gesture_detector_enabled.h",
     "gestures/velocity_calculator.cc",
     "gestures/velocity_calculator.h",
-    "platform/x11/x11_event_source.cc",
-    "platform/x11/x11_event_source.h",
     "win/events_win.cc",
     "x/events_x.cc",
   ]
@@ -128,8 +126,6 @@ component("events") {
     ]
   } else {
     sources -= [
-      "platform/x11/x11_event_source.cc",
-      "platform/x11/x11_event_source.h",
       "x/events_x.cc",
     ]
   }
