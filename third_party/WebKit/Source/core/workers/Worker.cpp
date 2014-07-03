@@ -82,9 +82,10 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
 Worker::~Worker()
 {
     ASSERT(isMainThread());
+    if (!m_contextProxy)
+        return;
     ASSERT(executionContext()); // The context is protected by worker context proxy, so it cannot be destroyed while a Worker exists.
-    if (m_contextProxy)
-        m_contextProxy->workerObjectDestroyed();
+    m_contextProxy->workerObjectDestroyed();
 }
 
 const AtomicString& Worker::interfaceName() const
@@ -94,6 +95,7 @@ const AtomicString& Worker::interfaceName() const
 
 void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
+    ASSERT(m_contextProxy);
     // Disentangle the port in preparation for sending it to the remote context.
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
     if (exceptionState.hadException())
@@ -114,7 +116,7 @@ void Worker::stop()
 
 bool Worker::hasPendingActivity() const
 {
-    return m_contextProxy->hasPendingActivity() || ActiveDOMObject::hasPendingActivity();
+    return (m_contextProxy && m_contextProxy->hasPendingActivity()) || ActiveDOMObject::hasPendingActivity();
 }
 
 void Worker::didReceiveResponse(unsigned long identifier, const ResourceResponse&)
@@ -127,6 +129,7 @@ void Worker::notifyFinished()
     if (m_scriptLoader->failed()) {
         dispatchEvent(Event::createCancelable(EventTypeNames::error));
     } else {
+        ASSERT(m_contextProxy);
         WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
         if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(executionContext()))
             startMode = PauseWorkerGlobalScopeOnStart;
