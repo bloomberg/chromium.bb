@@ -136,11 +136,12 @@ class WebSocketStreamCreateTest : public ::testing::Test {
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
         new TestConnectDelegate(this));
     WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();
+    scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
+        new DeterministicKeyWebSocketHandshakeStreamCreateHelper(
+            delegate, sub_protocols));
     stream_request_ = ::net::CreateAndConnectStreamForTesting(
         GURL(socket_url),
-        scoped_ptr<WebSocketHandshakeStreamCreateHelper>(
-            new DeterministicKeyWebSocketHandshakeStreamCreateHelper(
-                delegate, sub_protocols)),
+        create_helper.Pass(),
         url::Origin(origin),
         url_request_context_host_.GetURLRequestContext(),
         BoundNetLog(),

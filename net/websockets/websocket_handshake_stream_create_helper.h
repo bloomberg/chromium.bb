@@ -23,6 +23,7 @@ namespace net {
 class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
+  // |connect_delegate| must out-live this object.
   explicit WebSocketHandshakeStreamCreateHelper(
       WebSocketStream::ConnectDelegate* connect_delegate,
       const std::vector<std::string>& requested_subprotocols);
@@ -44,7 +45,16 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // Return the WebSocketHandshakeStreamBase object that we created. In the case
   // where CreateBasicStream() was called more than once, returns the most
   // recent stream, which will be the one on which the handshake succeeded.
+  // It is not safe to call this if the handshake failed.
   WebSocketHandshakeStreamBase* stream() { return stream_; }
+
+  // Set a pointer to the std::string into which to write any failure messages
+  // that are encountered. This method must be called before CreateBasicStream()
+  // or CreateSpdyStream(). The |failure_message| pointer must remain valid as
+  // long as this object exists.
+  void set_failure_message(std::string* failure_message) {
+    failure_message_ = failure_message;
+  }
 
  private:
   const std::vector<std::string> requested_subprotocols_;
@@ -52,10 +62,12 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // This is owned by the caller of CreateBaseStream() or
   // CreateSpdyStream(). Both the stream and this object will be destroyed
   // during the destruction of the URLRequest object associated with the
-  // handshake.
+  // handshake. This is only guaranteed to be a valid pointer if the handshake
+  // succeeded.
   WebSocketHandshakeStreamBase* stream_;
 
   WebSocketStream::ConnectDelegate* connect_delegate_;
+  std::string* failure_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamCreateHelper);
 };

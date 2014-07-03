@@ -573,6 +573,9 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
 void WebSocketChannel::OnConnectFailure(const std::string& message) {
   DCHECK_EQ(CONNECTING, state_);
 
+  // Copy the message before we delete its owner.
+  std::string message_copy = message;
+
   SetState(CLOSED);
   stream_request_.reset();
 
@@ -581,7 +584,7 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
     // |this| has been deleted.
     return;
   }
-  AllowUnused(event_interface_->OnFailChannel(message));
+  AllowUnused(event_interface_->OnFailChannel(message_copy));
   // |this| has been deleted.
 }
 

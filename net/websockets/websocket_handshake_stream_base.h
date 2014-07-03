@@ -66,10 +66,6 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
   // been called.
   virtual scoped_ptr<WebSocketStream> Upgrade() = 0;
 
-  // Returns a string describing the connection failure information.
-  // Returns an empty string if there is no failure.
-  virtual std::string GetFailureMessage() const = 0;
-
  protected:
   // As with the destructor, this must be inline.
   WebSocketHandshakeStreamBase() {}

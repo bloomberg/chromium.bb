@@ -87,6 +87,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
         url_request_(url, DEFAULT_PRIORITY, delegate_.get(), context),
         connect_delegate_(connect_delegate.Pass()),
         create_helper_(create_helper.release()) {
+    create_helper_->set_failure_message(&failure_message_);
     HttpRequestHeaders headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
     headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
@@ -117,25 +118,22 @@ class StreamRequestImpl : public WebSocketStreamRequest {
   }
 
   void ReportFailure() {
-    std::string failure_message;
-    if (create_helper_->stream()) {
-      failure_message = create_helper_->stream()->GetFailureMessage();
-    } else {
+    if (failure_message_.empty()) {
       switch (url_request_.status().status()) {
         case URLRequestStatus::SUCCESS:
         case URLRequestStatus::IO_PENDING:
           break;
         case URLRequestStatus::CANCELED:
-          failure_message = "WebSocket opening handshake was canceled";
+          failure_message_ = "WebSocket opening handshake was canceled";
           break;
         case URLRequestStatus::FAILED:
-          failure_message =
+          failure_message_ =
               std::string("Error in connection establishment: ") +
               ErrorToString(url_request_.status().error());
           break;
       }
     }
-    connect_delegate_->OnFailure(failure_message);
+    connect_delegate_->OnFailure(failure_message_);
   }
 
   WebSocketStream::ConnectDelegate* connect_delegate() const {
@@ -155,6 +153,9 @@ class StreamRequestImpl : public WebSocketStreamRequest {
 
   // Owned by the URLRequest.
   WebSocketHandshakeStreamCreateHelper* create_helper_;
+
+  // The failure message supplied by WebSocketBasicHandshakeStream, if any.
+  std::string failure_message_;
 };
 
 class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {

@@ -27,12 +27,14 @@ struct WebSocketExtensionParams;
 class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
     : public WebSocketHandshakeStreamBase {
  public:
+  // |connect_delegate| and |failure_message| must out-live this object.
   WebSocketBasicHandshakeStream(
       scoped_ptr<ClientSocketHandle> connection,
       WebSocketStream::ConnectDelegate* connect_delegate,
       bool using_proxy,
       std::vector<std::string> requested_sub_protocols,
-      std::vector<std::string> requested_extensions);
+      std::vector<std::string> requested_extensions,
+      std::string* failure_message);
 
   virtual ~WebSocketBasicHandshakeStream();
 
@@ -75,8 +77,6 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // For tests only.
   void SetWebSocketKeyForTesting(const std::string& key);
 
-  virtual std::string GetFailureMessage() const OVERRIDE;
-
  private:
   // A wrapper for the ReadResponseHeaders callback that checks whether or not
   // the connection has been accepted.
@@ -93,6 +93,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   int ValidateUpgradeResponse(const HttpResponseHeaders* headers);
 
   HttpStreamParser* parser() const { return state_.parser(); }
+
+  void set_failure_message(const std::string& failure_message);
 
   // The request URL.
   GURL url_;
@@ -130,7 +132,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // to avoid including extension-related header files here.
   scoped_ptr<WebSocketExtensionParams> extension_params_;
 
-  std::string failure_message_;
+  std::string* failure_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBasicHandshakeStream);
 };
