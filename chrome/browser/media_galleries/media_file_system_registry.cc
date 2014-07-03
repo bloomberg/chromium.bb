@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
+#include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
@@ -574,6 +575,12 @@ MediaScanManager* MediaFileSystemRegistry::media_scan_manager() {
   if (!media_scan_manager_)
     media_scan_manager_.reset(new MediaScanManager);
   return media_scan_manager_.get();
+}
+
+GalleryWatchManager* MediaFileSystemRegistry::gallery_watch_manager() {
+  if (!gallery_watch_manager_)
+    gallery_watch_manager_.reset(new GalleryWatchManager);
+  return gallery_watch_manager_.get();
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(

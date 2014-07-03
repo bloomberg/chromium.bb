@@ -15,12 +15,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_scan_manager_observer.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
@@ -42,7 +44,9 @@ class Extension;
 // The profile-keyed service that manages the media galleries extension API.
 // Created at the same time as the Profile. This is also the event router.
 class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
-                                  public MediaScanManagerObserver {
+                                  public GalleryWatchManagerObserver,
+                                  public MediaScanManagerObserver,
+                                  public extensions::EventRouter::Observer {
  public:
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -54,6 +58,7 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   // Convenience method to get the MediaGalleriesAPI for a profile.
   static MediaGalleriesEventRouter* Get(content::BrowserContext* context);
 
+  bool ExtensionHasGalleryChangeListener(const std::string& extension_id) const;
   bool ExtensionHasScanProgressListener(const std::string& extension_id) const;
 
   // MediaScanManagerObserver implementation.
@@ -80,6 +85,15 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
     return "MediaGalleriesAPI";
   }
   static const bool kServiceIsNULLWhileTesting = true;
+
+  // GalleryWatchManagerObserver
+  virtual void OnGalleryChanged(const std::string& extension_id,
+                                MediaGalleryPrefId gallery_id) OVERRIDE;
+  virtual void OnGalleryWatchDropped(const std::string& extension_id,
+                                     MediaGalleryPrefId gallery_id) OVERRIDE;
+
+  // extensions::EventRouter::Observer implementation.
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
   // Current profile.
   Profile* profile_;
