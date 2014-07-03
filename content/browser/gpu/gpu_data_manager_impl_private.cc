@@ -235,81 +235,6 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 }
 #endif  // OS_MACOSX
 
-#if defined(OS_ANDROID)
-void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
-                             CommandLine* command_line,
-                             std::set<int>* workarounds) {
-  std::string vendor(StringToLowerASCII(gpu_info.gl_vendor));
-  std::string renderer(StringToLowerASCII(gpu_info.gl_renderer));
-  std::string version(StringToLowerASCII(gpu_info.gl_version));
-
-  bool is_img =
-      gpu_info.gl_vendor.find("Imagination") != std::string::npos;
-
-  gfx::DeviceDisplayInfo info;
-  int default_tile_size = 256;
-
-  // TODO(epenner): Now that this is somewhat generic, maybe we can
-  // unify this for all platforms (http://crbug.com/159524)
-
-  bool real_size_supported = true;
-  int display_width = info.GetPhysicalDisplayWidth();
-  int display_height = info.GetPhysicalDisplayHeight();
-  if (display_width == 0 || display_height == 0) {
-    real_size_supported = false;
-    display_width = info.GetDisplayWidth();
-    display_height = info.GetDisplayHeight();
-  }
-
-  int portrait_width = std::min(display_width, display_height);
-  int landscape_width = std::max(display_width, display_height);
-
-  if (real_size_supported) {
-    // Maximum HD dimensions should be 768x1280
-    // Maximum FHD dimensions should be 1200x1920
-    if (portrait_width > 768 || landscape_width > 1280)
-       default_tile_size = 384;
-    if (portrait_width > 1200 || landscape_width > 1920)
-       default_tile_size = 512;
-
-    // Adjust for some resolutions that barely straddle an extra
-    // tile when in portrait mode. This helps worst case scroll/raster
-    // by not needing a full extra tile for each row.
-    if (default_tile_size == 256 && portrait_width == 768)
-      default_tile_size += 32;
-    if (default_tile_size == 384 && portrait_width == 1200)
-      default_tile_size += 32;
-  } else {
-    // We don't know the exact resolution due to screen controls etc.
-    // So this just estimates the values above using tile counts.
-    int numTiles = (display_width * display_height) / (256 * 256);
-    if (numTiles > 16)
-      default_tile_size = 384;
-    if (numTiles >= 40)
-      default_tile_size = 512;
-  }
-
-  // IMG: Fast async texture uploads only work with non-power-of-two,
-  // but still multiple-of-eight sizes.
-  // http://crbug.com/168099
-  if (is_img)
-    default_tile_size -= 8;
-
-  // Set the command line if it isn't already set and we changed
-  // the default tile size.
-  if (default_tile_size != 256 &&
-      !command_line->HasSwitch(switches::kDefaultTileWidth) &&
-      !command_line->HasSwitch(switches::kDefaultTileHeight)) {
-    std::stringstream size;
-    size << default_tile_size;
-    command_line->AppendSwitchASCII(
-        switches::kDefaultTileWidth, size.str());
-    command_line->AppendSwitchASCII(
-        switches::kDefaultTileHeight, size.str());
-  }
-}
-#endif  // OS_ANDROID
-
 // Block all domains' use of 3D APIs for this many milliseconds if
 // approaching a threshold where system stability might be compromised.
 const int64 kBlockAllDomainsMs = 10000;
@@ -989,11 +914,6 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdateGpuInfo(gpu_info);
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
-
-#if defined(OS_ANDROID)
-  ApplyAndroidWorkarounds(
-      gpu_info, CommandLine::ForCurrentProcess(), &gpu_driver_bugs_);
-#endif  // OS_ANDROID
 }
 
 void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(

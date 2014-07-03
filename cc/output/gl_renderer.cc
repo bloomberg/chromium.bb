@@ -338,10 +338,6 @@ GLRenderer::GLRenderer(RendererClient* client,
   // The updater can access textures while the GLRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
 
-  // Check for texture fast paths. Currently we always use MO8 textures,
-  // so we only need to avoid POT textures if we have an NPOT fast-path.
-  capabilities_.avoid_pow2_textures = context_caps.gpu.fast_npot_mo8_textures;
-
   capabilities_.using_map_image = context_caps.gpu.map_image;
 
   capabilities_.using_discard_framebuffer =

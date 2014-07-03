@@ -11,7 +11,6 @@ namespace gpu {
 
 struct GPU_EXPORT Capabilities {
   bool post_sub_buffer;
-  bool fast_npot_mo8_textures;
   bool egl_image_external;
   bool texture_format_bgra8888;
   bool texture_format_etc1;

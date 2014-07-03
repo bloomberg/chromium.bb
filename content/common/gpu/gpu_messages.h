@@ -187,7 +187,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(post_sub_buffer)
-  IPC_STRUCT_TRAITS_MEMBER(fast_npot_mo8_textures)
   IPC_STRUCT_TRAITS_MEMBER(egl_image_external)
   IPC_STRUCT_TRAITS_MEMBER(texture_format_bgra8888)
   IPC_STRUCT_TRAITS_MEMBER(texture_format_etc1)

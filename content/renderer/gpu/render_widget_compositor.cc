@@ -43,6 +43,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "ui/gfx/android/device_display_info.h"
 #endif
 
 namespace base {
@@ -101,6 +102,53 @@ cc::LayerSelectionBound ConvertWebSelectionBound(
   return result;
 }
 
+gfx::Size CalculateDefaultTileSize() {
+  int default_tile_size = 256;
+#if defined(OS_ANDROID)
+  // TODO(epenner): unify this for all platforms if it
+  // makes sense (http://crbug.com/159524)
+
+  gfx::DeviceDisplayInfo info;
+  bool real_size_supported = true;
+  int display_width = info.GetPhysicalDisplayWidth();
+  int display_height = info.GetPhysicalDisplayHeight();
+  if (display_width == 0 || display_height == 0) {
+    real_size_supported = false;
+    display_width = info.GetDisplayWidth();
+    display_height = info.GetDisplayHeight();
+  }
+
+  int portrait_width = std::min(display_width, display_height);
+  int landscape_width = std::max(display_width, display_height);
+
+  if (real_size_supported) {
+    // Maximum HD dimensions should be 768x1280
+    // Maximum FHD dimensions should be 1200x1920
+    if (portrait_width > 768 || landscape_width > 1280)
+      default_tile_size = 384;
+    if (portrait_width > 1200 || landscape_width > 1920)
+      default_tile_size = 512;
+
+    // Adjust for some resolutions that barely straddle an extra
+    // tile when in portrait mode. This helps worst case scroll/raster
+    // by not needing a full extra tile for each row.
+    if (default_tile_size == 256 && portrait_width == 768)
+      default_tile_size += 32;
+    if (default_tile_size == 384 && portrait_width == 1200)
+      default_tile_size += 32;
+  } else {
+    // We don't know the exact resolution due to screen controls etc.
+    // So this just estimates the values above using tile counts.
+    int numTiles = (display_width * display_height) / (256 * 256);
+    if (numTiles > 16)
+      default_tile_size = 384;
+    if (numTiles >= 40)
+      default_tile_size = 512;
+  }
+#endif
+  return gfx::Size(default_tile_size, default_tile_size);
+}
+
 }  // namespace
 
 // static
@@ -133,18 +181,25 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.touch_hit_testing =
       !cmd->HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
-  int default_tile_width = settings.default_tile_size.width();
+  settings.default_tile_size = CalculateDefaultTileSize();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
-    GetSwitchValueAsInt(*cmd, switches::kDefaultTileWidth, 1,
-                        std::numeric_limits<int>::max(), &default_tile_width);
+    int tile_width = 0;
+    GetSwitchValueAsInt(*cmd,
+                        switches::kDefaultTileWidth,
+                        1,
+                        std::numeric_limits<int>::max(),
+                        &tile_width);
+    settings.default_tile_size.set_width(tile_width);
   }
-  int default_tile_height = settings.default_tile_size.height();
   if (cmd->HasSwitch(switches::kDefaultTileHeight)) {
-    GetSwitchValueAsInt(*cmd, switches::kDefaultTileHeight, 1,
-                        std::numeric_limits<int>::max(), &default_tile_height);
+    int tile_height = 0;
+    GetSwitchValueAsInt(*cmd,
+                        switches::kDefaultTileHeight,
+                        1,
+                        std::numeric_limits<int>::max(),
+                        &tile_height);
+    settings.default_tile_size.set_height(tile_height);
   }
-  settings.default_tile_size = gfx::Size(default_tile_width,
-                                         default_tile_height);
 
   int max_untiled_layer_width = settings.max_untiled_layer_size.width();
   if (cmd->HasSwitch(switches::kMaxUntiledLayerWidth)) {

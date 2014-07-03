@@ -2695,8 +2695,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   Capabilities caps;
 
-  caps.fast_npot_mo8_textures =
-      feature_info_->workarounds().enable_chromium_fast_npot_mo8_textures;
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
   caps.texture_format_bgra8888 =

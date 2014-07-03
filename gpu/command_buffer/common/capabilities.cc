@@ -8,7 +8,6 @@ namespace gpu {
 
 Capabilities::Capabilities()
     : post_sub_buffer(false),
-      fast_npot_mo8_textures(false),
       egl_image_external(false),
       texture_format_bgra8888(false),
       texture_format_etc1(false),

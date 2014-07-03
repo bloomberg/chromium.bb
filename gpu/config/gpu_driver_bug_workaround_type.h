@@ -42,8 +42,6 @@
          disable_oes_standard_derivatives)                   \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \
          disable_post_sub_buffers_for_onscreen_surfaces)     \
-  GPU_OP(ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES,             \
-         enable_chromium_fast_npot_mo8_textures)             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
          exit_on_context_lost)                               \
   GPU_OP(FORCE_DISCRETE_GPU,                                 \

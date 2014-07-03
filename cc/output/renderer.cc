@@ -29,7 +29,6 @@ RendererCapabilitiesImpl::RendererCapabilitiesImpl()
       using_shared_memory_resources(false),
       using_partial_swap(false),
       using_egl_image(false),
-      avoid_pow2_textures(false),
       using_map_image(false),
       using_discard_framebuffer(false),
       allow_rasterize_on_demand(false) {}
