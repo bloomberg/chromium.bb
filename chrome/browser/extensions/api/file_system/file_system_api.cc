@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/directory_access_confirmation_dialog.h"
@@ -76,68 +77,6 @@ namespace file_system = extensions::api::file_system;
 namespace ChooseEntry = file_system::ChooseEntry;
 
 namespace {
-
-#if defined(OS_MACOSX)
-// Retrieves the localized display name for the base name of the given path.
-// If the path is not localized, this will just return the base name.
-std::string GetDisplayBaseName(const base::FilePath& path) {
-  base::ScopedCFTypeRef<CFURLRef> url(CFURLCreateFromFileSystemRepresentation(
-      NULL, (const UInt8*)path.value().c_str(), path.value().length(), true));
-  if (!url)
-    return path.BaseName().value();
-
-  CFStringRef str;
-  if (LSCopyDisplayNameForURL(url, &str) != noErr)
-    return path.BaseName().value();
-
-  std::string result(base::SysCFStringRefToUTF8(str));
-  CFRelease(str);
-  return result;
-}
-
-// Prettifies |source_path| for OS X, by localizing every component of the
-// path. Additionally, if the path is inside the user's home directory, then
-// replace the home directory component with "~".
-base::FilePath PrettifyPath(const base::FilePath& source_path) {
-  base::FilePath home_path;
-  PathService::Get(base::DIR_HOME, &home_path);
-  DCHECK(source_path.IsAbsolute());
-
-  // Break down the incoming path into components, and grab the display name
-  // for every component. This will match app bundles, ".localized" folders,
-  // and localized subfolders of the user's home directory.
-  // Don't grab the display name of the first component, i.e., "/", as it'll
-  // show up as the HDD name.
-  std::vector<base::FilePath::StringType> components;
-  source_path.GetComponents(&components);
-  base::FilePath display_path = base::FilePath(components[0]);
-  base::FilePath actual_path = display_path;
-  for (std::vector<base::FilePath::StringType>::iterator i =
-           components.begin() + 1; i != components.end(); ++i) {
-    actual_path = actual_path.Append(*i);
-    if (actual_path == home_path) {
-      display_path = base::FilePath("~");
-      home_path = base::FilePath();
-      continue;
-    }
-    std::string display = GetDisplayBaseName(actual_path);
-    display_path = display_path.Append(display);
-  }
-  DCHECK_EQ(actual_path.value(), source_path.value());
-  return display_path;
-}
-#else  // defined(OS_MACOSX)
-// Prettifies |source_path|, by replacing the user's home directory with "~"
-// (if applicable).
-base::FilePath PrettifyPath(const base::FilePath& source_path) {
-  base::FilePath home_path;
-  base::FilePath display_path = base::FilePath::FromUTF8Unsafe("~");
-  if (PathService::Get(base::DIR_HOME, &home_path)
-      && home_path.AppendRelativePath(source_path, &display_path))
-    return display_path;
-  return source_path;
-}
-#endif  // defined(OS_MACOSX)
 
 bool g_skip_picker_for_test = false;
 bool g_use_suggested_path_for_test = false;
@@ -274,7 +213,7 @@ bool FileSystemGetDisplayPathFunction::RunSync() {
                                                           &error_))
     return false;
 
-  file_path = PrettifyPath(file_path);
+  file_path = path_util::PrettifyPath(file_path);
   SetResult(new base::StringValue(file_path.value()));
   return true;
 }

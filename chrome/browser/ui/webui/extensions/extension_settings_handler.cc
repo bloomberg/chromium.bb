@@ -40,7 +40,9 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -234,8 +236,12 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
                                       extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       !enabled, NULL);
-  if (Manifest::IsUnpackedLocation(extension->location()))
+  if (Manifest::IsUnpackedLocation(extension->location())) {
     extension_data->SetString("path", extension->path().value());
+    extension_data->SetString(
+        "prettifiedPath",
+        extensions::path_util::PrettifyPath(extension->path()).value());
+  }
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
       Manifest::IsUnpackedLocation(extension->location()));
@@ -624,6 +630,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsDismissADTPromo",
       base::Bind(&ExtensionSettingsHandler::HandleDismissADTPromoMessage,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback("extensionSettingsShowPath",
+      base::Bind(&ExtensionSettingsHandler::HandleShowPath,
                  AsWeakPtr()));
 }
 
@@ -1138,6 +1147,19 @@ void ExtensionSettingsHandler::HandleDismissADTPromoMessage(
   DCHECK(args->empty());
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kExtensionsUIDismissedADTPromo, true);
+}
+
+void ExtensionSettingsHandler::HandleShowPath(const base::ListValue* args) {
+  DCHECK(!args->empty());
+  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  const Extension* extension = registry->GetExtensionById(
+      extension_id,
+      ExtensionRegistry::EVERYTHING);
+  CHECK(extension);
+  platform_util::OpenItem(profile, extension->path());
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {

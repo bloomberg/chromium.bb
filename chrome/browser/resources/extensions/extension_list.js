@@ -290,8 +290,12 @@ cr.define('options', function() {
       if (extension.isUnpacked) {
         var loadPath = node.querySelector('.load-path');
         loadPath.hidden = false;
-        loadPath.querySelector('span:nth-of-type(2)').textContent =
-            ' ' + extension.path;
+        var pathLink = loadPath.querySelector('a:nth-of-type(1)');
+        pathLink.textContent = ' ' + extension.prettifiedPath;
+        pathLink.addEventListener('click', function(e) {
+          chrome.send('extensionSettingsShowPath', [String(extension.id)]);
+          e.preventDefault();
+        });
       }
 
       // Then the 'managed, cannot uninstall/disable' message.

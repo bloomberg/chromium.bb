@@ -195,6 +195,9 @@ class ExtensionSettingsHandler
   // Callback for the "dismissADTPromo" message.
   void HandleDismissADTPromoMessage(const base::ListValue* args);
 
+  // Callback for the "showPath" message.
+  void HandleShowPath(const base::ListValue* args);
+
   // Utility for calling JavaScript window.alert in the page.
   void ShowAlert(const std::string& message);
 
