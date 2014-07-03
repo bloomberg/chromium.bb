@@ -761,7 +761,7 @@ class Callback<R(A1, A2, A3, A4, A5, A6, A7)> : public internal::CallbackBase {
 };
 
 
-// Syntactic sugar to make Callbacks<void(void)> easier to declare since it
+// Syntactic sugar to make Callback<void(void)> easier to declare since it
 // will be used in a lot of APIs with delayed execution.
 typedef Callback<void(void)> Closure;
 

@@ -427,7 +427,7 @@ $for ARG , [[typename internal::CallbackParamTraits<A$(ARG)>::ForwardType]]);
 
 ]]  $$ for ARITY
 
-// Syntactic sugar to make Callbacks<void(void)> easier to declare since it
+// Syntactic sugar to make Callback<void(void)> easier to declare since it
 // will be used in a lot of APIs with delayed execution.
 typedef Callback<void(void)> Closure;
 
