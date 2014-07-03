@@ -212,12 +212,12 @@ void NinePatchLayerImpl::AppendQuads(
   gfx::Rect opaque_rect;
   gfx::Rect visible_rect;
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-  scoped_ptr<TextureDrawQuad> quad;
 
   visible_rect =
       occlusion_tracker.UnoccludedContentRect(layer_top_left, draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_top_left,
                  opaque_rect,
@@ -229,13 +229,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect = occlusion_tracker.UnoccludedContentRect(layer_top_right,
                                                          draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_top_right,
                  opaque_rect,
@@ -247,13 +247,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect = occlusion_tracker.UnoccludedContentRect(layer_bottom_left,
                                                          draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_bottom_left,
                  opaque_rect,
@@ -265,13 +265,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect = occlusion_tracker.UnoccludedContentRect(layer_bottom_right,
                                                          draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_bottom_right,
                  opaque_rect,
@@ -283,13 +283,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect =
       occlusion_tracker.UnoccludedContentRect(layer_top, draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_top,
                  opaque_rect,
@@ -301,13 +301,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect =
       occlusion_tracker.UnoccludedContentRect(layer_left, draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_left,
                  opaque_rect,
@@ -319,13 +319,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect =
       occlusion_tracker.UnoccludedContentRect(layer_right, draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_right,
                  opaque_rect,
@@ -337,13 +337,13 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   visible_rect =
       occlusion_tracker.UnoccludedContentRect(layer_bottom, draw_transform());
   if (!visible_rect.IsEmpty()) {
-    quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  layer_bottom,
                  opaque_rect,
@@ -355,14 +355,14 @@ void NinePatchLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  flipped);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   if (fill_center_) {
     visible_rect =
         occlusion_tracker.UnoccludedContentRect(layer_center, draw_transform());
     if (!visible_rect.IsEmpty()) {
-      quad = TextureDrawQuad::Create();
+      TextureDrawQuad* quad =
+          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       quad->SetNew(shared_quad_state,
                    layer_center,
                    opaque_rect,
@@ -374,7 +374,6 @@ void NinePatchLayerImpl::AppendQuads(
                    SK_ColorTRANSPARENT,
                    vertex_opacity,
                    flipped);
-      render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
     }
   }
 }

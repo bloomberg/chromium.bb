@@ -82,7 +82,8 @@ void IOSurfaceLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
-  scoped_ptr<IOSurfaceDrawQuad> quad = IOSurfaceDrawQuad::Create();
+  IOSurfaceDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
@@ -90,7 +91,6 @@ void IOSurfaceLayerImpl::AppendQuads(
                io_surface_size_,
                io_surface_resource_id_,
                IOSurfaceDrawQuad::FLIPPED);
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void IOSurfaceLayerImpl::ReleaseResources() {

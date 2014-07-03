@@ -43,13 +43,13 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
                             blend_mode,
                             0);
 
-  scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* surface_quad =
+      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   gfx::Rect quad_rect = gfx::Rect(surface_size);
   surface_quad->SetNew(pass->shared_quad_state_list.back(),
                        gfx::Rect(surface_size),
                        gfx::Rect(surface_size),
                        surface_id);
-  pass->quad_list.push_back(surface_quad.PassAs<DrawQuad>());
 }
 void AddTestRenderPassQuad(TestRenderPass* pass,
                            RenderPass::Id render_pass_id) {
@@ -63,7 +63,8 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                        1,
                        SkXfermode::kSrcOver_Mode,
                        0);
-  scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+  RenderPassDrawQuad* quad =
+      pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state,
                output_rect,
                output_rect,
@@ -74,7 +75,6 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void AddQuadInPass(TestRenderPass* pass, Quad desc) {

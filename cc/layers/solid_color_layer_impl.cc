@@ -48,13 +48,13 @@ void SolidColorLayerImpl::AppendQuads(
       if (visible_quad_rect.IsEmpty())
         continue;
 
-      scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       quad->SetNew(shared_quad_state,
                    quad_rect,
                    visible_quad_rect,
                    background_color(),
                    false);
-      render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
     }
   }
 }

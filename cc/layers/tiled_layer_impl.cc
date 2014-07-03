@@ -186,14 +186,13 @@ void TiledLayerImpl::AppendQuads(
           border_color = DebugColors::HighResTileBorderColor();
           border_width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
         }
-        scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-            DebugBorderDrawQuad::Create();
+        DebugBorderDrawQuad* debug_border_quad =
+            render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
         debug_border_quad->SetNew(shared_quad_state,
                                   tile_rect,
                                   visible_tile_rect,
                                   border_color,
                                   border_width);
-        render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
       }
     }
   }
@@ -227,11 +226,10 @@ void TiledLayerImpl::AppendQuads(
           checker_color = DebugColors::DefaultCheckerboardColor();
         }
 
-        scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
-            CheckerboardDrawQuad::Create();
+        CheckerboardDrawQuad* checkerboard_quad =
+            render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
         checkerboard_quad->SetNew(
             shared_quad_state, tile_rect, visible_tile_rect, checker_color);
-        render_pass->AppendDrawQuad(checkerboard_quad.PassAs<DrawQuad>());
         append_quads_data->num_missing_tiles++;
         continue;
       }
@@ -251,7 +249,7 @@ void TiledLayerImpl::AppendQuads(
       float tile_height = static_cast<float>(tiler_->tile_size().height());
       gfx::Size texture_size(tile_width, tile_height);
 
-      scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+      TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
       quad->SetNew(shared_quad_state,
                    tile_rect,
                    tile_opaque_rect,
@@ -260,7 +258,6 @@ void TiledLayerImpl::AppendQuads(
                    tex_coord_rect,
                    texture_size,
                    tile->contents_swizzled());
-      render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
     }
   }
 }

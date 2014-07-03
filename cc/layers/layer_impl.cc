@@ -313,11 +313,10 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
 
   gfx::Rect quad_rect(content_bounds);
   gfx::Rect visible_quad_rect(quad_rect);
-  scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-      DebugBorderDrawQuad::Create();
+  DebugBorderDrawQuad* debug_border_quad =
+      render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
   debug_border_quad->SetNew(
       shared_quad_state, quad_rect, visible_quad_rect, color, width);
-  render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
 }
 
 bool LayerImpl::HasDelegatedContent() const {

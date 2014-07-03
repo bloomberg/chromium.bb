@@ -169,7 +169,8 @@ void VideoLayerImpl::AppendQuads(
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
-      scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
+      TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
                            quad_rect,
                            opaque_rect,
@@ -181,7 +182,6 @@ void VideoLayerImpl::AppendQuads(
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      render_pass->AppendDrawQuad(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
@@ -194,7 +194,8 @@ void VideoLayerImpl::AppendQuads(
               : YUVVideoDrawQuad::REC_601;
       gfx::RectF tex_coord_rect(
           tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
-      scoped_ptr<YUVVideoDrawQuad> yuv_video_quad = YUVVideoDrawQuad::Create();
+      YUVVideoDrawQuad* yuv_video_quad =
+          render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       yuv_video_quad->SetNew(
           shared_quad_state,
           quad_rect,
@@ -206,7 +207,6 @@ void VideoLayerImpl::AppendQuads(
           frame_resources_[2],
           frame_resources_.size() > 3 ? frame_resources_[3] : 0,
           color_space);
-      render_pass->AppendDrawQuad(yuv_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::RGB_RESOURCE: {
@@ -218,7 +218,8 @@ void VideoLayerImpl::AppendQuads(
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
-      scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
+      TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
                            quad_rect,
                            opaque_rect,
@@ -230,7 +231,6 @@ void VideoLayerImpl::AppendQuads(
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      render_pass->AppendDrawQuad(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {
@@ -239,8 +239,8 @@ void VideoLayerImpl::AppendQuads(
         break;
       gfx::Transform scale;
       scale.Scale(tex_width_scale, tex_height_scale);
-      scoped_ptr<StreamVideoDrawQuad> stream_video_quad =
-          StreamVideoDrawQuad::Create();
+      StreamVideoDrawQuad* stream_video_quad =
+          render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
       stream_video_quad->SetNew(
           shared_quad_state,
           quad_rect,
@@ -248,15 +248,14 @@ void VideoLayerImpl::AppendQuads(
           visible_quad_rect,
           frame_resources_[0],
           scale * provider_client_impl_->stream_texture_matrix());
-      render_pass->AppendDrawQuad(stream_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::IO_SURFACE: {
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      scoped_ptr<IOSurfaceDrawQuad> io_surface_quad =
-          IOSurfaceDrawQuad::Create();
+      IOSurfaceDrawQuad* io_surface_quad =
+          render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
       io_surface_quad->SetNew(shared_quad_state,
                               quad_rect,
                               opaque_rect,
@@ -264,7 +263,6 @@ void VideoLayerImpl::AppendQuads(
                               visible_rect.size(),
                               frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);
-      render_pass->AppendDrawQuad(io_surface_quad.PassAs<DrawQuad>());
       break;
     }
 #if defined(VIDEO_HOLE)
@@ -276,8 +274,8 @@ void VideoLayerImpl::AppendQuads(
     // ycheo@chromium.org
     case VideoFrameExternalResources::HOLE: {
       DCHECK_EQ(frame_resources_.size(), 0u);
-      scoped_ptr<SolidColorDrawQuad> solid_color_draw_quad =
-          SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* solid_color_draw_quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
 
       // Create a solid color quad with transparent black and force no
       // blending / no anti-aliasing.
@@ -289,7 +287,6 @@ void VideoLayerImpl::AppendQuads(
                                     false,
                                     SK_ColorTRANSPARENT,
                                     true);
-      render_pass->AppendDrawQuad(solid_color_draw_quad.PassAs<DrawQuad>());
       break;
     }
 #endif  // defined(VIDEO_HOLE)

@@ -48,6 +48,8 @@ class CC_EXPORT DrawQuad {
 
   virtual ~DrawQuad();
 
+  // TODO(weiliangc): DrawQuad need to be allocated on RenderPass. This function
+  // need to be moved to RenderPass.
   scoped_ptr<DrawQuad> Copy(
       const SharedQuadState* copied_shared_quad_state) const;
 

@@ -3497,7 +3497,8 @@ class BlendStateCheckLayer : public LayerImpl {
         render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state);
 
-    scoped_ptr<TileDrawQuad> test_blending_draw_quad = TileDrawQuad::Create();
+    TileDrawQuad* test_blending_draw_quad =
+        render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
     test_blending_draw_quad->SetNew(shared_quad_state,
                                     quad_rect_,
                                     opaque_rect,
@@ -3509,7 +3510,6 @@ class BlendStateCheckLayer : public LayerImpl {
     test_blending_draw_quad->visible_rect = quad_visible_rect_;
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(has_render_surface_, !!render_surface());
-    render_pass->AppendDrawQuad(test_blending_draw_quad.PassAs<DrawQuad>());
   }
 
   void SetExpectation(bool blend, bool has_render_surface) {
@@ -4251,10 +4251,10 @@ class FakeLayerWithQuads : public LayerImpl {
     SkColor gray = SkColorSetRGB(100, 100, 100);
     gfx::Rect quad_rect(content_bounds());
     gfx::Rect visible_quad_rect(quad_rect);
-    scoped_ptr<SolidColorDrawQuad> my_quad = SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* my_quad =
+        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     my_quad->SetNew(
         shared_quad_state, quad_rect, visible_quad_rect, gray, false);
-    render_pass->AppendDrawQuad(my_quad.PassAs<DrawQuad>());
   }
 
  private:

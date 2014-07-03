@@ -354,32 +354,32 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
       break;
 
     if (!top.IsEmpty()) {
-      scoped_ptr<SolidColorDrawQuad> top_quad = SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* top_quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       top_quad->SetNew(
           shared_quad_state, top, top, colors[i % kNumColors], false);
-      render_pass->AppendDrawQuad(top_quad.PassAs<DrawQuad>());
 
-      scoped_ptr<SolidColorDrawQuad> bottom_quad = SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* bottom_quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       bottom_quad->SetNew(shared_quad_state,
                           bottom,
                           bottom,
                           colors[kNumColors - 1 - (i % kNumColors)],
                           false);
-      render_pass->AppendDrawQuad(bottom_quad.PassAs<DrawQuad>());
     }
     if (!left.IsEmpty()) {
-      scoped_ptr<SolidColorDrawQuad> left_quad = SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* left_quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       left_quad->SetNew(shared_quad_state,
                         left,
                         left,
                         colors[kNumColors - 1 - (i % kNumColors)],
                         false);
-      render_pass->AppendDrawQuad(left_quad.PassAs<DrawQuad>());
 
-      scoped_ptr<SolidColorDrawQuad> right_quad = SolidColorDrawQuad::Create();
+      SolidColorDrawQuad* right_quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       right_quad->SetNew(
           shared_quad_state, right, right, colors[i % kNumColors], false);
-      render_pass->AppendDrawQuad(right_quad.PassAs<DrawQuad>());
     }
   }
 }
@@ -468,7 +468,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     }
 
     if (output_quad)
-      render_pass->AppendDrawQuad(output_quad.Pass());
+      render_pass->quad_list.push_back(output_quad.Pass());
   }
 }
 

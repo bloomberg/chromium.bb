@@ -172,11 +172,10 @@ void RenderSurfaceImpl::AppendQuads(
                       owning_layer_->layer_tree_impl()) :
                   DebugColors::SurfaceBorderWidth(
                       owning_layer_->layer_tree_impl());
-    scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-        DebugBorderDrawQuad::Create();
+    DebugBorderDrawQuad* debug_border_quad =
+        render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
     debug_border_quad->SetNew(
         shared_quad_state, content_rect_, visible_content_rect, color, width);
-    render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
   }
 
   // TODO(shawnsingh): By using the same RenderSurfaceImpl for both the content
@@ -225,7 +224,8 @@ void RenderSurfaceImpl::AppendQuads(
   gfx::Rect contents_changed_since_last_frame =
       ContentsChanged() ? content_rect_ : gfx::Rect();
 
-  scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+  RenderPassDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state,
                content_rect_,
                visible_content_rect,
@@ -236,7 +236,6 @@ void RenderSurfaceImpl::AppendQuads(
                mask_uv_rect,
                owning_layer_->filters(),
                owning_layer_->background_filters());
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

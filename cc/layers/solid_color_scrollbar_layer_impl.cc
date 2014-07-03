@@ -111,10 +111,10 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
-  scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   quad->SetNew(
       shared_quad_state, thumb_quad_rect, visible_quad_rect, color_, false);
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

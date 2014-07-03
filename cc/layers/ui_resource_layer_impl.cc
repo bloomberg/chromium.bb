@@ -126,7 +126,8 @@ void UIResourceLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
-  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  TextureDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
@@ -138,7 +139,6 @@ void UIResourceLayerImpl::AppendQuads(
                SK_ColorTRANSPARENT,
                vertex_opacity_,
                flipped);
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {

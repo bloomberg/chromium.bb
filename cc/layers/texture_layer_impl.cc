@@ -163,7 +163,8 @@ void TextureLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
-  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  TextureDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   ResourceProvider::ResourceId id =
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state,
@@ -177,7 +178,6 @@ void TextureLayerImpl::AppendQuads(
                bg_color,
                vertex_opacity_,
                flipped_);
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 Region TextureLayerImpl::VisibleContentOpaqueRegion() const {

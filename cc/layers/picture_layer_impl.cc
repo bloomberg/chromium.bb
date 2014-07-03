@@ -186,7 +186,8 @@ void PictureLayerImpl::AppendQuads(
     gfx::RectF texture_rect = gfx::RectF(texture_size);
     gfx::Rect quad_content_rect = rect;
 
-    scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
+    PictureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
     quad->SetNew(shared_quad_state,
                  geometry_rect,
                  opaque_rect,
@@ -197,7 +198,6 @@ void PictureLayerImpl::AppendQuads(
                  quad_content_rect,
                  max_contents_scale,
                  pile_);
-    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
     append_quads_data->num_missing_tiles++;
     return;
   }
@@ -239,8 +239,8 @@ void PictureLayerImpl::AppendQuads(
         width = DebugColors::MissingTileBorderWidth(layer_tree_impl());
       }
 
-      scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-          DebugBorderDrawQuad::Create();
+      DebugBorderDrawQuad* debug_border_quad =
+          render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
       gfx::Rect geometry_rect = iter.geometry_rect();
       gfx::Rect visible_geometry_rect = geometry_rect;
       debug_border_quad->SetNew(shared_quad_state,
@@ -248,7 +248,6 @@ void PictureLayerImpl::AppendQuads(
                                 visible_geometry_rect,
                                 color,
                                 width);
-      render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
     }
   }
 
@@ -271,7 +270,6 @@ void PictureLayerImpl::AppendQuads(
     append_quads_data->visible_content_area +=
         visible_geometry_rect.width() * visible_geometry_rect.height();
 
-    scoped_ptr<DrawQuad> draw_quad;
     if (*iter && iter->IsReadyToDraw()) {
       const ManagedTileState::TileVersion& tile_version =
           iter->GetTileVersionForDrawing();
@@ -284,7 +282,8 @@ void PictureLayerImpl::AppendQuads(
           if (iter->contents_scale() != ideal_contents_scale_)
             append_quads_data->had_incomplete_tile = true;
 
-          scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+          TileDrawQuad* quad =
+              render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
           quad->SetNew(shared_quad_state,
                        geometry_rect,
                        opaque_rect,
@@ -293,7 +292,6 @@ void PictureLayerImpl::AppendQuads(
                        texture_rect,
                        iter.texture_size(),
                        tile_version.contents_swizzled());
-          draw_quad = quad.PassAs<DrawQuad>();
           break;
         }
         case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
@@ -312,7 +310,8 @@ void PictureLayerImpl::AppendQuads(
               layer_tree_impl()->resource_provider();
           ResourceFormat format =
               resource_provider->memory_efficient_texture_format();
-          scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
+          PictureDrawQuad* quad =
+              render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
           quad->SetNew(shared_quad_state,
                        geometry_rect,
                        opaque_rect,
@@ -323,38 +322,35 @@ void PictureLayerImpl::AppendQuads(
                        iter->content_rect(),
                        iter->contents_scale(),
                        pile_);
-          draw_quad = quad.PassAs<DrawQuad>();
           break;
         }
         case ManagedTileState::TileVersion::SOLID_COLOR_MODE: {
-          scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+          SolidColorDrawQuad* quad =
+              render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
           quad->SetNew(shared_quad_state,
                        geometry_rect,
                        visible_geometry_rect,
                        tile_version.get_solid_color(),
                        false);
-          draw_quad = quad.PassAs<DrawQuad>();
           break;
         }
       }
-    }
-
-    if (!draw_quad) {
+    } else {
       if (draw_checkerboard_for_missing_tiles()) {
-        scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
+        CheckerboardDrawQuad* quad =
+            render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(
             shared_quad_state, geometry_rect, visible_geometry_rect, color);
-        render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
-        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        SolidColorDrawQuad* quad =
+            render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
         quad->SetNew(shared_quad_state,
                      geometry_rect,
                      visible_geometry_rect,
                      color,
                      false);
-        render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
       }
 
       append_quads_data->num_missing_tiles++;
@@ -364,8 +360,6 @@ void PictureLayerImpl::AppendQuads(
       ++missing_tile_count;
       continue;
     }
-
-    render_pass->AppendDrawQuad(draw_quad.Pass());
 
     if (iter->priority(ACTIVE_TREE).resolution != HIGH_RESOLUTION) {
       append_quads_data->approximated_visible_content_area +=

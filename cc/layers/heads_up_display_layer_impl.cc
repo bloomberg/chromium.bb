@@ -123,7 +123,8 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   gfx::PointF uv_bottom_right(1.f, 1.f);
   const float vertex_opacity[] = { 1.f, 1.f, 1.f, 1.f };
   bool flipped = false;
-  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  TextureDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
@@ -135,7 +136,6 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
                SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
-  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(

@@ -89,7 +89,12 @@ class CC_EXPORT RenderPass {
   scoped_ptr<base::Value> AsValue() const;
 
   SharedQuadState* CreateAndAppendSharedQuadState();
-  void AppendDrawQuad(scoped_ptr<DrawQuad> draw_quad);
+  template <typename DrawQuadType>
+  DrawQuadType* CreateAndAppendDrawQuad() {
+    scoped_ptr<DrawQuadType> draw_quad = DrawQuadType::Create();
+    quad_list.push_back(draw_quad.template PassAs<DrawQuad>());
+    return static_cast<DrawQuadType*>(quad_list.back());
+  }
 
   // Uniquely identifies the render pass in the compositor's current frame.
   Id id;
