@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 
 namespace gpu {
@@ -26,7 +28,11 @@ void ShaderTranslatorCache::OnDestruct(ShaderTranslator* translator) {
 }
 
 scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
+#if (ANGLE_SH_VERSION >= 126)
+    sh::GLenum shader_type,
+#else
     ShShaderType shader_type,
+#endif
     ShShaderSpec shader_spec,
     const ShBuiltInResources* resources,
     ShaderTranslatorInterface::GlslImplementationType

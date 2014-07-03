@@ -1187,7 +1187,11 @@ bool Program::CheckVaryingsPacking(
     }
 
     ShVariableInfo var;
+#if (ANGLE_SH_VERSION >= 126)
+    var.type = static_cast<sh::GLenum>(iter->second.type);
+#else
     var.type = static_cast<ShDataType>(iter->second.type);
+#endif
     var.size = iter->second.size;
     combined_map[iter->first] = var;
   }

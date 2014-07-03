@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 
 #include <string.h>
+#include <GLES2/gl2.h>
 #include <algorithm>
 
 #include "base/at_exit.h"
@@ -64,7 +65,11 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
   for (ANGLEGetInfoType i = 0; i < num_vars; ++i) {
     ANGLEGetInfoType len = 0;
     int size = 0;
+#if (ANGLE_SH_VERSION >= 126)
+    sh::GLenum type = GL_NONE;
+#else
     ShDataType type = SH_NONE;
+#endif
     ShPrecisionType precision = SH_PRECISION_UNDEFINED;
     int static_use = 0;
 
@@ -123,14 +128,22 @@ ShaderTranslator::ShaderTranslator()
 }
 
 bool ShaderTranslator::Init(
+#if (ANGLE_SH_VERSION >= 126)
+    GLenum shader_type,
+#else
     ShShaderType shader_type,
+#endif
     ShShaderSpec shader_spec,
     const ShBuiltInResources* resources,
     ShaderTranslatorInterface::GlslImplementationType glsl_implementation_type,
     ShCompileOptions driver_bug_workarounds) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
+#if (ANGLE_SH_VERSION >= 126)
+  DCHECK(shader_type == GL_FRAGMENT_SHADER || shader_type == GL_VERTEX_SHADER);
+#else
   DCHECK(shader_type == SH_FRAGMENT_SHADER || shader_type == SH_VERTEX_SHADER);
+#endif
   DCHECK(shader_spec == SH_GLES2_SPEC || shader_spec == SH_WEBGL_SPEC);
   DCHECK(resources != NULL);
 

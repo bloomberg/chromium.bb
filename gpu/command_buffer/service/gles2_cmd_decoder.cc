@@ -2792,7 +2792,11 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX;
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(
+#if (ANGLE_SH_VERSION >= 126)
+      GL_VERTEX_SHADER,
+#else
       SH_VERTEX_SHADER,
+#endif
       shader_spec,
       &resources,
       implementation_type,
@@ -2804,7 +2808,11 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   fragment_translator_ = shader_translator_cache()->GetTranslator(
+#if (ANGLE_SH_VERSION >= 126)
+      GL_FRAGMENT_SHADER,
+#else
       SH_FRAGMENT_SHADER,
+#endif
       shader_spec,
       &resources,
       implementation_type,

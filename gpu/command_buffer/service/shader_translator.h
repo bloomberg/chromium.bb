@@ -66,7 +66,11 @@ class ShaderTranslatorInterface {
   // Initializes the translator.
   // Must be called once before using the translator object.
   virtual bool Init(
+#if (ANGLE_SH_VERSION >= 126)
+      sh::GLenum shader_type,
+#else
       ShShaderType shader_type,
+#endif
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
@@ -116,7 +120,11 @@ class GPU_EXPORT ShaderTranslator
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Init(
+#if (ANGLE_SH_VERSION >= 126)
+      sh::GLenum shader_type,
+#else
       ShShaderType shader_type,
+#endif
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
