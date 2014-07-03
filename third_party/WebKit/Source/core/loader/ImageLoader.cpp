@@ -183,7 +183,11 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
     KURL url = imageURL();
     ResourcePtr<ImageResource> newImage = 0;
     if (!url.isNull()) {
-        FetchRequest request(ResourceRequest(url), element()->localName());
+        // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
+        ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
+        if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty())
+            resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
+        FetchRequest request(ResourceRequest(url), element()->localName(), resourceLoaderOptions);
         if (bypassMainWorldCSP)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
