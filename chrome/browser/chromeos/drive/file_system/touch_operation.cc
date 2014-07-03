@@ -92,11 +92,13 @@ void TouchOperation::TouchFileAfterUpdateLocalState(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(!entry->file_info().is_directory());
 
   FileChange changed_files;
   changed_files.Update(
-      file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+      file_path,
+      entry->file_info().is_directory() ?
+          FileChange::FILE_TYPE_DIRECTORY : FileChange::FILE_TYPE_FILE,
+      FileChange::ADD_OR_UPDATE);
 
   if (error == FILE_ERROR_OK) {
     observer_->OnFileChangedByOperation(changed_files);
