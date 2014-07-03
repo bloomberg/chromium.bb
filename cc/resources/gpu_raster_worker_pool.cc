@@ -16,26 +16,22 @@ namespace cc {
 // static
 scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
-    ResourceProvider* resource_provider,
-    ContextProvider* context_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(new GpuRasterWorkerPool(
-      task_runner, resource_provider, context_provider));
+    ResourceProvider* resource_provider) {
+  return make_scoped_ptr<RasterWorkerPool>(
+      new GpuRasterWorkerPool(task_runner, resource_provider));
 }
 
 GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                                         ResourceProvider* resource_provider,
-                                         ContextProvider* context_provider)
+                                         ResourceProvider* resource_provider)
     : task_runner_(task_runner),
       task_graph_runner_(new TaskGraphRunner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
       resource_provider_(resource_provider),
-      context_provider_(context_provider),
       run_tasks_on_origin_thread_pending_(false),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  DCHECK(context_provider_);
 }
 
 GpuRasterWorkerPool::~GpuRasterWorkerPool() {
@@ -189,25 +185,8 @@ void GpuRasterWorkerPool::RunTasksOnOriginThread() {
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;
 
-  DCHECK(context_provider_->ContextGL());
-  // TODO(alokp): Use a trace macro to push/pop markers.
-  // Using push/pop functions directly incurs cost to evaluate function
-  // arguments even when tracing is disabled.
-  context_provider_->ContextGL()->PushGroupMarkerEXT(
-      0, "GpuRasterWorkerPool::RunTasksOnOriginThread");
-
-  GrContext* gr_context = context_provider_->GrContext();
-  // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (gr_context)
-    gr_context->resetContext();
-
+  ResourceProvider::ScopedGpuRaster gpu_raster(resource_provider_);
   task_graph_runner_->RunUntilIdle();
-
-  // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (gr_context)
-    gr_context->flush();
-
-  context_provider_->ContextGL()->PopGroupMarkerEXT();
 }
 
 }  // namespace cc

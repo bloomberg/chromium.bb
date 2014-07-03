@@ -1880,16 +1880,14 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   transfer_buffer_memory_limit_ =
       GetMaxTransferBufferUsageBytes(context_provider);
 
-  if (use_gpu_rasterization_ && context_provider) {
+  if (use_gpu_rasterization_) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    raster_worker_pool_ =
-        GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                    resource_provider_.get(),
-                                    context_provider);
+    raster_worker_pool_ = GpuRasterWorkerPool::Create(
+        proxy_->ImplThreadTaskRunner(), resource_provider_.get());
     on_demand_task_graph_runner_ = &synchronous_task_graph_runner_;
   } else if (UseZeroCopyTextureUpload()) {
     resource_pool_ =

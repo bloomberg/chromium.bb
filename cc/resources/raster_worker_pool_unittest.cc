@@ -141,10 +141,8 @@ class RasterWorkerPoolTest
             staging_resource_pool_.get());
         break;
       case RASTER_WORKER_POOL_TYPE_GPU:
-        raster_worker_pool_ =
-            GpuRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
-                                        resource_provider_.get(),
-                                        context_provider_.get());
+        raster_worker_pool_ = GpuRasterWorkerPool::Create(
+            base::MessageLoopProxy::current().get(), resource_provider_.get());
         break;
     }
 

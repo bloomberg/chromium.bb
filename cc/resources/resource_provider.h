@@ -306,6 +306,20 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
   };
 
+  // The following class is needed to modify GL resources using GPU
+  // raster. The user must ensure that they only use GPU raster on
+  // GL resources while an instance of this class is alive.
+  class CC_EXPORT ScopedGpuRaster {
+   public:
+    ScopedGpuRaster(ResourceProvider* resource_provider);
+    ~ScopedGpuRaster();
+
+   private:
+    ResourceProvider* resource_provider_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedGpuRaster);
+  };
+
   class Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
@@ -626,6 +640,9 @@ class CC_EXPORT ResourceProvider {
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
   class GrContext* GrContext() const;
+
+  void BeginGpuRaster();
+  void EndGpuRaster();
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;

@@ -21,8 +21,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
 
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
-      ResourceProvider* resource_provider,
-      ContextProvider* context_provider);
+      ResourceProvider* resource_provider);
 
   // Overridden from RasterWorkerPool:
   virtual Rasterizer* AsRasterizer() OVERRIDE;
@@ -39,8 +38,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
 
  private:
   GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                      ResourceProvider* resource_provider,
-                      ContextProvider* context_provider);
+                      ResourceProvider* resource_provider);
 
   void OnRasterFinished();
   void OnRasterRequiredForActivationFinished();
@@ -53,7 +51,6 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
   const NamespaceToken namespace_token_;
   RasterizerClient* client_;
   ResourceProvider* resource_provider_;
-  ContextProvider* context_provider_;
 
   bool run_tasks_on_origin_thread_pending_;
 
