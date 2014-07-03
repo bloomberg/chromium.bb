@@ -32,6 +32,7 @@
 #define DOMWrapperMap_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "wtf/HashMap.h"
 #include <v8-util.h>
 #include <v8.h>
@@ -160,6 +161,7 @@ inline void DOMWrapperMap<void>::PersistentValueMapTraits::Dispose(
     v8::UniquePersistent<v8::Object> value,
     void* key)
 {
+    ScriptForbiddenScope forbiddenScope;
     RELEASE_ASSERT(!value.IsEmpty()); // See crbug.com/368095.
     releaseObject(v8::Local<v8::Object>::New(isolate, value));
 }

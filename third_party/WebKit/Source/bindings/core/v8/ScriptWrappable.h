@@ -32,6 +32,7 @@
 #define ScriptWrappable_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
 
@@ -265,6 +266,7 @@ private:
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
+        ScriptForbiddenScope forbiddenScope;
         v8::Persistent<v8::Object> persistent;
         data.GetParameter()->getPersistent(&persistent);
         ASSERT(persistent == data.GetValue());

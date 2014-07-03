@@ -16,14 +16,15 @@ static unsigned s_scriptForbiddenCount = 0;
 
 ScriptForbiddenScope::ScriptForbiddenScope()
 {
-    ASSERT(isMainThread());
-    ++s_scriptForbiddenCount;
+    // FIXME: Support non-main threads.
+    if (isMainThread())
+        ++s_scriptForbiddenCount;
 }
 
 ScriptForbiddenScope::~ScriptForbiddenScope()
 {
-    ASSERT(isMainThread());
-    --s_scriptForbiddenCount;
+    if (isMainThread())
+        --s_scriptForbiddenCount;
 }
 
 bool ScriptForbiddenScope::isScriptForbidden()
