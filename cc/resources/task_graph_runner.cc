@@ -17,7 +17,10 @@ namespace {
 class DependentIterator {
  public:
   DependentIterator(TaskGraph* graph, const Task* task)
-      : graph_(graph), task_(task), current_index_(-1), current_node_(NULL) {
+      : graph_(graph),
+        task_(task),
+        current_index_(static_cast<size_t>(-1)),
+        current_node_(NULL) {
     ++(*this);
   }
 

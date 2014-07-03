@@ -14,7 +14,7 @@ namespace cc {
 RenderPassDrawQuad::RenderPassDrawQuad()
     : render_pass_id(RenderPass::Id(-1, -1)),
       is_replica(false),
-      mask_resource_id(-1) {
+      mask_resource_id(static_cast<ResourceProvider::ResourceId>(-1)) {
 }
 
 RenderPassDrawQuad::~RenderPassDrawQuad() {

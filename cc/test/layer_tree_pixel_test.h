@@ -89,11 +89,9 @@ class LayerTreePixelTest : public LayerTreeTest {
                              bool lost_resource);
 
   // Common CSS colors defined for tests to use.
-  enum Colors {
-    kCSSOrange = 0xffffa500,
-    kCSSBrown = 0xffa52a2a,
-    kCSSGreen = 0xff008000,
-  };
+  static const SkColor kCSSOrange = 0xffffa500;
+  static const SkColor kCSSBrown = 0xffa52a2a;
+  static const SkColor kCSSGreen = 0xff008000;
 
   gfx::DisableNullDrawGLBindings enable_pixel_output_;
   scoped_ptr<PixelComparator> pixel_comparator_;
