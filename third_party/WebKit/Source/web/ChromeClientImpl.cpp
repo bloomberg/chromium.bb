@@ -52,6 +52,7 @@
 #include "core/page/PagePopupDriver.h"
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderWidget.h"
 #include "platform/ColorChooser.h"
 #include "platform/ColorChooserClient.h"
