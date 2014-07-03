@@ -10,6 +10,5 @@ def CustomizeBrowserOptionsForFastPath(options):
 def CustomizeBrowserOptionsForGpuRasterization(options):
   """Enables flags needed for forced GPU rasterization using Ganesh."""
   options.AppendExtraBrowserArgs('--enable-threaded-compositing')
-  options.AppendExtraBrowserArgs('--force-compositing-mode')
   options.AppendExtraBrowserArgs('--enable-impl-side-painting')
   options.AppendExtraBrowserArgs('--force-gpu-rasterization')

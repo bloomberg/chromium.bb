@@ -259,9 +259,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             shell()->web_contents()->GetVisibleURL());
 }
 
-// TODO(shrikant): enable this for Windows when issue with
-// force-compositing-mode is resolved (http://crbug.com/281726).
-// Also crashes under ThreadSanitizer, http://crbug.com/356758.
+// Crashes under ThreadSanitizer, http://crbug.com/356758.
 #if defined(OS_WIN) || defined(OS_ANDROID) \
     || defined(THREAD_SANITIZER)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView

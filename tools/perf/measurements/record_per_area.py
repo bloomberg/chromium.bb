@@ -21,7 +21,6 @@ class RecordPerArea(page_measurement.PageMeasurement):
     smoothness.Smoothness.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs([
         '--enable-impl-side-painting',
-        '--force-compositing-mode',
         '--enable-threaded-compositing',
         '--enable-gpu-benchmarking'
     ])

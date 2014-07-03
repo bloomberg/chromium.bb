@@ -213,7 +213,7 @@ bool IsDelegatedRendererEnabled() {
   if (enabled && !IsThreadedCompositingEnabled()) {
     enabled = false;
     LOG(ERROR) << "Disabling delegated-rendering because it needs "
-               << "force-compositing-mode and threaded-compositing.";
+               << "threaded-compositing.";
   }
 
   return enabled;

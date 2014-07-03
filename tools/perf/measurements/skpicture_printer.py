@@ -25,8 +25,7 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
                                     '--no-sandbox',
-                                    '--enable-deferred-image-decoding',
-                                    '--force-compositing-mode'])
+                                    '--enable-deferred-image-decoding'])
 
   def MeasurePage(self, page, tab, results):
     if tab.browser.platform.GetOSName() in ['android', 'chromeos']:

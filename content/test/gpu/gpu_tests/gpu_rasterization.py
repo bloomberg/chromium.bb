@@ -29,8 +29,7 @@ def _DidTestSucceed(tab):
 
 class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--force-compositing-mode',
-                                    '--enable-threaded-compositing',
+    options.AppendExtraBrowserArgs(['--enable-threaded-compositing',
                                     '--enable-impl-side-painting',
                                     '--force-gpu-rasterization',
                                     '--enable-gpu-benchmarking'])

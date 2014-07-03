@@ -39,7 +39,6 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         '--enable-impl-side-painting',
-        '--force-compositing-mode',
         '--enable-threaded-compositing',
         '--enable-gpu-benchmarking'
     ])
