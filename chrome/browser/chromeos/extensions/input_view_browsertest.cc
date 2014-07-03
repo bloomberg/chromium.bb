@@ -90,6 +90,13 @@ IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactTypingTest) {
           InputViewConfig(id, kCompactLayout));
 }
 
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactLongpressTest) {
+  std::string id = InstallIMEExtension();
+  ASSERT_FALSE(id.empty());
+  RunTest(base::FilePath("longpress_test.js"),
+          InputViewConfig(id, kCompactLayout));
+}
+
 // Disabled for leaking memory: http://crbug.com/380537
 IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_KeysetTransitionTest) {
   std::string id = InstallIMEExtension();

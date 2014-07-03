@@ -100,21 +100,18 @@ function isActive(el) {
     'c' : {
       'us' : '#\\31 01kbd-k-44',
       'us.compact.qwerty' : '#compactkbd-k-key-24',
-
     },
     'd' : {
       'us' : '#\\31 01kbd-k-31',
       'us.compact.qwerty' : '#compactkbd-k-key-13',
-
     },
     'e' : {
-      'us' : '#\\31 01kbd-k-43',
+      'us' : '#\\31 01kbd-k-17',
       'us.compact.qwerty': '#compactkbd-k-key-2',
     },
     'l' : {
       'us' : '#\\31 01kbd-k-37',
       'us.compact.qwerty' : '#compactkbd-k-key-19',
-
     },
     'p' : {
       'us' : '#\\31 01kbd-k-24',
@@ -169,6 +166,21 @@ function isActive(el) {
   }
 
   /**
+   * Returns the layout with the id provided. Periods in the id are replaced by
+   * hyphens.
+   * @param id {string} id The layout id.
+   * @return {object}
+   */
+
+  var getLayout_ = function(id) {
+    // Escape periods to hyphens.
+    var layoutId = id.replace(/\./g, '-');
+    var layout = document.querySelector('#' + layoutId);
+    assertTrue(!!layout, "Cannot find layout with id: " + layoutId);
+    return layout;
+  }
+
+  /**
    * Returns the key object corresponding to the character.
    * @return {string} char The character.
    */
@@ -180,6 +192,7 @@ function isActive(el) {
     var candidates = layout.querySelectorAll(getKeyId_(layoutId, char));
     assertTrue(candidates.length > 0, "Cannot find key: " + char);
     var visible = Array.prototype.filter.call(candidates, isActive);
+
     assertEquals(1, visible.length,
         "Expect exactly one visible key for char: " + char);
     return visible[0];
@@ -256,4 +269,49 @@ function mockTouchType(char) {
   var key = getKey(char);
   generateTouchEvent(key, 'touchstart');
   generateTouchEvent(key, 'touchend');
+}
+
+/**
+ * Returns, if present, the active alternate key container.
+ * @return {?Object}
+ */
+function getActiveAltContainer() {
+  // TODO(rsadam): Simplify once code refactor to remove unneeded containers is
+  // complete.
+  var all = document.querySelectorAll('.inputview-altdata-view');
+  var filtered = Array.prototype.filter.call(all, isActive);
+  assertTrue(filtered.length <= 1, "More than one active container.");
+  return filtered.length > 0 ? filtered[0] : null;
+}
+
+/**
+ * Mocks a character long press.
+ * @param {String} char The character to longpress.
+ * @param {Array<string>} altKeys the expected alt keys.
+ * @param {number} index The index of the alt key to select.
+ */
+function mockLongpress(char, altKeys, index) {
+  var key = getKey(char);
+
+  generateTouchEvent(key, 'touchstart');
+  mockTimer.tick(LONGPRESS_DELAY);
+
+  var container = getActiveAltContainer();
+  assertTrue(!!container, "Cannot find active alt container.");
+  var options = container.querySelectorAll('.inputview-altdata-key');
+  assertEquals(altKeys.length, options.length,
+      "Unexpected number of alt keys.");
+  // Check all altKeys present and in order specified.
+  for (var i = 0; i < altKeys.length; i++) {
+    assertEquals(altKeys[i], options[i].textContent);
+  }
+  // Expect selection to be typed
+  var send = chrome.input.ime.commitText;
+  send.addExpectation({
+    contextId: DEFAULT_CONTEXT_ID,
+    text: altKeys[index],
+  });
+  // TODO(rsadam:) Add support for touch move.
+  generateTouchEvent(key, 'touchend', true, true)
+  assertFalse(isActive(container), "Alt key container was not hidden.");
 }
