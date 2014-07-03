@@ -304,52 +304,6 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-// TODO(estade): if possible, port this test.
-TEST(ProcessMetricsTest, CalcFreeMemory) {
-  scoped_ptr<base::ProcessMetrics> metrics(
-      base::ProcessMetrics::CreateProcessMetrics(::GetCurrentProcess()));
-  ASSERT_TRUE(NULL != metrics.get());
-
-  bool using_tcmalloc = false;
-
-  // Detect if we are using tcmalloc
-#if !defined(NO_TCMALLOC)
-  const char* chrome_allocator = getenv("CHROME_ALLOCATOR");
-  if (!chrome_allocator || _stricmp(chrome_allocator, "tcmalloc") == 0)
-    using_tcmalloc = true;
-#endif
-
-  // Typical values here is ~1900 for total and ~1000 for largest. Obviously
-  // it depends in what other tests have done to this process.
-  base::FreeMBytes free_mem1 = {0};
-  EXPECT_TRUE(metrics->CalculateFreeMemory(&free_mem1));
-  EXPECT_LT(10u, free_mem1.total);
-  EXPECT_LT(10u, free_mem1.largest);
-  EXPECT_GT(2048u, free_mem1.total);
-  EXPECT_GT(2048u, free_mem1.largest);
-  EXPECT_GE(free_mem1.total, free_mem1.largest);
-  EXPECT_TRUE(NULL != free_mem1.largest_ptr);
-
-  // Allocate 20M and check again. It should have gone down.
-  const int kAllocMB = 20;
-  scoped_ptr<char[]> alloc(new char[kAllocMB * 1024 * 1024]);
-  size_t expected_total = free_mem1.total - kAllocMB;
-  size_t expected_largest = free_mem1.largest;
-
-  base::FreeMBytes free_mem2 = {0};
-  EXPECT_TRUE(metrics->CalculateFreeMemory(&free_mem2));
-  EXPECT_GE(free_mem2.total, free_mem2.largest);
-  // This test is flaky when using tcmalloc, because tcmalloc
-  // allocation strategy sometimes results in less than the
-  // full drop of 20Mb of free memory.
-  if (!using_tcmalloc)
-    EXPECT_GE(expected_total, free_mem2.total);
-  EXPECT_GE(expected_largest, free_mem2.largest);
-  EXPECT_TRUE(NULL != free_mem2.largest_ptr);
-}
-#endif  // defined(OS_WIN)
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(ProcessMetricsTest, ParseProcStatCPU) {
   // /proc/self/stat for a process running "top".

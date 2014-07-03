@@ -235,31 +235,6 @@ double ProcessMetrics::GetCPUUsage() {
   return cpu;
 }
 
-bool ProcessMetrics::CalculateFreeMemory(FreeMBytes* free) const {
-  const SIZE_T kTopAddress = 0x7F000000;
-  const SIZE_T kMegabyte = 1024 * 1024;
-  SIZE_T accumulated = 0;
-
-  MEMORY_BASIC_INFORMATION largest = {0};
-  UINT_PTR scan = 0;
-  while (scan < kTopAddress) {
-    MEMORY_BASIC_INFORMATION info;
-    if (!::VirtualQueryEx(process_, reinterpret_cast<void*>(scan),
-                          &info, sizeof(info)))
-      return false;
-    if (info.State == MEM_FREE) {
-      accumulated += info.RegionSize;
-      if (info.RegionSize > largest.RegionSize)
-        largest = info;
-    }
-    scan += info.RegionSize;
-  }
-  free->largest = largest.RegionSize / kMegabyte;
-  free->largest_ptr = largest.BaseAddress;
-  free->total = accumulated / kMegabyte;
-  return true;
-}
-
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   return GetProcessIoCounters(process_, io_counters) != FALSE;
 }
