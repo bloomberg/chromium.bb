@@ -246,11 +246,9 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   }
 
   if (IsFrameless() &&
-      init_params.opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
-      !create_params.resizable) {
+      init_params.opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW) {
     // The given window is most likely not rectangular since it uses
-    // transparency, has no standard frame and the user cannot resize it using
-    // the OS supplied methods. Therefore we do not use a shadow for it.
+    // transparency and has no standard frame, don't show a shadow for it.
     // TODO(skuhne): If we run into an application which should have a shadow
     // but does not have, a new attribute has to be added.
     wm::SetShadowType(widget()->GetNativeWindow(), wm::SHADOW_TYPE_NONE);
