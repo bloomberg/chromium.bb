@@ -223,34 +223,38 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
     const std::map<std::string, std::string>& db_tokens) {
   std::string old_login_token;
 
-  for (std::map<std::string, std::string>::const_iterator iter =
-           db_tokens.begin();
-       iter != db_tokens.end();
-       ++iter) {
-    std::string prefixed_account_id = iter->first;
-    std::string refresh_token = iter->second;
+  {
+    ScopedBacthChange batch(this);
 
-    if (IsLegacyRefreshTokenId(prefixed_account_id) && !refresh_token.empty())
-      old_login_token = refresh_token;
+    for (std::map<std::string, std::string>::const_iterator iter =
+             db_tokens.begin();
+         iter != db_tokens.end();
+         ++iter) {
+      std::string prefixed_account_id = iter->first;
+      std::string refresh_token = iter->second;
 
-    if (IsLegacyServiceId(prefixed_account_id)) {
-      scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
-      if (token_web_data.get())
-        token_web_data->RemoveTokenForService(prefixed_account_id);
-    } else {
-      DCHECK(!refresh_token.empty());
-      std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
-      refresh_tokens()[account_id].reset(
-          new AccountInfo(this, account_id, refresh_token));
-      FireRefreshTokenAvailable(account_id);
-      // TODO(fgorski): Notify diagnostic observers.
+      if (IsLegacyRefreshTokenId(prefixed_account_id) && !refresh_token.empty())
+        old_login_token = refresh_token;
+
+      if (IsLegacyServiceId(prefixed_account_id)) {
+        scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
+        if (token_web_data.get())
+          token_web_data->RemoveTokenForService(prefixed_account_id);
+      } else {
+        DCHECK(!refresh_token.empty());
+        std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
+        refresh_tokens()[account_id].reset(
+            new AccountInfo(this, account_id, refresh_token));
+        FireRefreshTokenAvailable(account_id);
+        // TODO(fgorski): Notify diagnostic observers.
+      }
     }
-  }
 
-  if (!old_login_token.empty()) {
-    DCHECK(!loading_primary_account_id_.empty());
-    if (refresh_tokens().count(loading_primary_account_id_) == 0)
-      UpdateCredentials(loading_primary_account_id_, old_login_token);
+    if (!old_login_token.empty()) {
+      DCHECK(!loading_primary_account_id_.empty());
+      if (refresh_tokens().count(loading_primary_account_id_) == 0)
+        UpdateCredentials(loading_primary_account_id_, old_login_token);
+    }
   }
 
   FireRefreshTokensLoaded();
@@ -307,6 +311,8 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
   bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
   if (!refresh_token_present ||
       refresh_tokens_[account_id]->refresh_token() != refresh_token) {
+    ScopedBacthChange batch(this);
+
     // If token present, and different from the new one, cancel its requests,
     // and clear the entries in cache related to that account.
     if (refresh_token_present) {
@@ -336,6 +342,7 @@ void MutableProfileOAuth2TokenService::RevokeCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (refresh_tokens_.count(account_id) > 0) {
+    ScopedBacthChange batch(this);
     RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
     CancelRequestsForAccount(account_id);
     ClearCacheForAccount(account_id);
@@ -366,6 +373,9 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
   if (!client()->CanRevokeCredentials())
     return;
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  ScopedBacthChange batch(this);
+
   CancelWebTokenFetch();
   CancelAllRequests();
   ClearCache();

@@ -332,17 +332,15 @@ void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
   }
 }
 
-void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
-  VLOG(1) << "AccountReconcilor::OnRefreshTokenAvailable: " << account_id;
-  StartReconcile();
-}
-
 void AccountReconcilor::OnRefreshTokenRevoked(const std::string& account_id) {
   VLOG(1) << "AccountReconcilor::OnRefreshTokenRevoked: " << account_id;
   PerformStartRemoveAction(account_id);
 }
 
-void AccountReconcilor::OnRefreshTokensLoaded() {}
+void AccountReconcilor::OnEndBatchChanges() {
+  VLOG(1) << "AccountReconcilor::OnEndBatchChanges";
+  StartReconcile();
+}
 
 void AccountReconcilor::GoogleSigninSucceeded(const std::string& username,
                                               const std::string& password) {
@@ -426,7 +424,9 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 }
 
 void AccountReconcilor::StartReconcile() {
-  if (!IsProfileConnected() || is_reconcile_started_)
+  if (!IsProfileConnected() || is_reconcile_started_ ||
+      get_gaia_accounts_callbacks_.size() > 0 ||
+      merge_session_helper_.is_running())
     return;
 
   is_reconcile_started_ = true;
@@ -529,7 +529,6 @@ void AccountReconcilor::ValidateAccountsFromTokenService() {
   DCHECK(!primary_account_.empty());
 
   chrome_accounts_ = token_service_->GetAccounts();
-  DCHECK_GT(chrome_accounts_.size(), 0u);
 
   VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
           << "Chrome " << chrome_accounts_.size() << " accounts, "
@@ -722,16 +721,17 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
 }
 
 // Remove the account from the list that is being merged.
-void AccountReconcilor::MarkAccountAsAddedToCookie(
+bool AccountReconcilor::MarkAccountAsAddedToCookie(
     const std::string& account_id) {
   for (std::vector<std::string>::iterator i = add_to_cookie_.begin();
        i != add_to_cookie_.end();
        ++i) {
     if (account_id == *i) {
       add_to_cookie_.erase(i);
-      break;
+      return true;
     }
   }
+  return false;
 }
 
 void AccountReconcilor::MergeSessionCompleted(
@@ -740,9 +740,10 @@ void AccountReconcilor::MergeSessionCompleted(
   VLOG(1) << "AccountReconcilor::MergeSessionCompleted: account_id="
           << account_id;
 
-  MarkAccountAsAddedToCookie(account_id);
-  CalculateIfReconcileIsDone();
-  ScheduleStartReconcileIfChromeAccountsChanged();
+  if (MarkAccountAsAddedToCookie(account_id)) {
+    CalculateIfReconcileIsDone();
+    ScheduleStartReconcileIfChromeAccountsChanged();
+  }
 }
 
 void AccountReconcilor::HandleSuccessfulAccountIdCheck(

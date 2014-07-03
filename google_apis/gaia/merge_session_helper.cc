@@ -27,6 +27,7 @@ MergeSessionHelper::~MergeSessionHelper() {
 
 void MergeSessionHelper::LogIn(const std::string& account_id) {
   DCHECK(!account_id.empty());
+  VLOG(1) << "MergeSessionHelper::LogIn: " << account_id;
   accounts_.push_back(account_id);
   if (accounts_.size() == 1)
     StartFetching();
@@ -41,6 +42,7 @@ void MergeSessionHelper::RemoveObserver(Observer* observer) {
 }
 
 void MergeSessionHelper::CancelAll() {
+  VLOG(1) << "MergeSessionHelper::CancelAll";
   gaia_auth_fetcher_.reset();
   uber_token_fetcher_.reset();
   accounts_.clear();
@@ -50,6 +52,8 @@ void MergeSessionHelper::LogOut(
     const std::string& account_id,
     const std::vector<std::string>& accounts) {
   DCHECK(!account_id.empty());
+  VLOG(1) << "MergeSessionHelper::LogOut: " << account_id
+          << " accounts=" << accounts.size();
   LogOutInternal(account_id, accounts);
 }
 
@@ -93,6 +97,7 @@ void MergeSessionHelper::LogOutInternal(
 }
 
 void MergeSessionHelper::LogOutAllAccounts() {
+  VLOG(1) << "MergeSessionHelper::LogOutAllAccounts";
   LogOutInternal("", std::vector<std::string>());
 }
 
@@ -108,6 +113,7 @@ void MergeSessionHelper::SignalComplete(
 
 void MergeSessionHelper::StartLogOutUrlFetch() {
   DCHECK(accounts_.front().empty());
+  VLOG(1) << "MergeSessionHelper::StartLogOutUrlFetch";
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
@@ -135,7 +141,7 @@ void MergeSessionHelper::OnUbertokenFailure(
 }
 
 void MergeSessionHelper::OnMergeSessionSuccess(const std::string& data) {
-  DVLOG(1) << "MergeSession successful account=" << accounts_.front();
+  VLOG(1) << "MergeSession successful account=" << accounts_.front();
   const std::string account_id = accounts_.front();
   HandleNextAccount();
   SignalComplete(account_id, GoogleServiceAuthError::AuthErrorNone());
@@ -152,6 +158,8 @@ void MergeSessionHelper::OnMergeSessionFailure(
 }
 
 void MergeSessionHelper::StartFetching() {
+  VLOG(1) << "MergeSessionHelper::StartFetching account_id="
+          << accounts_.front();
   uber_token_fetcher_.reset(new UbertokenFetcher(token_service_,
                                                  this,
                                                  request_context_));
@@ -160,13 +168,16 @@ void MergeSessionHelper::StartFetching() {
 
 void MergeSessionHelper::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(accounts_.front().empty());
+  VLOG(1) << "MergeSessionHelper::OnURLFetchComplete";
   HandleNextAccount();
 }
 
 void MergeSessionHelper::HandleNextAccount() {
+  VLOG(1) << "MergeSessionHelper::HandleNextAccount";
   accounts_.pop_front();
   gaia_auth_fetcher_.reset();
   if (accounts_.empty()) {
+    VLOG(1) << "MergeSessionHelper::HandleNextAccount: no more";
     uber_token_fetcher_.reset();
   } else {
     if (accounts_.front().empty()) {

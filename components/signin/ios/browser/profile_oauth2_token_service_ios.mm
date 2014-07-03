@@ -275,6 +275,8 @@ void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
     return;
   }
 
+  ScopedBacthChange batch(this);
+
   // Remove all old accounts that do not appear in |new_accounts| and then
   // load |new_accounts|.
   std::vector<std::string> new_accounts(GetProvider()->GetAllAccountIds());
@@ -312,6 +314,7 @@ void ProfileOAuth2TokenServiceIOS::RevokeAllCredentials() {
     return;
   }
 
+  ScopedBacthChange batch(this);
   CancelAllRequests();
   ClearCache();
   AccountInfoMap toRemove = accounts_;
@@ -359,6 +362,7 @@ void ProfileOAuth2TokenServiceIOS::ForceInvalidGrantResponses() {
     MutableProfileOAuth2TokenService::RevokeAllCredentials();
   }
 
+  ScopedBacthChange batch(this);
   for (auto i = accounts.begin(); i != accounts.end(); ++i) {
     std::string account_id = *i;
     MutableProfileOAuth2TokenService::UpdateCredentials(

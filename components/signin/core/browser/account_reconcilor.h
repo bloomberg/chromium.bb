@@ -128,6 +128,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileWithSessionInfoExpiredDefault);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           MergeSessionCompletedWithBogusAccount);
 
   // Register and unregister with dependent services.
   void RegisterForCookieChanges();
@@ -177,7 +179,7 @@ class AccountReconcilor : public KeyedService,
       const std::vector<std::pair<std::string, bool> >& accounts);
   void ValidateAccountsFromTokenService();
   // Note internally that this |account_id| is added to the cookie jar.
-  void MarkAccountAsAddedToCookie(const std::string& account_id);
+  bool MarkAccountAsAddedToCookie(const std::string& account_id);
   // Note internally that this |account_id| is added to the token service.
   void MarkAccountAsAddedToChrome(const std::string& account_id);
 
@@ -201,9 +203,8 @@ class AccountReconcilor : public KeyedService,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
   // Overriden from OAuth2TokenService::Observer.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokensLoaded() OVERRIDE;
+  virtual void OnEndBatchChanges() OVERRIDE;
 
   // Overriden from SigninManagerBase::Observer.
   virtual void GoogleSigninSucceeded(const std::string& username,

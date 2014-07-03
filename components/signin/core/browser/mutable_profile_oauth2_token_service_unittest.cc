@@ -33,7 +33,9 @@ class MutableProfileOAuth2TokenServiceTest
       : factory_(NULL),
         token_available_count_(0),
         token_revoked_count_(0),
-        tokens_loaded_count_(0) {}
+        tokens_loaded_count_(0),
+        start_batch_changes_(0),
+        end_batch_changes_(0) {}
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_MACOSX)
@@ -71,10 +73,20 @@ class MutableProfileOAuth2TokenServiceTest
   }
   virtual void OnRefreshTokensLoaded() OVERRIDE { ++tokens_loaded_count_; }
 
+  virtual void OnStartBatchChanges() OVERRIDE {
+    ++start_batch_changes_;
+  }
+
+  virtual void OnEndBatchChanges() OVERRIDE {
+    ++end_batch_changes_;
+  }
+
   void ResetObserverCounts() {
     token_available_count_ = 0;
     token_revoked_count_ = 0;
     tokens_loaded_count_ = 0;
+    start_batch_changes_ = 0;
+    end_batch_changes_ = 0;
   }
 
   void ExpectNoNotifications() {
@@ -114,6 +126,8 @@ class MutableProfileOAuth2TokenServiceTest
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;
+  int start_batch_changes_;
+  int end_batch_changes_;
 };
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
@@ -133,6 +147,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // Legacy tokens get discarded, but the old refresh token is kept.
   EXPECT_EQ(1, tokens_loaded_count_);
   EXPECT_EQ(1, token_available_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable(main_account_id));
   EXPECT_EQ(1U, oauth2_service_.refresh_tokens().size());
   EXPECT_EQ(main_refresh_token,
@@ -159,6 +175,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // token is present it is not overwritten.
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable(main_account_id));
   // TODO(fgorski): cover both using RefreshTokenIsAvailable() and then get the
   // tokens using GetRefreshToken()
@@ -170,6 +188,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
       oauth2_service_.refresh_tokens()[other_account_id]->refresh_token());
 
   oauth2_service_.RevokeAllCredentials();
+  EXPECT_EQ(2, start_batch_changes_);
+  EXPECT_EQ(2, end_batch_changes_);
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceRevokeCredentials) {
@@ -184,6 +204,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceRevokeCredentials) {
 
   oauth2_service_.UpdateCredentials(account_id_1, refresh_token_1);
   oauth2_service_.UpdateCredentials(account_id_2, refresh_token_2);
+  EXPECT_EQ(2, start_batch_changes_);
+  EXPECT_EQ(2, end_batch_changes_);
 
   // TODO(fgorski): Enable below when implemented:
   // EXPECT_TRUE(oauth2_servive_->RefreshTokenIsAvailable(account_id_1));
@@ -191,6 +213,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceRevokeCredentials) {
 
   ResetObserverCounts();
   oauth2_service_.RevokeCredentials(account_id_1);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   ExpectOneTokenRevokedNotification();
 
   // TODO(fgorski): Enable below when implemented:
@@ -201,6 +225,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceRevokeCredentials) {
   EXPECT_EQ(0, token_available_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(0, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   ResetObserverCounts();
 }
 
@@ -211,6 +237,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   // Perform a load from an empty DB.
   oauth2_service_.LoadCredentials("account_id");
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   ExpectOneTokensLoadedNotification();
   // LoadCredentials() guarantees that the account given to it as argument
   // is in the refresh_token map.
@@ -221,6 +249,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   oauth2_service_.UpdateCredentials("account_id", "refresh_token");
   oauth2_service_.UpdateCredentials("account_id2", "refresh_token2");
   oauth2_service_.refresh_tokens().clear();
+  EXPECT_EQ(2, start_batch_changes_);
+  EXPECT_EQ(2, end_batch_changes_);
   ResetObserverCounts();
 
   oauth2_service_.LoadCredentials("account_id");
@@ -228,6 +258,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   ResetObserverCounts();
 
   // TODO(fgorski): Enable below when implemented:
@@ -238,6 +270,8 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   EXPECT_EQ(0, token_available_count_);
   EXPECT_EQ(2, token_revoked_count_);
   EXPECT_EQ(0, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
   ResetObserverCounts();
 }
 

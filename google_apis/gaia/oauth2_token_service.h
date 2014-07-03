@@ -100,6 +100,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
+    // Sent before starting a batch of refresh token changes.
+    virtual void OnStartBatchChanges() {}
+    // Sent after a batch of refresh token changes is done.
+    virtual void OnEndBatchChanges() {}
 
    protected:
     virtual ~Observer() {}
@@ -229,6 +233,16 @@ class OAuth2TokenService : public base::NonThreadSafe {
     Consumer* const consumer_;
   };
 
+  // Helper class to scope batch changes.
+  class ScopedBacthChange {
+   public:
+    ScopedBacthChange(OAuth2TokenService* token_service);
+    ~ScopedBacthChange();
+   private:
+    OAuth2TokenService* token_service_;  // Weak.
+    DISALLOW_COPY_AND_ASSIGN(ScopedBacthChange);
+  };
+
   // Subclasses can override if they want to report errors to the user.
   virtual void UpdateAuthError(
       const std::string& account_id,
@@ -261,6 +275,9 @@ class OAuth2TokenService : public base::NonThreadSafe {
   virtual void FireRefreshTokenAvailable(const std::string& account_id);
   virtual void FireRefreshTokenRevoked(const std::string& account_id);
   virtual void FireRefreshTokensLoaded();
+
+  virtual void StartBatchChanges();
+  virtual void EndBatchChanges();
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior on Android.
@@ -373,6 +390,9 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // List of observers to notify when access token status changes.
   ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
+
+  // The depth of batch changes.
+  int batch_change_depth_;
 
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;

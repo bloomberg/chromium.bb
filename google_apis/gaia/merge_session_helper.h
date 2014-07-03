@@ -71,6 +71,9 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   void SignalComplete(const std::string& account_id,
                       const GoogleServiceAuthError& error);
 
+  // Returns true of there are pending log ins or outs.
+  bool is_running() const { return accounts_.size() > 0; }
+
  private:
   // Overridden from UbertokenConsumer.
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;

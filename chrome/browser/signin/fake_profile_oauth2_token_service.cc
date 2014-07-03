@@ -57,6 +57,7 @@ void FakeProfileOAuth2TokenService::IssueRefreshToken(
 void FakeProfileOAuth2TokenService::IssueRefreshTokenForUser(
     const std::string& account_id,
     const std::string& token) {
+  ScopedBacthChange batch(this);
   if (token.empty()) {
     refresh_tokens_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
