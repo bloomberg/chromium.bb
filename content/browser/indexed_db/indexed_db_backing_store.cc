@@ -3061,19 +3061,20 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
   // TODO(alecflett): avoid a copy here?
   IndexedDBKey previous_key = current_key_ ? *current_key_ : IndexedDBKey();
 
-  bool first_iteration = true;
-
   // When iterating with PrevNoDuplicate, spec requires that the
   // value we yield for each key is the first duplicate in forwards
   // order.
   IndexedDBKey last_duplicate_key;
 
   bool forward = cursor_options_.forward;
+  bool first_iteration_forward = forward;
+  bool flipped = false;
 
   for (;;) {
     if (next_state == SEEK) {
       // TODO(jsbell): Optimize seeking for reverse cursors as well.
-      if (first_iteration && key && forward) {
+      if (first_iteration_forward && key) {
+        first_iteration_forward = false;
         std::string leveldb_key;
         if (primary_key) {
           leveldb_key = EncodeKey(*key, *primary_key);
@@ -3081,7 +3082,6 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
           leveldb_key = EncodeKey(*key);
         }
         *s = iterator_->Seek(leveldb_key);
-        first_iteration = false;
       } else if (forward) {
         *s = iterator_->Next();
       } else {
@@ -3098,6 +3098,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
         // We need to walk forward because we hit the end of
         // the data.
         forward = true;
+        flipped = true;
         continue;
       }
 
@@ -3109,6 +3110,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
         // We need to walk forward because now we're beyond the
         // bounds defined by the cursor.
         forward = true;
+        flipped = true;
         continue;
       }
 
@@ -3128,7 +3130,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
         if (primary_key && current_key_->Equals(*key) &&
             this->primary_key().IsLessThan(*primary_key))
           continue;
-        if (current_key_->IsLessThan(*key))
+        if (!flipped && current_key_->IsLessThan(*key))
           continue;
       } else {
         if (primary_key && key->Equals(*current_key_) &&
@@ -3157,6 +3159,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
         // between key ranges.
         if (!last_duplicate_key.Equals(*current_key_)) {
           forward = true;
+          flipped = true;
           continue;
         }
 
