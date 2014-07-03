@@ -243,6 +243,7 @@ Object
 OfflineAudioCompletionEvent
 OfflineAudioContext
 Option
+OrientationInformation
 OscillatorNode
 OverflowEvent
 PageTransitionEvent

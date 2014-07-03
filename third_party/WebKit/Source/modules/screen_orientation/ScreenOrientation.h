@@ -17,6 +17,7 @@
 namespace WebCore {
 
 class Document;
+class OrientationInformation;
 class ScriptPromise;
 class ScriptState;
 class Screen;
@@ -27,7 +28,7 @@ public:
     static ScreenOrientation& from(Screen&);
     virtual ~ScreenOrientation();
 
-    static const AtomicString& orientation(Screen&);
+    static OrientationInformation* orientation(Screen&);
     static ScriptPromise lockOrientation(ScriptState*, Screen&, const AtomicString& orientation);
     static void unlockOrientation(Screen&);
 

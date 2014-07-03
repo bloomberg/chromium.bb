@@ -183,7 +183,8 @@ PASS childWindow.screen.availTop is 0
 PASS childWindow.screen.availWidth is 0
 PASS childWindow.screen.colorDepth is 0
 PASS childWindow.screen.height is 0
-PASS childWindow.screen.orientation is 'portrait-primary'
+FAIL childWindow.screen.orientation.angle should be 0. Threw exception TypeError: Cannot read property 'angle' of null
+FAIL childWindow.screen.orientation.type should be . Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.screen.pixelDepth is 0
 PASS childWindow.screen.width is 0
 PASS childWindow.screenLeft is 0

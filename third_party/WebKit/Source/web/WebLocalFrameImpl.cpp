@@ -1384,7 +1384,7 @@ void WebLocalFrameImpl::resetMatchCount()
 void WebLocalFrameImpl::sendOrientationChangeEvent()
 {
     if (frame())
-        frame()->sendOrientationChangeEvent();
+        ScreenOrientationController::from(*frame()).notifyOrientationChanged();
 }
 
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)

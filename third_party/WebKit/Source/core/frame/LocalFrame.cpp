@@ -159,30 +159,6 @@ void LocalFrame::setView(PassRefPtr<FrameView> view)
     }
 }
 
-void LocalFrame::sendOrientationChangeEvent()
-{
-    if (!RuntimeEnabledFeatures::orientationEventEnabled() && !RuntimeEnabledFeatures::screenOrientationEnabled())
-        return;
-
-    if (page()->visibilityState() != PageVisibilityStateVisible)
-        return;
-
-    LocalDOMWindow* window = domWindow();
-    if (!window)
-        return;
-    window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
-
-    // Notify subframes.
-    Vector<RefPtr<LocalFrame> > childFrames;
-    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            childFrames.append(toLocalFrame(child));
-    }
-
-    for (size_t i = 0; i < childFrames.size(); ++i)
-        childFrames[i]->sendOrientationChangeEvent();
-}
-
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
 {
     // In setting printing, we should not validate resources already cached for the document.

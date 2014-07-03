@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-enum OrientationLockType {
-    "any",
-    "natural",
-    "landscape",
-    "portrait",
+enum OrientationType {
     "portrait-primary",
     "portrait-secondary",
     "landscape-primary",
@@ -14,11 +10,9 @@ enum OrientationLockType {
 };
 
 [
+    GarbageCollected,
     RuntimeEnabled=ScreenOrientation
-] partial interface Screen {
-    readonly attribute OrientationInformation orientation;
-
-    [CallWith=ScriptState] Promise lockOrientation(OrientationLockType orientation);
-
-    void unlockOrientation();
+] interface OrientationInformation {
+    readonly attribute OrientationType type;
+    readonly attribute unsigned short angle;
 };
