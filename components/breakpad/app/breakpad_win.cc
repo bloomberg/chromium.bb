@@ -573,7 +573,9 @@ void InitCrashReporter(const std::string& process_type_switch) {
       google_breakpad::ExceptionHandler::HANDLER_NONE,
       dump_type, pipe_name.c_str(), custom_info);
 
-  base::debug::SetDumpWithoutCrashingFunction(&DumpProcessWithoutCrash);
+  // TODO(rtenneti): http://crbug.com/391165. Undo this change after getting
+  // data. Disabled DumpProcessWithoutCrash to see if UMA crash rate decreases.
+  // base::debug::SetDumpWithoutCrashingFunction(&DumpProcessWithoutCrash);
 
   if (g_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.
