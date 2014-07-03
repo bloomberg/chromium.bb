@@ -1,5 +1,6 @@
 
 Received files in worker
+Received a FileList
 Test reading a non-existent file as array buffer
 readyState: 0
 Received error event

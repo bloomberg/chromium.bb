@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<input type="file" name="file" id="file" onchange="onInputFileChange(testFileInfoList)" multiple>
+<input type="file" name="file" id="file" onchange="onInputFileListChanged()" multiple>
 <pre id='console'></pre>
 
 <script src="../resources/setup-for-read-common.js"></script>
@@ -16,6 +16,15 @@ var testFileInfoList = [
     { 'name': 'UTF16BE-file', 'path': '../resources/UTF16BE.txt' },
     { 'name': 'binary-file', 'path': '../resources/binary-file' },
 ];
+
+function onInputFileListChanged()
+{
+    var files = document.getElementById("file").files;
+    var namesOnly = testFileInfoList.map(function(fileSpec) { return fileSpec['name']; });
+    // Send both the FileList and the File names along. Worker will construct
+    // a name => File mapping of the cloned result.
+    startTest([files, namesOnly]);
+}
 
 function startTest(testFiles)
 {

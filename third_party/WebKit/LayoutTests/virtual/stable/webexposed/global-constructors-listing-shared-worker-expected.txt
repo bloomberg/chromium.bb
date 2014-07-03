@@ -15,6 +15,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] EventSource
 [Worker] File
 [Worker] FileError
+[Worker] FileList
 [Worker] FileReader
 [Worker] FileReaderSync
 [Worker] Float32Array

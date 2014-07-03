@@ -15,6 +15,7 @@ debug("Start");
 function onInputFileChange(files)
 {
     window.files = files;
+    shouldBeTrue("files instanceof FileList");
     shouldBe("files.length", "2");
     shouldBeTrue("files.item(0) instanceof File");
     shouldBeEqualToString("files.item(0).name", "UTF8.txt");

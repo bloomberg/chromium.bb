@@ -32,6 +32,6 @@ function readFiles(index, files)
 }
 
 onmessage = function (e) {
-    log('Received files in worker');
+    log("Received files in worker");
     readFiles(0, e.data);
 };
