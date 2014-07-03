@@ -14,7 +14,7 @@ const char* BrowserActionDragData::kClipboardFormatString =
     "chromium/x-browser-actions";
 
 BrowserActionDragData::BrowserActionDragData()
-    : profile_(NULL), index_(-1) {
+    : profile_(NULL), index_(static_cast<size_t>(-1)) {
 }
 
 BrowserActionDragData::BrowserActionDragData(

@@ -39,7 +39,7 @@ class TermBreakIterator {
   size_t prev() const { return prev_; }
   size_t pos() const { return pos_; }
 
-  static const size_t npos = -1;
+  static const size_t npos = static_cast<size_t>(-1);
 
  private:
   enum State {

@@ -851,17 +851,17 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
         const base::DictionaryValue* id = NULL;
         std::string timestamp_string;
-        int64 timestamp_usec;
+        int64 timestamp_usec = 0;
 
-        if (!(ids->GetDictionary(j, &id) &&
-            id->GetString("timestamp_usec", &timestamp_string) &&
-              base::StringToInt64(timestamp_string, &timestamp_usec))) {
+        if (!ids->GetDictionary(j, &id) ||
+            !id->GetString("timestamp_usec", &timestamp_string) ||
+            !base::StringToInt64(timestamp_string, &timestamp_usec)) {
           NOTREACHED() << "Unable to extract timestamp.";
           continue;
         }
         // The timestamp on the server is a Unix time.
         base::Time time = base::Time::UnixEpoch() +
-                          base::TimeDelta::FromMicroseconds(timestamp_usec);
+            base::TimeDelta::FromMicroseconds(timestamp_usec);
 
         // Get the ID of the client that this visit came from.
         std::string client_id;

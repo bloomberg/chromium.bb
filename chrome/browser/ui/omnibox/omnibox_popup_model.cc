@@ -23,7 +23,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel
 
-const size_t OmniboxPopupModel::kNoMatch = -1;
+const size_t OmniboxPopupModel::kNoMatch = static_cast<size_t>(-1);
 
 OmniboxPopupModel::OmniboxPopupModel(
     OmniboxPopupView* popup_view,

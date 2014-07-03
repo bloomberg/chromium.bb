@@ -68,7 +68,7 @@ const int kConnectionSectionPaddingRight = 18;
 
 // The text color that is used for the site identity status text, if the site's
 // identity was sucessfully verified.
-const int kIdentityVerifiedTextColor = 0xFF298a27;
+const SkColor kIdentityVerifiedTextColor = 0xFF298a27;
 
 // Left icon margin.
 const int kIconMarginLeft = 6;

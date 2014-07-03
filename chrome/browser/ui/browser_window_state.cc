@@ -29,7 +29,8 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 
   size_t num2_pos = num1_size + 1;
   size_t num2_size = str.size() - num2_pos;
-  int num1, num2;
+  int num1 = 0;
+  int num2 = 0;
   if (!base::StringToInt(str.substr(0, num1_size), &num1) ||
       !base::StringToInt(str.substr(num2_pos, num2_size), &num2))
     return false;
@@ -42,30 +43,19 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 }  // namespace
 
 std::string GetWindowPlacementKey(const Browser* browser) {
-  std::string name;
-  if (!browser->app_name().empty()) {
-    name = prefs::kBrowserWindowPlacement;
-    name.append("_");
-    name.append(browser->app_name());
-  } else if (browser->is_type_popup()) {
-    name = prefs::kBrowserWindowPlacementPopup;
-  } else {
-    name = prefs::kBrowserWindowPlacement;
+  if (browser->app_name().empty()) {
+    return browser->is_type_popup() ?
+        prefs::kBrowserWindowPlacementPopup : prefs::kBrowserWindowPlacement;
   }
-  return name;
+  return std::string(prefs::kBrowserWindowPlacement) + "_" +
+      browser->app_name();
 }
 
 bool ShouldSaveWindowPlacement(const Browser* browser) {
-  switch (browser->type()) {
-  case Browser::TYPE_TABBED:
-    return true;
-  case Browser::TYPE_POPUP:
-    // Only save the window placement of popups if the window is from a
-    // trusted source (v1 app, devtools, or system window).
-    return browser->is_trusted_source();
-  default:
-    return false;
-  }
+  // Only save the window placement of popups if the window is from a trusted
+  // source (v1 app, devtools, or system window).
+  return (browser->type() == Browser::TYPE_TABBED) ||
+    ((browser->type() == Browser::TYPE_POPUP) && browser->is_trusted_source());
 }
 
 void SaveWindowPlacement(const Browser* browser,

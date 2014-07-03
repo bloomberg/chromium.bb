@@ -99,7 +99,6 @@ void SuggestionsCombiner::FillPageValues() {
   }
 
   // Fill in extra items, prioritizing the first source.
-  base::DictionaryValue* item;
   // Rather than updating |next_item_index_for_source| we keep track of the
   // number of extra items that were added and offset indices by that much.
   size_t extra_items_added = 0;
@@ -107,8 +106,10 @@ void SuggestionsCombiner::FillPageValues() {
       page_values_->GetSize() < suggestions_count_; ++i) {
 
     size_t index = next_item_index_for_source[i] + extra_items_added;
-    while (page_values_->GetSize() < suggestions_count_ &&
-        (item = sources_[i]->PopItem())) {
+    while (page_values_->GetSize() < suggestions_count_) {
+      base::DictionaryValue* item = sources_[i]->PopItem();
+      if (!item)
+        break;
       page_values_->Insert(index++, item);
       extra_items_added++;
     }

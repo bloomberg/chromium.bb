@@ -95,9 +95,9 @@ TEST_F(AXTreeSourceAshTest, Accessors) {
   ASSERT_EQ(content, textfield->GetParent());
 
   // Try walking up the tree to the root.
-  AXAuraObjWrapper* root_finder = content;
   AXAuraObjWrapper* test_root = NULL;
-  while ((root_finder = ax_tree.GetParent(root_finder)))
+  for (AXAuraObjWrapper* root_finder = ax_tree.GetParent(content); root_finder;
+       root_finder = ax_tree.GetParent(root_finder))
     test_root = root_finder;
   ASSERT_EQ(ax_tree.GetRoot(), test_root);
 }

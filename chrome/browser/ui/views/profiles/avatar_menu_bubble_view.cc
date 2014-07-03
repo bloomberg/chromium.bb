@@ -600,7 +600,7 @@ void AvatarMenuBubbleView::Layout() {
     y += item_height + kItemMarginY;
   }
 
-  int separator_height;
+  int separator_height = 0;
   if (buttons_view_ || supervised_user_info_) {
     separator_height = separator_->GetPreferredSize().height();
     y += kSeparatorPaddingY;
