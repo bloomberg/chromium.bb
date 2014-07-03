@@ -63,6 +63,7 @@ std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
   return std::string();
 }
 
+#if !defined (OS_CHROMEOS)
 std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
   switch (field) {
     case SIGNIN_TYPE:
@@ -84,6 +85,7 @@ std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
   NOTREACHED();
   return "Error";
 }
+#endif // !defined (OS_CHROMEOS)
 
 }  // anonymous namespace
 
@@ -372,6 +374,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                   field,
                   untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN]);
 
+#if !defined(OS_CHROMEOS)
   // Time and status information of the possible sign in types.
   base::ListValue* detailed_info =
       AddSection(signin_info, "Last Signin Details");
@@ -384,6 +387,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].first,
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].second);
   }
+#endif // !defined(OS_CHROMEOS)
 
   // Token information for all services.
   base::ListValue* token_info = new base::ListValue();
