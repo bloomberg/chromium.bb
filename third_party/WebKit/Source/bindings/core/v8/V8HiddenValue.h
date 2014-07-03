@@ -6,6 +6,7 @@
 #define V8HiddenValue_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptPromiseProperties.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -37,7 +38,9 @@ class ScriptWrappable;
     V(stringData) \
     V(scriptState) \
     V(thenableHiddenPromise) \
-    V(toStringString)
+    V(toStringString) \
+    SCRIPT_PROMISE_PROPERTIES(V, Promise)  \
+    SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 
 class V8HiddenValue {
 public:

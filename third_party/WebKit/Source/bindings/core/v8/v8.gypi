@@ -74,6 +74,10 @@
             'ScriptPromise.h',
             'ScriptPromiseResolver.cpp',
             'ScriptPromiseResolver.h',
+            'ScriptPromiseProperties.h',
+            'ScriptPromiseProperty.h',
+            'ScriptPromisePropertyBase.cpp',
+            'ScriptPromisePropertyBase.h',
             'ScriptRegexp.cpp',
             'ScriptRegexp.h',
             'ScriptSourceCode.h',
@@ -155,6 +159,7 @@
         ],
         'bindings_core_v8_unittest_files': [
             'ScriptPromiseTest.cpp',
+            'ScriptPromisePropertyTest.cpp',
         ],
     },
 }

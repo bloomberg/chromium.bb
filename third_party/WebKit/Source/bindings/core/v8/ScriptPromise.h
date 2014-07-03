@@ -93,6 +93,16 @@ public:
         m_promise.clear();
     }
 
+    bool operator==(const ScriptPromise& value) const
+    {
+        return m_promise == value.m_promise;
+    }
+
+    bool operator!=(const ScriptPromise& value) const
+    {
+        return !operator==(value);
+    }
+
     // Constructs and returns a ScriptPromise from |value|.
     // if |value| is not a Promise object, returns a Promise object
     // resolved with |value|.
