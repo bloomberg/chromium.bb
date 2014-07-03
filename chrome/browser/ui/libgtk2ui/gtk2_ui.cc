@@ -655,20 +655,8 @@ Gtk2UI::GetSubpixelRenderingStyle() const {
   return subpixel_rendering;
 }
 
-std::string Gtk2UI::GetDefaultFontName() const {
-  GtkSettings* gtk_settings = gtk_settings_get_default();
-  CHECK(gtk_settings);
-
-  std::string out_font_name = "sans 10";
-  gchar* font_name = NULL;
-  g_object_get(gtk_settings, "gtk-font-name", &font_name, NULL);
-
-  if (font_name) {
-    out_font_name = std::string(font_name);
-    g_free(font_name);
-  }
-
-  return out_font_name;
+std::string Gtk2UI::GetDefaultFontDescription() const {
+  return default_font_description_;
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
@@ -834,6 +822,28 @@ void Gtk2UI::LoadGtkValues() {
   SetThemeColorFromGtk(ThemeProperties::COLOR_TAB_TEXT, &label_color);
   SetThemeColorFromGtk(ThemeProperties::COLOR_BOOKMARK_TEXT, &label_color);
   SetThemeColorFromGtk(ThemeProperties::COLOR_STATUS_BAR_TEXT, &label_color);
+
+  gchar* font_string = pango_font_description_to_string(label_style->font_desc);
+  default_font_description_ = std::string(font_string);
+  g_free(font_string);
+
+  {
+    // TODO(derat): Remove this debugging code if/when http://crbug.com/375824
+    // is resolved.
+    GtkSettings* gtk_settings = gtk_settings_get_default();
+    CHECK(gtk_settings);
+    gchar* font_name = NULL;
+    g_object_get(gtk_settings, "gtk-font-name", &font_name, NULL);
+    if (font_name) {
+      if (std::string(font_name) != default_font_description_) {
+        LOG(ERROR) << "Font specified in gtk-font-name property ("
+                   << font_name << ") does not match font from GtkLabel ("
+                   << default_font_description_ << "); see "
+                   << "http://crbug.com/375824";
+      }
+      g_free(font_name);
+    }
+  }
 
   // Build the various icon tints.
   GetNormalButtonTintHSL(&button_tint_);

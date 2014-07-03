@@ -69,7 +69,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual gfx::FontRenderParams::Hinting GetHintingStyle() const OVERRIDE;
   virtual gfx::FontRenderParams::SubpixelRendering
       GetSubpixelRenderingStyle() const OVERRIDE;
-  virtual std::string GetDefaultFontName() const OVERRIDE;
+  virtual std::string GetDefaultFontDescription() const OVERRIDE;
 
   // ui::LinuxShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
@@ -224,6 +224,9 @@ class Gtk2UI : public views::LinuxUI {
   SkColor active_selection_fg_color_;
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
+
+  // Pango description for the default UI font.
+  std::string default_font_description_;
 
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will

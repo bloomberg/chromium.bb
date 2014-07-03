@@ -257,10 +257,7 @@ std::string PlatformFontPango::GetDefaultFont() {
   return *default_font_description_;
 #else
   const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
-  if (delegate)
-    return delegate->GetDefaultFontName();
-
-  return "sans 10";
+  return delegate ? delegate->GetDefaultFontDescription() : "sans 10";
 #endif    // defined(OS_CHROMEOS)
 }
 
