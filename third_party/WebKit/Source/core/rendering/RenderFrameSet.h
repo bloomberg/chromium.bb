@@ -102,6 +102,7 @@ private:
 
     virtual void layout() OVERRIDE;
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void computePreferredLogicalWidths() OVERRIDE;
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const OVERRIDE;
 

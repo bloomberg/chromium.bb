@@ -153,6 +153,13 @@ void RenderFrameSet::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     }
 }
 
+void RenderFrameSet::computePreferredLogicalWidths()
+{
+    m_minPreferredLogicalWidth = 0;
+    m_maxPreferredLogicalWidth = 0;
+    clearPreferredLogicalWidthsDirty();
+}
+
 void RenderFrameSet::GridAxis::resize(int size)
 {
     m_sizes.resize(size);
