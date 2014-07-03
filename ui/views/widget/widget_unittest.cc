@@ -2231,7 +2231,15 @@ TEST_F(WidgetTest, ShowCreatesActiveWindow) {
   widget->CloseNow();
 }
 
-TEST_F(WidgetTest, ShowInactive) {
+// OSX does not have a per-application "active" window such as provided by
+// ::GetActiveWindow() on Windows. There is only a system-wide "keyWindow" which
+// is updated asynchronously.
+#if defined(OS_MACOSX)
+#define MAYBE_ShowInactive DISABLED_ShowInactive
+#else
+#define MAYBE_ShowInactive ShowInactive
+#endif
+TEST_F(WidgetTest, MAYBE_ShowInactive) {
   Widget* widget = CreateTopLevelPlatformWidget();
 
   widget->ShowInactive();
@@ -2240,13 +2248,39 @@ TEST_F(WidgetTest, ShowInactive) {
   widget->CloseNow();
 }
 
-TEST_F(WidgetTest, ShowInactiveAfterShow) {
+TEST_F(WidgetTest, InactiveBeforeShow) {
   Widget* widget = CreateTopLevelPlatformWidget();
 
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE(widget->IsVisible());
+
   widget->Show();
+
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_TRUE(widget->IsVisible());
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTest, ShowInactiveAfterShow) {
+  // Create 2 widgets to ensure window layering does not change.
+  Widget* widget = CreateTopLevelPlatformWidget();
+  Widget* widget2 = CreateTopLevelPlatformWidget();
+
+  widget2->Show();
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_TRUE(widget2->IsVisible());
+  EXPECT_TRUE(widget2->IsActive());
+
+  widget->Show();
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(widget2->IsActive());
   widget->ShowInactive();
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(widget2->IsActive());
   EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
 
+  widget2->CloseNow();
   widget->CloseNow();
 }
 
