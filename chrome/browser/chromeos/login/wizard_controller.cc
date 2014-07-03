@@ -111,6 +111,22 @@ bool IsResumableScreen(const std::string& screen) {
   return false;
 }
 
+void RecordUMAHistogramForOOBEStepCompletionTime(std::string screen_name,
+                                                 base::TimeDelta step_time) {
+  screen_name[0] = std::toupper(screen_name[0]);
+  std::string histogram_name = "OOBE.StepCompletionTime." + screen_name;
+  // Equivalent to using UMA_HISTOGRAM_MEDIUM_TIMES. UMA_HISTOGRAM_MEDIUM_TIMES
+  // can not be used here, because |histogram_name| is calculated dynamically
+  // and changes from call to call.
+  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
+      histogram_name,
+      base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMinutes(3),
+      50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddTime(step_time);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -635,6 +651,17 @@ void WizardController::OnUserImageSelected() {
       return;
     }
   }
+  if (!time_oobe_started_.is_null()) {
+    base::TimeDelta delta = base::Time::Now() - time_oobe_started_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "OOBE.BootToSignInCompleted",
+        delta,
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromMinutes(30),
+        100);
+    time_oobe_started_ = base::Time();
+  }
+
   // Launch browser and delete login host controller.
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -752,11 +779,11 @@ void WizardController::PerformPostEulaActions() {
 }
 
 void WizardController::PerformOOBECompletedActions() {
-  StartupUtils::MarkOobeCompleted();
   UMA_HISTOGRAM_COUNTS_100(
       "HIDDetection.TimesDialogShownPerOOBECompleted",
       GetLocalState()->GetInteger(prefs::kTimesHIDDialogShown));
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
+  StartupUtils::MarkOobeCompleted();
 }
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
@@ -792,6 +819,10 @@ void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
 
   if (current_screen_)
     oobe_display_->HideScreen(current_screen_);
+
+  std::string screen_id = new_current->GetName();
+  if (IsOOBEStepToTrack(screen_id))
+    screen_show_times_[screen_id] = base::Time::Now();
 
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
@@ -844,6 +875,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowHIDDetectionScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
+      time_oobe_started_ = base::Time::Now();
       if (CanShowHIDDetectionScreen())
         ShowHIDDetectionScreen();
       else
@@ -858,6 +890,12 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
   VLOG(1) << "Wizard screen exit code: " << exit_code;
+  std::string previous_screen_id = current_screen_->GetName();
+  if (IsOOBEStepToTrack(previous_screen_id)) {
+    RecordUMAHistogramForOOBEStepCompletionTime(
+        previous_screen_id,
+        base::Time::Now() - screen_show_times_[previous_screen_id]);
+  }
   switch (exit_code) {
     case HID_DETECTION_COMPLETED:
       OnHIDDetectionCompleted();
@@ -997,6 +1035,17 @@ void WizardController::SetZeroDelays() {
 // static
 bool WizardController::IsZeroDelayEnabled() {
   return zero_delay_enabled_;
+}
+
+// static
+bool WizardController::IsOOBEStepToTrack(const std::string& screen_id) {
+  return (screen_id == kHIDDetectionScreenName ||
+          screen_id == kNetworkScreenName ||
+          screen_id == kUpdateScreenName ||
+          screen_id == kUserImageScreenName ||
+          screen_id == kEulaScreenName ||
+          screen_id == kLoginScreenName ||
+          screen_id == kWrongHWIDScreenName);
 }
 
 // static

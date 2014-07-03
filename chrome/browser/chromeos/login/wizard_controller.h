@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -86,6 +88,9 @@ class WizardController : public ScreenObserver {
 
   // If true zero delays have been enabled (for browser tests).
   static bool IsZeroDelayEnabled();
+
+  // Checks whether screen show time should be tracked with UMA.
+  static bool IsOOBEStepToTrack(const std::string& screen_id);
 
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).
@@ -357,6 +362,10 @@ class WizardController : public ScreenObserver {
   // acceptance until the Sign-In screen is displayed.
   base::Time time_eula_accepted_;
 
+  // Time when OOBE was started. Used to measure the total time from boot to
+  // user Sign-In completed.
+  base::Time time_oobe_started_;
+
   ObserverList<Observer> observer_list_;
 
   bool login_screen_started_;
@@ -379,6 +388,9 @@ class WizardController : public ScreenObserver {
 
   scoped_ptr<SimpleGeolocationProvider> geolocation_provider_;
   scoped_ptr<TimeZoneProvider> timezone_provider_;
+
+  // Maps screen ids to last time of their shows.
+  base::hash_map<std::string, base::Time> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_;

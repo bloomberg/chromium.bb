@@ -18799,6 +18799,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="OOBE.BootToSignInCompleted" units="milliseconds">
+  <owner>merkulova@chromium.org</owner>
+  <summary>Time from boot to sign-in completed.</summary>
+</histogram>
+
+<histogram name="OOBE.StepCompletionTime" units="milliseconds">
+  <owner>merkulova@chromium.org</owner>
+  <summary>Time spent on specific OOBE screen.</summary>
+</histogram>
+
 <histogram name="OriginChip.Pressed">
   <owner>gbillock@chromium.org</owner>
   <summary>The number of clicks on the origin chip.</summary>
@@ -50014,6 +50024,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="Shortcuts"/>
   <suffix name="ZeroSuggest"/>
   <affected-histogram name="Omnibox.ProviderTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OobeScreenName" separator=".">
+  <suffix name="Eula"/>
+  <suffix name="Hid-detection"/>
+  <suffix name="Image"/>
+  <suffix name="Network"/>
+  <suffix name="Update"/>
+  <suffix name="Wrong-hwid"/>
+  <affected-histogram name="OOBE.StepCompletionTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OverlappedReadImpact">
