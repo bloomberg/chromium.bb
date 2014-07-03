@@ -352,7 +352,8 @@ void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
 void HistoryService::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  in_memory_backend_->DeleteAllSearchTermsForKeyword(keyword_id);
+  if (in_memory_backend_)
+    in_memory_backend_->DeleteAllSearchTermsForKeyword(keyword_id);
 
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::DeleteAllSearchTermsForKeyword,
