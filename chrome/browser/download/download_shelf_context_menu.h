@@ -52,6 +52,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
@@ -73,6 +74,13 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetMaybeMaliciousMenuModel();
   ui::SimpleMenuModel* GetMaliciousMenuModel();
 
+  int GetAlwaysOpenStringId() const;
+
+#if defined(OS_WIN)
+  bool IsDownloadPdf() const;
+  bool CanOpenPdfInReader() const;
+#endif
+
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
   scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
@@ -86,6 +94,10 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Used to open tabs.
   content::PageNavigator* navigator_;
+
+#if defined(OS_WIN)
+  bool is_pdf_reader_up_to_date_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);
 };

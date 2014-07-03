@@ -472,6 +472,9 @@ extern const char kMemoryCacheSize[];
 extern const char kDownloadDefaultDirectory[];
 extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadDirUpgraded[];
+#if defined(OS_WIN)
+extern const char kOpenPdfDownloadInAdobeReader[];
+#endif
 
 extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];

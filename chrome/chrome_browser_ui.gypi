@@ -1508,6 +1508,8 @@
       'browser/ui/panels/stacked_panel_collection.h',
       'browser/ui/panels/stacked_panel_drag_handler.cc',
       'browser/ui/panels/stacked_panel_drag_handler.h',
+      'browser/ui/pdf/adobe_reader_info_win.cc',
+      'browser/ui/pdf/adobe_reader_info_win.h',
       'browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h',
       'browser/ui/pdf/pdf_tab_helper.cc',
       'browser/ui/pdf/pdf_tab_helper.h',

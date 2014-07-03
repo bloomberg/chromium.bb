@@ -184,29 +184,6 @@ std::string GetMimeType(const base::FilePath& path) {
   return mime_type;
 }
 
-bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path) {
-  // On Android, always prefer opening with an external app. On ChromeOS, there
-  // are no external apps so just allow all opens to be handled by the "System."
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && defined(ENABLE_PLUGINS)
-  // TODO(asanka): Consider other file types and MIME types.
-  // http://crbug.com/323561
-  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".htm")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".html")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".shtm")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".shtml")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".svg")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xht")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xhtm")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xhtml")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xsl")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xslt"))) {
-    return true;
-  }
-#endif
-  return false;
-}
-
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -721,4 +698,36 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
                target_info->target_disposition,
                target_info->danger_type,
                target_info->intermediate_path);
+}
+
+bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
+    const base::FilePath& path) {
+  // On Windows, PDFs should open in Acrobat Reader if the user chooses.
+#if defined(OS_WIN)
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")) &&
+      DownloadTargetDeterminer::IsAdobeReaderUpToDate()) {
+    return !download_prefs_->ShouldOpenPdfInAdobeReader();
+  }
+#endif
+
+  // On Android, always prefer opening with an external app. On ChromeOS, there
+  // are no external apps so just allow all opens to be handled by the "System."
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && defined(ENABLE_PLUGINS)
+  // TODO(asanka): Consider other file types and MIME types.
+  // http://crbug.com/323561
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".htm")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".html")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".shtm")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".shtml")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".svg")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xht")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xhtm")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xhtml")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xsl")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xslt"))) {
+    return true;
+  }
+#endif
+  return false;
 }

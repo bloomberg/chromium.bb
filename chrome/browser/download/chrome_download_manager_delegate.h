@@ -170,6 +170,9 @@ class ChromeDownloadManagerDelegate
       const content::DownloadTargetCallback& callback,
       scoped_ptr<DownloadTargetInfo> target_info);
 
+  // Returns true if |path| should open in the browser.
+  bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path);
+
   Profile* profile_;
   uint32 next_download_id_;
   IdCallbackVector id_callbacks_;
