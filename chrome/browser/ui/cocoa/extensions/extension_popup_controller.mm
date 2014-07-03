@@ -214,20 +214,17 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         modalDialogManager->IsDialogActive()) {
       return;
     }
-    // We must shutdown host_ immediately, and it will notify RendererProcess
-    // right away. We can't wait to do it in
-    // -[ExtensionPopController windowWillClose:...]
-    if (host_->view())
-      host_->view()->set_container(NULL);
-    host_.reset();
   }
   [super close];
 }
 
-- (void)windowWillClose:(NSNotification*)notification {
+- (void)windowWillClose:(NSNotification *)notification {
   [super windowWillClose:notification];
   if (gPopup == self)
     gPopup = nil;
+  if (host_->view())
+    host_->view()->set_container(NULL);
+  host_.reset();
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -283,11 +280,6 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (!host)
     return nil;
 
-  // Since we only close without releasing(see bug:351278), we need to shutdown
-  // host_ in -[ExtensionPopupController close] immediately. If not, host_ might
-  // not be released even when new ExtensionPopupController is ready. And
-  // this causes bug:376511.
-  // See above -[ExtensionPopupController close].
   [gPopup close];
 
   // Takes ownership of |host|. Also will autorelease itself when the popup is
@@ -392,13 +384,13 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 - (void)windowDidResize:(NSNotification*)notification {
   // Let the extension view know, so that it can tell plugins.
-  if (host_ && host_->view())
+  if (host_->view())
     host_->view()->WindowFrameChanged();
 }
 
 - (void)windowDidMove:(NSNotification*)notification {
   // Let the extension view know, so that it can tell plugins.
-  if (host_ && host_->view())
+  if (host_->view())
     host_->view()->WindowFrameChanged();
 }
 
