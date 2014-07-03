@@ -59,6 +59,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
     , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
     , m_mainFrameResizesAreOrientationChanges(false)
+    , m_disallowFullscreenForNonMediaElements(false)
 {
     ASSERT(settings);
 }
@@ -709,6 +710,11 @@ void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
 void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
 {
     m_mainFrameResizesAreOrientationChanges = enabled;
+}
+
+void WebSettingsImpl::setDisallowFullscreenForNonMediaElements(bool enabled)
+{
+    m_disallowFullscreenForNonMediaElements = enabled;
 }
 
 } // namespace blink
