@@ -101,6 +101,11 @@ DisplaySnapshotDri::DisplaySnapshotDri(
     if (mode.type & DRM_MODE_TYPE_PREFERRED)
       native_mode_ = modes_.back();
   }
+
+  // If no preferred mode is found then use the first one. Using the first one
+  // since it should be the best mode.
+  if (!native_mode_ && !modes_.empty())
+    native_mode_ = modes_.front();
 }
 
 DisplaySnapshotDri::~DisplaySnapshotDri() {}
