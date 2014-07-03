@@ -73,6 +73,7 @@
             '../../build/linux/system.gyp:xext',
             '../../build/linux/system.gyp:xi',
             '../../build/linux/system.gyp:xrandr',
+            '../../ui/events/platform/events_platform.gyp:events_platform',
           ],
         }],
         ['chromeos == 1', {
@@ -149,13 +150,28 @@
       'dependencies': [
         '../../base/base.gyp:run_all_unittests',
         '../../testing/gtest.gyp:gtest',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         'display_util',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
+        'chromeos/display_configurator_unittest.cc',
+        'chromeos/touchscreen_delegate_impl_unittest.cc',
+        'chromeos/x11/display_util_x11_unittest.cc',
+        'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',
+        'util/display_util_unittest.cc',
         'util/edid_parser_unittest.cc',
+      ],
+      'conditions': [
+        ['chromeos == 1', {
+          'dependencies': [
+            'display',
+            'display_test_util',
+            'display_types',
+          ],
+        }],
       ],
     },
   ],

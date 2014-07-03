@@ -69,9 +69,6 @@
         'gfx/canvas_unittest_mac.mm',
         'gfx/platform_font_mac_unittest.mm',
       ],
-      'includes': [
-        'display/display_unittests.gypi',
-      ],
       'include_dirs': [
         '../',
       ],
