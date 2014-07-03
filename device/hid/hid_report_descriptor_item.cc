@@ -90,17 +90,17 @@ HidReportDescriptorItem::GetCollectionTypeFromValue(uint32_t value) {
     case 0x00:
       return kCollectionTypePhysical;
     case 0x01:
-      return kCollectionTypeApplication;
+      return kCollectionTypePhysical;
     case 0x02:
-      return kCollectionTypeLogical;
+      return kCollectionTypePhysical;
     case 0x03:
-      return kCollectionTypeReport;
+      return kCollectionTypePhysical;
     case 0x04:
-      return kCollectionTypeNamedArray;
+      return kCollectionTypePhysical;
     case 0x05:
-      return kCollectionTypeUsageSwitch;
+      return kCollectionTypePhysical;
     case 0x06:
-      return kCollectionTypeUsageModifier;
+      return kCollectionTypePhysical;
     default:
       break;
   }

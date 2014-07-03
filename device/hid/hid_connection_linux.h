@@ -8,8 +8,10 @@
 #include <queue>
 
 #include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "device/hid/hid_connection.h"
+#include "device/hid/hid_device_info.h"
 
 namespace device {
 
@@ -18,22 +20,19 @@ class HidConnectionLinux : public HidConnection,
  public:
   HidConnectionLinux(HidDeviceInfo device_info, std::string dev_node);
 
-  // HidConnection implementation.
-  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
-                            const IOCallback& callback) OVERRIDE;
-  virtual void PlatformWrite(uint8_t report_id,
-                             scoped_refptr<net::IOBufferWithSize> buffer,
-                             const IOCallback& callback) OVERRIDE;
-  virtual void PlatformGetFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
-  virtual void PlatformSendFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
+  virtual void Read(scoped_refptr<net::IOBufferWithSize> buffer,
+                    const IOCallback& callback) OVERRIDE;
+  virtual void Write(uint8_t report_id,
+                     scoped_refptr<net::IOBufferWithSize> buffer,
+                     const IOCallback& callback) OVERRIDE;
+  virtual void GetFeatureReport(uint8_t report_id,
+                                scoped_refptr<net::IOBufferWithSize> buffer,
+                                const IOCallback& callback) OVERRIDE;
+  virtual void SendFeatureReport(uint8_t report_id,
+                                 scoped_refptr<net::IOBufferWithSize> buffer,
+                                 const IOCallback& callback) OVERRIDE;
 
-  // base::MessagePumpLibevent::Watcher implementation.
+  // Implements base::MessagePumpLibevent::Watcher
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
@@ -41,17 +40,16 @@ class HidConnectionLinux : public HidConnection,
   friend class base::RefCountedThreadSafe<HidConnectionLinux>;
   virtual ~HidConnectionLinux();
 
-  void Disconnect();
-
-  void Flush();
-  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
   void ProcessReadQueue();
+  void Disconnect();
 
   base::File device_file_;
   base::MessagePumpLibevent::FileDescriptorWatcher device_file_watcher_;
 
   std::queue<PendingHidReport> pending_reports_;
   std::queue<PendingHidRead> pending_reads_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionLinux);
 };

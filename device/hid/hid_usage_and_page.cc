@@ -6,31 +6,8 @@
 
 namespace device {
 
-bool HidUsageAndPage::IsProtected() const {
-  if (usage_page == HidUsageAndPage::kPageKeyboard)
-    return true;
-
-  if (usage_page != HidUsageAndPage::kPageGenericDesktop)
-    return false;
-
-  if (usage == HidUsageAndPage::kGenericDesktopPointer ||
-      usage == HidUsageAndPage::kGenericDesktopMouse ||
-      usage == HidUsageAndPage::kGenericDesktopKeyboard ||
-      usage == HidUsageAndPage::kGenericDesktopKeypad) {
-    return true;
-  }
-
-  if (usage >= HidUsageAndPage::kGenericDesktopSystemControl &&
-      usage <= HidUsageAndPage::kGenericDesktopSystemWarmRestart) {
-    return true;
-  }
-
-  if (usage >= HidUsageAndPage::kGenericDesktopSystemDock &&
-      usage <= HidUsageAndPage::kGenericDesktopSystemDisplaySwap) {
-    return true;
-  }
-
-  return false;
+bool HidUsageAndPage::operator==(const HidUsageAndPage& other) const {
+  return usage == other.usage && usage_page == other.usage_page;
 }
 
 }  // namespace device
