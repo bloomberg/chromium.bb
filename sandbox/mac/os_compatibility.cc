@@ -13,6 +13,7 @@ namespace sandbox {
 
 namespace {
 
+#pragma pack(push, 4)
 // Verified from launchd-329.3.3 (10.6.8).
 struct look_up2_request_10_6 {
   mach_msg_header_t Head;
@@ -56,6 +57,7 @@ struct swap_integer_request_10_6 {
   vproc_gsk_t outkey;
   int64_t inval;
 };
+#pragma pack(pop)
 
 // TODO(rsesek): Libc provides strnlen() starting in 10.7.
 size_t strnlen(const char* str, size_t maxlen) {
