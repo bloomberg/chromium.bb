@@ -415,7 +415,7 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   navigate_params.current_history_list_length = history_list_length;
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;
-  navigate_params.page_id = impl->GetPageId() + offset;
+  navigate_params.page_id = impl->page_id_ + offset;
   navigate_params.page_state = state;
   navigate_params.request_time = base::Time::Now();
 

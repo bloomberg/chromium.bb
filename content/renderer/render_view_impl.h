@@ -137,6 +137,7 @@ class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
 class PepperPluginInstanceImpl;
+class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
@@ -577,6 +578,7 @@ class CONTENT_EXPORT RenderViewImpl
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
   friend class RendererAccessibilityTest;
+  friend class RenderViewImplTest;
   friend class RenderViewTest;
 
   // TODO(nasko): Temporarily friend RenderFrameImpl, so we don't duplicate
