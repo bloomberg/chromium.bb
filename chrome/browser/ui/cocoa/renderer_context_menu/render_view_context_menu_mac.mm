@@ -75,7 +75,9 @@ void RenderViewContextMenuMac::Show() {
   // [NSApp currentEvent] will return a valid event.
   NSEvent* currentEvent = [NSApp currentEvent];
   NSWindow* window = [parent_view_ window];
-  NSPoint position = [window mouseLocationOutsideOfEventStream];
+  NSPoint position =
+      NSMakePoint(params_.x, NSHeight([parent_view_ bounds]) - params_.y);
+  position = [parent_view_ convertPoint:position toView:nil];
   NSTimeInterval eventTime = [currentEvent timestamp];
   NSEvent* clickEvent = [NSEvent mouseEventWithType:NSRightMouseDown
                                            location:position
