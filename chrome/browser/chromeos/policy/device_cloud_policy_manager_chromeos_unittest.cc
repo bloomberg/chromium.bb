@@ -71,7 +71,8 @@ class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : state_keys_broker_(&fake_session_manager_client_,
+      : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
+        state_keys_broker_(&fake_session_manager_client_,
                            base::MessageLoopProxy::current()),
         store_(NULL) {
     EXPECT_CALL(mock_statistics_provider_,
@@ -88,6 +89,8 @@ class DeviceCloudPolicyManagerChromeOSTest
     state_keys.push_back("2");
     state_keys.push_back("3");
     fake_session_manager_client_.set_server_backed_state_keys(state_keys);
+    fake_dbus_thread_manager_->SetCryptohomeClient(
+        scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
   }
 
   virtual ~DeviceCloudPolicyManagerChromeOSTest() {
@@ -97,9 +100,8 @@ class DeviceCloudPolicyManagerChromeOSTest
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
 
-    // DBusThreadManager is set up in DeviceSettingsTestBase::SetUp().
-    install_attributes_.reset(new EnterpriseInstallAttributes(
-        chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
+    install_attributes_.reset(
+        new EnterpriseInstallAttributes(fake_cryptohome_client_));
     store_ =
         new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                            install_attributes_.get(),
@@ -190,6 +192,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
+  chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
   ServerBackedStateKeysBroker state_keys_broker_;
 
   DeviceCloudPolicyStoreChromeOS* store_;
@@ -590,11 +593,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest() {
     // Set up a FakeCryptohomeClient with a blank system salt.
-    scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client(
-        new chromeos::FakeCryptohomeClient());
-    fake_cryptohome_client->set_system_salt(std::vector<uint8>());
-    fake_dbus_thread_manager_->SetCryptohomeClient(
-        fake_cryptohome_client.PassAs<chromeos::CryptohomeClient>());
+    fake_cryptohome_client_->set_system_salt(std::vector<uint8>());
   }
 };
 
