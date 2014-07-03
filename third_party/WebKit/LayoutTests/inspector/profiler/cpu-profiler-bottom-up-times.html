@@ -8,6 +8,9 @@ function test()
 {
     var profileAndExpectations = {
         "title": "profile1",
+        "target": function() {
+          return WebInspector.targetManager.targets()[0];
+        },
         "_profile": {
             "head": {
                 "functionName": "(root)",
