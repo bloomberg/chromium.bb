@@ -166,7 +166,7 @@ void NativeViewHostAura::RemoveClippingWindow() {
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
 
   if (host_->native_view()->parent() == &clipping_window_) {
-    if (host_->GetWidget()->GetNativeView()) {
+    if (host_->GetWidget() && host_->GetWidget()->GetNativeView()) {
       Widget::ReparentNativeView(host_->native_view(),
                                  host_->GetWidget()->GetNativeView());
     } else {
