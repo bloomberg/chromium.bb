@@ -192,11 +192,11 @@ last visible message index: 149
 
 Running: testShiftClickSelectionOver
 anchor = {item: 72, offset: 6}, head = {item: 10, offset: 0}
-last visible message index: 37
+first visible message index: 4
 
 Running: testShiftClickSelectionBelow
 anchor = {item: 72, offset: 6}, head = {item: 140, offset: 0}
-last visible message index: 149
+first visible message index: 117
 
 Running: testRemoveSelection
 anchor = null, head = null
@@ -208,9 +208,9 @@ last visible message index: 76
 
 Running: testShiftClickReversedSelectionOver
 anchor = {item: 76, offset: 6}, head = {item: 10, offset: 0}
-last visible message index: 37
+first visible message index: 4
 
 Running: testShiftClickReversedSelectionBelow
 anchor = {item: 76, offset: 6}, head = {item: 140, offset: 0}
-last visible message index: 149
+first visible message index: 117
 
