@@ -116,7 +116,7 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
     // been lost. Garbage collection might be triggered in the middle of this function, for
     // example, printWarningToConsole() causes an upcall to JavaScript.
     // Must make sure that the context is not deleted until the call stack unwinds.
-    RefPtr<WebGLRenderingContextBase> protect(candidate);
+    RefPtrWillBeRawPtr<WebGLRenderingContextBase> protect(candidate);
 
     activeContexts().remove(candidateID);
 
