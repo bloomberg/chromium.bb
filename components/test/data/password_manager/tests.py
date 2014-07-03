@@ -12,6 +12,21 @@ from environment import Environment
 from websitetest import WebsiteTest
 
 
+class TypeOfTestedWebsites:
+  """An enum to specify which groups of tests to run."""
+  # Runs only the disabled tests.
+  DISABLED_TESTS = 0
+  # Runs only the enabled tests.
+  ENABLED_TESTS = 1
+  # Runs all the tests.
+  ALL_TESTS = 2
+  # Runs a specified list of tests.
+  LIST_OF_TESTS = 3
+
+  def __init__(self):
+    pass
+
+
 class Facebook(WebsiteTest):
 
   def Login(self):
@@ -416,7 +431,7 @@ def saveResults(environment_tests_results, environment_save_path):
 def RunTests(chrome_path, chromedriver_path, profile_path,
              environment_passwords_path, enable_automatic_password_saving,
              environment_numeric_level, log_to_console, environment_log_file,
-             all_tests, tests):
+             environment_tested_websites, tests=None):
 
   """Runs the the tests
 
@@ -431,8 +446,10 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
     log_to_console: If True, the debug logs will be shown on the console.
     environment_log_file: The file where to store the log. If it's empty, the
         log is not stored.
-    all_tests: If True, all the tests are going to be ran.
-    tests: A list of the names of the WebsiteTests that are going to be tested.
+    environment_tested_websites: One of the TypeOfTestedWebsites values,
+        indicating which group of tests to run.
+    tests: Specifies which tests to run. Ignored unless
+       |environment_tested_websites| is equal to LIST_OF_TESTS.
 
   Returns:
     The results of tests as list of TestResults.
@@ -453,12 +470,18 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
 
   Tests(environment)
 
-  if all_tests:
-    environment.AllTests(run_prompt_tests)
-  elif tests:
+  if environment_tested_websites == TypeOfTestedWebsites.ALL_TESTS:
+    environment.ALL_TESTS(run_prompt_tests)
+  elif environment_tested_websites == TypeOfTestedWebsites.DISABLED_TESTS:
+    environment.DISABLED_TESTS(run_prompt_tests)
+  elif environment_tested_websites == TypeOfTestedWebsites.LIST_OF_TESTS:
     environment.Test(tests, run_prompt_tests)
-  else:
+  elif environment_tested_websites == TypeOfTestedWebsites.ENABLED_TESTS:
     environment.WorkingTests(run_prompt_tests)
+  else:
+    raise Exception("Error: |environment_tested_websites| has to be one of the"
+        "TypeOfTestedWebsites values")
+
 
   environment.Quit()
   return environment.tests_results
@@ -487,9 +510,10 @@ if __name__ == "__main__":
       required=True)
   parser.add_argument("--all", action="store_true", dest="all",
                       help="Run all tests.")
+  parser.add_argument("--disabled", action="store_true", dest="disabled",
+                      help="Run only disabled tests.")
   parser.add_argument("--log", action="store", nargs=1, dest="log_level",
                       help="Set log level.")
-
   parser.add_argument("--log-screen", action="store_true", dest="log_screen",
                       help="Show log on the screen.")
   parser.add_argument("--log-file", action="store", dest="log_file",
@@ -501,6 +525,15 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   passwords_path = args.passwords_path[0]
+
+  if args.all:
+    tested_websites = TypeOfTestedWebsites.ALL_TESTS
+  elif args.disabled:
+    tested_websites = TypeOfTestedWebsites.DISABLED_TESTS
+  elif args.tests:
+    tested_websites = TypeOfTestedWebsites.LIST_OF_TESTS
+  else:
+    tested_websites = TypeOfTestedWebsites.ENABLED_TESTS
 
   numeric_level = None
   if args.log_level:
@@ -526,7 +559,7 @@ if __name__ == "__main__":
                            numeric_level,
                            args.log_screen,
                            log_file,
-                           args.all,
+                           tested_websites,
                            args.tests)
 
   # Run the test with enable-automatic-password-saving to check whether or not
@@ -539,6 +572,7 @@ if __name__ == "__main__":
                             numeric_level,
                             args.log_screen,
                             log_file,
-                            args.all,
+                            tested_websites,
                             args.tests)
+
   saveResults(tests_results, save_path)
