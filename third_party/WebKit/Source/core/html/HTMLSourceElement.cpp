@@ -59,8 +59,8 @@ public:
     void clearElement() { m_element = nullptr; }
     virtual void trace(Visitor* visitor) OVERRIDE
     {
-        MediaQueryListListener::trace(visitor);
         visitor->trace(m_element);
+        MediaQueryListListener::trace(visitor);
     }
 private:
     RawPtrWillBeMember<HTMLSourceElement> m_element;
@@ -79,7 +79,9 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 HTMLSourceElement::~HTMLSourceElement()
 {
     sourceErrorEventSender().cancelEvent(this);
+#if !ENABLE(OILPAN)
     m_listener->clearElement();
+#endif
 }
 
 Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode* insertionPoint)
@@ -178,9 +180,9 @@ void HTMLSourceElement::notifyMediaQueryChanged()
 
 void HTMLSourceElement::trace(Visitor* visitor)
 {
-    HTMLElement::trace(visitor);
     visitor->trace(m_mediaQueryList);
     visitor->trace(m_listener);
+    HTMLElement::trace(visitor);
 }
 
 }

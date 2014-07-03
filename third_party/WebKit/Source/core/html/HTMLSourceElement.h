@@ -53,6 +53,8 @@ public:
 
     bool mediaQueryMatches() const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit HTMLSourceElement(Document&);
 
@@ -62,7 +64,6 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     void notifyMediaQueryChanged();
-    virtual void trace(Visitor*) OVERRIDE;
 
     RefPtrWillBeMember<MediaQueryList> m_mediaQueryList;
     RefPtrWillBeMember<Listener> m_listener;
