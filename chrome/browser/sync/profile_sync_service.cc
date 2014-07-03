@@ -310,19 +310,19 @@ void ProfileSyncService::Initialize() {
   startup_controller_.Reset(GetRegisteredDataTypes());
   startup_controller_.TryStart();
 
-  backup_rollback_controller_.Start(backup_start_delay_);
 
+  if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
+    backup_rollback_controller_.Start(backup_start_delay_);
+  } else {
 #if defined(ENABLE_PRE_SYNC_BACKUP)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableBackup)) {
     profile_->GetIOTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(base::DeleteFile),
                    profile_->GetPath().Append(kSyncBackupDataFolderName),
                    true),
         backup_start_delay_);
-  }
 #endif
+  }
 }
 
 void ProfileSyncService::TrySyncDatatypePrefRecovery() {

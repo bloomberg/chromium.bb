@@ -38,6 +38,9 @@ class BackupRollbackController {
   // Update rollback preference to indicate rollback is finished.
   void OnRollbackDone();
 
+  // Return true if platform supports backup and backup is enabled.
+  static bool IsBackupEnabled();
+
  private:
   // Check signin status and rollback preference and start backup/rollback
   // accordingly.
