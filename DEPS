@@ -33,7 +33,6 @@ vars = {
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "pdfium_git": "https://pdfium.googlesource.com",
   "skia_git": "https://skia.googlesource.com",
-  "boringssl_git": "https://boringssl.googlesource.com",
   "swig_revision": "230490",
   "nacl_revision": "13430",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -82,10 +81,6 @@ vars = {
   # the commit queue can handle CLs rolling openmax_dl
   # and whatever else without interference from each other.
   "openmax_dl_revision": "6483",
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling BoringSSL
-  # and whatever else without interference from each other.
-  "boringssl_revision": "8af663956519f7302284c0c36b413c0495986e14",
 }
 
 deps = {
@@ -324,9 +319,6 @@ deps = {
 
   "src/third_party/pdfium":
     Var("pdfium_git") + "/pdfium.git@" + Var("pdfium_revision"),
-
-  "src/third_party/boringssl/src":
-    Var("boringssl_git") + "/boringssl.git@" + Var("boringssl_revision"),
 }
 
 
