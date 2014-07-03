@@ -262,11 +262,13 @@ static int PageAlignCrazyLibrary(const char* in_filename,
 
 // As only the read side API provides offsets, we check that we added the
 // correct amount of padding by reading the zip file we just generated.
-static bool CheckPageAlign(const char* out_zip_filename) {
+// Also enforce that only one library is in the APK.
+static bool CheckPageAlignAndOnlyOneLibrary(const char* out_zip_filename) {
   ScopedUnzip scoped_unzip(out_zip_filename);
   unzFile in_file = scoped_unzip.OpenOrDie();
 
   int err = 0;
+  int count = 0;
   bool checked = false;
   while (true) {
     char in_filename[kMaxFilenameInZip + 1];
@@ -288,6 +290,18 @@ static bool CheckPageAlign(const char* out_zip_filename) {
     in_filename[in_info.size_filename] = '\0';
 
     if (IsCrazyLibraryFilename(in_filename)) {
+      count++;
+      if (count > 1) {
+        LOG(ERROR)
+            << "Found more than one library in " << out_zip_filename << "\n"
+            << "Multiple libraries are not supported for APKs that use "
+            << "'load_library_from_zip_file'.\n"
+            << "See crbug/388223.\n"
+            << "Note, check that your build is clean.\n"
+            << "An unclean build can incorrectly incorporate old "
+            << "libraries in the APK.";
+        return false;
+      }
       err = unzOpenCurrentFile(in_file);
       if (err != UNZ_OK) {
         LOG(ERROR) << "failed to open subfile" << out_zip_filename << " "
@@ -513,7 +527,7 @@ int main(int argc, const char* argv[]) {
              inflate_predicate_fun)) {
     exit(1);
   }
-  if (check_page_align && !CheckPageAlign(out_zip_filename)) {
+  if (check_page_align && !CheckPageAlignAndOnlyOneLibrary(out_zip_filename)) {
     exit(1);
   }
   return 0;
