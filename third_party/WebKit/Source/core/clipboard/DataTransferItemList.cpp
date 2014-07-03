@@ -35,13 +35,11 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
+
 PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObject> list)
 {
     return adoptRefWillBeNoop(new DataTransferItemList(dataTransfer, list));
-}
-
-DataTransferItemList::~DataTransferItemList()
-{
 }
 
 size_t DataTransferItemList::length() const

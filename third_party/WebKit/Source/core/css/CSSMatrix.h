@@ -35,7 +35,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class CSSMatrix FINAL : public RefCountedWillBeGarbageCollectedFinalized<CSSMatrix>, public ScriptWrappable {
+class CSSMatrix FINAL : public RefCountedWillBeGarbageCollected<CSSMatrix>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<CSSMatrix> create(const TransformationMatrix& m)
     {

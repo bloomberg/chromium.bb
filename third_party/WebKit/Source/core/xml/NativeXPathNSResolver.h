@@ -39,7 +39,6 @@ public:
     {
         return adoptRefWillBeNoop(new NativeXPathNSResolver(node));
     }
-    virtual ~NativeXPathNSResolver();
 
     virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
 

@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class MemoryInfo : public RefCountedWillBeGarbageCollectedFinalized<MemoryInfo>, public ScriptWrappable {
+class MemoryInfo FINAL : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<MemoryInfo> create()
     {

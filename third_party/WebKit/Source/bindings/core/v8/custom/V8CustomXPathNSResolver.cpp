@@ -53,10 +53,6 @@ V8CustomXPathNSResolver::V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver
 {
 }
 
-V8CustomXPathNSResolver::~V8CustomXPathNSResolver()
-{
-}
-
 AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 {
     v8::Handle<v8::Function> lookupNamespaceURIFunc;

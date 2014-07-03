@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class DOMPoint FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPoint>, public ScriptWrappable {
+class DOMPoint FINAL : public RefCountedWillBeGarbageCollected<DOMPoint>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<DOMPoint> create()
     {

@@ -35,8 +35,8 @@
 namespace WebCore {
 
 class XPathNSResolver : public RefCountedWillBeGarbageCollectedFinalized<XPathNSResolver>, public ScriptWrappable {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(XPathNSResolver);
 public:
-    virtual ~XPathNSResolver();
     virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
     virtual void trace(Visitor*) { }

@@ -36,6 +36,8 @@ namespace WebCore {
 
 using namespace XPath;
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
+
 XPathResult::XPathResult(Document* document, const Value& value)
     : m_value(value)
     , m_nodeSetPosition(0)
@@ -61,10 +63,6 @@ XPathResult::XPathResult(Document* document, const Value& value)
         return;
     }
     ASSERT_NOT_REACHED();
-}
-
-XPathResult::~XPathResult()
-{
 }
 
 void XPathResult::trace(Visitor* visitor)

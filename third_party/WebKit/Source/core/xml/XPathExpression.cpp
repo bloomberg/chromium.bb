@@ -40,6 +40,8 @@ namespace WebCore {
 
 using namespace XPath;
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathExpression);
+
 XPathExpression::XPathExpression()
 {
     ScriptWrappable::init(this);
@@ -55,10 +57,6 @@ PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const 
         return nullptr;
 
     return expr.release();
-}
-
-XPathExpression::~XPathExpression()
-{
 }
 
 void XPathExpression::trace(Visitor* visitor)

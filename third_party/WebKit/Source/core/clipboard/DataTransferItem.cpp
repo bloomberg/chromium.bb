@@ -39,13 +39,11 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
+
 PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItem::create(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObjectItem> item)
 {
     return adoptRefWillBeNoop(new DataTransferItem(dataTransfer, item));
-}
-
-DataTransferItem::~DataTransferItem()
-{
 }
 
 String DataTransferItem::kind() const

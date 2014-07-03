@@ -30,7 +30,7 @@ namespace WebCore {
 class Document;
 class ExceptionState;
 
-class DOMParser : public RefCountedWillBeGarbageCollectedFinalized<DOMParser>, public ScriptWrappable {
+class DOMParser FINAL : public RefCountedWillBeGarbageCollected<DOMParser>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<DOMParser> create()
     {

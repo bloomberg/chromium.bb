@@ -41,7 +41,7 @@ class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
 
-class XPathEvaluator : public RefCountedWillBeGarbageCollectedFinalized<XPathEvaluator>, public ScriptWrappable {
+class XPathEvaluator FINAL : public RefCountedWillBeGarbageCollected<XPathEvaluator>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<XPathEvaluator> create()
     {

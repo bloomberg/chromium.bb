@@ -39,7 +39,8 @@ class Document;
 class ExceptionState;
 class Node;
 
-class XPathResult : public RefCountedWillBeGarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
+class XPathResult FINAL : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
 public:
     enum XPathResultType {
         ANY_TYPE = 0,
@@ -58,7 +59,6 @@ public:
     {
         return adoptRefWillBeNoop(new XPathResult(document, value));
     }
-    ~XPathResult();
 
     void convertTo(unsigned short type, ExceptionState&);
 

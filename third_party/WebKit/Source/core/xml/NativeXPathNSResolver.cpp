@@ -37,10 +37,6 @@ NativeXPathNSResolver::NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node> node)
 {
 }
 
-NativeXPathNSResolver::~NativeXPathNSResolver()
-{
-}
-
 AtomicString NativeXPathNSResolver::lookupNamespaceURI(const String& prefix)
 {
     // This is not done by Node::lookupNamespaceURI as per the DOM3 Core spec,

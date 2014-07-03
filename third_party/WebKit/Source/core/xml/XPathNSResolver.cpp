@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-XPathNSResolver::~XPathNSResolver()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathNSResolver);
 
 }

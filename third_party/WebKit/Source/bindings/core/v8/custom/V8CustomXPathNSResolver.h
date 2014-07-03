@@ -46,7 +46,6 @@ class V8CustomXPathNSResolver FINAL : public XPathNSResolver {
 public:
     static PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> create(v8::Handle<v8::Object> resolver, v8::Isolate*);
 
-    virtual ~V8CustomXPathNSResolver();
     virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;

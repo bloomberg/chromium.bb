@@ -44,13 +44,13 @@ namespace XPath {
 class Expression;
 }
 
-class XPathExpression : public RefCountedWillBeGarbageCollectedFinalized<XPathExpression>, public ScriptWrappable {
+class XPathExpression : public RefCountedWillBeGarbageCollected<XPathExpression>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathExpression);
 public:
     static PassRefPtrWillBeRawPtr<XPathExpression> create()
     {
         return adoptRefWillBeNoop(new XPathExpression);
     }
-    ~XPathExpression();
 
     static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
     PassRefPtrWillBeRawPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);

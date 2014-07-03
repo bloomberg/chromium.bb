@@ -46,10 +46,10 @@ class File;
 class StringCallback;
 class ExecutionContext;
 
-class DataTransferItem : public RefCountedWillBeGarbageCollectedFinalized<DataTransferItem>, public ScriptWrappable {
+class DataTransferItem FINAL : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItem> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);
-    ~DataTransferItem();
 
     String kind() const;
     String type() const;

@@ -46,10 +46,10 @@ class File;
 
 class ExceptionState;
 
-class DataTransferItemList : public RefCountedWillBeGarbageCollectedFinalized<DataTransferItemList>, public ScriptWrappable {
+class DataTransferItemList FINAL : public RefCountedWillBeGarbageCollected<DataTransferItemList>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItemList> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);
-    ~DataTransferItemList();
 
     size_t length() const;
     PassRefPtrWillBeRawPtr<DataTransferItem> item(unsigned long index);

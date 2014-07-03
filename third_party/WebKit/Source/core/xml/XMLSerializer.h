@@ -31,7 +31,7 @@ namespace WebCore {
 class ExceptionState;
 class Node;
 
-class XMLSerializer : public RefCountedWillBeGarbageCollectedFinalized<XMLSerializer>, public ScriptWrappable {
+class XMLSerializer FINAL : public RefCountedWillBeGarbageCollected<XMLSerializer>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<XMLSerializer> create()
     {
