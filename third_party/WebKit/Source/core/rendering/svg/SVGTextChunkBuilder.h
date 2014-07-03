@@ -51,7 +51,6 @@ private:
 
     void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
     void processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>&);
-    void buildSpacingAndGlyphsTransform(bool isVerticalText, float scale, const SVGTextFragment&, AffineTransform&);
 
 private:
     Vector<SVGTextChunk> m_textChunks;

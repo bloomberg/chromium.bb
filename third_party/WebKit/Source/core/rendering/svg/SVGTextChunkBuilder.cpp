@@ -152,6 +152,18 @@ void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxe
     m_textChunks.append(chunk);
 }
 
+static void buildSpacingAndGlyphsTransform(bool isVerticalText, float scale, const SVGTextFragment& fragment, AffineTransform& spacingAndGlyphsTransform)
+{
+    spacingAndGlyphsTransform.translate(fragment.x, fragment.y);
+
+    if (isVerticalText)
+        spacingAndGlyphsTransform.scaleNonUniform(1, scale);
+    else
+        spacingAndGlyphsTransform.scaleNonUniform(scale, 1);
+
+    spacingAndGlyphsTransform.translate(-fragment.x, -fragment.y);
+}
+
 void SVGTextChunkBuilder::processTextChunk(const SVGTextChunk& chunk)
 {
     bool processTextLength = chunk.hasDesiredTextLength();
@@ -247,18 +259,6 @@ void SVGTextChunkBuilder::processTextAnchorCorrection(bool isVerticalText, float
         else
             fragment.x += textAnchorShift;
     }
-}
-
-void SVGTextChunkBuilder::buildSpacingAndGlyphsTransform(bool isVerticalText, float scale, const SVGTextFragment& fragment, AffineTransform& spacingAndGlyphsTransform)
-{
-    spacingAndGlyphsTransform.translate(fragment.x, fragment.y);
-
-    if (isVerticalText)
-        spacingAndGlyphsTransform.scaleNonUniform(1, scale);
-    else
-        spacingAndGlyphsTransform.scaleNonUniform(scale, 1);
-
-    spacingAndGlyphsTransform.translate(-fragment.x, -fragment.y);
 }
 
 }
