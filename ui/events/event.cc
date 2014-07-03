@@ -86,10 +86,22 @@ std::string EventTypeName(ui::EventType type) {
 
 bool IsX11SendEventTrue(const base::NativeEvent& event) {
 #if defined(USE_X11)
-  if (event && event->xany.send_event)
-    return true;
-#endif
+  return event && event->xany.send_event;
+#else
   return false;
+#endif
+}
+
+bool X11EventHasNonStandardState(const base::NativeEvent& event) {
+#if defined(USE_X11)
+  const unsigned int kAllStateMask =
+      Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
+      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
+      LockMask | ControlMask | AnyModifier;
+  return event && (event->xkey.state & ~kAllStateMask) != 0;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -497,7 +509,11 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
   // A safe guard in case if there were continous key pressed events that are
   // not auto repeat.
   const int kMaxAutoRepeatTimeMs = 2000;
-
+  // Ignore key events that have non standard state masks as it may be
+  // reposted by an IME. IBUS-GTK uses this field to detect the
+  // re-posted event for example. crbug.com/385873.
+  if (X11EventHasNonStandardState(event.native_event()))
+    return false;
   if (event.is_char())
     return false;
   if (event.type() == ui::ET_KEY_RELEASED) {
