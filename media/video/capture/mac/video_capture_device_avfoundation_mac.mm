@@ -74,7 +74,7 @@
            [format videoSupportedFrameRateRanges]) {
       media::VideoCaptureFormat format(
           gfx::Size(dimensions.width, dimensions.height),
-          static_cast<int>(frameRate.maxFrameRate),
+          frameRate.maxFrameRate,
           pixelFormat);
       formats->push_back(format);
       DVLOG(2) << name.name() << " resolution: "
