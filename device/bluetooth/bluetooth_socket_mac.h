@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -48,24 +49,28 @@ class BluetoothSocketMac : public BluetoothSocket {
                const ErrorCompletionCallback& error_callback);
 
   // Listens for incoming RFCOMM connections using this socket: Publishes an
-  // RFCOMM service on the |adapter| as UUID |uuid| with Channel |channel_id|.
-  // |success_callback| will be called if the service is successfully
-  // registered, |error_callback| on failure with a message explaining the
-  // cause.
+  // RFCOMM service on the |adapter| as UUID |uuid| with Channel
+  // |options.channel|, or an automatically allocated Channel if
+  // |options.channel| is left null. The service is published with English name
+  // |options.name| if that is non-null. |success_callback| will be called if
+  // the service is successfully registered, |error_callback| on failure with a
+  // message explaining the cause.
   void ListenUsingRfcomm(scoped_refptr<BluetoothAdapterMac> adapter,
                          const BluetoothUUID& uuid,
-                         int channel_id,
+                         const BluetoothAdapter::ServiceOptions& options,
                          const base::Closure& success_callback,
                          const ErrorCompletionCallback& error_callback);
 
   // Listens for incoming L2CAP connections using this socket: Publishes an
-  // L2CAP service on the |adapter| as UUID |uuid| with PSM |psm|.
+  // L2CAP service on the |adapter| as UUID |uuid| with PSM |options.psm|, or an
+  // automatically allocated PSM if |options.psm| is left null. The service is
+  // published with English name |options.name| if that is non-null.
   // |success_callback| will be called if the service is successfully
   // registered, |error_callback| on failure with a message explaining the
   // cause.
   void ListenUsingL2cap(scoped_refptr<BluetoothAdapterMac> adapter,
                         const BluetoothUUID& uuid,
-                        int psm,
+                        const BluetoothAdapter::ServiceOptions& options,
                         const base::Closure& success_callback,
                         const ErrorCompletionCallback& error_callback);
 

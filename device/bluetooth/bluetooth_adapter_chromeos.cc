@@ -233,7 +233,7 @@ bool BluetoothAdapterChromeOS::IsDiscovering() const {
 
 void BluetoothAdapterChromeOS::CreateRfcommService(
     const BluetoothUUID& uuid,
-    int channel,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Creating RFCOMM service: "
@@ -247,14 +247,14 @@ void BluetoothAdapterChromeOS::CreateRfcommService(
   socket->Listen(this,
                  BluetoothSocketChromeOS::kRfcomm,
                  uuid,
-                 channel,
+                 options,
                  base::Bind(callback, socket),
                  error_callback);
 }
 
 void BluetoothAdapterChromeOS::CreateL2capService(
     const BluetoothUUID& uuid,
-    int psm,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Creating L2CAP service: "
@@ -268,7 +268,7 @@ void BluetoothAdapterChromeOS::CreateL2capService(
   socket->Listen(this,
                  BluetoothSocketChromeOS::kL2cap,
                  uuid,
-                 psm,
+                 options,
                  base::Bind(callback, socket),
                  error_callback);
 }

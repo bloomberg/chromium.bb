@@ -127,6 +127,7 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
   virtual void CreateService(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
+      scoped_ptr<std::string> name,
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) = 0;
@@ -165,6 +166,7 @@ class BluetoothSocketListenUsingRfcommFunction
   virtual void CreateService(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
+      scoped_ptr<std::string> name,
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) OVERRIDE;
@@ -193,6 +195,7 @@ class BluetoothSocketListenUsingL2capFunction
   virtual void CreateService(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
+      scoped_ptr<std::string> name,
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) OVERRIDE;

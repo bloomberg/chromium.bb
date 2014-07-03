@@ -123,22 +123,22 @@ bool BluetoothAdapterMac::IsDiscovering() const {
 
 void BluetoothAdapterMac::CreateRfcommService(
     const BluetoothUUID& uuid,
-    int channel,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
   socket->ListenUsingRfcomm(
-      this, uuid, channel, base::Bind(callback, socket), error_callback);
+      this, uuid, options, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothAdapterMac::CreateL2capService(
     const BluetoothUUID& uuid,
-    int psm,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
   socket->ListenUsingL2cap(
-      this, uuid, psm, base::Bind(callback, socket), error_callback);
+      this, uuid, options, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothAdapterMac::DeviceFound(IOBluetoothDevice* device) {

@@ -57,12 +57,12 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   virtual bool IsDiscovering() const OVERRIDE;
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
-      int channel,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
   virtual void CreateL2capService(
       const BluetoothUUID& uuid,
-      int psm,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
 

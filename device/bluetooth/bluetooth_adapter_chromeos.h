@@ -64,12 +64,12 @@ class BluetoothAdapterChromeOS
   virtual bool IsDiscovering() const OVERRIDE;
   virtual void CreateRfcommService(
       const device::BluetoothUUID& uuid,
-      int channel,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
   virtual void CreateL2capService(
       const device::BluetoothUUID& uuid,
-      int psm,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
 

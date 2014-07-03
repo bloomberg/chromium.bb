@@ -79,6 +79,16 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
                                BluetoothDevice* device) {}
   };
 
+  // Used to configure a listening servie.
+  struct ServiceOptions {
+    ServiceOptions();
+    ~ServiceOptions();
+
+    scoped_ptr<int> channel;
+    scoped_ptr<int> psm;
+    scoped_ptr<std::string> name;
+  };
+
   // The ErrorCallback is used for methods that can fail in which case it is
   // called, in the success case the callback is simply not called.
   typedef base::Closure ErrorCallback;
@@ -214,32 +224,32 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual BluetoothDevice::PairingDelegate* DefaultPairingDelegate();
 
   // Creates an RFCOMM service on this adapter advertised with UUID |uuid|,
-  // listening on channel |channel|, which may be the constant |kChannelAuto|
-  // to automatically allocate one. |callback| will be called on success with a
-  // BluetoothSocket instance that is to be owned by the received.
-  // |error_callback| will be called on failure with a message indicating the
-  // cause.
+  // listening on channel |options.channel|, which may be left null to
+  // automatically allocate one. The service will be advertised with
+  // |options.name| as the English name of the service. |callback| will be
+  // called on success with a BluetoothSocket instance that is to be owned by
+  // the received.  |error_callback| will be called on failure with a message
+  // indicating the cause.
   typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
       CreateServiceCallback;
   typedef base::Callback<void(const std::string& message)>
       CreateServiceErrorCallback;
-  static const int kChannelAuto;
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
-      int channel,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) = 0;
 
   // Creates an L2CAP service on this adapter advertised with UUID |uuid|,
-  // listening on PSM |psm|, which may be the constant |kPsmAuto| to
-  // automatically allocate one. |callback| will be called on success with a
+  // listening on PSM |options.psm|, which may be left null to automatically
+  // allocate one. The service will be advertised with |options.name| as the
+  // English name of the service. |callback| will be called on success with a
   // BluetoothSocket instance that is to be owned by the received.
   // |error_callback| will be called on failure with a message indicating the
   // cause.
-  static const int kPsmAuto;
   virtual void CreateL2capService(
       const BluetoothUUID& uuid,
-      int psm,
+      const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) = 0;
 

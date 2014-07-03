@@ -11,7 +11,7 @@ function testListen() {
   // First socket should be the listening one.
   chrome.test.assertEq(serverSocketId, sockets[0].socketId);
   chrome.test.assertEq(false, sockets[0].persistent);
-  chrome.test.assertEq(undefined, sockets[0].name);
+  chrome.test.assertEq('MyServiceName', sockets[0].name);
   chrome.test.assertEq(false, sockets[0].paused);
   chrome.test.assertEq(false, sockets[0].connected);
   chrome.test.assertEq(undefined, sockets[0].address);
@@ -84,6 +84,7 @@ function secondStage() {
 }
 
 chrome.bluetoothSocket.create(
+  {'name': 'MyServiceName'},
   function(socket) {
     failOnError();
 

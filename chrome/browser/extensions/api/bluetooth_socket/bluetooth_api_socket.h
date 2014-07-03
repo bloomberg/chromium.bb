@@ -91,8 +91,8 @@ class BluetoothApiSocket : public ApiResource {
   // Overriden from extensions::ApiResource.
   virtual bool IsPersistent() const OVERRIDE;
 
-  const std::string& name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  const std::string* name() const { return name_.get(); }
+  void set_name(const std::string& name) { name_.reset(new std::string(name)); }
 
   bool persistent() const { return persistent_; }
   void set_persistent(bool persistent) { persistent_ = persistent; }
@@ -137,7 +137,7 @@ class BluetoothApiSocket : public ApiResource {
   device::BluetoothUUID uuid_;
 
   // Application-defined string - see bluetooth.idl.
-  std::string name_;
+  scoped_ptr<std::string> name_;
 
   // Flag indicating whether the socket is left open when the application is
   // suspended - see bluetooth.idl.

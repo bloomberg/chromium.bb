@@ -11,6 +11,11 @@
 
 namespace device {
 
+BluetoothAdapter::ServiceOptions::ServiceOptions() {
+}
+BluetoothAdapter::ServiceOptions::~ServiceOptions() {
+}
+
 #if !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
 //static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
@@ -18,9 +23,6 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
   return base::WeakPtr<BluetoothAdapter>();
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
-
-const int BluetoothAdapter::kChannelAuto = 0;
-const int BluetoothAdapter::kPsmAuto = 0;
 
 BluetoothAdapter::BluetoothAdapter()
     : weak_ptr_factory_(this) {

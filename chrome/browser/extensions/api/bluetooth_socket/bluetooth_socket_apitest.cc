@@ -142,10 +142,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   BluetoothUUID service_uuid("2de497f9-ab28-49db-b6d2-066ea69f1737");
   scoped_refptr<testing::StrictMock<MockBluetoothSocket> > mock_server_socket
       = new testing::StrictMock<MockBluetoothSocket>();
-  EXPECT_CALL(*mock_adapter_,
-              CreateRfcommService(service_uuid,
-                                  BluetoothAdapter::kChannelAuto,
-                                  testing::_, testing::_))
+  BluetoothAdapter::ServiceOptions service_options;
+  service_options.name.reset(new std::string("MyServiceName"));
+  EXPECT_CALL(
+      *mock_adapter_,
+      CreateRfcommService(
+          service_uuid,
+          testing::Field(&BluetoothAdapter::ServiceOptions::name,
+                         testing::Pointee(testing::Eq("MyServiceName"))),
+          testing::_, testing::_))
       .WillOnce(InvokeCallbackArgument<2>(mock_server_socket));
 
   // Since the socket is unpaused, expect a call to Accept() from the socket

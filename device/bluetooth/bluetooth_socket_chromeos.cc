@@ -120,7 +120,7 @@ void BluetoothSocketChromeOS::Listen(
     scoped_refptr<BluetoothAdapter> adapter,
     SocketType socket_type,
     const BluetoothUUID& uuid,
-    int psm_or_channel,
+    const BluetoothAdapter::ServiceOptions& service_options,
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -137,17 +137,17 @@ void BluetoothSocketChromeOS::Listen(
 
   uuid_ = uuid;
   options_.reset(new BluetoothProfileManagerClient::Options());
+  if (service_options.name)
+    options_->name.reset(new std::string(*service_options.name));
 
   switch (socket_type) {
     case kRfcomm:
-      options_->channel.reset(new uint16(
-          psm_or_channel == BluetoothAdapter::kChannelAuto
-              ? 0 : psm_or_channel));
+      options_->channel.reset(
+          new uint16(service_options.channel ? *service_options.channel : 0));
       break;
     case kL2cap:
-      options_->psm.reset(new uint16(
-          psm_or_channel == BluetoothAdapter::kPsmAuto
-              ? 0 : psm_or_channel));
+      options_->psm.reset(
+          new uint16(service_options.psm ? *service_options.psm : 0));
       break;
     default:
       NOTREACHED();

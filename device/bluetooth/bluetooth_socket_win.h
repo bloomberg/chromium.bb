@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_net.h"
@@ -41,12 +42,13 @@ class BluetoothSocketWin : public BluetoothSocketNet {
                const ErrorCompletionCallback& error_callback);
 
   // Listens using this socket using an RFCOMM service published as UUID |uuid|
-  // with Channel |channel|.  |success_callback| will be called if the service
+  // with Channel |options.channel|, or an automatically allocated Channel if
+  // |options.channel| is null. |success_callback| will be called if the service
   // is successfully registered, |error_callback| on failure with a message
   // explaining the cause.
   void Listen(scoped_refptr<BluetoothAdapter> adapter,
               const BluetoothUUID& uuid,
-              int rfcomm_channel,
+              const BluetoothAdapter::ServiceOptions& options,
               const base::Closure& success_callback,
               const ErrorCompletionCallback& error_callback);
 

@@ -292,7 +292,7 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
 TEST_F(BluetoothSocketChromeOSTest, Listen) {
   adapter_->CreateRfcommService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
-      BluetoothAdapter::kChannelAuto,
+      BluetoothAdapter::ServiceOptions(),
       base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
@@ -412,7 +412,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
 
   adapter_->CreateRfcommService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
-      BluetoothAdapter::kChannelAuto,
+      BluetoothAdapter::ServiceOptions(),
       base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
@@ -461,7 +461,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
 
   adapter_->CreateRfcommService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
-      BluetoothAdapter::kChannelAuto,
+      BluetoothAdapter::ServiceOptions(),
       base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,

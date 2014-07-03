@@ -36,8 +36,8 @@ linked_ptr<SocketInfo> CreateSocketInfo(int socket_id,
   // This represents what we know about the socket, and does not call through
   // to the system.
   socket_info->socket_id = socket_id;
-  if (!socket->name().empty()) {
-    socket_info->name.reset(new std::string(socket->name()));
+  if (socket->name()) {
+    socket_info->name.reset(new std::string(*socket->name()));
   }
   socket_info->persistent = socket->persistent();
   if (socket->buffer_size() > 0) {
@@ -270,9 +270,14 @@ void BluetoothSocketListenFunction::OnGetAdapter(
     return;
   }
 
+  scoped_ptr<std::string> name;
+  if (socket->name())
+    name.reset(new std::string(*socket->name()));
+
   CreateService(
       adapter,
       bluetooth_uuid,
+      name.Pass(),
       base::Bind(&BluetoothSocketListenFunction::OnCreateService, this),
       base::Bind(&BluetoothSocketListenFunction::OnCreateServiceError, this));
 }
@@ -330,18 +335,20 @@ bool BluetoothSocketListenUsingRfcommFunction::CreateParams() {
 void BluetoothSocketListenUsingRfcommFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
+    scoped_ptr<std::string> name,
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
-  int channel = device::BluetoothAdapter::kChannelAuto;
+  device::BluetoothAdapter::ServiceOptions service_options;
+  service_options.name = name.Pass();
 
   ListenOptions* options = params_->options.get();
   if (options) {
     if (options->channel.get())
-      channel = *(options->channel);
+      service_options.channel.reset(new int(*(options->channel)));
   }
 
-  adapter->CreateRfcommService(uuid, channel, callback, error_callback);
+  adapter->CreateRfcommService(uuid, service_options, callback, error_callback);
 }
 
 void BluetoothSocketListenUsingRfcommFunction::CreateResults() {
@@ -371,18 +378,20 @@ bool BluetoothSocketListenUsingL2capFunction::CreateParams() {
 void BluetoothSocketListenUsingL2capFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
+    scoped_ptr<std::string> name,
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
-  int psm = device::BluetoothAdapter::kPsmAuto;
+  device::BluetoothAdapter::ServiceOptions service_options;
+  service_options.name = name.Pass();
 
   ListenOptions* options = params_->options.get();
   if (options) {
     if (options->psm.get())
-      psm = *(options->psm);
+      service_options.psm.reset(new int(*(options->psm)));
   }
 
-  adapter->CreateL2capService(uuid, psm, callback, error_callback);
+  adapter->CreateL2capService(uuid, service_options, callback, error_callback);
 }
 
 void BluetoothSocketListenUsingL2capFunction::CreateResults() {

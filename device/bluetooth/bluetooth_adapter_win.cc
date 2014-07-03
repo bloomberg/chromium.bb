@@ -163,7 +163,7 @@ void BluetoothAdapterWin::DiscoveryStopped() {
 
 void BluetoothAdapterWin::CreateRfcommService(
     const BluetoothUUID& uuid,
-    int channel,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketWin> socket =
@@ -172,14 +172,14 @@ void BluetoothAdapterWin::CreateRfcommService(
           socket_thread_,
           NULL,
           net::NetLog::Source());
-  socket->Listen(this, uuid, channel,
+  socket->Listen(this, uuid, options,
                  base::Bind(callback, socket),
                  error_callback);
 }
 
 void BluetoothAdapterWin::CreateL2capService(
     const BluetoothUUID& uuid,
-    int psm,
+    const ServiceOptions& options,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   // TODO(keybuk): implement.
