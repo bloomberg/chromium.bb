@@ -72,6 +72,7 @@
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
+#include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
@@ -171,6 +172,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
   { "UmaBridge", RegisterUmaBridge },
   { "UrlUtilities", RegisterUrlUtilities },
+  { "Variations", variations::android::RegisterVariations },
   { "VoiceSearchTabHelper", RegisterVoiceSearchTabHelper },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },

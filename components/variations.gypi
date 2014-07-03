@@ -18,6 +18,10 @@
       'sources': [
         'variations/active_field_trials.cc',
         'variations/active_field_trials.h',
+        'variations/android/component_jni_registrar.cc',
+        'variations/android/component_jni_registrar.h',
+        'variations/android/variations_associated_data_android.cc',
+        'variations/android/variations_associated_data_android.h',
         'variations/caching_permuted_entropy_provider.cc',
         'variations/caching_permuted_entropy_provider.h',
         'variations/entropy_provider.cc',
@@ -44,7 +48,42 @@
         'proto_in_dir': 'variations/proto',
         'proto_out_dir': 'components/variations/proto',
       },
-      'includes': [ '../build/protoc.gypi' ]
+      'includes': [ '../build/protoc.gypi' ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            'variations_jni_headers',
+          ],
+        }],
+      ],
     },
   ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'variations_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': 'variations/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'variations_jni_headers',
+          'type': 'none',
+          'sources': [
+            'variations/android/java/src/org/chromium/components/variations/VariationsAssociatedData.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'variations',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+    }],
+  ]
 }

@@ -658,6 +658,7 @@
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:sessions',
+            '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
             '../printing/printing.gyp:printing_java',
