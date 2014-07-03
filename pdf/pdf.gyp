@@ -118,11 +118,6 @@
               #'ldflags': [ '-s',],  # strip local symbols from binary.
             },
           },
-          # Use a custom version script to prevent leaking the vendor name in
-          # visible symbols.
-          'ldflags': [
-            '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/pdf/libpdf.map'
-          ],
         }],
       ],
     },

@@ -88,15 +88,6 @@ shared_library("pdf") {
     #},
   }
 
-  if (is_linux) {
-    # TODO(GYP)
-    ## Use a custom version script to prevent leaking the vendor name in
-    ## visible symbols.
-    #'ldflags': [
-    #  '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/pdf/libpdf.map'
-    #],
-  }
-
   deps = [
     "//base",
     "//net",
