@@ -2280,6 +2280,8 @@
       'browser/ui/views/toolbar/browser_action_test_util_views.cc',
       'browser/ui/views/toolbar/browser_action_view.cc',
       'browser/ui/views/toolbar/browser_action_view.h',
+      'browser/ui/views/toolbar/extension_toolbar_menu_view.cc',
+      'browser/ui/views/toolbar/extension_toolbar_menu_view.h',
       'browser/ui/views/toolbar/home_button.cc',
       'browser/ui/views/toolbar/home_button.h',
       'browser/ui/views/toolbar/reload_button.cc',

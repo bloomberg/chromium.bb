@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -56,6 +57,22 @@ const int kItemSpacing = ToolbarView::kStandardSpacing;
 
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = kItemSpacing - 2;
+
+// Padding to make sure the badge appears in the right location vertically when
+// in overflow mode (inside the Chrome menu).
+// TODO(devlin): Remove this hard coding and make sure the badge appears
+//               correctly.
+const int kPaddingForBadge = 9;
+
+// The maximum number of icons to show per row when in overflow mode (showing
+// icons in the application menu).
+// TODO(devlin): Compute the right number of icons to show, depending on the
+//               menu width.
+#if defined(OS_LINUX)
+const int kIconsPerMenuRow = 8;  // The menu on Linux is wider.
+#else
+const int kIconsPerMenuRow = 7;
+#endif
 
 // A version of MenuButton with almost empty insets to fit properly on the
 // toolbar.
@@ -94,15 +111,19 @@ bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
 
-BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
-                                                 View* owner_view)
+BrowserActionsContainer::BrowserActionsContainer(
+    Browser* browser,
+    View* owner_view,
+    BrowserActionsContainer* main_container)
     : profile_(browser->profile()),
       browser_(browser),
       owner_view_(owner_view),
+      main_container_(main_container),
       popup_(NULL),
       popup_button_(NULL),
       model_(NULL),
       container_width_(0),
+      resize_area_(NULL),
       chevron_(NULL),
       overflow_menu_(NULL),
       suppress_chevron_(false),
@@ -117,22 +138,33 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   if (model_)
     model_->AddObserver(this);
 
-  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-      browser->profile(),
-      owner_view->GetFocusManager(),
-      extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
-      this));
+  bool overflow_experiment =
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
+  DCHECK(!in_overflow_mode() || overflow_experiment);
 
-  resize_animation_.reset(new gfx::SlideAnimation(this));
-  resize_area_ = new views::ResizeArea(this);
-  AddChildView(resize_area_);
+  if (!in_overflow_mode()) {
+    extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
+        browser->profile(),
+        owner_view->GetFocusManager(),
+        extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
+        this));
 
-  chevron_ = new ChevronMenuButton(NULL, base::string16(), this, false);
-  chevron_->EnableCanvasFlippingForRTLUI(true);
-  chevron_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
-  chevron_->SetVisible(false);
-  AddChildView(chevron_);
+    resize_animation_.reset(new gfx::SlideAnimation(this));
+    resize_area_ = new views::ResizeArea(this);
+    AddChildView(resize_area_);
+
+    // 'Main' mode doesn't need a chevron overflow when overflow is shown inside
+    // the Chrome menu.
+    if (!overflow_experiment) {
+      chevron_ = new ChevronMenuButton(NULL, base::string16(), this, false);
+      chevron_->SetBorder(views::Border::NullBorder());
+      chevron_->EnableCanvasFlippingForRTLUI(true);
+      chevron_->SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
+      chevron_->SetVisible(false);
+      AddChildView(chevron_);
+    }
+  }
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
@@ -233,6 +265,10 @@ void BrowserActionsContainer::ExecuteExtensionCommand(
                                                  command.accelerator());
 }
 
+bool BrowserActionsContainer::ShownInsideMenu() const {
+  return in_overflow_mode();
+}
+
 void BrowserActionsContainer::AddObserver(
     BrowserActionsContainerObserver* observer) {
   observers_.AddObserver(observer);
@@ -244,23 +280,37 @@ void BrowserActionsContainer::RemoveObserver(
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
+  size_t icon_count = browser_action_views_.size() -
+      (in_overflow_mode() ? main_container_->VisibleBrowserActions() : 0);
+
+  // If there are no actions to show, or we are in overflow mode and the main
+  // container is already showing them all, then no further work is required.
+  if (icon_count == 0)
+    return gfx::Size();
+
+  if (in_overflow_mode()) {
+    // When in overflow, y is multiline, so the pixel count is IconHeight()
+    // times the number of rows needed.
+    return gfx::Size(
+        IconCountToWidth(kIconsPerMenuRow, false),
+        (((icon_count - 1) / kIconsPerMenuRow) + 1) * IconHeight());
+  }
+
   // We calculate the size of the view by taking the current width and
   // subtracting resize_amount_ (the latter represents how far the user is
   // resizing the view or, if animating the snapping, how far to animate it).
   // But we also clamp it to a minimum size and the maximum size, so that the
-  // container can never shrink too far or take up more space than it needs. In
-  // other words: MinimumNonemptyWidth() < width() - resize < ClampTo(MAX).
+  // container can never shrink too far or take up more space than it needs.
+  // In other words: MinimumNonemptyWidth() < width() - resize < ClampTo(MAX).
   int preferred_width = std::min(
       std::max(MinimumNonemptyWidth(), container_width_ - resize_amount_),
       IconCountToWidth(-1, false));
-  // Height will be ignored by the ToolbarView.
-  return gfx::Size(preferred_width, 0);
+  return gfx::Size(preferred_width, IconHeight());
 }
 
 gfx::Size BrowserActionsContainer::GetMinimumSize() const {
   int min_width = std::min(MinimumNonemptyWidth(), IconCountToWidth(-1, false));
-  // Height will be ignored by the ToolbarView.
-  return gfx::Size(min_width, 0);
+  return gfx::Size(min_width, IconHeight());
 }
 
 void BrowserActionsContainer::Layout() {
@@ -270,11 +320,12 @@ void BrowserActionsContainer::Layout() {
   }
 
   SetVisible(true);
-  resize_area_->SetBounds(0, 0, kItemSpacing, height());
+  if (resize_area_)
+    resize_area_->SetBounds(0, 0, kItemSpacing, height());
 
   // If the icons don't all fit, show the chevron (unless suppressed).
   int max_x = GetPreferredSize().width();
-  if ((IconCountToWidth(-1, false) > max_x) && !suppress_chevron_) {
+  if ((IconCountToWidth(-1, false) > max_x) && !suppress_chevron_ && chevron_) {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
     max_x -=
@@ -284,20 +335,44 @@ void BrowserActionsContainer::Layout() {
         0,
         chevron_size.width(),
         chevron_size.height());
-  } else {
+  } else if (chevron_) {
     chevron_->SetVisible(false);
   }
 
   // Now draw the icons for the browser actions in the available space.
   int icon_width = IconWidth(false);
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    BrowserActionView* view = browser_action_views_[i];
-    int x = ToolbarView::kStandardSpacing + (i * IconWidth(true));
-    if (x + icon_width <= max_x) {
-      view->SetBounds(x, 0, icon_width, height());
+  if (in_overflow_mode()) {
+    for (size_t i = 0;
+         i < main_container_->VisibleBrowserActionsAfterAnimation(); ++i) {
+      // Ensure that any browser actions shown in the main view are hidden in
+      // the overflow view.
+      browser_action_views_[i]->SetVisible(false);
+    }
+
+    for (size_t i = main_container_->VisibleBrowserActionsAfterAnimation();
+         i < browser_action_views_.size(); ++i) {
+      BrowserActionView* view = browser_action_views_[i];
+      size_t index = i - main_container_->VisibleBrowserActionsAfterAnimation();
+      int row_index = static_cast<int>(index) / kIconsPerMenuRow;
+      int x = (index * IconWidth(true)) -
+          (row_index * IconWidth(true) * kIconsPerMenuRow);
+      gfx::Rect rect_bounds(
+          x,
+          IconHeight() * row_index,
+          icon_width,
+          IconHeight() + kPaddingForBadge);
+      view->SetBoundsRect(rect_bounds);
       view->SetVisible(true);
-    } else {
-      view->SetVisible(false);
+    }
+  } else {
+    for (BrowserActionViews::const_iterator it = browser_action_views_.begin();
+         it < browser_action_views_.end(); ++it) {
+      BrowserActionView* view = *it;
+      int x = ToolbarView::kStandardSpacing +
+          ((it - browser_action_views_.begin()) * IconWidth(true));
+      view->SetVisible(x + icon_width <= max_x);
+      if (view->visible())
+        view->SetBounds(x, 0, icon_width, IconHeight());
     }
   }
 }
@@ -333,13 +408,18 @@ int BrowserActionsContainer::OnDragUpdated(
   }
   StopShowFolderDropMenuTimer();
 
+  // TODO(devlin): This calculation needs to take 'overflow' mode into account
+  // once the wrench menu becomes a drag target for browser action icons.
+
   // Figure out where to display the indicator.  This is a complex calculation:
 
   // First, we figure out how much space is to the left of the icon area, so we
   // can calculate the true offset into the icon area.
-  int width_before_icons = ToolbarView::kStandardSpacing +
-      (base::i18n::IsRTL() ?
-          (chevron_->GetPreferredSize().width() + kChevronSpacing) : 0);
+  int width_before_icons = ToolbarView::kStandardSpacing;
+  if (chevron_ && base::i18n::IsRTL()) {
+    width_before_icons +=
+        chevron_->GetPreferredSize().width() + kChevronSpacing;
+  }
   int offset_into_icon_area = event.x() - width_before_icons;
 
   // Next, we determine which icon to place the indicator in front of.  We want
@@ -556,8 +636,10 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   SetVisible(!browser_action_views_.empty());
-  owner_view_->Layout();
-  owner_view_->SchedulePaint();
+  if (owner_view_) {
+    owner_view_->Layout();
+    owner_view_->SchedulePaint();
+  }
 }
 
 extensions::ActiveTabPermissionGranter*
@@ -765,11 +847,12 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
       } else {
         // Either we went from overflow to no-overflow, or we shrunk the no-
         // overflow container by 1.  Either way the size changed, so animate.
-        chevron_->SetVisible(false);
+        if (chevron_)
+          chevron_->SetVisible(false);
         SaveDesiredSizeAndAnimate(gfx::Tween::EASE_OUT,
                                   browser_action_views_.size());
       }
-      return;
+      return;  // We have found the action to remove, bail out.
     }
   }
 }
@@ -811,6 +894,9 @@ void BrowserActionsContainer::HighlightModeChanged(bool is_highlighting) {
 
 void BrowserActionsContainer::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp || !chevron_)
+    return;
+
   chevron_->SetImage(views::Button::STATE_NORMAL,
                      *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
 
@@ -819,12 +905,19 @@ void BrowserActionsContainer::LoadImages() {
 }
 
 void BrowserActionsContainer::SetContainerWidth() {
-  int visible_actions = model_->GetVisibleIconCount();
+  // The slave only draws the overflow (what isn't visible in the other
+  // container).
+  int visible_actions = in_overflow_mode() ?
+      model_->toolbar_items().size() - model_->GetVisibleIconCount() :
+      model_->GetVisibleIconCount();
   if (visible_actions < 0)  // All icons should be visible.
     visible_actions = model_->toolbar_items().size();
-  chevron_->SetVisible(
-    static_cast<size_t>(visible_actions) < model_->toolbar_items().size());
-  container_width_ = IconCountToWidth(visible_actions, chevron_->visible());
+  if (chevron_) {
+    chevron_->SetVisible(
+      static_cast<size_t>(visible_actions) < model_->toolbar_items().size());
+  }
+  container_width_ =
+      IconCountToWidth(visible_actions, chevron_ && chevron_->visible());
 }
 
 void BrowserActionsContainer::CloseOverflowMenu() {
@@ -868,7 +961,7 @@ int BrowserActionsContainer::IconCountToWidth(int icons,
     return ToolbarView::kStandardSpacing;
   int icons_size =
       (icons == 0) ? 0 : ((icons * IconWidth(true)) - kItemSpacing);
-  int chevron_size = display_chevron ?
+  int chevron_size = chevron_ && display_chevron ?
       (kChevronSpacing + chevron_->GetPreferredSize().width()) : 0;
   return ToolbarView::kStandardSpacing + icons_size + chevron_size +
       ToolbarView::kStandardSpacing;
@@ -882,8 +975,8 @@ size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
   // We need to reserve space for the resize area, chevron, and the spacing on
   // either side of the chevron.
   int available_space = pixels - ToolbarView::kStandardSpacing -
-      chevron_->GetPreferredSize().width() - kChevronSpacing -
-      ToolbarView::kStandardSpacing;
+      (chevron_ ? chevron_->GetPreferredSize().width() : 0) -
+      kChevronSpacing - ToolbarView::kStandardSpacing;
   // Now we add an extra between-item padding value so the space can be divided
   // evenly by (size of icon with padding).
   return static_cast<size_t>(
@@ -891,8 +984,10 @@ size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
 }
 
 int BrowserActionsContainer::MinimumNonemptyWidth() const {
-  return ToolbarView::kStandardSpacing + kChevronSpacing +
-      chevron_->GetPreferredSize().width() + ToolbarView::kStandardSpacing;
+  if (!chevron_)
+    return ToolbarView::kStandardSpacing;
+  return (ToolbarView::kStandardSpacing * 2) + kChevronSpacing +
+      chevron_->GetPreferredSize().width();
 }
 
 void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
@@ -908,7 +1003,7 @@ void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
     model_->SetVisibleIconCount(num_visible_icons);
   int target_size = IconCountToWidth(num_visible_icons,
       num_visible_icons < browser_action_views_.size());
-  if (!disable_animations_during_testing_) {
+  if (resize_animation_ && !disable_animations_during_testing_) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();

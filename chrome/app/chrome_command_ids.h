@@ -213,6 +213,7 @@
 #define IDC_SHOW_SYNC_ERROR             40243
 #define IDC_DISTILL_PAGE                40244
 #define IDC_HELP_MENU                   40245
+#define IDC_EXTENSIONS_OVERFLOW_MENU    40246
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

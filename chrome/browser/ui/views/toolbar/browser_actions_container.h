@@ -42,22 +42,35 @@ namespace views {
 class ResizeArea;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
 // The BrowserActionsContainer is a container view, responsible for drawing the
-// browser action icons (extensions that add icons to the toolbar).
+// browser action icons (extensions that add icons to the toolbar). It comes in
+// two flavors, a main container (when residing on the toolbar) and an overflow
+// container (that resides in the main application menu, aka the Chrome menu).
 //
-// The container is placed flush against the omnibox and wrench menu, and its
-// layout looks like:
+// When in 'main' mode, the container supports the full functionality of a
+// BrowserActionContainer, but in 'overflow' mode the container is effectively
+// just an overflow for the 'main' toolbar (shows only the icons that the main
+// toolbar does not) and as such does not have an overflow itself. The overflow
+// container also does not support resizing. Since the main container only shows
+// icons in the Chrome toolbar, it is limited to a single row of icons. The
+// overflow container, however, is allowed to display icons in multiple rows.
+//
+// The main container is placed flush against the omnibox and hot dog menu,
+// whereas the overflow container is placed within the hot dog menu. The
+// layout is similar to this:
 //   rI_I_IcCs
 // Where the letters are as follows:
 //   r: An invisible resize area.  This is ToolbarView::kStandardSpacing pixels
-//      wide and directly adjacent to the omnibox.
+//      wide and directly adjacent to the omnibox. Only shown for the main
+//      container.
 //   I: An icon.  This is as wide as the IDR_BROWSER_ACTION image.
 //   _: kItemSpacing pixels of empty space.
 //   c: kChevronSpacing pixels of empty space.  Only present if C is present.
-//   C: An optional chevron, visible for overflow.  As wide as the
-//      IDR_BROWSER_ACTIONS_OVERFLOW image.
+//   C: An optional chevron, as wide as the IDR_BROWSER_ACTIONS_OVERFLOW image,
+//      and visible only when both of the following statements are true:
+//      - The container is set to a width smaller than needed to show all icons.
+//      - There is no other container in 'overflow' mode to handle the
+//        non-visible icons for this container.
 //   s: ToolbarView::kStandardSpacing pixels of empty space (before the wrench
 //      menu).
 // The reason the container contains the trailing space "s", rather than having
@@ -66,7 +79,8 @@ class ResizeArea;
 // ultimate drop indicator.  (Otherwise, we'd be trying to draw it into the
 // padding beyond our right edge, and it wouldn't appear.)
 //
-// The BrowserActionsContainer follows a few rules, in terms of user experience:
+// The BrowserActionsContainer in 'main' mode follows a few rules, in terms of
+// user experience:
 //
 // 1) The container can never grow beyond the space needed to show all icons
 // (hereby referred to as the max width).
@@ -81,7 +95,7 @@ class ResizeArea;
 // 5) If the container is NOT at max width (has an overflow menu), we respect
 // that size when adding and removing icons and DON'T grow/shrink the container.
 // This means that new icons (which always appear at the far right) will show up
-// in the overflow menu. The install bubble for extensions points to the chevron
+// in the overflow. The install bubble for extensions points to the chevron
 // menu in this case.
 //
 // Resizing the BrowserActionsContainer:
@@ -125,7 +139,12 @@ class BrowserActionsContainer
       public BrowserActionView::Delegate,
       public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
-  BrowserActionsContainer(Browser* browser, views::View* owner_view);
+  // Constructs a BrowserActionContainer for a particular |browser| object, and
+  // specifies which view is the |owner_view|. For documentation of
+  // |main_container|, see class comments.
+  BrowserActionsContainer(Browser* browser,
+                          views::View* owner_view,
+                          BrowserActionsContainer* main_container);
   virtual ~BrowserActionsContainer();
 
   void Init();
@@ -225,6 +244,7 @@ class BrowserActionsContainer
   virtual int GetCurrentTabId() const OVERRIDE;
   virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
+  virtual bool ShownInsideMenu() const OVERRIDE;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
@@ -346,6 +366,10 @@ class BrowserActionsContainer
                  ExtensionPopup::ShowAction show_action,
                  bool grant_tab_permissions);
 
+  // Whether this container is in overflow mode (as opposed to in 'main'
+  // mode). See class comments for details on the difference.
+  bool in_overflow_mode() const { return main_container_ != NULL; }
+
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in
   // this collection. Some extensions may be disabled in incognito windows.
@@ -358,6 +382,11 @@ class BrowserActionsContainer
 
   // The view that owns us.
   views::View* owner_view_;
+
+  // The main container we are serving as overflow for, or NULL if this
+  // class is the the main container. See class comments for details on
+  // the difference between main and overflow.
+  BrowserActionsContainer* main_container_;
 
   // The current popup and the button it came from.  NULL if no popup.
   ExtensionPopup* popup_;
@@ -375,7 +404,8 @@ class BrowserActionsContainer
   // The resize area for the container.
   views::ResizeArea* resize_area_;
 
-  // The chevron for accessing the overflow items.
+  // The chevron for accessing the overflow items. Can be NULL when in overflow
+  // mode or if the toolbar is permanently suppressing the chevron menu.
   views::MenuButton* chevron_;
 
   // The painter used when we are highlighting a subset of extensions.

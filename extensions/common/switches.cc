@@ -35,6 +35,9 @@ const char kEventPageIdleTime[] = "event-page-idle-time";
 // notified of its impending unload and that unload happening.
 const char kEventPageSuspendingTime[] = "event-page-unloading-time";
 
+// Whether to switch to extension action redesign mode (experimental).
+const char kExtensionActionRedesign[] = "extension-action-redesign";
+
 // Marks a renderer as extension process.
 const char kExtensionProcess[] = "extension-process";
 

@@ -47,6 +47,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/feature_switch.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -529,6 +530,9 @@ void WrenchMenuModel::Build(bool is_new_menu) {
     AddSeparator(ui::NORMAL_SEPARATOR);
 #endif
 
+  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
+    CreateExtensionToolbarOverflowMenu();
+
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
 
@@ -725,6 +729,14 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
       }
     }
   }
+}
+
+void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
+#if defined(TOOLKIT_VIEWS)
+  AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
+  // TODO(devlin): Add the separator only if there are > 0 icons to show.
+  AddSeparator(ui::UPPER_SEPARATOR);
+#endif  // defined(TOOLKIT_VIEWS)
 }
 
 void WrenchMenuModel::CreateCutCopyPasteMenu(bool new_menu) {

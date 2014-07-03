@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/common/extension.h"
@@ -71,7 +72,7 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
 }
 
 void BrowserActionView::Layout() {
-  button_->SetBounds(0, y(), width(), height());
+  button_->SetBounds(0, 0, width(), height());
 }
 
 void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
@@ -184,20 +185,34 @@ void BrowserActionButton::ShowContextMenuForView(
   SetButtonPushed();
 
   // Reconstructs the menu every time because the menu's contents are dynamic.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
+  scoped_refptr<ExtensionContextMenuModel> context_menu_contents(
       new ExtensionContextMenuModel(extension(), browser_, delegate_));
-  menu_runner_.reset(new views::MenuRunner(context_menu_contents_.get()));
+  menu_runner_.reset(new views::MenuRunner(context_menu_contents.get()));
 
   context_menu_ = menu_runner_->GetMenu();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner_->RunMenuAt(
-          GetWidget(),
-          NULL,
-          gfx::Rect(screen_loc, size()),
-          views::MENU_ANCHOR_TOPLEFT,
-          source_type,
-          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+
+  views::Widget* parent = NULL;
+  int run_types = views::MenuRunner::HAS_MNEMONICS |
+                  views::MenuRunner::CONTEXT_MENU;
+  if (delegate_->ShownInsideMenu()) {
+    run_types |= views::MenuRunner::IS_NESTED;
+    // RunMenuAt expects a nested menu to be parented by the same widget as the
+    // already visible menu, in this case the Chrome menu.
+    parent = BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()
+                                                            ->app_menu()
+                                                            ->GetWidget();
+  } else {
+    parent = GetWidget();
+  }
+
+  if (menu_runner_->RunMenuAt(parent,
+                              NULL,
+                              gfx::Rect(screen_loc, size()),
+                              views::MENU_ANCHOR_TOPLEFT,
+                              source_type,
+                              run_types) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

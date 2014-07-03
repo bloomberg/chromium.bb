@@ -154,6 +154,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   // to false.
   void CreateCutCopyPasteMenu(bool new_menu);
 
+  // Add a menu item for the extension icons.
+  void CreateExtensionToolbarOverflowMenu();
+
   // Appends everything needed for the zoom menu: a menu break, then the zoom
   // menu content and then another menu break. If the new menu type is used,
   // |new_menu| should be set to true.

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
+#include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/feature_switch.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -678,9 +680,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         menu->use_new_menu() ? kHorizontalTouchPadding : kHorizontalPadding;
     fullscreen_button_->SetBorder(views::Border::CreateEmptyBorder(
         0, horizontal_padding, 0, horizontal_padding));
-    fullscreen_button_->set_background(
-        new InMenuButtonBackground(InMenuButtonBackground::SINGLE_BUTTON,
-                                   menu->use_new_menu()));
+    fullscreen_button_->set_background(new InMenuButtonBackground(
+        InMenuButtonBackground::SINGLE_BUTTON, menu->use_new_menu()));
     fullscreen_button_->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(
             menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
@@ -1144,10 +1145,11 @@ bool WrenchMenu::IsCommandEnabled(int command_id) const {
   if (command_id == 0)
     return false;  // The root item.
 
-  // The items representing the cut menu (cut/copy/paste) and zoom menu
-  // (increment/decrement/reset) are always enabled. The child views of these
-  // items enabled state updates appropriately.
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS)
+  // The items representing the cut menu (cut/copy/paste), zoom menu
+  // (increment/decrement/reset) and extension toolbar view are always enabled.
+  // The child views of these items enabled state updates appropriately.
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+      command_id == IDC_EXTENSIONS_OVERFLOW_MENU)
     return true;
 
   const Entry& entry = command_id_to_entry_.find(command_id)->second;
@@ -1160,7 +1162,8 @@ void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
     return;
   }
 
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+      command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These items are represented by child views. If ExecuteCommand is invoked
     // it means the user clicked on the area around the buttons and we should
     // not do anyting.
@@ -1176,7 +1179,8 @@ bool WrenchMenu::GetAccelerator(int command_id,
   if (IsBookmarkCommand(command_id))
     return false;
 
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+      command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These have special child views; don't show the accelerator for them.
     return false;
   }
@@ -1243,6 +1247,12 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
          model->GetCommandIdAt(i) == IDC_ZOOM_MINUS))
       height = kMenuItemContainingButtonsHeight;
 
+    scoped_ptr<ExtensionToolbarMenuView> extension_toolbar_menu_view;
+    if (model->GetCommandIdAt(i) == IDC_EXTENSIONS_OVERFLOW_MENU) {
+      extension_toolbar_menu_view.reset(new ExtensionToolbarMenuView(browser_));
+      height = extension_toolbar_menu_view->GetPreferredSize().height();
+    }
+
     // Add the menu item at the end.
     int menu_index = parent->HasSubmenu() ?
         parent->GetSubmenu()->child_count() : 0;
@@ -1253,6 +1263,12 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       PopulateMenu(item, model->GetSubmenuModelAt(i));
 
     switch (model->GetCommandIdAt(i)) {
+      case IDC_EXTENSIONS_OVERFLOW_MENU:
+        if (height > 0)
+          item->AddChildView(extension_toolbar_menu_view.release());
+        else
+          item->SetVisible(false);
+        break;
       case IDC_CUT:
         DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
         DCHECK_LT(i + 2, max);
@@ -1326,6 +1342,8 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
     // For menu items with a special menu height we use our special class to be
     // able to modify the item height.
     menu_item = new ButtonContainerMenuItemView(parent, command_id, height);
+    if (!parent->GetSubmenu())
+      parent->CreateSubmenu();
     parent->GetSubmenu()->AddChildViewAt(menu_item, menu_index);
   } else {
     // For all other cases we use the more generic way to add menu items.

@@ -54,6 +54,9 @@ class BrowserActionView : public views::View {
     // Called when a browser action becomes visible/hidden.
     virtual void OnBrowserActionVisibilityChanged() = 0;
 
+    // Whether the container for this button is shown inside a menu.
+    virtual bool ShownInsideMenu() const = 0;
+
    protected:
     virtual ~Delegate() {}
   };
