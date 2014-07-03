@@ -1193,6 +1193,8 @@
       'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',
       'browser/services/gcm/gcm_profile_service_factory.h',
+      'browser/services/gcm/permission_bubble_request_impl.cc',
+      'browser/services/gcm/permission_bubble_request_impl.h',
       'browser/services/gcm/permission_context_base.cc',
       'browser/services/gcm/permission_context_base.h',
       'browser/services/gcm/push_messaging_infobar_delegate.cc',

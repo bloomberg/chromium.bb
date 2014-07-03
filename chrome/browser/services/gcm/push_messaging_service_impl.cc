@@ -134,6 +134,7 @@ void PushMessagingServiceImpl::Register(
     const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
+    bool user_gesture,
     const content::PushMessagingService::RegisterCallback& callback) {
   if (!gcm_profile_service_->driver()) {
     NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
@@ -184,7 +185,7 @@ void PushMessagingServiceImpl::Register(
       web_contents,
       id,
       embedder,
-      false,  // TODO(miguelg): implement user_gesture, needed for bubbles.
+      user_gesture,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
                  weak_factory_.GetWeakPtr(),
                  sender_id,

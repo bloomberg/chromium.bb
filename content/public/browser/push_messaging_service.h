@@ -27,6 +27,7 @@ class CONTENT_EXPORT PushMessagingService {
                         const std::string& sender_id,
                         int renderer_id,
                         int render_frame_id,
+                        bool user_gesture,
                         const RegisterCallback& callback) = 0;
 };
 

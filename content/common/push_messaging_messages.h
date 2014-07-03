@@ -22,7 +22,8 @@ IPC_MESSAGE_ROUTED1(PushMessagingMsg_RegisterError,
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_Register,
+IPC_MESSAGE_CONTROL4(PushMessagingHostMsg_Register,
                      int32 /* routing_id */,
                      int32 /* callbacks_id */,
-                     std::string /* sender_id */)
+                     std::string /* sender_id */,
+                     bool /* user gesture */)

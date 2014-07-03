@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_SERVICES_GCM_PERMISSION_CONTEXT_BASE_H_
 
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
@@ -22,14 +24,19 @@ class WebContents;
 
 typedef base::Callback<void(bool)> BrowserPermissionCallback;
 
-// TODO(miguelg) Move this out of gcm into a generic place and make
+// TODO(miguelg): Move this out of gcm into a generic place and make
 // Midi permissions and others use it.
 namespace gcm {
 
-// This base class contains common operations for grating permissions.
+// This base class contains common operations for granting permissions.
 // It is spit out of Midi and Push and will be moved to a common place
 // so it can be used by both classes (and eventually others) in a separate
 // patch.
+// It supports both infobars and bubbles, but it handles them differently.
+// For bubbles, it manages the life cycle of permission request and persists the
+// permission choices when stated by the user.
+// For infobars however all that logic is managed by the internal
+// PermissionQueueController object.
 class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
@@ -65,7 +72,9 @@ class PermissionContextBase : public KeyedService {
 
   void NotifyPermissionSet(const PermissionRequestID& id,
                            const GURL& requesting_frame,
+                           const GURL& embedder,
                            const BrowserPermissionCallback& callback,
+                           bool persist,
                            bool allowed);
 
   // Implementors can override this method to update the icons on the
@@ -78,10 +87,20 @@ class PermissionContextBase : public KeyedService {
   PermissionQueueController* GetQueueController();
 
  private:
+  void UpdateContentSetting(
+      const GURL& requesting_frame,
+      const GURL& embedder,
+      bool allowed);
+
+  // Called when a bubble is no longer used so it can be cleaned up.
+  void CleanUpBubble(const PermissionRequestID& id);
+
   Profile* profile_;
   const ContentSettingsType permission_type_;
   base::WeakPtrFactory<PermissionContextBase> weak_factory_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
+  base::ScopedPtrHashMap<std::string, PermissionBubbleRequest>
+      pending_bubbles_;
 };
 
 }  // namespace gcm

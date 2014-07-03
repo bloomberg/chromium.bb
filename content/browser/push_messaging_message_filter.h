@@ -27,11 +27,13 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnRegister(int render_frame_id,
                   int callbacks_id,
-                  const std::string& sender_id);
+                  const std::string& sender_id,
+                  bool user_gesture);
 
   void DoRegister(int render_frame_id,
                   int callbacks_id,
-                  const std::string& sender_id);
+                  const std::string& sender_id,
+                  bool user_gesture);
 
   void DidRegister(int render_frame_id,
                    int callbacks_id,

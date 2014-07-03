@@ -9,6 +9,7 @@
 #include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 using blink::WebString;
@@ -36,8 +37,10 @@ void PushMessagingDispatcher::registerPushMessaging(
     blink::WebPushRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
   int callbacks_id = registration_callbacks_.Add(callbacks);
+
   Send(new PushMessagingHostMsg_Register(
-      routing_id(), callbacks_id, sender_id.utf8()));
+      routing_id(), callbacks_id, sender_id.utf8(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }
 
 void PushMessagingDispatcher::OnRegisterSuccess(

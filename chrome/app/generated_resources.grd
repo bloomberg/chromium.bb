@@ -14525,6 +14525,12 @@ Do you accept?
     <message name="IDS_PUSH_MESSSAGING_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to send push messages.">
       Do not allow any sites to send push messages
     </message>
+    <message name="IDS_PUSH_MESSAGES_BUBBLE_TEXT" desc="Question asked on the info bar whenever a domain wants to send push messages">
+        notification tray.
+    </message>
+    <message name="IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT" desc="Question asked on the info bar whenever a domain wants to send push messages">
+        notifications
+    </message>
   </messages>
   </release>
 </grit>

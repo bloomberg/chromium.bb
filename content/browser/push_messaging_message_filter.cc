@@ -36,7 +36,8 @@ bool PushMessagingMessageFilter::OnMessageReceived(
 
 void PushMessagingMessageFilter::OnRegister(int render_frame_id,
                                             int callbacks_id,
-                                            const std::string& sender_id) {
+                                            const std::string& sender_id,
+                                            bool user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(mvanouwerkerk): Validate arguments?
   BrowserThread::PostTask(BrowserThread::UI,
@@ -45,12 +46,14 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
                                      weak_factory_.GetWeakPtr(),
                                      render_frame_id,
                                      callbacks_id,
-                                     sender_id));
+                                     sender_id,
+                                     user_gesture));
 }
 
 void PushMessagingMessageFilter::DoRegister(int render_frame_id,
                                             int callbacks_id,
-                                            const std::string& sender_id) {
+                                            const std::string& sender_id,
+                                            bool user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service()) {
     DidRegister(render_frame_id, callbacks_id, GURL(), "", false);
@@ -62,6 +65,7 @@ void PushMessagingMessageFilter::DoRegister(int render_frame_id,
                       sender_id,
                       render_process_id_,
                       render_frame_id,
+                      user_gesture,
                       base::Bind(&PushMessagingMessageFilter::DidRegister,
                                  weak_factory_.GetWeakPtr(),
                                  render_frame_id,
