@@ -422,7 +422,7 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
  * @private
  */
 DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
-  var match = /^deviceNavigation:(.+)$/.exec(id);
+  var match = /^deviceNavigation:(.*)$/.exec(id);
   if (match) {
     chrome.notifications.clear(id, function() {});
     var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
