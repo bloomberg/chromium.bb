@@ -40,6 +40,7 @@ class FakeProxy : public Proxy {
   virtual void Stop() OVERRIDE {}
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE {}
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
+  virtual bool SupportsImplScrolling() const OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
   virtual bool CommitPendingForTesting() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;

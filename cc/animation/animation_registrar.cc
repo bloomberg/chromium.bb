@@ -8,7 +8,8 @@
 
 namespace cc {
 
-AnimationRegistrar::AnimationRegistrar() {}
+AnimationRegistrar::AnimationRegistrar() : supports_scroll_animations_(false) {
+}
 
 AnimationRegistrar::~AnimationRegistrar() {
   AnimationControllerMap copy = all_animation_controllers_;

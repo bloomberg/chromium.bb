@@ -143,6 +143,10 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 
   proxy_ = proxy.Pass();
   proxy_->Start();
+  if (settings_.accelerated_animation_enabled) {
+    animation_registrar_->set_supports_scroll_animations(
+        proxy_->SupportsImplScrolling());
+  }
 }
 
 LayerTreeHost::~LayerTreeHost() {

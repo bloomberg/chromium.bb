@@ -32,6 +32,8 @@ void FakeProxy::SetMaxPartialTextureUpdates(size_t max) {
   max_partial_texture_updates_ = max;
 }
 
+bool FakeProxy::SupportsImplScrolling() const { return false; }
+
 bool FakeProxy::CommitPendingForTesting() { return false; }
 
 scoped_ptr<base::Value> FakeProxy::AsValue() const {

@@ -258,6 +258,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       transfer_buffer_memory_limit_(0u) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
+  animation_registrar_->set_supports_scroll_animations(
+      proxy_->SupportsImplScrolling());
 
   SetDebugState(settings.initial_debug_state);
 

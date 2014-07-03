@@ -1073,8 +1073,9 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations);
 
-// Verifies that when scroll offset is animated on the impl thread, updates
-// are sent back to the main thread.
+// Verifies that scroll offset animations are only accepted when impl-scrolling
+// is supported, and that when scroll offset animations are accepted,
+// scroll offset updates are sent back to the main thread.
 class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     : public LayerTreeHostAnimationTest {
  public:
@@ -1104,7 +1105,12 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
         scoped_ptr<Animation> animation(Animation::Create(
             curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
         animation->set_needs_synchronized_start_time(true);
-        scroll_layer_->AddAnimation(animation.Pass());
+        bool animation_added = scroll_layer_->AddAnimation(animation.Pass());
+        bool impl_scrolling_supported =
+            layer_tree_host()->proxy()->SupportsImplScrolling();
+        EXPECT_EQ(impl_scrolling_supported, animation_added);
+        if (!impl_scrolling_supported)
+          EndTest();
         break;
       }
       default:
@@ -1121,9 +1127,8 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
   scoped_refptr<FakeContentLayer> scroll_layer_;
 };
 
-// SingleThreadProxy doesn't send scroll updates from LayerTreeHostImpl to
-// LayerTreeHost.
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetChangesArePropagated);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestScrollOffsetChangesArePropagated);
 
 // Ensure that animation time is correctly updated when animations are frozen
 // because of checkerboarding.

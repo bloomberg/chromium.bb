@@ -391,6 +391,10 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
   }
 }
 
+bool SingleThreadProxy::SupportsImplScrolling() const {
+  return false;
+}
+
 bool SingleThreadProxy::ShouldComposite() const {
   DCHECK(Proxy::IsImplThread());
   return layer_tree_host_impl_->visible() &&

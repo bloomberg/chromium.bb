@@ -662,6 +662,10 @@ void ThreadProxy::ForceSerializeOnSwapBuffersOnImplThread(
   completion->Signal();
 }
 
+bool ThreadProxy::SupportsImplScrolling() const {
+  return true;
+}
+
 void ThreadProxy::SetDebugState(const LayerTreeDebugState& debug_state) {
   Proxy::ImplThreadTaskRunner()->PostTask(
       FROM_HERE,

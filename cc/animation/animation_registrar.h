@@ -51,11 +51,19 @@ class CC_EXPORT AnimationRegistrar {
     return all_animation_controllers_;
   }
 
+  void set_supports_scroll_animations(bool supports_scroll_animations) {
+    supports_scroll_animations_ = supports_scroll_animations;
+  }
+
+  bool supports_scroll_animations() { return supports_scroll_animations_; }
+
  private:
   AnimationRegistrar();
 
   AnimationControllerMap active_animation_controllers_;
   AnimationControllerMap all_animation_controllers_;
+
+  bool supports_scroll_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationRegistrar);
 };
