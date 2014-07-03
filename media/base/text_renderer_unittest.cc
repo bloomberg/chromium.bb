@@ -184,10 +184,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void Play() {
-    EXPECT_CALL(*this, OnPlay());
-    text_renderer_->Play(base::Bind(&TextRendererTest::OnPlay,
-                                    base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    text_renderer_->StartPlaying();
   }
 
   void Pause() {
@@ -215,7 +212,6 @@ class TextRendererTest : public testing::Test {
 
   MOCK_METHOD0(OnEnd, void());
   MOCK_METHOD0(OnStop, void());
-  MOCK_METHOD0(OnPlay, void());
   MOCK_METHOD0(OnPause, void());
   MOCK_METHOD0(OnFlush, void());
 

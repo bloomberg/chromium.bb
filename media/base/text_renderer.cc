@@ -46,7 +46,7 @@ void TextRenderer::Initialize(const base::Closure& ended_cb) {
   state_ = kPaused;
 }
 
-void TextRenderer::Play(const base::Closure& callback) {
+void TextRenderer::StartPlaying() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPaused) << "state_ " << state_;
 
@@ -62,7 +62,6 @@ void TextRenderer::Play(const base::Closure& callback) {
   }
 
   state_ = kPlaying;
-  callback.Run();
 }
 
 void TextRenderer::Pause(const base::Closure& callback) {

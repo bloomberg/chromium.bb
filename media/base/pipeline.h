@@ -294,10 +294,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void OnStateTransition(PipelineStatus status);
   void StateTransitionTask(PipelineStatus status);
 
-  // Initiates an asynchronous preroll call sequence executing |done_cb|
-  // with the final status when completed.
-  void DoInitialPreroll(const PipelineStatusCB& done_cb);
-
   // Initiates an asynchronous pause-flush-seek-preroll call sequence
   // executing |done_cb| with the final status when completed.
   //

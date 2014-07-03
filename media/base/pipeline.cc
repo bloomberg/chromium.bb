@@ -353,8 +353,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
 
   // Guard against accidentally clearing |pending_callbacks_| for states that
   // use it as well as states that should not be using it.
-  DCHECK_EQ(pending_callbacks_.get() != NULL,
-            (state_ == kInitPrerolling || state_ == kSeeking));
+  DCHECK_EQ(pending_callbacks_.get() != NULL, state_ == kSeeking);
 
   pending_callbacks_.reset();
 
@@ -397,7 +396,8 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         metadata_cb_.Run(metadata);
       }
 
-      return DoInitialPreroll(done_cb);
+      // TODO(scherkus): Fold kInitPrerolling state into kPlaying.
+      return done_cb.Run(PIPELINE_OK);
 
     case kPlaying:
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
@@ -406,6 +406,8 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         audio_renderer_->StartPlayingFrom(start_timestamp_);
       if (video_renderer_)
         video_renderer_->StartPlayingFrom(start_timestamp_);
+      if (text_renderer_)
+        text_renderer_->StartPlaying();
 
       PlaybackRateChangedTask(GetPlaybackRate());
       VolumeChangedTask(GetVolume());
@@ -426,19 +428,6 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
 //
 // That being said, deleting the renderers while keeping |pending_callbacks_|
 // running on the media thread would result in crashes.
-void Pipeline::DoInitialPreroll(const PipelineStatusCB& done_cb) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!pending_callbacks_.get());
-  SerialRunner::Queue bound_fns;
-
-  // Preroll renderers.
-  if (text_renderer_) {
-    bound_fns.Push(base::Bind(
-        &TextRenderer::Play, base::Unretained(text_renderer_.get())));
-  }
-
-  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
-}
 
 #if DCHECK_IS_ON
 static void VerifyBufferingStates(BufferingState* audio_buffering_state,
@@ -487,12 +476,6 @@ void Pipeline::DoSeek(
   // Seek demuxer.
   bound_fns.Push(base::Bind(
       &Demuxer::Seek, base::Unretained(demuxer_), seek_timestamp));
-
-  // Preroll renderers.
-  if (text_renderer_) {
-    bound_fns.Push(base::Bind(
-        &TextRenderer::Play, base::Unretained(text_renderer_.get())));
-  }
 
   pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }

@@ -44,9 +44,8 @@ class MEDIA_EXPORT TextRenderer {
   // end of stream, following a play request.
   void Initialize(const base::Closure& ended_cb);
 
-  // Start text track cue decoding and rendering, executing |callback| when
-  // playback is underway.
-  void Play(const base::Closure& callback);
+  // Start text track cue decoding and rendering.
+  void StartPlaying();
 
   // Temporarily suspend decoding and rendering, executing |callback| when
   // playback has been suspended.
