@@ -29,10 +29,20 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using extensions::Extension;
+using views::LabelButtonBorder;
+
+namespace {
+
+// We have smaller insets than normal STYLE_TEXTBUTTON buttons so that we can
+// fit user supplied icons in without clipping them.
+const int kBorderInset = 4;
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
@@ -342,6 +352,13 @@ void BrowserActionButton::OnGestureEvent(ui::GestureEvent* event) {
     MenuButton::OnGestureEvent(event);
   else
     LabelButton::OnGestureEvent(event);
+}
+
+scoped_ptr<LabelButtonBorder> BrowserActionButton::CreateDefaultBorder() const {
+  scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
+  border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
+                                 kBorderInset, kBorderInset));
+  return border.Pass();
 }
 
 bool BrowserActionButton::AcceleratorPressed(
