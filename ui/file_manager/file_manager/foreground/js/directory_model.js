@@ -164,13 +164,35 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 
 /**
  * Invoked when a change in the directory is detected by the watcher.
+ * @param {Event} event Event object.
  * @private
  */
-DirectoryModel.prototype.onWatcherDirectoryChanged_ = function() {
-  // Clear the metadata cache since something in this directory has changed.
+DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   var directoryEntry = this.getCurrentDirEntry();
 
-  this.rescanSoon(true);
+  if (event.changedFiles) {
+    var urls = event.changedFiles.map(function(change) { return change.url; });
+    util.URLsToEntries(urls).then(function(result) {
+      // Removes the metadata of invalid entries.
+      if (result.failureUrls.length > 0)
+        this.metadataCache_.clearByUrl(result.failureUrls, '*');
+
+      // Rescans after force-refreshing the metadata of the changed entries.
+      var entries = result.entries;
+      if (entries.length) {
+        this.currentDirContents_.prefetchMetadata(entries, true, function() {
+          this.rescanSoon(false);
+        }.bind(this));
+      }
+    }.bind(this)).catch(function(error) {
+      console.error('Error in proceeding the changed event.', error,
+                    'Fallback to force-refresh');
+      this.rescanSoon(true);
+    }.bind(this));
+  } else {
+    // Invokes force refresh if the detailed information isn't provided.
+    this.rescanSoon(true);
+  }
 };
 
 /**

@@ -50,6 +50,7 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
   if (this.watchedDirectoryEntry_ &&
       event.entry.toURL() === this.watchedDirectoryEntry_.toURL()) {
     var e = new Event('watcher-directory-changed');
+    e.changedFiles = event.changedFiles;
     this.dispatchEvent(e);
   }
 };

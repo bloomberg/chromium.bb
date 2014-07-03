@@ -420,11 +420,23 @@ MetadataCache.prototype.clear = function(entries, type) {
   if (!(entries instanceof Array))
     entries = [entries];
 
+  this.clearByUrl(
+      entries.map(function(entry) { return entry.toURL(); }),
+      type);
+};
+
+/**
+ * Clears the cached metadata values. This method takes an URL since some items
+ * may be already removed and can't be fetches their entry.
+ *
+ * @param {Array.<string>} urls The list of URLs.
+ * @param {string} type The metadata types or * for any type.
+ */
+MetadataCache.prototype.clearByUrl = function(urls, type) {
   var types = type.split('|');
 
-  for (var index = 0; index < entries.length; index++) {
-    var entry = entries[index];
-    var entryURL = entry.toURL();
+  for (var index = 0; index < urls.length; index++) {
+    var entryURL = urls[index];
     if (entryURL in this.cache_) {
       if (type === '*') {
         this.cache_[entryURL].properties = {};
