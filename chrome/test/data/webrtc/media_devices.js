@@ -29,7 +29,7 @@ function getSources() {
 
 /**
  * Queries for video input devices on the current system using the
- * getMediaDevices API.
+ * getSources API.
  *
  * This does not guarantee that a getUserMedia with video will succeed, as the
  * camera could be busy for instance.
@@ -38,10 +38,10 @@ function getSources() {
  * no-video-input-devices otherwise.
  */
 function hasVideoInputDeviceOnSystem() {
-  navigator.getMediaDevices(function(devices) {
+  MediaStreamTrack.getSources(function(devices) {
     var hasVideoInputDevice = false;
     devices.forEach(function(device) {
-      if (device.kind == 'videoinput')
+      if (device.kind == 'video')
         hasVideoInputDevice = true;
     });
 

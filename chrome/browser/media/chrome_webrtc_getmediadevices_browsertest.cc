@@ -181,8 +181,10 @@ INSTANTIATE_TEST_CASE_P(WebRtcGetMediaDevicesBrowserTests,
                         WebRtcGetMediaDevicesBrowserTest,
                         testing::ValuesIn(kParamsToRunTestsWith));
 
+// getMediaDevices has been removed and will be replaced
+// MediaDevices.enumerateDevices. http://crbug.com/388648.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       GetMediaDevicesWithoutAccess) {
+                       DISABLED_GetMediaDevicesWithoutAccess) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -199,6 +201,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   }
 }
 
+// getMediaDevices has been removed and will be replaced
+// MediaDevices.enumerateDevices. http://crbug.com/388648.
 // Disabled, fails due to http://crbug.com/382391.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesWithAccess) {
@@ -220,8 +224,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   }
 }
 
+// getMediaDevices has been removed and will be replaced
+// MediaDevices.enumerateDevices. http://crbug.com/388648.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       GetMediaDevicesEqualsGetSourcesWithoutAccess) {
+                       DISABLED_GetMediaDevicesEqualsGetSourcesWithoutAccess) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -252,6 +258,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   EXPECT_EQ(sources.end(), sources_it);
 }
 
+// getMediaDevices has been removed and will be replaced
+// MediaDevices.enumerateDevices. http://crbug.com/388648.
 // Disabled, fails due to http://crbug.com/382391.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesEqualsGetSourcesWithAccess) {
