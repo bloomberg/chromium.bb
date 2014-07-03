@@ -17,34 +17,36 @@ class WizardScreen;
 class ScreenObserver {
  public:
   // Each login screen or a view shown within login wizard view is itself a
-  // state. Upon exit each view returns one of the results by calling
-  // OnExit() method. Depending on the result and the current view or state
-  // login wizard decides what is the next view to show. There must be an
-  // exit code for each way to exit the screen for each screen.
+  // state. Upon exit each view returns one of the results by calling OnExit()
+  // method. Depending on the result and the current view or state login wizard
+  // decides what is the next view to show. There must be an exit code for each
+  // way to exit the screen for each screen. (Numeric ids are provided to
+  // facilitate interpretation of log files only, they are subject to change
+  // without notice.)
   enum ExitCodes {
     // "Continue" was pressed on network screen and network is online.
-    NETWORK_CONNECTED,
-    HID_DETECTION_COMPLETED,
+    NETWORK_CONNECTED = 0,
+    HID_DETECTION_COMPLETED = 1,
     // Connection failed while trying to load a WebPageScreen.
-    CONNECTION_FAILED,
-    UPDATE_INSTALLED,
-    UPDATE_NOUPDATE,
-    UPDATE_ERROR_CHECKING_FOR_UPDATE,
-    UPDATE_ERROR_UPDATING,
-    USER_IMAGE_SELECTED,
-    EULA_ACCEPTED,
-    EULA_BACK,
-    ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED,
-    ENTERPRISE_ENROLLMENT_COMPLETED,
-    ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED,
-    ENTERPRISE_ENROLLMENT_BACK,
-    RESET_CANCELED,
-    KIOSK_AUTOLAUNCH_CANCELED,
-    KIOSK_AUTOLAUNCH_CONFIRMED,
-    KIOSK_ENABLE_COMPLETED,
-    TERMS_OF_SERVICE_DECLINED,
-    TERMS_OF_SERVICE_ACCEPTED,
-    WRONG_HWID_WARNING_SKIPPED,
+    CONNECTION_FAILED = 2,
+    UPDATE_INSTALLED = 3,
+    UPDATE_NOUPDATE = 4,
+    UPDATE_ERROR_CHECKING_FOR_UPDATE = 5,
+    UPDATE_ERROR_UPDATING = 6,
+    USER_IMAGE_SELECTED = 7,
+    EULA_ACCEPTED = 8,
+    EULA_BACK = 9,
+    ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED = 10,
+    ENTERPRISE_ENROLLMENT_COMPLETED = 11,
+    ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED = 12,
+    ENTERPRISE_ENROLLMENT_BACK = 13,
+    RESET_CANCELED = 14,
+    KIOSK_AUTOLAUNCH_CANCELED = 15,
+    KIOSK_AUTOLAUNCH_CONFIRMED = 16,
+    KIOSK_ENABLE_COMPLETED = 17,
+    TERMS_OF_SERVICE_DECLINED = 18,
+    TERMS_OF_SERVICE_ACCEPTED = 19,
+    WRONG_HWID_WARNING_SKIPPED = 20,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 
