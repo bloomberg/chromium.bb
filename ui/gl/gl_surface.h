@@ -10,6 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_implementation.h"
@@ -17,6 +20,7 @@
 namespace gfx {
 
 class GLContext;
+class GLImage;
 class VSyncProvider;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
@@ -102,6 +106,22 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // of screen refresh. If unavailable, returns NULL.
   virtual VSyncProvider* GetVSyncProvider();
 
+  // Schedule an overlay plane to be shown at swap time.
+  // |z_order| specifies the stacking order of the plane relative to the
+  // main framebuffer located at index 0. For the case where there is no
+  // main framebuffer, overlays may be scheduled at 0, taking its place.
+  // |transform| specifies how the buffer is to be transformed during
+  // composition.
+  // |image| to be presented by the overlay.
+  // |bounds_rect| specify where it is supposed to be on the screen in pixels.
+  // |crop_rect| specifies the region within the buffer to be placed inside
+  // |bounds_rect|.
+  virtual bool ScheduleOverlayPlane(int z_order,
+                                    OverlayTransform transform,
+                                    GLImage* image,
+                                    const Rect& bounds_rect,
+                                    const RectF& crop_rect);
+
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window);
@@ -156,6 +176,11 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetConfig() OVERRIDE;
   virtual unsigned GetFormat() OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
+  virtual bool ScheduleOverlayPlane(int z_order,
+                                    OverlayTransform transform,
+                                    GLImage* image,
+                                    const Rect& bounds_rect,
+                                    const RectF& crop_rect) OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
 

@@ -226,6 +226,15 @@ VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
 
+bool GLSurface::ScheduleOverlayPlane(int z_order,
+                                     OverlayTransform transform,
+                                     GLImage* image,
+                                     const Rect& bounds_rect,
+                                     const RectF& crop_rect) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -332,6 +341,15 @@ unsigned GLSurfaceAdapter::GetFormat() {
 
 VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
   return surface_->GetVSyncProvider();
+}
+
+bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
+                                            OverlayTransform transform,
+                                            GLImage* image,
+                                            const Rect& bounds_rect,
+                                            const RectF& crop_rect) {
+  return surface_->ScheduleOverlayPlane(
+      z_order, transform, image, bounds_rect, crop_rect);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
