@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/crl_set_storage.h"
 
 static int Usage(const char* argv0) {
   fprintf(stderr, "Usage: %s <crl-set file> [<delta file>]"
@@ -46,13 +47,13 @@ int main(int argc, char** argv) {
   }
 
   scoped_refptr<net::CRLSet> crl_set, final_crl_set;
-  if (!net::CRLSet::Parse(crl_set_bytes, &crl_set)) {
+  if (!net::CRLSetStorage::Parse(crl_set_bytes, &crl_set)) {
     fprintf(stderr, "Failed to parse CRLSet\n");
     return 1;
   }
 
   if (!delta_bytes.empty()) {
-    if (!crl_set->ApplyDelta(delta_bytes, &final_crl_set)) {
+    if (!net::CRLSetStorage::ApplyDelta(crl_set, delta_bytes, &final_crl_set)) {
       fprintf(stderr, "Failed to apply delta to CRLSet\n");
       return 1;
     }
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
   }
 
   if (!output_filename.empty()) {
-    const std::string out = final_crl_set->Serialize();
+    const std::string out = net::CRLSetStorage::Serialize(final_crl_set);
     if (base::WriteFile(output_filename, out.data(), out.size()) == -1) {
       fprintf(stderr, "Failed to write resulting CRL set\n");
       return 1;

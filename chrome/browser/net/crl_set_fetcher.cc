@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/crl_set_storage.h"
 #include "net/ssl/ssl_config_service.h"
 
 using component_updater::ComponentUpdateService;
@@ -95,7 +96,7 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
       return;
   }
 
-  if (!net::CRLSet::Parse(crl_set_bytes, out_crl_set)) {
+  if (!net::CRLSetStorage::Parse(crl_set_bytes, out_crl_set)) {
     LOG(WARNING) << "Failed to parse CRL set from " << path.MaybeAsASCII();
     return;
   }
@@ -186,13 +187,13 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
   }
 
   bool is_delta;
-  if (!net::CRLSet::GetIsDeltaUpdate(crl_set_bytes, &is_delta)) {
+  if (!net::CRLSetStorage::GetIsDeltaUpdate(crl_set_bytes, &is_delta)) {
     LOG(WARNING) << "GetIsDeltaUpdate failed on CRL set from update CRX";
     return false;
   }
 
   if (!is_delta) {
-    if (!net::CRLSet::Parse(crl_set_bytes, &crl_set_)) {
+    if (!net::CRLSetStorage::Parse(crl_set_bytes, &crl_set_)) {
       LOG(WARNING) << "Failed to parse CRL set from update CRX";
       return false;
     }
@@ -205,13 +206,15 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
     }
   } else {
     scoped_refptr<net::CRLSet> new_crl_set;
-    if (!crl_set_->ApplyDelta(crl_set_bytes, &new_crl_set)) {
+    if (!net::CRLSetStorage::ApplyDelta(
+            crl_set_, crl_set_bytes, &new_crl_set)) {
       LOG(WARNING) << "Failed to parse delta CRL set";
       return false;
     }
     VLOG(1) << "Applied CRL set delta #" << crl_set_->sequence()
             << "->#" << new_crl_set->sequence();
-    const std::string new_crl_set_bytes = new_crl_set->Serialize();
+    const std::string new_crl_set_bytes =
+        net::CRLSetStorage::Serialize(new_crl_set);
     int size = base::checked_cast<int>(new_crl_set_bytes.size());
     if (base::WriteFile(save_to, new_crl_set_bytes.data(), size) != size) {
       LOG(WARNING) << "Failed to save new CRL set to disk";

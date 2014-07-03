@@ -15,15 +15,12 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_cert_types.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace net {
 
 // A CRLSet is a structure that lists the serial numbers of revoked
 // certificates from a number of issuers where issuers are identified by the
 // SHA256 of their SubjectPublicKeyInfo.
+// CRLSetStorage is responsible for creating CRLSet instances.
 class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
  public:
   enum Result {
@@ -31,11 +28,6 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
     UNKNOWN,  // the CRL for the certificate is not included in the set.
     GOOD,     // the certificate is not listed.
   };
-
-  // Parse parses the bytes in |data| and, on success, puts a new CRLSet in
-  // |out_crl_set| and returns true.
-  static bool Parse(base::StringPiece data,
-                    scoped_refptr<CRLSet>* out_crl_set);
 
   // CheckSPKI checks whether the given SPKI has been listed as blocked.
   //   spki_hash: the SHA256 of the SubjectPublicKeyInfo of the certificate.
@@ -53,21 +45,6 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // IsExpired returns true iff the current time is past the NotAfter time
   // specified in the CRLSet.
   bool IsExpired() const;
-
-  // ApplyDelta returns a new CRLSet in |out_crl_set| that is the result of
-  // updating the current CRL set with the delta information in |delta_bytes|.
-  bool ApplyDelta(const base::StringPiece& delta_bytes,
-                  scoped_refptr<CRLSet>* out_crl_set);
-
-  // GetIsDeltaUpdate extracts the header from |bytes|, sets *is_delta to
-  // whether |bytes| is a delta CRL set or not and returns true. In the event
-  // of a parse error, it returns false.
-  static bool GetIsDeltaUpdate(const base::StringPiece& bytes, bool *is_delta);
-
-  // Serialize returns a string of bytes suitable for passing to Parse. Parsing
-  // and serializing a CRLSet is a lossless operation - the resulting bytes
-  // will be equal.
-  std::string Serialize() const;
 
   // sequence returns the sequence number of this CRL set. CRL sets generated
   // by the same source are given strictly monotonically increasing sequence
@@ -103,10 +80,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   ~CRLSet();
 
   friend class base::RefCountedThreadSafe<CRLSet>;
-
-  // CopyBlockedSPKIsFromHeader sets |blocked_spkis_| to the list of values
-  // from "BlockedSPKIs" in |header_dict|.
-  bool CopyBlockedSPKIsFromHeader(base::DictionaryValue* header_dict);
+  friend class CRLSetStorage;
 
   uint32 sequence_;
   CRLList crls_;

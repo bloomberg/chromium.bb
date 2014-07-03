@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sha1.h"
@@ -19,6 +20,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/crl_set_storage.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
@@ -1216,7 +1218,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
       reinterpret_cast<const char*>(kCRLSetLeafSPKIBlocked),
       sizeof(kCRLSetLeafSPKIBlocked));
   scoped_refptr<CRLSet> crl_set;
-  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(cert.get(),
                  "127.0.0.1",
@@ -1231,7 +1233,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
   crl_set_bytes =
       base::StringPiece(reinterpret_cast<const char*>(kCRLSetLeafSerialBlocked),
                         sizeof(kCRLSetLeafSerialBlocked));
-  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(cert.get(),
                  "127.0.0.1",
@@ -1283,7 +1285,7 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
   base::StringPiece crl_set_bytes =
       base::StringPiece(reinterpret_cast<const char*>(kCRLSetQUICSerialBlocked),
                         sizeof(kCRLSetQUICSerialBlocked));
-  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(leaf.get(),
                  "test.example.com",
