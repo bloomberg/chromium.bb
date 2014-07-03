@@ -308,11 +308,7 @@ void TextTrackList::scheduleChangeEvent()
     // Fire a simple event named change at the media element's textTracks
     // attribute's TextTrackList object.
 
-    EventInit initializer;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    m_asyncEventQueue->enqueueEvent(Event::create(EventTypeNames::change, initializer));
+    m_asyncEventQueue->enqueueEvent(Event::create(EventTypeNames::change));
 }
 
 void TextTrackList::scheduleRemoveTrackEvent(PassRefPtrWillBeRawPtr<TextTrack> track)

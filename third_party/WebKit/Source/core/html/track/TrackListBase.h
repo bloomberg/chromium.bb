@@ -101,10 +101,7 @@ public:
 
     void scheduleChangeEvent()
     {
-        EventInit initializer;
-        initializer.bubbles = false;
-        initializer.cancelable = false;
-        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::change, initializer);
+        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::change);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }
