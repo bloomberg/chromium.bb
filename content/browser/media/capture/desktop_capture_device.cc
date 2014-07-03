@@ -477,7 +477,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             window_capturer.release(),
             webrtc::MouseCursorMonitor::CreateForWindow(options, source.id)));
-        IncrementDesktopCaptureCounter(WINDOW_CATPTURER_CREATED);
+        IncrementDesktopCaptureCounter(WINDOW_CAPTURER_CREATED);
       }
       break;
     }

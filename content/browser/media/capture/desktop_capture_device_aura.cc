@@ -330,7 +330,7 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
     } else {
       IncrementDesktopCaptureCounter(succeeded
                                          ? FIRST_WINDOW_CAPTURE_SUCCEEDED
-                                         : FIRST_WINDOW_CAPTURE_SUCCEEDED);
+                                         : FIRST_WINDOW_CAPTURE_FAILED);
     }
   }
 }
@@ -523,7 +523,7 @@ media::VideoCaptureDevice* DesktopCaptureDeviceAura::Create(
     const DesktopMediaID& source) {
   IncrementDesktopCaptureCounter(source.type == DesktopMediaID::TYPE_SCREEN
                                      ? SCREEN_CAPTURER_CREATED
-                                     : WINDOW_CATPTURER_CREATED);
+                                     : WINDOW_CAPTURER_CREATED);
   return new DesktopCaptureDeviceAura(source);
 }
 
