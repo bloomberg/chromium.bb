@@ -268,8 +268,6 @@ TEST(DiskBasedCertCache, GetBrokenCert) {
   cache.Get(kCert1.cache_key, get_callback.callback());
   get_callback.WaitForResult();
 
-  scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), kCert1.file_name));
   EXPECT_FALSE(get_callback.cert_handle());
 }
 
@@ -473,6 +471,61 @@ TEST(DiskBasedCertCache, DeletedCertCache) {
   cache.reset();
   set_callback.WaitForResult();
   EXPECT_EQ(std::string(), set_callback.key());
+}
+
+// Issues two successive read requests for a certificate, and then
+// checks that the DiskBasedCertCache correctly read and recorded
+// reading through the in-memory MRU cache.
+TEST(DiskBasedCertCache, MemCacheGet) {
+  ScopedMockTransaction trans1(
+      CreateMockTransaction(kCert1.cache_key, TEST_MODE_NORMAL));
+  MockDiskCache backend;
+  ASSERT_NO_FATAL_FAILURE(
+      ImportCert(&backend, kCert1, false /* not corrupted */));
+  DiskBasedCertCache cache(&backend);
+
+  TestGetCallback get_callback1, get_callback2;
+  cache.Get(kCert1.cache_key, get_callback1.callback());
+  get_callback1.WaitForResult();
+  EXPECT_EQ(0U, cache.mem_cache_hits_for_testing());
+  cache.Get(kCert1.cache_key, get_callback2.callback());
+  get_callback2.WaitForResult();
+  EXPECT_EQ(1U, cache.mem_cache_hits_for_testing());
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback1.cert_handle(),
+                                            get_callback2.cert_handle()));
+}
+
+// Reads a corrupted certificate from the disk cache, and then overwrites
+// it and checks that the uncorrupted version was stored in the in-memory
+// cache.
+TEST(DiskBasedCertCache, CorruptOverwrite) {
+  ScopedMockTransaction trans1(
+      CreateMockTransaction(kCert1.cache_key, TEST_MODE_NORMAL));
+  MockDiskCache backend;
+  backend.set_double_create_check(false);
+  ASSERT_NO_FATAL_FAILURE(ImportCert(&backend, kCert1, true /* corrupted */));
+  DiskBasedCertCache cache(&backend);
+  TestGetCallback get_callback1, get_callback2;
+
+  cache.Get(kCert1.cache_key, get_callback1.callback());
+  get_callback1.WaitForResult();
+  EXPECT_FALSE(get_callback2.cert_handle());
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), kCert1.file_name));
+  TestSetCallback set_callback;
+
+  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  set_callback.WaitForResult();
+  EXPECT_EQ(kCert1.cache_key, set_callback.key());
+  EXPECT_EQ(0U, cache.mem_cache_hits_for_testing());
+
+  cache.Get(kCert1.cache_key, get_callback2.callback());
+  get_callback2.WaitForResult();
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback2.cert_handle(),
+                                            cert->os_cert_handle()));
+  EXPECT_EQ(1U, cache.mem_cache_hits_for_testing());
+  ASSERT_NO_FATAL_FAILURE(CheckCertCached(&backend, kCert1));
 }
 
 }  // namespace net

@@ -19,6 +19,9 @@ namespace net {
 
 namespace {
 
+// TODO(brandonsalmon): change this number to improve performance.
+const size_t kMemoryCacheMaxSize = 30;
+
 // Used to obtain a unique cache key for a certificate in the form of
 // "cert:<hash>".
 std::string GetCacheKeyToCert(const X509Certificate::OSCertHandle cert_handle) {
@@ -108,7 +111,7 @@ DiskBasedCertCache::WriteWorker::WriteWorker(
     X509Certificate::OSCertHandle cert_handle,
     const base::Closure& cleanup_callback)
     : backend_(backend),
-      cert_handle_(cert_handle),
+      cert_handle_(X509Certificate::DupOSCertHandle(cert_handle)),
       key_(key),
       canceled_(false),
       entry_(NULL),
@@ -117,6 +120,12 @@ DiskBasedCertCache::WriteWorker::WriteWorker(
       cleanup_callback_(cleanup_callback),
       io_callback_(
           base::Bind(&WriteWorker::OnIOComplete, base::Unretained(this))) {
+}
+
+DiskBasedCertCache::WriteWorker::~WriteWorker() {
+  X509Certificate::FreeOSCertHandle(cert_handle_);
+  if (entry_)
+    entry_->Close();
 }
 
 void DiskBasedCertCache::WriteWorker::Start() {
@@ -133,6 +142,10 @@ void DiskBasedCertCache::WriteWorker::Start() {
 void DiskBasedCertCache::WriteWorker::AddCallback(
     const SetCallback& user_callback) {
   user_callbacks_.push_back(user_callback);
+}
+
+void DiskBasedCertCache::WriteWorker::Cancel() {
+  canceled_ = true;
 }
 
 void DiskBasedCertCache::WriteWorker::OnIOComplete(int rv) {
@@ -206,10 +219,9 @@ int DiskBasedCertCache::WriteWorker::DoOpen() {
 }
 
 int DiskBasedCertCache::WriteWorker::DoOpenComplete(int rv) {
-  if (rv < 0) {
-    state_ = STATE_NONE;
+  if (rv < 0)
     return rv;
-  }
+
   state_ = STATE_WRITE;
   return OK;
 }
@@ -218,10 +230,8 @@ int DiskBasedCertCache::WriteWorker::DoWrite() {
   std::string write_data;
   bool encoded = X509Certificate::GetDEREncoded(cert_handle_, &write_data);
 
-  if (!encoded) {
-    state_ = STATE_NONE;
+  if (!encoded)
     return ERR_FAILED;
-  }
 
   buffer_ = new IOBuffer(write_data.size());
   io_buf_len_ = write_data.size();
@@ -238,11 +248,17 @@ int DiskBasedCertCache::WriteWorker::DoWrite() {
 }
 
 int DiskBasedCertCache::WriteWorker::DoWriteComplete(int rv) {
-  state_ = STATE_NONE;
   if (rv < io_buf_len_)
     return ERR_FAILED;
 
   return OK;
+}
+
+void DiskBasedCertCache::WriteWorker::Finish(int rv) {
+  cleanup_callback_.Run();
+  cleanup_callback_.Reset();
+  RunCallbacks(rv);
+  delete this;
 }
 
 void DiskBasedCertCache::WriteWorker::RunCallbacks(int rv) {
@@ -258,22 +274,6 @@ void DiskBasedCertCache::WriteWorker::RunCallbacks(int rv) {
   user_callbacks_.clear();
 }
 
-void DiskBasedCertCache::WriteWorker::Finish(int rv) {
-  cleanup_callback_.Run();
-  cleanup_callback_.Reset();
-  RunCallbacks(rv);
-  delete this;
-}
-
-void DiskBasedCertCache::WriteWorker::Cancel() {
-  canceled_ = true;
-}
-
-DiskBasedCertCache::WriteWorker::~WriteWorker() {
-  if (entry_)
-    entry_->Close();
-}
-
 // ReadWorkers represent pending Get jobs in the DiskBasedCertCache. Each
 // certificate requested to be retrieved from the cache is assigned a ReadWorker
 // on a one-to-one basis. The same |key| should not have multiple ReadWorkers
@@ -287,7 +287,7 @@ class DiskBasedCertCache::ReadWorker {
   // regardless of success or failure.
   ReadWorker(disk_cache::Backend* backend,
              const std::string& key,
-             const base::Closure& cleanup_callback);
+             const GetCallback& cleanup_callback);
 
   ~ReadWorker();
 
@@ -335,15 +335,14 @@ class DiskBasedCertCache::ReadWorker {
   scoped_refptr<IOBuffer> buffer_;
   int io_buf_len_;
 
-  base::Closure cleanup_callback_;
+  GetCallback cleanup_callback_;
   std::vector<GetCallback> user_callbacks_;
   CompletionCallback io_callback_;
 };
 
-DiskBasedCertCache::ReadWorker::ReadWorker(
-    disk_cache::Backend* backend,
-    const std::string& key,
-    const base::Closure& cleanup_callback)
+DiskBasedCertCache::ReadWorker::ReadWorker(disk_cache::Backend* backend,
+                                           const std::string& key,
+                                           const GetCallback& cleanup_callback)
     : backend_(backend),
       cert_handle_(NULL),
       key_(key),
@@ -354,6 +353,13 @@ DiskBasedCertCache::ReadWorker::ReadWorker(
       cleanup_callback_(cleanup_callback),
       io_callback_(
           base::Bind(&ReadWorker::OnIOComplete, base::Unretained(this))) {
+}
+
+DiskBasedCertCache::ReadWorker::~ReadWorker() {
+  if (entry_)
+    entry_->Close();
+  if (cert_handle_)
+    X509Certificate::FreeOSCertHandle(cert_handle_);
 }
 
 void DiskBasedCertCache::ReadWorker::Start() {
@@ -370,6 +376,10 @@ void DiskBasedCertCache::ReadWorker::Start() {
 void DiskBasedCertCache::ReadWorker::AddCallback(
     const GetCallback& user_callback) {
   user_callbacks_.push_back(user_callback);
+}
+
+void DiskBasedCertCache::ReadWorker::Cancel() {
+  canceled_ = true;
 }
 
 void DiskBasedCertCache::ReadWorker::OnIOComplete(int rv) {
@@ -418,10 +428,9 @@ int DiskBasedCertCache::ReadWorker::DoOpen() {
 }
 
 int DiskBasedCertCache::ReadWorker::DoOpenComplete(int rv) {
-  if (rv < 0) {
-    state_ = STATE_NONE;
+  if (rv < 0)
     return rv;
-  }
+
   state_ = STATE_READ;
   return OK;
 }
@@ -435,7 +444,6 @@ int DiskBasedCertCache::ReadWorker::DoRead() {
 }
 
 int DiskBasedCertCache::ReadWorker::DoReadComplete(int rv) {
-  state_ = STATE_NONE;
   if (rv < io_buf_len_)
     return ERR_FAILED;
 
@@ -447,6 +455,13 @@ int DiskBasedCertCache::ReadWorker::DoReadComplete(int rv) {
   return OK;
 }
 
+void DiskBasedCertCache::ReadWorker::Finish(int rv) {
+  cleanup_callback_.Run(cert_handle_);
+  cleanup_callback_.Reset();
+  RunCallbacks();
+  delete this;
+}
+
 void DiskBasedCertCache::ReadWorker::RunCallbacks() {
   for (std::vector<GetCallback>::const_iterator it = user_callbacks_.begin();
        it != user_callbacks_.end();
@@ -456,26 +471,17 @@ void DiskBasedCertCache::ReadWorker::RunCallbacks() {
   user_callbacks_.clear();
 }
 
-void DiskBasedCertCache::ReadWorker::Finish(int rv) {
-  cleanup_callback_.Run();
-  cleanup_callback_.Reset();
-  RunCallbacks();
-  delete this;
-}
-
-void DiskBasedCertCache::ReadWorker::Cancel() {
-  canceled_ = true;
-}
-
-DiskBasedCertCache::ReadWorker::~ReadWorker() {
-  if (entry_)
-    entry_->Close();
-  if (cert_handle_)
-    X509Certificate::FreeOSCertHandle(cert_handle_);
+void DiskBasedCertCache::CertFree::operator()(
+    X509Certificate::OSCertHandle cert_handle) {
+  X509Certificate::FreeOSCertHandle(cert_handle);
 }
 
 DiskBasedCertCache::DiskBasedCertCache(disk_cache::Backend* backend)
-    : backend_(backend), weak_factory_(this) {
+    : backend_(backend),
+      mru_cert_cache_(kMemoryCacheMaxSize),
+      mem_cache_hits_(0),
+      mem_cache_misses_(0),
+      weak_factory_(this) {
   DCHECK(backend_);
 }
 
@@ -494,6 +500,17 @@ DiskBasedCertCache::~DiskBasedCertCache() {
 
 void DiskBasedCertCache::Get(const std::string& key, const GetCallback& cb) {
   DCHECK(!key.empty());
+
+  // If the handle is already in the MRU cache, just return that (via callback).
+  // Note, this will also bring the cert_handle to the front of the recency
+  // list in the MRU cache.
+  MRUCertCache::iterator mru_it = mru_cert_cache_.Get(key);
+  if (mru_it != mru_cert_cache_.end()) {
+    ++mem_cache_hits_;
+    cb.Run(mru_it->second);
+    return;
+  }
+  ++mem_cache_misses_;
 
   ReadWorkerMap::iterator it = read_worker_map_.find(key);
 
@@ -527,7 +544,8 @@ void DiskBasedCertCache::Set(const X509Certificate::OSCertHandle cert_handle,
                         cert_handle,
                         base::Bind(&DiskBasedCertCache::FinishedWriteOperation,
                                    weak_factory_.GetWeakPtr(),
-                                   key));
+                                   key,
+                                   cert_handle));
     write_worker_map_[key] = worker;
     worker->AddCallback(cb);
     worker->Start();
@@ -536,12 +554,20 @@ void DiskBasedCertCache::Set(const X509Certificate::OSCertHandle cert_handle,
   }
 }
 
-void DiskBasedCertCache::FinishedWriteOperation(const std::string& key) {
-  write_worker_map_.erase(key);
+void DiskBasedCertCache::FinishedReadOperation(
+    const std::string& key,
+    X509Certificate::OSCertHandle cert_handle) {
+  if (cert_handle)
+    mru_cert_cache_.Put(key, X509Certificate::DupOSCertHandle(cert_handle));
+  read_worker_map_.erase(key);
 }
 
-void DiskBasedCertCache::FinishedReadOperation(const std::string& key) {
-  read_worker_map_.erase(key);
+void DiskBasedCertCache::FinishedWriteOperation(
+    const std::string& key,
+    X509Certificate::OSCertHandle cert_handle) {
+  write_worker_map_.erase(key);
+  if (!key.empty())
+    mru_cert_cache_.Put(key, X509Certificate::DupOSCertHandle(cert_handle));
 }
 
 }  // namespace net

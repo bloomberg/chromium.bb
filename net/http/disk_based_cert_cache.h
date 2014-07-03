@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/mru_cache.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
@@ -46,9 +47,28 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
   void Set(const X509Certificate::OSCertHandle cert_handle,
            const SetCallback& cb);
 
+  // Returns the number of in-memory MRU cache hits that have occured
+  // on Set and Get operations. Intended for test purposes only.
+  size_t mem_cache_hits_for_testing() const { return mem_cache_hits_; }
+
+  // Returns the number of in-memory MRU cache misses that have occured
+  // on Set and Get operations. Intended for test purposes only.
+  size_t mem_cache_misses_for_testing() const { return mem_cache_misses_; }
+
  private:
   class ReadWorker;
   class WriteWorker;
+
+  // A functor used to free an OSCertHandle. Used by the MRUCertCache.
+  struct CertFree {
+    void operator()(X509Certificate::OSCertHandle cert_handle);
+  };
+
+  // An in-memory cache that is used to prevent redundant reads and writes
+  // to and from the disk cache.
+  typedef base::MRUCacheBase<std::string,
+                             X509Certificate::OSCertHandle,
+                             CertFree> MRUCertCache;
 
   // ReadWorkerMap and WriteWorkerMap map cache keys to their
   // corresponding Workers.
@@ -58,13 +78,20 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
   // FinishedReadOperation and FinishedWriteOperation are used by callbacks
   // given to the workers to signal the DiskBasedCertCache they have completed
   // their work.
-  void FinishedReadOperation(const std::string& key);
-  void FinishedWriteOperation(const std::string& key);
+  void FinishedReadOperation(const std::string& key,
+                             X509Certificate::OSCertHandle cert_handle);
+  void FinishedWriteOperation(const std::string& key,
+                              X509Certificate::OSCertHandle cert_handle);
+
+  disk_cache::Backend* backend_;
 
   ReadWorkerMap read_worker_map_;
   WriteWorkerMap write_worker_map_;
+  MRUCertCache mru_cert_cache_;
 
-  disk_cache::Backend* backend_;
+  int mem_cache_hits_;
+  int mem_cache_misses_;
+
   base::WeakPtrFactory<DiskBasedCertCache> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiskBasedCertCache);
 };
