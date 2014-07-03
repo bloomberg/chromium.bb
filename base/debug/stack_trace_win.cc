@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
@@ -34,6 +33,13 @@ long WINAPI StackDumpExceptionFilter(EXCEPTION_POINTERS* info) {
   if (g_previous_filter)
     return g_previous_filter(info);
   return EXCEPTION_CONTINUE_SEARCH;
+}
+
+FilePath GetExePath() {
+  wchar_t system_buffer[MAX_PATH];
+  GetModuleFileName(NULL, system_buffer, MAX_PATH);
+  system_buffer[MAX_PATH - 1] = L'\0';
+  return FilePath(system_buffer);
 }
 
 // SymbolContext is a threadsafe singleton that wraps the DbgHelp Sym* family
@@ -72,7 +78,8 @@ class SymbolContext {
   //
   // This function should only be called if Init() has been called.  We do not
   // LOG(FATAL) here because this code is called might be triggered by a
-  // LOG(FATAL) itself.
+  // LOG(FATAL) itself. Also, it should not be calling complex code that is
+  // extensible like PathService since that can in turn fire CHECKs.
   void OutputTraceToStream(const void* const* trace,
                            size_t count,
                            std::ostream* os) {
@@ -153,25 +160,20 @@ class SymbolContext {
     // into the executable will get off. To still retrieve symbols correctly,
     // add the directory of the executable to symbol search path.
     // All following errors are non-fatal.
-    wchar_t symbols_path[1024];
+    const size_t kSymbolsArraySize = 1024;
+    scoped_ptr<wchar_t[]> symbols_path(new wchar_t[kSymbolsArraySize]);
 
     // Note: The below function takes buffer size as number of characters,
     // not number of bytes!
     if (!SymGetSearchPathW(GetCurrentProcess(),
-                           symbols_path,
-                           arraysize(symbols_path))) {
+                           symbols_path.get(),
+                           kSymbolsArraySize)) {
       DLOG(WARNING) << "SymGetSearchPath failed: ";
       return;
     }
 
-    FilePath module_path;
-    if (!PathService::Get(FILE_EXE, &module_path)) {
-      DLOG(WARNING) << "PathService::Get(FILE_EXE) failed.";
-      return;
-    }
-
-    std::wstring new_path(std::wstring(symbols_path) +
-                          L";" + module_path.DirName().value());
+    std::wstring new_path(std::wstring(symbols_path.get()) +
+                          L";" + GetExePath().DirName().value());
     if (!SymSetSearchPathW(GetCurrentProcess(), new_path.c_str())) {
       DLOG(WARNING) << "SymSetSearchPath failed.";
       return;
