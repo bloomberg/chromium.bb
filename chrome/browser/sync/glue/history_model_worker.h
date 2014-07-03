@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/common/cancelable_request.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 
@@ -46,7 +46,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
   const base::WeakPtr<HistoryService> history_service_;
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
+  scoped_ptr<base::CancelableTaskTracker> cancelable_tracker_;
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);
 };
 

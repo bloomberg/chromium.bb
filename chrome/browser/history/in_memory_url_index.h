@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/common/cancelable_request.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
@@ -250,6 +250,12 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // Returns a pointer to our private data. For unit testing only.
   URLIndexPrivateData* private_data() { return private_data_.get(); }
 
+  // Returns a pointer to our private data cancelable request tracker. For
+  // unit testing only.
+  base::CancelableTaskTracker* private_data_tracker() {
+    return &private_data_tracker_;
+  }
+
   // Returns the set of whitelisted schemes. For unit testing only.
   const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
 
@@ -277,7 +283,8 @@ class InMemoryURLIndex : public content::NotificationObserver,
   RestoreCacheObserver* restore_cache_observer_;
   SaveCacheObserver* save_cache_observer_;
 
-  CancelableRequestConsumer cache_reader_consumer_;
+  base::CancelableTaskTracker private_data_tracker_;
+  base::CancelableTaskTracker cache_reader_tracker_;
   content::NotificationRegistrar registrar_;
 
   // Set to true once the shutdown process has begun.

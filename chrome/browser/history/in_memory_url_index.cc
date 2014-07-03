@@ -138,12 +138,12 @@ void InMemoryURLIndex::Init() {
 
 void InMemoryURLIndex::ShutDown() {
   registrar_.RemoveAll();
-  cache_reader_consumer_.CancelAllRequests();
+  cache_reader_tracker_.TryCancelAll();
   shutdown_ = true;
   base::FilePath path;
   if (!GetCacheFilePath(&path))
     return;
-  private_data_->CancelPendingUpdates();
+  private_data_tracker_.TryCancelAll();
   URLIndexPrivateData::WritePrivateDataToCacheFileTask(private_data_, path);
   needs_to_be_cached_ = false;
 }
@@ -210,8 +210,11 @@ void InMemoryURLIndex::OnURLVisited(const URLVisitedDetails* details) {
   HistoryService* service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            Profile::EXPLICIT_ACCESS);
-  needs_to_be_cached_ |= private_data_->UpdateURL(
-      service, details->row, languages_, scheme_whitelist_);
+  needs_to_be_cached_ |= private_data_->UpdateURL(service,
+                                                  details->row,
+                                                  languages_,
+                                                  scheme_whitelist_,
+                                                  &private_data_tracker_);
 }
 
 void InMemoryURLIndex::OnURLsModified(const URLsModifiedDetails* details) {
@@ -219,9 +222,11 @@ void InMemoryURLIndex::OnURLsModified(const URLsModifiedDetails* details) {
       HistoryServiceFactory::GetForProfile(profile_,
                                            Profile::EXPLICIT_ACCESS);
   for (URLRows::const_iterator row = details->changed_urls.begin();
-       row != details->changed_urls.end(); ++row)
-    needs_to_be_cached_ |=
-        private_data_->UpdateURL(service, *row, languages_, scheme_whitelist_);
+       row != details->changed_urls.end();
+       ++row) {
+    needs_to_be_cached_ |= private_data_->UpdateURL(
+        service, *row, languages_, scheme_whitelist_, &private_data_tracker_);
+  }
 }
 
 void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
@@ -259,6 +264,7 @@ void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
 void InMemoryURLIndex::OnCacheLoadDone(
     scoped_refptr<URLIndexPrivateData> private_data) {
   if (private_data.get() && !private_data->Empty()) {
+    private_data_tracker_.TryCancelAll();
     private_data_ = private_data;
     restored_ = true;
     if (restore_cache_observer_)
@@ -292,7 +298,7 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
   service->ScheduleDBTask(
       new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
           this, languages_, scheme_whitelist_),
-      &cache_reader_consumer_);
+      &cache_reader_tracker_);
 }
 
 void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
@@ -300,6 +306,7 @@ void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     scoped_refptr<URLIndexPrivateData> private_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (succeeded) {
+    private_data_tracker_.TryCancelAll();
     private_data_ = private_data;
     PostSaveToCacheFileTask();  // Cache the newly rebuilt index.
   } else {
@@ -313,6 +320,7 @@ void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
 }
 
 void InMemoryURLIndex::RebuildFromHistory(HistoryDatabase* history_db) {
+  private_data_tracker_.TryCancelAll();
   private_data_ = URLIndexPrivateData::RebuildFromHistory(history_db,
                                                           languages_,
                                                           scheme_whitelist_);

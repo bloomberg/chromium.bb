@@ -555,12 +555,11 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
     RecordEvent(EVENT_GOT_HISTORY_ISSUING_LOOKUP);
     CandidatePrerenderInfo* lookup_info_ptr = lookup_info.get();
     history->ScheduleDBTask(
-        new GetURLForURLIDTask(
-            lookup_info_ptr,
-            base::Bind(&PrerenderLocalPredictor::OnLookupURL,
-                       base::Unretained(this),
-                       base::Passed(&lookup_info))),
-        &history_db_consumer_);
+        new GetURLForURLIDTask(lookup_info_ptr,
+                               base::Bind(&PrerenderLocalPredictor::OnLookupURL,
+                                          base::Unretained(this),
+                                          base::Passed(&lookup_info))),
+        &history_db_tracker_);
   }
 }
 
@@ -997,9 +996,8 @@ void PrerenderLocalPredictor::Init() {
   HistoryService* history = GetHistoryIfExists();
   if (history) {
     CHECK(!is_visit_database_observer_);
-    history->ScheduleDBTask(
-        new GetVisitHistoryTask(this, kMaxVisitHistory),
-        &history_db_consumer_);
+    history->ScheduleDBTask(new GetVisitHistoryTask(this, kMaxVisitHistory),
+                            &history_db_tracker_);
     history->AddVisitDatabaseObserver(this);
     is_visit_database_observer_ = true;
   } else {

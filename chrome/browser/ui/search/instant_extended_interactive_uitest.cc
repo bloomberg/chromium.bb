@@ -226,8 +226,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
     DCHECK(history);
     DCHECK(base::MessageLoop::current());
 
-    CancelableRequestConsumer consumer;
-    history->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
+    base::CancelableTaskTracker tracker;
+    history->ScheduleDBTask(new QuittingHistoryDBTask(), &tracker);
     base::MessageLoop::current()->Run();
   }
 

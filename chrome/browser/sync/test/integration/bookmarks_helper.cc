@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -266,9 +267,8 @@ void WaitForHistoryToProcessPendingTasks() {
     HistoryService* history_service =
         HistoryServiceFactory::GetForProfileWithoutCreating(profile);
     base::WaitableEvent done(false, false);
-    CancelableRequestConsumer request_consumer;
-    history_service->ScheduleDBTask(new HistoryEmptyTask(&done),
-        &request_consumer);
+    base::CancelableTaskTracker task_tracker;
+    history_service->ScheduleDBTask(new HistoryEmptyTask(&done), &task_tracker);
     done.Wait();
   }
   // Wait such that any notifications broadcast from one of the history threads

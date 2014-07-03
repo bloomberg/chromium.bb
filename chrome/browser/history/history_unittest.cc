@@ -1530,9 +1530,9 @@ const int HistoryDBTaskImpl::kWantInvokeCount = 2;
 
 TEST_F(HistoryTest, HistoryDBTask) {
   ASSERT_TRUE(history_service_.get());
-  CancelableRequestConsumerT<int, 0> request_consumer;
+  base::CancelableTaskTracker task_tracker;
   scoped_refptr<HistoryDBTaskImpl> task(new HistoryDBTaskImpl());
-  history_service_->ScheduleDBTask(task.get(), &request_consumer);
+  history_service_->ScheduleDBTask(task.get(), &task_tracker);
   // Run the message loop. When HistoryDBTaskImpl::DoneRunOnMainThread runs,
   // it will stop the message loop. If the test hangs here, it means
   // DoneRunOnMainThread isn't being invoked correctly.
@@ -1546,10 +1546,10 @@ TEST_F(HistoryTest, HistoryDBTask) {
 
 TEST_F(HistoryTest, HistoryDBTaskCanceled) {
   ASSERT_TRUE(history_service_.get());
-  CancelableRequestConsumerT<int, 0> request_consumer;
+  base::CancelableTaskTracker task_tracker;
   scoped_refptr<HistoryDBTaskImpl> task(new HistoryDBTaskImpl());
-  history_service_->ScheduleDBTask(task.get(), &request_consumer);
-  request_consumer.CancelAllRequests();
+  history_service_->ScheduleDBTask(task.get(), &task_tracker);
+  task_tracker.TryCancelAll();
   CleanupHistoryService();
   // WARNING: history has now been deleted.
   history_service_.reset();

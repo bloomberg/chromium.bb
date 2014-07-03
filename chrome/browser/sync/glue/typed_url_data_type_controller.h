@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/common/cancelable_request.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
 class HistoryService;
@@ -60,7 +60,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
 
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
+  base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlDataTypeController);
 };

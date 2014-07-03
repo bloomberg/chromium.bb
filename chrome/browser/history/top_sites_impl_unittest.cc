@@ -181,7 +181,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Blocks the caller until history processes a task. This is useful if you
   // need to wait until you know history has processed a task.
   void WaitForHistory() {
-    history_service()->ScheduleDBTask(new WaitForHistoryTask(), &consumer_);
+    history_service()->ScheduleDBTask(new WaitForHistoryTask(),
+                                      &history_tracker_);
     base::MessageLoop::current()->Run();
   }
 
@@ -190,14 +191,13 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   void WaitForTopSites() {
     top_sites()->backend_->DoEmptyRequest(
         base::Bind(&TopSitesImplTest::QuitCallback, base::Unretained(this)),
-        &cancelable_task_tracker_);
+        &top_sites_tracker_);
     base::MessageLoop::current()->Run();
   }
 
   TopSitesImpl* top_sites() {
     return static_cast<TopSitesImpl*>(profile_->GetTopSites());
   }
-  CancelableRequestConsumer* consumer() { return &consumer_; }
   TestingProfile* profile() {return profile_.get();}
   HistoryService* history_service() {
     return HistoryServiceFactory::GetForProfile(profile_.get(),
@@ -332,10 +332,10 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   scoped_ptr<TestingProfile> profile_;
 
   // To cancel HistoryService tasks.
-  CancelableRequestConsumer consumer_;
+  base::CancelableTaskTracker history_tracker_;
 
   // To cancel TopSitesBackend tasks.
-  base::CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker top_sites_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesImplTest);
 };  // Class TopSitesImplTest

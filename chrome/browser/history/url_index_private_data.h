@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
@@ -86,7 +85,8 @@ class URLIndexPrivateData
   bool UpdateURL(HistoryService* history_service,
                  const URLRow& row,
                  const std::string& languages,
-                 const std::set<std::string>& scheme_whitelist);
+                 const std::set<std::string>& scheme_whitelist,
+                 base::CancelableTaskTracker* tracker);
 
   // Updates the entry for |url_id| in the index, replacing its
   // recent visits information with |recent_visits|.  If |url_id|
@@ -99,7 +99,8 @@ class URLIndexPrivateData
   // something unexpectedly goes wrong, UdpateRecentVisits() should
   // eventually be called from a callback.
   void ScheduleUpdateRecentVisits(HistoryService* history_service,
-                                  URLID url_id);
+                                  URLID url_id,
+                                  base::CancelableTaskTracker* tracker);
 
   // Deletes index data for the history item with the given |url|.
   // The item may not have actually been indexed, which is the case if it did
@@ -130,10 +131,6 @@ class URLIndexPrivateData
   static bool WritePrivateDataToCacheFileTask(
       scoped_refptr<URLIndexPrivateData> private_data,
       const base::FilePath& file_path);
-
-  // Stops all pending updates to recent visits fields.  This should be
-  // called during shutdown.
-  void CancelPendingUpdates();
 
   // Creates a copy of ourself.
   scoped_refptr<URLIndexPrivateData> Duplicate() const;
@@ -261,7 +258,8 @@ class URLIndexPrivateData
                 HistoryService* history_service,
                 const URLRow& row,
                 const std::string& languages,
-                const std::set<std::string>& scheme_whitelist);
+                const std::set<std::string>& scheme_whitelist,
+                base::CancelableTaskTracker* tracker);
 
   // Parses and indexes the words in the URL and page title of |row| and
   // calculate the word starts in each, saving the starts in |word_starts|.
@@ -328,9 +326,6 @@ class URLIndexPrivateData
 
   // Cache of search terms.
   SearchTermCacheMap search_term_cache_;
-
-  // Allows canceling pending requests to update recent visits information.
-  CancelableRequestConsumer recent_visits_consumer_;
 
   // Start of data members that are cached -------------------------------------
 

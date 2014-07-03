@@ -11,8 +11,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/visit_database.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -215,7 +215,7 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
   // history::VisitDatabaseObserver.
   bool is_visit_database_observer_;
 
-  CancelableRequestConsumer history_db_consumer_;
+  base::CancelableTaskTracker history_db_tracker_;
 
   scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;
 

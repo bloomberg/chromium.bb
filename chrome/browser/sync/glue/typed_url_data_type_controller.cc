@@ -137,7 +137,7 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
       profile(), Profile::IMPLICIT_ACCESS);
   if (history) {
     history->ScheduleDBTask(new RunTaskOnHistoryThread(task, this),
-                            &cancelable_consumer_);
+                            &task_tracker_);
     return true;
   } else {
     // History must be disabled - don't start.

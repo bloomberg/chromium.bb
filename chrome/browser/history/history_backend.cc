@@ -67,6 +67,15 @@ using base::TimeTicks;
 
 namespace history {
 
+namespace {
+void RunUnlessCanceled(
+    const base::Closure& closure,
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
+  if (!is_canceled.Run())
+    closure.Run();
+}
+}  // namespace
+
 #if defined(OS_ANDROID)
 // How long we keep segment data for in days. Currently 3 months.
 // This value needs to be greater or equal to
@@ -155,6 +164,38 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   scoped_refptr<HistoryBackend> history_backend_;
 };
 
+// QueuedHistoryDBTask ---------------------------------------------------------
+
+QueuedHistoryDBTask::QueuedHistoryDBTask(
+    scoped_refptr<HistoryDBTask> task,
+    scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
+    : task_(task), origin_loop_(origin_loop), is_canceled_(is_canceled) {
+  DCHECK(task_);
+  DCHECK(origin_loop_);
+  DCHECK(!is_canceled_.is_null());
+}
+
+QueuedHistoryDBTask::~QueuedHistoryDBTask() {
+}
+
+bool QueuedHistoryDBTask::is_canceled() {
+  return is_canceled_.Run();
+}
+
+bool QueuedHistoryDBTask::RunOnDBThread(HistoryBackend* backend,
+                                        HistoryDatabase* db) {
+  return task_->RunOnDBThread(backend, db);
+}
+
+void QueuedHistoryDBTask::DoneRunOnMainThread() {
+  origin_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&RunUnlessCanceled,
+                 base::Bind(&HistoryDBTask::DoneRunOnMainThread, task_),
+                 is_canceled_));
+}
+
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
@@ -172,7 +213,7 @@ HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
 
 HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_.get()) << "Deleting without cleanup";
-  ReleaseDBTasks();
+  queued_history_db_tasks_.clear();
 
 #if defined(OS_ANDROID)
   // Release AndroidProviderBackend before other objects.
@@ -2288,41 +2329,34 @@ void HistoryBackend::CancelScheduledCommit() {
 void HistoryBackend::ProcessDBTaskImpl() {
   if (!db_) {
     // db went away, release all the refs.
-    ReleaseDBTasks();
+    queued_history_db_tasks_.clear();
     return;
   }
 
   // Remove any canceled tasks.
-  while (!db_task_requests_.empty() && db_task_requests_.front()->canceled()) {
-    db_task_requests_.front()->Release();
-    db_task_requests_.pop_front();
+  while (!queued_history_db_tasks_.empty()) {
+    QueuedHistoryDBTask& task = queued_history_db_tasks_.front();
+    if (!task.is_canceled()) {
+      break;
+    }
+    queued_history_db_tasks_.pop_front();
   }
-  if (db_task_requests_.empty())
+  if (queued_history_db_tasks_.empty())
     return;
 
   // Run the first task.
-  HistoryDBTaskRequest* request = db_task_requests_.front();
-  db_task_requests_.pop_front();
-  if (request->value->RunOnDBThread(this, db_.get())) {
-    // The task is done. Notify the callback.
-    request->ForwardResult();
-    // We AddRef'd the request before adding, need to release it now.
-    request->Release();
+  QueuedHistoryDBTask task = queued_history_db_tasks_.front();
+  queued_history_db_tasks_.pop_front();
+  if (task.RunOnDBThread(this, db_.get())) {
+    // The task is done, notify the callback.
+    task.DoneRunOnMainThread();
   } else {
-    // Tasks wants to run some more. Schedule it at the end of current tasks.
-    db_task_requests_.push_back(request);
-    // And process it after an invoke later.
+    // The task wants to run some more. Schedule it at the end of the current
+    // tasks, and process it after an invoke later.
+    queued_history_db_tasks_.insert(queued_history_db_tasks_.end(), task);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
   }
-}
-
-void HistoryBackend::ReleaseDBTasks() {
-  for (std::list<HistoryDBTaskRequest*>::iterator i =
-       db_task_requests_.begin(); i != db_task_requests_.end(); ++i) {
-    (*i)->Release();
-  }
-  db_task_requests_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2505,20 +2539,15 @@ void HistoryBackend::KillHistoryDatabase() {
 }
 
 void HistoryBackend::ProcessDBTask(
-    scoped_refptr<HistoryDBTaskRequest> request) {
-  DCHECK(request.get());
-  if (request->canceled())
-    return;
-
-  bool task_scheduled = !db_task_requests_.empty();
-  // Make sure we up the refcount of the request. ProcessDBTaskImpl will
-  // release when done with the task.
-  request->AddRef();
-  db_task_requests_.push_back(request.get());
-  if (!task_scheduled) {
-    // No other tasks are scheduled. Process request now.
+    scoped_refptr<HistoryDBTask> task,
+    scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
+  bool scheduled = !queued_history_db_tasks_.empty();
+  queued_history_db_tasks_.insert(
+      queued_history_db_tasks_.end(),
+      QueuedHistoryDBTask(task, origin_loop, is_canceled));
+  if (!scheduled)
     ProcessDBTaskImpl();
-  }
 }
 
 void HistoryBackend::BroadcastNotifications(

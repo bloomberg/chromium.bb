@@ -103,6 +103,7 @@ class InMemoryURLIndexTest : public testing::Test {
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   URLIndexPrivateData* GetPrivateData() const;
+  base::CancelableTaskTracker* GetPrivateDataTracker() const;
   void ClearPrivateData();
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
@@ -148,6 +149,12 @@ URLIndexPrivateData* InMemoryURLIndexTest::GetPrivateData() const {
   return url_index_->private_data();
 }
 
+base::CancelableTaskTracker* InMemoryURLIndexTest::GetPrivateDataTracker()
+    const {
+  DCHECK(url_index_->private_data_tracker());
+  return url_index_->private_data_tracker();
+}
+
 void InMemoryURLIndexTest::ClearPrivateData() {
   return url_index_->ClearPrivateData();
 }
@@ -181,9 +188,11 @@ const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
 }
 
 bool InMemoryURLIndexTest::UpdateURL(const URLRow& row) {
-  return GetPrivateData()->UpdateURL(
-      history_service_, row, url_index_->languages_,
-      url_index_->scheme_whitelist_);
+  return GetPrivateData()->UpdateURL(history_service_,
+                                     row,
+                                     url_index_->languages_,
+                                     url_index_->scheme_whitelist_,
+                                     GetPrivateDataTracker());
 }
 
 bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {

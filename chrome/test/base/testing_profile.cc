@@ -846,8 +846,8 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   DCHECK(history_service);
   DCHECK(base::MessageLoop::current());
 
-  CancelableRequestConsumer consumer;
-  history_service->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
+  base::CancelableTaskTracker tracker;
+  history_service->ScheduleDBTask(new QuittingHistoryDBTask(), &tracker);
   base::MessageLoop::current()->Run();
 }
 

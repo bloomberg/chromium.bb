@@ -446,8 +446,8 @@ class HistoryService : public CancelableRequestProvider,
 
   // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does.
-  virtual void ScheduleDBTask(history::HistoryDBTask* task,
-                              CancelableRequestConsumerBase* consumer);
+  virtual void ScheduleDBTask(scoped_refptr<history::HistoryDBTask> task,
+                              base::CancelableTaskTracker* tracker);
 
   // Adds or removes observers for the VisitDatabase.
   void AddVisitDatabaseObserver(history::VisitDatabaseObserver* observer);

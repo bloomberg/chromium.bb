@@ -378,13 +378,21 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
                     urls);
 }
 
-void HistoryService::ScheduleDBTask(history::HistoryDBTask* task,
-                                    CancelableRequestConsumerBase* consumer) {
+void HistoryService::ScheduleDBTask(scoped_refptr<history::HistoryDBTask> task,
+                                    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  history::HistoryDBTaskRequest* request = new history::HistoryDBTaskRequest(
-      base::Bind(&history::HistoryDBTask::DoneRunOnMainThread, task));
-  request->value = task;  // The value is the task to execute.
-  Schedule(PRIORITY_UI, &HistoryBackend::ProcessDBTask, consumer, request);
+  base::CancelableTaskTracker::IsCanceledCallback is_canceled;
+  tracker->NewTrackedTaskId(&is_canceled);
+  // Use base::ThreadTaskRunnerHandler::Get() to get a message loop proxy to
+  // the current message loop so that we can forward the call to the method
+  // HistoryDBTask::DoneRunOnMainThread in the correct thread.
+  thread_->message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&HistoryBackend::ProcessDBTask,
+                 history_backend_.get(),
+                 task,
+                 base::ThreadTaskRunnerHandle::Get(),
+                 is_canceled));
 }
 
 void HistoryService::FlushForTest(const base::Closure& flushed) {

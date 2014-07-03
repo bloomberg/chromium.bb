@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_marshaling.h"
@@ -45,6 +46,24 @@ static const size_t kMaxFaviconsPerPage = 8;
 // The maximum number of bitmaps for a single icon URL which can be stored in
 // the thumbnail database.
 static const size_t kMaxFaviconBitmapsPerIconURL = 8;
+
+class QueuedHistoryDBTask {
+ public:
+  QueuedHistoryDBTask(
+      scoped_refptr<HistoryDBTask> task,
+      scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+      const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
+  ~QueuedHistoryDBTask();
+
+  bool is_canceled();
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db);
+  void DoneRunOnMainThread();
+
+ private:
+  scoped_refptr<HistoryDBTask> task_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_loop_;
+  base::CancelableTaskTracker::IsCanceledCallback is_canceled_;
+};
 
 // *See the .cc file for more information on the design.*
 //
@@ -320,7 +339,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Generic operations --------------------------------------------------------
 
-  void ProcessDBTask(scoped_refptr<HistoryDBTaskRequest> request);
+  void ProcessDBTask(
+      scoped_refptr<HistoryDBTask> task,
+      scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+      const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
 
   virtual bool GetAllTypedURLs(URLRows* urls);
 
@@ -712,9 +734,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // to be invoked again if there are more tasks that need to run.
   void ProcessDBTaskImpl();
 
-  // Release all tasks in history_db_tasks_ and clears it.
-  void ReleaseDBTasks();
-
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) OVERRIDE;
@@ -808,9 +827,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // data.
   bool segment_queried_;
 
-  // HistoryDBTasks to run. Be sure to AddRef when adding, and Release when
-  // done.
-  std::list<HistoryDBTaskRequest*> db_task_requests_;
+  // List of QueuedHistoryDBTasks to run;
+  std::list<QueuedHistoryDBTask> queued_history_db_tasks_;
 
   // Used to determine if a URL is bookmarked; may be NULL.
   //

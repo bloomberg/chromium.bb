@@ -92,7 +92,6 @@ class ProfileSigninConfirmationHelper
   Profile* profile_;
 
   // Used for async tasks.
-  CancelableRequestConsumer request_consumer_;
   base::CancelableTaskTracker task_tracker_;
 
   // Keep track of how many async requests are pending.
@@ -159,10 +158,8 @@ void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {
   }
   service->ScheduleDBTask(
       new HasTypedURLsTask(
-          base::Bind(
-              &ProfileSigninConfirmationHelper::ReturnResult,
-              this)),
-      &request_consumer_);
+          base::Bind(&ProfileSigninConfirmationHelper::ReturnResult, this)),
+      &task_tracker_);
 }
 
 void ProfileSigninConfirmationHelper::set_pending_requests(int requests) {
@@ -174,7 +171,7 @@ void ProfileSigninConfirmationHelper::ReturnResult(bool result) {
   // result of |true|, otherwise pass the last returned result.
   if (!result_returned_ && (--pending_requests_ == 0 || result)) {
     result_returned_ = true;
-    request_consumer_.CancelAllRequests();
+    task_tracker_.TryCancelAll();
     return_result_.Run(result);
   }
 }

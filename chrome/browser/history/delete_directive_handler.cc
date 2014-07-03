@@ -302,7 +302,7 @@ void DeleteDirectiveHandler::Start(
         new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
                                 initial_sync_data,
                                 DROP_AFTER_PROCESSING),
-        &internal_consumer_);
+        &internal_tracker_);
   }
 }
 
@@ -410,8 +410,9 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     // in one chrome session.
     history_service->ScheduleDBTask(
         new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
-                                delete_directives, KEEP_AFTER_PROCESSING),
-        &internal_consumer_);
+                                delete_directives,
+                                KEEP_AFTER_PROCESSING),
+        &internal_tracker_);
   }
   return syncer::SyncError();
 }

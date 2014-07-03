@@ -25,14 +25,6 @@ typedef CancelableRequest1<HistoryService::QueryMostVisitedURLsCallback,
                            history::MostVisitedURLList>
     QueryMostVisitedURLsRequest;
 
-// Generic operations ---------------------------------------------------------
-
-// The argument here is an input value, which is the task to run on the
-// background thread. The callback is used to execute the portion of the task
-// that executes on the main thread.
-typedef CancelableRequest1<base::Closure, scoped_refptr<HistoryDBTask> >
-    HistoryDBTaskRequest;
-
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_

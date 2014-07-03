@@ -66,13 +66,13 @@ namespace {
 // thread.
 void PostWorkerTask(const base::WeakPtr<HistoryService>& history_service,
                     const syncer::WorkCallback& work,
-                    CancelableRequestConsumerT<int, 0>* cancelable_consumer,
+                    base::CancelableTaskTracker* cancelable_tracker,
                     WaitableEvent* done,
                     syncer::SyncerError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (history_service.get()) {
     scoped_refptr<WorkerTask> task(new WorkerTask(work, done, error));
-    history_service->ScheduleDBTask(task.get(), cancelable_consumer);
+    history_service->ScheduleDBTask(task.get(), cancelable_tracker);
   } else {
     *error = syncer::CANNOT_DO_WORK;
     done->Signal();
@@ -87,6 +87,8 @@ HistoryModelWorker::HistoryModelWorker(
   : syncer::ModelSafeWorker(observer),
     history_service_(history_service) {
   CHECK(history_service.get());
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  cancelable_tracker_.reset(new base::CancelableTaskTracker);
 }
 
 void HistoryModelWorker::RegisterForLoopDestruction() {
@@ -94,7 +96,7 @@ void HistoryModelWorker::RegisterForLoopDestruction() {
   history_service_->ScheduleDBTask(
       new AddDBThreadObserverTask(
           base::Bind(&HistoryModelWorker::RegisterOnDBThread, this)),
-      &cancelable_consumer_);
+      cancelable_tracker_.get());
 }
 
 void HistoryModelWorker::RegisterOnDBThread() {
@@ -105,9 +107,12 @@ void HistoryModelWorker::RegisterOnDBThread() {
 syncer::SyncerError HistoryModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   syncer::SyncerError error = syncer::UNSET;
-  if (BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&PostWorkerTask, history_service_,
-                                         work, &cancelable_consumer_,
+  if (BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(&PostWorkerTask,
+                                         history_service_,
+                                         work,
+                                         cancelable_tracker_.get(),
                                          work_done_or_stopped(),
                                          &error))) {
     work_done_or_stopped()->Wait();
@@ -121,6 +126,11 @@ syncer::ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_HISTORY;
 }
 
-HistoryModelWorker::~HistoryModelWorker() {}
+HistoryModelWorker::~HistoryModelWorker() {
+  // The base::CancelableTaskTracker class is not thread-safe and must only be
+  // used from a single thread but the current object may not be destroyed from
+  // the UI thread, so delete it from the UI thread.
+  BrowserThread::DeleteOnUIThread::Destruct(cancelable_tracker_.release());
+}
 
 }  // namespace browser_sync
