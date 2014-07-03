@@ -1703,6 +1703,9 @@
         'android_stlport_libs_dir': '<(android_stlport_root)/libs/<(android_app_abi)',
         'host_os%': '<(host_os)',
 
+        # Location of the "objcopy" binary, used by both gyp and scripts.
+        'android_objcopy%' : '<!(/bin/echo -n <(android_toolchain)/*-objcopy)',
+
         # Location of the "strip" binary, used by both gyp and scripts.
         'android_strip%' : '<!(/bin/echo -n <(android_toolchain)/*-strip)',
 

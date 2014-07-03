@@ -48,6 +48,8 @@
 #    RELRO section of the native libraries between the different processes.
 #  load_library_from_zip_file - When using the dynamic linker, load the library
 #    directly out of the zip file.
+#  use_relocation_packer - Enable relocation packing. Relies on the chromium
+#    linker, so use_chromium_linker must also be enabled.
 #  enable_chromium_linker_tests - Enable the content dynamic linker test support
 #    code. This allows a test APK to inject a Linker.TestRunner instance at
 #    runtime. Should only be used by the chromium_linker_test_apk target!!
@@ -95,7 +97,9 @@
     'instr_stamp': '<(intermediate_dir)/instr.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
+    'pack_arm_relocations_stamp': '<(intermediate_dir)/pack_arm_relocations.stamp',
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
+    'stripped_libraries_dir': '<(SHARED_INTERMEDIATE_DIR)/stripped_libraries',
     'classes_dir': '<(intermediate_dir)/classes/2',
     'javac_includes': [],
     'jar_excluded_classes': [],
@@ -127,6 +131,7 @@
         'native_lib_version_name%': '',
         'use_chromium_linker%' : 0,
         'load_library_from_zip_file%' : 0,
+        'use_relocation_packer%' : 0,
         'enable_chromium_linker_tests%': 0,
         'is_test_apk%': 0,
       },
@@ -151,11 +156,13 @@
     'native_lib_target%': '',
     'native_lib_version_name%': '',
     'use_chromium_linker%' : 0,
-    'enable_chromium_linker_tests%': 0,
     'load_library_from_zip_file%' : 0,
+    'use_relocation_packer%' : 0,
+    'enable_chromium_linker_tests%': 0,
     'emma_instrument%': '<(emma_instrument)',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
+    'libchromium_android_linker': 'libchromium_android_linker.>(android_product_extension)',
     'extra_native_libs': [],
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
@@ -227,7 +234,7 @@
               ['use_chromium_linker == 1', {
                 'variables': {
                   'linker_input_libraries': [
-                    '<(SHARED_LIB_DIR)/libchromium_android_linker.>(android_product_extension)',
+                    '<(SHARED_LIB_DIR)/<(libchromium_android_linker)',
                   ],
                 }
               }, {
@@ -332,7 +339,7 @@
           'action_name': 'strip_native_libraries',
           'variables': {
             'ordered_libraries_file%': '<(ordered_libraries_file)',
-            'stripped_libraries_dir': '<(libraries_source_dir)',
+            'stripped_libraries_dir%': '<(stripped_libraries_dir)',
             'input_paths': [
               '<@(native_libs_paths)',
               '<@(extra_native_libs)',
@@ -340,6 +347,32 @@
             'stamp': '<(strip_stamp)'
           },
           'includes': ['../build/android/strip_native_libraries.gypi'],
+        },
+        {
+          'action_name': 'pack_arm_relocations',
+          'variables': {
+            'conditions': [
+              ['use_chromium_linker == 1 and use_relocation_packer == 1', {
+                'enable_packing': 1,
+              }, {
+                'enable_packing': 0,
+              }],
+            ],
+            'exclude_packing_list': [
+              '<(libchromium_android_linker)',
+            ],
+            'ordered_libraries_file%': '<(ordered_libraries_file)',
+            'stripped_libraries_dir%': '<(stripped_libraries_dir)',
+            'packed_libraries_dir': '<(libraries_source_dir)',
+            'input_paths': [
+              '<(strip_stamp)',
+            ],
+            'stamp': '<(pack_arm_relocations_stamp)',
+          },
+          'dependencies': [
+            'strip_native_libraries',
+          ],
+          'includes': ['../build/android/pack_arm_relocations.gypi'],
         },
       ],
       'conditions': [
