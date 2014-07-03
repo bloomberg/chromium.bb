@@ -204,7 +204,7 @@
       },
       'example_value': True,
       'id': 3,
-      'caption': '''Set Chrome as Default Browser''',
+      'caption': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
       'desc': '''Configures the default browser checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always check on startup whether it is the default browser and automatically register itself if possible.
@@ -212,7 +212,7 @@
       If this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will never check if it is the default browser and will disable user controls for setting this option.
 
       If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.''',
-      'label': '''Set Chrome as Default Browser''',
+      'label': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
     },
     {
       'name': 'ApplicationLocaleValue',
@@ -324,7 +324,7 @@
       'caption': '''Enable WPAD optimization''',
       'desc': '''Enables WPAD optimization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
-      Setting this to enabled causes Chrome to wait for a shorter interval for DNS-based WPAD servers.
+      Setting this to enabled causes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to wait for a shorter interval for DNS-based WPAD servers.
 
       If this policy is left not set, this will be enabled and the user will not
       be able to change it.''',
@@ -1003,7 +1003,7 @@
       },
       'example_value': True,
       'id': 190,
-      'caption': '''Allows sign in to Chrome''',
+      'caption': '''Allows sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'desc': '''Allows the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you set this policy, you can configure if a user is allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> or not.''',
@@ -1491,7 +1491,7 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set Chrome will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by Chrome.''',
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
         {
           'name': 'AuthNegotiateDelegateWhitelist',
@@ -1509,7 +1509,7 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set Chrome will not delegate user credentials even if a server is detected as Intranet.''',
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
         },
         {
           'name': 'GSSAPILibraryName',
@@ -1640,7 +1640,7 @@
           'caption': '''Configure extension, app, and user script install sources''',
           'desc': '''Allows you to specify which URLs are allowed to install extensions, apps, and themes.
 
-          Starting in Chrome 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and Chrome would offer to install the file after a few warnings. After Chrome 21, such files must be downloaded and dragged onto the Chrome settings page. This setting allows specific URLs to have the old, easier installation flow.
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> would offer to install the file after a few warnings. After <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, such files must be downloaded and dragged onto the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings page. This setting allows specific URLs to have the old, easier installation flow.
 
           Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
 
@@ -1674,7 +1674,7 @@
           'caption': '''Configure allowed app/extension types''',
           'desc': '''Controls which app/extension types are allowed to be installed.
 
-          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the Chrome extensions documentation for more information on these types.
+          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
 
           Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
 
@@ -3141,7 +3141,7 @@
 
       If this setting is left not set the user can decide to use this function or not.
 
-      This setting has been removed from Chrome 29 and higher versions.''',
+      This setting has been removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 29 and higher versions.''',
     },
     {
       'name': 'TranslateEnabled',
@@ -3693,7 +3693,7 @@
       'caption': '''Whether online OCSP/CRL checks are performed''',
       'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
 
-      If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.''',
+      If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not perform online revocation checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 19 and later.''',
     },
     {
       'name': 'RequireOnlineRevocationChecksForLocalAnchors',
@@ -3711,7 +3711,7 @@
 
       If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
 
-      If this policy is not set, or it is set to false, then Chrome will use the existing online revocation checking settings.''',
+      If this policy is not set, or it is set to false, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the existing online revocation checking settings.''',
     },
     {
       'name': 'ForceEphemeralProfiles',
@@ -3747,7 +3747,7 @@
       'caption': '''Limit the time for which a user authenticated via SAML can log in offline''',
       'desc': '''Limit the time for which a user authenticated via SAML can log in offline.
 
-      During login, Chrome OS can authenticate against a server (online) or using a cached password (offline).
+      During login, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
 
       When this policy is set to a value of -1, the user can authenticate offline indefinitely. When this policy is set to any other value, it specifies the length of time since the last online authentication after which the user must use online authentication again.
 
@@ -4413,8 +4413,8 @@
           },
           'example_value': True,
           'id': 139,
-          'caption': '''Disables Drive in the Chrome OS Files app''',
-          'desc': '''Disables Google Drive syncing in the Chrome OS Files app when set to True. In that case, no data is uploaded to Google Drive.
+          'caption': '''Disables Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+          'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
           If not set or set to False, then users will be able to transfer files to Google Drive.''',
         },
@@ -4429,8 +4429,8 @@
           },
           'example_value': True,
           'id': 140,
-          'caption': '''Disables Google Drive over Cellular connections in the Chrome OS Files app''',
-          'desc': '''Disables Google Drive syncing in the Chrome OS Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
+          'caption': '''Disables Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+          'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
         },
@@ -5999,8 +5999,8 @@
       },
       'example_value': True,
       'id': 189,
-      'caption': '''Hide the web store from the new tab page and app launcher''',
-      'desc': '''Hide the Chrome Web Store app and footer link from the New Tab Page and Chrome OS app launcher.
+      'caption': '''Hide the web store from the New Tab Page and app launcher''',
+      'desc': '''Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> app launcher.
 
       When this policy is set to true, the icons are hidden.
 
@@ -6020,8 +6020,8 @@
       },
       'example_value': [ "enable-managed-mode", "my-cool-flag" ],
       'id': 191,
-      'caption': '''System wide flags to be applied on Chrome start-up''',
-      'desc': '''Specifies the flags that should be applied to Chrome when it starts. The specified flags are applied before Chrome is started even for the sign-in screen.''',
+      'caption': '''System wide flags to be applied on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> start-up''',
+      'desc': '''Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied before <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is started even for the sign-in screen.''',
     },
     {
       'name': 'UptimeLimit',
@@ -6243,7 +6243,7 @@
           'caption': '''Default behavior for sites not in any content pack''',
           'desc': '''The default behavior for sites not in any content pack.
 
-          This policy is for internal use by Chrome itself.''',
+          This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
         },
         {
           'name': 'ContentPackManualBehaviorHosts',
@@ -6269,7 +6269,7 @@
           'caption': '''Managed user manual exception hosts''',
           'desc': '''A dictionary mapping hostnames to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
-          This policy is for internal use by Chrome itself.''',
+          This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
         },
         {
           'name': 'ContentPackManualBehaviorURLs',
@@ -6295,7 +6295,7 @@
           'caption': '''Managed user manual exception URLs''',
           'desc': '''A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
-          This policy is for internal use by Chrome itself.''',
+          This policy is for internal use by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> itself.''',
         },
         {
           'name': 'SupervisedUsersEnabled',
@@ -6378,7 +6378,7 @@
 
       These bookmarks are placed in a Managed bookmarks folder inside the Mobile bookmarks. These bookmarks can't be modified by the user.
 
-      When this policy is set then the Managed bookmarks are the default folder opened when the bookmarks view is opened in Chrome.
+      When this policy is set then the Managed bookmarks are the default folder opened when the bookmarks view is opened in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       Managed bookmarks are not synced to the user account.''',
     },
@@ -6536,7 +6536,7 @@
       'text': '''Microsoft Windows XP SP2 or later'''
     },
     'mac_chrome_preferences': {
-      'desc': '''A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chrome are being edited''',
+      'desc': '''A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chromium are being edited''',
       'text': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> preferences'''
     },
     'doc_data_type': {
@@ -6577,16 +6577,22 @@
     },
     'doc_intro': {
       'desc': '''Introduction text for the generated policy documentation''',
-      'text': '''(This document may include policies that are targeted for later
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> versions, those are
-      subject to change without notice. The list of supported policies is the
-      same for Chromium and Google Chrome.)
+      'text': '''Both Chromium and Google Chrome support the same set of
+      policies. Please note that this document may include policies that are
+      targeted for unreleased software versions (i.e. their 'supported on' entry
+      refers to an unreleased version) and that such policies are subject to
+      change or removal without prior notice.
 
-      You don't need to change these settings by hand!  You can download easy-to-use templates from
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
+      These policies are strictly intended to be used to configure instances of
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> internal to your
+      organization. Use of these policies outside of your organization (for
+      example, in a publicly distributed program) is considered malware and will
+      likely be labeled as malware by Google and anti-virus vendors.
+
+      These settings don't need to be configured manually!  Easy-to-use
+      templates for Windows, Mac and Linux are available for download from <ph
+      name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
       http://www.chromium.org/administrators/policy-templates</ex></ph>.
-
-      These policies are strictly intended to be used to configure instances of Chrome internal to your organization. Use of these policies outside of your organization (for example, in a publicly distributed program) is considered malware and will likely be labeled as malware by Google and anti-virus vendors.
 
       Note: Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       28, policies are loaded directly from the Group Policy API on
@@ -6616,7 +6622,7 @@
       'text': '''Description'''
     },
     'doc_feature_dynamic_refresh': {
-      'desc': '''The name of the feature that indicates for a given policy that changes to it are respected by Chrome without a browser restart''',
+      'desc': '''The name of the feature that indicates for a given policy that changes to it are respected by Chromium without a browser restart''',
       'text': '''Dynamic Policy Refresh'''
     },
     'doc_feature_can_be_recommended': {
