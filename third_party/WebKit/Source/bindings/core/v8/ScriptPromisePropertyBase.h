@@ -16,7 +16,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class ScriptPromisePropertyBase : public ContextLifecycleObserver, public RefCounted<ScriptPromisePropertyBase> {
+class ScriptPromisePropertyBase : public RefCountedWillBeRefCountedGarbageCollected<ScriptPromisePropertyBase>, public ContextLifecycleObserver {
 public:
     virtual ~ScriptPromisePropertyBase();
 
@@ -34,6 +34,8 @@ public:
     State state() const { return m_state; }
 
     ScriptPromise promise(DOMWrapperWorld&);
+
+    virtual void trace(Visitor*) { }
 
 protected:
     ScriptPromisePropertyBase(ExecutionContext*, Name);

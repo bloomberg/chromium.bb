@@ -93,14 +93,14 @@ protected:
     // of events, and 'Ready' because it is an available property name
     // that won't bloat V8HiddenValue with a test property name.
 
-    ScriptValue wrap(PassRefPtr<Event> event)
+    ScriptValue wrap(PassRefPtrWillBeRawPtr<Event> event)
     {
         ScriptState::Scope scope(scriptState());
         return ScriptValue(scriptState(), V8ValueTraits<Event>::toV8Value(event, scriptState()->context()->Global(), isolate()));
     }
 
-    typedef ScriptPromiseProperty<RefPtr<Event>, Event*, Event*> Property;
-    PassRefPtr<Property> newProperty() { return Property::create(&document(), Event::create(), Property::Ready); }
+    typedef ScriptPromiseProperty<RefPtrWillBeMember<Event>, Event*, Event*> Property;
+    PassRefPtrWillBeRawPtr<Property> newProperty() { return Property::create(&document(), Event::create(), Property::Ready); }
 
 private:
     OwnPtr<DummyPageHolder> m_page;
@@ -121,7 +121,7 @@ TEST_F(ScriptPromisePropertyTest, Promise_IsStableObjectAfterSettling)
     RefPtr<Property> p(newProperty());
     ScriptPromise v = p->promise(DOMWrapperWorld::mainWorld());
 
-    RefPtr<Event> value(Event::create());
+    RefPtrWillBeRawPtr<Event> value(Event::create());
     p->resolve(value.get());
     EXPECT_EQ(Property::Resolved, p->state());
 
@@ -132,12 +132,12 @@ TEST_F(ScriptPromisePropertyTest, Promise_IsStableObjectAfterSettling)
 
 TEST_F(ScriptPromisePropertyTest, Promise_DoesNotImpedeGarbageCollection)
 {
-    RefPtr<Event> holder(Event::create());
+    RefPtrWillBePersistent<Event> holder(Event::create());
     ScriptValue holderWrapper = wrap(holder);
 
-    RefPtr<Property> p(Property::create(&document(), holder, Property::Ready));
+    RefPtr<Property> p(Property::create(&document(), holder.get(), Property::Ready));
 
-    RefPtr<GCObservation> observation;
+    RefPtrWillBePersistent<GCObservation> observation;
     {
         ScriptState::Scope scope(scriptState());
         observation = GCObservation::create(p->promise(DOMWrapperWorld::mainWorld()).v8Value());
@@ -166,7 +166,7 @@ TEST_F(ScriptPromisePropertyTest, Resolve_ResolvesScriptPromise)
         promise.then(stub(value, nResolveCalls), notReached());
     }
 
-    RefPtr<Event> event(Event::create());
+    RefPtrWillBeRawPtr<Event> event(Event::create());
     p->resolve(event.get());
     EXPECT_EQ(Property::Resolved, p->state());
 
@@ -179,7 +179,7 @@ TEST_F(ScriptPromisePropertyTest, Reject_RejectsScriptPromise)
 {
     RefPtr<Property> p(newProperty());
 
-    RefPtr<Event> event(Event::create());
+    RefPtrWillBeRawPtr<Event> event(Event::create());
     p->reject(event.get());
     EXPECT_EQ(Property::Rejected, p->state());
 
@@ -200,7 +200,7 @@ TEST_F(ScriptPromisePropertyTest, Promise_DeadContext)
 {
     RefPtr<Property> p(newProperty());
 
-    RefPtr<Event> event(Event::create());
+    RefPtrWillBeRawPtr<Event> event(Event::create());
     p->resolve(event.get());
     EXPECT_EQ(Property::Resolved, p->state());
 
@@ -220,7 +220,7 @@ TEST_F(ScriptPromisePropertyTest, Resolve_DeadContext)
 
     destroyContext();
 
-    RefPtr<Event> event(Event::create());
+    RefPtrWillBeRawPtr<Event> event(Event::create());
     p->resolve(event.get());
     EXPECT_EQ(Property::Pending, p->state());
 

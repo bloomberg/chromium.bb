@@ -62,6 +62,8 @@ public:
     template<typename PassRejectedType>
     void reject(PassRejectedType);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     template<typename PassHolderType>
     ScriptPromiseProperty(ExecutionContext*, PassHolderType, Name);
@@ -79,7 +81,7 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 template<typename PassHolderType>
 PassRefPtrWillBeRawPtr<ScriptPromiseProperty<HolderType, ResolvedType, RejectedType> > ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::create(ExecutionContext* executionContext, PassHolderType holder, Name name)
 {
-    return adoptRef(new ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>(executionContext, holder, name));
+    return adoptRefWillBeRefCountedGarbageCollected(new ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>(executionContext, holder, name));
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
@@ -137,6 +139,13 @@ v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedTy
 {
     ASSERT(state() == Rejected);
     return V8ValueTraits<RejectedType>::toV8Value(m_rejected, creationContext, isolate);
+}
+
+template<typename HolderType, typename ResolvedType, typename RejectedType>
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visitor* visitor)
+{
+    visitor->trace(m_holder);
+    ScriptPromisePropertyBase::trace(visitor);
 }
 
 } // namespace WebCore
