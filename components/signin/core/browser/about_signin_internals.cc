@@ -133,7 +133,7 @@ void AboutSigninInternals::NotifySigninValueChanged(
 
   Time now = Time::NowFromSystemTime();
   std::string time_as_str =
-      base::UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
+      base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(now));
   TimedSigninStatusValue timed_value(value, time_as_str);
 
   signin_status_.timed_signin_fields[field_index] = timed_value;
