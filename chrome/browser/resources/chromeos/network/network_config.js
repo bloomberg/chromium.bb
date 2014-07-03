@@ -111,6 +111,18 @@ var networkConfig = {
   },
 
   /**
+   * Implement networkingPrivate.getManagedProperties. See
+   * networking_private.json.
+   *
+   * @param {string} guid The guid identifying the network.
+   * @param {function()} callback The callback to call on completion.
+   */
+  getManagedProperties: function(guid, callback) {
+    var callbackId = this.storeCallback_(callback);
+    chrome.send('networkConfig.getManagedProperties', [callbackId, guid]);
+  },
+
+  /**
    * Implement networkingPrivate.getNetworks. See networking_private.json.
    *
    * @param {string} guid The guid identifying the network.

@@ -37,6 +37,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   // to the callback method.
   void GetNetworks(const base::ListValue* arg_list) const;
   void GetProperties(const base::ListValue* arg_list);
+  void GetManagedProperties(const base::ListValue* arg_list);
   void GetPropertiesSuccess(int callback_id,
                             const std::string& service_path,
                             const base::DictionaryValue& dictionary) const;

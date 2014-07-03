@@ -257,12 +257,16 @@ var NetworkUI = (function() {
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
     expandedRow.appendChild(detailCell);
-    networkConfig.getProperties(guid, function(state) {
+    var showDetail = function(state) {
       if (networkConfig.lastError)
         detailCell.textContent = networkConfig.lastError;
       else
         detailCell.textContent = JSON.stringify(state, null, '\t');
-    });
+    };
+    if ($('get-managed').checked)
+      networkConfig.getManagedProperties(guid, showDetail);
+    else
+      networkConfig.getProperties(guid, showDetail);
     return expandedRow;
   };
 

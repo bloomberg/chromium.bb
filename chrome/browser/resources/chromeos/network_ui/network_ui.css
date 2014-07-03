@@ -81,3 +81,7 @@
 .network-log-level-debug {
   color: blue;
 }
+
+#advanced-options {
+  margin-top: 10px;
+}

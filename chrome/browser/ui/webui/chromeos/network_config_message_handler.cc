@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -53,6 +54,10 @@ void NetworkConfigMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "networkConfig.getProperties",
       base::Bind(&NetworkConfigMessageHandler::GetProperties,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "networkConfig.getManagedProperties",
+      base::Bind(&NetworkConfigMessageHandler::GetManagedProperties,
                  base::Unretained(this)));
 }
 
@@ -107,6 +112,30 @@ void NetworkConfigMessageHandler::GetProperties(
                  weak_ptr_factory_.GetWeakPtr(), callback_id),
       base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
+void NetworkConfigMessageHandler::GetManagedProperties(
+    const base::ListValue* arg_list) {
+  int callback_id = 0;
+  std::string guid;
+  if (!arg_list->GetInteger(0, &callback_id) ||
+      !arg_list->GetString(1, &guid)) {
+    NOTREACHED();
+  }
+  std::string service_path;
+  if (!GetServicePathFromGuid(guid, &service_path)) {
+    scoped_ptr<base::DictionaryValue> error_data;
+    ErrorCallback(callback_id, "Error.InvalidNetworkGuid", error_data.Pass());
+    return;
+  }
+  NetworkHandler::Get()->managed_network_configuration_handler()->
+      GetManagedProperties(
+          LoginState::Get()->primary_user_hash(),
+          service_path,
+          base::Bind(&NetworkConfigMessageHandler::GetPropertiesSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id),
+          base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void NetworkConfigMessageHandler::GetPropertiesSuccess(
