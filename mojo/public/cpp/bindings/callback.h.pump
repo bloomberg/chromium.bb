@@ -32,8 +32,9 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
  public:
   struct Runnable {
     virtual ~Runnable() {}
-    virtual void Run(
-        $for ARG ,
+    virtual void Run($if ARITY > 0 [[
+
+        ]]$for ARG ,
         [[typename internal::Callback_ParamTraits<A$(ARG)>::ForwardType a$(ARG)]]) const = 0;
   };
 
@@ -47,12 +48,14 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
   template <typename Sink>
   Callback(const Sink& sink) : sink_(new Adapter<Sink>(sink)) {}
 
-  void Run(
-      $for ARG ,
+  void Run($if ARITY > 1 [[
+
+      ]]$for ARG ,
       [[typename internal::Callback_ParamTraits<A$(ARG)>::ForwardType a$(ARG)]]) const {
     if (sink_.get())
-      sink_->Run(
-          $for ARG ,
+      sink_->Run($if ARITY > 1 [[
+
+          ]]$for ARG ,
           [[internal::Forward(a$(ARG))]]);
   }
 
@@ -64,11 +67,13 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
   template <typename Sink>
   struct Adapter : public Runnable {
     explicit Adapter(const Sink& sink) : sink(sink) {}
-    virtual void Run(
-        $for ARG ,
+    virtual void Run($if ARITY > 0 [[
+
+        ]]$for ARG ,
         [[typename internal::Callback_ParamTraits<A$(ARG)>::ForwardType a$(ARG)]]) const MOJO_OVERRIDE {
-      sink.Run(
-          $for ARG ,
+      sink.Run($if ARITY > 1 [[
+
+          ]]$for ARG ,
           [[internal::Forward(a$(ARG))]]);
     }
     Sink sink;

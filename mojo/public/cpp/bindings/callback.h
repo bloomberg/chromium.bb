@@ -51,7 +51,9 @@ class Callback<void()> {
   template <typename Sink>
   struct Adapter : public Runnable {
     explicit Adapter(const Sink& sink) : sink(sink) {}
-    virtual void Run() const MOJO_OVERRIDE { sink.Run(); }
+    virtual void Run() const MOJO_OVERRIDE {
+      sink.Run();
+    }
     Sink sink;
   };
 
@@ -77,8 +79,7 @@ class Callback<void(A1)> {
   template <typename Sink>
   Callback(const Sink& sink) : sink_(new Adapter<Sink>(sink)) {}
 
-  void Run(
-      typename internal::Callback_ParamTraits<A1>::ForwardType a1) const {
+  void Run(typename internal::Callback_ParamTraits<A1>::ForwardType a1) const {
     if (sink_.get())
       sink_->Run(internal::Forward(a1));
   }
