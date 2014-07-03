@@ -238,6 +238,11 @@ public class AwContents {
     // through the resourcethrottle. This is only used for popup windows.
     private boolean mDeferredShouldOverrideUrlLoadingIsPendingForPopup;
 
+    // The framework may temporarily detach our container view, for example during layout if
+    // we are a child of a ListView. This may cause many toggles of View focus, which we suppress
+    // when in this state.
+    private boolean mTemporarilyDetached;
+
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwContents;
         private DestroyRunnable(long nativeAwContents) {
@@ -1704,6 +1709,7 @@ public class AwContents {
      * @see android.view.View#onAttachedToWindow()
      */
     public void onAttachedToWindow() {
+        mTemporarilyDetached = false;
         mAwViewMethods.onAttachedToWindow();
     }
 
@@ -1726,7 +1732,23 @@ public class AwContents {
      * @see android.view.View#onFocusChanged()
      */
     public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
-        mAwViewMethods.onFocusChanged(focused, direction, previouslyFocusedRect);
+        if (!mTemporarilyDetached) {
+            mAwViewMethods.onFocusChanged(focused, direction, previouslyFocusedRect);
+        }
+    }
+
+    /**
+     * @see android.view.View#onStartTemporaryDetach()
+     */
+    public void onStartTemporaryDetach() {
+        mTemporarilyDetached = true;
+    }
+
+    /**
+     * @see android.view.View#onFinishTemporaryDetach()
+     */
+    public void onFinishTemporaryDetach() {
+        mTemporarilyDetached = false;
     }
 
     /**
