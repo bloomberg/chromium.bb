@@ -41,9 +41,9 @@
       overridden by a -n or --no-overwrite flag
 
     - All files are converted to work in WebKit:
-         1. Paths to testharness.js files are modified point to Webkit's copy
-            of them in LayoutTests/resources, using the correct relative path
-            from the new location.
+         1. Paths to testharness.js and vendor-prefix.js files are modified to
+            point to Webkit's copy of them in LayoutTests/resources, using the
+            correct relative path from the new location.
          2. All CSS properties requiring the -webkit-vendor prefix are prefixed
             (the list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in).
          3. Each reftest has its own copy of its reference file following
@@ -52,6 +52,10 @@
             uses it, it is checked for paths to support files as it will be
             imported into a different relative position to the test file
             (in the same directory).
+         5. Any tags with the class "instructions" have style="display:none" added
+            to them. Some w3c tests contain instructions to manual testers which we
+            want to strip out (the test result parser only recognizes pure testharness.js
+            output and not those instructions).
 
      - Upon completion, script outputs the total number tests imported, broken
        down by test type

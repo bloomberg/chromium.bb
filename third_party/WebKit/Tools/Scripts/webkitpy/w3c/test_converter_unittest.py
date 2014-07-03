@@ -205,6 +205,34 @@ CONTENT OF TEST
         self.verify_conversion_happened(converted)
         self.verify_test_harness_paths(converter, converted[1], fake_dir_path, 2, 1)
 
+    def test_convert_vendor_prefix_js_paths(self):
+        test_html = """<head>
+<script src="/common/vendor-prefix.js">
+</head>
+"""
+        fake_dir_path = self.fake_dir_path('adapterjspaths')
+        converter = _W3CTestConverter(fake_dir_path, DUMMY_FILENAME)
+
+        oc = OutputCapture()
+        oc.capture_output()
+        try:
+            converter.feed(test_html)
+            converter.close()
+            converted = converter.output()
+        finally:
+            oc.restore_output()
+
+        new_html = BeautifulSoup(converted[1])
+
+        # Verify the original paths are gone, and the new paths are present.
+        orig_path_pattern = re.compile('\"/common/vendor-prefix.js')
+        self.assertEquals(len(new_html.findAll(src=orig_path_pattern)), 0, 'vendor-prefix.js path was not converted')
+
+        resources_dir = converter.path_from_webkit_root("LayoutTests", "resources")
+        new_relpath = os.path.relpath(resources_dir, fake_dir_path)
+        relpath_pattern = re.compile(new_relpath)
+        self.assertEquals(len(new_html.findAll(src=relpath_pattern)), 1, 'vendor-prefix.js relative path not correct')
+
     def test_convert_prefixed_properties(self):
         """ Tests convert_prefixed_properties() file that has 20 properties requiring the -webkit- prefix:
         10 in one style block + 5 in another style
@@ -282,6 +310,36 @@ CONTENT OF TEST
 
         self.verify_conversion_happened(converted)
         self.verify_prefixed_properties(converted, test_content[0])
+
+    def test_hides_all_instructions_for_manual_testers(self):
+        test_html = """<body>
+<h1 class="instructions">Hello manual tester!</h1>
+<p class="instructions some_other_class">This is how you run this test.</p>
+<p style="willbeoverwritten" class="instructions">...</p>
+<doesntmatterwhichtagitis class="some_other_class instructions">...</p>
+<p>Legit content may contain the instructions string</p>
+</body>
+"""
+        expected_test_html = """<body>
+<h1 class="instructions" style="display:none">Hello manual tester!</h1>
+<p class="instructions some_other_class" style="display:none">This is how you run this test.</p>
+<p class="instructions" style="display:none">...</p>
+<doesntmatterwhichtagitis class="some_other_class instructions" style="display:none">...</p>
+<p>Legit content may contain the instructions string</p>
+</body>
+"""
+        converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME)
+
+        oc = OutputCapture()
+        oc.capture_output()
+        try:
+            converter.feed(test_html)
+            converter.close()
+            converted = converter.output()
+        finally:
+            oc.restore_output()
+
+        self.assertEqual(converted[1], expected_test_html)
 
     def verify_conversion_happened(self, converted):
         self.assertTrue(converted, "conversion didn't happen")

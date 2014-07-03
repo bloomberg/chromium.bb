@@ -68,15 +68,13 @@ class _W3CTestConverter(HTMLParser):
 
         resources_path = self.path_from_webkit_root('LayoutTests', 'resources')
         resources_relpath = self._filesystem.relpath(resources_path, new_path)
-        self.new_test_harness_path = resources_relpath
+        self.resources_relpath = resources_relpath
 
         # These settings might vary between WebKit and Blink
         self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSPropertyNames.in')
         self._css_property_split_string = 'alias_for='
 
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
-
-        self.test_harness_re = re.compile('/resources/testharness')
 
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
         prop_regex = '([\s{]|^)(' + "|".join(prop.replace('-webkit-', '') for prop in self.prefixed_properties) + ')(\s+:|:)'
@@ -138,18 +136,28 @@ class _W3CTestConverter(HTMLParser):
     def convert_attributes_if_needed(self, tag, attrs):
         converted = self.get_starttag_text()
         if tag in ('script', 'link'):
-            attr_name = 'src'
+            target_attr = 'src'
             if tag != 'script':
-                attr_name = 'href'
-            for attr in attrs:
-                if attr[0] == attr_name:
-                    new_path = re.sub(self.test_harness_re, self.new_test_harness_path + '/testharness', attr[1])
-                    converted = re.sub(attr[1], new_path, converted)
+                target_attr = 'href'
+            for attr_name, attr_value in attrs:
+                if attr_name == target_attr:
+                    new_path = re.sub('/resources/testharness',
+                                      self.resources_relpath + '/testharness',
+                                      attr_value)
+                    converted = re.sub(attr_value, new_path, converted)
+                    new_path = re.sub('/common/vendor-prefix',
+                                      self.resources_relpath + '/vendor-prefix',
+                                      attr_value)
+                    converted = re.sub(attr_value, new_path, converted)
 
-        for attr in attrs:
-            if attr[0] == 'style':
-                new_style = self.convert_style_data(attr[1])
-                converted = re.sub(attr[1], new_style, converted)
+        for attr_name, attr_value in attrs:
+            if attr_name == 'style':
+                new_style = self.convert_style_data(attr_value)
+                converted = re.sub(attr_value, new_style, converted)
+            if attr_name == 'class' and 'instructions' in attr_value:
+                # Always hide instructions, they're for manual testers.
+                converted = re.sub(' style=".*?"', '', converted)
+                converted = re.sub('\>', ' style="display:none">', converted)
 
         self.converted_data.append(converted)
 
