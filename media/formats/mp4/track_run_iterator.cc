@@ -90,8 +90,7 @@ static void PopulateSampleInfo(const TrackExtends& trex,
                                const int64 edit_list_offset,
                                const uint32 i,
                                SampleInfo* sample_info,
-                               const SampleDependsOn sdtp_sample_depends_on,
-                               bool is_sync_sample) {
+                               const SampleDependsOn sdtp_sample_depends_on) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
   } else if (tfhd.default_sample_size > 0) {
@@ -237,8 +236,6 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
     int64 run_start_dts = traf.decode_time.decode_time;
     int sample_count_sum = 0;
-    const SyncSample& sync_sample =
-        trak->media.information.sample_table.sync_sample;
     for (size_t j = 0; j < traf.runs.size(); j++) {
       const TrackFragmentRun& trun = traf.runs[j];
       TrackRunInfo tri;
@@ -300,8 +297,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.samples.resize(trun.sample_count);
       for (size_t k = 0; k < trun.sample_count; k++) {
         PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
-                           k, &tri.samples[k], traf.sdtp.sample_depends_on(k),
-                           sync_sample.IsSyncSample(k));
+                           k, &tri.samples[k], traf.sdtp.sample_depends_on(k));
         run_start_dts += tri.samples[k].duration;
 
         if (!is_sample_to_group_valid) {
