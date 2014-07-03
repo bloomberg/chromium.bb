@@ -757,36 +757,27 @@ Gallery.prototype.onFilenameFocus_ = function() {
  * @private
  */
 Gallery.prototype.onFilenameEditBlur_ = function(event) {
-  if (this.filenameEdit_.value && this.filenameEdit_.value[0] === '.') {
-    this.prompt_.show('GALLERY_FILE_HIDDEN_NAME', 5000);
-    this.filenameEdit_.focus();
-    event.stopPropagation();
-    event.preventDefault();
-    return false;
-  }
-
   var item = this.getSingleSelectedItem();
   if (item) {
     var oldEntry = item.getEntry();
 
-    var onFileExists = function() {
-      this.prompt_.show('GALLERY_FILE_EXISTS', 3000);
-      this.filenameEdit_.value = name;
-      this.filenameEdit_.focus();
-    }.bind(this);
-
-    var onSuccess = function() {
+    item.rename(this.filenameEdit_.value).then(function() {
       var event = new Event('content');
       event.item = item;
       event.oldEntry = oldEntry;
       event.metadata = null;  // Metadata unchanged.
       this.dataModel_.dispatchEvent(event);
-    }.bind(this);
-
-    if (this.filenameEdit_.value) {
-      item.rename(
-          this.filenameEdit_.value, onSuccess, onFileExists);
-    }
+    }.bind(this), function(error) {
+      this.filenameEdit_.value =
+          ImageUtil.getDisplayNameFromName(item.getEntry().name);
+      this.filenameEdit_.focus();
+      if (typeof error === 'string')
+        this.prompt_.showStringAt('center', error, 5000);
+      else
+        return Promise.reject(error);
+    }.bind(this)).catch(function(error) {
+      console.error(error.stack || error);
+    });
   }
 
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', false);

@@ -252,38 +252,38 @@ Gallery.Item.prototype.saveToFile = function(
 };
 
 /**
- * Renames the file.
+ * Renames the item.
  *
  * @param {string} displayName New display name (without the extension).
- * @param {function()} onSuccess Success callback.
- * @param {function()} onExists Called if the file with the new name exists.
+ * @return {Promise} Promise fulfilled after renaming, or rejected with
+ *     GalleryRenameError.
  */
-Gallery.Item.prototype.rename = function(displayName, onSuccess, onExists) {
+Gallery.Item.prototype.rename = function(displayName) {
   var newFileName = this.entry_.name.replace(
       ImageUtil.getDisplayNameFromName(this.entry_.name), displayName);
 
   if (newFileName === this.entry_.name)
-    return;
+    return Promise.resolve();
 
-  var onRenamed = function(entry) {
+  if (/^\s*$/.test(displayName))
+    return Promise.reject(str('ERROR_WHITESPACE_NAME'));
+
+  var parentDirectoryPromise = new Promise(
+      this.entry_.getParent.bind(this.entry_));
+  return parentDirectoryPromise.then(function(parentDirectory) {
+    var nameValidatingPromise =
+        util.validateFileName(parentDirectory, newFileName, true);
+    return nameValidatingPromise.then(function() {
+      var existingFilePromise = new Promise(parentDirectory.getFile.bind(
+          parentDirectory, newFileName, {create: false, exclusive: false}));
+      return existingFilePromise.then(function() {
+        return Promise.reject(str('GALLERY_FILE_EXISTS'));
+      }, function() {
+        return new Promise(
+            this.entry_.moveTo.bind(this.entry_, parentDirectory, newFileName));
+      }.bind(this));
+    }.bind(this));
+  }.bind(this)).then(function(entry) {
     this.entry_ = entry;
-    onSuccess();
-  }.bind(this);
-
-  var onError = function() {
-    console.error(
-        'Rename error: "' + this.entry_.name + '" to "' + newFileName + '"');
-  };
-
-  var moveIfDoesNotExist = function(parentDir) {
-    parentDir.getFile(
-        newFileName,
-        {create: false, exclusive: false},
-        onExists,
-        function() {
-          this.entry_.moveTo(parentDir, newFileName, onRenamed, onError);
-        }.bind(this));
-  }.bind(this);
-
-  this.entry_.getParent(moveIfDoesNotExist, onError);
+  }.bind(this));
 };

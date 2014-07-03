@@ -1385,3 +1385,45 @@ util.isDropEffectAllowed = function(effectAllowed, dropEffect) {
   return effectAllowed === 'all' ||
       effectAllowed.toLowerCase().indexOf(dropEffect) !== -1;
 };
+
+/**
+ * Verifies the user entered name for file or folder to be created or
+ * renamed to. Name restrictions must correspond to File API restrictions
+ * (see DOMFilePath::isValidPath). Curernt WebKit implementation is
+ * out of date (spec is
+ * http://dev.w3.org/2009/dap/file-system/file-dir-sys.html, 8.3) and going to
+ * be fixed. Shows message box if the name is invalid.
+ *
+ * It also verifies if the name length is in the limit of the filesystem.
+ *
+ * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
+ * @param {string} name New file or folder name.
+ * @param {boolean} filterHiddenOn Whether to report the hidden file name error
+ *     or not.
+ * @return {Promise} Promise fulfilled on success, or rejected with the error
+ *     message.
+ */
+util.validateFileName = function(parentEntry, name, filterHiddenOn) {
+  var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
+  var msg;
+  if (testResult)
+    return Promise.reject(strf('ERROR_INVALID_CHARACTER', testResult[0]));
+  else if (/^\s*$/i.test(name))
+    return Promise.reject(str('ERROR_WHITESPACE_NAME'));
+  else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name))
+    return Promise.reject(str('ERROR_RESERVED_NAME'));
+  else if (filterHiddenOn && name[0] == '.')
+    return Promise.reject(str('ERROR_HIDDEN_NAME'));
+
+  return new Promise(function(fulfill, reject) {
+    chrome.fileBrowserPrivate.validatePathNameLength(
+        parentEntry.toURL(),
+        name,
+        function(valid) {
+          if (valid)
+            fulfill();
+          else
+            reject(str('ERROR_LONG_NAME'));
+        });
+  });
+};

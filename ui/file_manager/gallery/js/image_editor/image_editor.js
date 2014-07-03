@@ -1129,23 +1129,42 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
  *
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {Object} formatArgs varArgs for the formatting function.
+ * @param {...Object} var_formatArgs varArgs for the formatting function.
  */
-ImageEditor.Prompt.prototype.show = function(text, timeout, formatArgs) {
-  this.showAt.apply(this,
-      ['center'].concat(Array.prototype.slice.call(arguments)));
+ImageEditor.Prompt.prototype.show = function(text, timeout, var_formatArgs) {
+  var args = [text].concat(Array.prototype.slice.call(arguments, 2));
+  var message = this.displayStringFunction_.apply(
+      null, [text].concat(args));
+  this.showStringAt('center', message, timeout);
 };
 
 /**
+ * Show the position at the specific position.
  *
  * @param {string} pos The 'pos' attribute value.
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {Object} formatArgs varArgs for the formatting function.
+ * @param {...Object} var_formatArgs varArgs for the formatting function.
  */
-ImageEditor.Prompt.prototype.showAt = function(pos, text, timeout, formatArgs) {
+ImageEditor.Prompt.prototype.showAt = function(
+    pos, text, timeout, var_formatArgs) {
+  var args = [text].concat(Array.prototype.slice.call(arguments, 3));
+  var message = this.displayStringFunction_.apply(
+      null, [text].concat(args));
+  this.showStringAt(pos, message, timeout);
+};
+
+/**
+ * Show the string in the prompt
+ *
+ * @param {string} pos The 'pos' attribute value.
+ * @param {string} text The prompt text.
+ * @param {number} timeout Timeout in ms.
+ */
+ImageEditor.Prompt.prototype.showStringAt = function(pos, text, timeout) {
   this.reset();
-  if (!text) return;
+  if (!text)
+    return;
 
   var document = this.container_.ownerDocument;
   this.wrapper_ = document.createElement('div');
@@ -1162,8 +1181,7 @@ ImageEditor.Prompt.prototype.showAt = function(pos, text, timeout, formatArgs) {
   this.wrapper_.appendChild(tool);
   tool.appendChild(this.prompt_);
 
-  var args = [text].concat(Array.prototype.slice.call(arguments, 3));
-  this.prompt_.textContent = this.displayStringFunction_.apply(null, args);
+  this.prompt_.textContent = text;
 
   var close = document.createElement('div');
   close.className = 'close';

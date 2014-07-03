@@ -3441,13 +3441,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Verifies the user entered name for file or folder to be created or
-   * renamed to. Name restrictions must correspond to File API restrictions
-   * (see DOMFilePath::isValidPath). Curernt WebKit implementation is
-   * out of date (spec is
-   * http://dev.w3.org/2009/dap/file-system/file-dir-sys.html, 8.3) and going to
-   * be fixed. Shows message box if the name is invalid.
-   *
-   * It also verifies if the name length is in the limit of the filesystem.
+   * renamed to. See also util.validateFileName.
    *
    * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
    * @param {string} name New file or folder name.
@@ -3458,34 +3452,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.validateFileName_ = function(
       parentEntry, name, onDone) {
-    var msg;
-    var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
-    if (testResult) {
-      msg = strf('ERROR_INVALID_CHARACTER', testResult[0]);
-    } else if (/^\s*$/i.test(name)) {
-      msg = str('ERROR_WHITESPACE_NAME');
-    } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
-      msg = str('ERROR_RESERVED_NAME');
-    } else if (this.fileFilter_.isFilterHiddenOn() && name[0] == '.') {
-      msg = str('ERROR_HIDDEN_NAME');
-    }
-
-    if (msg) {
-      this.alert.show(msg, function() {
-        onDone(false);
-      });
-      return;
-    }
-
-    var self = this;
-    chrome.fileBrowserPrivate.validatePathNameLength(
-        parentEntry.toURL(), name, function(valid) {
-          if (!valid) {
-            self.alert.show(str('ERROR_LONG_NAME'),
-                            function() { onDone(false); });
-          } else {
-            onDone(true);
-          }
+    var fileNameErrorPromise = util.validateFileName(
+        parentEntry,
+        name,
+        this.fileFilter_.isFilterHiddenOn());
+    fileNameErrorPromise.then(
+        onDone.bind(null, true),
+        function(message) {
+          this.alert.show(message, onDone.bind(null, false));
+        }.bind(this)).catch(function(error) {
+          console.error(error.stack || error);
         });
   };
 
