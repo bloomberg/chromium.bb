@@ -744,4 +744,141 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
       ->second->original_signon_realm);
 }
 
+TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  PasswordForm invalid_action_form(*observed_form());
+  invalid_action_form.action = GURL("http://");
+  ASSERT_FALSE(invalid_action_form.action.is_valid());
+  ASSERT_FALSE(invalid_action_form.action.is_empty());
+  // Non-empty invalid action URLs should not match other actions.
+  // First when the compared form has an invalid URL:
+  EXPECT_EQ(0,
+            manager->DoesManage(invalid_action_form) &
+                PasswordFormManager::RESULT_ACTION_MATCH);
+  // Then when the observed form has an invalid URL:
+  PasswordForm valid_action_form(*observed_form());
+  scoped_ptr<PasswordFormManager> invalid_manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), invalid_action_form, false));
+  EXPECT_EQ(0,
+            invalid_manager->DoesManage(valid_action_form) &
+                PasswordFormManager::RESULT_ACTION_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, EmptyActionURLsDoNotMatchNonEmpty) {
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  PasswordForm empty_action_form(*observed_form());
+  empty_action_form.action = GURL();
+  ASSERT_FALSE(empty_action_form.action.is_valid());
+  ASSERT_TRUE(empty_action_form.action.is_empty());
+  // First when the compared form has an empty URL:
+  EXPECT_EQ(0,
+            manager->DoesManage(empty_action_form) &
+                PasswordFormManager::RESULT_ACTION_MATCH);
+  // Then when the observed form has an empty URL:
+  PasswordForm valid_action_form(*observed_form());
+  scoped_ptr<PasswordFormManager> empty_action_manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), empty_action_form, false));
+  EXPECT_EQ(0,
+            empty_action_manager->DoesManage(valid_action_form) &
+                PasswordFormManager::RESULT_ACTION_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, NonHTMLFormsDoNotMatchHTMLForms) {
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  ASSERT_EQ(PasswordForm::SCHEME_HTML, observed_form()->scheme);
+  PasswordForm non_html_form(*observed_form());
+  non_html_form.scheme = PasswordForm::SCHEME_DIGEST;
+  EXPECT_EQ(0,
+            manager->DoesManage(non_html_form) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+
+  // The other way round: observing a non-HTML form, don't match a HTML form.
+  PasswordForm html_form(*observed_form());
+  scoped_ptr<PasswordFormManager> non_html_manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), non_html_form, false));
+  EXPECT_EQ(0,
+            non_html_manager->DoesManage(html_form) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, OriginCheck_HostsMatchExactly) {
+  // Host part of origins must match exactly, not just by prefix.
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  PasswordForm form_longer_host(*observed_form());
+  form_longer_host.origin = GURL("http://accounts.google.com.au/a/LoginAuth");
+  // Check that accounts.google.com does not match accounts.google.com.au.
+  EXPECT_EQ(0,
+            manager->DoesManage(form_longer_host) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, OriginCheck_MoreSecureSchemePathsMatchPrefix) {
+  // If the URL scheme of the observed form is HTTP, and the compared form is
+  // HTTPS, then the compared form can extend the path.
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  PasswordForm form_longer_path(*observed_form());
+  form_longer_path.origin = GURL("https://accounts.google.com/a/LoginAuth/sec");
+  EXPECT_NE(0,
+            manager->DoesManage(form_longer_path) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest,
+       OriginCheck_NotMoreSecureSchemePathsMatchExactly) {
+  // If the origin URL scheme of the compared form is not more secure than that
+  // of the observed form, then the paths must match exactly.
+  scoped_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient(NULL));
+  scoped_ptr<StubPasswordManagerDriver> driver;
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), *observed_form(), false));
+
+  PasswordForm form_longer_path(*observed_form());
+  form_longer_path.origin = GURL("http://accounts.google.com/a/LoginAuth/sec");
+  // Check that /a/LoginAuth does not match /a/LoginAuth/more.
+  EXPECT_EQ(0,
+            manager->DoesManage(form_longer_path) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+
+  PasswordForm secure_observed_form(*observed_form());
+  secure_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
+  scoped_ptr<PasswordFormManager> secure_manager(new PasswordFormManager(
+      NULL, client.get(), driver.get(), secure_observed_form, true));
+  // Also for HTTPS in the observed form, and HTTP in the compared form, an
+  // exact path match is expected.
+  EXPECT_EQ(0,
+            secure_manager->DoesManage(form_longer_path) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  // Not even upgrade to HTTPS in the compared form should help.
+  form_longer_path.origin = GURL("https://accounts.google.com/a/LoginAuth/sec");
+  EXPECT_EQ(0,
+            secure_manager->DoesManage(form_longer_path) &
+                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+}
+
 }  // namespace password_manager

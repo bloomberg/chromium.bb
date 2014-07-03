@@ -96,52 +96,53 @@ int PasswordFormManager::GetActionsTaken() {
 };
 
 // TODO(timsteele): use a hash of some sort in the future?
-bool PasswordFormManager::DoesManage(const PasswordForm& form,
-                                     ActionMatch action_match) const {
-  if (form.scheme != PasswordForm::SCHEME_HTML)
-      return observed_form_.signon_realm == form.signon_realm;
+PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
+    const PasswordForm& form) const {
+  // Non-HTML form case.
+  if (observed_form_.scheme != PasswordForm::SCHEME_HTML ||
+      form.scheme != PasswordForm::SCHEME_HTML) {
+    const bool forms_match = observed_form_.signon_realm == form.signon_realm &&
+                             observed_form_.scheme == form.scheme;
+    return forms_match ? RESULT_COMPLETE_MATCH : RESULT_NO_MATCH;
+  }
 
   // HTML form case.
-  // At a minimum, username and password element must match.
-  if (!((form.username_element == observed_form_.username_element) &&
-        (form.password_element == observed_form_.password_element))) {
-    return false;
-  }
+  MatchResultMask result = RESULT_NO_MATCH;
 
-  // When action match is required, the action URL must match, but
-  // the form is allowed to have an empty action URL (See bug 1107719).
-  // Otherwise ignore action URL, this is to allow saving password form with
-  // dynamically changed action URL (See bug 27246).
-  if (form.action.is_valid() && (form.action != observed_form_.action)) {
-    if (action_match == ACTION_MATCH_REQUIRED)
-      return false;
-  }
-
+  // Easiest case of matching origins.
+  bool origins_match = form.origin == observed_form_.origin;
   // If this is a replay of the same form in the case a user entered an invalid
   // password, the origin of the new form may equal the action of the "first"
-  // form.
-  if (!((form.origin == observed_form_.origin) ||
-        (form.origin == observed_form_.action))) {
-    if (form.origin.SchemeIsSecure() &&
-        !observed_form_.origin.SchemeIsSecure()) {
-      // Compare origins, ignoring scheme. There is no easy way to do this
-      // with GURL because clearing the scheme would result in an invalid url.
-      // This is for some sites (such as Hotmail) that begin on an http page and
-      // head to https for the retry when password was invalid.
-      std::string::const_iterator after_scheme1 = form.origin.spec().begin() +
-                                                  form.origin.scheme().length();
-      std::string::const_iterator after_scheme2 =
-          observed_form_.origin.spec().begin() +
-          observed_form_.origin.scheme().length();
-      return std::search(after_scheme1,
-                         form.origin.spec().end(),
-                         after_scheme2,
-                         observed_form_.origin.spec().end())
-                         != form.origin.spec().end();
-    }
-    return false;
+  // form instead.
+  origins_match = origins_match || (form.origin == observed_form_.action);
+  // Otherwise, if action hosts are the same, the old URL scheme is HTTP while
+  // the new one is HTTPS, and the new path equals to or extends the old path,
+  // we also consider the actions a match. This is to accommodate cases where
+  // the original login form is on an HTTP page, but a failed login attempt
+  // redirects to HTTPS (as in http://example.org -> https://example.org/auth).
+  if (!origins_match && !observed_form_.origin.SchemeIsSecure() &&
+      form.origin.SchemeIsSecure()) {
+    const std::string& old_path = observed_form_.origin.path();
+    const std::string& new_path = form.origin.path();
+    origins_match =
+        observed_form_.origin.host() == form.origin.host() &&
+        observed_form_.origin.port() == form.origin.port() &&
+        StartsWithASCII(new_path, old_path, /*case_sensitive=*/true);
   }
-  return true;
+
+  if (form.username_element == observed_form_.username_element &&
+      form.password_element == observed_form_.password_element &&
+      origins_match) {
+    result |= RESULT_MANDATORY_ATTRIBUTES_MATCH;
+  }
+
+  // Note: although saved password forms might actually have an empty action
+  // URL if they were imported (see bug 1107719), the |form| we see here comes
+  // never from the password store, and should have an exactly matching action.
+  if (form.action == observed_form_.action)
+    result |= RESULT_ACTION_MATCH;
+
+  return result;
 }
 
 bool PasswordFormManager::IsBlacklisted() {
@@ -231,7 +232,7 @@ void PasswordFormManager::ProvisionallySave(
     const PasswordForm& credentials,
     OtherPossibleUsernamesAction action) {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
-  DCHECK(DoesManage(credentials, ACTION_MATCH_NOT_REQUIRED));
+  DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
 
   // Make sure the important fields stay the same as the initially observed or
   // autofilled ones, as they may have changed if the user experienced a login

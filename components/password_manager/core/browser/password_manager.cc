@@ -94,7 +94,8 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
            pending_login_managers_.begin();
        iter != pending_login_managers_.end();
        ++iter) {
-    if ((*iter)->DoesManage(form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+    if ((*iter)->DoesManage(form) ==
+        PasswordFormManager::RESULT_COMPLETE_MATCH) {
       (*iter)->SetHasGeneratedPassword();
       return;
     }
@@ -147,18 +148,20 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
            pending_login_managers_.begin();
        iter != pending_login_managers_.end();
        ++iter) {
-    if ((*iter)->DoesManage(form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+    PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
+    if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
       // If we find a manager that exactly matches the submitted form including
       // the action URL, exit the loop.
       if (logger)
         logger->LogMessage(Logger::STRING_EXACT_MATCH);
       matched_manager_it = iter;
       break;
-    } else if ((*iter)->DoesManage(
-                   form, PasswordFormManager::ACTION_MATCH_NOT_REQUIRED)) {
+    } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
+                          ~PasswordFormManager::RESULT_ACTION_MATCH)) {
       // If the current manager matches the submitted form excluding the action
       // URL, remember it as a candidate and continue searching for an exact
-      // match.
+      // match. See http://crbug.com/27246 for an example where actions can
+      // change.
       if (logger)
         logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
       matched_manager_it = iter;
@@ -335,8 +338,8 @@ void PasswordManager::CreatePendingLoginManagers(
              old_login_managers.begin();
          !old_manager_found && old_manager != old_login_managers.end();
          ++old_manager) {
-      old_manager_found |= (*old_manager)->DoesManage(
-          *iter, PasswordFormManager::ACTION_MATCH_REQUIRED);
+      old_manager_found = (*old_manager)->DoesManage(*iter) ==
+                          PasswordFormManager::RESULT_COMPLETE_MATCH;
     }
     if (old_manager_found)
       continue;  // The current form is already managed.

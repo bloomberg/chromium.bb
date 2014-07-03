@@ -40,20 +40,30 @@ class PasswordFormManager : public PasswordStoreConsumer {
                       bool ssl_valid);
   virtual ~PasswordFormManager();
 
-  enum ActionMatch {
-    ACTION_MATCH_REQUIRED,
-    ACTION_MATCH_NOT_REQUIRED
+  // Flags describing the result of comparing two forms as performed by
+  // DoesMatch. Individual flags are only relevant for HTML forms, but
+  // RESULT_COMPLETE_MATCH will also be returned to indicate non-HTML forms
+  // completely matching.
+  enum MatchResultFlags {
+    RESULT_NO_MATCH = 0,
+    RESULT_MANDATORY_ATTRIBUTES_MATCH = 1 << 0,  // Bare minimum to be a match.
+    RESULT_ACTION_MATCH = 1 << 1,                // Action URLs match too.
+    RESULT_COMPLETE_MATCH =
+        RESULT_MANDATORY_ATTRIBUTES_MATCH | RESULT_ACTION_MATCH
   };
+  // Use MatchResultMask to contain combinations of MatchResultFlags values.
+  // It's a signed int rather than unsigned to avoid signed/unsigned mismatch
+  // caused by the enum values implicitly converting to signed int.
+  typedef int MatchResultMask;
 
   enum OtherPossibleUsernamesAction {
     ALLOW_OTHER_POSSIBLE_USERNAMES,
     IGNORE_OTHER_POSSIBLE_USERNAMES
   };
 
-  // Compare basic data of observed_form_ with argument. Only check the action
-  // URL when action match is required.
-  bool DoesManage(const autofill::PasswordForm& form,
-                  ActionMatch action_match) const;
+  // Compares basic data of |observed_form_| with |form| and returns how much
+  // they match. The return value is a MatchResultMask bitmask.
+  MatchResultMask DoesManage(const autofill::PasswordForm& form) const;
 
   // Retrieves potential matching logins from the database.
   // |prompt_policy| indicates whether it's permissible to prompt the user to
