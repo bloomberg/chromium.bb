@@ -1,5 +1,3 @@
-crbug.com/391036 fast/repaint/create-layer-repaint.html [ NeedsRebaseline ]
-crbug.com/391036 fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
