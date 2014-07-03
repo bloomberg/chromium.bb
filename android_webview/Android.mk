@@ -40,7 +40,7 @@ LOCAL_MODULE_TAGS := optional
 # Depend on the android_webview_strings target to ensure the grd->string.xml
 # processing takes place.
 LOCAL_ADDITIONAL_DEPENDENCIES := \
-    $(call intermediates-dir-for,GYP,android_webview_resources,,,$(TARGET_2ND_ARCH))/android_webview_resources.stamp
+    $(call intermediates-dir-for,GYP,android_webview_resources)/android_webview_resources.stamp
 
 include $(LOCAL_PATH)/java_library_common.mk
 

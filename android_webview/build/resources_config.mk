@@ -13,10 +13,10 @@ android_webview_manifest_file := $(call my-dir)/AndroidManifest.xml
 # We defeat the optimization by including an empty values.xml file in the list.
 android_webview_resources_dirs := \
     $(call my-dir)/res_hack \
-    $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/android_webview_jarjar_content_resources/jarjar_res \
-    $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/android_webview_jarjar_ui_resources/jarjar_res \
-    $(call intermediates-dir-for,GYP,ui_strings_grd,,,$(TARGET_2ND_ARCH))/ui_strings_grd/res_grit \
-    $(call intermediates-dir-for,GYP,content_strings_grd,,,$(TARGET_2ND_ARCH))/content_strings_grd/res_grit
+    $(call intermediates-dir-for,GYP,shared)/android_webview_jarjar_content_resources/jarjar_res \
+    $(call intermediates-dir-for,GYP,shared)/android_webview_jarjar_ui_resources/jarjar_res \
+    $(call intermediates-dir-for,GYP,ui_strings_grd)/ui_strings_grd/res_grit \
+    $(call intermediates-dir-for,GYP,content_strings_grd)/content_strings_grd/res_grit
 
 android_webview_aapt_flags := --auto-add-overlay
 android_webview_aapt_flags += --custom-package com.android.webview.chromium
