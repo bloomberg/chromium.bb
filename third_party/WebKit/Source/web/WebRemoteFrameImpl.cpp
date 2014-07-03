@@ -161,9 +161,12 @@ void WebRemoteFrameImpl::setIsRemote(bool)
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer*)
+void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* layer)
 {
-    ASSERT_NOT_REACHED();
+    if (!frame())
+        return;
+
+    frame()->setRemotePlatformLayer(layer);
 }
 
 void WebRemoteFrameImpl::setPermissionClient(WebPermissionClient*)

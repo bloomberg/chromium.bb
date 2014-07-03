@@ -91,7 +91,7 @@ public:
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     // FIXME: These should move to RemoteFrame when that is instantiated.
-    void setRemotePlatformLayer(blink::WebLayer* remotePlatformLayer) { m_remotePlatformLayer = remotePlatformLayer; }
+    void setRemotePlatformLayer(blink::WebLayer*);
     blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
 
     Settings* settings() const; // can be null
