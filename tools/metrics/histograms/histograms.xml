@@ -38245,6 +38245,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="820" label="WEBVIEWINTERNAL_TERMINATE"/>
   <int value="821" label="BLUETOOTHLOWENERGY_STARTCHARACTERISTICNOTIFICATIONS"/>
   <int value="822" label="BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS"/>
+  <int value="823" label="GCDPRIVATE_GETCLOUDDEVICELIST"/>
+  <int value="824" label="GCDPRIVATE_QUERYFORNEWLOCALDEVICES"/>
+  <int value="825" label="GCDPRIVATE_STARTSETUP"/>
+  <int value="826" label="GCDPRIVATE_SETWIFINETWORKS"/>
+  <int value="827" label="GCDPRIVATE_SETWIFICREDENTIALS"/>
+  <int value="828" label="GCDPRIVATE_CONFIRMCODE"/>
+  <int value="829" label="GCDPRIVATE_STOPSETUP"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

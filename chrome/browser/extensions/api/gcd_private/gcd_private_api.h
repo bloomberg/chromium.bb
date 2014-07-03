@@ -45,14 +45,14 @@ class GcdPrivateGetCloudDeviceListFunction
       public local_discovery::CloudDeviceListDelegate {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.getCloudDeviceList",
-                             FEEDBACKPRIVATE_GETSTRINGS)
+                             GCDPRIVATE_GETCLOUDDEVICELIST)
 
   GcdPrivateGetCloudDeviceListFunction();
 
  protected:
   virtual ~GcdPrivateGetCloudDeviceListFunction();
 
-  // SyncExtensionFunction overrides.
+  // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
 
  private:
@@ -68,6 +68,100 @@ class GcdPrivateGetCloudDeviceListFunction
 
   scoped_ptr<local_discovery::GCDApiFlow> printer_list_;
   scoped_ptr<local_discovery::GCDApiFlow> device_list_;
+};
+
+class GcdPrivateQueryForNewLocalDevicesFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.queryForNewLocalDevices",
+                             GCDPRIVATE_QUERYFORNEWLOCALDEVICES)
+
+  GcdPrivateQueryForNewLocalDevicesFunction();
+
+ protected:
+  virtual ~GcdPrivateQueryForNewLocalDevicesFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+};
+
+class GcdPrivateStartSetupFunction : public ChromeAsyncExtensionFunction {
+ public:
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.startSetup", GCDPRIVATE_STARTSETUP)
+
+  GcdPrivateStartSetupFunction();
+
+ protected:
+  virtual ~GcdPrivateStartSetupFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateSetWiFiNetworksFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiNetworks",
+                             GCDPRIVATE_SETWIFINETWORKS)
+
+  GcdPrivateSetWiFiNetworksFunction();
+
+ protected:
+  virtual ~GcdPrivateSetWiFiNetworksFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateSetWiFiCredentialsFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiCredentials",
+                             GCDPRIVATE_SETWIFICREDENTIALS)
+
+  GcdPrivateSetWiFiCredentialsFunction();
+
+ protected:
+  virtual ~GcdPrivateSetWiFiCredentialsFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.confirmCode", GCDPRIVATE_CONFIRMCODE)
+
+  GcdPrivateConfirmCodeFunction();
+
+ protected:
+  virtual ~GcdPrivateConfirmCodeFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateStopSetupFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.stopSetup", GCDPRIVATE_STOPSETUP)
+
+  GcdPrivateStopSetupFunction();
+
+ protected:
+  virtual ~GcdPrivateStopSetupFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
 };
 
 }  // namespace extensions
