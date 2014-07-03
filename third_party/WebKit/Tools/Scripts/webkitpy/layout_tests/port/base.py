@@ -1608,6 +1608,9 @@ class Port(object):
             VirtualTestSuite('threaded',
                              'printing',
                              ['--enable-threaded-compositing']),
+            VirtualTestSuite('regionbasedmulticol',
+                             'fast/multicol',
+                             ['--enable-region-based-columns']),
         ]
 
     @memoized
