@@ -29,77 +29,15 @@ namespace gcdPrivate {
     DOMString deviceDescription;
   };
 
-  // Represents wifi network credentials.
-  dictionary WiFiCredentials {
-    DOMString ssid;
-    DOMString password;
-  };
-
   callback CloudDeviceListCallback = void(GCDDevice[] devices);
 
   interface Functions {
     static void getCloudDeviceList(CloudDeviceListCallback callback);
-
-    // Starts device setup process. Returns id of setup process. Id should be
-    // used as |setupId| in all subsequent setup related calls, and for
-    // filtering setup events.
-    static long startSetup(GCDDevice device);
-
-    // Sets WiFi network list as reply to |onGetWifiNetworks| event.
-    // |setupId| : The value returned by |startSetup|.
-    // |networks| : The list of network device should be registered on.
-    static void setWiFiNetworks(long setupId, DOMString[] networks);
-
-    // Sets WiFi network credentials as reply to |onGetWifiCredentials|
-    // event.
-    // |setupId| : The value returned by |startSetup|.
-    // |credentials| : The list of ssid with passwoors. The list is not required
-    // to match |networks| provided with |setWiFiNetworks| or
-    // |onGetWifiCredentials|.
-    static void setWiFiCredentials(long setupId, WiFiCredentials[] credentials);
-
-    // Confirms that security code known to application match to the code known
-    // to device.
-    // |setupId| : The value returned by |startSetup|.
-    static void confirmCode(long setupId);
-
-    // Stops registration process.
-    // This call triggers |onSetupError| event. App should wait this even before
-    // starting new registration.
-    // |setupId| : The value returned by |startSetup|.
-    static void stopSetup(long setupId);
   };
 
   interface Events {
     // Subscribe to this event to start listening to cloud devices. New
     // listeners will get called with all known devices on the network.
     static void onCloudDeviceStateChanged(boolean available, GCDDevice device);
-
-    // Notifies app that setup is waiting for network list. App should reply
-    // with |setWiFiNetworks|.
-    // |setupId| : The value returned by |startSetup|.
-    static void onGetWifiNetworks(long setupId);
-
-    // Notifies app that setup is waiting for credentions for |networks| list.
-    // App should reply with |setWiFiCredentials|.
-    // |setupId| : The value returned by |startSetup|.
-    // |networks| : A subset of the list provided in |setWiFiNetworks| for which
-    // setup flow is unable to find credentials
-    static void onGetWifiCredentials(long setupId, DOMString[] networks);
-
-    // Notifies app that setup is waiting for confirmation that code is the same
-    // as code known to device. App should reply with |confirmCode|, or
-    // |stopSetup| if code does not match.
-    // |confirmationCode| : The code to confirm.
-    // |setupId| : The value returned by |startSetup|.
-    static void onConfirmCode(long setupId, DOMString confirmationCode);
-
-    // Notifies app that setup is completed successfully.
-    // |setupId| : The value returned by |startSetup|.
-    static void onSetupSuccess(long setupId);
-
-    // Notifies app that setup is failed or stoped.
-    // |setupId| : The value returned by |startSetup|.
-    static void onSetupError(long setupId);
   };
 };
