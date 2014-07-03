@@ -1364,8 +1364,11 @@ void TransformationMatrix::blend(const TransformationMatrix& from, double progre
     // decompose
     DecomposedType fromDecomp;
     DecomposedType toDecomp;
-    from.decompose(fromDecomp);
-    decompose(toDecomp);
+    if (!from.decompose(fromDecomp) || !decompose(toDecomp)) {
+        if (progress < 0.5)
+            *this = from;
+        return;
+    }
 
     // interpolate
     blendFloat(fromDecomp.scaleX, toDecomp.scaleX, progress);
