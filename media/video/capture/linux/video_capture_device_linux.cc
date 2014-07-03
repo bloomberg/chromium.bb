@@ -256,7 +256,8 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   video_fmt.fmt.pix.pixelformat = *best;
 
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_FMT, &video_fmt)) < 0) {
-    SetErrorState("Failed to set camera format");
+    SetErrorState(
+        base::StringPrintf("Failed to set camera format: %s", strerror(errno)));
     return;
   }
 
