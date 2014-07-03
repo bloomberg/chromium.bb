@@ -10,7 +10,9 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 # pylint: disable=W0212
 # pylint: disable=W0613
 
+import collections
 import os
+import re
 import signal
 import sys
 import unittest
@@ -64,8 +66,9 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
 
   class AndroidCommandsCalls(object):
 
-    def __init__(self, test_case, cmd_ret):
+    def __init__(self, test_case, cmd_ret, comp):
       self._cmds = cmd_ret
+      self._comp = comp
       self._test_case = test_case
       self._total_received = 0
 
@@ -74,18 +77,20 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
       atr_run_command.RunCommand.side_effect = lambda c, **kw: self._ret(c)
 
     def _ret(self, actual_cmd):
-      on_failure_fmt = ('\n'
-                        '  received command: %s\n'
-                        '  expected command: %s')
-      self._test_case.assertGreater(
-          len(self._cmds), self._total_received,
-          msg=on_failure_fmt % (actual_cmd, None))
-      expected_cmd, ret = self._cmds[self._total_received]
-      self._total_received += 1
-      self._test_case.assertEqual(
-          actual_cmd, expected_cmd,
-          msg=on_failure_fmt % (actual_cmd, expected_cmd))
-      return ret
+      if sys.exc_info()[0] is None:
+        on_failure_fmt = ('\n'
+                          '  received command: %s\n'
+                          '  expected command: %s')
+        self._test_case.assertGreater(
+            len(self._cmds), self._total_received,
+            msg=on_failure_fmt % (actual_cmd, None))
+        expected_cmd, ret = self._cmds[self._total_received]
+        self._total_received += 1
+        self._test_case.assertTrue(
+            self._comp(expected_cmd, actual_cmd),
+            msg=on_failure_fmt % (actual_cmd, expected_cmd))
+        return ret
+      return ''
 
     def __exit__(self, exc_type, _exc_val, exc_trace):
       if exc_type is None:
@@ -99,18 +104,21 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         for (expected_cmd, _r), (_n, actual_args, actual_kwargs) in zip(
             self._cmds, atr_run_command.RunCommand.mock_calls):
           self._test_case.assertEqual(1, len(actual_args), msg=on_failure)
-          self._test_case.assertEqual(expected_cmd, actual_args[0],
-                                      msg=on_failure)
+          self._test_case.assertTrue(self._comp(expected_cmd, actual_args[0]),
+                                     msg=on_failure)
           self._test_case.assertTrue('timeout_time' in actual_kwargs,
                                      msg=on_failure)
           self._test_case.assertTrue('retry_count' in actual_kwargs,
                                      msg=on_failure)
 
-  def assertOldImplCalls(self, cmd, ret):
-    return type(self).AndroidCommandsCalls(self, [(cmd, ret)])
+  def assertNoAdbCalls(self):
+    return type(self).AndroidCommandsCalls(self, [], str.__eq__)
 
-  def assertOldImplCallsSequence(self, cmd_ret):
-    return type(self).AndroidCommandsCalls(self, cmd_ret)
+  def assertOldImplCalls(self, cmd, ret, comp=str.__eq__):
+    return type(self).AndroidCommandsCalls(self, [(cmd, ret)], comp)
+
+  def assertOldImplCallsSequence(self, cmd_ret, comp=str.__eq__):
+    return type(self).AndroidCommandsCalls(self, cmd_ret, comp)
 
   def setUp(self):
     self.device = device_utils.DeviceUtils(
@@ -716,6 +724,468 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         "adb -s 0123456789abcdef shell 'input keyevent 66'",
         ''):
       self.device.SendKeyEvent(66)
+
+  def testPushChangedFiles_noHostPath(self):
+    with mock.patch('os.path.exists', return_value=False):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.PushChangedFiles('/test/host/path', '/test/device/path')
+
+  def testPushChangedFiles_file_noChange(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_file_info = {
+      '/test/host/path': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 100,
+      },
+    }
+
+    os_path_exists = mock.Mock()
+    os_path_exists.side_effect = lambda f: mock_file_info[f]['os.path.exists']
+
+    os_path_isdir = mock.Mock()
+    os_path_isdir.side_effect = lambda f: mock_file_info[f]['os.path.isdir']
+
+    os_path_getsize = mock.Mock()
+    os_path_getsize.side_effect = lambda f: mock_file_info[f]['os.path.getsize']
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
+
+    with mock.patch('os.path.exists', new=os_path_exists), (
+         mock.patch('os.path.isdir', new=os_path_isdir)), (
+         mock.patch('os.path.getsize', new=os_path_getsize)):
+      # GetFilesChanged is mocked, so its adb calls are omitted.
+      with self.assertNoAdbCalls():
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  @staticmethod
+  def createMockOSStatResult(
+      st_mode=None, st_ino=None, st_dev=None, st_nlink=None, st_uid=None,
+      st_gid=None, st_size=None, st_atime=None, st_mtime=None, st_ctime=None):
+    MockOSStatResult = collections.namedtuple('MockOSStatResult', [
+        'st_mode', 'st_ino', 'st_dev', 'st_nlink', 'st_uid', 'st_gid',
+        'st_size', 'st_atime', 'st_mtime', 'st_ctime'])
+    return MockOSStatResult(st_mode, st_ino, st_dev, st_nlink, st_uid, st_gid,
+                            st_size, st_atime, st_mtime, st_ctime)
+
+  def testPushChangedFiles_file_changed(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_file_info = {
+      '/test/host/path': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 100,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000000)
+      },
+    }
+
+    os_path_exists = mock.Mock()
+    os_path_exists.side_effect = lambda f: mock_file_info[f]['os.path.exists']
+
+    os_path_isdir = mock.Mock()
+    os_path_isdir.side_effect = lambda f: mock_file_info[f]['os.path.isdir']
+
+    os_path_getsize = mock.Mock()
+    os_path_getsize.side_effect = lambda f: mock_file_info[f]['os.path.getsize']
+
+    os_stat = mock.Mock()
+    os_stat.side_effect = lambda f: mock_file_info[f]['os.stat']
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path', '/test/device/path')])
+
+    with mock.patch('os.path.exists', new=os_path_exists), (
+         mock.patch('os.path.isdir', new=os_path_isdir)), (
+         mock.patch('os.path.getsize', new=os_path_getsize)), (
+         mock.patch('os.stat', new=os_stat)):
+      with self.assertOldImplCalls('adb -s 0123456789abcdef push '
+          '/test/host/path /test/device/path', '100 B/s (100 B in 1.000s)\r\n'):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_nothingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_file_info = {
+      '/test/host/path': {
+        'os.path.exists': True,
+        'os.path.isdir': True,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000000)
+      },
+      '/test/host/path/file1': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 251,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000001)
+      },
+      '/test/host/path/file2': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 252,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000002)
+      },
+    }
+
+    os_path_exists = mock.Mock()
+    os_path_exists.side_effect = lambda f: mock_file_info[f]['os.path.exists']
+
+    os_path_isdir = mock.Mock()
+    os_path_isdir.side_effect = lambda f: mock_file_info[f]['os.path.isdir']
+
+    os_path_getsize = mock.Mock()
+    os_path_getsize.side_effect = lambda f: mock_file_info[f]['os.path.getsize']
+
+    os_stat = mock.Mock()
+    os_stat.side_effect = lambda f: mock_file_info[f]['os.stat']
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
+
+    with mock.patch('os.path.exists', new=os_path_exists), (
+         mock.patch('os.path.isdir', new=os_path_isdir)), (
+         mock.patch('os.path.getsize', new=os_path_getsize)), (
+         mock.patch('os.stat', new=os_stat)):
+      with self.assertOldImplCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           '')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_somethingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_file_info = {
+      '/test/host/path': {
+        'os.path.exists': True,
+        'os.path.isdir': True,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000000),
+        'os.walk': [('/test/host/path', [], ['file1', 'file2'])]
+      },
+      '/test/host/path/file1': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000001)
+      },
+      '/test/host/path/file2': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000002)
+      },
+    }
+
+    os_path_exists = mock.Mock()
+    os_path_exists.side_effect = lambda f: mock_file_info[f]['os.path.exists']
+
+    os_path_isdir = mock.Mock()
+    os_path_isdir.side_effect = lambda f: mock_file_info[f]['os.path.isdir']
+
+    os_path_getsize = mock.Mock()
+    os_path_getsize.side_effect = lambda f: mock_file_info[f]['os.path.getsize']
+
+    os_stat = mock.Mock()
+    os_stat.side_effect = lambda f: mock_file_info[f]['os.stat']
+
+    os_walk = mock.Mock()
+    os_walk.side_effect = lambda f: mock_file_info[f]['os.walk']
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path/file1', '/test/device/path/file1')])
+
+    with mock.patch('os.path.exists', new=os_path_exists), (
+         mock.patch('os.path.isdir', new=os_path_isdir)), (
+         mock.patch('os.path.getsize', new=os_path_getsize)), (
+         mock.patch('os.stat', new=os_stat)), (
+         mock.patch('os.walk', new=os_walk)):
+      with self.assertOldImplCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           ''),
+          ('adb -s 0123456789abcdef push '
+              '/test/host/path/file1 /test/device/path/file1',
+           '256 B/s (256 B in 1.000s)\r\n')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_everythingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_file_info = {
+      '/test/host/path': {
+        'os.path.exists': True,
+        'os.path.isdir': True,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000000)
+      },
+      '/test/host/path/file1': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000001)
+      },
+      '/test/host/path/file2': {
+        'os.path.exists': True,
+        'os.path.isdir': False,
+        'os.path.getsize': 256,
+        'os.stat': self.createMockOSStatResult(st_mtime=1000000002)
+      },
+    }
+
+    os_path_exists = mock.Mock()
+    os_path_exists.side_effect = lambda f: mock_file_info[f]['os.path.exists']
+
+    os_path_isdir = mock.Mock()
+    os_path_isdir.side_effect = lambda f: mock_file_info[f]['os.path.isdir']
+
+    os_path_getsize = mock.Mock()
+    os_path_getsize.side_effect = lambda f: mock_file_info[f]['os.path.getsize']
+
+    os_stat = mock.Mock()
+    os_stat.side_effect = lambda f: mock_file_info[f]['os.stat']
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path/file1', '/test/device/path/file1'),
+                      ('/test/host/path/file2', '/test/device/path/file2')])
+
+    with mock.patch('os.path.exists', new=os_path_exists), (
+         mock.patch('os.path.isdir', new=os_path_isdir)), (
+         mock.patch('os.path.getsize', new=os_path_getsize)), (
+         mock.patch('os.stat', new=os_stat)):
+      with self.assertOldImplCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           ''),
+          ('adb -s 0123456789abcdef push /test/host/path /test/device/path',
+           '768 B/s (768 B in 1.000s)\r\n')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testFileExists_usingTest_fileExists(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell "
+            "'test -e \"/data/app/test.file.exists\"; echo $?'",
+        '0\r\n'):
+      self.assertTrue(self.device.FileExists('/data/app/test.file.exists'))
+
+  def testFileExists_usingTest_fileDoesntExist(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell "
+            "'test -e \"/data/app/test.file.does.not.exist\"; echo $?'",
+        '1\r\n'):
+      self.assertFalse(self.device.FileExists(
+          '/data/app/test.file.does.not.exist'))
+
+  def testFileExists_usingLs_fileExists(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell "
+            "'test -e \"/data/app/test.file.exists\"; echo $?'",
+         'test: not found\r\n'),
+        ("adb -s 0123456789abcdef shell "
+            "'ls \"/data/app/test.file.exists\" >/dev/null 2>&1; echo $?'",
+         '0\r\n')]):
+      self.assertTrue(self.device.FileExists('/data/app/test.file.exists'))
+
+  def testFileExists_usingLs_fileDoesntExist(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell "
+            "'test -e \"/data/app/test.file.does.not.exist\"; echo $?'",
+         'test: not found\r\n'),
+        ("adb -s 0123456789abcdef shell "
+            "'ls \"/data/app/test.file.does.not.exist\" "
+            ">/dev/null 2>&1; echo $?'",
+         '1\r\n')]):
+      self.assertFalse(self.device.FileExists(
+          '/data/app/test.file.does.not.exist'))
+
+  def testPullFile_existsOnDevice(self):
+    with mock.patch('os.path.exists', return_value=True):
+      with self.assertOldImplCallsSequence([
+          ('adb -s 0123456789abcdef shell '
+              'ls /data/app/test.file.exists',
+           '/data/app/test.file.exists'),
+          ('adb -s 0123456789abcdef pull '
+              '/data/app/test.file.exists /test/file/host/path',
+           '100 B/s (100 bytes in 1.000s)\r\n')]):
+        self.device.PullFile('/data/app/test.file.exists',
+                             '/test/file/host/path')
+
+  def testPullFile_doesntExistOnDevice(self):
+    with mock.patch('os.path.exists', return_value=True):
+      with self.assertOldImplCalls(
+          'adb -s 0123456789abcdef shell '
+              'ls /data/app/test.file.does.not.exist',
+          '/data/app/test.file.does.not.exist: No such file or directory\r\n'):
+        with self.assertRaises(device_errors.CommandFailedError):
+          self.device.PullFile('/data/app/test.file.does.not.exist',
+                               '/test/file/host/path')
+
+  def testReadFile_exists(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell "
+            "'cat \"/read/this/test/file\" 2>/dev/null'",
+         'this is a test file')]):
+      self.assertEqual(['this is a test file'],
+                       self.device.ReadFile('/read/this/test/file'))
+
+  def testReadFile_doesNotExist(self):
+    with self.assertOldImplCalls(
+        "adb -s 0123456789abcdef shell "
+            "'cat \"/this/file/does.not.exist\" 2>/dev/null'",
+         ''):
+      self.device.ReadFile('/this/file/does.not.exist')
+
+  def testReadFile_asRoot_withRoot(self):
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommand)
+    self.device.old_interface._protected_file_access_method_initialized = True
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell "
+            "'cat \"/this/file/must.be.read.by.root\" 2> /dev/null'",
+         'this is a test file\nread by root')]):
+      self.assertEqual(
+          ['this is a test file', 'read by root'],
+          self.device.ReadFile('/this/file/must.be.read.by.root',
+                               as_root=True))
+
+  def testReadFile_asRoot_withSu(self):
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommandWithSU)
+    self.device.old_interface._protected_file_access_method_initialized = True
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell "
+            "'su -c cat \"/this/file/can.be.read.with.su\" 2> /dev/null'",
+         'this is a test file\nread with su')]):
+      self.assertEqual(
+          ['this is a test file', 'read with su'],
+          self.device.ReadFile('/this/file/can.be.read.with.su',
+                               as_root=True))
+
+  def testReadFile_asRoot_rejected(self):
+    self.device.old_interface._privileged_command_runner = None
+    self.device.old_interface._protected_file_access_method_initialized = True
+    with self.assertRaises(device_errors.CommandFailedError):
+      self.device.ReadFile('/this/file/cannot.be.read.by.user',
+                           as_root=True)
+
+  def testWriteFile_basic(self):
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertOldImplCalls(
+          'adb -s 0123456789abcdef push '
+              '/tmp/file/to.be.pushed /test/file/written.to.device',
+          '100 B/s (100 bytes in 1.000s)\r\n'):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents')
+    mock_file.write.assert_called_once_with('new test file contents')
+
+  def testWriteFile_asRoot_withRoot(self):
+    self.device.old_interface._external_storage = '/fake/storage/path'
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommand)
+    self.device.old_interface._protected_file_access_method_initialized = True
+
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertOldImplCallsSequence(
+          cmd_ret=[
+              # Create temporary contents file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Create temporary script file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Set contents file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Set script file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Call script
+              (r"adb -s 0123456789abcdef shell "
+                  "'sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              # Remove device temporaries
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+          comp=re.match):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents', as_root=True)
+
+  def testWriteFile_asRoot_withSu(self):
+    self.device.old_interface._external_storage = '/fake/storage/path'
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommandWithSU)
+    self.device.old_interface._protected_file_access_method_initialized = True
+
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertOldImplCallsSequence(
+          cmd_ret=[
+              # Create temporary contents file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Create temporary script file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Set contents file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Set script file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Call script
+              (r"adb -s 0123456789abcdef shell "
+                  "'su -c sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              # Remove device temporaries
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+          comp=re.match):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents', as_root=True)
+
+  def testWriteFile_asRoot_rejected(self):
+    self.device.old_interface._privileged_command_runner = None
+    self.device.old_interface._protected_file_access_method_initialized = True
+    with self.assertRaises(device_errors.CommandFailedError):
+      self.device.WriteFile('/test/file/no.permissions.to.write',
+                            'new test file contents', as_root=True)
 
 
 if __name__ == '__main__':

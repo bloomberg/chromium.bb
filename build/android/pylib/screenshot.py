@@ -86,7 +86,6 @@ class VideoRecorder(object):
     Returns:
       Output video file name on the host.
     """
-    self._device.old_interface.PullFileFromDevice(
-        self._device_file, self._host_file)
+    self._device.PullFile(self._device_file, self._host_file)
     self._device.RunShellCommand('rm -f "%s"' % self._device_file)
     return self._host_file

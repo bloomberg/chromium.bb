@@ -64,7 +64,7 @@ def TriggerSymlinkScript(options):
   mkdir_cmd = ('if [ ! -e %(dir)s ]; then mkdir -p %(dir)s; fi ' %
       { 'dir': device_dir })
   RunShellCommand(device, mkdir_cmd)
-  device.PushIfNeeded(options.script_host_path, options.script_device_path)
+  device.PushChangedFiles(options.script_host_path, options.script_device_path)
 
   trigger_cmd = (
       'APK_LIBRARIES_DIR=%(apk_libraries_dir)s; '

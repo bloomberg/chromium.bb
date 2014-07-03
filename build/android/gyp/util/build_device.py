@@ -33,8 +33,8 @@ class BuildDevice(object):
   def RunShellCommand(self, *args, **kwargs):
     return self.device.RunShellCommand(*args, **kwargs)
 
-  def PushIfNeeded(self, *args, **kwargs):
-    return self.device.old_interface.PushIfNeeded(*args, **kwargs)
+  def PushChangedFiles(self, *args, **kwargs):
+    return self.device.PushChangedFiles(*args, **kwargs)
 
   def GetSerialNumber(self):
     return self.id

@@ -37,7 +37,7 @@ class TestPackageExecutable(TestPackage):
     ret_code = 1  # Assume failure if we can't find it
     ret_code_file = tempfile.NamedTemporaryFile()
     try:
-      if not device.old_interface.Adb().Pull(
+      if not device.PullFile(
           constants.TEST_EXECUTABLE_DIR + '/' +
           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE,
           ret_code_file.name):
@@ -105,7 +105,7 @@ class TestPackageExecutable(TestPackage):
                           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
-    device.old_interface.PushIfNeeded(
+    device.PushChangedFiles(
         sh_script_file.name,
         constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')
     logging.info('Conents of the test runner script: ')
@@ -148,4 +148,4 @@ class TestPackageExecutable(TestPackage):
              self.suite_name + '_stripped'))
 
     test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
-    device.old_interface.PushIfNeeded(target_name, test_binary)
+    device.PushChangedFiles(target_name, test_binary)

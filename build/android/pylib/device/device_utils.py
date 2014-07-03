@@ -435,6 +435,117 @@ class DeviceUtils(object):
     """
     self.old_interface.SendKeyEvent(keycode)
 
+  PUSH_CHANGED_FILES_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
+  PUSH_CHANGED_FILES_DEFAULT_RETRIES = _DEFAULT_RETRIES
+
+  @decorators.WithTimeoutAndRetriesDefaults(
+      PUSH_CHANGED_FILES_DEFAULT_TIMEOUT,
+      PUSH_CHANGED_FILES_DEFAULT_RETRIES)
+  def PushChangedFiles(self, host_path, device_path, timeout=None,
+                       retries=None):
+    """Push files to the device, skipping files that don't need updating.
+
+    Args:
+      host_path: A string containing the absolute path to the file or directory
+                 on the host that should be minimally pushed to the device.
+      device_path: A string containing the absolute path of the destination on
+                   the device.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.PushIfNeeded(host_path, device_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def FileExists(self, device_path, timeout=None, retries=None):
+    """Checks whether the given file exists on the device.
+
+    Args:
+      device_path: A string containing the absolute path to the file on the
+                   device.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Returns:
+      True if the file exists on the device, False otherwise.
+    """
+    return self._FileExistsImpl(device_path)
+
+  def _FileExistsImpl(self, device_path):
+    """Implementation of FileExists.
+
+    This is split from FileExists to allow other DeviceUtils methods to call
+    FileExists without spawning a new timeout thread.
+
+    Args:
+      device_path: Same as for |FileExists|.
+    Returns:
+      True if the file exists on the device, False otherwise.
+    """
+    return self.old_interface.FileExistsOnDevice(device_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def PullFile(self, device_path, host_path, timeout=None, retries=None):
+    """Pull a file from the device.
+
+    Args:
+      device_path: A string containing the absolute path of the file to pull
+                   from the device.
+      host_path: A string containing the absolute path of the destination on
+                 the host.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.PullFileFromDevice(device_path, host_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def ReadFile(self, device_path, as_root=False, timeout=None, retries=None):
+    """Reads the contents of a file from the device.
+
+    Args:
+      device_path: A string containing the absolute path of the file to read
+                   from the device.
+      as_root: A boolean indicating whether the read should be executed with
+               root priveleges.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Returns:
+      The contents of the file at |device_path| as a list of lines.
+    Raises:
+      CommandFailedError if the file can't be read.
+    """
+    # TODO(jbudorick) Evaluate whether we actually want to return a list of
+    # lines after the implementation switch.
+    if as_root:
+      if not self.old_interface.CanAccessProtectedFileContents():
+        raise device_errors.CommandFailedError(
+          'Cannot read from %s with root priveleges.' % device_path)
+      return self.old_interface.GetProtectedFileContents(device_path)
+    else:
+      return self.old_interface.GetFileContents(device_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def WriteFile(self, device_path, contents, as_root=False, timeout=None,
+                retries=None):
+    """Writes |contents| to a file on the device.
+
+    Args:
+      device_path: A string containing the absolute path to the file to write
+                   on the device.
+      contents: A string containing the data to write to the device.
+      as_root: A boolean indicating whether the write should be executed with
+               root priveleges.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Raises:
+      CommandFailedError if the file could not be written on the device.
+    """
+    if as_root:
+      if not self.old_interface.CanAccessProtectedFileContents():
+        raise device_errors.CommandFailedError(
+            'Cannot write to %s with root priveleges.' % device_path)
+      self.old_interface.SetProtectedFileContents(device_path, contents)
+    else:
+      self.old_interface.SetFileContents(device_path, contents)
+
   def __str__(self):
     """Returns the device serial."""
     return self.old_interface.GetDevice()

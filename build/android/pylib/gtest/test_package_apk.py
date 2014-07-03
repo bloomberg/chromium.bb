@@ -44,7 +44,7 @@ class TestPackageApk(TestPackage):
     # GTest expects argv[0] to be the executable path.
     command_line_file.write(self.suite_name + ' ' + options)
     command_line_file.flush()
-    device.old_interface.PushIfNeeded(
+    device.PushChangedFiles(
         command_line_file.name,
         self._package_info.cmdline_file)
 
@@ -60,7 +60,7 @@ class TestPackageApk(TestPackage):
 
   def _WatchFifo(self, device, timeout, logfile=None):
     for i in range(10):
-      if device.old_interface.FileExistsOnDevice(self._GetFifo()):
+      if device.FileExists(self._GetFifo()):
         logging.info('Fifo created.')
         break
       time.sleep(i)

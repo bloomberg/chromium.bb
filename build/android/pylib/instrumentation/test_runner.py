@@ -106,7 +106,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       # Make sure SD card is ready.
       self.device.WaitUntilFullyBooted(timeout=20)
       for p in test_data:
-        self.device.old_interface.PushIfNeeded(
+        self.device.PushChangedFiles(
             os.path.join(constants.DIR_SOURCE_ROOT, p),
             os.path.join(self.device.GetExternalStoragePath(), p))
 
@@ -118,7 +118,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       host_src = dst_src[1]
       host_test_files_path = '%s/%s' % (constants.DIR_SOURCE_ROOT, host_src)
       if os.path.exists(host_test_files_path):
-        self.device.old_interface.PushIfNeeded(
+        self.device.PushChangedFiles(
             host_test_files_path,
             '%s/%s/%s' % (
                 self.device.GetExternalStoragePath(),
@@ -235,7 +235,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.TearDownPerfMonitoring(test)
 
     if self.coverage_dir:
-      self.device.old_interface.Adb().Pull(
+      self.device.PullFile(
           self.coverage_device_file, self.coverage_host_file)
       self.device.RunShellCommand(
           'rm -f %s' % self.coverage_device_file)
@@ -266,8 +266,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
       # Obtain the relevant perf data.  The data is dumped to a
       # JSON formatted file.
-      json_string = self.device.old_interface.GetProtectedFileContents(
-          '/data/data/com.google.android.apps.chrome/files/PerfTestData.txt')
+      json_string = self.device.ReadFile(
+          '/data/data/com.google.android.apps.chrome/files/PerfTestData.txt',
+          as_root=True)
 
       if json_string:
         json_string = '\n'.join(json_string)

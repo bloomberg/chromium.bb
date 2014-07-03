@@ -75,14 +75,12 @@ class _PerfProfiler(object):
     raise RuntimeError('%s. Log output:\n%s' % (msg, log))
 
   def PullResult(self, output_path):
-    if not self._device.old_interface.FileExistsOnDevice(
-        self._output_file.name):
+    if not self._device.FileExists(self._output_file.name):
       self._FailWithLog('Perf recorded no data')
 
     perf_profile = os.path.join(output_path,
                                 os.path.basename(self._output_file.name))
-    self._device.old_interface.PullFileFromDevice(self._output_file.name,
-                                                  perf_profile)
+    self._device.PullFile(self._output_file.name, perf_profile)
     if not os.stat(perf_profile).st_size:
       os.remove(perf_profile)
       self._FailWithLog('Perf recorded a zero-sized file')

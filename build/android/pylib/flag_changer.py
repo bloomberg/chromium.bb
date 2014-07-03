@@ -32,8 +32,7 @@ class FlagChanger(object):
     self._cmdline_file = cmdline_file
 
     # Save the original flags.
-    self._orig_line = self._device.old_interface.GetFileContents(
-        self._cmdline_file)
+    self._orig_line = self._device.ReadFile(self._cmdline_file)
     if self._orig_line:
       self._orig_line = self._orig_line[0].strip()
 
@@ -102,23 +101,16 @@ class FlagChanger(object):
       # The first command line argument doesn't matter as we are not actually
       # launching the chrome executable using this command line.
       cmd_line = ' '.join(['_'] + self._current_flags)
-      if use_root:
-        self._device.old_interface.SetProtectedFileContents(
-            self._cmdline_file, cmd_line)
-        file_contents = self._device.old_interface.GetProtectedFileContents(
-            self._cmdline_file)
-      else:
-        self._device.old_interface.SetFileContents(self._cmdline_file, cmd_line)
-        file_contents = self._device.old_interface.GetFileContents(
-            self._cmdline_file)
+      self._device.WriteFile(
+          self._cmdline_file, cmd_line, as_root=use_root)
+      file_contents = self._device.ReadFile(
+          self._cmdline_file, as_root=use_root)
       assert len(file_contents) == 1 and file_contents[0] == cmd_line, (
           'Failed to set the command line file at %s' % self._cmdline_file)
     else:
       self._device.RunShellCommand('rm ' + self._cmdline_file,
                                    as_root=use_root)
-      assert (
-          not self._device.old_interface.FileExistsOnDevice(
-              self._cmdline_file)), (
+      assert not self._device.FileExists(self._cmdline_file), (
           'Failed to remove the command line file at %s' % self._cmdline_file)
 
   @staticmethod

@@ -1054,7 +1054,9 @@ class AndroidCommands(object):
     All pushed files can be removed by calling RemovePushedFiles().
     """
     MAX_INDIVIDUAL_PUSHES = 50
-    assert os.path.exists(host_path), 'Local path not found %s' % host_path
+    if not os.path.exists(host_path):
+      raise device_errors.CommandFailedError(
+          'Local path not found %s' % host_path, device=str(self))
 
     # See if the file on the host changed since the last push (if any) and
     # return early if it didn't. Note that this shortcut assumes that the tests
@@ -1110,8 +1112,6 @@ class AndroidCommands(object):
     # approximates the push time for each method.
     if len(changed_files) > MAX_INDIVIDUAL_PUSHES or diff_size > 0.5 * size:
       self._actual_push_size += size
-      if os.path.isdir(host_path):
-        self.RunShellCommand('mkdir -p %s' % device_path)
       Push(host_path, device_path)
     else:
       for f in changed_files:
@@ -1783,7 +1783,9 @@ class AndroidCommands(object):
       device_file: Absolute path to the file to retrieve from the device.
       host_file: Absolute path to the file to store on the host.
     """
-    assert self._adb.Pull(device_file, host_file)
+    if not self._adb.Pull(device_file, host_file):
+      raise device_errors.AdbCommandFailedError(
+          ['pull', device_file, host_file], 'Failed to pull file from device.')
     assert os.path.exists(host_file)
 
   def SetUtilWrapper(self, util_wrapper):

@@ -25,8 +25,7 @@ class PerfControl(object):
     self._num_cpu_cores = len(cpu_files)
     assert self._num_cpu_cores > 0, 'Failed to detect CPUs.'
     logging.info('Number of CPUs: %d', self._num_cpu_cores)
-    self._have_mpdecision = self._device.old_interface.FileExistsOnDevice(
-        '/system/bin/mpdecision')
+    self._have_mpdecision = self._device.FileExists('/system/bin/mpdecision')
 
   def SetHighPerfMode(self):
     # TODO(epenner): Enable on all devices (http://crbug.com/383566)
@@ -61,16 +60,15 @@ class PerfControl(object):
   def _SetScalingGovernorInternal(self, value):
     for cpu in range(self._num_cpu_cores):
       scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
-      if self._device.old_interface.FileExistsOnDevice(scaling_governor_file):
+      if self._device.FileExists(scaling_governor_file):
         logging.info('Writing scaling governor mode \'%s\' -> %s',
                      value, scaling_governor_file)
-        self._device.old_interface.SetProtectedFileContents(
-            scaling_governor_file, value)
+        self._device.WriteFile(scaling_governor_file, value, as_root=True)
 
   def _AllCpusAreOnline(self):
     for cpu in range(self._num_cpu_cores):
       online_path = PerfControl._CPU_ONLINE_FMT % cpu
-      if self._device.old_interface.GetFileContents(online_path)[0] == '0':
+      if self._device.ReadFile(online_path)[0] == '0':
         return False
     return True
 
@@ -100,5 +98,4 @@ class PerfControl(object):
 
     for cpu in range(self._num_cpu_cores):
       online_path = PerfControl._CPU_ONLINE_FMT % cpu
-      self._device.old_interface.SetProtectedFileContents(
-          online_path, '1')
+      self._device.WriteFile(online_path, '1', as_root=True)

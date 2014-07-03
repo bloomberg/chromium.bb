@@ -39,7 +39,7 @@ be8b7000-be8d8000 rw-p 0 private_unevictable=8192 private=8192 shared_app=[] """
 ffff0000-ffff1000 r-xp 0 private_unevictable=0 private=0 shared_app=[] """
     """shared_other_unevictable=0 shared_other=0 "[vectors]" [AA==]""")
 
-_MOCH_DUMPHEAP_OUT = """Android Native Heap Dump v1.0
+_MOCK_DUMPHEAP_OUT = """Android Native Heap Dump v1.0
 
 Total memory: 1608601
 Allocation records: 2
@@ -85,7 +85,8 @@ class AndroidBackendTest(unittest.TestCase):
       'root': 'adbd is already running as root',
       'shell /data/local/tmp/ps_ext': _MOCK_PS_EXT_OUT,
       'shell /data/local/tmp/memdump': _MOCK_MEMDUMP_OUT,
-      'shell cat "/data/local/tmp/heap': _MOCH_DUMPHEAP_OUT,
+      'shell cat "/data/local/tmp/heap': _MOCK_DUMPHEAP_OUT,
+      'shell test -e "/data/local/tmp/heap': '0',
     }
     for (cmd, response) in planned_adb_responses.iteritems():
       self._mock_adb.PrepareResponse(cmd, response)

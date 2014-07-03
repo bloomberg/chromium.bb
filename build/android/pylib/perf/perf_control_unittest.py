@@ -30,10 +30,10 @@ class TestPerfControl(unittest.TestCase):
       for cpu in range(perf._num_cpu_cores):
         path = perf_control.PerfControl._CPU_ONLINE_FMT % cpu
         self.assertEquals('1',
-                          self._device.old_interface.GetFileContents(path)[0])
+                          self._device.ReadFile(path)[0])
         path = perf_control.PerfControl._SCALING_GOVERNOR_FMT % cpu
         self.assertEquals('performance',
-                          self._device.old_interface.GetFileContents(path)[0])
+                          self._device.ReadFile(path)[0])
     finally:
       perf.SetDefaultPerfMode()
 

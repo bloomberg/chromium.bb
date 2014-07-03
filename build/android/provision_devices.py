@@ -72,7 +72,7 @@ def PushAndLaunchAdbReboot(devices, target):
     print '  Pushing adb_reboot ...'
     adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                               'out/%s/adb_reboot' % target)
-    device.old_interface.PushIfNeeded(adb_reboot, '/data/local/tmp/')
+    device.PushChangedFiles(adb_reboot, '/data/local/tmp/')
     # Launch adb_reboot
     print '  Launching adb_reboot ...'
     device.old_interface.GetAndroidToolStatusAndOutput(
@@ -91,9 +91,9 @@ def _ConfigureLocalProperties(device, is_perf):
   if not is_perf:
     local_props.append('%s=all' % android_commands.JAVA_ASSERT_PROPERTY)
     local_props.append('debug.checkjni=1')
-  device.old_interface.SetProtectedFileContents(
+  device.WriteFile(
       constants.DEVICE_LOCAL_PROPERTIES_PATH,
-      '\n'.join(local_props))
+      '\n'.join(local_props), as_root=True)
   # Android will not respect the local props file if it is world writable.
   device.RunShellCommand(
       'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
@@ -114,8 +114,7 @@ def WipeDeviceData(device):
   Arguments:
     device: the device to wipe
   """
-  device_authorized = device.old_interface.FileExistsOnDevice(
-      constants.ADB_KEYS_FILE)
+  device_authorized = device.FileExists(constants.ADB_KEYS_FILE)
   if device_authorized:
     adb_keys = device.RunShellCommand('cat %s' % constants.ADB_KEYS_FILE,
                                       as_root=True)

@@ -71,7 +71,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       else:
         device_dir = self.device.GetExternalStoragePath()
       for p in os.listdir(constants.ISOLATE_DEPS_DIR):
-        self.device.old_interface.PushIfNeeded(
+        self.device.PushChangedFiles(
             os.path.join(constants.ISOLATE_DEPS_DIR, p),
             os.path.join(device_dir, p))
 

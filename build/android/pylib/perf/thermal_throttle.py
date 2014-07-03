@@ -14,8 +14,7 @@ class OmapThrottlingDetector(object):
 
   @staticmethod
   def IsSupported(device):
-    return device.old_interface.FileExistsOnDevice(
-        OmapThrottlingDetector.OMAP_TEMP_FILE)
+    return device.FileExists(OmapThrottlingDetector.OMAP_TEMP_FILE)
 
   def __init__(self, device):
     self._device = device
@@ -34,8 +33,7 @@ class OmapThrottlingDetector(object):
       return float([s for s in log_line.split() if s.isdigit()][0]) / 1000.0
 
   def GetCurrentTemperature(self):
-    tempdata = self._device.old_interface.GetFileContents(
-        OmapThrottlingDetector.OMAP_TEMP_FILE)
+    tempdata = self._device.ReadFile(OmapThrottlingDetector.OMAP_TEMP_FILE)
     return float(tempdata[0]) / 1000.0
 
 
@@ -43,7 +41,7 @@ class ExynosThrottlingDetector(object):
   """Class to detect and track thermal throttling on an Exynos 5."""
   @staticmethod
   def IsSupported(device):
-    return device.old_interface.FileExistsOnDevice('/sys/bus/exynos5-core')
+    return device.FileExists('/sys/bus/exynos5-core')
 
   def __init__(self, device):
     pass

@@ -327,8 +327,7 @@ class AndroidProcess(backends.Process):
     # TODO(primiano): Some pre-KK versions of Android might need a sleep here
     # as, IIRC, 'am dumpheap' did not wait for the dump to be completed before
     # returning. Double check this and either add a sleep or remove this TODO.
-    dump_out = self.device.underlying_device.old_interface.GetFileContents(
-        dump_file_path)
+    dump_out = self.device.underlying_device.ReadFile(dump_file_path)
     self.device.underlying_device.RunShellCommand('rm %s' % dump_file_path)
     return dumpheap_native_parser.Parse(dump_out)
 

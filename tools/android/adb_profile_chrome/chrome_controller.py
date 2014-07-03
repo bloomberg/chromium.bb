@@ -100,5 +100,5 @@ class ChromeTracingController(controllers.BaseController):
 
     trace_file = self._trace_file.replace('/storage/emulated/0/', '/sdcard/')
     host_file = os.path.join(os.path.curdir, os.path.basename(trace_file))
-    self._device.old_interface.PullFileFromDevice(trace_file, host_file)
+    self._device.PullFile(trace_file, host_file)
     return host_file

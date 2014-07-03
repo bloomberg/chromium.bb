@@ -40,7 +40,7 @@ def DoPush(options):
       if needs_directory:
         device.RunShellCommand('mkdir -p ' + options.device_dir)
         needs_directory[:] = [] # = False
-      device.PushIfNeeded(host_path, device_path)
+      device.PushChangedFiles(host_path, device_path)
 
     record_path = '%s.%s.push.md5.stamp' % (host_path, serial_number)
     md5_check.CallAndRecordIfStale(
