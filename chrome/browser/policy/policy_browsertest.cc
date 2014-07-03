@@ -705,8 +705,7 @@ class PolicyTest : public InProcessBrowserTest {
         expect_success ? chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED
                        : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::NotificationService::AllSources());
-    extension_service()->UninstallExtension(
-        id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+    extension_service()->UninstallExtension(id, false, NULL);
     observer.Wait();
   }
 

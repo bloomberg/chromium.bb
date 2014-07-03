@@ -144,11 +144,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
 
 void ExtensionContextMenuModel::ExtensionUninstallAccepted() {
   if (GetExtension()) {
-    extensions::ExtensionSystem::Get(profile_)
-        ->extension_service()
-        ->UninstallExtension(extension_id_,
-                             ExtensionService::UNINSTALL_REASON_USER_INITIATED,
-                             NULL);
+    extensions::ExtensionSystem::Get(profile_)->extension_service()->
+        UninstallExtension(extension_id_, false, NULL);
   }
   Release();
 }

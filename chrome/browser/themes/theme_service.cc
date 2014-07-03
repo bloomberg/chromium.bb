@@ -366,12 +366,8 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   // are installed but not loaded because they are blacklisted by a management
   // policy provider.
 
-  for (size_t i = 0; i < remove_list.size(); ++i) {
-    service->UninstallExtension(
-        remove_list[i],
-        ExtensionService::UNINSTALL_REASON_ORPHANED_THEME,
-        NULL);
-  }
+  for (size_t i = 0; i < remove_list.size(); ++i)
+    service->UninstallExtension(remove_list[i], false, NULL);
 }
 
 void ThemeService::UseDefaultTheme() {

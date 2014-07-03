@@ -794,10 +794,8 @@ void AppLauncherHandler::ExtensionUninstallAccepted() {
   if (!extension)
     return;
 
-  extension_service_->UninstallExtension(
-      extension_id_prompting_,
-      ExtensionService::UNINSTALL_REASON_USER_INITIATED,
-      NULL);
+  extension_service_->UninstallExtension(extension_id_prompting_,
+                                         false /* external_uninstall */, NULL);
   CleanupAfterUninstall();
 }
 
