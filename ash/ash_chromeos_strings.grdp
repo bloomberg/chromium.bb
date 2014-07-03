@@ -307,7 +307,7 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
 
   <!-- Status tray media recording state strings. -->
   <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO" desc="label used to indicate that the microphone is used by a background user">
-    Micropohne is in use.
+    Microphone is in use.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO" desc="label used to indicate that the camera is used by a background user">
     Camera is in use.
