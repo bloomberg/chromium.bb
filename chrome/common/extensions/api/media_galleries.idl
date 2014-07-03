@@ -6,14 +6,6 @@
 // images, video) from the user's local disks (with the user's consent).
 namespace mediaGalleries {
 
-  [inline_doc] enum GalleryChangeType {
-    // The contents of the gallery have changed.
-    contents_changed,
-    // The watch has been dropped because the device has been detached,
-    // the gallery permission has been removed, or any other reason.
-    watch_dropped
-  };
-
   [inline_doc] enum GetMediaFileSystemsInteractivity {
     // Do not act interactively.
     no,
@@ -43,14 +35,6 @@ namespace mediaGalleries {
     finish,
     // The scan encountered an error and could not proceed.
     error
-  };
-  
-  [inline_doc] dictionary GalleryChangeDetails {
-    // Type of change event.
-    GalleryChangeType type;
-    
-    // Identifies the modified gallery.
-    DOMString galleryId;
   };
 
   [inline_doc] dictionary MediaFileSystemsDetails {
@@ -223,9 +207,6 @@ namespace mediaGalleries {
   };
 
   interface Events {
-    // Fired when a media gallery is changed or a gallery watch is dropped.
-    static void onGalleryChanged(GalleryChangeDetails details);
-
     // The pending media scan has changed state. See details for more
     // information.
     static void onScanProgress(ScanProgressDetails details);

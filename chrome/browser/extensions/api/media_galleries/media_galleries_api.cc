@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
-#include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
@@ -46,6 +45,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/blob_holder.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -95,10 +95,6 @@ const char kSizeKey[] = "size";
 
 MediaFileSystemRegistry* media_file_system_registry() {
   return g_browser_process->media_file_system_registry();
-}
-
-GalleryWatchManager* gallery_watch_manager() {
-  return media_file_system_registry()->gallery_watch_manager();
 }
 
 MediaScanManager* media_scan_manager() {
@@ -283,11 +279,6 @@ MediaGalleriesEventRouter::MediaGalleriesEventRouter(
     : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-
-  EventRouter::Get(profile_)->RegisterObserver(
-      this, MediaGalleries::OnGalleryChanged::kEventName);
-
-  gallery_watch_manager()->AddObserver(profile_, this);
   media_scan_manager()->AddObserver(profile_, this);
 }
 
@@ -297,10 +288,6 @@ MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {
 void MediaGalleriesEventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   weak_ptr_factory_.InvalidateWeakPtrs();
-
-  EventRouter::Get(profile_)->UnregisterObserver(this);
-
-  gallery_watch_manager()->RemoveObserver(profile_);
   media_scan_manager()->RemoveObserver(profile_);
   media_scan_manager()->CancelScansForProfile(profile_);
 }
@@ -322,12 +309,6 @@ MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(
              ->GetPreferences(Profile::FromBrowserContext(context))
              ->IsInitialized());
   return BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>::Get(context);
-}
-
-bool MediaGalleriesEventRouter::ExtensionHasGalleryChangeListener(
-    const std::string& extension_id) const {
-  return EventRouter::Get(profile_)->ExtensionHasEventListener(
-      extension_id, MediaGalleries::OnGalleryChanged::kEventName);
 }
 
 bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(
@@ -393,36 +374,6 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
   scoped_ptr<extensions::Event> event(
       new extensions::Event(event_name, event_args.Pass()));
   router->DispatchEventToExtension(extension_id, event.Pass());
-}
-
-void MediaGalleriesEventRouter::OnGalleryChanged(
-    const std::string& extension_id, MediaGalleryPrefId gallery_id) {
-  MediaGalleries::GalleryChangeDetails details;
-  details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
-  details.gallery_id = gallery_id;
-  DispatchEventToExtension(
-      extension_id,
-      MediaGalleries::OnGalleryChanged::kEventName,
-      MediaGalleries::OnGalleryChanged::Create(details).Pass());
-}
-
-void MediaGalleriesEventRouter::OnGalleryWatchDropped(
-    const std::string& extension_id, MediaGalleryPrefId gallery_id) {
-  MediaGalleries::GalleryChangeDetails details;
-  details.type = MediaGalleries::GALLERY_CHANGE_TYPE_WATCH_DROPPED;
-  details.gallery_id = gallery_id;
-  DispatchEventToExtension(
-      extension_id,
-      MediaGalleries::OnGalleryChanged::kEventName,
-      MediaGalleries::OnGalleryChanged::Create(details).Pass());
-}
-
-void MediaGalleriesEventRouter::OnListenerRemoved(
-    const EventListenerInfo& details) {
-  if (details.event_name == MediaGalleries::OnGalleryChanged::kEventName &&
-      !ExtensionHasGalleryChangeListener(details.extension_id)) {
-    gallery_watch_manager()->RemoveAllWatches(profile_, details.extension_id);
-  }
 }
 
 MediaGalleriesGetMediaFileSystemsFunction::

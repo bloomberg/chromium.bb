@@ -22,7 +22,6 @@
 #include "components/storage_monitor/removable_storage_observer.h"
 
 class ExtensionGalleriesHost;
-class GalleryWatchManager;
 class MediaFileSystemContext;
 class MediaGalleriesPreferences;
 class MediaScanManager;
@@ -96,7 +95,6 @@ class MediaFileSystemRegistry
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   MediaScanManager* media_scan_manager();
-  GalleryWatchManager* gallery_watch_manager();
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageDetached(
@@ -136,7 +134,6 @@ class MediaFileSystemRegistry
   scoped_ptr<MediaFileSystemContext> file_system_context_;
 
   scoped_ptr<MediaScanManager> media_scan_manager_;
-  scoped_ptr<GalleryWatchManager> gallery_watch_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };
