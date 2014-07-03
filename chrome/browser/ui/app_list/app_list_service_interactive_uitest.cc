@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -172,13 +173,29 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, ShowAppListFlag) {
   AppListService* service = test::GetAppListService();
   // The app list should already be shown because we passed
   // switches::kShowAppList.
-  ASSERT_TRUE(service->IsAppListVisible());
+  EXPECT_TRUE(service->IsAppListVisible());
 
   // Create a browser to prevent shutdown when we dismiss the app list.  We
   // need to do this because switches::kShowAppList suppresses the creation of
   // any browsers.
-  CreateBrowser(service->GetCurrentAppListProfile());
+  Profile* profile = service->GetCurrentAppListProfile();
+  CreateBrowser(profile);
+
   service->DismissAppList();
+  EXPECT_FALSE(service->IsAppListVisible());
+
+  // With Chrome still running, test receiving a second --show-app-list request
+  // via the process singleton. ChromeOS has no process singleton so exclude it.
+#if !defined(OS_CHROMEOS)
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kShowAppList);
+  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
+      command_line, base::FilePath(), profile->GetPath());
+
+  EXPECT_TRUE(service->IsAppListVisible());
+  service->DismissAppList();
+  EXPECT_FALSE(service->IsAppListVisible());
+#endif
 }
 
 // Interactive UI test that creates a non-default profile and configures it for
