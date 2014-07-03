@@ -11,6 +11,7 @@
 namespace views {
 
 class View;
+class ViewTargeterDelegate;
 
 // Contains the logic used to determine the View to which an
 // event should be dispatched. A ViewTargeter (or one of its
@@ -19,8 +20,11 @@ class View;
 // that View.
 class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
  public:
-  ViewTargeter();
+  explicit ViewTargeter(ViewTargeterDelegate* delegate);
   virtual ~ViewTargeter();
+
+  // A call-through to DoesIntersectRect() on |delegate_|.
+  bool DoesIntersectRect(const View* target, const gfx::Rect& rect) const;
 
  protected:
   // Returns the location of |event| represented as a rect. If |event| is
@@ -42,6 +46,10 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
 
  private:
   View* FindTargetForKeyEvent(View* view, const ui::KeyEvent& key);
+
+  // ViewTargeter does not own the |delegate_|, but |delegate_| must
+  // outlive the targeter.
+  ViewTargeterDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTargeter);
 };

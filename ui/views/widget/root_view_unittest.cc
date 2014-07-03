@@ -53,10 +53,10 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   child->SetFocusable(true);
   child->RequestFocus();
 
-  ViewTargeter* targeter = new ViewTargeter();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+  ViewTargeter* view_targeter = new ViewTargeter(root_view);
+  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, 0, false);
   ui::EventDispatchDetails details = root_view->OnEventFromSource(&key_event);

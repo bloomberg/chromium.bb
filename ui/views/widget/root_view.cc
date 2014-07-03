@@ -169,7 +169,7 @@ RootView::RootView(Widget* widget)
       old_dispatch_target_(NULL) {
   AddPreTargetHandler(pre_dispatch_handler_.get());
   AddPostTargetHandler(post_dispatch_handler_.get());
-  SetEventTargeter(scoped_ptr<ViewTargeter>(new ViewTargeter()));
+  SetEventTargeter(scoped_ptr<ViewTargeter>(new ViewTargeter(this)));
 }
 
 RootView::~RootView() {

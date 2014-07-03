@@ -15,7 +15,9 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -86,14 +88,38 @@ class TestTabStripObserver : public TabStripObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
-class TabStripTest : public testing::Test {
+class TabStripTest : public views::ViewsTestBase {
  public:
   TabStripTest()
-      : controller_(new FakeBaseTabStripController) {
+      : controller_(NULL),
+        tab_strip_(NULL) {
+  }
+
+  virtual ~TabStripTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    views::ViewsTestBase::SetUp();
+
+    controller_ = new FakeBaseTabStripController;
     tab_strip_ = new TabStrip(controller_);
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);
+    parent_.set_owned_by_client();
+
+    widget_.reset(new views::Widget);
+    views::Widget::InitParams init_params =
+        CreateParams(views::Widget::InitParams::TYPE_POPUP);
+    init_params.ownership =
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    init_params.bounds = gfx::Rect(0, 0, 200, 200);
+    widget_->Init(init_params);
+    widget_->SetContentsView(&parent_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    widget_.reset();
+    views::ViewsTestBase::TearDown();
   }
 
  protected:
@@ -124,12 +150,12 @@ class TabStripTest : public testing::Test {
     return tab->HitTestPoint(point_in_tab_coords);
   }
 
-  base::MessageLoopForUI ui_loop_;
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_;
   // Owns |tab_strip_|.
   views::View parent_;
   TabStrip* tab_strip_;
+  scoped_ptr<views::Widget> widget_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabStripTest);

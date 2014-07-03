@@ -12,6 +12,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 
@@ -44,6 +45,7 @@ class PreEventDispatchHandler;
 //  TODO(sky): We don't really want to export this class.
 //
 class VIEWS_EXPORT RootView : public View,
+                              public ViewTargeterDelegate,
                               public FocusTraversable,
                               public ui::EventProcessor {
  public:

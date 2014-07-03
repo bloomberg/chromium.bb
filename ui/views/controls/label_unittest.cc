@@ -11,10 +11,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
 
 namespace views {
+
+typedef ViewsTestBase LabelTest;
 
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
@@ -26,7 +30,7 @@ void SetRTL(bool rtl) {
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
-TEST(LabelTest, FontPropertySymbol) {
+TEST_F(LabelTest, FontPropertySymbol) {
   Label label;
   std::string font_name("symbol");
   gfx::Font font(font_name, 26);
@@ -36,7 +40,7 @@ TEST(LabelTest, FontPropertySymbol) {
   EXPECT_EQ(26, font_used.GetFontSize());
 }
 
-TEST(LabelTest, FontPropertyArial) {
+TEST_F(LabelTest, FontPropertyArial) {
   Label label;
   std::string font_name("arial");
   gfx::Font font(font_name, 30);
@@ -46,14 +50,14 @@ TEST(LabelTest, FontPropertyArial) {
   EXPECT_EQ(30, font_used.GetFontSize());
 }
 
-TEST(LabelTest, TextProperty) {
+TEST_F(LabelTest, TextProperty) {
   Label label;
   base::string16 test_text(ASCIIToUTF16("A random string."));
   label.SetText(test_text);
   EXPECT_EQ(test_text, label.text());
 }
 
-TEST(LabelTest, ColorProperty) {
+TEST_F(LabelTest, ColorProperty) {
   Label label;
   SkColor color = SkColorSetARGB(20, 40, 10, 5);
   label.SetAutoColorReadabilityEnabled(false);
@@ -61,7 +65,7 @@ TEST(LabelTest, ColorProperty) {
   EXPECT_EQ(color, label.enabled_color());
 }
 
-TEST(LabelTest, AlignmentProperty) {
+TEST_F(LabelTest, AlignmentProperty) {
   const bool was_rtl = base::i18n::IsRTL();
 
   Label label;
@@ -92,7 +96,7 @@ TEST(LabelTest, AlignmentProperty) {
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 
-TEST(LabelTest, DirectionalityModeProperty) {
+TEST_F(LabelTest, DirectionalityModeProperty) {
   Label label;
   EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
 
@@ -103,7 +107,7 @@ TEST(LabelTest, DirectionalityModeProperty) {
   EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
 }
 
-TEST(LabelTest, MultiLineProperty) {
+TEST_F(LabelTest, MultiLineProperty) {
   Label label;
   EXPECT_FALSE(label.is_multi_line());
   label.SetMultiLine(true);
@@ -112,7 +116,7 @@ TEST(LabelTest, MultiLineProperty) {
   EXPECT_FALSE(label.is_multi_line());
 }
 
-TEST(LabelTest, ObscuredProperty) {
+TEST_F(LabelTest, ObscuredProperty) {
   Label label;
   base::string16 test_text(ASCIIToUTF16("Password!"));
   label.SetText(test_text);
@@ -137,7 +141,7 @@ TEST(LabelTest, ObscuredProperty) {
   EXPECT_EQ(test_text + test_text, label.text());
 }
 
-TEST(LabelTest, ObscuredSurrogatePair) {
+TEST_F(LabelTest, ObscuredSurrogatePair) {
   // 'MUSICAL SYMBOL G CLEF': represented in UTF-16 as two characters
   // forming the surrogate pair 0x0001D11E.
   Label label;
@@ -149,7 +153,7 @@ TEST(LabelTest, ObscuredSurrogatePair) {
   EXPECT_EQ(test_text, label.text());
 }
 
-TEST(LabelTest, TooltipProperty) {
+TEST_F(LabelTest, TooltipProperty) {
   Label label;
   label.SetText(ASCIIToUTF16("My cool string."));
 
@@ -202,7 +206,7 @@ TEST(LabelTest, TooltipProperty) {
   label.SetTooltipText(base::string16());
 }
 
-TEST(LabelTest, Accessibility) {
+TEST_F(LabelTest, Accessibility) {
   Label label;
   label.SetText(ASCIIToUTF16("My special text."));
 
@@ -213,7 +217,7 @@ TEST(LabelTest, Accessibility) {
   EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
-TEST(LabelTest, SingleLineSizing) {
+TEST_F(LabelTest, SingleLineSizing) {
   Label label;
   label.SetText(ASCIIToUTF16("A not so random string in one line."));
 
@@ -236,7 +240,7 @@ TEST(LabelTest, SingleLineSizing) {
             required_size.width() + border.width());
 }
 
-TEST(LabelTest, MultilineSmallAvailableWidthSizing) {
+TEST_F(LabelTest, MultilineSmallAvailableWidthSizing) {
   Label label;
   label.SetMultiLine(true);
   label.SetAllowCharacterBreak(true);
@@ -250,7 +254,7 @@ TEST(LabelTest, MultilineSmallAvailableWidthSizing) {
     EXPECT_GT(label.GetHeightForWidth(i), 0);
 }
 
-TEST(LabelTest, MultiLineSizing) {
+TEST_F(LabelTest, MultiLineSizing) {
   Label label;
   label.SetFocusable(false);
   label.SetText(
@@ -331,7 +335,7 @@ TEST(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
-TEST(LabelTest, DirectionalityFromText) {
+TEST_F(LabelTest, DirectionalityFromText) {
   Label label;
   label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
   label.SetBounds(0, 0, 1000, 1000);
@@ -354,7 +358,7 @@ TEST(LabelTest, DirectionalityFromText) {
                      gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
 }
 
-TEST(LabelTest, DrawSingleLineString) {
+TEST_F(LabelTest, DrawSingleLineString) {
   Label label;
   label.SetFocusable(false);
   // Force a directionality to simplify alignment value testing.
@@ -479,7 +483,7 @@ TEST(LabelTest, DrawSingleLineString) {
 }
 
 // Pango needs a max height to elide multiline text; that is not supported here.
-TEST(LabelTest, DrawMultiLineString) {
+TEST_F(LabelTest, DrawMultiLineString) {
   Label label;
   label.SetFocusable(false);
   // Force a directionality to simplify alignment value testing.
@@ -609,7 +613,7 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(expected_flags, expected_flags);
 }
 
-TEST(LabelTest, DrawSingleLineStringInRTL) {
+TEST_F(LabelTest, DrawSingleLineStringInRTL) {
   Label label;
   label.SetFocusable(false);
 
@@ -741,7 +745,7 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
 // On Linux the underlying pango routines require a max height in order to
 // ellide multiline text. So until that can be resolved, we set all
 // multiline lables to not ellide in Linux only.
-TEST(LabelTest, DrawMultiLineStringInRTL) {
+TEST_F(LabelTest, DrawMultiLineStringInRTL) {
   Label label;
   label.SetFocusable(false);
 
@@ -863,7 +867,7 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
 }
 
 // Ensure the subpixel rendering flag and background color alpha are respected.
-TEST(LabelTest, DisableSubpixelRendering) {
+TEST_F(LabelTest, DisableSubpixelRendering) {
   Label label;
   label.SetBackgroundColor(SK_ColorWHITE);
   const int flag = gfx::Canvas::NO_SUBPIXEL_RENDERING;
@@ -878,11 +882,23 @@ TEST(LabelTest, DisableSubpixelRendering) {
 }
 
 // Check that labels support GetTooltipHandlerForPoint.
-TEST(LabelTest, GetTooltipHandlerForPoint) {
+TEST_F(LabelTest, GetTooltipHandlerForPoint) {
+  // A root view must be defined for this test because the hit-testing
+  // behaviour used by GetTooltipHandlerForPoint() is defined by
+  // the ViewTargeter installed on the root view.
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  widget.Init(init_params);
+
   Label label;
   label.SetText(
       ASCIIToUTF16("A string that's long enough to exceed the bounds"));
   label.SetBounds(0, 0, 10, 10);
+  widget.SetContentsView(&label);
+
   // There's a default tooltip if the text is too big to fit.
   EXPECT_EQ(&label, label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
 

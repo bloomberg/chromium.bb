@@ -7,11 +7,21 @@
 #include "ui/events/event_target.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 
-ViewTargeter::ViewTargeter() {}
+ViewTargeter::ViewTargeter(ViewTargeterDelegate* delegate)
+    : delegate_(delegate) {
+}
+
 ViewTargeter::~ViewTargeter() {}
+
+bool ViewTargeter::DoesIntersectRect(const View* target,
+                                     const gfx::Rect& rect) const {
+  DCHECK(delegate_);
+  return delegate_->DoesIntersectRect(target, rect);
+}
 
 gfx::RectF ViewTargeter::BoundsForEvent(const ui::LocatedEvent& event) const {
   gfx::RectF event_bounds(event.location_f(), gfx::SizeF(1, 1));

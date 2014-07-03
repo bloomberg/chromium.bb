@@ -99,10 +99,10 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   grandchild->SetFocusable(true);
   grandchild->RequestFocus();
 
-  ViewTargeter* view_targeter = new ViewTargeter();
-  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
+  ViewTargeter* view_targeter = new ViewTargeter(root_view);
+  ui::EventTargeter* targeter = view_targeter;
   root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
@@ -148,10 +148,10 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
-  ViewTargeter* view_targeter = new ViewTargeter();
-  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
+  ViewTargeter* view_targeter = new ViewTargeter(root_view);
+  ui::EventTargeter* targeter = view_targeter;
   root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   // The event falls within the bounds of |child| and |content| but not
@@ -201,9 +201,9 @@ TEST_F(ViewTargeterTest, SubtreeShouldBeExploredForEvent) {
   params.bounds = gfx::Rect(0, 0, 650, 650);
   widget.Init(params);
 
-  ViewTargeter* targeter = new ViewTargeter();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
+  ViewTargeter* targeter = new ViewTargeter(root_view);
   root_view->SetEventTargeter(make_scoped_ptr(targeter));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
@@ -266,10 +266,10 @@ TEST_F(ViewTargeterTest, CanProcessEventsWithinSubtree) {
   params.bounds = gfx::Rect(0, 0, 650, 650);
   widget.Init(params);
 
-  ViewTargeter* view_targeter = new ViewTargeter();
-  ui::EventTargeter* targeter = view_targeter;
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
+  ViewTargeter* view_targeter = new ViewTargeter(root_view);
+  ui::EventTargeter* targeter = view_targeter;
   root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
@@ -332,6 +332,8 @@ TEST_F(ViewTargeterTest, CanProcessEventsWithinSubtree) {
 // Tests that the functions ViewTargeterDelegate::DoesIntersectRect()
 // and MaskedTargeterDelegate::DoesIntersectRect() work as intended when
 // called on views which are derived from ViewTargeterDelegate.
+// Also verifies that ViewTargeterDelegate::DoesIntersectRect() can
+// be called from the ViewTargeter installed on RootView.
 TEST_F(ViewTargeterTest, DoesIntersectRect) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -341,6 +343,8 @@ TEST_F(ViewTargeterTest, DoesIntersectRect) {
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
+  ViewTargeter* view_targeter = new ViewTargeter(root_view);
+  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   TestingView v2;
@@ -375,6 +379,13 @@ TEST_F(ViewTargeterTest, DoesIntersectRect) {
   EXPECT_TRUE(v3.TestDoesIntersectRect(&v3, gfx::Rect(90, 90, 1, 1)));
   EXPECT_FALSE(v3.TestDoesIntersectRect(&v3, gfx::Rect(10, 125, 50, 50)));
   EXPECT_FALSE(v3.TestDoesIntersectRect(&v3, gfx::Rect(110, 110, 1, 1)));
+
+  // Verify that hit-testing is performed correctly when using the
+  // call-through function ViewTargeter::DoesIntersectRect().
+  EXPECT_TRUE(view_targeter->DoesIntersectRect(root_view,
+                                               gfx::Rect(0, 0, 50, 50)));
+  EXPECT_FALSE(view_targeter->DoesIntersectRect(root_view,
+                                                gfx::Rect(-20, -20, 10, 10)));
 }
 
 }  // namespace test

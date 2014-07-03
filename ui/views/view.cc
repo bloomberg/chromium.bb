@@ -948,21 +948,32 @@ bool View::HitTestPoint(const gfx::Point& point) const {
 }
 
 bool View::HitTestRect(const gfx::Rect& rect) const {
+  // If no ViewTargeter is installed on |this|, use the ViewTargeter installed
+  // on our root view instead.
+  ViewTargeter* view_targeter = targeter();
+  if (!view_targeter)
+    view_targeter = GetWidget()->GetRootView()->targeter();
+  CHECK(view_targeter);
+
+  // TODO(tdanderson): The check for !HasHitTestMask() is temporary. Remove
+  //                   the check along with the duplicated code below once all
+  //                   of the masked views subclass MaskedViewDelegate.
+  //                   HasHitTestMask() and GetHitTestMaskDeprecated() can also
+  //                   be removed from the View interface at that time.
+  if (!HasHitTestMask())
+    return view_targeter->DoesIntersectRect(this, rect);
+
   if (GetLocalBounds().Intersects(rect)) {
-    if (HasHitTestMask()) {
-      gfx::Path mask;
-      HitTestSource source = HIT_TEST_SOURCE_MOUSE;
-      if (!views::UsePointBasedTargeting(rect))
-        source = HIT_TEST_SOURCE_TOUCH;
-      GetHitTestMaskDeprecated(source, &mask);
-      SkRegion clip_region;
-      clip_region.setRect(0, 0, width(), height());
-      SkRegion mask_region;
-      return mask_region.setPath(mask, clip_region) &&
-             mask_region.intersects(RectToSkIRect(rect));
-    }
-    // No mask, but inside our bounds.
-    return true;
+    gfx::Path mask;
+    HitTestSource source = HIT_TEST_SOURCE_MOUSE;
+    if (!views::UsePointBasedTargeting(rect))
+      source = HIT_TEST_SOURCE_TOUCH;
+    GetHitTestMaskDeprecated(source, &mask);
+    SkRegion clip_region;
+    clip_region.setRect(0, 0, width(), height());
+    SkRegion mask_region;
+    return mask_region.setPath(mask, clip_region) &&
+           mask_region.intersects(RectToSkIRect(rect));
   }
   // Outside our bounds.
   return false;
