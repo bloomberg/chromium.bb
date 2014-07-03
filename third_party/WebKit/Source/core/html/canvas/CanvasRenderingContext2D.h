@@ -283,6 +283,8 @@ private:
         String m_unparsedFont;
         Font m_font;
         bool m_realizedFont;
+
+        bool m_hasClip;
     };
 
     CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
@@ -342,6 +344,7 @@ private:
     void drawFocusRing(const Path&);
 
     void addHitRegionInternal(const HitRegionOptions&, ExceptionState&);
+    bool hasClip() { return state().m_hasClip; }
 
     void validateStateStack();
 

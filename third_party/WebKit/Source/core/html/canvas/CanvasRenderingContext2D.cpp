@@ -259,6 +259,7 @@ CanvasRenderingContext2D::State::State()
     , m_textBaseline(AlphabeticTextBaseline)
     , m_unparsedFont(defaultFont)
     , m_realizedFont(false)
+    , m_hasClip(false)
 {
 }
 
@@ -288,6 +289,7 @@ CanvasRenderingContext2D::State::State(const State& other)
     , m_unparsedFont(other.m_unparsedFont)
     , m_font(other.m_font)
     , m_realizedFont(other.m_realizedFont)
+    , m_hasClip(other.m_hasClip)
 {
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
@@ -326,6 +328,7 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     m_unparsedFont = other.m_unparsedFont;
     m_font = other.m_font;
     m_realizedFont = other.m_realizedFont;
+    m_hasClip = other.m_hasClip;
 
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
@@ -1097,6 +1100,7 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
 
     realizeSaves();
     c->canvasClip(path, parseWinding(windingRuleString));
+    modifiableState().m_hasClip = true;
 }
 
 void CanvasRenderingContext2D::clip(const String& windingRuleString)
@@ -2386,7 +2390,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
     Path specifiedPath = m_path;
     specifiedPath.transform(state().m_transform);
 
-    if (context->isClipMode()) {
+    if (hasClip()) {
         // FIXME: The hit regions should take clipping region into account.
         // However, we have no way to get the region from canvas state stack by now.
         // See http://crbug.com/387057

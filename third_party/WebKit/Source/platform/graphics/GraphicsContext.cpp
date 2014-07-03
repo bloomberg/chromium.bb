@@ -1388,14 +1388,6 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     path.setFillType(previousFillType);
 }
 
-bool GraphicsContext::isClipMode() const
-{
-    if (contextDisabled())
-        return false;
-
-    return m_canvas->getClipStack()->getSaveCount() != 0;
-}
-
 void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)
 {
     if (contextDisabled())
