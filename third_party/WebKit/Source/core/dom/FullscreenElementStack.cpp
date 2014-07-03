@@ -496,15 +496,9 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
 
     while (!changeQueue.isEmpty()) {
         RefPtrWillBeRawPtr<Node> node = changeQueue.takeFirst();
-        if (!node)
-            node = document()->documentElement();
-        // The dispatchEvent below may have blown away our documentElement.
-        if (!node)
-            continue;
 
-        // If the element was removed from our tree, also message the documentElement. Since we may
-        // have a document hierarchy, check that node isn't in another document.
-        if (!document()->contains(node.get()) && !node->inDocument())
+        // If the element was removed from our tree, also message the documentElement.
+        if (!node->inDocument() && document()->documentElement())
             changeQueue.append(document()->documentElement());
 
         node->dispatchEvent(Event::createBubble(EventTypeNames::webkitfullscreenchange));
@@ -512,15 +506,9 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
 
     while (!errorQueue.isEmpty()) {
         RefPtrWillBeRawPtr<Node> node = errorQueue.takeFirst();
-        if (!node)
-            node = document()->documentElement();
-        // The dispatchEvent below may have blown away our documentElement.
-        if (!node)
-            continue;
 
-        // If the element was removed from our tree, also message the documentElement. Since we may
-        // have a document hierarchy, check that node isn't in another document.
-        if (!document()->contains(node.get()) && !node->inDocument())
+        // If the element was removed from our tree, also message the documentElement.
+        if (!node->inDocument() && document()->documentElement())
             errorQueue.append(document()->documentElement());
 
         node->dispatchEvent(Event::createBubble(EventTypeNames::webkitfullscreenerror));
