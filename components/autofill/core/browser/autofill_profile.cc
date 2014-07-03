@@ -26,7 +26,9 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
+#include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::ASCIIToUTF16;
@@ -298,11 +300,11 @@ base::string16 AutofillProfile::GetInfo(const AutofillType& type,
   if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
     scoped_ptr< ::i18n::addressinput::AddressData> address_data =
         i18n::CreateAddressDataFromAutofillProfile(*this, app_locale);
-    if (!address_data->HasAllRequiredFields())
+    if (!addressinput::HasAllRequiredFields(*address_data))
       return base::string16();
 
     std::vector<std::string> lines;
-    address_data->FormatForDisplay(&lines);
+    ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
     return base::UTF8ToUTF16(JoinString(lines, '\n'));
   }
 
