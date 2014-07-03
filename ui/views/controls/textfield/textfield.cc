@@ -647,7 +647,14 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
+  // Since HandleKeyEvent() might destroy |this|, get a weak pointer and verify
+  // it isn't null before proceeding.
+  base::WeakPtr<Textfield> textfield(weak_ptr_factory_.GetWeakPtr());
+
   bool handled = controller_ && controller_->HandleKeyEvent(this, event);
+
+  if (!textfield)
+    return handled;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   ui::TextEditKeyBindingsDelegateAuraLinux* delegate =

@@ -93,6 +93,28 @@ class GestureEventForTest : public ui::GestureEvent {
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
+// This controller will happily destroy the target textfield passed on
+// construction when a key event is triggered.
+class TextfieldDestroyerController : public views::TextfieldController {
+ public:
+  explicit TextfieldDestroyerController(views::Textfield* target)
+      : target_(target) {
+    target_->set_controller(this);
+  }
+
+  views::Textfield* target() { return target_.get(); }
+
+  // views::TextfieldController:
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE {
+    target_.reset();
+    return false;
+  }
+
+ private:
+  scoped_ptr<views::Textfield> target_;
+};
+
 base::string16 GetClipboardText(ui::ClipboardType type) {
   base::string16 text;
   ui::Clipboard::GetForCurrentThread()->ReadText(type, &text);
@@ -2007,6 +2029,21 @@ TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
 
   // Regardless of the text, the baseline must be the same.
   EXPECT_EQ(new_baseline, old_baseline);
+}
+
+// Tests that a textfield view can be destroyed from OnKeyEvent() on its
+// controller and it does not crash.
+TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
+  InitTextfield();
+
+  // The controller assumes ownership of the textfield.
+  TextfieldDestroyerController controller(textfield_);
+  EXPECT_TRUE(controller.target());
+
+  // Send a key to trigger OnKeyEvent().
+  SendKeyEvent('X');
+
+  EXPECT_FALSE(controller.target());
 }
 
 }  // namespace views
