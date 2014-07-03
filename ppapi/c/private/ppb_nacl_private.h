@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Jun 27 15:10:18 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Jul  2 12:11:51 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -316,7 +316,6 @@ struct PPB_NaCl_Private_1_0 {
                         uint64_t total_bytes);
   /* Report that the nexe loaded successfully. */
   void (*ReportLoadSuccess)(PP_Instance instance,
-                            const char* url,
                             uint64_t loaded_bytes,
                             uint64_t total_bytes);
   /* Report an error that occured while attempting to load a nexe. */

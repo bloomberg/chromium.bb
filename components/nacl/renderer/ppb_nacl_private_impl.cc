@@ -744,12 +744,14 @@ void DispatchEvent(PP_Instance instance,
 }
 
 void ReportLoadSuccess(PP_Instance instance,
-                       const char* url,
                        uint64_t loaded_bytes,
                        uint64_t total_bytes) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager)
-    load_manager->ReportLoadSuccess(url, loaded_bytes, total_bytes);
+  if (load_manager) {
+    load_manager->ReportLoadSuccess(load_manager->program_url(),
+                                    loaded_bytes,
+                                    total_bytes);
+  }
 }
 
 void ReportLoadError(PP_Instance instance,

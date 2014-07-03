@@ -217,9 +217,6 @@ class Plugin : public pp::Instance {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
-  // Original, unresolved URL for the .nexe program to load.
-  std::string program_url_;
-
   pp::CompletionCallbackFactory<Plugin> callback_factory_;
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;

@@ -353,6 +353,7 @@ bool NexeLoadManager::RequestNaClManifest(const std::string& url) {
 }
 
 void NexeLoadManager::ProcessNaClManifest(const std::string& program_url) {
+  program_url_ = program_url;
   GURL gurl(program_url);
   DCHECK(gurl.is_valid());
   if (gurl.is_valid())

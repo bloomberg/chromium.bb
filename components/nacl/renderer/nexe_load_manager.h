@@ -110,6 +110,8 @@ class NexeLoadManager {
     pnacl_start_time_ = time;
   }
 
+  const std::string& program_url() const { return program_url_; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
@@ -121,6 +123,8 @@ class NexeLoadManager {
   PP_Instance pp_instance_;
   PP_NaClReadyState nacl_ready_state_;
   bool nexe_error_reported_;
+
+  std::string program_url_;
 
   // A flag indicating if the NaCl executable is being loaded from an installed
   // application.  This flag is used to bucket UMA statistics more precisely to

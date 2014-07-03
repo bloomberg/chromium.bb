@@ -404,7 +404,7 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
             " setting histograms\n");
     int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
     nacl_interface_->ReportLoadSuccess(
-        pp_instance(), program_url_.c_str(), nexe_size, nexe_size);
+        pp_instance(), nexe_size, nexe_size);
   } else {
     NaClLog(4, "NexeFileDidOpenContinuation: failed.");
   }
@@ -459,8 +459,7 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
     // TODO(teravest): Tighten this up so we can get rid of
     // GetCurrentProgress(). loaded should always equal total.
     pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
-    nacl_interface_->ReportLoadSuccess(
-        pp_instance(), program_url_.c_str(), loaded, total);
+    nacl_interface_->ReportLoadSuccess(pp_instance(), loaded, total);
   }
 }
 
@@ -475,17 +474,17 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PP_Bool uses_nonsfi_mode;
   if (nacl_interface_->GetManifestProgramURL(
           pp_instance(), &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {
-    program_url_ = pp::Var(pp::PASS_REF, pp_program_url).AsString();
+    std::string program_url = pp::Var(pp::PASS_REF, pp_program_url).AsString();
     // TODO(teravest): Make ProcessNaClManifest take responsibility for more of
     // this function.
-    nacl_interface_->ProcessNaClManifest(pp_instance(), program_url_.c_str());
+    nacl_interface_->ProcessNaClManifest(pp_instance(), program_url.c_str());
     uses_nonsfi_mode_ = PP_ToBool(uses_nonsfi_mode);
     if (pnacl_options.translate) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
       pnacl_coordinator_.reset(
           PnaclCoordinator::BitcodeToNative(this,
-                                            program_url_,
+                                            program_url,
                                             pnacl_options,
                                             translate_callback));
       return;
@@ -494,7 +493,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
           callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
       // Will always call the callback on success or failure.
       nacl_interface_->DownloadNexe(pp_instance(),
-                                    program_url_.c_str(),
+                                    program_url.c_str(),
                                     &nexe_file_info_,
                                     open_callback.pp_completion_callback());
       return;
